@@ -261,41 +261,6 @@ to queue action
    check the rule not exists in the list.
    send matched packets, check the packets are not to queue 3.
 
-to queue group action
-.....................
-
-1. validate a rule::
-
-     testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Flow rule validated
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-
-2. create a rule::
-
-     testpmd> flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions rss queues 2 3 end / end
-     testpmd> flow list 0
-
-   check the rule exists in the list.
-
-3. send matched packets, check the packets are to queue 2 or 3.
-   send mismatched packets, check the packets are not to queue 2 and 3.
-
-4. verify rules can be destroyed::
-
-     testpmd> flow destroy 0 rule 15360
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-   send matched packets, check the packets are not to queue 2 and 3.
-
 drop action
 ...........
 
@@ -538,48 +503,6 @@ to queue action
    check the rule not exists in the list.
    send matched packets, check the packets are not to queue 5.
 
-to queue group action
-......................
-
-1. validate a rule::
-
-     testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp src is 50 dst is 23 / end actions rss queues 4 5 end / end
-
-   get the message::
-
-     Flow rule validated
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-
-2. create a rule::
-
-     testpmd> flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp src is 50 dst is 23 / end actions rss queues 4 5 end / end
-
-   get the message::
-
-     Succeeded to create (2) flow
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule exists in the list.
-
-3. send matched packets, check the packets are to queue 4 or 5.
-   send mismatched packets, check the packets are not to queue 4 and 5.
-
-4. verify rules can be destroyed::
-
-     testpmd> flow destroy 0 rule 15360
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-   send matched packets, check the packets are not to queue 4 and 5.
-
 drop action
 ...........
 
@@ -684,48 +607,6 @@ to queue action
 
    check the rule not exists in the list.
    send matched packets, check the packets are not to queue 2.
-
-to queue group action
-......................
-
-1. validate a rule::
-
-     testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Flow rule validated
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-
-2. create a rule::
-
-     testpmd> flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Succeeded to create (2) flow
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule exists in the list.
-
-3. send matched packets, check the packets are to queue 2 or 3.
-   send mismatched packets, check the packets are not to queue 2 and 3.
-
-4. verify rules can be destroyed::
-
-     testpmd> flow destroy 0 rule 15360
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-   send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
 ...........
@@ -971,48 +852,6 @@ to queue action
    check the rule not exists in the list.
    send matched packets, check the packets are not to queue 1.
 
-to queue group action
-......................
-
-1. validate a rule::
-
-     testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp src is 25 dst is 23 / end actions rss queues 1 2 end / end
-
-   get the message::
-
-     Flow rule validated
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-
-2. create a rule::
-
-     testpmd> flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp src is 25 dst is 23 / end actions rss queues 1 2 end / end
-
-   get the message::
-
-     Succeeded to create (2) flow
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule exists in the list.
-
-3. send matched packets, check the packets are to queue 1 or 2.
-   send mismatched packets, check the packets are not to queue 1 and 2.
-
-4. verify rules can be destroyed::
-
-     testpmd> flow destroy 0 rule 15360
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-   send matched packets, check the packets are not to queue 1 and 2.
-
 drop action
 ...........
 
@@ -1112,48 +951,6 @@ to queue action
 
    check the rule not exists in the list.
    send matched packets, check the packets are not to queue 2.
-
-to queue group action
-......................
-
-1. validate a rule::
-
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Flow rule validated
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-
-2. create a rule::
-
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Succeeded to create (2) flow
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule exists in the list.
-
-3. send matched packets, check the packets are to queue 2 or 3.
-   send mismatched packets, check the packets are not to queue 2 and 3.
-
-4. verify rules can be destroyed::
-
-     testpmd> flow destroy 0 rule 0
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-   send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
 ...........
@@ -1260,48 +1057,6 @@ to queue action
 
    check the rules not exist in the list.
    send matched packets, check the packets are not to queue 2.
-
-to queue group action
-......................
-
-1. validate a rule::
-
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 proto is 0x06 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Flow rule validated
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-
-2. create a rule::
-
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 proto is 0x06 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Succeeded to create (2) flow
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rules exist in the list.
-
-3. send matched packets, check the packets are to queue 2 or 3.
-   send mismatched packets, check the packets are not to queue 2 and 3.
-
-4. verify rules can be destroyed::
-
-     testpmd> flow destroy 0 rule 0
-     testpmd> flow list 0
-
-   check the rules not exist in the list.
-   send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
 ............
@@ -1688,48 +1443,6 @@ to queue action
    check the rule not exists in the list.
    send matched packets, check the packets are not to queue 3.
 
-to queue group action
-......................
-
-1. validate a rule::
-
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / tcp src is 50 dst is 23 / end actions rss queues 4 5 end / end
-
-   get the message::
-
-     Flow rule validated
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-
-2. create a rule::
-
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / tcp src is 50 dst is 23 / end actions rss queues 4 5 end / end
-
-   get the message::
-
-     Succeeded to create (2) flow
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule exists in the list.
-
-3. send matched packets, check the packets are to queue 4 or 5.
-   send mismatched packets, check the packets are not to queue 4 and 5.
-
-4. verify rules can be destroyed::
-
-     testpmd> flow destroy 0 rule 0
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-   send matched packets, check the packets are not to queue queue 4 and 5.
-
 drop action
 ...........
 
@@ -1835,48 +1548,6 @@ to queue action
 
    check the rule not exists in the list.
    send matched packets, check the packets are not to queue 3.
-
-to queue group action
-......................
-
-1. validate a rule::
-
-     testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Flow rule validated
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-
-2. create a rule::
-
-     testpmd> flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Succeeded to create (2) flow
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule exists in the list.
-
-3. send matched packets, check the packets are to queue 2 or 3.
-   send mismatched packets, check the packets are not to queue 2 and 3.
-
-4. verify rules can be destroyed::
-
-     testpmd> flow destroy 0 rule 15360
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-   send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
 ...........
@@ -2120,48 +1791,6 @@ to queue action
    check the rule not exists in the list.
    send matched packets, check the packets are not to queue 1.
 
-to queue group action
-......................
-
-1. validate a rule::
-
-     testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions rss queues 1 2 end / end
-
-   get the message::
-
-     Flow rule validated
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-
-2. create a rule::
-
-     testpmd> flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions rss queues 1 2 end / end
-
-   get the message::
-
-     Succeeded to create (2) flow
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule exists in the list.
-
-3. send matched packets, check the packets are to queue 1 or 2
-   send mismatched packets, check the packets are not to queue 1 and 2.
-
-4. verify rules can be destroyed::
-
-     testpmd> flow destroy 0 rule 15360
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-   send matched packets, check the packets are not to queue 1 and 2.
-
 drop action
 ............
 
@@ -2266,48 +1895,6 @@ to queue action
 
    check the rule not exists in the list.
    send matched packets, check the packets are not to queue 3.
-
-to queue group action
-......................
-
-1. validate a rule::
-
-     testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Flow rule validated
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-
-2. create a rule::
-
-     testpmd> flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Succeeded to create (2) flow
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule exists in the list.
-
-3. send matched packets, check the packets are to queue 2 or 3.
-   send mismatched packets, check the packets are not to queue 2 and 3.
-
-4. verify rules can be destroyed::
-
-     testpmd> flow destroy 0 rule 15360
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-   send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
 ............
@@ -2553,48 +2140,6 @@ to queue action
    check the rule not exists in the list.
    send matched packets, check the packets are not to queue 3.
 
-to queue group action
-......................
-
-1. validate a rule::
-
-     testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Flow rule validated
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-
-2. create a rule::
-
-     testpmd> flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Succeeded to create (2) flow
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule exists in the list.
-
-3. send matched packets, check the packets are to queue 2 or 3.
-   send mismatched packets, check the packets are not to queue 2 and 3.
-
-4. verify rules can be destroyed::
-
-     testpmd> flow destroy 0 rule 15360
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-   send matched packets, check the packets are not to queue 2 and 3.
-
 drop action
 ............
 
@@ -2694,48 +2239,6 @@ to queue action
 
    check the rule not exists in the list.
    send matched packets, check the packets are not to queue 3.
-
-to queue group action
-......................
-
-1. validate a rule::
-
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Flow rule validated
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-
-2. create a rule::
-
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Succeeded to create (2) flow
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule exists in the list.
-
-3. send matched packets, check the packets are to queue 2 or 3.
-   send mismatched packets, check the packets are not to queue 2 and 3.
-
-4. verify rules can be destroyed::
-
-     testpmd> flow destroy 0 rule 0
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-   send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
 ............
@@ -2842,48 +2345,6 @@ to queue action
 
    check the rule not exists in the list.
    send matched packets, check the packets are not to queue 2.
-
-to queue group action
-......................
-
-1. validate a rule::
-
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 proto is 0x06 tos is 4 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Flow rule validated
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-
-2. create a rule::
-
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 proto is 0x06 tos is 4 / end actions rss queues 2 3 end / end
-
-   get the message::
-
-     Succeeded to create (2) flow
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule exists in the list.
-
-3. send matched packets, check the packets are to queue 2 or 3.
-   send mismatched packets, check the packets are not to queue 2 and 3.
-
-4. verify rules can be destroyed::
-
-     testpmd> flow destroy 0 rule 0
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-   send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
 ............
@@ -3129,48 +2590,6 @@ to queue action
    check the rule not exists in the list.
    send matched packets, check the packets are not to queue 2.
 
-to queue group action
-......................
-
-1. validate a rule::
-
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / udp src is 50 dst is 23 / end actions rss queues 4 5 end / end
-
-   get the message::
-
-     Flow rule validated
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-
-2. create a rule::
-
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / udp src is 50 dst is 23 / end actions rss queues 4 5 end / end
-
-   get the message::
-
-     Succeeded to create (2) flow
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule exists in the list.
-
-3. send matched packets, check the packets are to queue 4 or 5.
-   send mismatched packets, check the packets are not to queue 4 and 5.
-
-4. verify rules can be destroyed::
-
-     testpmd> flow destroy 0 rule 0
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-   send matched packets, check the packets are not to queue 4 and 5.
-
 drop action
 ............
 
@@ -3269,48 +2688,6 @@ to queue action
 
    check the rule not exists in the list.
    send matched packets, check the packets are not to queue 2.
-
-to queue group action
-......................
-
-1. validate a rule::
-
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / tcp src is 50 dst is 23 / end actions rss queues 4 5 end / end
-
-   get the message::
-
-     Flow rule validated
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-
-2. create a rule::
-
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / tcp src is 50 dst is 23 / end actions rss queues 4 5 end / end
-
-   get the message::
-
-     Succeeded to create (2) flow
-
-   check the flow list::
-
-     testpmd> flow list 0
-
-   check the rule exists in the list.
-
-3. send matched packets, check the packets are to queue 4 or 5.
-   send mismatched packets, check the packets are not to queue 4 and 5.
-
-4. verify rules can be destroyed::
-
-     testpmd> flow destroy 0 rule 0
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-   send matched packets, check the packets are not to queue 4 and 5.
 
 drop action
 ............
