@@ -1220,22 +1220,7 @@ Subcase 1: MAC_IPV4_TUN_IPV4_PAY queue index
    verify the packets hit rule are distributed by RSS without FDIR matched ID.
    check there is no rule listed.
 
-Subcase 2: MAC_IPV4_TUN_IPV4_PAY rss queues
--------------------------------------------
-
-1. create filter rules::
-
-    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss queues 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 end / mark / end
-
-2. send matched packets, check the packets are distributed to queue group with FDIR matched ID=0x0.
-   send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
-
-3. repeat step 3 of subcase 1.
-
-4. verify the packets hit rule are distributed by RSS without FDIR matched ID.
-   check there is no rule listed.
-
-Subcase 3: MAC_IPV4_TUN_IPV4_PAY passthru
+Subcase 2: MAC_IPV4_TUN_IPV4_PAY passthru
 -----------------------------------------
 
 1. create filter rules::
@@ -1250,7 +1235,7 @@ Subcase 3: MAC_IPV4_TUN_IPV4_PAY passthru
 4. verify the packets hit rule are distributed by RSS without FDIR matched ID.
    check there is no rule listed.
 
-Subcase 4: MAC_IPV4_TUN_IPV4_PAY drop
+Subcase 3: MAC_IPV4_TUN_IPV4_PAY drop
 -------------------------------------
 
 1. create filter rules::
@@ -1265,7 +1250,7 @@ Subcase 4: MAC_IPV4_TUN_IPV4_PAY drop
 4. check there is no rule listed.
    verify the packets hit the rule are not dropped.
 
-Subcase 5: MAC_IPV4_TUN_IPV4_PAY mark/rss
+Subcase 4: MAC_IPV4_TUN_IPV4_PAY mark/rss
 -----------------------------------------
 
 1. create filter rules::
@@ -1280,7 +1265,7 @@ Subcase 5: MAC_IPV4_TUN_IPV4_PAY mark/rss
 4. verify matched packet is distributed by RSS without FDIR matched ID.
    check there is no rule listed.
 
-Subcase 6: MAC_IPV4_TUN_IPV4_PAY mark
+Subcase 5: MAC_IPV4_TUN_IPV4_PAY mark
 -------------------------------------
 
 1. create filter rules::
@@ -1316,22 +1301,7 @@ Subcase 1: MAC_IPV4_TUN_IPV4_UDP queue index
 4. verify the packets hit rule are distributed by RSS without FDIR matched ID.
    check there is no rule listed.
 
-Subcase 2: MAC_IPV4_TUN_IPV4_UDP rss queues
--------------------------------------------
-
-1. create filter rules::
-
-    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions rss queues 38 39 40 41 end / mark id 1 / end
-
-2. send matched packets, check the packets are distributed to queue group with FDIR matched ID=0x1.
-   send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
-
-3. repeat step 3 of subcase 1.
-
-4. verify the packets hit rule are distributed by RSS without FDIR matched ID.
-   check there is no rule listed.
-
-Subcase 3: MAC_IPV4_TUN_IPV4_UDP passthru
+Subcase 2: MAC_IPV4_TUN_IPV4_UDP passthru
 -----------------------------------------
 
 1. create filter rules::
@@ -1346,7 +1316,7 @@ Subcase 3: MAC_IPV4_TUN_IPV4_UDP passthru
 4. verify the packets hit rule are distributed by RSS without FDIR matched ID.
    check there is no rule listed.
 
-Subcase 4: MAC_IPV4_TUN_IPV4_UDP drop
+Subcase 3: MAC_IPV4_TUN_IPV4_UDP drop
 -------------------------------------
 
 1. create filter rules::
@@ -1360,7 +1330,7 @@ Subcase 4: MAC_IPV4_TUN_IPV4_UDP drop
 
 4. verify the packets hit rule are received without FDIR matched ID.
 
-Subcase 5: MAC_IPV4_TUN_IPV4_UDP mark/rss
+Subcase 4: MAC_IPV4_TUN_IPV4_UDP mark/rss
 -----------------------------------------
 
 1. create filter rules::
@@ -1375,7 +1345,7 @@ Subcase 5: MAC_IPV4_TUN_IPV4_UDP mark/rss
 4. verify the packets hit rule are distributed by RSS without FDIR matched ID.
    check there is no rule listed.
 
-Subcase 6: MAC_IPV4_TUN_IPV4_UDP mark
+Subcase 5: MAC_IPV4_TUN_IPV4_UDP mark
 -------------------------------------
 
 1. create filter rules::
