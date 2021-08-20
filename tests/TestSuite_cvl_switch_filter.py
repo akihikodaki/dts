@@ -80,22 +80,6 @@ tv_mac_ipv4_vxlan_ipv4_in_queue_01 = {
                   "expect_results":{"expect_pkts":8}}
 }
 
-tv_mac_ipv4_vxlan_ipv4_queue_region_02 = {
-    "name":"tv_mac_ipv4_vxlan_ipv4_frag_queue_region_02",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions rss queues 2 3 end / end",
-    "configuration":{
-        "is_non_pipeline":True,
-        "is_need_rss_rule":False},
-    "matched":{"scapy_str":mac_ipv4_vxlan_ipv4_scapy_str["matched"],
-               "check_func":{"func":rfc.check_output_log_queue_region,
-                             "param":{"expect_port":0, "expect_queues":[2, 3]}},
-               "expect_results":{"expect_pkts":2}},
-    "mismatched":{"scapy_str":mac_ipv4_vxlan_ipv4_scapy_str["mismatched"],
-                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
-                                "param":{"expect_port":0, "expect_queues":[2, 3]}},
-                  "expect_results":{"expect_pkts":8}}
-}
-
 tv_mac_ipv4_vxlan_ipv4_drop_03 = {
     "name":"tv_mac_ipv4_vxlan_ipv4_frag_drop_03",
     "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions drop / end",
@@ -114,7 +98,6 @@ tv_mac_ipv4_vxlan_ipv4_drop_03 = {
 
 tvs_mac_ipv4_vxlan_ipv4 = [
     tv_mac_ipv4_vxlan_ipv4_in_queue_01,
-    tv_mac_ipv4_vxlan_ipv4_queue_region_02,
     tv_mac_ipv4_vxlan_ipv4_drop_03
     ]
 
@@ -217,22 +200,6 @@ tv_mac_ipv4_vxlan_ipv4_tcp_in_queue_01 = {
                   "expect_results":{"expect_pkts":6}}
 }
 
-tv_mac_ipv4_vxlan_ipv4_tcp_queue_region_02 = {
-    "name":"tv_mac_ipv4_vxlan_ipv4_tcp_queue_region_02",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp src is 50 dst is 23 / end actions rss queues 4 5 end / end",
-    "configuration":{
-        "is_non_pipeline":True,
-        "is_need_rss_rule":False},
-    "matched":{"scapy_str":mac_ipv4_vxlan_ipv4_tcp_scapy_str["matched"],
-               "check_func":{"func":rfc.check_output_log_queue_region,
-                             "param":{"expect_port":0, "expect_queues":[4, 5]}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":mac_ipv4_vxlan_ipv4_tcp_scapy_str["mismatched"],
-                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
-                                "param":{"expect_port":0, "expect_queues":[4, 5]}},
-                  "expect_results":{"expect_pkts":6}}
-}
-
 tv_mac_ipv4_vxlan_ipv4_tcp_drop_03 = {
     "name":"tv_mac_ipv4_vxlan_ipv4_tcp_drop_03",
     "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp src is 50 dst is 23 / end actions drop / end",
@@ -251,7 +218,6 @@ tv_mac_ipv4_vxlan_ipv4_tcp_drop_03 = {
 
 tvs_mac_ipv4_vxlan_ipv4_tcp = [
     tv_mac_ipv4_vxlan_ipv4_tcp_in_queue_01,
-    tv_mac_ipv4_vxlan_ipv4_tcp_queue_region_02,
     tv_mac_ipv4_vxlan_ipv4_tcp_drop_03
     ]
 
@@ -291,22 +257,6 @@ tv_mac_ipv4_vxlan_mac_ipv4_in_queue_01 = {
                   "expect_results":{"expect_pkts":10}}
 }
 
-tv_mac_ipv4_vxlan_mac_ipv4_queue_region_02 = {
-    "name":"tv_mac_ipv4_vxlan_mac_ipv4_queue_region_02",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions rss queues 2 3 end / end",
-    "configuration":{
-        "is_non_pipeline":True,
-        "is_need_rss_rule":False},
-    "matched":{"scapy_str":mac_ipv4_vxlan_mac_ipv4_scapy_str["matched"],
-               "check_func":{"func":rfc.check_output_log_queue_region,
-                             "param":{"expect_port":0, "expect_queues":[2, 3]}},
-               "expect_results":{"expect_pkts":2}},
-    "mismatched":{"scapy_str":mac_ipv4_vxlan_mac_ipv4_scapy_str["mismatched"],
-                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
-                                "param":{"expect_port":0, "expect_queues":[2, 3]}},
-                  "expect_results":{"expect_pkts":10}}
-}
-
 tv_mac_ipv4_vxlan_mac_ipv4_drop_03 = {
     "name":"tv_mac_ipv4_vxlan_mac_ipv4_drop_03",
     "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions drop / end",
@@ -325,7 +275,6 @@ tv_mac_ipv4_vxlan_mac_ipv4_drop_03 = {
 
 tvs_mac_ipv4_vxlan_mac_ipv4 = [
     tv_mac_ipv4_vxlan_mac_ipv4_in_queue_01,
-    tv_mac_ipv4_vxlan_mac_ipv4_queue_region_02,
     tv_mac_ipv4_vxlan_mac_ipv4_drop_03
     ]
 
@@ -429,22 +378,6 @@ tv_mac_ipv4_vxlan_mac_ipv4_tcp_in_queue_01 = {
                   "expect_results":{"expect_pkts":7}}
 }
 
-tv_mac_ipv4_vxlan_mac_ipv4_tcp_queue_region_02 = {
-    "name":"tv_mac_ipv4_vxlan_mac_ipv4_tcp_queue_region_02",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp src is 25 dst is 23 / end actions rss queues 1 2 end / end",
-    "configuration":{
-        "is_non_pipeline":True,
-        "is_need_rss_rule":False},
-    "matched":{"scapy_str":mac_ipv4_vxlan_mac_ipv4_tcp_scapy_str["matched"],
-               "check_func":{"func":rfc.check_output_log_queue_region,
-                             "param":{"expect_port":0, "expect_queues":[1, 2]}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":mac_ipv4_vxlan_mac_ipv4_tcp_scapy_str["mismatched"],
-                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
-                                "param":{"expect_port":0, "expect_queues":[1, 2]}},
-                  "expect_results":{"expect_pkts":7}}
-}
-
 tv_mac_ipv4_vxlan_mac_ipv4_tcp_drop_03 = {
     "name":"tv_mac_ipv4_vxlan_mac_ipv4_tcp_drop_03",
     "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp src is 25 dst is 23 / end actions drop / end",
@@ -463,7 +396,6 @@ tv_mac_ipv4_vxlan_mac_ipv4_tcp_drop_03 = {
 
 tvs_mac_ipv4_vxlan_mac_ipv4_tcp = [
     tv_mac_ipv4_vxlan_mac_ipv4_tcp_in_queue_01,
-    tv_mac_ipv4_vxlan_mac_ipv4_tcp_queue_region_02,
     tv_mac_ipv4_vxlan_mac_ipv4_tcp_drop_03
     ]
 
@@ -501,22 +433,6 @@ tv_mac_ipv4_nvgre_ipv4_in_queue_01 = {
                   "expect_results":{"expect_pkts":8}}
 }
 
-tv_mac_ipv4_nvgre_ipv4_queue_region_02 = {
-    "name":"tv_mac_ipv4_nvgre_ipv4_queue_region_02",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions rss queues 2 3 end / end",
-    "configuration":{
-        "is_non_pipeline":True,
-        "is_need_rss_rule":False},
-    "matched":{"scapy_str":mac_ipv4_nvgre_ipv4_scapy_str["matched"],
-               "check_func":{"func":rfc.check_output_log_queue_region,
-                             "param":{"expect_port":0, "expect_queues":[2, 3]}},
-               "expect_results":{"expect_pkts":2}},
-    "mismatched":{"scapy_str":mac_ipv4_nvgre_ipv4_scapy_str["mismatched"],
-                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
-                                "param":{"expect_port":0, "expect_queues":[2, 3]}},
-                  "expect_results":{"expect_pkts":8}}
-}
-
 tv_mac_ipv4_nvgre_ipv4_drop_03 = {
     "name":"tv_mac_ipv4_nvgre_ipv4_drop_03",
     "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions drop / end",
@@ -535,7 +451,6 @@ tv_mac_ipv4_nvgre_ipv4_drop_03 = {
 
 tvs_mac_ipv4_nvgre_ipv4 = [
     tv_mac_ipv4_nvgre_ipv4_in_queue_01,
-    tv_mac_ipv4_nvgre_ipv4_queue_region_02,
     tv_mac_ipv4_nvgre_ipv4_drop_03
     ]
 
@@ -637,22 +552,6 @@ tv_mac_ipv4_nvgre_ipv4_tcp_in_queue_01 = {
                   "expect_results":{"expect_pkts":6}}
 }
 
-tv_mac_ipv4_nvgre_ipv4_tcp_queue_region_02 = {
-    "name":"tv_mac_ipv4_nvgre_ipv4_tcp_queue_region_02",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions rss queues 1 2 end / end",
-    "configuration":{
-        "is_non_pipeline":True,
-        "is_need_rss_rule":False},
-    "matched":{"scapy_str":mac_ipv4_nvgre_ipv4_tcp_scapy_str["matched"],
-               "check_func":{"func":rfc.check_output_log_queue_region,
-                             "param":{"expect_port":0, "expect_queues":[1, 2]}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":mac_ipv4_nvgre_ipv4_tcp_scapy_str["mismatched"],
-                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
-                                "param":{"expect_port":0, "expect_queues":[1, 2]}},
-                  "expect_results":{"expect_pkts":6}}
-}
-
 tv_mac_ipv4_nvgre_ipv4_tcp_drop_03 = {
     "name":"tv_mac_ipv4_nvgre_ipv4_tcp_drop_03",
     "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions drop / end",
@@ -671,7 +570,6 @@ tv_mac_ipv4_nvgre_ipv4_tcp_drop_03 = {
 
 tvs_mac_ipv4_nvgre_ipv4_tcp = [
     tv_mac_ipv4_nvgre_ipv4_tcp_in_queue_01,
-    tv_mac_ipv4_nvgre_ipv4_tcp_queue_region_02,
     tv_mac_ipv4_nvgre_ipv4_tcp_drop_03
     ]
 
@@ -710,22 +608,6 @@ tv_mac_ipv4_nvgre_mac_ipv4_in_queue_01 = {
                   "expect_results":{"expect_pkts":10}}
 }
 
-tv_mac_ipv4_nvgre_mac_ipv4_queue_region_02 = {
-    "name":"tv_mac_ipv4_nvgre_mac_ipv4_queue_region_02",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions rss queues 2 3 end / end",
-    "configuration":{
-        "is_non_pipeline":True,
-        "is_need_rss_rule":False},
-    "matched":{"scapy_str":mac_ipv4_nvgre_mac_ipv4_scapy_str["matched"],
-               "check_func":{"func":rfc.check_output_log_queue_region,
-                             "param":{"expect_port":0, "expect_queues":[2, 3]}},
-               "expect_results":{"expect_pkts":2}},
-    "mismatched":{"scapy_str":mac_ipv4_nvgre_mac_ipv4_scapy_str["mismatched"],
-                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
-                                "param":{"expect_port":0, "expect_queues":[2, 3]}},
-                  "expect_results":{"expect_pkts":10}}
-}
-
 tv_mac_ipv4_nvgre_mac_ipv4_drop_03 = {
     "name":"tv_mac_ipv4_nvgre_mac_ipv4_drop_03",
     "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions drop / end",
@@ -744,7 +626,6 @@ tv_mac_ipv4_nvgre_mac_ipv4_drop_03 = {
 
 tvs_mac_ipv4_nvgre_mac_ipv4 = [
     tv_mac_ipv4_nvgre_mac_ipv4_in_queue_01,
-    tv_mac_ipv4_nvgre_mac_ipv4_queue_region_02,
     tv_mac_ipv4_nvgre_mac_ipv4_drop_03
     ]
 
@@ -848,22 +729,6 @@ tv_mac_ipv4_nvgre_mac_ipv4_tcp_in_queue_01 = {
                   "expect_results":{"expect_pkts":7}}
 }
 
-tv_mac_ipv4_nvgre_mac_ipv4_tcp_queue_region_02 = {
-    "name":"tv_mac_ipv4_nvgre_mac_ipv4_tcp_queue_region_02",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions rss queues 2 3 end / end",
-    "configuration":{
-        "is_non_pipeline":True,
-        "is_need_rss_rule":False},
-    "matched":{"scapy_str":mac_ipv4_nvgre_mac_ipv4_tcp_scapy_str["matched"],
-               "check_func":{"func":rfc.check_output_log_queue_region,
-                             "param":{"expect_port":0, "expect_queues":[2, 3]}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":mac_ipv4_nvgre_mac_ipv4_tcp_scapy_str["mismatched"],
-                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
-                                "param":{"expect_port":0, "expect_queues":[2, 3]}},
-                  "expect_results":{"expect_pkts":7}}
-}
-
 tv_mac_ipv4_nvgre_mac_ipv4_tcp_drop_03 = {
     "name":"tv_mac_ipv4_nvgre_mac_ipv4_tcp_drop_03",
     "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions drop / end",
@@ -882,7 +747,6 @@ tv_mac_ipv4_nvgre_mac_ipv4_tcp_drop_03 = {
 
 tvs_mac_ipv4_nvgre_mac_ipv4_tcp = [
     tv_mac_ipv4_nvgre_mac_ipv4_tcp_in_queue_01,
-    tv_mac_ipv4_nvgre_mac_ipv4_tcp_queue_region_02,
     tv_mac_ipv4_nvgre_mac_ipv4_tcp_drop_03
     ]
 
@@ -914,22 +778,6 @@ tv_mac_ipv4_vxlan_ipv4_frag_pipeline_mode_in_queue_01 = {
                   "expect_results":{"expect_pkts":3}}
 }
 
-tv_mac_ipv4_vxlan_ipv4_frag_pipeline_mode_queue_region_02 = {
-    "name":"tv_mac_ipv4_vxlan_ipv4_frag_pipeline_mode_queue_region_02",
-    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions rss queues 2 3 end / end",
-    "configuration":{
-        "is_non_pipeline":False,
-        "is_need_rss_rule":False},
-    "matched":{"scapy_str":mac_ipv4_vxlan_ipv4_frag_pipeline_mode_scapy_str["matched"],
-               "check_func":{"func":rfc.check_output_log_queue_region,
-                             "param":{"expect_port":0, "expect_queues":[2, 3]}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":mac_ipv4_vxlan_ipv4_frag_pipeline_mode_scapy_str["mismatched"],
-                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
-                                "param":{"expect_port":0, "expect_queues":[2, 3]}},
-                  "expect_results":{"expect_pkts":3}}
-}
-
 tv_mac_ipv4_vxlan_ipv4_frag_pipeline_mode_drop_03 = {
     "name":"tv_mac_ipv4_vxlan_ipv4_frag_pipeline_mode_drop_03",
     "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions drop / end",
@@ -948,7 +796,6 @@ tv_mac_ipv4_vxlan_ipv4_frag_pipeline_mode_drop_03 = {
 
 tvs_mac_ipv4_vxlan_ipv4_frag_pipeline_mode = [
     tv_mac_ipv4_vxlan_ipv4_frag_pipeline_mode_in_queue_01,
-    tv_mac_ipv4_vxlan_ipv4_frag_pipeline_mode_queue_region_02,
     tv_mac_ipv4_vxlan_ipv4_frag_pipeline_mode_drop_03
     ]
 
@@ -985,22 +832,6 @@ tv_mac_ipv4_vxlan_ipv4_pay_proto_tcp_pipeline_mode_in_queue_01 = {
                   "expect_results":{"expect_pkts":8}}
 }
 
-tv_mac_ipv4_vxlan_ipv4_pay_proto_tcp_pipeline_mode_queue_region_02 = {
-    "name":"tv_mac_ipv4_vxlan_ipv4_pay_proto_tcp_pipeline_mode_queue_region_02",
-    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 proto is 0x06 / end actions rss queues 2 3 end / end",
-    "configuration":{
-        "is_non_pipeline":False,
-        "is_need_rss_rule":False},
-    "matched":{"scapy_str":mac_ipv4_vxlan_ipv4_pay_proto_tcp_pipeline_mode_scapy_str["matched"],
-               "check_func":{"func":rfc.check_output_log_queue_region,
-                             "param":{"expect_port":0, "expect_queues":[2, 3]}},
-               "expect_results":{"expect_pkts":2}},
-    "mismatched":{"scapy_str":mac_ipv4_vxlan_ipv4_pay_proto_tcp_pipeline_mode_scapy_str["mismatched"],
-                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
-                                "param":{"expect_port":0, "expect_queues":[2, 3]}},
-                  "expect_results":{"expect_pkts":8}}
-}
-
 tv_mac_ipv4_vxlan_ipv4_pay_proto_tcp_pipeline_mode_drop_03 = {
     "name":"tv_mac_ipv4_vxlan_ipv4_pay_proto_tcp_pipeline_mode_drop_03",
     "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 proto is 0x06 / end actions drop / end",
@@ -1019,7 +850,6 @@ tv_mac_ipv4_vxlan_ipv4_pay_proto_tcp_pipeline_mode_drop_03 = {
 
 tvs_mac_ipv4_vxlan_ipv4_pay_proto_tcp_pipeline_mode = [
     tv_mac_ipv4_vxlan_ipv4_pay_proto_tcp_pipeline_mode_in_queue_01,
-    tv_mac_ipv4_vxlan_ipv4_pay_proto_tcp_pipeline_mode_queue_region_02,
     tv_mac_ipv4_vxlan_ipv4_pay_proto_tcp_pipeline_mode_drop_03
     ]
 
@@ -1190,22 +1020,6 @@ tv_mac_ipv4_vxlan_ipv4_tcp_pipeline_mode_in_queue_01 = {
                   "expect_results":{"expect_pkts":5}}
 }
 
-tv_mac_ipv4_vxlan_ipv4_tcp_pipeline_mode_queue_region_02 = {
-    "name":"tv_mac_ipv4_vxlan_ipv4_tcp_pipeline_mode_queue_region_02",
-    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / tcp src is 50 dst is 23 / end actions rss queues 4 5 end / end",
-    "configuration":{
-        "is_non_pipeline":False,
-        "is_need_rss_rule":False},
-    "matched":{"scapy_str":mac_ipv4_vxlan_ipv4_tcp_pipeline_mode_scapy_str["matched"],
-               "check_func":{"func":rfc.check_output_log_queue_region,
-                             "param":{"expect_port":0, "expect_queues":[4, 5]}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":mac_ipv4_vxlan_ipv4_tcp_pipeline_mode_scapy_str["mismatched"],
-                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
-                                "param":{"expect_port":0, "expect_queues":[4, 5]}},
-                  "expect_results":{"expect_pkts":5}}
-}
-
 tv_mac_ipv4_vxlan_ipv4_tcp_pipeline_mode_drop_03 = {
     "name":"tv_mac_ipv4_vxlan_ipv4_tcp_pipeline_mode_drop_03",
     "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / tcp src is 50 dst is 23 / end actions drop / end",
@@ -1224,7 +1038,6 @@ tv_mac_ipv4_vxlan_ipv4_tcp_pipeline_mode_drop_03 = {
 
 tvs_mac_ipv4_vxlan_ipv4_tcp_pipeline_mode = [
     tv_mac_ipv4_vxlan_ipv4_tcp_pipeline_mode_in_queue_01,
-    tv_mac_ipv4_vxlan_ipv4_tcp_pipeline_mode_queue_region_02,
     tv_mac_ipv4_vxlan_ipv4_tcp_pipeline_mode_drop_03
     ]
 
@@ -1256,22 +1069,6 @@ tv_mac_ipv4_nvgre_ipv4_frag_pipeline_mode_in_queue_01 = {
                   "expect_results":{"expect_pkts":3}}
 }
 
-tv_mac_ipv4_nvgre_ipv4_frag_pipeline_mode_queue_region_02 = {
-    "name":"tv_mac_ipv4_nvgre_ipv4_frag_pipeline_mode_queue_region_02",
-    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions rss queues 2 3 end / end",
-    "configuration":{
-        "is_non_pipeline":False,
-        "is_need_rss_rule":False},
-    "matched":{"scapy_str":mac_ipv4_nvgre_ipv4_frag_pipeline_mode_scapy_str["matched"],
-               "check_func":{"func":rfc.check_output_log_queue_region,
-                             "param":{"expect_port":0, "expect_queues":[2, 3]}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":mac_ipv4_nvgre_ipv4_frag_pipeline_mode_scapy_str["mismatched"],
-                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
-                                "param":{"expect_port":0, "expect_queues":[2, 3]}},
-                  "expect_results":{"expect_pkts":3}}
-}
-
 tv_mac_ipv4_nvgre_ipv4_frag_pipeline_mode_drop_03 = {
     "name":"tv_mac_ipv4_nvgre_ipv4_frag_pipeline_mode_drop_03",
     "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions drop / end",
@@ -1290,7 +1087,6 @@ tv_mac_ipv4_nvgre_ipv4_frag_pipeline_mode_drop_03 = {
 
 tvs_mac_ipv4_nvgre_ipv4_frag_pipeline_mode = [
     tv_mac_ipv4_nvgre_ipv4_frag_pipeline_mode_in_queue_01,
-    tv_mac_ipv4_nvgre_ipv4_frag_pipeline_mode_queue_region_02,
     tv_mac_ipv4_nvgre_ipv4_frag_pipeline_mode_drop_03
     ]
 
@@ -1327,22 +1123,6 @@ tv_mac_ipv4_nvgre_ipv4_pay_proto_tcp_pipeline_mode_in_queue_01 = {
                   "expect_results":{"expect_pkts":8}}
 }
 
-tv_mac_ipv4_nvgre_ipv4_pay_proto_tcp_pipeline_mode_queue_region_02 = {
-    "name":"tv_mac_ipv4_nvgre_ipv4_pay_proto_tcp_pipeline_mode_queue_region_02",
-    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 proto is 0x06 tos is 4 / end actions rss queues 2 3 end / end",
-    "configuration":{
-        "is_non_pipeline":False,
-        "is_need_rss_rule":False},
-    "matched":{"scapy_str":mac_ipv4_nvgre_ipv4_pay_proto_tcp_pipeline_mode_scapy_str["matched"],
-               "check_func":{"func":rfc.check_output_log_queue_region,
-                             "param":{"expect_port":0, "expect_queues":[2, 3]}},
-               "expect_results":{"expect_pkts":2}},
-    "mismatched":{"scapy_str":mac_ipv4_nvgre_ipv4_pay_proto_tcp_pipeline_mode_scapy_str["mismatched"],
-                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
-                                "param":{"expect_port":0, "expect_queues":[2, 3]}},
-                  "expect_results":{"expect_pkts":8}}
-}
-
 tv_mac_ipv4_nvgre_ipv4_pay_proto_tcp_pipeline_mode_drop_03 = {
     "name":"tv_mac_ipv4_nvgre_ipv4_pay_proto_tcp_pipeline_mode_drop_03",
     "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 proto is 0x06 tos is 4 / end actions drop / end",
@@ -1361,7 +1141,6 @@ tv_mac_ipv4_nvgre_ipv4_pay_proto_tcp_pipeline_mode_drop_03 = {
 
 tvs_mac_ipv4_nvgre_ipv4_pay_proto_tcp_pipeline_mode = [
     tv_mac_ipv4_nvgre_ipv4_pay_proto_tcp_pipeline_mode_in_queue_01,
-    tv_mac_ipv4_nvgre_ipv4_pay_proto_tcp_pipeline_mode_queue_region_02,
     tv_mac_ipv4_nvgre_ipv4_pay_proto_tcp_pipeline_mode_drop_03
     ]
 
@@ -1465,22 +1244,6 @@ tv_mac_ipv4_nvgre_ipv4_udp_pay_pipeline_mode_in_queue_01 = {
                   "expect_results":{"expect_pkts":5}}
 }
 
-tv_mac_ipv4_nvgre_ipv4_udp_pay_pipeline_mode_queue_region_02 = {
-    "name":"tv_mac_ipv4_nvgre_ipv4_udp_pay_pipeline_mode_queue_region_02",
-    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / udp src is 50 dst is 23 / end actions rss queues 4 5 end / end",
-    "configuration":{
-        "is_non_pipeline":False,
-        "is_need_rss_rule":False},
-    "matched":{"scapy_str":mac_ipv4_nvgre_ipv4_udp_pay_pipeline_mode_scapy_str["matched"],
-               "check_func":{"func":rfc.check_output_log_queue_region,
-                             "param":{"expect_port":0, "expect_queues":[4, 5]}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":mac_ipv4_nvgre_ipv4_udp_pay_pipeline_mode_scapy_str["mismatched"],
-                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
-                                "param":{"expect_port":0, "expect_queues":[4, 5]}},
-                  "expect_results":{"expect_pkts":5}}
-}
-
 tv_mac_ipv4_nvgre_ipv4_udp_pay_pipeline_mode_drop_03 = {
     "name":"tv_mac_ipv4_nvgre_ipv4_udp_pay_pipeline_mode_drop_03",
     "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / udp src is 50 dst is 23 / end actions drop / end",
@@ -1499,7 +1262,6 @@ tv_mac_ipv4_nvgre_ipv4_udp_pay_pipeline_mode_drop_03 = {
 
 tvs_mac_ipv4_nvgre_ipv4_udp_pay_pipeline_mode = [
     tv_mac_ipv4_nvgre_ipv4_udp_pay_pipeline_mode_in_queue_01,
-    tv_mac_ipv4_nvgre_ipv4_udp_pay_pipeline_mode_queue_region_02,
     tv_mac_ipv4_nvgre_ipv4_udp_pay_pipeline_mode_drop_03
     ]
 
@@ -1532,22 +1294,6 @@ tv_mac_ipv4_nvgre_ipv4_tcp_pipeline_mode_in_queue_01 = {
                   "expect_results":{"expect_pkts":5}}
 }
 
-tv_mac_ipv4_nvgre_ipv4_tcp_pipeline_mode_queue_region_02 = {
-    "name":"tv_mac_ipv4_nvgre_ipv4_tcp_pipeline_mode_queue_region_02",
-    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / tcp src is 50 dst is 23 / end actions rss queues 4 5 end / end",
-    "configuration":{
-        "is_non_pipeline":False,
-        "is_need_rss_rule":False},
-    "matched":{"scapy_str":mac_ipv4_nvgre_ipv4_tcp_pipeline_mode_scapy_str["matched"],
-               "check_func":{"func":rfc.check_output_log_queue_region,
-                             "param":{"expect_port":0, "expect_queues":[4, 5]}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":mac_ipv4_nvgre_ipv4_tcp_pipeline_mode_scapy_str["mismatched"],
-                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
-                                "param":{"expect_port":0, "expect_queues":[4, 5]}},
-                  "expect_results":{"expect_pkts":5}}
-}
-
 tv_mac_ipv4_nvgre_ipv4_tcp_pipeline_mode_drop_03 = {
     "name":"tv_mac_ipv4_nvgre_ipv4_tcp_pipeline_mode_drop_03",
     "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / tcp src is 50 dst is 23 / end actions drop / end",
@@ -1566,7 +1312,6 @@ tv_mac_ipv4_nvgre_ipv4_tcp_pipeline_mode_drop_03 = {
 
 tvs_mac_ipv4_nvgre_ipv4_tcp_pipeline_mode = [
     tv_mac_ipv4_nvgre_ipv4_tcp_pipeline_mode_in_queue_01,
-    tv_mac_ipv4_nvgre_ipv4_tcp_pipeline_mode_queue_region_02,
     tv_mac_ipv4_nvgre_ipv4_tcp_pipeline_mode_drop_03
     ]
 
