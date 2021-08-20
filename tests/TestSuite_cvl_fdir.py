@@ -790,14 +790,6 @@ tv_mac_ipv4_tun_ipv4_pay_queue_index = {
     "check_param": {"port_id": 0, "queue": 1}
 }
 
-tv_mac_ipv4_tun_ipv4_pay_rss_queues = {
-    "name": "test_mac_ipv4_tun_ipv4_pay_rss_queues",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss queues 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 end / mark / end",
-    "scapy_str": MAC_IPV4_TUN_IPV4_PAY_MAC_IPV4_TUN_MAC_IPV4_PAY,
-    "check_func": rfc.check_mark,
-    "check_param": {"port_id": 0, "queue": list(range(9, 25)), "mark_id": 0}
-}
-
 tv_mac_ipv4_tun_ipv4_pay_passthru = {
     "name": "test_mac_ipv4_tun_ipv4_pay_passthru",
     "rule": "flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions passthru / mark / end",
@@ -830,7 +822,7 @@ tv_mac_ipv4_tun_ipv4_pay_mark = {
     "check_param": {"port_id": 0, "mark_id": 0, "rss": True}
 }
 
-vectors_ipv4_tun_ipv4_pay = [tv_mac_ipv4_tun_ipv4_pay_queue_index, tv_mac_ipv4_tun_ipv4_pay_rss_queues,
+vectors_ipv4_tun_ipv4_pay = [tv_mac_ipv4_tun_ipv4_pay_queue_index,
                              tv_mac_ipv4_tun_ipv4_pay_passthru, tv_mac_ipv4_tun_ipv4_pay_drop,
                              tv_mac_ipv4_tun_ipv4_pay_mark_rss, tv_mac_ipv4_tun_ipv4_pay_mark]
 
@@ -894,14 +886,6 @@ tv_mac_ipv4_tun_ipv4_tcp_queue_index = {
     "check_param": {"port_id": 0, "queue": 1, "mark_id": 1}
 }
 
-tv_mac_ipv4_tun_ipv4_tcp_rss_queues = {
-    "name": "test_mac_ipv4_tun_ipv4_tcp_rss_queues",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss queues 38 39 40 41 end / mark id 1 / end",
-    "scapy_str": MAC_IPV4_TUN_IPV4_TCP_MAC_IPV4_TUN_MAC_IPV4_TCP,
-    "check_func": rfc.check_mark,
-    "check_param": {"port_id": 0, "queue": list(range(38, 42)), "mark_id": 1}
-}
-
 tv_mac_ipv4_tun_ipv4_tcp_passthru = {
     "name": "test_mac_ipv4_tun_ipv4_tcp_passthru",
     "rule": "flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
@@ -934,7 +918,7 @@ tv_mac_ipv4_tun_ipv4_tcp_mark = {
     "check_param": {"port_id": 0, "mark_id": 1, "rss": True}
 }
 
-vectors_ipv4_tun_ipv4_tcp = [tv_mac_ipv4_tun_ipv4_tcp_queue_index, tv_mac_ipv4_tun_ipv4_tcp_rss_queues,
+vectors_ipv4_tun_ipv4_tcp = [tv_mac_ipv4_tun_ipv4_tcp_queue_index,
                              tv_mac_ipv4_tun_ipv4_tcp_passthru, tv_mac_ipv4_tun_ipv4_tcp_drop,
                              tv_mac_ipv4_tun_ipv4_tcp_mark_rss, tv_mac_ipv4_tun_ipv4_tcp_mark]
 
@@ -944,14 +928,6 @@ tv_mac_ipv4_tun_ipv4_sctp_queue_index = {
     "scapy_str": MAC_IPV4_TUN_IPV4_SCTP_MAC_IPV4_TUN_MAC_IPV4_SCTP,
     "check_func": rfc.check_mark,
     "check_param": {"port_id": 0, "queue": 1, "mark_id": 1}
-}
-
-tv_mac_ipv4_tun_ipv4_sctp_rss_queues = {
-    "name": "test_mac_ipv4_tun_ipv4_sctp_rss_queues",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / sctp src is 22 dst is 23 / end actions rss queues 38 39 40 41 end / mark id 1 / end",
-    "scapy_str": MAC_IPV4_TUN_IPV4_SCTP_MAC_IPV4_TUN_MAC_IPV4_SCTP,
-    "check_func": rfc.check_mark,
-    "check_param": {"port_id": 0, "queue": list(range(38, 42)), "mark_id": 1}
 }
 
 tv_mac_ipv4_tun_ipv4_sctp_passthru = {
@@ -986,7 +962,7 @@ tv_mac_ipv4_tun_ipv4_sctp_mark = {
     "check_param": {"port_id": 0, "mark_id": 1, "rss": True}
 }
 
-vectors_ipv4_tun_ipv4_sctp = [tv_mac_ipv4_tun_ipv4_sctp_queue_index, tv_mac_ipv4_tun_ipv4_sctp_rss_queues,
+vectors_ipv4_tun_ipv4_sctp = [tv_mac_ipv4_tun_ipv4_sctp_queue_index,
                               tv_mac_ipv4_tun_ipv4_sctp_passthru, tv_mac_ipv4_tun_ipv4_sctp_drop,
                               tv_mac_ipv4_tun_ipv4_sctp_mark_rss, tv_mac_ipv4_tun_ipv4_sctp_mark]
 
