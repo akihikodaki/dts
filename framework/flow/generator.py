@@ -31,19 +31,18 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from __future__ import annotations
 
-import copy
-import itertools
 import os
 import sys
-import time
 from typing import List, Set, Generator, Iterable, FrozenSet, Tuple
 
-import numpy as np
+path = os.path.dirname(os.path.dirname(__file__))
+if path not in sys.path:
+    sys.path.append(path)
 
 from flow.flow import Flow
 from flow.flow_pattern_items import PATTERN_ITEMS_TYPE_CLASS_MAPPING, PatternFlowItem, \
-    PATTERN_OPERATION_TYPES, TUNNELING_PROTOCOL_TYPES, ALWAYS_ALLOWED_ITEMS, FlowItemEnd, FlowItemVxlan, FlowItemIpv4, \
-    FlowItemEth, FlowItemGre, L3_FLOW_TYPES, FlowItemVlan, FlowItemUdp
+    PATTERN_OPERATION_TYPES, ALWAYS_ALLOWED_ITEMS, FlowItemVxlan, FlowItemIpv4, \
+    FlowItemEth, FlowItemGre, L3_FLOW_TYPES, FlowItemUdp
 from flow.flow_rule import FlowItemType
 
 

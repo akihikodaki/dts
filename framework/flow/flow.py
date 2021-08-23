@@ -39,6 +39,7 @@ from functools import reduce
 from typing import List, FrozenSet, Union, Iterable, Tuple
 
 from scapy.layers.l2 import Ether
+from scapy.packet import Raw
 
 from flow.enums import FlowItemType, FlowActionType
 from flow.exceptions import InvalidFlowItemException
@@ -47,7 +48,7 @@ from flow.flow_items import FlowItem
 from flow.flow_pattern_items import PatternFlowItem, TUNNELING_PROTOCOLS
 
 # Get reserved mac addresses
-NEVER_MATCH_PACKET = Ether(src="", dst="") / ('\x00' * 64)
+NEVER_MATCH_PACKET = Ether(src="", dst="") / Raw('\x00' * 64)
 
 
 def _iterable_deep_compare(i1, i2):

@@ -138,90 +138,90 @@ class FlowItemArp_eth_ipv4(PatternFlowItem):
     possible_properties = {
         'hdr':
             ('arp_eth_ipv4 hdr is 1',
-             frozenset({"Ether() / ARP(hwtype=1) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / ARP(hwtype=1) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / ARP(hwtype=2) / ('\\x00' * 64)",
-                        "Ether() / ARP(hwtype=3) / ('\\x00' * 64)",
-                        "Ether() / ARP(hwtype=6) / ('\\x00' * 64)",
-                        "Ether() / ARP(hwtype-15) / ('\\x00' * 64)"
+             frozenset({"Ether() / ARP(hwtype=2) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(hwtype=3) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(hwtype=6) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(hwtype-15) / Raw('\\x00' * 64)"
                         })),
         'pro':
             ('arp_eth_ipv4 pro is 0x0800',
-             frozenset({"Ether() / ARP(ptype=0x0800) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / ARP(ptype=0x0800) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / ARP(ptype=0x0800) / ('\\x00' * 64)",
-                        "Ether() / ARP(ptype=0x0842) / ('\\x00' * 64)",
-                        "Ether() / ARP(ptype=0x6004) / ('\\x00' * 64)",
-                        "Ether() / ARP(ptype=0x809b) / ('\\x00' * 64)"
+             frozenset({"Ether() / ARP(ptype=0x0800) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(ptype=0x0842) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(ptype=0x6004) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(ptype=0x809b) / Raw('\\x00' * 64)"
                         })),
 
         'hln':
             ('arp_eth_ipv4 hln is 6',
-             frozenset({"Ether() / ARP(hwlen=6) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / ARP(hwlen=6) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / ARP(hwlen=12) / ('\\x00' * 64)",
-                        "Ether() / ARP(hwlen=2) / ('\\x00' * 64)",
-                        "Ether() / ARP(hwlen=8) / ('\\x00' * 64)",
-                        "Ether() / ARP(hwlen=4) / ('\\x00' * 64)"
+             frozenset({"Ether() / ARP(hwlen=12) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(hwlen=2) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(hwlen=8) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(hwlen=4) / Raw('\\x00' * 64)"
                         })),
 
         'pln':
             ('arp_eth_ipv4 pln is 4',
-             frozenset({"Ether() / ARP(plen=4) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / ARP(plen=4) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / ARP(plen=6) / ('\\x00' * 64)",
-                        "Ether() / ARP(plen=2) / ('\\x00' * 64)",
-                        "Ether() / ARP(plen=8) / ('\\x00' * 64)",
-                        "Ether() / ARP(plen=12) / ('\\x00' * 64)"
+             frozenset({"Ether() / ARP(plen=6) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(plen=2) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(plen=8) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(plen=12) / Raw('\\x00' * 64)"
                         })),
 
         'op':
             ('arp_eth_ipv4 op is 1',
-             frozenset({"Ether() / ARP(op=1) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / ARP(op=1) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / ARP(op=2) / ('\\x00' * 64)",
-                        "Ether() / ARP(op=3) / ('\\x00' * 64)",
-                        "Ether() / ARP(op=4) / ('\\x00' * 64)",
-                        "Ether() / ARP(op=5) / ('\\x00' * 64)"
+             frozenset({"Ether() / ARP(op=2) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(op=3) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(op=4) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(op=5) / Raw('\\x00' * 64)"
                         })),
 
         'sha':
             ('arp_eth_ipv4 sha is 90:61:ae:fd:41:43',
-             frozenset({"Ether() / ARP(hwsrc=\"90:61:ae:fd:41:43\") / ('\\x00' * 64)"}),
+             frozenset({"Ether() / ARP(hwsrc=\"90:61:ae:fd:41:43\") / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / ARP(hwsrc=\"90:61:ae:fd:41:44\") / ('\\x00' * 64)",
-                        "Ether() / ARP(hwsrc=\"90:61:ae:fd:41:45\") / ('\\x00' * 64)",
-                        "Ether() / ARP(hwsrc=\"90:61:ae:fd:41:46\") / ('\\x00' * 64)",
-                        "Ether() / ARP(hwsrc=\"90:61:ae:fd:41:47\") / ('\\x00' * 64)"
+             frozenset({"Ether() / ARP(hwsrc=\"90:61:ae:fd:41:44\") / Raw('\\x00' * 64)",
+                        "Ether() / ARP(hwsrc=\"90:61:ae:fd:41:45\") / Raw('\\x00' * 64)",
+                        "Ether() / ARP(hwsrc=\"90:61:ae:fd:41:46\") / Raw('\\x00' * 64)",
+                        "Ether() / ARP(hwsrc=\"90:61:ae:fd:41:47\") / Raw('\\x00' * 64)"
                         })),
 
         'spa':
             ('arp_eth_ipv4 spa is 192.168.0.80',
-             frozenset({"Ether() / ARP(psrc=\"192.168.0.80\") / ('\\x00' * 64)"}),
+             frozenset({"Ether() / ARP(psrc=\"192.168.0.80\") / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / ARP(psrc=\"10.0.30.10\") / ('\\x00' * 64)",
-                        "Ether() / ARP(psrc=\"8.8.8.8\") / ('\\x00' * 64)",
-                        "Ether() / ARP(psrc=\"132.177.0.5\") / ('\\x00' * 64)",
-                        "Ether() / ARP(psrc=\"123.4.5.6\") / ('\\x00' * 64)"
+             frozenset({"Ether() / ARP(psrc=\"10.0.30.10\") / Raw('\\x00' * 64)",
+                        "Ether() / ARP(psrc=\"8.8.8.8\") / Raw('\\x00' * 64)",
+                        "Ether() / ARP(psrc=\"132.177.0.5\") / Raw('\\x00' * 64)",
+                        "Ether() / ARP(psrc=\"123.4.5.6\") / Raw('\\x00' * 64)"
                         })),
         'tha':
             ('arp_eth_ipv4 tha is 00:00:00:00:00:00',
-             frozenset({"Ether() / ARP(hwdst=00:00:00:00:00:00) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / ARP(hwdst=00:00:00:00:00:00) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / ARP(hwdst=90:61:ae:fd:41:45) / ('\\x00' * 64)",
-                        "Ether() / ARP(hwdst=90:61:ae:fd:41:46) / ('\\x00' * 64)",
-                        "Ether() / ARP(hwdst=90:61:ae:fd:41:47) / ('\\x00' * 64)",
-                        "Ether() / ARP(hwdst=90:61:ae:fd:41:48) / ('\\x00' * 64)"
+             frozenset({"Ether() / ARP(hwdst=90:61:ae:fd:41:45) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(hwdst=90:61:ae:fd:41:46) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(hwdst=90:61:ae:fd:41:47) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(hwdst=90:61:ae:fd:41:48) / Raw('\\x00' * 64)"
                         })),
 
         'tpa':
             ('arp_eth_ipv4 tpa is 192.168.0.1',
-             frozenset({"Ether() / ARP(pdst=192.168.0.1) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / ARP(pdst=192.168.0.1) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / ARP(pdst=10.0.30.10) / ('\\x00' * 64)",
-                        "Ether() / ARP(pdst=8.8.8.8) / ('\\x00' * 64)",
-                        "Ether() / ARP(pdst=132.177.0.5) / ('\\x00' * 64)",
-                        "Ether() / ARP(pdst=123.4.5.6) / ('\\x00' * 64)"
+             frozenset({"Ether() / ARP(pdst=10.0.30.10) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(pdst=8.8.8.8) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(pdst=132.177.0.5) / Raw('\\x00' * 64)",
+                        "Ether() / ARP(pdst=123.4.5.6) / Raw('\\x00' * 64)"
                         })),
 
     }
@@ -242,31 +242,31 @@ class FlowItemEth(PatternFlowItem):
     possible_properties = {
         'dst':
             ('eth dst is 90:61:ae:fd:41:43',
-             frozenset({"Ether(dst=\"90:61:ae:fd:41:43\") / ('\\x00' * 64)"}),
+             frozenset({"Ether(dst=\"90:61:ae:fd:41:43\") / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether(dst=\"90:61:ae:fd:41:44\") / ('\\x00' * 64)",
-                        "Ether(dst=\"90:61:ae:fd:41:45\") / ('\\x00' * 64)",
-                        "Ether(dst=\"90:61:ae:fd:41:46\") / ('\\x00' * 64)",
-                        "Ether(dst=\"91:61:ae:fd:41:43\") / ('\\x00' * 64)"
+             frozenset({"Ether(dst=\"90:61:ae:fd:41:44\") / Raw('\\x00' * 64)",
+                        "Ether(dst=\"90:61:ae:fd:41:45\") / Raw('\\x00' * 64)",
+                        "Ether(dst=\"90:61:ae:fd:41:46\") / Raw('\\x00' * 64)",
+                        "Ether(dst=\"91:61:ae:fd:41:43\") / Raw('\\x00' * 64)"
                         })),
         'src':
             ('eth src is 90:61:ae:fd:41:43',
-             frozenset({"Ether(src=\"90:61:ae:fd:41:43\") / ('\\x00' * 64)"}),
+             frozenset({"Ether(src=\"90:61:ae:fd:41:43\") / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether(src=\"90:61:ae:fd:41:44\") / ('\\x00' * 64)",
-                        "Ether(src=\"90:61:ae:fd:41:45\") / ('\\x00' * 64)",
-                        "Ether(src=\"90:61:ae:fd:41:46\") / ('\\x00' * 64)",
-                        "Ether(src=\"91:61:ae:fd:41:43\") / ('\\x00' * 64)"
+             frozenset({"Ether(src=\"90:61:ae:fd:41:44\") / Raw('\\x00' * 64)",
+                        "Ether(src=\"90:61:ae:fd:41:45\") / Raw('\\x00' * 64)",
+                        "Ether(src=\"90:61:ae:fd:41:46\") / Raw('\\x00' * 64)",
+                        "Ether(src=\"91:61:ae:fd:41:43\") / Raw('\\x00' * 64)"
                         })),
         'type':
             ('eth type is 0x0800',  # IPv4 EtherType
-             frozenset({"Ether(type=0x0800) / ('\\x00' * 64)"}),
+             frozenset({"Ether(type=0x0800) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether(type=0x0842) / ('\\x00' * 64)",
-                        "Ether(type=0x8100) / ('\\x00' * 64)",  # Possibly a special case? TPID/VLAN
-                        "Ether(type=0x9100) / ('\\x00' * 64)",  # Possibly special, VLAN double tagging
-                        "Ether(type=0x8863) / ('\\x00' * 64)",
-                        "Ether(type=0x9000) / ('\\x00' * 64)"
+             frozenset({"Ether(type=0x0842) / Raw('\\x00' * 64)",
+                        "Ether(type=0x8100) / Raw('\\x00' * 64)",  # Possibly a special case? TPID/VLAN
+                        "Ether(type=0x9100) / Raw('\\x00' * 64)",  # Possibly special, VLAN double tagging
+                        "Ether(type=0x8863) / Raw('\\x00' * 64)",
+                        "Ether(type=0x9000) / Raw('\\x00' * 64)"
                         })),
     }
 
@@ -283,18 +283,18 @@ class FlowItemGre(PatternFlowItem):
     possible_properties = {
         'c_rsvd0_ver':
            ('gre c_rsvd0_ver is 0',
-            frozenset({"Ether() / GRE(chksum_present=0, version=0) / ('\\x00' * 64)"}),
+            frozenset({"Ether() / GRE(chksum_present=0, version=0) / Raw('\\x00' * 64)"}),
 
-           frozenset({"Ether() / GRE(chksum_present=1, version=0)) / ('\\x00' * 64)", #this is the only other option
+           frozenset({"Ether() / GRE(chksum_present=1, version=0)) / Raw('\\x00' * 64)", #this is the only other option
                       })),
         'protocol':
             ('gre protocol is 0x0800',
-             frozenset({"Ether() / GRE(proto=0x0800) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / GRE(proto=0x0800) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / GRE(proto=0x0842) / ('\\x00' * 64)",
-                        "Ether() / GRE(proto=0x8100) / ('\\x00' * 64)",
-                        "Ether() / GRE(proto=0x0806) / ('\\x00' * 64)",
-                        "Ether() / GRE(proto=0x809B) / ('\\x00' * 64)"
+             frozenset({"Ether() / GRE(proto=0x0842) / Raw('\\x00' * 64)",
+                        "Ether() / GRE(proto=0x8100) / Raw('\\x00' * 64)",
+                        "Ether() / GRE(proto=0x0806) / Raw('\\x00' * 64)",
+                        "Ether() / GRE(proto=0x809B) / Raw('\\x00' * 64)"
                         }))
     }
 
@@ -318,49 +318,49 @@ class FlowItemIcmp(PatternFlowItem):
 
         'icmp_type':
             ('icmp type is 3',
-             frozenset({"Ether() / ICMP(type=3) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / ICMP(type=3) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / ICMP(type=3) / ('\\x00' * 64)",
-                        "Ether() / ICMP(type=11) / ('\\x00' * 64)",
-                        "Ether() / ICMP(type=13) / ('\\x00' * 64)",
-                        "Ether() / ICMP(type=0) / ('\\x00' * 64)"
+             frozenset({"Ether() / ICMP(type=3) / Raw('\\x00' * 64)",
+                        "Ether() / ICMP(type=11) / Raw('\\x00' * 64)",
+                        "Ether() / ICMP(type=13) / Raw('\\x00' * 64)",
+                        "Ether() / ICMP(type=0) / Raw('\\x00' * 64)"
                         })),
         'icmp_code':
             ('icmp type is 3 code is 3',  # Assume type 3 code 3; code meanings/options are dependent on type.
 
-             frozenset({"Ether() / ICMP(type=3, code=3) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / ICMP(type=3, code=3) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / ICMP(type=3, code=0) / ('\\x00' * 64)",
-                        "Ether() / ICMP(type=3, code=2) / ('\\x00' * 64)",
-                        "Ether() / ICMP(type=11, code=1) / ('\\x00' * 64)",
-                        "Ether() / ICMP(type=12, code=2) / ('\\x00' * 64)"
+             frozenset({"Ether() / ICMP(type=3, code=0) / Raw('\\x00' * 64)",
+                        "Ether() / ICMP(type=3, code=2) / Raw('\\x00' * 64)",
+                        "Ether() / ICMP(type=11, code=1) / Raw('\\x00' * 64)",
+                        "Ether() / ICMP(type=12, code=2) / Raw('\\x00' * 64)"
                         })),
         'icmp_cksum':
            ('icmp cksum is 0x0800',
-            frozenset({"Ether() / ICMP() / UDP() / ('\x00' * 64)"}),
+            frozenset({"Ether() / ICMP() / UDP() / Raw('\x00' * 64)"}),
 
-            frozenset({"Ether() / ICMP() / UDP() / ('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / ('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / ('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / ('\x00' * 64)"
+            frozenset({"Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)"
                        })),
         'icmp_ident':
            ('icmp ident is 0x0800',
-            frozenset({"Ether() / ICMP() / UDP() / ('\x00' * 64)"}),
+            frozenset({"Ether() / ICMP() / UDP() / Raw('\x00' * 64)"}),
 
-            frozenset({"Ether() / ICMP() / UDP() / ('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / ('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / ('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / ('\x00' * 64)"
+            frozenset({"Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)"
                        })),
         'icmp_seq_nb':
            ('icmp seq_nb is 0x0800',
-            frozenset({"Ether() / ICMP(proto=0x0800) / UDP() / ('\x00' * 64)"}),
+            frozenset({"Ether() / ICMP(proto=0x0800) / UDP() / Raw('\x00' * 64)"}),
 
-            frozenset({"Ether() / ICMP() / UDP() / ('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / ('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / ('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / ('\x00' * 64)"
+            frozenset({"Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)"
                         })),
     }
 
@@ -380,31 +380,31 @@ class FlowItemIcmp6(PatternFlowItem):
     possible_properties = {
         'type':
             ('icmp6 type is 1',  # Destination Unreachable
-             frozenset({"Ether() / ICMPv6DestUnreach(type=1) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / ICMPv6DestUnreach(type=1) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / ICMPv6DestUnreach(type=128) / ('\\x00' * 64)",
-                        "Ether() / ICMPv6DestUnreach(type=129) / ('\\x00' * 64)",
-                        "Ether() / ICMPv6DestUnreach(type=3) / ('\\x00' * 64)",
-                        "Ether() / ICMPv6DestUnreach(type=135) / ('\\x00' * 64)"
+             frozenset({"Ether() / ICMPv6DestUnreach(type=128) / Raw('\\x00' * 64)",
+                        "Ether() / ICMPv6DestUnreach(type=129) / Raw('\\x00' * 64)",
+                        "Ether() / ICMPv6DestUnreach(type=3) / Raw('\\x00' * 64)",
+                        "Ether() / ICMPv6DestUnreach(type=135) / Raw('\\x00' * 64)"
                         })),
         'code':  # ICMP code is dependent on type; these are possible Destination Unreachable codes
             ('icmp6 code is 0',
-             frozenset({"Ether() / ICMPv6DestUnreach(code=0) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / ICMPv6DestUnreach(code=0) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / ICMPv6DestUnreach(code=1) / ('\\x00' * 64)",
-                        "Ether() / ICMPv6DestUnreach(code=2) / ('\\x00' * 64)",
-                        "Ether() / ICMPv6DestUnreach(code=3) / ('\\x00' * 64)",
-                        "Ether() / ICMPv6DestUnreach(code=4) / ('\\x00' * 64)"
+             frozenset({"Ether() / ICMPv6DestUnreach(code=1) / Raw('\\x00' * 64)",
+                        "Ether() / ICMPv6DestUnreach(code=2) / Raw('\\x00' * 64)",
+                        "Ether() / ICMPv6DestUnreach(code=3) / Raw('\\x00' * 64)",
+                        "Ether() / ICMPv6DestUnreach(code=4) / Raw('\\x00' * 64)"
                         })),
 
         'checksum':
             ('icmp6 cksum is 0x1234',
-             frozenset({"Ether() / ICMPv6DestUnreach(cksum=0x1234) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / ICMPv6DestUnreach(cksum=0x1234) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / ICMPv6DestUnreach(cksum=0x4321) / ('\\x00' * 64)",
-                        "Ether() / ICMPv6DestUnreach(cksum=0xffff) / ('\\x00' * 64)",
-                        "Ether() / ICMPv6DestUnreach(cksum=0x1233) / ('\\x00' * 64)",
-                        "Ether() / ICMPv6DestUnreach(cksum=0x1010) / ('\\x00' * 64)"
+             frozenset({"Ether() / ICMPv6DestUnreach(cksum=0x4321) / Raw('\\x00' * 64)",
+                        "Ether() / ICMPv6DestUnreach(cksum=0xffff) / Raw('\\x00' * 64)",
+                        "Ether() / ICMPv6DestUnreach(cksum=0x1233) / Raw('\\x00' * 64)",
+                        "Ether() / ICMPv6DestUnreach(cksum=0x1010) / Raw('\\x00' * 64)"
                         })),
     }
 
@@ -424,58 +424,58 @@ class FlowItemIpv4(PatternFlowItem):
 
         'tos':
             ('ipv4 tos is 0',
-             frozenset({"Ether() / IP(tos=0) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP(tos=0) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP(tos=2) / ('\\x00' * 64)",
-                        "Ether() / IP(tos=4) / ('\\x00' * 64)",
-                        "Ether() / IP(tos=8) / ('\\x00' * 64)",
-                        "Ether() / IP(tos=16) / ('\\x00' * 64)"
+             frozenset({"Ether() / IP(tos=2) / Raw('\\x00' * 64)",
+                        "Ether() / IP(tos=4) / Raw('\\x00' * 64)",
+                        "Ether() / IP(tos=8) / Raw('\\x00' * 64)",
+                        "Ether() / IP(tos=16) / Raw('\\x00' * 64)"
                         })),
         'ttl':
             ('ipv4 ttl is 64',
-             frozenset({"Ether() / IP(ttl=64) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP(ttl=64) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP(ttl=128) / ('\\x00' * 64)",
-                        "Ether() / IP(ttl=255) / ('\\x00' * 64)",
-                        "Ether() / IP(ttl=32)  / ('\\x00' * 64)",
-                        "Ether() / IP(ttl=100) / ('\\x00' * 64)"
+             frozenset({"Ether() / IP(ttl=128) / Raw('\\x00' * 64)",
+                        "Ether() / IP(ttl=255) / Raw('\\x00' * 64)",
+                        "Ether() / IP(ttl=32)  / Raw('\\x00' * 64)",
+                        "Ether() / IP(ttl=100) / Raw('\\x00' * 64)"
                         })),
         'proto':
             ('ipv4 proto is 0x06',  # TCP
-             frozenset({"Ether() / IP(proto=0x06) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP(proto=0x06) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP(proto=0x01) / ('\\x00' * 64)",
-                        "Ether() / IP(proto=0x11) / ('\\x00' * 64)",
-                        "Ether() / IP(proto=0x12) / ('\\x00' * 64)",
-                        "Ether() / IP(proto=0x58) / ('\\x00' * 64)"
+             frozenset({"Ether() / IP(proto=0x01) / Raw('\\x00' * 64)",
+                        "Ether() / IP(proto=0x11) / Raw('\\x00' * 64)",
+                        "Ether() / IP(proto=0x12) / Raw('\\x00' * 64)",
+                        "Ether() / IP(proto=0x58) / Raw('\\x00' * 64)"
                         })),
         'src':
             ('ipv4 src is 192.168.0.5',
-             frozenset({"Ether() / IP(src=\"192.168.0.5\") / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP(src=\"192.168.0.5\") / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP(src=\"10.10.10.10\") / ('\\x00' * 64)",
-                        "Ether() / IP(src=\"132.177.127.6\") / ('\\x00' * 64)",
-                        "Ether() / IP(src=\"192.168.0.4\") / ('\\x00' * 64)",
-                        "Ether() / IP(src=\"192.168.0.250\") / ('\\x00' * 64)"
+             frozenset({"Ether() / IP(src=\"10.10.10.10\") / Raw('\\x00' * 64)",
+                        "Ether() / IP(src=\"132.177.127.6\") / Raw('\\x00' * 64)",
+                        "Ether() / IP(src=\"192.168.0.4\") / Raw('\\x00' * 64)",
+                        "Ether() / IP(src=\"192.168.0.250\") / Raw('\\x00' * 64)"
                         })),
         'dst':
             ('ipv4 dst is 192.168.0.5',
-             frozenset({"Ether() / IP(dst=\"192.168.0.5\") / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP(dst=\"192.168.0.5\") / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP(dst=\"10.10.10.10\") / ('\\x00' * 64)",
-                        "Ether() / IP(dst=\"132.177.127.6\") / ('\\x00' * 64)",
-                        "Ether() / IP(dst=\"192.168.0.4\") / ('\\x00' * 64)",
-                        "Ether() / IP(dst=\"192.168.0.250\") / ('\\x00' * 64)"
+             frozenset({"Ether() / IP(dst=\"10.10.10.10\") / Raw('\\x00' * 64)",
+                        "Ether() / IP(dst=\"132.177.127.6\") / Raw('\\x00' * 64)",
+                        "Ether() / IP(dst=\"192.168.0.4\") / Raw('\\x00' * 64)",
+                        "Ether() / IP(dst=\"192.168.0.250\") / Raw('\\x00' * 64)"
                         })),
         # CHECKSUM PROPERTY NOT SUPPORTED BY TESTPMD; DO NOT UNCOMMENT UNTIL SUPPORTED
         # 'checksum':
         #     ('ipv4 chksum is 0x1234',
-        #     frozenset({"Ether() / ICMPv6DestUnreach(cksum=0x1234) / ('\\x00' * 64)"}),
+        #     frozenset({"Ether() / ICMPv6DestUnreach(cksum=0x1234) / Raw('\\x00' * 64)"}),
 
-        #     frozenset({"Ether() / ICMPv6DestUnreach(cksum=0x4321) / ('\\x00' * 64)",
-        #                "Ether() / ICMPv6DestUnreach(cksum=0xffff) / ('\\x00' * 64)",
-        #                "Ether() / ICMPv6DestUnreach(cksum=0x1233) / ('\\x00' * 64)",
-        #                "Ether() / ICMPv6DestUnreach(cksum=0x1010) / ('\\x00' * 64)"
+        #     frozenset({"Ether() / ICMPv6DestUnreach(cksum=0x4321) / Raw('\\x00' * 64)",
+        #                "Ether() / ICMPv6DestUnreach(cksum=0xffff) / Raw('\\x00' * 64)",
+        #                "Ether() / ICMPv6DestUnreach(cksum=0x1233) / Raw('\\x00' * 64)",
+        #                "Ether() / ICMPv6DestUnreach(cksum=0x1010) / Raw('\\x00' * 64)"
         #                })),
 
         ##########################################################################
@@ -499,76 +499,76 @@ class FlowItemIpv6(PatternFlowItem):
         # They are still tested to future proof this test suite.
         'vtc_flow':
             ('ipv6 vtc_flow is 0x0',
-             frozenset({"Ether() / IPv6(tc=0, fl=0, version=0) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IPv6(tc=0, fl=0, version=0) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IPv6(tc=1, fl=0, version=0) / ('\\x00' * 64)",
-                        "Ether() / IPv6(tc=0, fl=0xABCD, version=0) / ('\\x00' * 64)",
-                        "Ether() / IPv6(tc=0, fl=0, version=1) / ('\\x00' * 64)",
-                        "Ether() / IPv6(tc=6, fl=0x9999, version=1) / ('\\x00' * 64)"
+             frozenset({"Ether() / IPv6(tc=1, fl=0, version=0) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(tc=0, fl=0xABCD, version=0) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(tc=0, fl=0, version=1) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(tc=6, fl=0x9999, version=1) / Raw('\\x00' * 64)"
                         })),
         'payload_len':
             ('ipv6 payload_len is 64',
-             frozenset({"Ether() / IPv6(plen=64) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IPv6(plen=64) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IPv6(plen=32) / ('\\x00' * 64)",
-                        "Ether() / IPv6(plen=128) / ('\\x00' * 64)",
-                        "Ether() / IPv6(plen=5000) / ('\\x00' * 64)",
-                        "Ether() / IPv6(plen=4) / ('\\x00' * 64)"
+             frozenset({"Ether() / IPv6(plen=32) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(plen=128) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(plen=5000) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(plen=4) / Raw('\\x00' * 64)"
                         })),
         # END UNSUPPORTED PROPERTIES
         'tc':
             ('ipv6 tc is 0',
-             frozenset({"Ether() / IPv6(tc=0) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IPv6(tc=0) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IPv6(tc=1) / ('\\x00' * 64)",
-                        "Ether() / IPv6(tc=2) / ('\\x00' * 64)",
-                        "Ether() / IPv6(tc=4) / ('\\x00' * 64)",
-                        "Ether() / IPv6(tc=6) / ('\\x00' * 64)"
+             frozenset({"Ether() / IPv6(tc=1) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(tc=2) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(tc=4) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(tc=6) / Raw('\\x00' * 64)"
                         })),
         'flow':
             ('ipv6 flow is 0xABCD',
-             frozenset({"Ether() / IPv6(fl=0xABCD) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IPv6(fl=0xABCD) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IPv6(fl=0xABCE) / ('\\x00' * 64)",
-                        "Ether() / IPv6(fl=0x0001) / ('\\x00' * 64)",
-                        "Ether() / IPv6(fl=0xFFFF) / ('\\x00' * 64)",
-                        "Ether() / IPv6(fl=0x1234) / ('\\x00' * 64)"
+             frozenset({"Ether() / IPv6(fl=0xABCE) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(fl=0x0001) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(fl=0xFFFF) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(fl=0x1234) / Raw('\\x00' * 64)"
                         })),
         'proto':  # next header (nh)
             ('ipv6 proto is 6',  # TCP
-             frozenset({"Ether() / IPv6(nh=6) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IPv6(nh=6) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IPv6(nh=17) / ('\\x00' * 64)",
-                        "Ether() / IPv6(nh=41) / ('\\x00' * 64)",
-                        "Ether() / IPv6(nh=0) / ('\\x00' * 64)",
-                        "Ether() / IPv6(nh=60) / ('\\x00' * 64)"
+             frozenset({"Ether() / IPv6(nh=17) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(nh=41) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(nh=0) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(nh=60) / Raw('\\x00' * 64)"
                         })),
         'hop':  # hop limit
             ('ipv6 hop is 64',
-             frozenset({"Ether() / IPv6(hlim=64) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IPv6(hlim=64) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IPv6(hlim=128) / ('\\x00' * 64)",
-                        "Ether() / IPv6(hlim=32) / ('\\x00' * 64)",
-                        "Ether() / IPv6(hlim=255) / ('\\x00' * 64)",
-                        "Ether() / IPv6(hlim=100) / ('\\x00' * 64)"
+             frozenset({"Ether() / IPv6(hlim=128) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(hlim=32) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(hlim=255) / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(hlim=100) / Raw('\\x00' * 64)"
                         })),
         'dst':
             ('ipv6 dst is 2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c2',
-             frozenset({"Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c2\") / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c2\") / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c3\") / ('\\x00' * 64)",
-                        "Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c4\") / ('\\x00' * 64)",
-                        "Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c5\") / ('\\x00' * 64)",
-                        "Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c6\") / ('\\x00' * 64)"
+             frozenset({"Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c3\") / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c4\") / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c5\") / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c6\") / Raw('\\x00' * 64)"
                         })),
         'src':
             ('ipv6 src is 2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c2',
-             frozenset({"Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c2\") / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c2\") / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c3\") / ('\\x00' * 64)",
-                        "Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c4\") / ('\\x00' * 64)",
-                        "Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c5\") / ('\\x00' * 64)",
-                        "Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c6\") / ('\\x00' * 64)"
+             frozenset({"Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c3\") / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c4\") / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c5\") / Raw('\\x00' * 64)",
+                        "Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c6\") / Raw('\\x00' * 64)"
                         })),
     }
 
@@ -587,41 +587,41 @@ class FlowItemSctp(PatternFlowItem):
 
         'src':
             ('sctp src is 3838',
-             frozenset({"Ether() / IP() / SCTP(sport=3838) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP() / SCTP(sport=3838) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP() / SCTP(sport=3939) / ('\\x00' * 64)",
-                        "Ether() / IP() / SCTP(sport=5000) / ('\\x00' * 64)",
-                        "Ether() / IP() / SCTP(sport=1998) / ('\\x00' * 64)",
-                        "Ether() / IP() / SCTP(sport=1028) / ('\\x00' * 64)"
+             frozenset({"Ether() / IP() / SCTP(sport=3939) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / SCTP(sport=5000) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / SCTP(sport=1998) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / SCTP(sport=1028) / Raw('\\x00' * 64)"
                         })),
 
         'dst':
             ('sctp dst is 3838',
-             frozenset({"Ether() / IP() / SCTP(dport=3838) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP() / SCTP(dport=3838) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP() / SCTP(dport=3939) / ('\\x00' * 64)",
-                        "Ether() / IP() / SCTP(dport=5000) / ('\\x00' * 64)",
-                        "Ether() / IP() / SCTP(dport=1998) / ('\\x00' * 64)",
-                        "Ether() / IP() / SCTP(dport=1028) / ('\\x00' * 64)"
+             frozenset({"Ether() / IP() / SCTP(dport=3939) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / SCTP(dport=5000) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / SCTP(dport=1998) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / SCTP(dport=1028) / Raw('\\x00' * 64)"
                         })),
         'tag':
             ('sctp tag is 12345',
-             frozenset({"Ether() / IP() / SCTP(tag=12345) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP() / SCTP(tag=12345) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP() / SCTP(tag=12346) / ('\\x00' * 64)",
-                        "Ether() / IP() / SCTP(tag=12) / ('\\x00' * 64)",
-                        "Ether() / IP() / SCTP(tag=9999) / ('\\x00' * 64)",
-                        "Ether() / IP() / SCTP(tag=42) / ('\\x00' * 64)"
+             frozenset({"Ether() / IP() / SCTP(tag=12346) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / SCTP(tag=12) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / SCTP(tag=9999) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / SCTP(tag=42) / Raw('\\x00' * 64)"
                         })),
 
         'cksum':
             ('sctp cksum is 0x01535b67',
-             frozenset({"Ether() / IP() / SCTP(chksum=0x01535b67) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP() / SCTP(chksum=0x01535b67) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP() / SCTP(chksum=0x01535b68) / ('\\x00' * 64)",
-                        "Ether() / IP() / SCTP(chksum=0xdeadbeef) / ('\\x00' * 64)",
-                        "Ether() / IP() / SCTP(chksum=0x12345678) / ('\\x00' * 64)",
-                        "Ether() / IP() / SCTP(chksum=0x385030fe) / ('\\x00' * 64)"
+             frozenset({"Ether() / IP() / SCTP(chksum=0x01535b68) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / SCTP(chksum=0xdeadbeef) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / SCTP(chksum=0x12345678) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / SCTP(chksum=0x385030fe) / Raw('\\x00' * 64)"
                         }))
     }
 
@@ -658,59 +658,59 @@ class FlowItemTcp(PatternFlowItem):
         # They are still tested to future proof this test suite.
         'data_off':
             ('tcp data_off is 0',
-             frozenset({"Ether() / IP() / TCP(dataofs=0) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP() / TCP(dataofs=0) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() /  IP() / TCP(dataofs=1) / ('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(dataofs=2) / ('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(dataofs=3) / ('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(dataofs=4) / ('\\x00' * 64)"
+             frozenset({"Ether() /  IP() / TCP(dataofs=1) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() / TCP(dataofs=2) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() / TCP(dataofs=3) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() / TCP(dataofs=4) / Raw('\\x00' * 64)"
                         })),
         'rx_win':
             ('tcp rx_win is 64',
-             frozenset({"Ether() /  IP() / TCP(window=64)/ ('\\x00' * 64)"}),
+             frozenset({"Ether() /  IP() / TCP(window=64)/ Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() /  IP() / TCP(window=16)/ ('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(window=128) / ('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(window=32) / ('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(window=255) / ('\\x00' * 64)"
+             frozenset({"Ether() /  IP() / TCP(window=16)/ Raw('\\x00' * 64)",
+                        "Ether() /  IP() / TCP(window=128) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() / TCP(window=32) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() / TCP(window=255) / Raw('\\x00' * 64)"
                         })),
         'cksum':
             ('tcp cksum is 0x1234',
-             frozenset({"Ether() /  IP() / TCP(chksum=0x1234) / ('\\x00' * 64)"}),
+             frozenset({"Ether() /  IP() / TCP(chksum=0x1234) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP() / TCP(chksum=0x4321) / ('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(chksum=0xffff) / ('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(chksum=0x9999) / ('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(chksum=0x1233)  / ('\\x00' * 64)"
+             frozenset({"Ether() / IP() / TCP(chksum=0x4321) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() / TCP(chksum=0xffff) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() / TCP(chksum=0x9999) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() / TCP(chksum=0x1233)  / Raw('\\x00' * 64)"
                         })),
         # END UNSUPPORTED PROPERTIES
         'src':
             ('tcp src is 3838',
-             frozenset({"Ether() / IP() / TCP(sport=3838) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP() / TCP(sport=3838) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP() / TCP(sport=3939) / ('\\x00' * 64)",
-                        "Ether() / IP() / TCP(sport=5000) / ('\\x00' * 64)",
-                        "Ether() / IP() / TCP(sport=1998) / ('\\x00' * 64)",
-                        "Ether() / IP() / TCP(sport=1028) / ('\\x00' * 64)"
+             frozenset({"Ether() / IP() / TCP(sport=3939) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / TCP(sport=5000) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / TCP(sport=1998) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / TCP(sport=1028) / Raw('\\x00' * 64)"
                         })),
 
         'dst':
             ('tcp dst is 3838',
-             frozenset({"Ether() / IP() / TCP(dport=3838) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP() / TCP(dport=3838) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP() / TCP(dport=3939) / ('\\x00' * 64)",
-                        "Ether() / IP() / TCP(dport=5000) / ('\\x00' * 64)",
-                        "Ether() / IP() / TCP(dport=1998) / ('\\x00' * 64)",
-                        "Ether() / IP() / TCP(dport=1028) / ('\\x00' * 64)"
+             frozenset({"Ether() / IP() / TCP(dport=3939) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / TCP(dport=5000) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / TCP(dport=1998) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / TCP(dport=1028) / Raw('\\x00' * 64)"
                         })),
         'flags':
             ('tcp flags is 0x02',
-             frozenset({"Ether() / IP() / TCP(flags=0x02) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP() / TCP(flags=0x02) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP() / TCP(flags=0x01) / ('\\x00' * 64)",
-                        "Ether() / IP() / TCP(flags=0x04) / ('\\x00' * 64)",
-                        "Ether() / IP() / TCP(flags=0x08) / ('\\x00' * 64)",
-                        "Ether() / IP() / TCP(flags=0x10) / ('\\x00' * 64)"
+             frozenset({"Ether() / IP() / TCP(flags=0x01) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / TCP(flags=0x04) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / TCP(flags=0x08) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / TCP(flags=0x10) / Raw('\\x00' * 64)"
                         }))
 
     }
@@ -730,42 +730,42 @@ class FlowItemUdp(PatternFlowItem):
         # They are still tested to future proof this test suite.
         'dgram_len':
             ('udp dgram_len is 64',
-             frozenset({"Ether() / IP() / UDP(len=64) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP() / UDP(len=64) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() /  IP() / UDP(len=128) / ('\\x00' * 64)",
-                        "Ether() /  IP() / UDP(len=32) / ('\\x00' * 64)",
-                        "Ether() /  IP() / UDP(len=16) / ('\\x00' * 64)",
-                        "Ether() /  IP() / UDP(len=255) / ('\\x00' * 64)"
+             frozenset({"Ether() /  IP() / UDP(len=128) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() / UDP(len=32) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() / UDP(len=16) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() / UDP(len=255) / Raw('\\x00' * 64)"
                         })),
         'dgram_cksum':
             ('udp dgram_cksum is 0x1234',
-             frozenset({"Ether() /  IP() / UDP(chksum=0x1234) / ('\\x00' * 64)"}),
+             frozenset({"Ether() /  IP() / UDP(chksum=0x1234) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP() / UDP(chksum=0x4321) / ('\\x00' * 64)",
-                        "Ether() /  IP() / UDP(chksum=0xffff) / ('\\x00' * 64)",
-                        "Ether() /  IP() / UDP(chksum=0x9999) / ('\\x00' * 64)",
-                        "Ether() /  IP() / UDP(chksum=0x1233)  / ('\\x00' * 64)"
+             frozenset({"Ether() / IP() / UDP(chksum=0x4321) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() / UDP(chksum=0xffff) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() / UDP(chksum=0x9999) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() / UDP(chksum=0x1233)  / Raw('\\x00' * 64)"
                         })),
         # END UNSUPPORTED PROPERTIES
 
         'src':
             ('udp src is 3838',
-             frozenset({"Ether() / IP() / UDP(sport=3838) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP() / UDP(sport=3838) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP() / UDP(sport=3939) / ('\\x00' * 64)",
-                        "Ether() / IP() / UDP(sport=5000) / ('\\x00' * 64)",
-                        "Ether() / IP() / UDP(sport=1998) / ('\\x00' * 64)",
-                        "Ether() / IP() / UDP(sport=1028) / ('\\x00' * 64)"
+             frozenset({"Ether() / IP() / UDP(sport=3939) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / UDP(sport=5000) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / UDP(sport=1998) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / UDP(sport=1028) / Raw('\\x00' * 64)"
                         })),
 
         'dst':
             ('udp dst is 3838',
-             frozenset({"Ether() / IP() / UDP(dport=3838) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP() / UDP(dport=3838) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP() / UDP(dport=3939) / ('\\x00' * 64)",
-                        "Ether() / IP() / UDP(dport=5000) / ('\\x00' * 64)",
-                        "Ether() / IP() / UDP(dport=1998) / ('\\x00' * 64)",
-                        "Ether() / IP() / UDP(dport=1028) / ('\\x00' * 64)"
+             frozenset({"Ether() / IP() / UDP(dport=3939) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / UDP(dport=5000) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / UDP(dport=1998) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / UDP(dport=1028) / Raw('\\x00' * 64)"
                         })),
 
     }
@@ -798,48 +798,48 @@ class FlowItemVlan(PatternFlowItem):
 
         'tci':
             ('vlan tci is 0xaaaa',
-             frozenset({"Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() /  Dot1Q(prio = 0x0, id = 0x1, vlan = 0xbbb) / ('\\x00' * 64)",
-                        "Ether() /  Dot1Q(prio = 0x5, id = 0x0, vlan = 0xccc) / ('\\x00' * 64)",
-                        "Ether() /  Dot1Q(prio = 0x5, id = 0x1, vlan = 0xaaa) / ('\\x00' * 64)",
-                        "Ether() /  Dot1Q(prio = 0x4, id = 0x0, vlan = 0xaaa) / ('\\x00' * 64)"
+             frozenset({"Ether() /  Dot1Q(prio = 0x0, id = 0x1, vlan = 0xbbb) / Raw('\\x00' * 64)",
+                        "Ether() /  Dot1Q(prio = 0x5, id = 0x0, vlan = 0xccc) / Raw('\\x00' * 64)",
+                        "Ether() /  Dot1Q(prio = 0x5, id = 0x1, vlan = 0xaaa) / Raw('\\x00' * 64)",
+                        "Ether() /  Dot1Q(prio = 0x4, id = 0x0, vlan = 0xaaa) / Raw('\\x00' * 64)"
                         })),
 
         'pcp':
             ('vlan pcp is 0x0',
-             frozenset({"Ether() / Dot1Q(prio=0x0) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / Dot1Q(prio=0x0) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() /  Dot1Q(prio=0x1) /  ('\\x00' * 64)",
-                        "Ether() /  Dot1Q(prio=0x2) /  ('\\x00' * 64)",
-                        "Ether() /  Dot1Q(prio=0x3) / ('\\x00' * 64)",
-                        "Ether() /  Dot1Q(prio=0x7) / ('\\x00' * 64)"
+             frozenset({"Ether() /  Dot1Q(prio=0x1) / Raw('\\x00' * 64)",
+                        "Ether() /  Dot1Q(prio=0x2) / Raw('\\x00' * 64)",
+                        "Ether() /  Dot1Q(prio=0x3) / Raw('\\x00' * 64)",
+                        "Ether() /  Dot1Q(prio=0x7) / Raw('\\x00' * 64)"
                         })),
         'dei':
             ('vlan dei is 0',
-             frozenset({"Ether() / Dot1Q(id=0) /  ('\\x00' * 64)"}),
+             frozenset({"Ether() / Dot1Q(id=0) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() /  Dot1Q(id=1) / ('\\x00' * 64)"
+             frozenset({"Ether() /  Dot1Q(id=1) / Raw('\\x00' * 64)"
                         })),
 
         'vid':
             ('vlan vid is 0xabc',
-             frozenset({"Ether() / Dot1Q(vlan=0xabc) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / Dot1Q(vlan=0xabc) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() /  Dot1Q(vlan=0xaaa) / ('\\x00' * 64)",
-                        "Ether() /  Dot1Q(vlan=0x123) / ('\\x00' * 64)",
-                        "Ether() /  Dot1Q(vlan=0x1f5) / ('\\x00' * 64)",
-                        "Ether() /  Dot1Q(vlan=0x999) / ('\\x00' * 64)"
+             frozenset({"Ether() /  Dot1Q(vlan=0xaaa) / Raw('\\x00' * 64)",
+                        "Ether() /  Dot1Q(vlan=0x123) / Raw('\\x00' * 64)",
+                        "Ether() /  Dot1Q(vlan=0x1f5) / Raw('\\x00' * 64)",
+                        "Ether() /  Dot1Q(vlan=0x999) / Raw('\\x00' * 64)"
                         })),
 
         'tpid':
             ('vlan tpid is 0x8100',  # standard value
-             frozenset({"Ether() / Dot1Q(type=0x8100) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / Dot1Q(type=0x8100) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() /  Dot1Q(type=0x0800) / ('\\x00' * 64)",
-                        "Ether() /  Dot1Q(type=0x0842) / ('\\x00' * 64)",
-                        "Ether() /  Dot1Q(type=0x809b) / ('\\x00' * 64)",
-                        "Ether() /  Dot1Q(type=0x86dd) / ('\\x00' * 64)"
+             frozenset({"Ether() /  Dot1Q(type=0x0800) / Raw('\\x00' * 64)",
+                        "Ether() /  Dot1Q(type=0x0842) / Raw('\\x00' * 64)",
+                        "Ether() /  Dot1Q(type=0x809b) / Raw('\\x00' * 64)",
+                        "Ether() /  Dot1Q(type=0x86dd) / Raw('\\x00' * 64)"
                         })),
     }
 
@@ -864,40 +864,40 @@ possible_properties = {
     # They are still tested to future proof this test suite.
     'rsvd0':
         ('vxlan rsvd0 is 0x000000',
-         frozenset({"Ether() / IP() / VXLAN(reserved0=0) / ('\\x00' * 64)"}),
+         frozenset({"Ether() / IP() / VXLAN(reserved0=0) / Raw('\\x00' * 64)"}),
 
-         frozenset({"Ether() /  IP() / VXLAN(reserved0=1) /  ('\\x00' * 64)",
-                    "Ether() /  IP() /  VXLAN(reserved0=2) /  ('\\x00' * 64)",
-                    "Ether() /  IP() /  VXLAN(reserved0=3) /  ('\\x00' * 64)",
-                    "Ether() /  IP()  / VXLAN(reserved0=4) /  ('\\x00' * 64)"
+         frozenset({"Ether() /  IP() / VXLAN(reserved0=1) / Raw('\\x00' * 64)",
+                    "Ether() /  IP() /  VXLAN(reserved0=2) / Raw('\\x00' * 64)",
+                    "Ether() /  IP() /  VXLAN(reserved0=3) / Raw('\\x00' * 64)",
+                    "Ether() /  IP()  / VXLAN(reserved0=4) / Raw('\\x00' * 64)"
                     })),
     'rsvd1':
         ('vxlan rsvd1 is 0x00',
-         frozenset({"Ether() /  IP() /  VXLAN(reserved0=0) /  ('\\x00' * 64)"}),
+         frozenset({"Ether() /  IP() /  VXLAN(reserved0=0) / Raw('\\x00' * 64)"}),
 
-         frozenset({"Ether() / IP() /  VXLAN(reserved0=1) /  ('\\x00' * 64)",
-                    "Ether() /  IP() /  VXLAN(reserved0=2) /  ('\\x00' * 64)",
-                    "Ether() /  IP() / VXLAN(reserved0=3) /  ('\\x00' * 64)",
-                    "Ether() /  IP() /  VXLAN(reserved0=4) /  ('\\x00' * 64)"
+         frozenset({"Ether() / IP() /  VXLAN(reserved0=1) / Raw('\\x00' * 64)",
+                    "Ether() /  IP() /  VXLAN(reserved0=2) / Raw('\\x00' * 64)",
+                    "Ether() /  IP() / VXLAN(reserved0=3) / Raw('\\x00' * 64)",
+                    "Ether() /  IP() /  VXLAN(reserved0=4) / Raw('\\x00' * 64)"
                     })),
     'flags':
         ('vxlan flags is 0x08',
-         frozenset({"Ether() /  IP() /  VXLAN(flags=0x08) /  ('\\x00' * 64)"}),
+         frozenset({"Ether() /  IP() /  VXLAN(flags=0x08) / Raw('\\x00' * 64)"}),
 
-         frozenset({"Ether() / IP() /  VXLAN(flags=0x80) /  ('\\x00' * 64)",
-                    "Ether() /  IP() /  VXLAN(flags=0x00) /  ('\\x00' * 64)",
-                    "Ether() /  IP() / VXLAN(flags=0x99) /  ('\\x00' * 64)",
-                    "Ether() /  IP() /  VXLAN(flags=0x01) /  ('\\x00' * 64)"
+         frozenset({"Ether() / IP() /  VXLAN(flags=0x80) / Raw('\\x00' * 64)",
+                    "Ether() /  IP() /  VXLAN(flags=0x00) / Raw('\\x00' * 64)",
+                    "Ether() /  IP() / VXLAN(flags=0x99) / Raw('\\x00' * 64)",
+                    "Ether() /  IP() /  VXLAN(flags=0x01) / Raw('\\x00' * 64)"
                     })),
     # END UNSUPPORTED PROPERTIES
     'vni':  # a 3-byte value
         ('vxlan vni is 0x112233',
-         frozenset({"Ether() / IP() / VXLAN(vni=0x112233) / ('\\x00' * 64)"}),
+         frozenset({"Ether() / IP() / VXLAN(vni=0x112233) / Raw('\\x00' * 64)"}),
 
-         frozenset({"Ether() / IP() / VXLAN(vni=0x112234) / ('\\x00' * 64)",
-                    "Ether() / IP() / VXLAN(vni=0x123456) / ('\\x00' * 64)",
-                    "Ether() / IP() / VXLAN(vni=0xaabbcc) / ('\\x00' * 64)",
-                    "Ether() / IP() / VXLAN(vni=0x999999) / ('\\x00' * 64)"
+         frozenset({"Ether() / IP() / VXLAN(vni=0x112234) / Raw('\\x00' * 64)",
+                    "Ether() / IP() / VXLAN(vni=0x123456) / Raw('\\x00' * 64)",
+                    "Ether() / IP() / VXLAN(vni=0xaabbcc) / Raw('\\x00' * 64)",
+                    "Ether() / IP() / VXLAN(vni=0x999999) / Raw('\\x00' * 64)"
                     })),
 }
 
@@ -923,49 +923,49 @@ class FlowItemVxlan_gpe(PatternFlowItem):
 
         'rsvd0':
             ('vxlan rsvd0 is 0x000000',
-             frozenset({"Ether() / IP() / VXLAN(reserved0=0) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP() / VXLAN(reserved0=0) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() /  IP() / VXLAN(reserved0=1) /  ('\\x00' * 64)",
-                        "Ether() /  IP() /  VXLAN(reserved0=2) /  ('\\x00' * 64)",
-                        "Ether() /  IP() /  VXLAN(reserved0=3) /  ('\\x00' * 64)",
-                        "Ether() /  IP()  / VXLAN(reserved0=4) /  ('\\x00' * 64)"
+             frozenset({"Ether() /  IP() / VXLAN(reserved0=1) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() /  VXLAN(reserved0=2) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() /  VXLAN(reserved0=3) / Raw('\\x00' * 64)",
+                        "Ether() /  IP()  / VXLAN(reserved0=4) / Raw('\\x00' * 64)"
                         })),
         'rsvd1':
             ('vxlan rsvd1 is 0x00',
-             frozenset({"Ether() /  IP() /  VXLAN(reserved0=0) /  ('\\x00' * 64)"}),
+             frozenset({"Ether() /  IP() /  VXLAN(reserved0=0) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP() /  VXLAN(reserved0=1) /  ('\\x00' * 64)",
-                        "Ether() /  IP() /  VXLAN(reserved0=2) /  ('\\x00' * 64)",
-                        "Ether() /  IP() / VXLAN(reserved0=3) /  ('\\x00' * 64)",
-                        "Ether() /  IP() /  VXLAN(reserved0=4) /  ('\\x00' * 64)"
+             frozenset({"Ether() / IP() /  VXLAN(reserved0=1) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() /  VXLAN(reserved0=2) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() / VXLAN(reserved0=3) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() /  VXLAN(reserved0=4) / Raw('\\x00' * 64)"
                         })),
         'flags':
             ('vxlan flags is 0x08',
-             frozenset({"Ether() /  IP() /  VXLAN(flags=0x08) /  ('\\x00' * 64)"}),
+             frozenset({"Ether() /  IP() /  VXLAN(flags=0x08) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP() /  VXLAN(flags=0x80) /  ('\\x00' * 64)",
-                        "Ether() /  IP() /  VXLAN(flags=0x00) /  ('\\x00' * 64)",
-                        "Ether() /  IP() / VXLAN(flags=0x99) /  ('\\x00' * 64)",
-                        "Ether() /  IP() /  VXLAN(flags=0x01) /  ('\\x00' * 64)"
+             frozenset({"Ether() / IP() /  VXLAN(flags=0x80) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() /  VXLAN(flags=0x00) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() / VXLAN(flags=0x99) / Raw('\\x00' * 64)",
+                        "Ether() /  IP() /  VXLAN(flags=0x01) / Raw('\\x00' * 64)"
                         })),
 
         'vni':  # a 3-byte value
             ('vxlan vni is 0x112233',
-             frozenset({"Ether() / IP() / VXLAN(vni=0x112233) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP() / VXLAN(vni=0x112233) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP() / VXLAN(vni=0x112234) / ('\\x00' * 64)",
-                        "Ether() / IP() / VXLAN(vni=0x123456) / ('\\x00' * 64)",
-                        "Ether() / IP() / VXLAN(vni=0xaabbcc) / ('\\x00' * 64)",
-                        "Ether() / IP() / VXLAN(vni=0x999999) / ('\\x00' * 64)"
+             frozenset({"Ether() / IP() / VXLAN(vni=0x112234) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / VXLAN(vni=0x123456) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / VXLAN(vni=0xaabbcc) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / VXLAN(vni=0x999999) / Raw('\\x00' * 64)"
                         })),
         'protocol':
             ('vxlan protocol is 0x01',
-             frozenset({"Ether() / IP() / VXLAN(NextProtocol=0x01) / ('\\x00' * 64)"}),
+             frozenset({"Ether() / IP() / VXLAN(NextProtocol=0x01) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP() / VXLAN(NextProtocol=0x01) / ('\\x00' * 64)",
-                        "Ether() / IP() / VXLAN(NextProtocol=0x11) / ('\\x00' * 64)",
-                        "Ether() / IP() / VXLAN(NextProtocol=0x22) / ('\\x00' * 64)",
-                        "Ether() / IP() / VXLAN(NextProtocol=0x33) / ('\\x00' * 64)"
+             frozenset({"Ether() / IP() / VXLAN(NextProtocol=0x01) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / VXLAN(NextProtocol=0x11) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / VXLAN(NextProtocol=0x22) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / VXLAN(NextProtocol=0x33) / Raw('\\x00' * 64)"
                         })),
     }
 

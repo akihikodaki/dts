@@ -44,7 +44,7 @@ from test_case import TestCase
 
 from test_case import TestCase
 
-from framework.flow import generator
+from flow import generator
 
 
 class RteFlow(TestCase):
@@ -95,9 +95,7 @@ class RteFlow(TestCase):
 
     def send_packets(self, packets, pass_fail_function: Callable[[str], bool], error_message: str):
         for packet in packets:
-            output = self.send_scapy_packet(0, packet)
-            time.sleep(5)  # Allow the packet to be processed
-            self.verify("Sent" in output, "Broken scapy packet definition: " + packet)
+            output = self.send_scapy_packet(self.dut_ports[1], packet)
             output = self.pmdout.get_output()
             self.verify(pass_fail_function(output),
                         error_message + "\r\n" + output)
@@ -164,22 +162,22 @@ class RteFlow(TestCase):
         self.do_test_with_queue_action(
             "ingress pattern eth / ipv4 / " + (
                     "void / " * 200) + "udp / end actions queue index 1 / end",
-            frozenset({'Ether() / IP() / UDP() / (\'\\x00\' * 64)'}),
+            frozenset({'Ether() / IP() / UDP() / Raw(\'\\x00\' * 64)'}),
             frozenset({
-                'Ether() / IP() / TCP() / (\'\\x00\' * 64)',
-                'Ether() / IP() / SCTP() / (\'\\x00\' * 64)',
-                'Ether() / IPv6() / UDP() / (\'\\x00\' * 64)',
+                'Ether() / IP() / TCP() / Raw(\'\\x00\' * 64)',
+                'Ether() / IP() / SCTP() / Raw(\'\\x00\' * 64)',
+                'Ether() / IPv6() / UDP() / Raw(\'\\x00\' * 64)',
             })
         )
 
     def test_excessive_tunneling(self):
         self.do_test_with_queue_action(
             "ingress pattern " + ("eth / gre / " * 20) + "eth / ipv4 / udp / end actions queue index 1 / end",
-            frozenset({'Ether() / IP() / UDP() / (\'\\x00\' * 64)'}),
+            frozenset({'Ether() / IP() / UDP() / Raw(\'\\x00\' * 64)'}),
             frozenset({
-                'Ether() / IP() / TCP() / (\'\\x00\' * 64)',
-                'Ether() / IP() / SCTP() / (\'\\x00\' * 64)',
-                'Ether() / IPv6() / UDP() / (\'\\x00\' * 64)',
+                'Ether() / IP() / TCP() / Raw(\'\\x00\' * 64)',
+                'Ether() / IP() / SCTP() / Raw(\'\\x00\' * 64)',
+                'Ether() / IPv6() / UDP() / Raw(\'\\x00\' * 64)',
             })
         )
 
@@ -192,11 +190,11 @@ class RteFlow(TestCase):
     def test_drop_case1(self):
         self.do_test_with_callable_tests_for_pass_fail(
             "ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions drop / end",
-            frozenset({'Ether() / IP(src="192.168.0.1") / UDP() / (\'\\x00\' * 64)'}),
-            frozenset({'Ether() / IP(src="10.0.30.99") / UDP() / (\'\\x00\' * 64)',
-                       'Ether() / IP(src="132.177.0.99") / UDP() / (\'\\x00\' * 64)',
-                       'Ether() / IP(src="192.168.0.2") / UDP() / (\'\\x00\' * 64)',
-                       'Ether() / IP(src="8.8.8.8") / UDP() / (\'\\x00\' * 64)'}),
+            frozenset({'Ether() / IP(src="192.168.0.1") / UDP() / Raw(\'\\x00\' * 64)'}),
+            frozenset({'Ether() / IP(src="10.0.30.99") / UDP() / Raw(\'\\x00\' * 64)',
+                       'Ether() / IP(src="132.177.0.99") / UDP() / Raw(\'\\x00\' * 64)',
+                       'Ether() / IP(src="192.168.0.2") / UDP() / Raw(\'\\x00\' * 64)',
+                       'Ether() / IP(src="8.8.8.8") / UDP() / Raw(\'\\x00\' * 64)'}),
             lambda output: "port" not in output,
             lambda output: "port" in output,
             "Drop function was not correctly applied")
@@ -204,11 +202,11 @@ class RteFlow(TestCase):
     def test_queue_case1(self):
         self.do_test_with_queue_action(
             "ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions queue index 1 / end",
-            frozenset({'Ether() / IP(src="192.168.0.1") / UDP() / (\'\\x00\' * 64)'}), frozenset(
-                {'Ether() / IP(src="10.0.30.99") / UDP() / (\'\\x00\' * 64)',
-                 'Ether() / IP(src="132.177.0.99") / UDP() / (\'\\x00\' * 64)',
-                 'Ether() / IP(src="192.168.0.2") / UDP() / (\'\\x00\' * 64)',
-                 'Ether() / IP(src="8.8.8.8") / UDP() / (\'\\x00\' * 64)'}))
+            frozenset({'Ether() / IP(src="192.168.0.1") / UDP() / Raw(\'\\x00\' * 64)'}), frozenset(
+                {'Ether() / IP(src="10.0.30.99") / UDP() / Raw(\'\\x00\' * 64)',
+                 'Ether() / IP(src="132.177.0.99") / UDP() / Raw(\'\\x00\' * 64)',
+                 'Ether() / IP(src="192.168.0.2") / UDP() / Raw(\'\\x00\' * 64)',
+                 'Ether() / IP(src="8.8.8.8") / UDP() / Raw(\'\\x00\' * 64)'}))
 
 
 def do_runtime_test_generation():

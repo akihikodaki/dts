@@ -107,11 +107,11 @@ class FlowActionVoid(ActionFlowItem):
 
     test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions void / end',
-                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -119,11 +119,11 @@ class FlowActionPassthru(ActionFlowItem):
     type = FlowActionType.PASSTHRU
     test_case = {
         'test':  ('ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions passthru / end',
-                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -131,11 +131,11 @@ class FlowActionFlag(ActionFlowItem):
     type = FlowActionType.FLAG
     test_case = {
         'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions flag / end',
-                 frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                 frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                 frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                 frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -143,11 +143,11 @@ class FlowActionDrop(ActionFlowItem):
     type = FlowActionType.DROP
     test_case = {
         'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions drop / end',
-                 frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                 frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                 frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                 frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -156,17 +156,17 @@ class FlowActionCount(ActionFlowItem):
     test_case = {
         'test_shared': ('ingress pattern eth / ipv4 src is 192.168.0.1'
                         ' / udp / end actions count shared 0 id 1 / end',
-                        frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                        frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                   "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\x00' * 64)",
-                                   "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\x00' * 64)",
-                                   "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                        frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                        frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                   "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\x00' * 64)",
+                                   "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\x00' * 64)",
+                                   "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
         'test_id': ('ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions count id 1 / end',
-                    frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                    frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                              "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                               "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                               "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                    frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                    frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                              "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                               "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                               "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -176,15 +176,15 @@ class FlowActionMac_swap(ActionFlowItem):
     test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions mac_swap / end',
                   frozenset({"Ether(src=\"90:61:ae:fd:41:43\", dst = \"ab:cd:ef:12:34:56\") "
-                            "/ IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
+                            "/ IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
                   frozenset({"Ether(src=\"90:61:ae:fd:41:43\", dst = \"ab:cd:ef:12:34:56\") "
-                            "/ IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
+                            "/ IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
                              "Ether(src=\"90:61:ae:fd:41:43\", dst = \"ab:cd:ef:12:34:56\") "
-                             "/ IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
+                             "/ IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
                              "Ether(src=\"90:61:ae:fd:41:43\", dst = \"ab:cd:ef:12:34:56\") "
-                             "/ IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
+                             "/ IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
                              "Ether(src=\"90:61:ae:fd:41:43\", dst = \"ab:cd:ef:12:34:56\") "
-                             "/ IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                             "/ IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
      }
 
 
@@ -193,11 +193,11 @@ class FlowActionDec_ttl(ActionFlowItem):
 
     test_case = {
         'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions dec_ttl / end',
-                 frozenset({"Ether() / IP(src=\"192.168.0.1\", ttl = 128) / UDP() / ('\\x00' * 64)"}),
-                 frozenset({"Ether() / IP(src=\"192.168.0.2\", ttl = 128) / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"10.0.30.99\", ttl = 128) / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"8.8.8.8\", ttl = 128 ) / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"132.177.0.99\", ttl = 128) / UDP() / ('\\x00' * 64)"})),
+                 frozenset({"Ether() / IP(src=\"192.168.0.1\", ttl = 128) / UDP() / Raw('\\x00' * 64)"}),
+                 frozenset({"Ether() / IP(src=\"192.168.0.2\", ttl = 128) / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"10.0.30.99\", ttl = 128) / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"8.8.8.8\", ttl = 128 ) / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"132.177.0.99\", ttl = 128) / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -206,11 +206,11 @@ class FlowActionJump(ActionFlowItem):
 
     test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions jump group 1 / end',
-                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -219,11 +219,11 @@ class FlowActionMark(ActionFlowItem):
     test_case = {
         'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                  '/ udp / end actions mark id 0xABCDEF / end',
-                 frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                 frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                 frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                 frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -231,11 +231,11 @@ class FlowActionQueue(ActionFlowItem):
     type = FlowActionType.QUEUE
     test_case = {
         'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions queue index 1 / end',
-                 frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                 frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                 frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                 frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -246,11 +246,11 @@ class FlowActionRss(ActionFlowItem):
     '''
      test_case = {
          'case1': ('ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions / end',
-                   frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                   frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                              "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                              "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                              "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                   frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                   frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                              "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                              "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                              "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
      }
      '''
 
@@ -259,11 +259,11 @@ class FlowActionPf(ActionFlowItem):
     type = FlowActionType.PF
     test_case = {
         'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions pf / end',
-                 frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                 frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                 frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                 frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -272,17 +272,17 @@ class FlowActionVf(ActionFlowItem):
     test_case = {
         'test_original': ('ingress pattern eth / ipv4 src is 192.168.0.1 /'
                           ' udp / end actions vf original 1/ end',
-                          frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                          frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                     "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\x00' * 64)",
-                                     "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\x00' * 64)",
-                                     "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                          frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                          frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                     "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\x00' * 64)",
+                                     "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\x00' * 64)",
+                                     "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
         'test_id': ('ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions vf id 1 / end',
-                    frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                    frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                               "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                               "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                               "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                    frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                    frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                               "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                               "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                               "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -293,19 +293,19 @@ class FlowActionPhy_port(ActionFlowItem):
          # original port index
          'test_original': ('ingress pattern eth / ipv4 src is 192.168.0.1'
                            ' / udp / end actions phy_port original / end',
-                           frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                           frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                      "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                                      "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                                      "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                           frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                           frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                      "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                                      "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                                      "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
          # physical port index
          'test_index': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                         '/ udp / end actions phy_port index 1 / end',
-                        frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                        frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                   "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                                   "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                                   "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                        frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                        frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                   "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                                   "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                                   "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -316,19 +316,19 @@ class FlowActionPort_id(ActionFlowItem):
         # original DPDK port ID
         'test_original': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                           '/ udp / end actions port_id original / end',
-                          frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                          frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                     "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                                     "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                                     "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                          frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                          frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                     "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                                     "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                                     "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
         # DPDK port ID
         'test_id': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                     '/ udp / end actions port_id id 1 / end',
-                    frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                    frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                               "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                               "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                               "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                    frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                    frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                               "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                               "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                               "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
      }
 
 
@@ -336,11 +336,11 @@ class FlowActionMeter(ActionFlowItem):
     type = FlowActionType.METER
     test_case = {
         'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions meter mtr_id 1 / end',
-                 frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                 frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                 frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                 frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -349,11 +349,11 @@ class FlowActionSecurity(ActionFlowItem):
     test_case = {
         'test': ('ingress pattern eth / ipv4 src is 192.168.0.1'
                  ' / udp / end actions security security_session 1 / end',
-                 frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                 frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                 frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                 frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -364,12 +364,12 @@ class FlowActionOf_set_mpls_ttl(ActionFlowItem):
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                   '/ udp / end actions of_set_mpls_ttl mpls_ttl 64 / end',
                   frozenset({"Ether() / IP(src=\"192.168.0.1\") / MPLS(label = 0xab, ttl=128)"
-                             " / UDP() / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"10.0.30.99\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"8.8.8.8\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\\x00' * 64)",
+                             " / UDP() / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"10.0.30.99\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"8.8.8.8\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\\x00' * 64)",
                              "Ether() / IP(src=\"132.177.0.99\") / MPLS(label = 0xab, ttl=128)"
-                             " / UDP() / ('\\x00' * 64)"})),
+                             " / UDP() / Raw('\\x00' * 64)"})),
      }
 
 
@@ -379,11 +379,11 @@ class FlowActionOf_dec_mpls_ttl(ActionFlowItem):
     test_case = {
         'test': (
             'ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions of_dec_mpls_ttl / end',
-            frozenset({"Ether() / IP(src=\"192.168.0.1\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\\x00' * 64)"}),
-            frozenset({"Ether() / IP(src=\"192.168.0.2\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\\x00' * 64)",
-                       "Ether() / IP(src=\"10.0.30.99\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\\x00' * 64)",
-                       "Ether() / IP(src=\"8.8.8.8\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\\x00' * 64)",
-                       "Ether() / IP(src=\"132.177.0.99\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\\x00' * 64)"})),
+            frozenset({"Ether() / IP(src=\"192.168.0.1\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\\x00' * 64)"}),
+            frozenset({"Ether() / IP(src=\"192.168.0.2\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\\x00' * 64)",
+                       "Ether() / IP(src=\"10.0.30.99\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\\x00' * 64)",
+                       "Ether() / IP(src=\"8.8.8.8\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\\x00' * 64)",
+                       "Ether() / IP(src=\"132.177.0.99\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -393,11 +393,11 @@ class FlowActionOf_set_nw_ttl(ActionFlowItem):
     test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                   '/ udp / end actions of_set_nw_ttl nw_ttl 64 / end',
-                  frozenset({"Ether() / IP(src=\"192.168.0.1\", ttl=128) / UDP() / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(src=\"192.168.0.2\", ttl=128) / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"10.0.30.99\", ttl=128) / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"8.8.8.8\", ttl=128) / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"132.177.0.99\", ttl=128) / UDP() / ('\\x00' * 64)"})),
+                  frozenset({"Ether() / IP(src=\"192.168.0.1\", ttl=128) / UDP() / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(src=\"192.168.0.2\", ttl=128) / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"10.0.30.99\", ttl=128) / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"8.8.8.8\", ttl=128) / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"132.177.0.99\", ttl=128) / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -406,11 +406,11 @@ class FlowActionOf_dec_nw_ttl(ActionFlowItem):
     test_case = {
         'test': (
             'ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions of_dec_nw_ttl / end',
-            frozenset({"Ether() / IP(src=\"192.168.0.1\", ttl=128) / UDP() / ('\\x00' * 64)"}),
-            frozenset({"Ether() / IP(src=\"192.168.0.2\", ttl=128) / UDP() / ('\\x00' * 64)",
-                       "Ether() / IP(src=\"10.0.30.99\", ttl=128) / UDP() / ('\\x00' * 64)",
-                       "Ether() / IP(src=\"8.8.8.8\", ttl=128) / UDP() / ('\\x00' * 64)",
-                       "Ether() / IP(src=\"132.177.0.99\", ttl=128) / UDP() / ('\\x00' * 64)"})),
+            frozenset({"Ether() / IP(src=\"192.168.0.1\", ttl=128) / UDP() / Raw('\\x00' * 64)"}),
+            frozenset({"Ether() / IP(src=\"192.168.0.2\", ttl=128) / UDP() / Raw('\\x00' * 64)",
+                       "Ether() / IP(src=\"10.0.30.99\", ttl=128) / UDP() / Raw('\\x00' * 64)",
+                       "Ether() / IP(src=\"8.8.8.8\", ttl=128) / UDP() / Raw('\\x00' * 64)",
+                       "Ether() / IP(src=\"132.177.0.99\", ttl=128) / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -420,11 +420,11 @@ class FlowActionOf_copy_ttl_out(ActionFlowItem):
     test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                   '/ udp / end actions of_copy_ttl_out / end',
-                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -434,11 +434,11 @@ class FlowActionOf_copy_ttl_in(ActionFlowItem):
     test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                   '/ udp / end actions of_copy_ttl_out / end',
-                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -448,15 +448,15 @@ class FlowActionOf_pop_vlan(ActionFlowItem):
     test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions of_pop_vlan / end',
                   frozenset({"Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"192.168.0.1\") "
-                             "/ UDP() / ('\\x00' * 64)"}),
+                             "/ UDP() / Raw('\\x00' * 64)"}),
                   frozenset({"Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"192.168.0.2\") "
-                             "/ UDP() / ('\\x00' * 64)",
+                             "/ UDP() / Raw('\\x00' * 64)",
                              "Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"10.0.30.99\") "
-                             "/ UDP() / ('\\x00' * 64)",
+                             "/ UDP() / Raw('\\x00' * 64)",
                              "Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"8.8.8.8\") "
-                             "/ UDP() / ('\\x00' * 64)",
+                             "/ UDP() / Raw('\\x00' * 64)",
                              "Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"132.177.0.99\")"
-                             " / UDP() / ('\\x00' * 64)"})),
+                             " / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -466,15 +466,15 @@ class FlowActionOf_push_vlan(ActionFlowItem):
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1'
                   ' / udp / end actions of_push_vlan ethertype 0x8100 / end',
                   frozenset({"Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"192.168.0.1\") "
-                             "/ UDP() / ('\\x00' * 64)"}),
+                             "/ UDP() / Raw('\\x00' * 64)"}),
                   frozenset({"Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"192.168.0.2\") "
-                             "/ UDP() / ('\\x00' * 64)",
+                             "/ UDP() / Raw('\\x00' * 64)",
                              "Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"10.0.30.99\") "
-                             "/ UDP() / ('\\x00' * 64)",
+                             "/ UDP() / Raw('\\x00' * 64)",
                              "Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"8.8.8.8\") "
-                             "/ UDP() / ('\\x00' * 64)",
+                             "/ UDP() / Raw('\\x00' * 64)",
                              "Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"132.177.0.99\")"
-                             " / UDP() / ('\\x00' * 64)"})),
+                             " / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -486,16 +486,16 @@ class FlowActionOf_set_vlan_vid(ActionFlowItem):
                  '/ udp / end actions of_set_vlan_vid vlan_vid 0xbbb / end',
                  frozenset({
                                "Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"192.168.0.1\")"
-                               " / UDP() / ('\\x00' * 64)"}),
+                               " / UDP() / Raw('\\x00' * 64)"}),
                  frozenset({
                                "Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"192.168.0.2\") "
-                               "/ UDP() / ('\\x00' * 64)",
+                               "/ UDP() / Raw('\\x00' * 64)",
                                "Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"10.0.30.99\") "
-                               "/ UDP() / ('\x00' * 64)",
+                               "/ UDP() / Raw('\x00' * 64)",
                                "Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"8.8.8.8\") "
-                               "/ UDP() / ('\x00' * 64)",
+                               "/ UDP() / Raw('\x00' * 64)",
                                "Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"132.177.0.99\") "
-                               "/ UDP() / ('\\x00' * 64)"})),
+                               "/ UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -506,16 +506,16 @@ class FlowActionOf_set_vlan_pcp(ActionFlowItem):
                  ' / udp / end actions of_set_vlan_vid vlan_pcp 0x7 / end',
                  frozenset({
                                "Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"192.168.0.1\") "
-                               "/ UDP() / ('\\x00' * 64)"}),
+                               "/ UDP() / Raw('\\x00' * 64)"}),
                  frozenset({
                                "Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"192.168.0.2\") "
-                               "/ UDP() / ('\\x00' * 64)",
+                               "/ UDP() / Raw('\\x00' * 64)",
                                "Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"10.0.30.99\") "
-                               "/ UDP() / ('\x00' * 64)",
+                               "/ UDP() / Raw('\x00' * 64)",
                                "Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"8.8.8.8\") "
-                               "/ UDP() / ('\x00' * 64)",
+                               "/ UDP() / Raw('\x00' * 64)",
                                "Ether() / Dot1Q(prio = 0x5, id = 0x0, vlan = 0xaaa) / IP(src=\"132.177.0.99\") "
-                               "/ UDP() / ('\\x00' * 64)"})),
+                               "/ UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -525,11 +525,11 @@ class FlowActionOf_pop_mpls(ActionFlowItem):
         'test': (
             'ingress pattern eth / ipv4 src is 192.168.0.1 '
             '/ udp / end actions of_pop_mpls ethertype 0x0806 / end',
-            frozenset({"Ether() / IP(src=\"192.168.0.1\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\\x00' * 64)"}),
-            frozenset({"Ether() / IP(src=\"192.168.0.2\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\\x00' * 64)",
-                       "Ether() / IP(src=\"10.0.30.99\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\x00' * 64)",
-                       "Ether() / IP(src=\"8.8.8.8\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\x00' * 64)",
-                       "Ether() / IP(src=\"132.177.0.99\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\\x00' * 64)"})),
+            frozenset({"Ether() / IP(src=\"192.168.0.1\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\\x00' * 64)"}),
+            frozenset({"Ether() / IP(src=\"192.168.0.2\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\\x00' * 64)",
+                       "Ether() / IP(src=\"10.0.30.99\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\x00' * 64)",
+                       "Ether() / IP(src=\"8.8.8.8\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\x00' * 64)",
+                       "Ether() / IP(src=\"132.177.0.99\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -540,11 +540,11 @@ class FlowActionOf_push_mpls(ActionFlowItem):
         'test': (
             'ingress pattern eth / ipv4 src is 192.168.0.1'
             ' / udp / end actions of_push_mpls ethertype 0x0806 / end',
-            frozenset({"Ether() / IP(src=\"192.168.0.1\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\\x00' * 64)"}),
-            frozenset({"Ether() / IP(src=\"192.168.0.2\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\\x00' * 64)",
-                       "Ether() / IP(src=\"10.0.30.99\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\x00' * 64)",
-                       "Ether() / IP(src=\"8.8.8.8\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\x00' * 64)",
-                       "Ether() / IP(src=\"132.177.0.99\") / MPLS(label = 0xab, ttl=128) / UDP() / ('\\x00' * 64)"})),
+            frozenset({"Ether() / IP(src=\"192.168.0.1\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\\x00' * 64)"}),
+            frozenset({"Ether() / IP(src=\"192.168.0.2\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\\x00' * 64)",
+                       "Ether() / IP(src=\"10.0.30.99\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\x00' * 64)",
+                       "Ether() / IP(src=\"8.8.8.8\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\x00' * 64)",
+                       "Ether() / IP(src=\"132.177.0.99\") / MPLS(label = 0xab, ttl=128) / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -555,11 +555,11 @@ class FlowActionVxlan_encap(ActionFlowItem):
          # VXLAN encap definition is the VNI?
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1'
                   ' / udp / end actions vxlan_encap definition 0x112233 / end',
-                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\x00' * 64)",
-                             "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\x00' * 64)",
-                             "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\x00' * 64)",
+                             "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\x00' * 64)",
+                             "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
      }
 
 
@@ -568,11 +568,11 @@ class FlowActionVxlan_decap(ActionFlowItem):
 
     test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions vxlan_decap / end',
-                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / VXLAN() / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / VXLAN() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"10.0.30.99\") / UDP() / VXLAN() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"8.8.8.8\") / UDP() / VXLAN() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"132.177.0.99\") / UDP() / VXLAN() / ('\\x00' * 64)"})),
+                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / VXLAN() / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / VXLAN() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"10.0.30.99\") / UDP() / VXLAN() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"8.8.8.8\") / UDP() / VXLAN() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"132.177.0.99\") / UDP() / VXLAN() / Raw('\\x00' * 64)"})),
      }
 
 
@@ -583,11 +583,11 @@ class FlowActionNvgre_encap(ActionFlowItem):
      test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1
          / udp / end actions nvgre_encap definition 0x112233 / end',
-                   frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() /  NVGRE() / ('\\x00' * 64)"}),
-                   frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() /  NVGRE() / ('\\x00' * 64)",
-                              "Ether() / IP(src=\"10.0.30.99\") / UDP() /  NVGRE() / ('\\x00' * 64)",
-                              "Ether() / IP(src=\"8.8.8.8\") / UDP() /  NVGRE() / ('\\x00' * 64)",
-                              "Ether() / IP(src=\"132.177.0.99\") / UDP() /  NVGRE() / ('\\x00' * 64)"})),
+                   frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() /  NVGRE() / Raw('\\x00' * 64)"}),
+                   frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() /  NVGRE() / Raw('\\x00' * 64)",
+                              "Ether() / IP(src=\"10.0.30.99\") / UDP() /  NVGRE() / Raw('\\x00' * 64)",
+                              "Ether() / IP(src=\"8.8.8.8\") / UDP() /  NVGRE() / Raw('\\x00' * 64)",
+                              "Ether() / IP(src=\"132.177.0.99\") / UDP() /  NVGRE() / Raw('\\x00' * 64)"})),
      }
      '''
 
@@ -598,11 +598,11 @@ class FlowActionNvgre_decap(ActionFlowItem):
     '''
      test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions nvgre_decap / end',
-                   frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / NVGRE() / ('\\x00' * 64)"}),
-                   frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / NVGRE() / ('\\x00' * 64)",
-                              "Ether() / IP(src=\"10.0.30.99\") / UDP() / NVGRE() / ('\\x00' * 64)",
-                              "Ether() / IP(src=\"8.8.8.8\") / UDP() / NVGRE() / ('\\x00' * 64)",
-                              "Ether() / IP(src=\"132.177.0.99\") / UDP() / NVGRE() / ('\\x00' * 64)"})),
+                   frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / NVGRE() / Raw('\\x00' * 64)"}),
+                   frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / NVGRE() / Raw('\\x00' * 64)",
+                              "Ether() / IP(src=\"10.0.30.99\") / UDP() / NVGRE() / Raw('\\x00' * 64)",
+                              "Ether() / IP(src=\"8.8.8.8\") / UDP() / NVGRE() / Raw('\\x00' * 64)",
+                              "Ether() / IP(src=\"132.177.0.99\") / UDP() / NVGRE() / Raw('\\x00' * 64)"})),
      }
      '''
 
@@ -618,27 +618,27 @@ class FlowActionRaw_encap(ActionFlowItem):
     test_case = {
         'test_data': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                       '/ udp / end actions raw_encap data 0x8100aaaa / end',
-                      frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                      frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                 "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\x00' * 64)",
-                                 "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\x00' * 64)",
-                                 "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                      frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                      frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                 "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\x00' * 64)",
+                                 "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\x00' * 64)",
+                                 "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
 
         'test_preserve': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                           '/ udp / end actions raw_encap data 0x8100aaaa preserve 0xffffffff / end',
-                          frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                          frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                     "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                                     "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                                     "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                          frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                          frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                     "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                                     "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                                     "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
         # Is "size" in bits or bytes? Unclear in documentation, defaulting to bits.
         'test_size': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                       '/ udp / end actions raw_encap data 0x8100aaaa size 32 / end',
-                      frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                      frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                 "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\x00' * 64)",
-                                 "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\x00' * 64)",
-                                 "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                      frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                      frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                 "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\x00' * 64)",
+                                 "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\x00' * 64)",
+                                 "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -648,30 +648,30 @@ class FlowActionRaw_decap(ActionFlowItem):
         'test_data': (
             'ingress pattern eth / ipv4 src is 192.168.0.1 '
             '/ udp / end actions raw_decap data 0x8100aaaa / end',
-            frozenset({"Ether()  / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
+            frozenset({"Ether()  / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
             frozenset({"Ether() /  Dot1Q(prio = 0x5, id = 0x0, vlan = 0xbbb) / IP(src=\"192.168.0.2\")"
-                       " / UDP() / ('\\x00' * 64)",
+                       " / UDP() / Raw('\\x00' * 64)",
                        "Ether() /  Dot1Q(prio = 0x5, id = 0x0, vlan = 0xbbb) / IP(src=\"10.0.30.99\") "
-                       "/ UDP() / ('\x00' * 64)",
+                       "/ UDP() / Raw('\x00' * 64)",
                        "Ether() /  Dot1Q(prio = 0x5, id = 0x0, vlan = 0xbbb) / IP(src=\"8.8.8.8\")"
-                       " / UDP() / ('\x00' * 64)",
+                       " / UDP() / Raw('\x00' * 64)",
                        "Ether() /  Dot1Q(prio = 0x5, id = 0x0, vlan = 0xbbb) / IP(src=\"132.177.0.99\") "
-                       "/ UDP() / ('\\x00' * 64)"})),
+                       "/ UDP() / Raw('\\x00' * 64)"})),
 
         # Is "size" in bits or bytes? Unclear in documentation, defaulting to bits.
         'test_size': (
             'ingress pattern eth / ipv4 src is 192.168.0.1 '
             '/ udp / end actions raw_decap data 0x8100aaaa size 32 / end',
             frozenset({"Ether() /  Dot1Q(prio = 0x5, id = 0x0, vlan = 0xbbb) / IP(src=\"192.168.0.1\") "
-                       "/ UDP() / ('\\x00' * 64)"}),
+                       "/ UDP() / Raw('\\x00' * 64)"}),
             frozenset({"Ether() /  Dot1Q(prio = 0x5, id = 0x0, vlan = 0xbbb) / IP(src=\"192.168.0.2\") "
-                       "/ UDP() / ('\\x00' * 64)",
+                       "/ UDP() / Raw('\\x00' * 64)",
                        "Ether() /  Dot1Q(prio = 0x5, id = 0x0, vlan = 0xbbb) / IP(src=\"10.0.30.99\")"
-                       " / UDP() / ('\x00' * 64)",
+                       " / UDP() / Raw('\x00' * 64)",
                        "Ether() /  Dot1Q(prio = 0x5, id = 0x0, vlan = 0xbbb) / IP(src=\"8.8.8.8\") "
-                       "/ UDP() / ('\x00' * 64)",
+                       "/ UDP() / Raw('\x00' * 64)",
                        "Ether() /  Dot1Q(prio = 0x5, id = 0x0, vlan = 0xbbb) / IP(src=\"132.177.0.99\") "
-                       "/ UDP() / ('\\x00' * 64)"})),
+                       "/ UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -681,11 +681,11 @@ class FlowActionSet_ipv4_src(ActionFlowItem):
     test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                   '/ udp / end actions set_ipv4_src ipv4_addr 172.16.0.10  / end',
-                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
      }
 
 
@@ -695,11 +695,11 @@ class FlowActionSet_ipv4_dst(ActionFlowItem):
     test_case = {
          'test': ('ingress pattern eth / ipv4 dst is 192.168.0.1'
                   ' / udp / end actions set_ipv4_dst ipv4_addr 172.16.0.10 / end',
-                  frozenset({"Ether() / IP(dst=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(dst=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(dst=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(dst=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(dst=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                  frozenset({"Ether() / IP(dst=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(dst=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(dst=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(dst=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(dst=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -710,12 +710,12 @@ class FlowActionSet_ipv6_src(ActionFlowItem):
          'test': ('ingress pattern eth / ipv6 src is 2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c2 '
                   '/ udp / end actions set_ipv6_src ipv6_addr 2001:0000:9d38:6ab8:1c48:9999:aaaa:bbbb',
                   frozenset({"Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c2\") "
-                             "/ UDP() / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c3\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c4\") / UDP() / ('\x00' * 64)",
-                             "Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c5\") / UDP() / ('\x00' * 64)",
+                             "/ UDP() / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c3\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c4\") / UDP() / Raw('\x00' * 64)",
+                             "Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c5\") / UDP() / Raw('\x00' * 64)",
                              "Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c6\") "
-                             "/ UDP() / ('\\x00' * 64)"})),
+                             "/ UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -726,12 +726,12 @@ class FlowActionSet_ipv6_dst(ActionFlowItem):
          'test': ('ingress pattern eth / ipv6 dst is 2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c2 '
                   '/ udp / end actions set_ipv6_dst ipv6_addr 2001:0000:9d38:6ab8:1c48:9999:aaaa:bbbb',
                   frozenset({"Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c2\")"
-                             " / UDP() / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c3\") / UDP() / ('\\x00' * 64)",
-                            "Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c4\") / UDP() / ('\x00' * 64)",
-                             "Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c5\") / UDP() / ('\x00' * 64)",
+                             " / UDP() / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c3\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c4\") / UDP() / Raw('\x00' * 64)",
+                             "Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c5\") / UDP() / Raw('\x00' * 64)",
                              "Ether() / IPv6(dst=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c6\") "
-                             "/ UDP() / ('\\x00' * 64)"})),
+                             "/ UDP() / Raw('\\x00' * 64)"})),
       }
 
 
@@ -742,20 +742,20 @@ class FlowActionSet_tp_src(ActionFlowItem):
         # UDP
         'test_udp': ('ingress pattern eth / ipv4 src is 192.168.0.1'
                      ' / udp / end actions set_tp_src port 1998 / end',
-                     frozenset({"Ether() / IP(src=\"192.168.0.1\") UDP(sport=3838) / ('\\x00' * 64)"}),
-                     frozenset({"Ether() / IP(src=\"192.168.0.2\") UDP(sport=3838) / ('\\x00' * 64)",
-                                "Ether() / IP(src=\"10.0.30.99\") UDP(sport=3838) / ('\x00' * 64)",
-                                "Ether() / IP(src=\"8.8.8.8\") UDP(sport=3838) / ('\x00' * 64)",
-                                "Ether() / IP(src=\"132.177.0.99\") UDP(sport=3838) / ('\\x00' * 64)"})),
+                     frozenset({"Ether() / IP(src=\"192.168.0.1\") UDP(sport=3838) / Raw('\\x00' * 64)"}),
+                     frozenset({"Ether() / IP(src=\"192.168.0.2\") UDP(sport=3838) / Raw('\\x00' * 64)",
+                                "Ether() / IP(src=\"10.0.30.99\") UDP(sport=3838) / Raw('\x00' * 64)",
+                                "Ether() / IP(src=\"8.8.8.8\") UDP(sport=3838) / Raw('\x00' * 64)",
+                                "Ether() / IP(src=\"132.177.0.99\") UDP(sport=3838) / Raw('\\x00' * 64)"})),
 
         # TCP
         'test_tcp': (
           'ingress pattern eth / ipv4 src is 192.168.0.1 / tcp / end actions set_tp_src port 1998 / end',
-          frozenset({"Ether() / IP(src=\"192.168.0.1\") TCP(sport=3838) / ('\\x00' * 64)"}),
-          frozenset({"Ether() / IP(src=\"192.168.0.2\") TCP(sport=3838) / ('\\x00' * 64)",
-                     "Ether() / IP(src=\"10.0.30.99\") TCP(sport=3838) / ('\x00' * 64)",
-                     "Ether() / IP(src=\"8.8.8.8\") TCP(sport=3838) / ('\x00' * 64)",
-                     "Ether() / IP(src=\"132.177.0.99\") TCP(sport=3838) / ('\\x00' * 64)"})),
+          frozenset({"Ether() / IP(src=\"192.168.0.1\") TCP(sport=3838) / Raw('\\x00' * 64)"}),
+          frozenset({"Ether() / IP(src=\"192.168.0.2\") TCP(sport=3838) / Raw('\\x00' * 64)",
+                     "Ether() / IP(src=\"10.0.30.99\") TCP(sport=3838) / Raw('\x00' * 64)",
+                     "Ether() / IP(src=\"8.8.8.8\") TCP(sport=3838) / Raw('\x00' * 64)",
+                     "Ether() / IP(src=\"132.177.0.99\") TCP(sport=3838) / Raw('\\x00' * 64)"})),
     }
 
 
@@ -766,20 +766,20 @@ class FlowActionSet_tp_dst(ActionFlowItem):
         # UDP
         'test_udp': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                      '/ udp / end actions set_tp_dst port 1998 / end',
-                     frozenset({"Ether() / IP(src=\"192.168.0.1\") UDP(dport=3838) / ('\\x00' * 64)"}),
-                     frozenset({"Ether() / IP(src=\"192.168.0.2\") UDP(dport=3838) / ('\\x00' * 64)",
-                                "Ether() / IP(src=\"10.0.30.99\") UDP(dport=3838) / ('\x00' * 64)",
-                                "Ether() / IP(src=\"8.8.8.8\") UDP(dport=3838) / ('\x00' * 64)",
-                                "Ether() / IP(src=\"132.177.0.99\") UDP(dport=3838) / ('\\x00' * 64)"})),
+                     frozenset({"Ether() / IP(src=\"192.168.0.1\") UDP(dport=3838) / Raw('\\x00' * 64)"}),
+                     frozenset({"Ether() / IP(src=\"192.168.0.2\") UDP(dport=3838) / Raw('\\x00' * 64)",
+                                "Ether() / IP(src=\"10.0.30.99\") UDP(dport=3838) / Raw('\x00' * 64)",
+                                "Ether() / IP(src=\"8.8.8.8\") UDP(dport=3838) / Raw('\x00' * 64)",
+                                "Ether() / IP(src=\"132.177.0.99\") UDP(dport=3838) / Raw('\\x00' * 64)"})),
 
         # TCP
         'test_tcp': (
           'ingress pattern eth / ipv4 src is 192.168.0.1 / tcp / end actions set_tp_dst port 1998 / end',
-          frozenset({"Ether() / IP(src=\"192.168.0.1\") TCP(dport=3838) / ('\\x00' * 64)"}),
-          frozenset({"Ether() / IP(src=\"192.168.0.2\") TCP(dport=3838) / ('\\x00' * 64)",
-                     "Ether() / IP(src=\"10.0.30.99\") TCP(dport=3838) / ('\x00' * 64)",
-                     "Ether() / IP(src=\"8.8.8.8\") TCP(dport=3838) / ('\x00' * 64)",
-                     "Ether() / IP(src=\"132.177.0.99\") TCP(dport=3838) / ('\\x00' * 64)"})),
+          frozenset({"Ether() / IP(src=\"192.168.0.1\") TCP(dport=3838) / Raw('\\x00' * 64)"}),
+          frozenset({"Ether() / IP(src=\"192.168.0.2\") TCP(dport=3838) / Raw('\\x00' * 64)",
+                     "Ether() / IP(src=\"10.0.30.99\") TCP(dport=3838) / Raw('\x00' * 64)",
+                     "Ether() / IP(src=\"8.8.8.8\") TCP(dport=3838) / Raw('\x00' * 64)",
+                     "Ether() / IP(src=\"132.177.0.99\") TCP(dport=3838) / Raw('\\x00' * 64)"})),
 
     }
 
@@ -790,11 +790,11 @@ class FlowActionSet_ttl(ActionFlowItem):
     test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1'
                   ' / udp / end actions set_ttl ttl_value 64 / end',
-                  frozenset({"Ether() / IP(src=\"192.168.0.1\" , ttl=128 ) / UDP() / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(src=\"192.168.0.2\" , ttl=128 ) / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"10.0.30.99\" , ttl=128 ) / UDP() / ('\x00' * 64)",
-                             "Ether() / IP(src=\"8.8.8.8\", ttl=128 ) / UDP() / ('\x00' * 64)",
-                             "Ether() / IP(src=\"132.177.0.99\", ttl=128 ) / UDP() / ('\\x00' * 64)"})),
+                  frozenset({"Ether() / IP(src=\"192.168.0.1\" , ttl=128 ) / UDP() / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(src=\"192.168.0.2\" , ttl=128 ) / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"10.0.30.99\" , ttl=128 ) / UDP() / Raw('\x00' * 64)",
+                             "Ether() / IP(src=\"8.8.8.8\", ttl=128 ) / UDP() / Raw('\x00' * 64)",
+                             "Ether() / IP(src=\"132.177.0.99\", ttl=128 ) / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -804,11 +804,11 @@ class FlowActionSet_mac_src(ActionFlowItem):
     test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1'
                   ' / udp / end actions set_mac_src mac_addr 10:20:30:40:50:60 / end',
-                  frozenset({"Ether(src=\"90:61:ae:fd:41:43\") / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                  frozenset({"Ether(src=\"90:61:ae:fd:41:43\") / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                            "Ether(src=\"90:61:ae:fd:41:43\") / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                             "Ether(src=\"90:61:ae:fd:41:43\") / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                             "Ether(src=\"90:61:ae:fd:41:43\") / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                  frozenset({"Ether(src=\"90:61:ae:fd:41:43\") / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether(src=\"90:61:ae:fd:41:43\") / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                            "Ether(src=\"90:61:ae:fd:41:43\") / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether(src=\"90:61:ae:fd:41:43\") / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                             "Ether(src=\"90:61:ae:fd:41:43\") / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
      }
 
 
@@ -818,12 +818,12 @@ class FlowActionSet_mac_dst(ActionFlowItem):
              'test': ('ingress pattern eth / ipv4 src is 192.168.0.1'
                       ' / udp / end actions set_mac_dst mac_addr 10:20:30:40:50:60 / end',
                       frozenset({"Ether(dst=\"90:61:ae:fd:41:43\") / IP(src=\"192.168.0.1\") "
-                                 "/ UDP() / ('\\x00' * 64)"}),
-                      frozenset({"Ether(dst=\"90:61:ae:fd:41:43\") / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                "Ether(dst=\"90:61:ae:fd:41:43\") / IP(src=\"10.0.30.99\") / UDP() / ('\x00' * 64)",
-                                 "Ether(dst=\"90:61:ae:fd:41:43\") / IP(src=\"8.8.8.8\") / UDP() / ('\x00' * 64)",
+                                 "/ UDP() / Raw('\\x00' * 64)"}),
+                      frozenset({"Ether(dst=\"90:61:ae:fd:41:43\") / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                "Ether(dst=\"90:61:ae:fd:41:43\") / IP(src=\"10.0.30.99\") / UDP() / Raw('\x00' * 64)",
+                                 "Ether(dst=\"90:61:ae:fd:41:43\") / IP(src=\"8.8.8.8\") / UDP() / Raw('\x00' * 64)",
                                  "Ether(dst=\"90:61:ae:fd:41:43\") / IP(src=\"132.177.0.99\") "
-                                 "/ UDP() / ('\\x00' * 64)"})),
+                                 "/ UDP() / Raw('\\x00' * 64)"})),
          }
 
 
@@ -832,11 +832,11 @@ class FlowActionInc_tcp_seq(ActionFlowItem):
 
     test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 / tcp / end actions inc_tcp_seq / end',
-                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / TCP(seq=2) / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / TCP(seq=2) / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"10.0.30.99\") / TCP(seq=2) / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"8.8.8.8\") / TCP(seq=2) / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"132.177.0.99\") / TCP(seq=2) / ('\\x00' * 64)"})),
+                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / TCP(seq=2) / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / TCP(seq=2) / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"10.0.30.99\") / TCP(seq=2) / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"8.8.8.8\") / TCP(seq=2) / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"132.177.0.99\") / TCP(seq=2) / Raw('\\x00' * 64)"})),
      }
 
 
@@ -845,11 +845,11 @@ class FlowActionDec_tcp_seq(ActionFlowItem):
 
     test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 / tcp / end actions dec_tcp_seq / end',
-                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / TCP(seq=2) / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / TCP(seq=2) / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"10.0.30.99\") / TCP(seq=2) / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"8.8.8.8\") / TCP(seq=2) / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"132.177.0.99\") / TCP(seq=2) / ('\\x00' * 64)"})),
+                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / TCP(seq=2) / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / TCP(seq=2) / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"10.0.30.99\") / TCP(seq=2) / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"8.8.8.8\") / TCP(seq=2) / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"132.177.0.99\") / TCP(seq=2) / Raw('\\x00' * 64)"})),
     }
 
 
@@ -858,11 +858,11 @@ class FlowActionInc_tcp_ack(ActionFlowItem):
 
     test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 / tcp / end actions inc_tcp_ack / end',
-                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / TCP(ack=2) / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / TCP(ack=2) / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"10.0.30.99\") / TCP(ack=2) / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"8.8.8.8\") / TCP(ack=2) / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"132.177.0.99\") / TCP(ack=2) / ('\\x00' * 64)"})),
+                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / TCP(ack=2) / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / TCP(ack=2) / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"10.0.30.99\") / TCP(ack=2) / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"8.8.8.8\") / TCP(ack=2) / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"132.177.0.99\") / TCP(ack=2) / Raw('\\x00' * 64)"})),
      }
 
 
@@ -871,11 +871,11 @@ class FlowActionDec_tcp_ack(ActionFlowItem):
 
     test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 / tcp / end actions dec_tcp_ack / end',
-                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / TCP(ack=2) / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / TCP(ack=2) / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"10.0.30.99\") / TCP(ack=2) / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"8.8.8.8\") / TCP(ack=2) / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"132.177.0.99\") / TCP(ack=2) / ('\\x00' * 64)"})),
+                  frozenset({"Ether() / IP(src=\"192.168.0.1\") / TCP(ack=2) / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(src=\"192.168.0.2\") / TCP(ack=2) / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"10.0.30.99\") / TCP(ack=2) / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"8.8.8.8\") / TCP(ack=2) / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"132.177.0.99\") / TCP(ack=2) / Raw('\\x00' * 64)"})),
     }
 
 
@@ -885,26 +885,26 @@ class FlowActionSet_tag(ActionFlowItem):
     test_case = {
          'test_data': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                        '/ udp / end actions set_tag data 0xabc / end',
-                       frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                       frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                  "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\x00' * 64)",
-                                  "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\x00' * 64)",
-                                  "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                       frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                       frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                  "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\x00' * 64)",
+                                  "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\x00' * 64)",
+                                  "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
          # bit-mask applies to "data"
          'test_mask': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                        '/ udp / end actions set_tag data 0xabc mask 0xcba / end',
-                       frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                       frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                  "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                                  "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                                  "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                       frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                       frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                  "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                                  "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                                  "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
          'test_index': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                         '/ udp / end actions set_tag data 0xabc index 1 / end',
-                        frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                        frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                   "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\x00' * 64)",
-                                   "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\x00' * 64)",
-                                   "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                        frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                        frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                   "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\x00' * 64)",
+                                   "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\x00' * 64)",
+                                   "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -914,19 +914,19 @@ class FlowActionSet_meta(ActionFlowItem):
     test_case = {
          'test_data': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                        '/ udp / end actions set_meta data 0xabc / end',
-                       frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                       frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                  "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                                  "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                                  "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                       frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                       frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                  "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                                  "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                                  "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
          # bit-mask applies to "data"
          'test_mask': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                        '/ udp / end actions set_meta data 0xabc mask 0xcb / end',
-                       frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                       frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                  "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\x00' * 64)",
-                                  "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\x00' * 64)",
-                                  "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                       frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                       frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                  "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\x00' * 64)",
+                                  "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\x00' * 64)",
+                                  "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -936,11 +936,11 @@ class FlowActionSet_ipv4_dscp(ActionFlowItem):
     test_case = {
          'test': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                   '/ udp / end actions set_ipv4_dscp dscp 2 / end',
-                  frozenset({"Ether() / IP(src=\"192.168.0.1\", tos = 0) / UDP() / ('\\x00' * 64)"}),
-                  frozenset({"Ether() / IP(src=\"192.168.0.2\", tos = 0) / UDP() / ('\\x00' * 64)",
-                             "Ether() / IP(src=\"10.0.30.99\", tos = 0) / UDP() / ('\x00' * 64)",
-                             "Ether() / IP(src=\"8.8.8.8\", tos = 0) / UDP() / ('\x00' * 64)",
-                             "Ether() / IP(src=\"132.177.0.99\", tos = 0) / UDP() / ('\\x00' * 64)"})),
+                  frozenset({"Ether() / IP(src=\"192.168.0.1\", tos = 0) / UDP() / Raw('\\x00' * 64)"}),
+                  frozenset({"Ether() / IP(src=\"192.168.0.2\", tos = 0) / UDP() / Raw('\\x00' * 64)",
+                             "Ether() / IP(src=\"10.0.30.99\", tos = 0) / UDP() / Raw('\x00' * 64)",
+                             "Ether() / IP(src=\"8.8.8.8\", tos = 0) / UDP() / Raw('\x00' * 64)",
+                             "Ether() / IP(src=\"132.177.0.99\", tos = 0) / UDP() / Raw('\\x00' * 64)"})),
     }
 
 
@@ -951,15 +951,15 @@ class FlowActionSet_ipv6_dscp(ActionFlowItem):
          'test': ('ingress pattern eth / ipv6 src is 2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c2 '
                   '/ udp / end actions set_ipv6_dscp dscp 0x30',
                   frozenset({"Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c2\", tc = 0) "
-                             "/ UDP() / ('\\x00' * 64)"}),
+                             "/ UDP() / Raw('\\x00' * 64)"}),
                   frozenset({"Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c3\", tc = 0) "
-                             "/ UDP() / ('\\x00' * 64)",
+                             "/ UDP() / Raw('\\x00' * 64)",
                             "Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c4\", tc = 0) "
-                             "/ UDP() / ('\x00' * 64)",
+                             "/ UDP() / Raw('\x00' * 64)",
                              "Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c5\", tc = 0) "
-                             "/ UDP() / ('\x00' * 64)",
+                             "/ UDP() / Raw('\x00' * 64)",
                              "Ether() / IPv6(src=\"2001:0000:9d38:6ab8:1c48:3a1c:a95a:b1c6\", tc = 0) "
-                             "/ UDP() / ('\\x00' * 64)"})),
+                             "/ UDP() / Raw('\\x00' * 64)"})),
      }
 
 
@@ -969,27 +969,27 @@ class FlowActionAge(ActionFlowItem):
     test_case = {
          'test_timeout': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                           '/ udp / end actions age timeout 128 / end',
-                          frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                          frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                     "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\x00' * 64)",
-                                     "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\x00' * 64)",
-                                     "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                          frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                          frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                     "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\x00' * 64)",
+                                     "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\x00' * 64)",
+                                     "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
          # 8 bits reserved, must be zero
          'test_reserved': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                            '/ udp / end actions age timeout 128 reserved 0 / end',
-                           frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                           frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                      "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\x00' * 64)",
-                                      "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\x00' * 64)",
-                                      "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                           frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                           frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                      "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\x00' * 64)",
+                                      "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\x00' * 64)",
+                                      "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
          # The user flow context, NULL means the rte_flow pointer.
          'test_context': ('ingress pattern eth / ipv4 src is 192.168.0.1 '
                           '/ udp / end actions age timeout 128 context NULL / end',
-                          frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / ('\\x00' * 64)"}),
-                          frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / ('\\x00' * 64)",
-                                    "Ether() / IP(src=\"10.0.30.99\") / UDP() / ('\\x00' * 64)",
-                                     "Ether() / IP(src=\"8.8.8.8\") / UDP() / ('\\x00' * 64)",
-                                     "Ether() / IP(src=\"132.177.0.99\") / UDP() / ('\\x00' * 64)"})),
+                          frozenset({"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}),
+                          frozenset({"Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                                    "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                                     "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                                     "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)"})),
 
     }
 
