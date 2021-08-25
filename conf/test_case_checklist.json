@@ -3689,5 +3689,43 @@
              "Bug ID": "",
              "Comments": "NIC not support this case"
          }
+    ],
+    "create_same_rule_after_destroy": [
+         {
+             "OS": [
+                 "ALL"
+             ],
+             "NIC": [
+                 "sageville",
+                 "sagepond",
+                 "springville",
+                 "powerville",
+                 "foxville"
+             ],
+             "Target": [
+                 "ALL"
+             ],
+             "Bug ID": "",
+             "Comments": "NIC not support this case"
+         }
+    ],
+    "create_different_rule_after_destroy": [
+         {
+             "OS": [
+                 "ALL"
+             ],
+             "NIC": [
+                 "sageville",
+                 "sagepond",
+                 "springville",
+                 "powerville",
+                 "foxville"
+             ],
+             "Target": [
+                 "ALL"
+             ],
+             "Bug ID": "",
+             "Comments": "NIC not support this case"
+         }
     ]
 }
