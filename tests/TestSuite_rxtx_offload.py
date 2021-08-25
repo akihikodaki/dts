@@ -209,6 +209,26 @@ class TestRxTx_Offload(TestCase):
                 acl_offload = offloads[offload[i]]
                 self.verify(acl_offload in queue_line[i], "Fail to configure offload by queue.")
             i = i + 1
+
+    def verify_packets_increasing(self, rxtx="tx", count=2):
+        # Verify RXTX-packets increasing on each ports, check count < 25
+        out1 = self.dut.send_expect("show port stats all", "testpmd> ")
+        i = 0
+        while i < count:
+            if rxtx == "tx":
+                pks_l1 = re.findall(r'TX-packets: (\w+)', out1)
+                time.sleep(15)
+                out1 = self.dut.send_expect("show port stats all", "testpmd> ")
+                pks_l2 = re.findall(r'TX-packets: (\w+)', out1)
+                self.logger.info("Times="+ str(i) + ", count=" + str(count) + ", pks2_cur=" + str(pks_l2) + ", pks1_before=" + str(pks_l1))
+                for index in range(len(pks_l2)):
+                    self.verify(int(pks_l2[index]) > int(pks_l1[index]), "TX-packets hang")
+                if int(pks_l1[index]) < 100000000 or int(pks_l2[index]) < 100000000:
+                    count += 1
+            i += 1
+            if count > 25:
+                self.verify(False, "Check count timeout")
+                break
  
     def get_queue_number(self, packet):
         """
@@ -715,6 +735,52 @@ class TestRxTx_Offload(TestCase):
         self.dut.send_expect("port config 0 tx_offload mbuf_fast_free on", "testpmd> ")
         offload = ["mbuf_fast_free"]
         self.check_port_config("tx", offload)
+
+    def test_txoffload_port_multi_segs(self):
+        """
+        Tx offload multi_segs setting.
+        """
+        offload = ["multi_segs"]
+        # Start testpmd with "--tx-offloads=0x00008000" to enable multi_segs tx_offload
+        self.pmdout.start_testpmd("%s" % self.cores, "--tx-offloads=0x00008000")
+        for portid in range(len(self.dut_ports)):
+            self.check_port_config(rxtx="tx", offload=offload, port_id=portid)
+
+        # Set fwd to txonly, Set the length of each segment of the TX-ONLY packets, Set the split policy for TX packets, then start to send pkgs
+        self.dut.send_expect("set fwd txonly", "testpmd> ")
+        self.dut.send_expect("set txpkts 64,128,512,2000,64,128,512,2000", "testpmd> ")
+        self.dut.send_expect("set txsplit rand", "testpmd> ")
+        self.dut.send_expect("start", "testpmd> ")
+
+        # Check TX-packets will not hang and continue to increase
+        self.verify_packets_increasing(rxtx="tx")
+        self.dut.send_expect("stop", "testpmd> ")
+        self.dut.send_expect("quit", "# ")
+
+        # Start testpmd again without "--tx-offloads", check multi-segs is disabled by default
+        self.pmdout.start_testpmd("%s" % self.cores, " ")
+        for portid in range(len(self.dut_ports)):
+            outstring = self.dut.send_expect("show port %d tx_offload configuration" % portid, "testpmd> ")
+            self.verify("MULTI_SEGS" not in outstring, "multi-segs is not disabled by default")
+
+        self.dut.send_expect("port stop all", "testpmd> ")
+        for portid in range(len(self.dut_ports)):
+            cmd = "port config {} tx_offload multi_segs on".format(portid)
+            self.dut.send_expect(cmd, "testpmd> ")
+        self.dut.send_expect("port start all", "testpmd> ")
+        for portid in range(len(self.dut_ports)):
+              self.check_port_config(rxtx="tx", offload=offload, port_id=portid)
+
+        # Set fwd to txonly, Set the length of each segment of the TX-ONLY packets, Set the split policy for TX packets, then start to send pkgs
+        self.dut.send_expect("set fwd txonly", "testpmd> ")
+        self.dut.send_expect("set txpkts 64,128,256,512,64,128,256,512", "testpmd> ")
+        self.dut.send_expect("set txsplit rand", "testpmd> ")
+        self.dut.send_expect("start", "testpmd> ")
+
+        # Check TX-packets will not hang and continue to increase
+        self.verify_packets_increasing(rxtx="tx")
+        self.dut.send_expect("stop", "testpmd> ")
+        self.dut.send_expect("quit", "# ")
 
     def tear_down(self):
         """
