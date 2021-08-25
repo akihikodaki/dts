@@ -1996,3 +1996,49 @@ Test case: Dual vlan(QinQ)
 
    3). send packet as step 2 with changed ivlan id, got hash value and queue value that output from the testpmd on DUT, the value should be
    different with the values in step 2 & step 1) & step 2).
+
+Test case: create same rule after destroy
+=========================================
+
+1. Launch the app ``testpmd`` with the following arguments::
+
+        ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1,2,3,4,5,6,7,8 -n 4 -- -i --disable-rss --rxq=16 --txq=16
+        testpmd> set fwd rxonly
+        testpmd> set verbose 1
+        testpmd> start
+
+2. create same rule after destroy::
+
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp src is 32 / end actions queue index 2 / end
+        testpmd>flow destroy 0 rule 0
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp src is 32 / end actions queue index 2 / end
+
+3. send match and mismatch packets to check if rule work::
+
+    pkt1 = Ether()/IP()/UDP(sport=32)/Raw('x' * 20)
+    pkt2 = Ether()/IP()/UDP(dport=32)/Raw('x' * 20)
+
+    verify match pkt1 to queue 2, verify mismatch pkt2 to queue 0.
+
+Test case: create different rule after destroy
+==============================================
+
+1. Launch the app ``testpmd`` with the following arguments::
+
+        ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1,2,3,4,5,6,7,8 -n 4 -- -i --disable-rss --rxq=16 --txq=16
+        testpmd> set fwd rxonly
+        testpmd> set verbose 1
+        testpmd> start
+
+2. create different rule after destroy::
+
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp src is 32 / end actions queue index 2 / end
+        testpmd>flow destroy 0 rule 0
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp dst is 32 / end actions queue index 2 / end
+
+3. send match and mismatch packets to check if rule work::
+
+    pkt1 = Ether()/IP()/UDP(sport=32)/Raw('x' * 20)
+    pkt2 = Ether()/IP()/UDP(dport=32)/Raw('x' * 20)
+
+    verify match pkt2 to queue 2, verify mismatch pkt1 to queue 0.
