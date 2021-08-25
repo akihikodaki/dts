@@ -677,3 +677,102 @@ Test case: FVL Tx offload per-queue setting
 
    Note 1: there is no tx_offload per_queue parameter in ixgbe driver,
    so this case is just only for i40e.
+
+Test case: Tx offload multi_segs setting
+======================================================
+
+1. Start testpmd with "--tx-offloads=0x00008000" to enable tx_offload multi_segs ::
+
+    ./testpmd -c 0xf -n 4  -- -i --tx-offloads==0x00008000
+    testpmd> show port 0 tx_offload configuration
+    Tx Offloading Configuration of port 0 :
+      Port : MULTI_SEGS
+      Queue[ 0] : MULTI_SEGS
+
+2. Set fwd to txonly, Set the length of each segment of the TX-ONLY packets, Set the split policy for TX packets, then start to send pkgs::
+
+    testpmd> set fwd txonly
+    testpmd> set txpkts 64,128,512,2000,64,128,512,2000
+    testpmd> set txsplit rand
+    testpmd> start
+
+3. Check TX-packets will not hang and continue to increase::
+    Wait 30s or more, check TX-packets will continue to increase and can be more than 100K
+
+    testpmd> show port stats all
+        ######################## NIC statistics for port 0  ########################
+        RX-packets: 0         RX-missed: 0          RX-bytes:  0
+        RX-errors: 0
+        RX-nombuf:  0
+        TX-packets: 102628493  TX-errors: 0          TX-bytes:  139709164375
+
+        Throughput (since last show)
+        Rx-pps:            0          Rx-bps:            0
+        Tx-pps:       563539          Tx-bps:   9892394768
+        ############################################################################
+
+        ######################## NIC statistics for port 1  ########################
+        RX-packets: 0         RX-missed: 0          RX-bytes:  0
+        RX-errors: 0
+        RX-nombuf:  0
+        TX-packets: 102627429  TX-errors: 0          TX-bytes:  139709724215
+
+        Throughput (since last show)
+        Rx-pps:            0          Rx-bps:            0
+        Tx-pps:       563708          Tx-bps:   9892375000
+        ############################################################################
+
+    testpmd> stop
+    testpmd> quit
+
+4. Start testpmd again without "--tx-offloads", check multi-segs is disabled by default::
+
+    ./testpmd -c 0xf -n 4  -- -i
+    testpmd> show port 0 tx_offload configuration
+    No MULTI_SEGS in Tx Offloading Configuration of ports
+
+5. Enable tx_offload multi_segs ::
+    testpmd> port stop all
+    testpmd> port config 0 tx_offload multi_segs on
+    testpmd> port config 1 tx_offload multi_segs on
+    testpmd> port start all
+    testpmd> show port 0 tx_offload configuration
+    Tx Offloading Configuration of port 0 :
+      Port : MULTI_SEGS
+      Queue[ 0] : MULTI_SEGS
+
+6. Set fwd to txonly, Set the length of each segment of the TX-ONLY packets, Set the split policy for TX packets, then start to send pkgs::
+
+    testpmd> set fwd txonly
+    testpmd> set txpkts 64,128,256,512,64,128,256,512
+    testpmd> set txsplit rand
+    testpmd> start
+
+7. Check TX-packets will not hang and continue to increase::
+    Wait 30s or more, check TX-packets will continue to increase and can be more than 100K
+
+    testpmd> show port stats all
+        ######################## NIC statistics for port 0  ########################
+        RX-packets: 0         RX-missed: 0          RX-bytes:  0
+        RX-errors: 0
+        RX-nombuf:  0
+        TX-packets: 101266875  TX-errors: 0          TX-bytes:  136721429135
+
+        Throughput (since last show)
+        Rx-pps:            0          Rx-bps:            0
+        Tx-pps:       563293          Tx-bps:   9892438256
+        ############################################################################
+
+        ######################## NIC statistics for port 1  ########################
+        RX-packets: 0         RX-missed: 0          RX-bytes:  0
+        RX-errors: 0
+        RX-nombuf:  0
+        TX-packets: 101265405  TX-errors: 0          TX-bytes:  136721996771
+
+        Throughput (since last show)
+        Rx-pps:            0          Rx-bps:            0
+        Tx-pps:       564392          Tx-bps:   9892193416
+        ############################################################################
+
+    testpmd> stop
+    testpmd> quit
