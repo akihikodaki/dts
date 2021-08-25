@@ -1738,7 +1738,7 @@ default pattern supported case
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
-3. check all the packets with symmetric L3 address have different hash value and distributed to queues by RSS.
+3. check all the packets with symmetric L3 address have same hash value and distributed to queues by RSS.
 
 inner L4 protocal hash case
 ===========================
@@ -2042,20 +2042,15 @@ Subcase: IPV4_GTPU_EH_IPV4 and IPV4_GTPU_EH_IPV4_UDP/TCP
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
-   check packet 2 has same hash value with packet 1, packet 3 has different hash value with packet 1.
-   check packet 5 has same hash value with packet 4, packet 6 has different hash value with packet 4.
-   check packet 8 has different hash value to packet 7, packet 9 have different hash value to packet 7 and 8.
-   check packet 11 has different hash value to packet 10, packet 12 have different hash value to packet 10 and 11.
-
 3. create IPV4_GTPU_DL_IPV4_UDP rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end
 
 4. send same packets with step 2,
-   check packet 2 has same hash value with packet 1, packet 3 has different hash value with packet 1.
+   check packet 2 has same hash value with packet 1, packet 3 has same hash value with packet 1.
    check packet 5 has different hash value with packet 4, packet 6 has same hash value with packet 4.
-   check packet 8 has different hash value to packet 7, packet 9 have different hash value to packet 7 and 8.
-   check packet 11 has different hash value to packet 10, packet 12 have different hash value to packet 10 and 11.
+   check packet 8 has same hash value to packet 7, packet 9 have same hash value to packet 7 and 8.
+   check packet 11 has same hash value to packet 10, packet 12 have same hash value to packet 10 and 11.
 
 5. create IPV4_GTPU_UL_IPV4::
 
@@ -2064,7 +2059,7 @@ Subcase: IPV4_GTPU_EH_IPV4 and IPV4_GTPU_EH_IPV4_UDP/TCP
 6. send same packets with step 2,
    check packet 2 has same hash value with packet 1, packet 3 has same hash value with packet 1.
    check packet 5 has different hash value with packet 4, packet 6 has same hash value with packet 4.
-   check packet 8 has different hash value to packet 7, packet 9 have different hash value to packet 7 and 8.
+   check packet 8 has same hash value to packet 7, packet 9 have same hash value to packet 7 and 8.
    check packet 11 has different hash value to packet 10, packet 12 have same hash value to packet 10.
 
 Note: the action after deleting rule is not guaranteed so far.
@@ -2112,19 +2107,14 @@ Subcase: IPV6_GTPU_EH_IPV6 and IPV6_GTPU_EH_IPV6_UDP/TCP
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)],iface="enp216s0f0")
 
-   check packet 2 has same hash value with packet 1, packet 3 has different hash value with packet 1.
-   check packet 5 has same hash value with packet 4, packet 6 has different hash value with packet 4.
-   check packet 8 has different hash value to packet 7, packet 9 have different hash value to packet 7 and 8.
-   check packet 11 has different hash value to packet 10, packet 12 have different hash value to packet 10 and 11.
-
 3. create rule 0::
 
     flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp / end actions rss types ipv6-tcp l4-dst-only end key_len 0 queues end / end
 
 4. send same packets with step 2,
    check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
-   check packet 5 has same hash value with packet 4, packet 6 has different hash value with packet 4.
-   check packet 8 has different hash value to packet 7, packet 9 have different hash value to packet 7 and 8.
+   check packet 5 has same hash value with packet 4, packet 6 has same hash value with packet 4.
+   check packet 8 has same hash value to packet 7, packet 9 have same hash value to packet 7 and 8.
    check packet 11 has different hash value to packet 10, packet 12 have different hash value to packet 10 and 11.
 
 5. create rule 1::
@@ -2132,10 +2122,10 @@ Subcase: IPV6_GTPU_EH_IPV6 and IPV6_GTPU_EH_IPV6_UDP/TCP
     flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / end actions rss types ipv6 l3-dst-only end key_len 0 queues end / end
 
 6. send same packets with step 2,
-   check packet 2 has same hash value with packet 1, packet 3 has different hash value with packet 1.
-   check packet 5 has same hash value with packet 4, packet 6 has different hash value with packet 4.
+   check packet 2 has same hash value with packet 1, packet 3 has same hash value with packet 1.
+   check packet 5 has same hash value with packet 4, packet 6 has same hash value with packet 4.
    check packet 8 has same hash value to packet 7, packet 9 have different hash value to packet 7.
-   check packet 11 has different hash value to packet 10, packet 12 have different hash value to packet 10 and 11.
+   check packet 11 has same hash value to packet 10, packet 12 have same hash value to packet 10 and 11.
 
 Note: the action after deleting rule is not guaranteed so far.
 so the following step don't need to be run.
@@ -2214,10 +2204,6 @@ Subcase: IPV6_GTPU_IPV4 and IPV6_GTPU_IPV4_UDP/TCP
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
-   check packet 2 has same hash value to packet 1.
-   check packet 3 and packet 4 have different hash value to packet 1.
-   check packet 5 and packet 6 and packet 7 have different hash value.
-
 3. create rule 0::
 
     flow create 0 ingress pattern eth / ipv6 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end
@@ -2225,7 +2211,7 @@ Subcase: IPV6_GTPU_IPV4 and IPV6_GTPU_IPV4_UDP/TCP
 4. send same packets with step 2,
    check packet 2 has different hash value to packet 1.
    check packet 3 and packet 4 have same hash value to packet 1.
-   check packet 5 and packet 6 and packet 7 have different hash value.
+   check packet 5 and packet 6 and packet 7 have same hash value.
 
 5. create rule 1::
 
@@ -2578,20 +2564,17 @@ all the test cases run the same test steps as below:
 1. validate rule.
 2. if the rule inner protocol is IPV4_UDP/TCP or IPV6_UDP/TCP,
    set "port config all rss all".
-3. send a basic hit pattern packet,record the hash value.
+3. create rule and list rule.
+4. send a basic hit pattern packet,record the hash value.
    then send a hit pattern packet with switched value of input set in the rule.
-   check the two received packets have different hash value.
-   check both the packets are distributed to queues by rss.
-4. create rule and list rule.
-5. send same packets with step 2.
    check the received packets have same hash value.
    check both the packets are distributed to queues by rss.
-6. send two not hit pattern packets with switched value of input set in the rule.
+5. send two not hit pattern packets with switched value of input set in the rule.
    check the received packets have different hash value.
    check both the packets are distributed to queues by rss.
    note: if there is not this type packet in the case, omit this step.
-7. distroy the rule and list rule.
-8. send the same packets in step3, only switch ip address.
+6. distroy the rule and list rule.
+7. send the same packets in step4, only switch ip address.
    check the received packets which switched ip address have different hash value.
 
 Pattern: symmetric outer ipv4 + inner ipv4
