@@ -2351,6 +2351,54 @@ class TestGeneric_flow_api(TestCase):
         rule_num = extrapkt_rulenum['rulenum']
         self.verify_rulenum(rule_num)
 
+    def test_create_same_rule_after_destroy(self):
+
+        self.pmdout.start_testpmd("%s" % self.cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1))
+        self.dut.send_expect("set fwd rxonly", "testpmd> ", 20)
+        self.dut.send_expect("set verbose 1", "testpmd> ", 20)
+        self.dut.send_expect("start", "testpmd> ", 20)
+        time.sleep(2)
+
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth / ipv4 / udp src is 32 / end actions queue index 2 / end", "created")
+
+        out = self.dut.send_expect("flow destroy 0 rule 0", "testpmd> ")
+        p = re.compile(r"Flow rule #(\d+) destroyed")
+        m = p.search(out)
+        self.verify(m, "flow rule 0 delete failed" )
+
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth / ipv4 / udp src is 32 / end actions queue index 2 / end", "created")
+
+        self.sendpkt(pktstr='Ether(dst="%s")/IP()/UDP(sport=32)/Raw("x" * 20)' % self.pf_mac)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="2", verify_mac=self.pf_mac)
+        self.sendpkt(pktstr='Ether(dst="%s")/IP()/UDP(dport=32)/Raw("x" * 20)' % self.pf_mac)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
+
+    def test_create_different_rule_after_destroy(self):
+
+        self.pmdout.start_testpmd("%s" % self.cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1))
+        self.dut.send_expect("set fwd rxonly", "testpmd> ", 20)
+        self.dut.send_expect("set verbose 1", "testpmd> ", 20)
+        self.dut.send_expect("start", "testpmd> ", 20)
+        time.sleep(2)
+
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth / ipv4 / udp src is 32 / end actions queue index 2 / end", "created")
+
+        out = self.dut.send_expect("flow destroy 0 rule 0", "testpmd> ")
+        p = re.compile(r"Flow rule #(\d+) destroyed")
+        m = p.search(out)
+        self.verify(m, "flow rule 0 delete failed" )
+
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth / ipv4 / udp dst is 32 / end actions queue index 2 / end", "created")
+
+        self.sendpkt(pktstr='Ether(dst="%s")/IP()/UDP(sport=32)/Raw("x" * 20)' % self.pf_mac)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
+        self.sendpkt(pktstr='Ether(dst="%s")/IP()/UDP(dport=32)/Raw("x" * 20)' % self.pf_mac)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="2", verify_mac=self.pf_mac)
+
     def tear_down(self):
         """
         Run after each test case.
