@@ -4150,6 +4150,931 @@ ipv6_64bit_prefix_l3_src_dst_only = {
 
 ipv6_64bit_prefix = [ipv6_64bit_prefix_l3_src_only, ipv6_64bit_prefix_l3_dst_only, ipv6_64bit_prefix_l3_src_dst_only]
 
+#gre tunnel related data
+mac_ipv4_gre_ipv4_basic_pkt = {
+    'ipv4-proto':
+       'Ether(dst="%s")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/("X"*480)' % vf0_mac,
+    'ipv4-tcp':
+        'Ether(dst="%s")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)' % vf0_mac,
+}
+
+mac_ipv4_gre_ipv6_basic_pkt = {
+    'ipv6-nh':
+        'Ether(dst="%s")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910B:6666:3457:8295:3333:1800:2929", nh=6)/("X"*480)' % vf0_mac,
+    'ipv6-tcp':
+        'Ether(dst="%s")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910B:6666:3457:8295:3333:1800:2929", nh=6)/TCP(sport=22,dport=23)/("X"*480)' % vf0_mac,
+}
+
+mac_ipv4_gre_ipv4_all = {
+    'sub_casename': 'ipv4_gre_ipv4_all',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-proto'],
+            'action': {'save_hash': 'ipv4-proto'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-proto'].replace('dst="192.168.0.1"','dst="192.168.1.1"'),
+            'action': {'check_hash_different': 'ipv4-proto'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-proto'].replace('src="192.168.0.2"','src="192.168.1.2"'),
+            'action': {'check_hash_different': 'ipv4-proto'},
+        },
+    ],
+}
+
+mac_ipv4_gre_ipv4_l3_src = {
+    'sub_casename': 'ipv4_gre_ipv4_l3_src',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-proto'],
+            'action': {'save_hash': 'ipv4-proto'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-proto'].replace('src="192.168.0.2"','src="192.168.1.2"'),
+            'action': {'check_hash_different': 'ipv4-proto'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-proto'].replace('dst="192.168.0.1"','dst="192.168.1.1"'),
+            'action': {'check_hash_same': 'ipv4-proto'},
+        },
+    ],
+}
+
+mac_ipv4_gre_ipv4_l3_dst = {
+    'sub_casename': 'ipv4_gre_ipv4_l3_dst',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-proto'],
+            'action': {'save_hash': 'ipv4-proto'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-proto'].replace('dst="192.168.0.1"','dst="192.168.1.1"'),
+            'action': {'check_hash_different': 'ipv4-proto'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-proto'].replace('src="192.168.0.2"','src="192.168.1.2"'),
+            'action': {'check_hash_same': 'ipv4-proto'},
+        },
+    ],
+}
+
+mac_ipv4_gre_ipv4_tcp_l3_src = {
+    'sub_casename': 'ipv4_gre_ipv4_tcp_l3_src',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp l3-src-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'],
+            'action': {'save_hash': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('src="192.168.0.2"', 'src="192.168.1.2"'),
+            'action': {'check_hash_different': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dst="192.168.0.1"', 'dst="192.168.1.1"'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+    ],
+}
+
+mac_ipv4_gre_ipv4_tcp_l3_dst = {
+    'sub_casename': 'ipv4_gre_ipv4_tcp_l3_dst',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp l3-dst-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'],
+            'action': {'save_hash': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dst="192.168.0.1"', 'dst="192.168.1.1"'),
+            'action': {'check_hash_different': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('src="192.168.0.2"', 'src="192.168.1.2"'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+    ],
+}
+
+mac_ipv4_gre_ipv4_tcp_l3_src_l4_src = {
+    'sub_casename': 'ipv4_gre_ipv4_tcp_l3_src_l4_src',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp l3-src-only l4-src-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'],
+            'action': {'save_hash': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('src="192.168.0.2"', 'src="192.168.1.2"'),
+            'action': {'check_hash_different': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_different': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dst="192.168.0.1"', 'dst="192.168.1.1"'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+    ],
+}
+
+mac_ipv4_gre_ipv4_tcp_l3_src_l4_dst = {
+    'sub_casename': 'ipv4_gre_ipv4_tcp_l3_src_l4_dst',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp l3-src-only l4-dst-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'],
+            'action': {'save_hash': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('src="192.168.0.2"', 'src="192.168.1.2"'),
+            'action': {'check_hash_different': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_different': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dst="192.168.0.1"', 'dst="192.168.1.1"'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+    ],
+}
+
+mac_ipv4_gre_ipv4_tcp_l3_dst_l4_src = {
+    'sub_casename': 'ipv4_gre_ipv4_tcp_l3_dst_l4_src',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp l3-dst-only l4-src-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'],
+            'action': {'save_hash': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dst="192.168.0.1"', 'dst="192.168.1.1"'),
+            'action': {'check_hash_different': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_different': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('src="192.168.0.2"', 'src="192.168.1.2"'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+        {
+            'send_packet':mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+    ],
+}
+
+mac_ipv4_gre_ipv4_tcp_l3_dst_l4_dst = {
+    'sub_casename': 'ipv4_gre_ipv4_tcp_l3_dst_l4_dst',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp l3-dst-only l4-dst-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'],
+            'action': {'save_hash': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dst="192.168.0.1"', 'dst="192.168.1.1"'),
+            'action': {'check_hash_different': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_different': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('src="192.168.0.2"', 'src="192.168.1.2"'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+    ],
+}
+
+mac_ipv4_gre_ipv4_tcp_l4_src = {
+    'sub_casename': 'ipv4_gre_ipv4_tcp_l4_src',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp l4-src-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'],
+            'action': {'save_hash': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_different': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dst="192.168.0.1"', 'dst="192.168.1.1"'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('src="192.168.0.2"', 'src="192.168.1.2"'),
+
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv4_tcp_l4_dst = {
+    'sub_casename': 'ipv4_gre_ipv4_tcp_l4_dst',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp l4-dst-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'],
+            'action': {'save_hash': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_different': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dst="192.168.0.1"', 'dst="192.168.1.1"'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('src="192.168.0.2"', 'src="192.168.1.2"'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_same': 'ipv4-tcp'},
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv4_tcp_all = {
+    'sub_casename': 'ipv4_gre_ipv4_tcp_all',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'],
+            'action': {'save_hash': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dst="192.168.0.1"', 'dst="192.168.1.1"'),
+            'action': {'check_hash_different': 'ipv4-tcp'}
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('src="192.168.0.2"', 'src="192.168.1.2"'),
+            'action': {'check_hash_different': 'ipv4-tcp'}
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_different': 'ipv4-tcp'}
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_different': 'ipv4-tcp'}
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv4_tcp_ipv4 = {
+    'sub_casename': 'ipv4_gre_ipv4_tcp_ipv4',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'],
+            'action': {'save_hash': 'ipv4-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dst="192.168.0.1"', 'dst="192.168.1.1"'),
+            'action': {'check_hash_different': 'ipv4-tcp'}
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('src="192.168.0.2"', 'src="192.168.1.2"'),
+
+            'action': {'check_hash_different': 'ipv4-tcp'}
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('sport=22', 'sport=21'),
+
+            'action': {'check_hash_same': 'ipv4-tcp'}
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv4_basic_pkt['ipv4-tcp'].replace('dport=23', 'dport=24'),
+
+            'action': {'check_hash_same': 'ipv4-tcp'}
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv6_l3_src = {
+    'sub_casename': 'ipv4_gre_ipv6_l3_src',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / end actions rss types ipv6 l3-src-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-nh'],
+            'action': {'save_hash': 'ipv6-nh'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-nh'].replace('src="ABAB:910B:6666:3457:8295:3333:1800:2929"','src="ABAB:910B:6666:3457:8295:3333:1800:2930"'),
+            'action': {'check_hash_different': 'ipv6-nh'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-nh'].replace('dst="CDCD:910A:2222:5498:8475:1111:3900:2020"', 'dst="CDCD:910A:2222:5498:8475:1111:3900:2021"'),
+            'action': {'check_hash_same': 'ipv6-nh'},
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv6_l3_dst = {
+    'sub_casename': 'ipv4_gre_ipv6_l3_dst',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / end actions rss types ipv6 l3-dst-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-nh'],
+            'action': {'save_hash': 'ipv6-nh'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-nh'].replace('dst="CDCD:910A:2222:5498:8475:1111:3900:2020"',
+                                                                          'dst="CDCD:910A:2222:5498:8475:1111:3900:2021"'),
+            'action': {'check_hash_different': 'ipv6-nh'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-nh'].replace('src="ABAB:910B:6666:3457:8295:3333:1800:2929"',
+                                                                          'src="ABAB:910B:6666:3457:8295:3333:1800:2930"'),
+            'action': {'check_hash_same': 'ipv6-nh'},
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv6_all = {
+    'sub_casename': 'ipv4_gre_ipv6_all',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / end actions rss types ipv6 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-nh'],
+            'action': {'save_hash': 'ipv6-nh'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-nh'].replace('dst="CDCD:910A:2222:5498:8475:1111:3900:2020"',
+                                                                          'dst="CDCD:910A:2222:5498:8475:1111:3900:2021"'),
+            'action': {'check_hash_different': 'ipv6-nh'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-nh'].replace('src="ABAB:910B:6666:3457:8295:3333:1800:2929"',
+                                                                          'src="ABAB:910B:6666:3457:8295:3333:1800:2930"'),
+            'action': {'check_hash_different': 'ipv6-nh'},
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv6_tcp_l3_src = {
+    'sub_casename': 'ipv4_gre_ipv6_tcp_l3_src',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp l3-src-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'],
+            'action': {'save_hash': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'src="ABAB:910B:6666:3457:8295:3333:1800:2929"', 'src="ABAB:910B:6666:3457:8295:3333:1800:2930"'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-nh'].replace(
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2020"',
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2021"'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv6_tcp_l3_dst = {
+    'sub_casename': 'ipv4_gre_ipv6_tcp_l3_dst',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp l3-dst-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'],
+            'action': {'save_hash': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-nh'].replace(
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2020"',
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2021"'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'src="ABAB:910B:6666:3457:8295:3333:1800:2929"', 'src="ABAB:910B:6666:3457:8295:3333:1800:2930"'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv6_tcp_l4_src = {
+    'sub_casename': 'ipv4_gre_ipv6_tcp_l4_src',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp l4-src-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'],
+            'action': {'save_hash': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'src="ABAB:910B:6666:3457:8295:3333:1800:2929"', 'src="ABAB:910B:6666:3457:8295:3333:1800:2930"'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2020"',
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2021"'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv6_tcp_l4_dst = {
+    'sub_casename': 'ipv4_gre_ipv6_tcp_l4_dst',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp l4-dst-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'],
+            'action': {'save_hash': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'src="ABAB:910B:6666:3457:8295:3333:1800:2929"', 'src="ABAB:910B:6666:3457:8295:3333:1800:2930"'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2020"',
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2021"'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv6_tcp_l3_src_l4_src = {
+    'sub_casename': 'ipv4_gre_ipv6_tcp_l3_src_l4_src',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp l3-src-only l4-src-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'],
+            'action': {'save_hash': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'src="ABAB:910B:6666:3457:8295:3333:1800:2929"', 'src="ABAB:910B:6666:3457:8295:3333:1800:2930"'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2020"',
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2021"'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv6_tcp_l3_src_l4_dst = {
+    'sub_casename': 'ipv4_gre_ipv6_tcp_l3_src_l4_dst',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp l3-src-only l4-dst-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'],
+            'action': {'save_hash': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'src="ABAB:910B:6666:3457:8295:3333:1800:2929"', 'src="ABAB:910B:6666:3457:8295:3333:1800:2930"'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2020"',
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2021"'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv6_tcp_l3_dst_l4_src = {
+    'sub_casename': 'ipv4_gre_ipv6_tcp_l3_dst_l4_src',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp l3-dst-only l4-src-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'],
+            'action': {'save_hash': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2020"',
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2021"'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'src="ABAB:910B:6666:3457:8295:3333:1800:2929"', 'src="ABAB:910B:6666:3457:8295:3333:1800:2930"'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv6_tcp_l3_dst_l4_dst = {
+    'sub_casename': 'ipv4_gre_ipv6_tcp_l3_dst_l4_dst',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp l3-dst-only l4-dst-only end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'],
+            'action': {'save_hash': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2020"',
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2021"'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'src="ABAB:910B:6666:3457:8295:3333:1800:2929"', 'src="ABAB:910B:6666:3457:8295:3333:1800:2930"'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv6_tcp_all = {
+    'sub_casename': 'ipv4_gre_ipv6_tcp_all',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'],
+            'action': {'save_hash': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2020"',
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2021"'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'src="ABAB:910B:6666:3457:8295:3333:1800:2929"', 'src="ABAB:910B:6666:3457:8295:3333:1800:2930"'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv6_tcp_ipv6 = {
+    'sub_casename': 'ipv4_gre_ipv6_tcp_ipv6',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'],
+            'action': {'save_hash': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2020"',
+                'dst="CDCD:910A:2222:5498:8475:1111:3900:2021"'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('dport=23', 'dport=24'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace(
+                'src="ABAB:910B:6666:3457:8295:3333:1800:2929"', 'src="ABAB:910B:6666:3457:8295:3333:1800:2930"'),
+            'action': {'check_hash_different': 'ipv6-tcp'},
+        },
+        {
+            'send_packet': mac_ipv4_gre_ipv6_basic_pkt['ipv6-tcp'].replace('sport=22', 'sport=21'),
+            'action': {'check_hash_same': 'ipv6-tcp'},
+        },
+    ]
+}
+
+mac_ipv4_gre_ipv4 = [
+                     mac_ipv4_gre_ipv4_l3_src,
+                     mac_ipv4_gre_ipv4_l3_dst,
+                     mac_ipv4_gre_ipv4_all
+                     ]
+
+mac_ipv6_gre_ipv4 = [eval(str(each).replace('ipv4_gre_ipv4','ipv6_gre_ipv4').replace('IP()','IPv6()')
+                           .replace('eth / ipv4','eth / ipv6')) for each in mac_ipv4_gre_ipv4]
+
+mac_ipv4_gre_ipv6 = [
+                     mac_ipv4_gre_ipv6_l3_src,
+                     mac_ipv4_gre_ipv6_l3_dst,
+                     mac_ipv4_gre_ipv6_all
+                    ]
+
+mac_ipv6_gre_ipv6 = [eval(str(each).replace('ipv4_gre_ipv6','ipv6_gre_ipv6').replace('IP()','IPv6()')
+                           .replace('eth / ipv4','eth / ipv6')) for each in mac_ipv4_gre_ipv6]
+
+mac_ipv4_gre_ipv4_tcp = [
+                     mac_ipv4_gre_ipv4_tcp_l3_src,
+                     mac_ipv4_gre_ipv4_tcp_l3_dst,
+                     mac_ipv4_gre_ipv4_tcp_l4_src,
+                     mac_ipv4_gre_ipv4_tcp_l4_dst,
+                     mac_ipv4_gre_ipv4_tcp_l3_src_l4_src,
+                     mac_ipv4_gre_ipv4_tcp_l3_src_l4_dst,
+                     mac_ipv4_gre_ipv4_tcp_l3_dst_l4_src,
+                     mac_ipv4_gre_ipv4_tcp_l3_dst_l4_dst,
+                     mac_ipv4_gre_ipv4_tcp_all,
+                     mac_ipv4_gre_ipv4_tcp_ipv4,
+                    ]
+
+mac_ipv6_gre_ipv4_tcp = [eval(str(each).replace('ipv4_gre_ipv4','ipv6_gre_ipv4').replace('IP()','IPv6()')
+                           .replace('eth / ipv4','eth / ipv6')) for each in mac_ipv4_gre_ipv4_tcp]
+
+mac_ipv4_gre_ipv6_tcp = [
+                    mac_ipv4_gre_ipv6_tcp_l3_src,
+                    mac_ipv4_gre_ipv6_tcp_l3_dst,
+                    mac_ipv4_gre_ipv6_tcp_l4_src,
+                    mac_ipv4_gre_ipv6_tcp_l4_dst,
+                    mac_ipv4_gre_ipv6_tcp_l3_src_l4_src,
+                    mac_ipv4_gre_ipv6_tcp_l3_src_l4_dst,
+                    mac_ipv4_gre_ipv6_tcp_l3_dst_l4_src,
+                    mac_ipv4_gre_ipv6_tcp_l3_dst_l4_dst,
+                    mac_ipv4_gre_ipv6_tcp_all,
+                    mac_ipv4_gre_ipv6_tcp_ipv6,
+    ]
+
+mac_ipv6_gre_ipv6_tcp = [eval(str(each).replace('ipv4_gre_ipv6','ipv6_gre_ipv6').replace('IP()','IPv6()')
+                           .replace('eth / ipv4','eth / ipv6')) for each in mac_ipv4_gre_ipv6_tcp]
+
+mac_ipv4_gre_ipv4_udp = [eval(str(each).replace('tcp','udp').replace('TCP','UDP').replace('proto=6','proto=17')) for each in mac_ipv4_gre_ipv4_tcp]
+
+mac_ipv6_gre_ipv4_udp = [eval(str(each).replace('tcp','udp').replace('TCP','UDP').replace('proto=6','proto=17')) for each in mac_ipv6_gre_ipv4_tcp]
+
+mac_ipv4_gre_ipv6_udp = [eval(str(each).replace('tcp','udp').replace('TCP','UDP').replace('nh=6','nh=17')) for each in mac_ipv4_gre_ipv6_tcp]
+
+mac_ipv6_gre_ipv6_udp = [eval(str(each).replace('tcp','udp').replace('TCP','UDP').replace('nh=6','nh=17')) for each in mac_ipv6_gre_ipv6_tcp]
+
+mac_ipv4_gre_ipv4_symmetric = {
+    'sub_casename': 'mac_ipv4_gre_ipv4_symmetric',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)' % vf0_mac,
+            'action': {'save_hash': 'ipv4'},
+        },
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IP(dst="192.168.0.2", src="192.168.0.1")/("X"*480)' % vf0_mac,
+            'action': {'check_hash_same': 'ipv4'},
+        },
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2",proto=6)/("X"*480)' % vf0_mac,
+            'action': {'save_hash': 'ipv4-proto'},
+        },
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IP(dst="192.168.0.2", src="192.168.0.1",proto=6)/("X"*480)' % vf0_mac,
+            'action': {'check_hash_same': 'ipv4-proto'},
+        },
+    ],
+}
+
+mac_ipv6_gre_ipv4_symmetric = eval(str(mac_ipv4_gre_ipv4_symmetric).replace('ipv4_gre_ipv4','ipv6_gre_ipv4').replace('IP()','IPv6()')
+                           .replace('eth / ipv4','eth / ipv6'))
+
+mac_ipv4_gre_ipv6_symmetric = {
+    'sub_casename': 'mac_ipv4_gre_ipv6_symmetric',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / end actions rss func symmetric_toeplitz types ipv6 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)' % vf0_mac,
+            'action': {'save_hash': 'ipv6'},
+        },
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)' % vf0_mac,
+            'action': {'check_hash_same': 'ipv6'},
+        },
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/("X"*480)' % vf0_mac,
+            'action': {'save_hash': 'ipv6-nh'},
+        },
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/("X"*480)' % vf0_mac,
+            'action': {'check_hash_same': 'ipv6-nh'},
+        },
+    ],
+}
+
+mac_ipv6_gre_ipv6_symmetric = eval(str(mac_ipv4_gre_ipv6_symmetric).replace('ipv4_gre_ipv6','ipv6_gre_ipv6').replace('IP()','IPv6()')
+                           .replace('eth / ipv4','eth / ipv6'))
+
+mac_ipv4_gre_ipv4_tcp_symmetric = {
+    'sub_casename': 'mac_ipv4_gre_ipv4_tcp_symmetric',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv4-tcp end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)' % vf0_mac,
+            'action': {'save_hash': 'ipv4'},
+        },
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22,dport=23)/("X"*480)' % vf0_mac,
+            'action': {'check_hash_same': 'ipv4'},
+        },
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=23,dport=22)/("X"*480)' % vf0_mac,
+            'action': {'check_hash_same': 'ipv4'},
+        },
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2",proto=6)/TCP(sport=22,dport=23)/("X"*480)' % vf0_mac,
+            'action': {'save_hash': 'ipv4-proto'},
+        },
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IP(dst="192.168.0.2", src="192.168.0.1",proto=6)/TCP(sport=22,dport=23)/("X"*480)' % vf0_mac,
+            'action': {'check_hash_same': 'ipv4-proto'},
+        },
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2",proto=6)/TCP(sport=23,dport=22)/("X"*480)' % vf0_mac,
+            'action': {'check_hash_same': 'ipv4-proto'},
+        },
+    ],
+}
+
+mac_ipv6_gre_ipv4_tcp_symmetric = eval(str(mac_ipv4_gre_ipv4_tcp_symmetric).replace('ipv4_gre_ipv4','ipv6_gre_ipv4').replace('IP()','IPv6()')
+                           .replace('eth / ipv4','eth / ipv6'))
+
+mac_ipv4_gre_ipv6_tcp_symmetric = {
+    'sub_casename': 'mac_ipv4_gre_ipv6_tcp_symmetric',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss func symmetric_toeplitz types ipv6-tcp end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)' % vf0_mac,
+            'action': {'save_hash': 'ipv6'},
+        },
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)' % vf0_mac,
+            'action': {'check_hash_same': 'ipv6'},
+        },
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=23,dport=22)/("X"*480)' % vf0_mac,
+            'action': {'check_hash_same': 'ipv6'},
+        },
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=23)/("X"*480)' % vf0_mac,
+            'action': {'save_hash': 'ipv6-nh'},
+        },
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=23)/("X"*480)' % vf0_mac,
+            'action': {'check_hash_same': 'ipv6-nh'},
+        },
+        {
+            'send_packet': 'Ether(dst="%s")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=23,dport=22)/("X"*480)' % vf0_mac,
+            'action': {'check_hash_same': 'ipv6-nh'},
+        },
+    ],
+}
+
+mac_ipv6_gre_ipv6_tcp_symmetric = eval(str(mac_ipv4_gre_ipv6_tcp_symmetric).replace('ipv4_gre_ipv6','ipv6_gre_ipv6').replace('IP()','IPv6()')
+                           .replace('eth / ipv4','eth / ipv6'))
+
+mac_ipv4_gre_ipv4_udp_symmetric = eval(str(mac_ipv4_gre_ipv4_tcp_symmetric).replace('tcp','udp').replace('TCP','UDP').replace('proto=6','proto=17'))
+
+mac_ipv6_gre_ipv4_udp_symmetric = eval(str(mac_ipv6_gre_ipv4_tcp_symmetric).replace('tcp','udp').replace('TCP','UDP').replace('proto=6','proto=17'))
+
+mac_ipv4_gre_ipv6_udp_symmetric = eval(str(mac_ipv4_gre_ipv6_tcp_symmetric).replace('tcp','udp').replace('TCP','UDP').replace('proto=6','proto=17'))
+
+mac_ipv6_gre_ipv6_udp_symmetric = eval(str(mac_ipv6_gre_ipv6_tcp_symmetric).replace('tcp','udp').replace('TCP','UDP').replace('proto=6','proto=17'))
+#gre tunnel end
+
 class AdvancedIavfRSSTest(TestCase):
 
     def set_up_all(self):
@@ -4450,6 +5375,78 @@ class AdvancedIavfRSSTest(TestCase):
         ]
         self.rssprocess.handle_tests(tests, 0)
         self.verify(not self.rssprocess.error_msgs, 'some subcases failed')
+
+    def test_mac_ipv4_gre_ipv4(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_gre_ipv4)
+
+    def test_mac_ipv6_gre_ipv4(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_gre_ipv4)
+
+    def test_mac_ipv4_gre_ipv6(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_gre_ipv6)
+
+    def test_mac_ipv6_gre_ipv6(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_gre_ipv6)
+
+    def test_mac_ipv4_gre_ipv4_tcp(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_gre_ipv4_tcp)
+
+    def test_mac_ipv6_gre_ipv4_tcp(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_gre_ipv4_tcp)
+
+    def test_mac_ipv4_gre_ipv6_tcp(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_gre_ipv6_tcp)
+
+    def test_mac_ipv6_gre_ipv6_tcp(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_gre_ipv6_tcp)
+
+    def test_mac_ipv4_gre_ipv4_udp(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_gre_ipv4_udp)
+
+    def test_mac_ipv6_gre_ipv4_udp(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_gre_ipv4_udp)
+
+    def test_mac_ipv4_gre_ipv6_udp(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_gre_ipv6_udp)
+
+    def test_mac_ipv6_gre_ipv6_udp(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_gre_ipv6_udp)
+
+    def test_symmetric_mac_ipv4_gre_ipv4(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_gre_ipv4_symmetric)
+
+    def test_symmetric_mac_ipv6_gre_ipv4(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_gre_ipv4_symmetric)
+
+    def test_symmetric_mac_ipv4_gre_ipv6(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_gre_ipv6_symmetric)
+
+    def test_symmetric_mac_ipv6_gre_ipv6(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_gre_ipv6_symmetric)
+
+    def test_symmetric_mac_ipv4_gre_ipv4_tcp(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_gre_ipv4_tcp_symmetric)
+
+    def test_symmetric_mac_ipv6_gre_ipv4_tcp(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_gre_ipv4_tcp_symmetric)
+
+    def test_symmetric_mac_ipv4_gre_ipv6_tcp(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_gre_ipv6_tcp_symmetric)
+
+    def test_symmetric_mac_ipv6_gre_ipv6_tcp(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_gre_ipv6_tcp_symmetric)
+
+    def test_symmetric_mac_ipv4_gre_ipv4_udp(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_gre_ipv4_udp_symmetric)
+
+    def test_symmetric_mac_ipv6_gre_ipv4_udp(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_gre_ipv4_udp_symmetric)
+
+    def test_symmetric_mac_ipv4_gre_ipv6_udp(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_gre_ipv6_udp_symmetric)
+
+    def test_symmetric_mac_ipv6_gre_ipv6_udp(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_gre_ipv6_udp_symmetric)
 
     def tear_down(self):
         # destroy all flow rule on port 0
