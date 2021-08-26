@@ -175,6 +175,38 @@ Pattern and input set
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_IPV6_PFCP             | pfcp                                                                             |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
+    | IPV4/IPV6+GRE+IPV4/IPV6       | MAC_IPV4_GRE_IPV4         | inner ipv4, inner l3-src-only, inner l3-dst-only                                 |
+    +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
+    |                               | MAC_IPV6_GRE_IPV4         | inner ipv4, inner l3-src-only, inner l3-dst-only                                 |
+    +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
+    |                               | MAC_IPV4_GRE_IPV6         | inner ipv6, inner l3-src-only, inner l3-dst-only                                 |
+    +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
+    |                               | MAC_IPV6_GRE_IPV6         | inner ipv6, inner l3-src-only, inner l3-dst-only                                 |
+    +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
+    | IPV4/IPV6+GRE+IPV4/IPV6+TCP   | MAC_IPV4_GRE_IPV4_TCP     | inner ipv4-tcp, inner l3-src-only, inner l3-dst-only,                            |
+    |                               |                           | inner l4-src-only, inner l4-dst-only, inner ipv4                                 |
+    +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
+    |                               | MAC_IPV6_GRE_IPV4_TCP     | inner ipv4-tcp, inner l3-src-only, inner l3-dst-only,                            |
+    |                               |                           | inner l4-src-only, inner l4-dst-only, inner ipv4                                 |
+    +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
+    |                               | MAC_IPV4_GRE_IPV6_TCP     | inner ipv6-tcp, inner l3-src-only, inner l3-dst-only,                            |
+    |                               |                           | inner l4-src-only, inner l4-dst-only, inner iv6                                  |
+    +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
+    |                               | MAC_IPV6_GRE_IPV6_TCP     | inner ipv6-tcp, inner l3-src-only, inner l3-dst-only,                            |
+    |                               |                           | inner l4-src-only, inner l4-dst-only, inner ipv6                                 |
+    +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
+    | IPV4/IPV6+GRE+IPV4/IPV6+UDP   | MAC_IPV4_GRE_IPV4_UDP     | inner ipv4-udp, inner l3-src-only, inner l3-dst-only,                            |
+    |                               |                           | inner l4-src-only, inner l4-dst-only, inner ipv4                                 |
+    +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
+    |                               | MAC_IPV6_GRE_IPV4_UDP     | inner ipv4-udp, inner l3-src-only, inner l3-dst-only,                            |
+    |                               |                           | inner l4-src-only, inner l4-dst-only, inner ipv4                                 |
+    +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
+    |                               | MAC_IPV4_GRE_IPV6_UDP     | inner ipv6-udp, inner l3-src-only, inner l3-dst-only,                            |
+    |                               |                           | inner l4-src-only, inner l4-dst-only, inner ipv6                                 |
+    +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
+    |                               | MAC_IPV6_GRE_IPV6_UDP     | inner ipv6-udp, inner l3-src-only, inner l3-dst-only,                            |
+    |                               |                           | inner l4-src-only, inner l4-dst-only, inner ipv6                                 |
+    +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
 
 .. table::
 
@@ -249,6 +281,30 @@ Pattern and input set
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
     |                               | MAC_IPV6_GTPU_EH_IPV6_TCP | ipv6-tcp                                                                       |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
+    | IPV4/IPV6+GRE+IPV4/IPV6       | MAC_IPV4_GRE_IPV4         | inner ipv4                                                                     |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
+    |                               | MAC_IPV6_GRE_IPV4         | inner ipv4                                                                     |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
+    |                               | MAC_IPV4_GRE_IPV6         | inner ipv6                                                                     |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
+    |                               | MAC_IPV6_GRE_IPV6         | inner ipv6                                                                     |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
+    | IPV4/IPV6+GRE+IPV4/IPV6+TCP   | MAC_IPV4_GRE_IPV4_TCP     | inner ipv4-tcp                                                                 |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
+    |                               | MAC_IPV6_GRE_IPV4_TCP     | inner ipv4-tcp                                                                 |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
+    |                               | MAC_IPV4_GRE_IPV6_TCP     | inner ipv6-tcp                                                                 |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
+    |                               | MAC_IPV6_GRE_IPV6_TCP     | inner ipv6-tcp                                                                 |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
+    | IPV4/IPV6+GRE+IPV4/IPV6+UDP   | MAC_IPV4_GRE_IPV4_UDP     | inner ipv4-udp                                                                 |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
+    |                               | MAC_IPV6_GRE_IPV4_UDP     | inner ipv4-udp                                                                 |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
+    |                               | MAC_IPV4_GRE_IPV6_UDP     | inner ipv6-udp                                                                 |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
+    |                               | MAC_IPV6_GRE_IPV6_UDP     | inner ipv6-udp                                                                 |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
 
 .. note::
 
@@ -259,6 +315,7 @@ Pattern and input set
     Rules with src/dst mac addresses as hash input set can not be applied
     to tunnel packets. So in the test cases with input set src/dst mac addresses,
     matched packets do not include tunnel packets.
+    For GRE tunnel rule,the input settings are for inner layer.
 
 Prerequisites
 =============
@@ -1483,6 +1540,811 @@ Subcase: MAC_IPV6_SCTP_IPV6
 Subcase: MAC_IPV6_SCTP_ALL
 --------------------------
 
+GRE Tunnel Case Test steps
+==========================
+all the test cases run the same test steps as below:
+
+1. validate rule.
+2. create rule and list rule.
+3. send a basic hit pattern packet,record the hash value,
+   check the packet is distributed to queues by RSS.
+4. send hit pattern packet with changed input set in the rule.
+   check the received packet have different hash value with basic packet.
+   check the packet is distributed to queues by rss.
+5. send hit pattern packet with changed input set not in the rule.
+   check the received packet have same hash value with the basic packet.
+   check the packet is distributed to queues by rss.
+6. destroy the rule and list rule. check the flow list has no rule.
+
+Test case: MAC_IPV4_GRE_IPV4
+============================
+basic hit pattern packets are the same in this test case:
+ipv4-proto packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2, proto=6")/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV4_L3SRC
+--------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.1.2", proto=6)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.1.1", src="192.168.0.2", proto=6)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV4_L3DST
+--------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.1.1", src="192.168.0.2", proto=6)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.1.2", proto=6)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV4_ALL
+------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.1.1", src="192.168.0.2", proto=6)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.1.2", proto=6)/("X"*480)],iface="enp134s0f0")
+
+Test case: MAC_IPV6_GRE_IPV4
+============================
+
+Subcase 1: MAC_IPV6_GRE_IPV4_L3SRC
+----------------------------------
+
+Subcase 2: MAC_IPV6_GRE_IPV4_L3DST
+----------------------------------
+
+Subcase 3: MAC_IPV6_GRE_IPV4_L4SRC
+----------------------------------
+
+Subcase 4: MAC_IPV6_GRE_IPV4_L4DST
+----------------------------------
+
+Subcase 5: MAC_IPV6_GRE_IPV4_ALL
+--------------------------------
+
+each subcase is the same as the subcase of Test case: MAC_IPV4_GRE_IPV4, just only pattern is different,
+replace it with 'eth / ipv6 / gre / ipv4'
+
+Test case: MAC_IPV4_GRE_IPV6
+============================
+basic hit pattern packets are the same in this test case:
+ipv6-nh packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV6_L3SRC
+--------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / end actions rss types ipv6 l3-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021", nh=6)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV6_L3DST
+--------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / end actions rss types ipv6 l3-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021", nh=6)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV6_ALL
+------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / end actions rss types ipv6 end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021", nh=6)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/("X"*480)],iface="enp134s0f0")
+
+Test case: MAC_IPV6_GRE_IPV6
+============================
+
+Subcase 1: MAC_IPV6_GRE_IPV4_L3SRC
+----------------------------------
+
+Subcase 2: MAC_IPV6_GRE_IPV4_L3DST
+----------------------------------
+
+Subcase 3: MAC_IPV6_GRE_IPV4_L4SRC
+----------------------------------
+
+Subcase 4: MAC_IPV6_GRE_IPV4_L4DST
+----------------------------------
+
+Subcase 5: MAC_IPV6_GRE_IPV4_ALL
+--------------------------------
+
+each subcase is the same as the subcase of Test case: MAC_IPV4_GRE_IPV6, just only pattern is different,
+replace it with 'eth / ipv6 / gre / ipv6'
+
+Test case: MAC_IPV4_GRE_IPV4_TCP
+================================
+basic hit pattern packets are the same in this test case:
+ipv4-tcp packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2, proto=6")/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV4_TCP_L3SRC
+------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp l3-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.1.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.1.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV4_TCP_L3DST
+------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp l3-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.1.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.1.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV4_TCP_L4SRC
+------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp l4-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.1.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.1.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV4_TCP_L4DST
+------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp l4-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.1.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.1.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV4_TCP_L3SRC_L4SRC
+------------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp l3-src-only l4-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.1.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.1.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV4_TCP_L3SRC_L4DST
+------------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp l3-src-only l4-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.1.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.1.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV4_TCP_L3DST_L4SRC
+------------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp l3-dst-only l4-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.1.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.1.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV4_TCP_L3DST_L4DST
+------------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp l3-dst-only l4-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.1.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.1.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV4_TCP_ALL
+----------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4-tcp end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.1.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.1.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV4_TCP_IPV4
+-----------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss types ipv4 end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.1.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.1.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+Test case: MAC_IPV6_GRE_IPV4_TCP
+================================
+
+Subcase: MAC_IPV6_GRE_IPV4_TCP_L3SRC
+------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_TCP_L3DST
+------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_TCP_L4SRC
+------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_TCP_L4DST
+------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_TCP_L3SRC_L4SRC
+------------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_TCP_L3SRC_L4DST
+------------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_TCP_L3DST_L4SRC
+------------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_TCP_L3DST_L4DST
+------------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_TCP_ALL
+----------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_TCP_IPV4
+-----------------------------------
+
+each subcase is the same as the subcase of Test case: MAC_IPV4_GRE_IPV4_TCP, just only pattern is different,
+replace it with 'eth / ipv6 / gre / ipv4'
+
+Test case: MAC_IPV4_GRE_IPV6_TCP
+================================
+basic hit pattern packets are the same in this test case:
+ipv6-nh packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV6_TCP_L3SRC
+------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp l3-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV6_TCP_L3DST
+------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp l3-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV6_TCP_L4SRC
+------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp l4-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV6_TCP_L4DST
+------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp l4-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV6_TCP_L3SRC_L4SRC
+------------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp l3-src-only l4-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV6_TCP_L3SRC_L4DST
+------------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp l3-src-only l4-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV6_TCP_L3DST_L4SRC
+------------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp l3-dst-only l4-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV6_TCP_ALL
+----------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6-tcp end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GRE_IPV6_TCP_IPV6
+-----------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss types ipv6 end key_len 0 queues end / end
+
+2. hit pattern/defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=21,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=24)/("X"*480)],iface="enp134s0f0")
+
+Test case: MAC_IPV6_GRE_IPV6_TCP
+================================
+
+Subcase: MAC_IPV6_GRE_IPV6_TCP_L3SRC
+------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_TCP_L3DST
+------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_TCP_L4SRC
+------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_TCP_L4DST
+------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_TCP_L3SRC_L4SRC
+------------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_TCP_L3SRC_L4DST
+------------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_TCP_L3DST_L4SRC
+------------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_TCP_L3DST_L4DST
+------------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_TCP_ALL
+----------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_TCP_IPV6
+-----------------------------------
+
+each subcase is the same as the subcase of Test case: MAC_IPV4_GRE_IPV6_TCP, just only pattern is different,
+replace it with 'eth / ipv6 / gre / ipv6'
+
+Test case: MAC_IPV4_GRE_IPV4_UDP
+================================
+
+Subcase: MAC_IPV4_GRE_IPV4_UDP_L3SRC
+------------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV4_UDP_L3DST
+------------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV4_UDP_L4SRC
+------------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV4_UDP_L4DST
+------------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV4_UDP_L3SRC_L4SRC
+------------------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV4_UDP_L3SRC_L4DST
+------------------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV4_UDP_L3DST_L4SRC
+------------------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV4_UDP_L3DST_L4DST
+------------------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV4_UDP_ALL
+----------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV4_UDP_IPV4
+-----------------------------------
+
+each subcase is the same as the subcase of Test case: MAC_IPV4_GRE_IPV4_TCP, just only pattern is different,
+replace "tcp" with "udp" in all the subcases
+
+Test case: MAC_IPV4_GRE_IPV6_UDP
+================================
+
+Subcase: MAC_IPV4_GRE_IPV6_UDP_L3SRC
+------------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV6_UDP_L3DST
+------------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV6_UDP_L4SRC
+------------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV6_UDP_L4DST
+------------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV6_UDP_L3SRC_L4SRC
+------------------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV6_UDP_L3SRC_L4DST
+------------------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV6_UDP_L3DST_L4SRC
+------------------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV6_UDP_L3DST_L4DST
+------------------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV6_UDP_ALL
+----------------------------------
+
+Subcase: MAC_IPV4_GRE_IPV6_UDP_IPV6
+-----------------------------------
+
+each subcase is the same as the subcase of Test case: MAC_IPV4_GRE_IPV6_TCP, just only pattern is different,
+replace "tcp" with "udp" in all the subcases
+
+Test case: MAC_IPV6_GRE_IPV4_UDP
+================================
+
+Subcase: MAC_IPV6_GRE_IPV4_UDP_L3SRC
+------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_UDP_L3DST
+------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_UDP_L4SRC
+------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_UDP_L4DST
+------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_UDP_L3SRC_L4SRC
+------------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_UDP_L3SRC_L4DST
+------------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_UDP_L3DST_L4SRC
+------------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_UDP_L3DST_L4DST
+------------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_UDP_ALL
+----------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV4_UDP_IPV4
+-----------------------------------
+
+each subcase is the same as the subcase of Test case: MAC_IPV6_GRE_IPV4_TCP, just only pattern is different,
+replace "tcp" with "udp" in all the subcases
+
+Test case: MAC_IPV6_GRE_IPV6_UDP
+================================
+
+Subcase: MAC_IPV6_GRE_IPV6_UDP_L3SRC
+------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_UDP_L3DST
+------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_UDP_L4SRC
+------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_UDP_L4DST
+------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_UDP_L3SRC_L4SRC
+------------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_UDP_L3SRC_L4DST
+------------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_UDP_L3DST_L4SRC
+------------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_UDP_L3DST_L4DST
+------------------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_UDP_ALL
+----------------------------------
+
+Subcase: MAC_IPV6_GRE_IPV6_UDP_IPV6
+-----------------------------------
+
+each subcase is the same as the subcase of Test case: MAC_IPV6_GRE_IPV6_TCP, just only pattern is different,
+replace "tcp" with "udp" in all the subcases
+
+GRE Tunnel symmetric-toeplitz Test steps
+========================================
+1. validate rule.
+2. create rule and list rule.
+3. send hit pattern packets with switched value of input set in the rule.
+   check the received packets have same hash value.
+   check all the packets are distributed to queues by rss.
+
+Test case: symmetric MAC_IPV4_GRE_IPV4
+======================================
+
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end
+
+2. hit pattern with switched value of input set in the rule::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.2", src="192.168.0.1", proto=6)/("X"*480)],iface="enp134s0f0")
+
+Test case: symmetric MAC_IPV6_GRE_IPV4
+======================================
+
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / gre / ipv4 / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end
+
+2. hit pattern with switched value of input set in the rule::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/GRE()/IP(dst="192.168.0.2", src="192.168.0.1", proto=6)/("X"*480)],iface="enp134s0f0")
+
+Test case: symmetric MAC_IPV4_GRE_IPV6
+======================================
+
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / end actions rss func symmetric_toeplitz types ipv6 end key_len 0 queues end / end
+
+2. hit pattern with switched value of input set in the rule::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2020",dst="CDCD:910A:2222:5498:8475:1111:3900:2929", nh=6)/("X"*480)],iface="enp134s0f0")
+
+Test case: symmetric MAC_IPV6_GRE_IPV6
+======================================
+
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / gre / ipv6 / end actions rss func symmetric_toeplitz types ipv6 end key_len 0 queues end / end
+
+2. hit pattern with switched value of input set in the rule::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2020",dst="CDCD:910A:2222:5498:8475:1111:3900:2929", nh=6)/("X"*480)],iface="enp134s0f0")
+
+Test case: symmetric MAC_IPV4_GRE_IPV4_TCP
+==========================================
+
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv4-tcp end key_len 0 queues end / end
+
+2. hit pattern with switched value of input set in the rule::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.2", src="192.168.0.1", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=23,dport=22)/("X"*480)],iface="enp134s0f0")
+
+Test case: symmetric MAC_IPV6_GRE_IPV4_TCP
+==========================================
+
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / gre / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv4-tcp end key_len 0 queues end / end
+
+2. hit pattern with switched value of input set in the rule::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/GRE()/IP(dst="192.168.0.2", src="192.168.0.1", proto=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/GRE()/IP(dst="192.168.0.1", src="192.168.0.2", proto=6)/TCP(sport=23,dport=22)/("X"*480)],iface="enp134s0f0")
+
+Test case: symmetric MAC_IPV4_GRE_IPV6_TCP
+==========================================
+
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 / tcp / end actions rss func symmetric_toeplitz types ipv6-tcp end key_len 0 queues end / end
+
+2. hit pattern with switched value of input set in the rule::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2020",dst="CDCD:910A:2222:5498:8475:1111:3900:2929", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=23,dport=22)/("X"*480)],iface="enp134s0f0")
+
+Test case: symmetric MAC_IPV6_GRE_IPV6_TCP
+==========================================
+
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / gre / ipv6 / tcp / end actions rss func symmetric_toeplitz types ipv6-tcp end key_len 0 queues end / end
+
+2. hit pattern with switched value of input set in the rule::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2020",dst="CDCD:910A:2222:5498:8475:1111:3900:2929", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=23,dport=22)/("X"*480)],iface="enp134s0f0")
+
+Test case: symmetric MAC_IPV4_GRE_IPV4_TCP
+==========================================
+test steps same as Test case: symmetric MAC_IPV4_GRE_IPV4_TCP, just only pattern is different,
+replace "tcp" with "udp"
+
+Test case: symmetric MAC_IPV6_GRE_IPV4_TCP
+==========================================
+test steps same as Test case: symmetric MAC_IPV6_GRE_IPV4_TCP, just only pattern is different,
+replace "tcp" with "udp"
+
+Test case: symmetric MAC_IPV4_GRE_IPV6_TCP
+==========================================
+test steps same as Test case: symmetric MAC_IPV4_GRE_IPV6_TCP, just only pattern is different,
+replace "tcp" with "udp"
+
+Test case: symmetric MAC_IPV6_GRE_IPV6_TCP
+==========================================
+test steps same as Test case: symmetric MAC_IPV6_GRE_IPV6_TCP, just only pattern is different,
+replace "tcp" with "udp"
 
 symmetric-toeplitz Test steps
 =============================
