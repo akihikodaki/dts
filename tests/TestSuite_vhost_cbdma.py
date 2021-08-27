@@ -318,49 +318,9 @@ class TestVirTioVhostCbdma(TestCase):
         self.handle_expected(mode_list=self.mode_list)
         self.handle_results(mode_list=self.mode_list)
 
-    def test_check_threshold_value_with_cbdma(self):
-        """
-        Test Case3: CBDMA threshold value check
-        """
-        used_cbdma_num = 4
-        params = '--nb-cores=1 --rxq=2 --txq=2'
-        dmathr = [512, 4096]
-        vid_dict = {}
-        self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
-        self.dut.restore_interfaces()
-        # launch vhost, Check the cbdma threshold value for each vhost port can be config correct from vhost log
-        vhost_vdev = [f"'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]}],dmathr={dmathr[0]}'", \
-            f"'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@{self.used_cbdma[2]};txq1@{self.used_cbdma[3]}],dmathr={dmathr[1]}'"]
-        virtio_dev0 = f"net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net0,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0,queue_size=4096"
-        virtio_dev1 = f"net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0,queue_size=4096"
-        vdev_params = '{} --vdev {}'.format(vhost_vdev[0], vhost_vdev[1])
-        allow_pci = []
-        for index in range(used_cbdma_num):
-            allow_pci.append(self.cbdma_dev_infos[index])
-        self.pmdout_vhost_user.start_testpmd(cores=self.cores[0:2], param=params, vdevs=[vdev_params], ports=allow_pci, prefix="vhost", fixed_prefix=True)
-        self.vhost_user.send_expect('start', 'testpmd> ', 120)
-        # vid0,qid0,dma2,threshold:4096
-        self.launch_testpmd_as_virtio_user1(params, self.cores[2:4], dev=virtio_dev1)
-        vid_dict[dmathr[1]] = 0
-        # vid1,qid0,dma0,threshold:512
-        self.launch_testpmd_as_virtio_user(params, self.cores[4:6], dev=virtio_dev0)
-        vid_dict[dmathr[0]] = 1
-        # Check the cbdma threshold value for each vhost port can be config correct from vhost log
-        out = self.vhost_user.get_session_before(timeout=2)
-        self.vhost_user.send_expect("quit", "# ")
-        self.virtio_user.send_expect("quit", "# ")
-        self.virtio_user1.send_expect("quit", "# ")
-        pattern = re.compile(r'dma parameters: vid\S+,qid\d+,dma\d+,threshold:\d+')
-        return_param = re.findall(pattern, out)
-        self.logger.info("Actual Info:" + str(return_param))
-        check_value = 0
-        for dma in dmathr:
-            check_value += len(re.findall('vid{},\S+threshold:{}'.format(vid_dict[dma], dma), str(return_param)))
-        self.verify(check_value == used_cbdma_num, "Check failed: Actual value:{}".format(return_param))
-
     def test_perf_pvp_packed_all_path_with_cbdma_vhost_enqueue_operations(self):
         """
-        Test Case 4: PVP packed ring all path with DMA-accelerated vhost enqueue
+        Test Case 3: PVP packed ring all path with DMA-accelerated vhost enqueue
         """
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
@@ -406,7 +366,7 @@ class TestVirTioVhostCbdma(TestCase):
 
     def test_perf_packed_dynamic_queue_number_cbdma_vhost_enqueue_operations(self):
         """
-        Test Case5: Packed ring dynamic queue number test for DMA-accelerated vhost Tx operations
+        Test Case4: Packed ring dynamic queue number test for DMA-accelerated vhost Tx operations
         """
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
@@ -466,7 +426,7 @@ class TestVirTioVhostCbdma(TestCase):
     
     def test_perf_compare_pvp_split_ring_performance(self):
         """
-        Test Case6: Compare PVP split ring performance between CPU copy, CBDMA copy and Sync copy
+        Test Case5: Compare PVP split ring performance between CPU copy, CBDMA copy and Sync copy
         """
         used_cbdma_num = 1
         queue = 1
