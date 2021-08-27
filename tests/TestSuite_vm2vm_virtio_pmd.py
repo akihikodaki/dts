@@ -68,6 +68,7 @@ class TestVM2VMVirtioPMD(TestCase):
         self.pmd_vhost = PmdOutput(self.dut, self.vhost_user)
         self.cbdma_dev_infos = []
         self.vm_config = 'vhost_sample'
+        self.device_str = ' '
 
     def set_up(self):
         """
@@ -147,7 +148,7 @@ class TestVM2VMVirtioPMD(TestCase):
         self.virtio_user0.send_expect('set burst 1', 'testpmd> ', 30)
         self.virtio_user0.send_expect('start tx_first 10', 'testpmd> ', 30)
 
-    def start_vm_testpmd(self, vm_client, path_mode, extern_param="", virtio_net_pci="", queues=""):
+    def start_vm_testpmd(self, vm_client, path_mode, extern_param="", virtio_net_pci=""):
         """
         launch the testpmd in vm
         """
@@ -157,20 +158,19 @@ class TestVM2VMVirtioPMD(TestCase):
         w_pci_str = ' '.join(w_pci_list)
         if path_mode == "mergeable":
             command = self.app_testpmd_path + " -c 0x3 -n 4 " + \
-                        "--file-prefix=virtio -- -i --tx-offloads=0x00 " + \
-                        "--enable-hw-vlan-strip " + "--txq={0} --rxq={0} ".format(queues) if queues else ""
-
+                        "--file-prefix=virtio -- -i --tx-offloads=0x00 --rx-offloads=0x00002000 " + \
+                        "--enable-hw-vlan-strip "
             command = command + "--txd=1024 --rxd=1024 %s"
             vm_client.send_expect(command % extern_param, "testpmd> ", 20)
         elif path_mode == "normal":
             command = self.app_testpmd_path + " -c 0x3 -n 4 " + \
                         "--file-prefix=virtio -- -i --tx-offloads=0x00 " + \
-                        "--enable-hw-vlan-strip " + "--txq={0} --rxq={0} ".format(queues) if queues else ""
+                        "--enable-hw-vlan-strip "
             command = command + "--txd=1024 --rxd=1024 %s"
             vm_client.send_expect(command % extern_param, "testpmd> ", 20)
         elif path_mode == "vector_rx":
             command = self.app_testpmd_path + " -c 0x3 -n 4 " + \
-                        "--file-prefix=virtio %s -- -i" + "--txq={0} --rxq={0} ".format(queues) if queues else ""
+                        "--file-prefix=virtio %s -- -i "
             command = command + "--txd=1024 --rxd=1024 %s"
             vm_client.send_expect(command % (w_pci_str, extern_param), "testpmd> ", 20)
 
@@ -190,29 +190,16 @@ class TestVM2VMVirtioPMD(TestCase):
                     "--pdump  '%s,queue=*,rx-dev=%s,mbuf-size=8000'"
             self.pdump_session.send_expect(command_line % (self.dut.prefix_subfix, dump_port, self.dump_pcap), 'Port')
 
-    def start_vms(self, mode=0, mergeable=True, server_mode=False, opt_queue=None, vm_config=''):
+    def start_vms(self, setting_args='', server_mode=False, opt_queue=None, vm_config='vhost_sample'):
         """
         start two VM, each VM has one virtio device
         """
         # for virtio 0.95, start vm with "disable-modern=true"
         # for virito 1.0, start vm with "disable-modern=false"
-        if mode == 0:
-            setting_args = "disable-modern=true"
-        elif mode == 1:
-            setting_args = "disable-modern=false"
-        elif mode == 2:
-            setting_args = "disable-modern=false,packed=on"
-        if mergeable is True:
-            setting_args += "," + "mrg_rxbuf=on"
-        else:
-            setting_args += "," + "mrg_rxbuf=off"
         vm_params = {}
-        if opt_queue > 1:
-            setting_args += ",csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on"
+
+        if opt_queue is not None:
             vm_params['opt_queue'] = opt_queue
-            setting_args = setting_args + ",mq=on,vectors=40"
-        else:
-            setting_args += ",csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
 
         for i in range(self.vm_num):
             vm_dut = None
@@ -306,62 +293,67 @@ class TestVM2VMVirtioPMD(TestCase):
 
     def test_vhost_vm2vm_virtio_pmd_with_normal_path(self):
         """
-        vhost-user + virtio-pmd with normal path
+        Test Case 2: vhost-user + virtio-pmd with normal path
         """
+        setting_args = "disable-modern=true,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
         path_mode = "normal"
         self.get_core_list(2)
         self.start_vhost_testpmd()
-        self.start_vms(mode=0, mergeable=False)
+        self.start_vms(setting_args=setting_args)
         self.start_vm_testpmd(self.vm_dut[0], path_mode)
         self.start_vm_testpmd(self.vm_dut[1], path_mode)
         self.send_and_verify(mode="virtio 0.95 normal path", path=path_mode)
 
     def test_vhost_vm2vm_virito_10_pmd_with_normal_path(self):
         """
-        vhost-user + virtio1.0-pmd with normal path
+        Test Case 4: vhost-user + virtio1.0-pmd with normal path
         """
         path_mode = "normal"
+        setting_args = "disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
         self.get_core_list(2)
         self.start_vhost_testpmd()
-        self.start_vms(mode=1, mergeable=False)
+        self.start_vms(setting_args=setting_args)
         self.start_vm_testpmd(self.vm_dut[0], path_mode)
         self.start_vm_testpmd(self.vm_dut[1], path_mode)
         self.send_and_verify(mode="virtio 1.0 normal path", path=path_mode)
 
     def test_vhost_vm2vm_virtio_pmd_with_vector_rx_path(self):
         """
-        vhost-user + virtio-pmd with vector_rx path
+        Test Case 1: vhost-user + virtio-pmd with vector_rx path
         """
         path_mode = "vector_rx"
+        setting_args = "disable-modern=true,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
         self.get_core_list(2)
         self.start_vhost_testpmd()
-        self.start_vms(mode=0, mergeable=False)
+        self.start_vms(setting_args=setting_args)
         self.start_vm_testpmd(self.vm_dut[0], path_mode, virtio_net_pci = self.vm_dut[0].ports_info[0]['pci'])
         self.start_vm_testpmd(self.vm_dut[1], path_mode, virtio_net_pci = self.vm_dut[1].ports_info[0]['pci'])
         self.send_and_verify(mode="virtio 0.95 vector_rx", path=path_mode)
 
     def test_vhost_vm2vm_virtio_10_pmd_with_vector_rx_path(self):
         """
-        vhost-user + virtio1.0-pmd with vector_rx path
+        Test Case 3: vhost-user + virtio1.0-pmd with vector_rx path
         """
         path_mode = "vector_rx"
+        setting_args = "disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
         self.get_core_list(2)
         self.start_vhost_testpmd()
-        self.start_vms(mode=1, mergeable=False)
+        self.start_vms(setting_args=setting_args)
         self.start_vm_testpmd(self.vm_dut[0], path_mode, virtio_net_pci = self.vm_dut[0].ports_info[0]['pci'])
         self.start_vm_testpmd(self.vm_dut[1], path_mode, virtio_net_pci = self.vm_dut[1].ports_info[0]['pci'])
         self.send_and_verify(mode="virtio 1.0 vector_rx", path=path_mode)
 
     def test_vhost_vm2vm_virito_pmd_with_mergeable_path(self):
         """
-        vhost-user + virtio-pmd with mergeable path test with payload check
+        Test Case 5: vhost-user + virtio-pmd with mergeable path test with payload check
         """
         path_mode = "mergeable"
+        setting_args = "disable-modern=true,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
         extern_param = '--max-pkt-len=9600'
         dump_port = 'port=0'
         self.get_core_list(2)
         self.start_vhost_testpmd()
-        self.start_vms(mode=0, mergeable=True)
+        self.start_vms(setting_args=setting_args)
         # git the vm enough huge to run pdump
         self.vm_dut[0].set_huge_pages(2048)
         # start testpmd and pdump in VM0
@@ -379,14 +371,15 @@ class TestVM2VMVirtioPMD(TestCase):
 
     def test_vhost_vm2vm_virito_10_pmd_with_mergeable_path(self):
         """
-        vhost-user + virtio1.0-pmd with mergeable path test with payload check
+        Test Case 6: vhost-user + virtio1.0-pmd with mergeable path test with payload check
         """
         path_mode = "mergeable"
+        setting_args = "disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
         extern_param = '--max-pkt-len=9600'
         dump_port = 'port=0'
         self.get_core_list(2)
         self.start_vhost_testpmd()
-        self.start_vms(mode=1, mergeable=True)
+        self.start_vms(setting_args=setting_args)
         # git the vm enough huge to run pdump
         self.vm_dut[0].set_huge_pages(2048)
         # start testpmd and pdump in VM0
@@ -404,26 +397,28 @@ class TestVM2VMVirtioPMD(TestCase):
 
     def test_vhost_vm2vm_virito_11_pmd_with_normal_path(self):
         """
-        vhost-user + virtio1.0-pmd with normal path
+        Test Case 8: vhost-user + virtio1.0-pmd with normal path
         """
         path_mode = "normal"
+        setting_args = "disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on"
         self.get_core_list(2)
         self.start_vhost_testpmd()
-        self.start_vms(mode=2, mergeable=False)
+        self.start_vms(setting_args=setting_args)
         self.start_vm_testpmd(self.vm_dut[0], path_mode)
         self.start_vm_testpmd(self.vm_dut[1], path_mode)
         self.send_and_verify(mode="virtio 1.0 normal path", path=path_mode)
 
     def test_vhost_vm2vm_virito_11_pmd_with_mergeable_path(self):
         """
-        vhost-user + virtio1.0-pmd with mergeable path test with payload check
+        Test Case 7: vhost-user + virtio1.0-pmd with mergeable path test with payload check
         """
         path_mode = "mergeable"
+        setting_args = "disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on"
         extern_param = '--max-pkt-len=9600'
         dump_port = 'port=0'
         self.get_core_list(2)
         self.start_vhost_testpmd()
-        self.start_vms(mode=2, mergeable=True)
+        self.start_vms(setting_args=setting_args)
         # git the vm enough huge to run pdump
         self.vm_dut[0].set_huge_pages(2048)
         # start testpmd and pdump in VM0
@@ -439,22 +434,25 @@ class TestVM2VMVirtioPMD(TestCase):
          # check the packet in vm0
         self.check_packet_payload_valid(self.vm_dut[0])
 
-    def test_vhost_vm2vm_virtio_split_ring_with_mergeable_path_cbdma_enabled(self):
+    def test_vhost_vm2vm_virtio_split_ring_with_mergeable_path_cbdma_enable(self):
         """
         Test Case 9: VM2VM virtio-pmd split ring mergeable path 8 queues CBDMA enable with server mode stable test
         """
         self.nb_cores = 4
+        path_mode = "mergeable"
+        extern_param = '--max-pkt-len=9600 --txq=8 --rxq=8'
         self.get_core_list(self.nb_cores + 1)
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, queue_num=8, allow_diff_socket=True)
         self.logger.info("Launch vhost-testpmd with CBDMA and used 8 queue")
-        self.prepare_test_env(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4,
-                              server_mode=True, opt_queue=8, combined=True, rxq_txq=8)
+        setting_args = "disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on"
+        self.prepare_test_env(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4, setting_args=setting_args,
+                              server_mode=True, opt_queue=8, rxq_txq=8)
         self.logger.info("Launch testpmd in VM1")
-        self.start_vm_testpmd(self.vm_dut[0], "mergeable", extern_param="--max-pkt-len=9600", queues="8")
+        self.start_vm_testpmd(self.vm_dut[0], path_mode, extern_param)
         self.vm_dut[0].send_expect('set fwd mac', 'testpmd> ', 30)
         self.vm_dut[0].send_expect('start', 'testpmd> ', 30)
         self.logger.info("Launch testpmd in VM2, sent imix pkts from VM2")
-        self.start_vm_testpmd(self.vm_dut[1], "mergeable", extern_param="--max-pkt-len=9600", queues="8")
+        self.start_vm_testpmd(self.vm_dut[1], path_mode, extern_param)
         self.vm_dut[1].send_expect('set fwd mac', 'testpmd> ', 30)
         self.vm_dut[1].send_expect('set txpkts 64,256,512,1024,2000,64,256,512,1024,2000', 'testpmd> ', 30)
         self.vm_dut[1].send_expect('start tx_first 1', 'testpmd> ', 30)
@@ -471,50 +469,57 @@ class TestVM2VMVirtioPMD(TestCase):
             self.check_port_stats_result(self.vm_dut[0], queue_num=8)
             self.check_port_stats_result(self.vm_dut[1], queue_num=8)
 
-    def test_vhost_vm2vm_split_ring_with_mergeable_path_and_server_mode_cbdma_enabled(self):
+    def test_vhost_vm2vm_split_ring_with_mergeable_path_and_server_mode_cbdma_enable(self):
         """
         Test Case 10: VM2VM virtio-pmd split ring mergeable path dynamic queue size CBDMA enable with server mode test
         """
         self.nb_cores = 4
+        path_mode = "mergeable"
+        extern_param = '--max-pkt-len=9600 --txq=8 --rxq=8'
         self.get_core_list(self.nb_cores + 1)
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, queue_num=8, allow_diff_socket=True)
-        self.logger.info("Launch vhost-testpmd with CBDMA and used 8 queue")
-        self.prepare_test_env(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4,
-                              server_mode=True, opt_queue=8, combined=True, rxq_txq=8)
+        self.logger.info("Launch vhost-testpmd with CBDMA and used 4 queue")
+        setting_args = "disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on"
+        self.prepare_test_env(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4, setting_args=setting_args,
+                              server_mode=True, opt_queue=8, rxq_txq=4)
         self.logger.info("Launch testpmd in VM1")
-        self.start_vm_testpmd(self.vm_dut[0], "mergeable", extern_param="--max-pkt-len=9600", queues="8")
+        self.start_vm_testpmd(self.vm_dut[0], path_mode, extern_param)
         self.vm_dut[0].send_expect('set fwd mac', 'testpmd> ', 30)
         self.vm_dut[0].send_expect('start', 'testpmd> ', 30)
         self.logger.info("Launch testpmd in VM2 and send imix pkts")
-        self.start_vm_testpmd(self.vm_dut[1], "mergeable", extern_param="--max-pkt-len=9600", queues="8")
+        self.start_vm_testpmd(self.vm_dut[1], path_mode, extern_param)
         self.vm_dut[1].send_expect('set fwd mac', 'testpmd> ', 30)
         self.vm_dut[1].send_expect('set txpkts 64,256,512,1024,2000,64,256,512,1024,2000', 'testpmd> ', 30)
         self.vm_dut[1].send_expect('start tx_first 32', 'testpmd> ', 30)
         self.logger.info("Check imix packets")
-        self.check_port_stats_result(self.vm_dut[0], queue_num=8)
-        self.check_port_stats_result(self.vm_dut[1], queue_num=8)
+        self.check_port_stats_result(self.vm_dut[0], queue_num=4)
+        self.check_port_stats_result(self.vm_dut[1], queue_num=4)
         self.logger.info("Relaunch vhost side testpmd and Check imix packets 10 times")
-        self.pmd_vhost.execute_cmd('quit', '#')
-        self.start_vhost_testpmd_cbdma(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4,
-                                       rxq_txq=8)
-        self.vm_dut[1].send_expect('stop', 'testpmd> ', 30)
-        self.vm_dut[1].send_expect('start tx_first 32', 'testpmd> ', 30)
-        self.check_port_stats_result(self.vm_dut[0], queue_num=8)
-        self.check_port_stats_result(self.vm_dut[1], queue_num=8)
+        for _ in range(10):
+            self.pmd_vhost.execute_cmd('quit', '#')
+            self.start_vhost_testpmd_cbdma(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4,
+                                           rxq_txq=8)
+            self.vm_dut[1].send_expect('stop', 'testpmd> ', 30)
+            self.vm_dut[1].send_expect('start tx_first 32', 'testpmd> ', 30)
+            self.check_port_stats_result(self.vm_dut[0], queue_num=8)
+            self.check_port_stats_result(self.vm_dut[1], queue_num=8)
 
-    def test_vhost_vm2vm_packed_ring_with_mergeable_path_and_8queues_cbdma_enabled(self):
+    def test_vhost_vm2vm_packed_ring_with_mergeable_path_and_8queues_cbdma_enable(self):
         """
         Test Case 11: VM2VM virtio-pmd packed ring mergeable path 8 queues CBDMA enable test
         """
         self.nb_cores = 4
+        path_mode = "mergeable"
+        extern_param = '--max-pkt-len=9600 --txq=8 --rxq=8'
         self.get_core_list(self.nb_cores + 1)
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, queue_num=8, allow_diff_socket=True)
-        self.prepare_test_env(cbdma=True, no_pci=False, client_mode=False, enable_queues=8, nb_cores=4,
-                              server_mode=False, opt_queue=8, combined=True, rxq_txq=8, mode=2)
+        setting_args = "disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on"
+        self.prepare_test_env(cbdma=True, no_pci=False, client_mode=False, enable_queues=8, nb_cores=4, setting_args=setting_args,
+                              server_mode=False, opt_queue=8, rxq_txq=8)
         self.logger.info("Launch testpmd in VM1")
-        self.start_vm_testpmd(self.vm_dut[0], "mergeable", extern_param="--max-pkt-len=9600", queues="8")
+        self.start_vm_testpmd(self.vm_dut[0], path_mode, extern_param)
         self.logger.info("Launch testpmd in VM2 and send imix pkts")
-        self.start_vm_testpmd(self.vm_dut[1], "mergeable", extern_param="--max-pkt-len=9600", queues="8")
+        self.start_vm_testpmd(self.vm_dut[1], path_mode, extern_param)
         self.vm_dut[0].send_expect('set fwd mac', 'testpmd> ', 30)
         self.vm_dut[0].send_expect('start', 'testpmd> ', 30)
         self.vm_dut[1].send_expect('set fwd mac', 'testpmd> ', 30)
@@ -533,7 +538,7 @@ class TestVM2VMVirtioPMD(TestCase):
             self.logger.info(e)
         time.sleep(10)
         self.start_one_vms(mode=1, server_mode=False, opt_queue=8, vm_config=self.vm_config)
-        self.start_vm_testpmd(self.vm_dut[1], "mergeable", extern_param="--max-pkt-len=9600", queues="8")
+        self.start_vm_testpmd(self.vm_dut[1], path_mode, extern_param)
         self.vm_dut[0].send_expect('start', 'testpmd> ', 30)
         self.vm_dut[1].send_expect('set fwd mac', 'testpmd> ', 30)
         self.vm_dut[1].send_expect('set txpkts 64,256,512,1024,20000,64,256,512,1024,20000', 'testpmd> ', 30)
@@ -618,14 +623,14 @@ class TestVM2VMVirtioPMD(TestCase):
         vm_dut.send_expect("clear port stats all", "testpmd> ", 30)
         vm_dut.send_expect("start", "testpmd> ", 30)
 
-    def prepare_test_env(self, cbdma=False, no_pci=True, client_mode=False, enable_queues=1, nb_cores=2,
-                         server_mode=False, opt_queue=None, combined=False, rxq_txq=None, iova_mode=False, vm_config='vhost_sample', mode=1):
+    def prepare_test_env(self, cbdma=False, no_pci=True, client_mode=False, enable_queues=1, nb_cores=2, setting_args='',
+                         server_mode=False, opt_queue=None, rxq_txq=None, iova_mode=False, vm_config='vhost_sample'):
         """
         start vhost testpmd and qemu, and config the vm env
         """
         self.start_vhost_testpmd_cbdma(cbdma=cbdma, no_pci=no_pci, client_mode=client_mode, enable_queues=enable_queues,
                                  nb_cores=nb_cores, rxq_txq=rxq_txq, iova_mode=iova_mode)
-        self.start_vms(server_mode=server_mode, opt_queue=opt_queue, mode=mode, vm_config=vm_config)
+        self.start_vms(setting_args=setting_args, server_mode=server_mode, opt_queue=opt_queue, vm_config=vm_config)
 
     def start_vhost_testpmd_cbdma(self, cbdma=False, no_pci=True, client_mode=False, enable_queues=1, nb_cores=2, rxq_txq=None, iova_mode=False):
         """
