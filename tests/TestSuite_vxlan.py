@@ -57,7 +57,7 @@ from scapy.route import *
 
 from test_case import TestCase
 from settings import HEADER_SIZE, FOLDERS
-from etgen import IxiaPacketGenerator
+from pktgen import PacketGeneratorHelper
 import packet
 
 #
@@ -283,7 +283,7 @@ class VxlanTestConfig(object):
         return len(self.pkt) + 4
 
 
-class TestVxlan(TestCase, IxiaPacketGenerator):
+class TestVxlan(TestCase):
 
     def set_up_all(self):
         """
@@ -300,9 +300,6 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             self.verify(False, "%s not support this vxlan" % self.nic)
         # Based on h/w type, choose how many ports to use
         ports = self.dut.get_ports()
-
-        # update IxiaPacketGenerator function by local
-        self.tester.extend_external_packet_generator(TestVxlan, self)
 
         # Verify that enough ports are available
         self.verify(len(ports) >= 2, "Insufficient ports for testing")
@@ -395,6 +392,68 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             {'Packet': 'VXLAN', 'tunnel_filter':
                 'omac-imac-tenid', 'recvqueue': 'Multi'}
         ]
+
+        self.pktgen_helper = PacketGeneratorHelper()
+
+    def set_fields(self):
+        fields_config = {
+            'ip': {
+                'src': {'action': 'random'},
+                'dst': {'action': 'random'},
+        },}
+        return fields_config
+
+    def suite_measure_throughput(self, tgen_input, use_vm=False):
+        vm_config = self.set_fields()
+        self.tester.pktgen.clear_streams()
+        streams = self.pktgen_helper.prepare_stream_from_tginput(
+            tgen_input, 100, vm_config if use_vm else None, self.tester.pktgen)
+        result = self.tester.pktgen.measure_throughput(stream_ids=streams)
+
+        return result
+
+    def perf_tunnel_filter_set_rule(self, rule_config):
+        rule_list = {
+            # check inner mac + inner vlan filter can work
+            'imac-ivlan':
+                f'flow create {rule_config.get("dut_port")} ingress pattern eth / '
+                f'ipv4 / udp / vxlan / eth dst is {rule_config.get("inner_mac_dst")} / '
+                f'vlan tci is {rule_config.get("inner_vlan")} / end actions pf / '
+                f'queue index {rule_config.get("queue")} / end',
+            # check inner mac + inner vlan + tunnel id filter can work
+            'imac-ivlan-tenid':
+                f'flow create {rule_config.get("dut_port")} ingress pattern eth / '
+                f'ipv4 / udp / vxlan vni is {rule_config.get("vni")} / '
+                f'eth dst is {rule_config.get("inner_mac_dst")} / '
+                f'vlan tci is {rule_config.get("inner_vlan")} / '
+                f'end actions pf / queue index {rule_config.get("queue")} / end',
+            # check inner mac + tunnel id filter can work
+            'imac-tenid':
+                f'flow create {rule_config.get("dut_port")} ingress pattern eth / '
+                f'ipv4 / udp / vxlan vni is {rule_config.get("vni")} / '
+                f'eth dst is {rule_config.get("inner_mac_dst")} / end actions pf / '
+                f'queue index {rule_config.get("queue")} / end',
+            # check inner mac filter can work
+            'imac':
+                f'flow create {rule_config.get("dut_port")} ingress pattern eth / '
+                f'ipv4 / udp / vxlan / eth dst is {rule_config.get("inner_mac_dst")} / end actions pf / '
+                f'queue index {rule_config.get("queue")} / end',
+            # check outer mac + inner mac + tunnel id filter can work
+            'omac-imac-tenid':
+                f'flow create {rule_config.get("dut_port")} ingress pattern '
+                f'eth dst is {rule_config.get("outer_mac_dst")} / '
+                f'ipv4 / udp / vxlan vni is {rule_config.get("vni")} / '
+                f'eth dst is {rule_config.get("inner_mac_dst")} / '
+                f'end actions pf / queue index {rule_config.get("queue")} / end',
+        }
+        rule = rule_list.get(rule_config.get("tun_filter"))
+        if not rule:
+            msg = "not support format"
+            self.logger.error(msg)
+            return
+        out = self.dut.send_expect(rule, "testpmd>", 3)
+        pat = "Flow rule #\d+ created"
+        self.verify(re.findall(pat, out, re.M), "Flow rule create failed")
 
     def send_and_detect(self, **kwargs):
         """
@@ -886,11 +945,17 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             self.enable_vxlan(dut_port)
 
         if tun_filter != 'None':
-            args = [dut_port, config.outer_mac_dst,
-                    config.inner_mac_dst, config.inner_ip_dst,
-                    config.inner_vlan, tun_filter,
-                    config.vni, 0]
-            self.tunnel_filter_add(*args)
+            rule_config = {
+                'dut_port': dut_port,
+                'outer_mac_dst': config.outer_mac_dst,
+                'inner_mac_dst': config.inner_mac_dst,
+                'inner_ip_dst': config.inner_ip_dst,
+                'inner_vlan': config.inner_vlan,
+                'tun_filter': tun_filter,
+                'vni': config.vni,
+                'queue': 0
+            }
+            self.perf_tunnel_filter_set_rule(rule_config)
 
         if perf_config['Packet'] == 'Normal':
             config.outer_udp_dst = 63
@@ -917,34 +982,21 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
                 pkt = config.create_pcap()
                 pkts.append(pkt)
 
-                args = [dut_port, config.outer_mac_dst,
-                        config.inner_mac_dst, config.inner_ip_dst,
-                        config.inner_vlan, tun_filter,
-                        config.vni, (queue + 1)]
-                self.tunnel_filter_add(*args)
+                rule_config = {
+                    'dut_port': dut_port,
+                    'outer_mac_dst': config.outer_mac_dst,
+                    'inner_mac_dst': config.inner_mac_dst,
+                    'inner_ip_dst': config.inner_ip_dst,
+                    'inner_vlan': config.inner_vlan,
+                    'tun_filter': tun_filter,
+                    'vni': config.vni,
+                    'queue': (queue + 1),
+                }
+                self.perf_tunnel_filter_set_rule(rule_config)
 
         # save pkt list into pcap file
         wrpcap(config.pcap_file, pkts)
         self.tester.session.copy_file_to(config.pcap_file)
-
-    def ip_random(self, port, frag, src, proto, tos, dst, chksum, len,
-                  options, version, flags, ihl, ttl, id):
-        self.add_tcl_cmd("protocol config -name ip")
-        self.add_tcl_cmd('ip config -sourceIpAddr "%s"' % src)
-        self.add_tcl_cmd('ip config -sourceIpAddrMode ipIncrHost')
-        self.add_tcl_cmd('ip config -sourceIpAddrRepeatCount %d' % 64)
-        self.add_tcl_cmd('ip config -destIpAddr "%s"' % dst)
-        self.add_tcl_cmd('ip config -destIpMask "255.255.0.0" ')
-        self.add_tcl_cmd('ip config -destIpAddrMode ipRandom')
-        self.add_tcl_cmd('ip config -destIpAddrRepeatCount 65536')
-        self.add_tcl_cmd("ip config -ttl %d" % ttl)
-        self.add_tcl_cmd("ip config -totalLength %d" % len)
-        self.add_tcl_cmd("ip config -fragment %d" % frag)
-        self.add_tcl_cmd("ip config -ipProtocol %d" % proto)
-        self.add_tcl_cmd("ip config -identifier %d" % id)
-        self.add_tcl_cmd("stream config -framesize %d" % (len + 18))
-        self.add_tcl_cmd("ip set %d %d %d" %
-                         (self.chasId, port['card'], port['port']))
 
     def combine_pcap(self, dest_pcap, src_pcap):
         pkts = rdpcap(dest_pcap)
@@ -1002,15 +1054,9 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             else:
                 wirespeed = self.wirespeed(self.nic, PACKET_LEN, 1)
 
-            if recv_queue == 'Multi' and tun_filter == "None":
-                ip_ori = self.ip
-                self.ip = self.ip_random
-
             # run traffic generator
-            _, pps = self.tester.traffic_generator_throughput(tgen_input)
-
-            if recv_queue == 'Multi' and tun_filter == "None":
-                self.ip = ip_ori
+            use_vm = True if recv_queue == 'Multi' and tun_filter == "None" else False
+            _, pps = self.suite_measure_throughput(tgen_input, use_vm=use_vm)
 
             pps /= 1000000.0
             perf_config['Mpps'] = pps
@@ -1020,8 +1066,9 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             self.dut.send_expect("quit", "# ", 10)
 
             # verify every queue work fine
+            check_queue = 0
             if recv_queue == 'Multi':
-                for queue in range(self.tunnel_multiqueue):
+                for queue in range(check_queue):
                     self.verify("Queue= %d -> TX Port"
                                 % (queue) in out,
                                 "Queue %d no traffic" % queue)
@@ -1032,6 +1079,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             self.result_table_add(table_row)
 
         self.result_table_print()
+
 
     def test_perf_vxlan_checksum_performance_2ports(self):
         self.result_table_create(self.chksum_header)
@@ -1053,8 +1101,10 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             socket=self.ports_socket)
         core_mask = utils.create_mask(core_list)
 
-        tgen_dut = self.tester.get_local_port(self.dut_port)
-        tgen_tester = self.tester.get_local_port(self.recv_port)
+        self.dut_ports = self.dut.get_ports_performance(force_different_nic=False)
+        tx_port = self.tester.get_local_port(self.dut_ports[0])
+        rx_port = self.tester.get_local_port(self.dut_ports[1])
+
         for cal in self.cal_type:
             recv_queue = cal['recvqueue']
             print((utils.GREEN("Measure checksum performance of [%s %s %s]"
@@ -1063,9 +1113,10 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             # configure flows
             tgen_input = []
             if recv_queue == 'Multi':
-                self.combine_pcap("vxlan1.pcap", "vxlan1_1.pcap")
-            self.tester.session.copy_file_to("vxlan1.pcap")
-            tgen_input.append((tgen_dut, tgen_tester, "vxlan1.pcap"))
+                tgen_input.append((tx_port, rx_port, "vxlan1.pcap"))
+                tgen_input.append((tx_port, rx_port, "vxlan1_1.pcap"))
+            else:
+                tgen_input.append((tx_port, rx_port, "vxlan1.pcap"))
 
             # multi queue and signle queue commands
             if recv_queue == 'Multi':
@@ -1078,24 +1129,34 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
             self.dut.send_expect(pmd_cmd, "testpmd> ", 100)
             self.dut.send_expect("set fwd csum", "testpmd>", 10)
-            self.dut.send_expect("csum parse-tunnel on %d" %
-                                 self.dut_port, "testpmd>", 10)
-            self.dut.send_expect("csum parse-tunnel on %d" %
-                                 self.recv_port, "testpmd>", 10)
             self.enable_vxlan(self.dut_port)
             self.enable_vxlan(self.recv_port)
 
             # redirect flow to another queue by tunnel filter
-            args = [self.dut_port, vxlan.outer_mac_dst,
-                    vxlan.inner_mac_dst, vxlan.inner_ip_dst,
-                    0, 'imac', vxlan.vni, 0]
-            self.tunnel_filter_add(*args)
+            rule_config = {
+                'dut_port': self.dut_port,
+                'outer_mac_dst': vxlan.outer_mac_dst,
+                'inner_mac_dst': vxlan.inner_mac_dst,
+                'inner_ip_dst': vxlan.inner_ip_dst,
+                'inner_vlan': 0,
+                'tun_filter': 'imac',
+                'vni': vxlan.vni,
+                'queue': 0
+            }
+            self.perf_tunnel_filter_set_rule(rule_config)
 
             if recv_queue == 'Multi':
-                args = [self.dut_port, vxlan_queue.outer_mac_dst,
-                        vxlan_queue.inner_mac_dst, vxlan_queue.inner_ip_dst,
-                        0, 'imac', vxlan_queue.vni, 1]
-                self.tunnel_filter_add(*args)
+                rule_config = {
+                    'dut_port': self.dut_port,
+                    'outer_mac_dst': vxlan_queue.outer_mac_dst,
+                    'inner_mac_dst': vxlan_queue.inner_mac_dst,
+                    'inner_ip_dst': vxlan_queue.inner_ip_dst,
+                    'inner_vlan': 0,
+                    'tun_filter': 'imac',
+                    'vni': vxlan.vni,
+                    'queue': 1
+                }
+                self.perf_tunnel_filter_set_rule(rule_config)
 
             for pro in cal['csum']:
                 self.csum_set_type(pro, self.dut_port)
@@ -1106,7 +1167,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             wirespeed = self.wirespeed(self.nic, PACKET_LEN, 1)
 
             # run traffic generator
-            _, pps = self.tester.traffic_generator_throughput(tgen_input)
+            _, pps = self.suite_measure_throughput(tgen_input)
 
             pps /= 1000000.0
             cal['Mpps'] = pps
@@ -1116,8 +1177,9 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             self.dut.send_expect("quit", "# ", 10)
 
             # verify every queue work fine
+            check_queue = 1
             if recv_queue == 'Multi':
-                for queue in range(self.tunnel_multiqueue):
+                for queue in range(check_queue):
                     self.verify("Queue= %d -> TX Port"
                                 % (queue) in out,
                                 "Queue %d no traffic" % queue)
