@@ -38,10 +38,9 @@ import subprocess
 import os
 from time import sleep
 from settings import NICS, load_global_setting, PERF_SETTING
-from settings import IXIA, USERNAME, PKTGEN, PKTGEN_GRP
+from settings import USERNAME, PKTGEN, PKTGEN_GRP
 from crb import Crb
 from net_device import GetNicObj
-from etgen import IxiaPacketGenerator, SoftwarePacketGenerator
 import random
 from utils import (GREEN, convert_int2ip, convert_ip2int,
                    check_crb_python_version)
@@ -78,7 +77,6 @@ class Tester(Crb):
         self.bgItf = ''
         self.re_run_time = 0
         self.pktgen = None
-        self.ixia_packet_gen = None
         self.tmp_scapy_module_dir = '/tmp/dep'
         # prepare for scapy env
         self.scapy_sessions_li = list()
@@ -130,10 +128,7 @@ class Tester(Crb):
         if self.it_uses_external_generator():
             if self.is_pktgen:
                 self.pktgen_init()
-            else:
-                self.ixia_packet_gen = IxiaPacketGenerator(self)
             return
-        self.packet_gen = SoftwarePacketGenerator(self)
 
     def set_re_run(self, re_run_time):
         """
@@ -183,19 +178,11 @@ class Tester(Crb):
         try:
             # if pktgen_group is set, take pktgen config file as first selection
             if self.is_pktgen:
-                return True 
-            elif self.crb[IXIA] is not None:
                 return True
         except Exception as e:
             return False
 
         return False
-
-    def get_external_traffic_generator(self):
-        """
-        Return IXIA object.
-        """
-        return self.crb[IXIA]
 
     def it_uses_external_generator(self):
         """
@@ -456,8 +443,6 @@ class Tester(Crb):
             if self.it_uses_external_generator():
                 if self.is_pktgen:
                     self._scan_pktgen_ports()
-                else:
-                    self.ports_info.extend(self.ixia_packet_gen.get_ports())
             self.save_serializer_ports()
 
         for port_info in self.ports_info:
@@ -572,8 +557,6 @@ class Tester(Crb):
                                 self.ports_info[localPort]['pci'], mac, ipv6)
             elif self.ports_info[localPort]['type'].lower() == 'trex':
                 return "Not implemented yet"
-        elif self.ports_info[localPort]['type'].lower() in 'ixia':
-            return self.ixia_packet_gen.send_ping6(self.ports_info[localPort]['pci'], mac, ipv6)
         else:
             return self.send_expect("ping6 -w 5 -c 5 -A %s%%%s" % (ipv6, self.ports_info[localPort]['intf']), "# ", 10)
 
@@ -670,60 +653,6 @@ class Tester(Crb):
         self.logger.info('SCAPY Result:\n' + out + '\n\n\n')
 
         return out
-
-    def traffic_generator_throughput(self, portList, rate_percent=100, delay=5):
-        """
-        Run throughput performance test on specified ports.
-        """
-        if self.check_port_list(portList, 'ixia'):
-            return self.ixia_packet_gen.throughput(portList, rate_percent, delay)
-        if not self.check_port_list(portList):
-            self.logger.warning("exception by mixed port types")
-            return None
-        return self.packet_gen.throughput(portList, rate_percent)
-
-    def verify_packet_order(self, portList, delay):
-        if self.check_port_list(portList, 'ixia'):
-            return self.ixia_packet_gen.is_packet_ordered(portList, delay)
-        else:
-            self.logger.warning("Only ixia port support check verify packet order function")
-            return False
-
-    def run_rfc2544(self, portlist, delay=120, permit_loss_rate=0):
-        """
-        test_rate: the line rate we are going to test.
-        """
-        test_rate = float(100)
-
-        self.logger.info("test rate: %f " % test_rate)
-        loss_rate, tx_num, rx_num = self.traffic_generator_loss(portlist, test_rate, delay)
-        while loss_rate > permit_loss_rate:
-                test_rate = float(1 - loss_rate) * test_rate
-                loss_rate, tx_num, rx_num = self.traffic_generator_loss(portlist, test_rate, delay)
-
-        self.logger.info("zero loss rate is %s" % test_rate)
-        return test_rate, tx_num, rx_num
-
-
-    def traffic_generator_loss(self, portList, ratePercent, delay=60):
-        """
-        Run loss performance test on specified ports.
-        """
-        if self.check_port_list(portList, 'ixia'):
-            return self.ixia_packet_gen.loss(portList, ratePercent, delay)
-        elif not self.check_port_list(portList):
-            self.logger.warning("exception by mixed port types")
-            return None
-        return self.packet_gen.loss(portList, ratePercent)
-
-    def traffic_generator_latency(self, portList, ratePercent=100, delay=5):
-        """
-        Run latency performance test on specified ports.
-        """
-        if self.check_port_list(portList, 'ixia'):
-            return self.ixia_packet_gen.latency(portList, ratePercent, delay)
-        else:
-            return None
 
     def parallel_transmit_ptks(self, pkt=None, intf='', send_times=1, interval=0.01):
         """
@@ -824,20 +753,6 @@ class Tester(Crb):
 
         return True
 
-    def extend_external_packet_generator(self, clazz, instance):
-        """
-        Update packet generator function, will implement later.
-        """
-        # packet generator has forbidden suite class to override parent class methods  
-        if self.is_pktgen:
-            return
-        # discard this in future
-        if self.it_uses_external_generator():
-            self.ixia_packet_gen.__class__ = clazz
-            current_attrs = instance.__dict__
-            instance.__dict__ = self.ixia_packet_gen.__dict__
-            instance.__dict__.update(current_attrs)
-
     def tcpdump_sniff_packets(self, intf, count=0, filters=None, lldp_forbid=True):
         """
         Wrapper for packet module sniff_packets
@@ -879,9 +794,6 @@ class Tester(Crb):
                 if 'start_trex' in list(self.pktgen.conf.keys()):
                     self.restore_trex_interfaces()
                 self.pktgen = None
-            elif self.ixia_packet_gen:
-                self.ixia_packet_gen.close()
-                self.ixia_packet_gen = None
 
         if self.scapy_sessions_li:
             for i in self.scapy_sessions_li:

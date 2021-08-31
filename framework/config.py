@@ -36,7 +36,7 @@ import os
 import re
 import configparser  # config parse module
 import argparse      # parse arguments module
-from settings import (IXIA, PKTGEN, PKTGEN_DPDK, PKTGEN_TREX, PKTGEN_IXIA, PKTGEN_IXIA_NETWORK,
+from settings import (PKTGEN, PKTGEN_DPDK, PKTGEN_TREX, PKTGEN_IXIA, PKTGEN_IXIA_NETWORK,
                       CONFIG_ROOT_PATH, SUITE_SECTION_NAME)
 from settings import load_global_setting, DTS_CFG_FOLDER
 from exception import ConfigParseException, VirtConfigParseException, PortConfigParseException
@@ -268,7 +268,7 @@ class PortConf(UserConf):
 class CrbsConf(UserConf):
     DEF_CRB = {'IP': '', 'board': 'default', 'user': '',
                'pass': '', 'tester IP': '', 'tester pass': '',
-               IXIA: None, 'memory channels': 4,
+               'memory channels': 4,
                PKTGEN: None,
                'bypass core0': True, 'dut_cores': '',
                'snapshot_load_side': 'tester'}
@@ -309,11 +309,6 @@ class CrbsConf(UserConf):
                     crb['tester IP'] = value
                 elif key == 'tester_passwd':
                     crb['tester pass'] = value
-                elif key == 'ixia_group':
-                    # None type will be check later
-                    if value.lower() == 'none':
-                        value = None
-                    crb[IXIA] = value
                 elif key == 'pktgen_group':
                     crb[PKTGEN] = value.lower()
                 elif key == 'channels':
@@ -335,64 +330,6 @@ class CrbsConf(UserConf):
             self.crbs_cfg.append(crb)
         return self.crbs_cfg
 
-
-class IxiaConf(UserConf):
-
-    def __init__(self, ixia_conf=IXIACONF):
-        self.config_file = ixia_conf
-        self.ixia_cfg = {}
-        try:
-            self.ixia_conf = UserConf(self.config_file)
-        except ConfigParseException:
-            self.ixia_conf = None
-            raise ConfigParseException
-
-    def load_ixia_config(self):
-        port_reg = r'card=(\d+),port=(\d+)'
-        groups = self.ixia_conf.get_sections()
-        if not groups:
-            return self.ixia_cfg
-
-        for group in groups:
-            ixia_group = {}
-            ixia_confs = self.ixia_conf.load_section(group)
-            if not ixia_confs:
-                continue
-
-            # convert file configuration to dts ixiacfg
-            for conf in ixia_confs:
-                key, value = conf
-                if key == 'ixia_version':
-                    ixia_group['Version'] = value
-                elif key == 'ixia_ip':
-                    ixia_group['IP'] = value
-                elif key == 'ixia_ports':
-                    ports = self.ixia_conf.load_config(value)
-                    ixia_ports = []
-                    for port in ports:
-                        m = re.match(port_reg, port)
-                        if m:
-                            ixia_port = {}
-                            ixia_port["card"] = int(m.group(1))
-                            ixia_port["port"] = int(m.group(2))
-                            ixia_ports.append(ixia_port)
-                    ixia_group['Ports'] = ixia_ports
-                elif key == 'ixia_enable_rsfec':
-                    ixia_group['enable_rsfec'] = value
-
-            if 'Version' not in ixia_group:
-                print('ixia configuration file request ixia_version option!!!')
-                continue
-            if 'IP' not in ixia_group:
-                print('ixia configuration file request ixia_ip option!!!')
-                continue
-            if 'Ports' not in ixia_group:
-                print('ixia configuration file request ixia_ports option!!!')
-                continue
-
-            self.ixia_cfg[group] = ixia_group
-
-        return self.ixia_cfg
 
 class PktgenConf(UserConf):
 

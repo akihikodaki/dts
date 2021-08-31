@@ -32,7 +32,7 @@
 import time
 import re
 import os
-from settings import TIMEOUT, IXIA
+from settings import TIMEOUT
 from ssh_connection import SSHConnection
 from logger import getLogger
 from config import PortConf, PORTCONF, PktgenConf

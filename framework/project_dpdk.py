@@ -40,7 +40,7 @@ from crb import Crb
 from dut import Dut
 from tester import Tester
 from logger import getLogger
-from settings import IXIA, DRIVERS
+from settings import DRIVERS
 from utils import RED
 
 
@@ -707,16 +707,6 @@ class DPDKtester(Tester):
         self.tester_prerequisites()
 
         self.set_promisc()
-        # use software pktgen for performance test
-        if perf_test is True:
-            try:
-                if self.crb[IXIA] is not None:
-                    self.logger.info("Use hardware packet generator")
-            except Exception as e:
-                self.logger.warning("Use default software pktgen")
-                out = self.send_expect("ls /root/igb_uio.ko", "# ")
-                assert ("No such file or directory" not in out), "Can not find /root/igb_uio.ko for performance"
-                self.setup_memory()
 
         self.stage = "post-init"
 

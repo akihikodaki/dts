@@ -1,7 +1,6 @@
 """
 Static configuration data for any CRBs that can be used.
 """
-from settings import IXIA
 
 crbs_desc = {
     'CrownPassCRB1':

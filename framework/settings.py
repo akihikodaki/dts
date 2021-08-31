@@ -226,7 +226,6 @@ TIMEOUT = 15
 """
 Global macro for dts.
 """
-IXIA = "ixia"
 PKTGEN = "pktgen"
 PKTGEN_DPDK = "dpdk"
 PKTGEN_TREX = "trex"

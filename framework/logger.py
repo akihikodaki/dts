@@ -58,9 +58,6 @@ logging.SUITE_DUT_OUTPUT = logging.DEBUG + 3
 logging.SUITE_TESTER_CMD = logging.INFO + 4
 logging.SUITE_TESTER_OUTPUT = logging.DEBUG + 4
 
-logging.DTS_IXIA_CMD = logging.INFO + 5
-logging.DTS_IXIA_OUTPUT = logging.DEBUG + 5
-
 logging.DTS_VIRTDUT_CMD = logging.INFO + 6
 logging.DTS_VIRTDUT_OUTPUT = logging.DEBUG + 6
 
@@ -74,9 +71,6 @@ logging.addLevelName(logging.DTS_DUT_RESULT, 'DTS_DUT_RESULT')
 logging.addLevelName(logging.DTS_TESTER_CMD, 'DTS_TESTER_CMD')
 logging.addLevelName(logging.DTS_TESTER_OUTPUT, 'DTS_TESTER_OUTPUT')
 logging.addLevelName(logging.DTS_TESTER_RESULT, 'DTS_TESTER_RESULT')
-
-logging.addLevelName(logging.DTS_IXIA_CMD, 'DTS_IXIA_CMD')
-logging.addLevelName(logging.DTS_IXIA_OUTPUT, 'DTS_IXIA_OUTPUT')
 
 logging.addLevelName(logging.DTS_VIRTDUT_CMD, 'VIRTDUT_CMD')
 logging.addLevelName(logging.DTS_VIRTDUT_OUTPUT, 'VIRTDUT_OUTPUT')
@@ -140,12 +134,6 @@ class BaseLoggerAdapter(logging.LoggerAdapter):
     def suite_tester_output(self, msg, *args, **kwargs):
         self.log(logging.SUITE_TESTER_OUTPUT, msg, *args, **kwargs)
 
-    def dts_ixia_cmd(self, msg, *args, **kwargs):
-        self.log(logging.DTS_IXIA_CMD, msg, *args, **kwargs)
-
-    def dts_ixia_output(self, msg, *args, **kwargs):
-        self.log(logging.DTS_IXIA_OUTPUT, msg, *args, **kwargs)
-
     def dts_virtdut_cmd(self, msg, *args, **kwargs):
         self.log(logging.DTS_VIRTDUT_CMD, msg, *args, **kwargs)
 
@@ -174,8 +162,6 @@ class ColorHandler(logging.StreamHandler):
         logging.DTS_TESTER_CMD: '',  # SYSTEM
         logging.SUITE_DUT_CMD: '',  # SYSTEM
         logging.SUITE_TESTER_CMD: '',  # SYSTEM
-        logging.DTS_IXIA_CMD: '',  # SYSTEM
-        logging.DTS_IXIA_OUTPUT: '',  # SYSTEM
         logging.DTS_PKTGEN_CMD: '',  # SYSTEM
         logging.DTS_PKTGEN_OUTPUT: '',  # SYSTEM
         logging.DTS_VIRTDUT_CMD: '',  # SYSTEM
@@ -317,9 +303,6 @@ class DTSLOG(BaseLoggerAdapter):
             self.info_lvl = logging.DTS_TESTER_CMD
             self.debug_lvl = logging.DTS_TESTER_OUTPUT
             self.warn_lvl = logging.DTS_TESTER_RESULT
-        elif crb.startswith('ixia'):
-            self.info_lvl = logging.DTS_IXIA_CMD
-            self.debug_lvl = logging.DTS_IXIA_OUTPUT
         elif crb.startswith('pktgen'):
             self.info_lvl = logging.DTS_PKTGEN_CMD
             self.debug_lvl = logging.DTS_PKTGEN_OUTPUT
@@ -352,9 +335,6 @@ class DTSLOG(BaseLoggerAdapter):
         elif crb == 'tester':
             self.info_lvl = logging.SUITE_TESTER_CMD
             self.debug_lvl = logging.SUITE_TESTER_OUTPUT
-        elif crb == 'ixia':
-            self.info_lvl = logging.DTS_IXIA_CMD
-            self.debug_lvl = logging.DTS_IXIA_OUTPUT
         elif crb == 'pktgen':
             self.info_lvl = logging.DTS_PKTGEN_CMD
             self.debug_lvl = logging.DTS_PKTGEN_OUTPUT

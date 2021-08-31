@@ -281,9 +281,6 @@ def dts_log_testsuite(duts, tester, suite_obj, log_handler, test_classname):
                hasattr(tester, 'pktgen') and \
                getattr(tester, 'pktgen'):
                 tester.pktgen.logger.config_suite(test_classname, 'pktgen')
-            elif hasattr(tester, 'ixia_packet_gen') and \
-                 getattr(tester, 'ixia_packet_gen'):
-                tester.ixia_packet_gen.logger.config_suite(test_classname, 'ixia')
     except Exception as ex:
         pass
 
@@ -304,9 +301,6 @@ def dts_log_execution(duts, tester, log_handler):
                hasattr(tester, 'pktgen') and \
                getattr(tester, 'pktgen'):
                 tester.pktgen.logger.config_execution('pktgen')
-            elif hasattr(tester, 'ixia_packet_gen') and \
-                 getattr(tester, 'ixia_packet_gen'):
-                tester.ixia_packet_gen.logger.config_execution('ixia')
     except Exception as ex:
         pass
 
