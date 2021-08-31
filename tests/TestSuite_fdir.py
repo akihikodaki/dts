@@ -42,16 +42,16 @@ from time import sleep
 from scapy.utils import struct, socket, PcapWriter
 
 import utils
-from etgen import IxiaPacketGenerator
 from test_case import TestCase
 from settings import HEADER_SIZE
 from pmd_output import PmdOutput
+from pktgen import PacketGeneratorHelper
 
 import sys
 import imp
 
 
-class TestFdir(TestCase, IxiaPacketGenerator):
+class TestFdir(TestCase):
 
     #
     #
@@ -140,7 +140,6 @@ class TestFdir(TestCase, IxiaPacketGenerator):
 
         PMD prerequisites.
         """
-        self.tester.extend_external_packet_generator(TestFdir, self)
         #self.verify('bsdapp' not in self.path, "FDIR not support freebsd")
         # this feature support Fortville, Niantic
         #self.verify(self.nic in ["kawela_2", "niantic", "bartonhills", "82545EM",
@@ -208,6 +207,8 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         for test_cycle in self.test_cycles:
             self.table_header.append("%s Mpps" % test_cycle['cores'])
             self.table_header.append("% linerate")
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def set_up(self):
         """
@@ -1180,7 +1181,10 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         dst_ip_temp = self.dst_ip
         print("*src_ip_temp = " + src_ip_temp + "dst_ip_temp = " + dst_ip_temp)
         flows.append("Ether(src='52:00:00:00:00:00', dst='00:1B:21:8E:B2:30')/IP(src='%s',dst='%s')/UDP(sport=%d,dport=%d)/Raw(load='%s' + 'X'*(%d - 42 - %d))" % (src_ip_temp, dst_ip_temp, 1021, 1021, self.payload, frame_size, self.flexlength))
-        self.scapyCmds.append('wrpcap("/root/test.pcap", [%s])' % string.join(flows, ','))
+        self.scapyCmds.append('wrpcap("/root/test1.pcap", [%s])' % ','.join(flows))
+        flows = []
+        flows.append("Ether(src='52:00:00:00:00:01', dst='00:1B:21:8E:B2:31')/IP(src='%s',dst='%s')/UDP(sport=%d,dport=%d)/Raw(load='%s' + 'X'*(%d - 42 - %d))" % (src_ip_temp, dst_ip_temp, 1021, 1021, self.payload, frame_size, self.flexlength))
+        self.scapyCmds.append('wrpcap("/root/test2.pcap", [%s])' % ','.join(flows))
 
     def perf_fdir_performance_2ports(self, test_type, num_rules, num_flows):
         """
@@ -1191,10 +1195,10 @@ class TestFdir(TestCase, IxiaPacketGenerator):
 
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                           self.tester.get_local_port(self.dut_ports[1]),
-                          "/root/test.pcap"))
+                          "/root/test1.pcap"))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[1]),
                           self.tester.get_local_port(self.dut_ports[0]),
-                          "/root/test.pcap"))
+                          "/root/test2.pcap"))
 
         print("self.ports_socket=%s" % (self.ports_socket))
         # run testpmd for each core config
@@ -1229,7 +1233,6 @@ class TestFdir(TestCase, IxiaPacketGenerator):
             out = self.dut.send_expect(command_line, "testpmd> ", 100)
             print(out)
 
-            self.dut.send_expect("set verbose 1", "testpmd>")
             self.fdir_get_flexbytes()
 
             if test_type in ["fdir_noflex", "fdir_2flex", "fdir_16flex"]:
@@ -1264,12 +1267,14 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                 """
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input)
+                streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
+                                                    None, self.tester.pktgen)
+                _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
                 """
                 _, pps, _ = self.throughputRate(tgen_input)
                 """
 
-                out = self.dut.send_expect("show port stats all", "testpmd> ")
+                out = self.dut.send_expect("show port stats all", "testpmd> ", timeout=60)
                 print(out)
 
                 pps /= 1000000.0
@@ -1296,26 +1301,6 @@ class TestFdir(TestCase, IxiaPacketGenerator):
             self.result_table_add(table_row)
 
         self.result_table_print()
-
-    def ip(self, port, frag, src, proto, tos, dst, chksum, len, version, flags, ihl, ttl, id, options=None):
-        """
-        Configure IP protocol.
-        """
-        self.add_tcl_cmd("protocol config -name ip")
-        self.add_tcl_cmd('ip config -sourceIpAddr "%s"' % src)
-        self.add_tcl_cmd("ip config -sourceIpAddrMode ipIncrHost")
-        self.add_tcl_cmd("ip config -sourceIpAddrRepeatCount 64")
-        self.add_tcl_cmd('ip config -destIpAddr "%s"' % dst)
-        self.add_tcl_cmd("ip config -destIpAddrMode ipIncrHost")
-        self.add_tcl_cmd("ip config -destIpAddrRepeatCount 64")
-        self.add_tcl_cmd("ip config -ttl %d" % ttl)
-        self.add_tcl_cmd("ip config -totalLength %d" % len)
-        self.add_tcl_cmd("ip config -fragment %d" % frag)
-        # self.add_tcl_cmd("ip config -ipProtocol %d" % proto)
-        self.add_tcl_cmd("ip config -ipProtocol ipV4ProtocolReserved255")
-        self.add_tcl_cmd("ip config -identifier %d" % id)
-        self.add_tcl_cmd("stream config -framesize %d" % (len + 18))
-        self.add_tcl_cmd("ip set %d %d %d" % (self.chasId, port['card'], port['port']))
 
     def test_perf_fdir_performance_2ports(self):
         """
