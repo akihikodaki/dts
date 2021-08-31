@@ -45,7 +45,7 @@ class TestAfXdp(TestCase):
         Run at the start of each test suite.
         """
         #self.verify(self.nic in ("fortville_spirit"), "the port can not run this suite")
-        self.tester.extend_external_packet_generator(TestAfXdp, self)
+
         self.frame_sizes = [64, 128, 256, 512, 1024, 1518]
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports for testing")

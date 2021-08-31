@@ -49,7 +49,6 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.tester.extend_external_packet_generator(TestVhostVirtioPmdInterrupt, self)
         self.fix_ip = False
         self.nb_cores = 4
         self.queues = 4

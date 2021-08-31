@@ -45,8 +45,6 @@ class TestDistributor(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.tester.extend_external_packet_generator(TestDistributor, self)
-
         # reduce tx queues for enable many workers
         self.dut.send_expect("sed -i -e 's/.*txRings = .*/\\tconst uint16_t rxRings = 1, txRings = 1;/' ./examples/distributor/main.c", "#")
         out = self.dut.build_dpdk_apps("./examples/distributor")

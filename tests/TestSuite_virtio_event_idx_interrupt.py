@@ -49,7 +49,6 @@ class TestVirtioIdxInterrupt(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.tester.extend_external_packet_generator(TestVirtioIdxInterrupt, self)
         self.queues = 1
         self.nb_cores = 1
         self.dut_ports = self.dut.get_ports()

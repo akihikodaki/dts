@@ -44,7 +44,6 @@ class TestEFD(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.tester.extend_external_packet_generator(TestEFD, self)
 
         self.build_server_node_efd()
 

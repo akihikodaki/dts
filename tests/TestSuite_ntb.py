@@ -55,7 +55,6 @@ class TestNtb(TestCase):
         self.host_mac = self.ntb_host.get_mac_address(self.host_port)
         self.client_mac = self.ntb_client.get_mac_address(self.client_port)
 
-        self.tester.extend_external_packet_generator(TestNtb, self)
         self.frame_sizes = [64, 128, 256, 512, 1024, 1518]
         self.header_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip'] + HEADER_SIZE['udp']
         self.pktgen_helper = PacketGeneratorHelper()

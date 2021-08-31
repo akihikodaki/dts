@@ -48,7 +48,6 @@ class TestPacketOrdering(TestCase):
         Executes the Packet Ordering prerequisites. Creates a simple scapy
         packet to be used later on the tests. It also compiles the example app.
         """
-        self.tester.extend_external_packet_generator(TestPacketOrdering, self)
         self.dut_ports = self.dut.get_ports(self.nic)
         global valports
         valports = [_ for _ in self.dut_ports if self.tester.get_local_port(_) != -1]

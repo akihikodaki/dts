@@ -42,7 +42,6 @@ from time import sleep
 from scapy.utils import struct, socket, PcapWriter
 
 import utils
-from etgen import IxiaPacketGenerator
 from test_case import TestCase
 from settings import HEADER_SIZE
 from pmd_output import PmdOutput

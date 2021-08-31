@@ -58,7 +58,6 @@ class TestMultiprocess(TestCase):
         # self.verify('bsdapp' not in self.target, "Multiprocess not support freebsd")
 
         self.verify(len(self.dut.get_all_cores()) >= 4, "Not enough Cores")
-        self.tester.extend_external_packet_generator(TestMultiprocess, self)
         self.dut_ports = self.dut.get_ports()
         self.socket = self.dut.get_numa_id(self.dut_ports[0])
 

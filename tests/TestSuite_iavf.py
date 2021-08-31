@@ -57,7 +57,6 @@ class TestIavf(TestCase):
     supported_vf_driver = ['pci-stub', 'vfio-pci']
 
     def set_up_all(self):
-        self.tester.extend_external_packet_generator(TestIavf, self)
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) > 1, "Insufficient ports")
         self.vm0 = None

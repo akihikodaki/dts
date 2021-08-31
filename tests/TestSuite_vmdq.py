@@ -50,7 +50,6 @@ class TestVmdq(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.tester.extend_external_packet_generator(TestVmdq, self)
 
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")

@@ -58,7 +58,6 @@ class TestPmd(TestCase):
 
         PMD prerequisites.
         """
-        self.tester.extend_external_packet_generator(TestPmd, self)
 
         self.frame_sizes = [64, 72, 128, 256, 512, 1024, 1280, 1518]
 

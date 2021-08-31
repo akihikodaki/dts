@@ -51,7 +51,6 @@ class TestVmdqDcb(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.tester.extend_external_packet_generator(TestVmdqDcb, self)
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
         self.socket = self.dut.get_numa_id(self.dut_ports[0])

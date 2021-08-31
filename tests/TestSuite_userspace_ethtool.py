@@ -41,14 +41,14 @@ import re
 from test_case import TestCase
 from packet import Packet
 import random
-from etgen import IxiaPacketGenerator
 from settings import HEADER_SIZE
 from settings import SCAPY2IXIA
+from pktgen import PacketGeneratorHelper
 from utils import RED
 from exception import VerifyFailure
 
 
-class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
+class TestUserspaceEthtool(TestCase):
 
     def set_up_all(self):
         """
@@ -76,9 +76,8 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         self.pause_time = 65535
         self.frame_size = 64
         self.pause_rate = 0.50
-
-        # update IxiaPacketGenerator function from local
-        self.tester.extend_external_packet_generator(TestUserspaceEthtool, self)
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def set_up(self):
         """
@@ -635,45 +634,6 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
 
         self.dut.send_expect("quit", "# ")
 
-    def test_perf_port_rx_pause(self):
-        """
-        Test ethtool app flow control configure
-        """
-        self.dut.send_expect(self.cmd, "EthApp>", 60)
-        # enable pause rx
-        self.dut.send_expect("pause 0 rx", "EthApp")
-
-        # calculate number of packets
-        pps = self.wirespeed(self.nic, self.frame_size, 1) * 1000000.0
-        # get line rate
-        linerate = pps * (self.frame_size + 20) * 8
-        # calculate default sleep time for one pause frame
-        sleep = (1 / linerate) * self.pause_time * 512
-        # calculate packets dropped in sleep time
-        self.n_pkts = int((sleep / (1 / pps)) * (1 / self.pause_rate))
-
-        tgen_input = []
-        headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip'] + \
-            HEADER_SIZE['udp']
-        payload_size = self.frame_size - headers_size
-        self.tester.scapy_append('wrpcap("pause_rx.pcap", [Ether()/IP()/UDP()/("X"*%d)])' % payload_size)
-        self.tester.scapy_execute()
-        # rx and tx is the same port
-        tester_port = self.tester.get_local_port(self.ports[0])
-        tgen_input.append((tester_port, tester_port, "pause_rx.pcap"))
-
-        ori_func = self.config_stream
-        self.config_stream = self.config_stream_pause_rx
-        _, rx_pps = self.tester.traffic_generator_throughput(tgen_input)
-        self.config_stream = ori_func
-
-        rate = rx_pps / pps
-        # rate should same as expected rate
-        self.verify(rate > (self.pause_rate - 0.01) and
-                    rate < (self.pause_rate + 0.01), "Failed to handle Rx pause frame")
-
-        self.dut.send_expect("quit", "# ")
-
     def test_perf_port_tx_pause(self):
         """
         Test ethtool app flow control configure
@@ -691,77 +651,32 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip'] + \
             HEADER_SIZE['udp']
         payload_size = self.frame_size - headers_size
-        self.tester.scapy_append('wrpcap("pause_tx.pcap", [Ether()/IP()/UDP()/("X"*%d)])' % payload_size)
+        dst_mac =  self.dut.get_mac_address(0)
+        self.tester.scapy_append(
+            'wrpcap("/root/pause_tx.pcap", [Ether(dst="%s")/IP()/UDP()/("X"*%d)])' % (dst_mac, payload_size))
         self.tester.scapy_execute()
         # rx and tx is the same port
         tester_port = self.tester.get_local_port(self.ports[0])
-        tgen_input.append((tester_port, tester_port, "pause_tx.pcap"))
+        tgen_input.append((tester_port, tester_port, "/root/pause_tx.pcap"))
 
-        self.wirespeed(self.nic, self.frame_size, 1) * 1000000.0
-        _, tx_pps = self.tester.traffic_generator_throughput(tgen_input)
-
-        # verify ixia transmit line rate dropped
-        pps = self.wirespeed(self.nic, self.frame_size, 1) * 1000000.0
-        rate = tx_pps / pps
-        self.verify(rate < 0.1, "Failed to slow down transmit speed")
-
-        # verify received packets more than sent
-        self.stat_get_stat_all_stats(tester_port)
-        sent_pkts = self.get_frames_sent()
-        recv_pkts = self.get_frames_received()
-        self.verify((float(recv_pkts) / float(sent_pkts)) > 1.05, "Failed to transmit pause frame")
-
+        # run traffic generator
+        streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
+                                        None, self.tester.pktgen)
+        traffic_opt = {'throughput_stat_flag': True}
+        loss, rx_throughput  = self.tester.pktgen._measure_loss(
+            stream_ids=streams, options=traffic_opt)
+        tx_pps = rx_throughput[1]
+        sent_pkts, recv_pkts = list(loss.values())[0][1:]
         self.dut.send_expect("quit", "# ")
         self.dut.send_expect("sed -i -e '/usleep(10);$/d' %s" % main_file, "# ")
         # rebuild sample app
         self.build_ethtool()
-
-    def config_stream_pause_rx(self, fpcap, txport, rate_percent, stream_id=1, latency=False):
-        """
-        Configure IXIA stream with pause frame and normal packet
-        """
-        # enable flow control on port
-        self.add_tcl_cmd("port config -flowControl true")
-        self.add_tcl_cmd("port config -flowControlType ieee8023x")
-        self.add_tcl_cmd("port set %d %d %d" % (self.chasId, txport['card'], txport['port']))
-
-        flows = self.parse_pcap(fpcap)
-
-        self.add_tcl_cmd("ixGlobalSetDefault")
-        self.add_tcl_cmd("stream config -rateMode usePercentRate")
-        self.add_tcl_cmd("stream config -percentPacketRate 100")
-        self.add_tcl_cmd("stream config -numBursts 1")
-        self.add_tcl_cmd("stream config -numFrames %d" % self.n_pkts)
-        self.add_tcl_cmd("stream config -dma advance")
-
-        pat = re.compile(r"(\w+)\((.*)\)")
-        for header in flows[0].split('/'):
-            match = pat.match(header)
-            params = eval('dict(%s)' % match.group(2))
-            method_name = match.group(1)
-            if method_name in SCAPY2IXIA:
-                method = getattr(self, method_name.lower())
-                method(txport, **params)
-
-        # stream id start from 1
-        self.add_tcl_cmd("stream set %d %d %d %d" % (self.chasId, txport['card'], txport['port'], 1))
-
-        # pause frame stream
-        self.add_tcl_cmd("stream config -rateMode usePercentRate")
-        self.add_tcl_cmd("stream config -percentPacketRate 100")
-        self.add_tcl_cmd("stream config -numBursts 1")
-        self.add_tcl_cmd("stream config -numFrames 1")
-        self.add_tcl_cmd("stream config -dma gotoFirst")
-
-        self.add_tcl_cmd("protocol setDefault")
-        self.add_tcl_cmd("protocol config -name pauseControl")
-        self.add_tcl_cmd("pauseControl setDefault")
-        self.add_tcl_cmd("pauseControl config -da \"01 80 C2 00 00 01\"")
-        self.add_tcl_cmd("pauseControl config -pauseTime %d" % self.pause_time)
-        self.add_tcl_cmd("pauseControl config -pauseControlType ieee8023x")
-        self.add_tcl_cmd("pauseControl set %d %d %d" % (self.chasId, txport['card'], txport['port']))
-        self.add_tcl_cmd("stream set %d %d %d %d" %
-                         (self.chasId, txport['card'], txport['port'], 2))
+        # verify ixia transmit line rate dropped
+        pps = self.wirespeed(self.nic, self.frame_size, 1) * 1000000.0
+        rate = tx_pps / pps
+        self.verify(rate < 0.1, "Failed to slow down transmit speed")
+        # verify received packets more than sent
+        self.verify((float(recv_pkts) / float(sent_pkts)) > 1.05, "Failed to transmit pause frame")
 
     def tear_down(self):
         """

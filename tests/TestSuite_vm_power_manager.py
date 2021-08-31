@@ -37,12 +37,11 @@ VM power manager test suite.
 import re
 import utils
 from test_case import TestCase
-from etgen import IxiaPacketGenerator
 from settings import HEADER_SIZE
 from qemu_libvirt import LibvirtKvm
 
 
-class TestVmPowerManager(TestCase, IxiaPacketGenerator):
+class TestVmPowerManager(TestCase):
 
     def set_up_all(self):
         """
