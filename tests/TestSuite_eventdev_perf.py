@@ -43,14 +43,14 @@ from test_case import TestCase
 from time import sleep
 from settings import HEADER_SIZE
 from pmd_output import PmdOutput
-from etgen import IxiaPacketGenerator
+from pktgen import PacketGeneratorHelper
 
 from settings import FOLDERS
 from system_info import SystemInfo
 import perf_report
 from datetime import datetime
 
-class TestEventdevPerf(TestCase,IxiaPacketGenerator):
+class TestEventdevPerf(TestCase):
 
     def set_up_all(self):
         """
@@ -58,7 +58,6 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
 
         PMD prerequisites.
         """
-        self.tester.extend_external_packet_generator(TestEventdevPerf, self)
 
         self.frame_sizes = [64, 128, 256, 512, 1024, 1518]
 
@@ -111,6 +110,30 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
 
         self.pmdout = PmdOutput(self.dut)
 
+        self.build_eventdev_app()
+
+        if self.logger.log_path.startswith(os.sep):
+            self.output_path = self.logger.log_path
+        else:
+            cur_path = os.path.dirname(
+                os.path.dirname(os.path.realpath(__file__)))
+            self.output_path = os.sep.join([cur_path, self.logger.log_path])
+
+        self.pktgen_helper = PacketGeneratorHelper()
+
+    def suite_measure_throughput(self, tgen_input, rate_percent, delay):
+        streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, rate_percent,
+                                            None, self.tester.pktgen)
+        result = self.tester.pktgen.measure_throughput(stream_ids=streams)
+
+        return result
+
+    def build_eventdev_app(self):
+        self.app_command = self.dut.apps_name["eventdev_pipeline"]
+        out = self.dut.build_dpdk_apps("examples/eventdev_pipeline")
+        self.verify("Error" not in out, "compilation error 1")
+        self.verify("No such file" not in out, "compilation error 2")
+
     def set_up(self):
         """
         Run before each test case.
@@ -120,7 +143,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
     def eventdev_cmd(self, test_type, stlist, nports, worker_cores):
 
         self.Port_pci_ids = []
-        command_line1 = "dpdk-test-eventdev -l %s -w %s"
+        command_line1 = self.app_command + " -l %s -w %s"
         for i in range(0, nports):
             self.Port_pci_ids.append(self.dut.ports_info[i]['pci'])
             ## Adding core-list and pci-ids
@@ -144,7 +167,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -174,12 +197,13 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -221,7 +245,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -251,12 +275,13 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -299,7 +324,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -329,12 +354,13 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -377,7 +403,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -407,12 +433,13 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -455,7 +482,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -485,12 +512,13 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -533,7 +561,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -563,12 +591,13 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -611,10 +640,10 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[1]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test1.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[1]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test2.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -645,11 +674,15 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (
+                        os.sep.join([self.output_path, "event_test1.pcap"]), payload_size))
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:01")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (
+                        os.sep.join([self.output_path, "event_test2.pcap"]), payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -692,10 +725,10 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[1]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test1.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[1]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test2.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -725,12 +758,16 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test1.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test2.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:01")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -773,10 +810,10 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[1]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test1.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[1]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test2.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -806,12 +843,16 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test1.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test2.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:01")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -854,10 +895,10 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[1]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test1.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[1]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test2.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -887,12 +928,16 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test1.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test2.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:01")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -935,10 +980,10 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[1]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test1.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[1]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test2.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -968,12 +1013,16 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test1.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test2.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:01")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -1016,10 +1065,10 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[1]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test1.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[1]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test2.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -1049,12 +1098,16 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test1.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test2.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -1098,16 +1151,16 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[1]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test1.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[2]),
                            self.tester.get_local_port(self.dut_ports[3]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test2.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[1]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test3.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[3]),
                            self.tester.get_local_port(self.dut_ports[2]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test4.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -1137,12 +1190,22 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test1.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test2.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:01")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test3.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:02")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test4.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:03")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -1184,16 +1247,16 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[1]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test1.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[2]),
                            self.tester.get_local_port(self.dut_ports[3]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test2.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[1]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test3.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[3]),
                            self.tester.get_local_port(self.dut_ports[2]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test4.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -1223,12 +1286,22 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test1.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test2.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:01")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test3.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:02")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test4.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:03")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -1271,16 +1344,16 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[1]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test1.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[2]),
                            self.tester.get_local_port(self.dut_ports[3]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test2.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[1]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test3.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[3]),
                            self.tester.get_local_port(self.dut_ports[2]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test4.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -1310,12 +1383,22 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test1.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test2.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:01")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test3.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:02")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test4.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:03")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -1358,16 +1441,16 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[1]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test1.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[2]),
                            self.tester.get_local_port(self.dut_ports[3]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test2.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[1]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test3.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[3]),
                            self.tester.get_local_port(self.dut_ports[2]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test4.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -1397,12 +1480,22 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test1.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test2.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:01")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test3.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:02")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test4.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:03")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -1445,16 +1538,16 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[1]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test1.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[2]),
                            self.tester.get_local_port(self.dut_ports[3]),
-                          "event_test.pcap"))
+                          os.sep.join([self.output_path, "event_test2.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[1]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test3.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[3]),
                           self.tester.get_local_port(self.dut_ports[2]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test4.pcap"])))
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
             core_config = test_cycle['cores']
@@ -1483,12 +1576,22 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test1.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test2.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:01")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test3.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:02")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test4.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:03")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -1531,16 +1634,16 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         tgen_input = []
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[1]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test1.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[2]),
                            self.tester.get_local_port(self.dut_ports[3]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test2.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[1]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test3.pcap"])))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[3]),
                            self.tester.get_local_port(self.dut_ports[2]),
-                           "event_test.pcap"))
+                           os.sep.join([self.output_path, "event_test4.pcap"])))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -1570,12 +1673,22 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
+                pcap = os.sep.join([self.output_path, "event_test1.pcap"])
                 self.tester.scapy_append(
-                    'wrpcap("event_test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (payload_size))
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test2.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:01")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test3.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:02")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
+                pcap = os.sep.join([self.output_path, "event_test4.pcap"])
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:03")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                _, pps = self.suite_measure_throughput(tgen_input, 100, 60)
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
@@ -1602,22 +1715,6 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
             self.perf_results['data'].append(table_row)
 
         self.result_table_print()
-
-    def ip(self, port, frag, src, proto, tos, dst, chksum, len, options, version, flags, ihl, ttl, id):
-        self.add_tcl_cmd("protocol config -name ip")
-        self.add_tcl_cmd('ip config -sourceIpAddr "%s"' % src)
-        self.add_tcl_cmd("ip config -sourceIpAddrMode ipIncrHost")
-        self.add_tcl_cmd("ip config -sourceIpAddrRepeatCount 100")
-        self.add_tcl_cmd('ip config -destIpAddr "%s"' % dst)
-        self.add_tcl_cmd("ip config -destIpAddrMode ipIdle")
-        self.add_tcl_cmd("ip config -ttl %d" % ttl)
-        self.add_tcl_cmd("ip config -totalLength %d" % len)
-        self.add_tcl_cmd("ip config -fragment %d" % frag)
-        self.add_tcl_cmd("ip config -ipProtocol ipV4ProtocolReserved255")
-        self.add_tcl_cmd("ip config -identifier %d" % id)
-        self.add_tcl_cmd("stream config -framesize %d" % (len + 18))
-        self.add_tcl_cmd("ip set %d %d %d" % (self.chasId, port['card'], port['port']))
-
 
     def tear_down(self):
         """
