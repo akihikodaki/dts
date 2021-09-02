@@ -751,6 +751,152 @@ drop action
 
    repeat step 1-4 to check the pattern in pipeline mode.
 
+Test steps for supported pattern
+================================
+1. validate rules.
+2. create rules and list rules.
+3. send matched packets, check the action is correct::
+    queue index: to correct queue 
+    rss queues: to correct queue group 
+    drop: not receive pkt
+4. send mismatched packets, check the action is not correct::
+    queue index: not to correct queue  
+    rss queues: not to correct queue group 
+    drop: receive pkt
+5. destroy rule, list rules, check no rules.
+6. send matched packets, check the action is not right.
+
+Test case: IPv4/IPv6 + TCP/UDP pipeline mode
+============================================
+
+MAC_PPPOE_IPV4_UDP + L4 MASK
+----------------------------
+
+matched packets::
+
+  sendp([Ether()/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=2304,dport=23)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=2244,dport=23)/Raw("x"*80)],iface="ens260f0",count=1)
+
+queue index
+...........
+
+flow create 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 2500 src mask 0xf00 / end actions queue index 1 / end
+
+
+MAC_PPPOE_IPV4_TCP + L4 MASK
+----------------------------
+
+matched packets::
+
+  sendp([Ether()/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=2304,dport=23)/Raw("x" * 80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=2244,dport=23)/Raw("x" * 80)],iface="ens260f0",count=1)
+
+queue index
+...........
+flow create 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 2500 src mask 0xf00 / end actions queue index 3 / end
+
+
+MAC_PPPOE_IPV6_UDP + L4 MASK
+----------------------------
+
+matched packets::
+
+  sendp([Ether()/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=1282)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=1040)/Raw("x"*80)],iface="ens260f0",count=1)
+
+rss queues
+..........             
+flow create 0 priority 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp dst is 1025 dst mask 0xf0 / end actions rss queues 4 5 end / end
+
+MAC_PPPOE_IPV6_TCP + L4 MASK
+----------------------------
+
+matched packets::
+
+  sendp([Ether()/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=1282)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=1040)/Raw("x"*80)],iface="ens260f0",count=1)
+
+drop
+....    
+flow create 0 priority 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp dst is 1025 dst mask 0xf0 / end actions drop / end
+
+
+Test case: VLAN non-pipeline mode
+=================================
+
+MAC_VLAN_PPPOE_IPV4_UDP + L4 MASK
+---------------------------------
+matched packets::
+
+  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=50,dport=1024)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=50,dport=1281)/Raw("x"*80)],iface="ens260f0",count=1)
+        
+queue index
+...........
+flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp dst is 1280 dst mask 0x00ff / end actions queue index 1 / end
+
+MAC_VLAN_PPPOE_IPV4_TCP + L4 MASK
+---------------------------------
+matched packets::
+
+  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=50,dport=1024)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=50,dport=1281)/Raw("x"*80)],iface="ens260f0",count=1)
+
+rss queues
+..........
+flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 dst is 192.168.1.2 / tcp dst is 1280 dst mask 0x00ff / end actions rss queues 4 5 end / end
+
+Test case: VLAN pipeline mode
+=============================
+MAC_VLAN_PPPOE_IPV6_UDP + L4 MASK
+---------------------------------
+
+matched packets::
+
+  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=16,dport=23)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=17,dport=23)/Raw("x"*80)],iface="ens260f0",count=1)
+
+drop
+....
+flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 32 src mask 0x0f / end actions drop / end
+
+MAC_VLAN_PPPOE_IPV6_TCP + L4 MASK
+---------------------------------
+
+matched packets::
+
+  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=16)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=17)/Raw("x"*80)],iface="ens260f0",count=1)
+
+queue index
+...........
+flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp dst is 32 dst mask 0x0f / end actions queue index 7 / end
+
+
 Test case: MAC_PPPOE_IPV4_PAY_session_id_proto_id
 =================================================
 
