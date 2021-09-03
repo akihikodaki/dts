@@ -691,15 +691,15 @@ sv_mac_ipv4_gtpu_eh_ipv4_udp_1 = [
     tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_without_mask,
     tv_mac_ipv4_gtpu_eh_ipv4_udp_qfi,
     tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst,
-    tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src,
-    tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src_l4dst,
+    tv_mac_ipv4_gtpu_eh_ipv4_udp_l4dst,
+    tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst_l4dst,
+    tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst_l4src,
 ]
 
 sv_mac_ipv4_gtpu_eh_ipv4_udp_2 = [
-    tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst_l4dst,
+    tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src,
+    tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src_l4dst,
     tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src_l4src,
-    tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst_l4src,
-    tv_mac_ipv4_gtpu_eh_ipv4_udp_l4dst,
     tv_mac_ipv4_gtpu_eh_ipv4_udp_l4src,
     tv_mac_ipv4_gtpu_eh_ipv4_udp_l4src_l4dst,
     tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_l4src_l4dst,
@@ -710,6 +710,7 @@ sv_mac_ipv4_gtpu_eh_ipv4_udp_2 = [
     tv_mac_ipv4_gtpu_eh_ipv4_udp_l3_l4,
     tv_mac_ipv4_gtpu_eh_ipv4_udp_all,
 ]
+
 
 sv_mac_ipv4_gtpu_eh_ipv4_udp = [sv_mac_ipv4_gtpu_eh_ipv4_udp_1, sv_mac_ipv4_gtpu_eh_ipv4_udp_2]
 
@@ -1062,15 +1063,15 @@ sv_mac_ipv4_gtpu_eh_ipv4_tcp_1 = [
     tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_without_mask,
     tv_mac_ipv4_gtpu_eh_ipv4_tcp_qfi,
     tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst,
-    tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src,
-    tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src_l4src,
+    tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4dst,
+    tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst_l4dst,
+    tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst_l4src,
 ]
 
 sv_mac_ipv4_gtpu_eh_ipv4_tcp_2 = [
+    tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src,
     tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src_l4dst,
-    tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst_l4src,
-    tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst_l4dst,
-    tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4dst,
+    tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src_l4src,
     tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4src,
     tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4src_l4dst,
     tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_l4src_l4dst,
