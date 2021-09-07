@@ -264,6 +264,21 @@ FVL does not support hardware per queue stats,
 so rx_qx_packets and rx_qx_bytes are both 0.
 tx_qx_packets and tx_qx_bytes are both 0 too.
 
+6. Clear stats::
+
+      testpmd> clear port stats all
+
+7. Check stats and xstats, verify rx_good_packets, RX-packets of port 0 and tx_good_packets, TX-packets of port 1 are both 0.
+
+8. Repeat above 4 and 5 steps.
+
+9. Clear xstats::
+
+    testpmd> clear port xstats all
+
+10. Check stats and xstats, verify rx_good_packets, RX-packets of port 0 and tx_good_packets, TX-packets of port 1 are both 0.
+
+
 Test Case: VF xstats Checks
 ============================
 1. Create one VF port on a kernel PF, then bind the VF to pmd driver::
