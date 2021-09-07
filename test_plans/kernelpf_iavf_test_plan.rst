@@ -105,6 +105,27 @@ packets can be received and forwarded by the VF::
 Use scapy to send 100 random packets with a wrong MAC to VF0, verify the
 packets can't be received by the VF.
 
+Remove the MAC 00:11:22:33:44:55::
+
+    testpmd> mac_addr remove 0 00:11:22:33:44:55
+
+Use scapy to send 100 random packets with removed VF0's MAC, verify the
+packets can't be received and forwarded by the VF::
+
+Set the default mac address to other mac, check the mac address has be changed
+to new set mac::
+
+    testpmd> mac_addr set 0 00:01:23:45:67:11
+    testpmd> show port info 0
+
+Use scapy to send 100 random packets with original VF0's MAC, verify the
+packets can't be received and forwarded by the VF
+
+Use scapy to send 100 random packets with new set VF0's MAC, verify the
+packets can be received and forwarded by the VF
+
+Reset to original mac address
+
 Note::
     Not set VF MAC from kernel PF for this case, if set, will print
     "not permitted error" when add new MAC for VF.
@@ -350,17 +371,35 @@ Start command with multi-queues like below::
 
    ./testpmd -c f -n 4 -- -i --txq=4 --rxq=4
 
+Show RSS RETA configuration::
+
+    testpmd> show port 0 rss reta 64 (0xffffffffffffffff)
+
+    RSS RETA configuration: hash index=0, queue=0
+    RSS RETA configuration: hash index=1, queue=1
+    RSS RETA configuration: hash index=2, queue=2
+    RSS RETA configuration: hash index=3, queue=3
+    ...
+    RSS RETA configuration: hash index=60, queue=0
+    RSS RETA configuration: hash index=61, queue=1
+    RSS RETA configuration: hash index=62, queue=2
+    RSS RETA configuration: hash index=63, queue=3
+
 Config hash reta table::
 
-  testpmd> port config 0 rss reta (0,0)
-  testpmd> port config 0 rss reta (1,1)
-  testpmd> port config 0 rss reta (2,2)
-  testpmd> port config 0 rss reta (3,3)
-  ...
-  testpmd> port config 0 rss reta (60,0)
-  testpmd> port config 0 rss reta (61,1)
-  testpmd> port config 0 rss reta (62,2)
-  testpmd> port config 0 rss reta (63,3)
+    testpmd> port config 0 rss reta (0,3)
+    testpmd> port config 0 rss reta (1,2)
+    testpmd> port config 0 rss reta (2,1)
+    testpmd> port config 0 rss reta (3,0)
+
+Check RSS RETA configuration has changed::
+
+    testpmd> show port 0 rss reta 64 (0xffffffffffffffff)
+
+    RSS RETA configuration: hash index=0, queue=3
+    RSS RETA configuration: hash index=1, queue=2
+    RSS RETA configuration: hash index=2, queue=2
+    RSS RETA configuration: hash index=3, queue=1
 
 Enable IP/TCP/UDP RSS::
 
@@ -368,6 +407,43 @@ Enable IP/TCP/UDP RSS::
 
 Send different flow types' IP/TCP/UDP packets to VF port, check packets are
 received by different configured queues.
+
+Test case: VF RSS hash key
+==========================
+
+Start command with multi-queues like below::
+
+   ./testpmd -c f -n 4 -- -i --txq=4 --rxq=4
+
+Show port rss hash key::
+
+    testpmd> show port 0 rss-hash key
+
+Set rxonly fwd, enable print, start testpmd::
+
+    testpmd> set fwd rxonly
+    testpmd> set verbose 1
+    testpmd> start
+
+Send ipv4 packets, mark the RSS hash value::
+
+    p=Ether(dst="56:0A:EC:50:A4:28")/IP(src="1.2.3.4")/Raw(load='X'*30)
+
+Update ipv4 different hash key::
+
+    testpmd> port config 0 rss-hash-key ipv4 1b9d58a4b961d9cd1c56ad1621c3ad51632c16a5d16c21c3513d132c135d132c13ad1531c23a51d6ac49879c499d798a7d949c8a
+
+Show port rss hash key, check the key is same to configured key::
+
+    testpmd> show port 0 rss-hash key
+    RSS functions:
+     all ipv4 ipv6 ip
+    RSS key:
+    1B9D58A4B961D9CD1C56AD1621C3AD51632C16A5D16C21C3513D132C135D132C13AD1531C23A51D6AC49879C499D798A7D949C8A
+
+Send ipv4 packets, check RSS hash value is different::
+
+    p=Ether(dst="56:0A:EC:50:A4:28")/IP(src="1.2.3.4")/Raw(load='X'*30)
 
 
 Test case: VF HW checksum offload
