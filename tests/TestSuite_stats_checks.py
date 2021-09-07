@@ -208,10 +208,22 @@ class TestStatsChecks(TestCase):
         self.exec("clear port xstats all")
         org_xstats = self.get_xstats([rx_port, tx_port])
         self.verify_results(org_xstats, rx_port, tx_port, if_zero=True)
+        final_xstats, stats_data = self.sendpkt_get_xstats(rx_port, tx_port, if_vf)
+        self.verify_results(final_xstats, rx_port, tx_port, stats_data=stats_data)
+        self.exec("clear port stats all")
+        clear_stats = self.get_xstats([rx_port, tx_port])
+        self.verify_results(clear_stats, rx_port, tx_port, if_zero=True)
+
+        final_xstats, stats_data = self.sendpkt_get_xstats(rx_port, tx_port, if_vf)
+        self.verify_results(final_xstats, rx_port, tx_port, stats_data=stats_data)
+        self.exec("clear port xstats all")
+        clear_xstats = self.get_xstats([rx_port, tx_port])
+        self.verify_results(clear_xstats, rx_port, tx_port, if_zero=True)
+        self.pmdout.quit()
+
+    def sendpkt_get_xstats(self, rx_port, tx_port, if_vf):
         self.exec("start")
-
         self.send_pkt_with_random_ip(tx_port, count=100, if_vf=if_vf)
-
         self.exec("stop")
         if rx_port == tx_port:
             final_xstats = self.get_xstats([rx_port])
@@ -226,8 +238,7 @@ class TestStatsChecks(TestCase):
                 rx_port: rx_stats_info,
                 tx_port: tx_stats_info
             }
-        self.verify_results(final_xstats, rx_port, tx_port, stats_data=stats_data)
-        self.pmdout.quit()
+        return final_xstats, stats_data
 
     def set_up_all(self):
         """
