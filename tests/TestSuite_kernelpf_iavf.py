@@ -277,6 +277,17 @@ class TestKernelpfIavf(TestCase):
         # send packet with wrong mac
         self.send_random_pkt(self.wrong_mac, count=100)
         self.verify_packet_count(0)
+        self.vm_testpmd.execute_cmd('clear port stats all')
+        self.vm_testpmd.execute_cmd("mac_addr remove 0 %s" % self.add_addr)
+        self.send_random_pkt(self.add_addr, count=100)
+        self.verify_packet_count(0)
+        self.vm_testpmd.execute_cmd('clear port stats all')
+        self.vm_testpmd.execute_cmd("mac_addr add 0 00:01:23:45:67:11")
+        self.send_random_pkt(self.add_addr, count=100)
+        self.verify_packet_count(0)
+        self.vm_testpmd.execute_cmd('clear port stats all')
+        self.send_random_pkt("00:01:23:45:67:11", count=100)
+        self.verify_packet_count(100)
 
     def get_testpmd_vf_mac(self, out):
         result = re.search("([a-f0-9]{2}:){5}[a-f0-9]{2}", out, re.IGNORECASE)
@@ -635,8 +646,11 @@ class TestKernelpfIavf(TestCase):
         self.vm_testpmd.start_testpmd("all", "--txq=4 --rxq=4")
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set verbose 1")
-        for i, j in zip(list(range(64)), [0, 1, 2, 3]*16):
+        default_rss_reta = self.vm_testpmd.execute_cmd("show port 0 rss reta 64 (0xffffffffffffffff)")
+        for i, j in zip(list(range(64)), [3, 2, 1, 0]*16):
             self.vm_testpmd.execute_cmd("port config 0 rss reta (%d,%d)" % (i, j))
+        change_rss_reta = self.vm_testpmd.execute_cmd("show port 0 rss reta 64 (0xffffffffffffffff)")
+        self.verify(default_rss_reta != change_rss_reta, "port config rss reta failed")
         for type in rss_type:
             self.vm_testpmd.execute_cmd("port config all rss %s" % type)
             self.vm_testpmd.execute_cmd("start")
@@ -645,6 +659,32 @@ class TestKernelpfIavf(TestCase):
             out = self.vm_dut.get_session_output()
             self.verify_packet_number(out)
             self.vm_testpmd.execute_cmd("clear port stats all")
+
+    def test_vf_rss_hash_key(self):
+        update_hash_key = '1b9d58a4b961d9cd1c56ad1621c3ad51632c16a5d16c21c3513d132c135d132c13ad1531c23a51d6ac49879c499d798a7d949c8a'
+        self.vm_testpmd.start_testpmd("all", "--txq=4 --rxq=4")
+        self.vm_testpmd.execute_cmd("show port 0 rss-hash key")
+        self.vm_testpmd.execute_cmd("set fwd rxonly")
+        self.vm_testpmd.execute_cmd("set verbose 1")
+        self.vm_testpmd.execute_cmd("start")
+        pkt1_info = self.send_pkt_gethash()
+        self.vm_testpmd.execute_cmd("port config 0 rss-hash-key ipv4 {}".format(update_hash_key))
+        out = self.vm_testpmd.execute_cmd("show port 0 rss-hash key")
+        self.verify(update_hash_key in out.lower(), "rss hash key update failed")
+        pkt2_info = self.send_pkt_gethash()
+        self.verify(pkt1_info[0][0] != pkt2_info[0][0], "hash value should be different")
+
+    def send_pkt_gethash(self, pkt=''):
+        if pkt == '':
+            pkt = "sendp([Ether(dst='%s')/IP(src='1.2.3.4')/Raw(load='X'*30)], iface='%s')" % (self.vf_mac, self.tester_intf)
+        self.tester.scapy_append(pkt)
+        self.tester.scapy_execute()
+        out = self.vm_dut.get_session_output()
+        p = re.compile("RSS hash=(0x\w+) - RSS queue=(0x\w+)")
+        pkt_info = p.findall(out)
+        self.verify(pkt_info, "received pkt have no hash")
+        self.logger.info("hash values:{}".format(pkt_info))
+        return pkt_info
 
     def verify_packet_number(self, out):
         queue0_number = len(re.findall('port 0/queue 0', out))
