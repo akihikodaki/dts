@@ -182,10 +182,14 @@ class TestCVLEcpri(TestCase):
         self.right_ecpri = '0x5123'
         self.wrong_ecpri = '0x5121'
 
+        self.new_session = self.dut.create_session(name="self.new_session")
+
     def set_up(self):
         """
         Run before each test case.
         """
+        self.new_session.send_expect("ip link set {} vf 0 trust on".format(self.pf_interface), "# ", timeout=10)
+        self.new_session.send_expect("ip link set {} vf 0 mac 00:11:22:33:44:00".format(self.pf_interface), "# ", timeout=10)
         self.launch_testpmd()
         self.pkt = Packet()
 
@@ -202,9 +206,6 @@ class TestCVLEcpri(TestCase):
                         self.sriov_vfs_port[i].bind_driver(self.drivername)
                     self.dut.send_expect("ip link set %s vf %s mac %s" % (self.pf_interface, i, Mac_list[i]), "# ")
 
-                #self.vf0_prop = {'opt_host': self.sriov_vfs_port[0].pci}
-                #self.dut.send_expect("ifconfig %s up" % self.pf_interface, "# ")
-                self.dut.send_expect("ip link set %s vf 0 trust on" % self.pf_interface, "# ")
             except Exception as e:
                 self.destroy_iavf()
                 raise Exception(e)
@@ -248,57 +249,53 @@ class TestCVLEcpri(TestCase):
 
         self.send_and_verify(Mac_list[1], self.right_ecpri, if_match=False)
 
-    def test_add_and_delete_eCPRI_port_config_in_DCF(self):
+    def test_eCPRI_port_config_when_DCF_exit_reset(self):
         self.pmd_output.execute_cmd("port config 0 udp_tunnel_port add ecpri {}".format(self.right_ecpri))
         self.pmd_output.execute_cmd("quit", expected="#")
         self.launch_testpmd()
         self.send_and_verify(Mac_list[1], self.right_ecpri, if_match=False)
         self.pmd_output.execute_cmd("port config 0 udp_tunnel_port add ecpri {}".format(self.right_ecpri))
         # use new mac to test
-        new_session = self.dut.create_session(name="new_session")
         new_mac = "00:11:22:33:44:66"
-        new_session.send_expect("ip link set {} vf 0 mac {}".format(self.pf_interface, new_mac), "#", timeout=10)
+        self.new_session.send_expect("ip link set {} vf 0 mac {}".format(self.pf_interface, new_mac), "#", timeout=10)
         self.send_and_verify(Mac_list[1], self.right_ecpri, if_match=False)
         self.pmd_output.execute_cmd("quit", expected="#")
         # set port vf 0 trust off and test
         self.launch_testpmd()
         self.pmd_output.execute_cmd("port config 0 udp_tunnel_port add ecpri {}".format(self.right_ecpri))
-        new_session.send_expect("ip link set {} vf 0 trust off".format(self.pf_interface), "#", timeout=10)
+        self.new_session.send_expect("ip link set {} vf 0 trust off".format(self.pf_interface), "#", timeout=10)
         self.send_and_verify(Mac_list[1], self.right_ecpri, if_match=False)
-        new_session.close()
 
     def test_DCF_port_config_and_linux_port_config(self):
-        new_session = self.dut.create_session(name="new_session")
         self.pmd_output.execute_cmd("port config 0 udp_tunnel_port add ecpri {}".format(self.right_ecpri))
-        new_session.send_expect("dmesg -c", "#")
-        new_session.send_expect("ip link add vx0 type vxlan id 100 local 1.1.1.1 remote "
+        self.new_session.send_expect("dmesg -c", "#")
+        self.new_session.send_expect("ip link add vx0 type vxlan id 100 local 1.1.1.1 remote "
                                 "2.2.2.2 dev {} dstport 0x1234".format(self.pf_interface), "#")
-        new_session.send_expect("ifconfig vx0 up", "#")
-        new_session.send_expect("ifconfig vx0 down", "#")
-        out = new_session.send_expect("dmesg", "#")
+        self.new_session.send_expect("ifconfig vx0 up", "#")
+        self.new_session.send_expect("ifconfig vx0 down", "#")
+        out = self.new_session.send_expect("dmesg", "#")
         self.verify("Cannot config tunnel, the capability is used by DCF" in out, "port can used by another thread!")
         # delete eCPRI port config and test
-        new_session.send_expect("dmesg -c", "#")
+        self.new_session.send_expect("dmesg -c", "#")
         self.pmd_output.execute_cmd("port config 0 udp_tunnel_port rm ecpri {}".format(self.right_ecpri))
-        new_session.send_expect("ifconfig vx0 up", "#")
-        new_session.send_expect("ifconfig vx0 down", "# ")
-        out = new_session.send_expect("dmesg", "#")
+        self.new_session.send_expect("ifconfig vx0 up", "#")
+        self.new_session.send_expect("ifconfig vx0 down", "# ")
+        out = self.new_session.send_expect("dmesg", "#")
         self.verify("Cannot config tunnel, the capability is used by DCF" not in out, "port can't used by another thread!")
         self.pmd_output.execute_cmd("quit", "#")
         # do ecpri test
         self.launch_testpmd()
-        new_session.send_expect("ip link add vx0 type vxlan id 100 local 1.1.1.1 remote "
+        self.new_session.send_expect("ip link add vx0 type vxlan id 100 local 1.1.1.1 remote "
                                 "2.2.2.2 dev {} dstport 0x1234".format(self.pf_interface), "#")
-        new_session.send_expect("ifconfig vx0 up", "#")
+        self.new_session.send_expect("ifconfig vx0 up", "#")
         out = self.pmd_output.execute_cmd("port config 0 udp_tunnel_port add ecpri {}".format(self.right_ecpri))
         self.verify("ice_dcf_send_aq_cmd(): No response (201 times) or return failure (desc: -63 / buff: -63)" in out,
                     "test fail")
         # set vx0 down and test
-        new_session.send_expect("ifconfig vx0 down", "#")
+        self.new_session.send_expect("ifconfig vx0 down", "#")
         out = self.pmd_output.execute_cmd("port config 0 udp_tunnel_port add ecpri {}".format(self.right_ecpri))
         self.verify("ice_dcf_send_aq_cmd(): No response (201 times) or return failure (desc: -63 / buff: -63)"
                     not in out, "test fail")
-        new_session.close()
 
     def test_negative_eCPRI_port_config_in_DCF(self):
         ecpri_and_expect_dic = {"1": "Operation not supported",
@@ -435,8 +432,7 @@ class TestCVLEcpri(TestCase):
         hash_lst = [i.get('RSS hash') for i in out_data]
         self.verify(len(set(hash_lst)) == 2 and None not in hash_lst, 'test fail, RSS hash is same')
 
-        new_session = self.dut.create_session(name="new_session")
-        new_session.send_expect("ip link set {} vf 0 mac 00:11:22:33:44:66".format(self.pf_interface), "#")
+        self.new_session.send_expect("ip link set {} vf 0 mac 00:11:22:33:44:66".format(self.pf_interface), "#")
         out_data = self.get_receive_lst(tag_lst, [pkt])
         # verify
         hash_lst = [i.get('RSS hash') for i in out_data]
@@ -444,7 +440,7 @@ class TestCVLEcpri(TestCase):
 
         # restart testpmd and test
         new_mac = "00:11:22:33:44:55"
-        new_session.send_expect("ip link set {} vf 0 mac {}".format(self.pf_interface, new_mac), "#")
+        self.new_session.send_expect("ip link set {} vf 0 mac {}".format(self.pf_interface, new_mac), "#")
         self.dut.send_expect("quit", "# ")
         self.launch_testpmd()
         self.pmd_output.execute_cmd("port config 0 udp_tunnel_port add ecpri 0x5123")
@@ -455,7 +451,7 @@ class TestCVLEcpri(TestCase):
         hash_lst = [i.get('RSS hash') for i in out_data]
         self.verify(len(set(hash_lst)) == 2 and None not in hash_lst, 'test fail, RSS hash is same')
 
-        new_session.send_expect("ip link set {} vf 0 mac 00:11:22:33:44:66".format(self.pf_interface), "#")
+        self.new_session.send_expect("ip link set {} vf 0 mac 00:11:22:33:44:66".format(self.pf_interface), "#")
         out_data = self.get_receive_lst(tag_lst, [pkt])
         # verify
         hash_lst = [i.get('RSS hash') for i in out_data]
@@ -463,13 +459,11 @@ class TestCVLEcpri(TestCase):
 
         self.dut.send_expect("quit", "# ")
         self.launch_testpmd()
-        new_session.send_expect("ip link set {} vf 0 trust off".format(self.pf_interface), "#")
+        self.new_session.send_expect("ip link set {} vf 0 trust off".format(self.pf_interface), "#")
         out_data = self.get_receive_lst(tag_lst, [pkt])
         # verify
         hash_lst = [i.get('RSS hash') for i in out_data]
         self.verify(len(set(hash_lst)) == 1, 'test fail, RSS hash is not same')
-        new_session.send_expect("ip link set {} vf 0 trust on".format(self.pf_interface), "#")
-        new_session.close()
 
     def test_DCF_reset_for_eth_ecpri_rss(self):
         tag_lst = ['x45', 'x46', 'x47', 'x48']
@@ -482,36 +476,30 @@ class TestCVLEcpri(TestCase):
         # verify
         hash_lst = [i.get('RSS hash') for i in out_data]
         self.verify(len(set(hash_lst)) == 2 and None not in hash_lst, 'test fail, RSS hash is same')
-        new_session = self.dut.create_session(name="new_session")
-        new_session.send_expect("ip link set {} vf 0 mac 00:11:22:33:44:66".format(self.pf_interface), "#")
+        self.new_session.send_expect("ip link set {} vf 0 mac 00:11:22:33:44:66".format(self.pf_interface), "#")
         out_data = self.get_receive_lst(tag_lst[1:], [pkt])
         # verify
         hash_lst = [i.get('RSS hash') for i in out_data]
         self.verify(len(set(hash_lst)) == 3 and None not in hash_lst, 'test fail, RSS hash is same')
 
-        new_session.send_expect("ip link set {} vf 0 trust off".format(self.pf_interface), "#")
+        self.new_session.send_expect("ip link set {} vf 0 trust off".format(self.pf_interface), "#")
         out_data = self.get_receive_lst(tag_lst[:2], [pkt])
         # verify
         hash_lst = [i.get('RSS hash') for i in out_data]
         self.verify(len(set(hash_lst)) == 2 and None not in hash_lst, 'test fail, RSS hash is same')
 
-        new_session.send_expect("ip link set {} vf 0 mac 00:11:22:33:44:66".format(self.pf_interface), "#")
+        self.new_session.send_expect("ip link set {} vf 0 mac 00:11:22:33:44:66".format(self.pf_interface), "#")
         out_data = self.get_receive_lst(tag_lst[1:], [pkt])
         # verify
         hash_lst = [i.get('RSS hash') for i in out_data]
         self.verify(len(set(hash_lst)) == 3 and None not in hash_lst, 'test fail, RSS hash is same')
-
-        new_session.send_expect("ip link set {} vf 0 trust on".format(self.pf_interface), "#")
-        new_session.send_expect("ip link set {} vf 0 mac 00:11:22:33:44:55".format(self.pf_interface), "#")
-        new_session.close()
 
     def test_DCF_exit_for_eth_ecpri_and_udp_ecpri_rss(self):
         self.dut.send_expect("quit", "# ")
         eal_param = " -a {},cap=dcf".format(self.sriov_vfs_port[0].pci)
         self.pmd_output.start_testpmd(cores=list(range(8)), eal_param=eal_param, prefix="test1", socket=self.ports_socket)
         self.pmd_output.execute_cmd("port config 0 udp_tunnel_port add ecpri 0x5123")
-        new_session = self.dut.create_session(name="new_session")
-        pmd_output1 = PmdOutput(self.dut, new_session)
+        pmd_output1 = PmdOutput(self.dut, self.new_session)
         eal_param1 = " -a {} -a {}".format(self.sriov_vfs_port[1].pci, self.sriov_vfs_port[2].pci)
         param = " --rxq=16 --txq=16"
         pmd_output1.start_testpmd(cores=list(range(8)), eal_param=eal_param1, param=param, prefix="test2",
@@ -537,7 +525,6 @@ class TestCVLEcpri(TestCase):
         hash_lst = [i.get('RSS hash') for i in out_data]
         self.verify(hash_lst[0] == hash_lst[2] and hash_lst[1] != hash_lst[3], 'test fail, hash value is wrong.')
         pmd_output1.execute_cmd("quit", '#')
-        new_session.close()
 
     def create_fdir_rule(self, rule: (list, str), check_stats=None, msg=None, validate=True):
         if validate:
@@ -782,8 +769,7 @@ class TestCVLEcpri(TestCase):
         # verify
         self.verify([data.get('queue') for data in data_lst] == ['1', '2'], "pkt to the wrong queue!")
         self.verify([data.get('FDIR matched ID') for data in data_lst] == ['0x1', '0x2'], "pkt with wrong FDIR matched ID!")
-        new_session = self.dut.create_session(name="new_session")
-        new_session.send_expect('ip link set {} vf 0 mac 00:11:22:33:44:66'.format(self.pf_interface), '#')
+        self.new_session.send_expect('ip link set {} vf 0 mac 00:11:22:33:44:66'.format(self.pf_interface), '#')
         data_lst = self.get_receive_lst(tag_lst, pkt_lst)
         # verify
         self.verify(data_lst[1].get('queue') == '2', "pkt to the wrong queue!")
@@ -798,11 +784,10 @@ class TestCVLEcpri(TestCase):
         data_lst = self.get_receive_lst(tag_lst, pkt_lst)
         self.verify([data.get('queue') for data in data_lst] == ['1', '2'], "pkt to the wrong queue!")
         self.verify([data.get('FDIR matched ID') for data in data_lst] == ['0x1', '0x2'], "pkt with wrong FDIR matched ID!")
-        new_session.send_expect("ip link set {} vf 0 trust off".format(self.pf_interface), "#")
+        self.new_session.send_expect("ip link set {} vf 0 trust off".format(self.pf_interface), "#")
         data_lst = self.get_receive_lst(tag_lst, pkt_lst)
         self.verify(data_lst[1].get('queue') == '2', "pkt to the wrong queue!")
         self.verify([data.get('FDIR matched ID') for data in data_lst] == [None, '0x2'], "pkt with wrong FDIR matched ID!")
-        new_session.close()
 
     def test_ecpri_fdir_when_DCF_exit(self):
         self.dut.send_expect("quit", "#")
@@ -810,8 +795,7 @@ class TestCVLEcpri(TestCase):
         self.pmd_output.start_testpmd(cores=list(range(8)), eal_param=eal_param, prefix="test1",
                                       socket=self.ports_socket)
         self.pmd_output.execute_cmd("port config 0 udp_tunnel_port add ecpri 0x5123")
-        new_session = self.dut.create_session(name="new_session")
-        pmd_output1 = PmdOutput(self.dut, new_session)
+        pmd_output1 = PmdOutput(self.dut, self.new_session)
         eal_param1 = " -a {} -a {}".format(self.sriov_vfs_port[1].pci, self.sriov_vfs_port[2].pci)
         param = " --rxq=16 --txq=16"
         pmd_output1.start_testpmd(cores=list(range(8)), eal_param=eal_param1, param=param, prefix="test2",
@@ -895,4 +879,5 @@ class TestCVLEcpri(TestCase):
         self.dut.kill_all()
 
     def tear_down_all(self):
+        self.new_session.close()
         self.dut.kill_all()
