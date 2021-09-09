@@ -93,7 +93,7 @@ class TestVmPowerManager(TestCase):
         self.path = self.vm_dut.apps_name['guest_cli']
         self.guest_cmd = self.path + "-c 0xf -n 4 -- --vm-name=%s --vcpu-list=0,1,2,3" % self.vm_name
         self.vm_power_dir = self.vm_dut.apps_name['vm_power_manager']
-        mgr_cmd = self.vm_power_dir + "-c 0x7 -n 4"
+        mgr_cmd = self.vm_power_dir + "-c 0x1ff -n 4"
         out = self.dut.send_expect(mgr_cmd, "vmpower>", 120)
         self.dut.send_expect("add_vm %s" % self.vm_name, "vmpower>")
         self.dut.send_expect("add_channels %s all" % self.vm_name, "vmpower>")
