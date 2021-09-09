@@ -283,18 +283,10 @@ class TestVEBSwitching(TestCase):
 
         self.dut.send_expect("stop", "testpmd>", 2)
         self.session_secondary.send_expect("stop", "testpmd>", 2)
-        out = self.session_secondary.send_expect("show port info 0", "testpmd>")
-        vf1_driver = re.findall("Driver\s*name:\s*(\w+)", out)[0]
 
         vf0_tx_stats = self.veb_get_pmd_stats("first", 0, "tx")
         vf1_rx_stats = self.veb_get_pmd_stats("second", 0, "rx")
-        if self.kdriver == 'ice':
-            vf1_rx_stats[-1] = vf1_rx_stats[-1] + 4
-        if self.kdriver == 'i40e':
-            if vf1_driver == 'net_iavf':
-                vf1_rx_stats[-1] = vf1_rx_stats[-1] + 4
-            else:
-                vf1_rx_stats[-1] = vf1_rx_stats[-1]
+        vf1_rx_stats[-1] = vf1_rx_stats[-1] + 4
         self.verify(vf0_tx_stats[0] != 0, "no packet was sent by VF0")
         self.verify(vf0_tx_stats == vf1_rx_stats, "VF1 failed to receive packets from VF0")
     
