@@ -1786,8 +1786,9 @@ class CVLDCFSwitchFilterTest(TestCase):
         self.dut.send_expect("port stop 0", "testpmd> ")
         self.dut.send_expect("port start 0", "testpmd> ")
         #send matched packets, port 1 can not receive the packets.
-        matched_dic['expect_results'] = {"expect_pkts":0}
-        self.send_and_check_packets(matched_dic)
+        destroy_dict = copy.deepcopy(matched_dic)
+        destroy_dict['expect_results'] = {"expect_pkts":0}
+        self.send_and_check_packets(destroy_dict)
 
     @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_pfcp_node(self):
