@@ -109,6 +109,218 @@ tvs_ethertype_filter_pppoes = [
     tv_ethertype_filter_pppoes_drop_03
     ]
 
+#l4 mask
+#ipv4/ipv6 + udp/tcp pipeline mode
+mac_pppoes_ipv4_udp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=2304,dport=23)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=2244,dport=23)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_pppoes_ipv4_udp_l4_mask_in_queue_01 = {
+    "name":"tv_mac_pppoes_ipv4_udp_l4_mask_in_queue_01",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 2500 src mask 0xf00 / end actions queue index 1 / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_pppoes_ipv4_udp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":1}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_pppoes_ipv4_udp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":1}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_pppoes_ipv4_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=2304,dport=23)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=2244,dport=23)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_pppoes_ipv4_tcp_l4_mask_in_queue_02 = {
+    "name":"tv_mac_pppoes_ipv4_tcp_l4_mask_in_queue_02",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 2500 src mask 0xf00 / end actions queue index 3 / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_pppoes_ipv4_tcp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":3}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_pppoes_ipv4_tcp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":3}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_pppoes_ipv6_udp_l4_mask_scapy_str = {
+    "matched":[
+        'Ether()/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=1282)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=1040)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_pppoes_ipv6_udp_l4_mask_queue_region_03 = {
+    "name":"tv_mac_pppoes_ipv6_udp_l4_mask_queue_region_03",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp dst is 1025 dst mask 0xf0 / end actions rss queues 4 5 end / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_pppoes_ipv6_udp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_queue_region,
+                             "param":{"expect_port":0, "expect_queues":[4, 5]}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_pppoes_ipv6_udp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
+                                "param":{"expect_port":0, "expect_queues":[4, 5]}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_pppoes_ipv6_tcp_l4_mask_scapy_str = {
+    "matched":[
+        'Ether()/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=1282)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=1040)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_pppoes_ipv6_tcp_l4_mask_drop_04 = {
+    "name":"tv_mac_pppoes_ipv6_tcp_l4_mask_drop_04",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp dst is 1025 dst mask 0xf0 / end actions drop / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_pppoes_ipv6_tcp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_drop,
+                             "param":{"expect_port":0, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_pppoes_ipv6_tcp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
+                                "param":{"expect_port":0, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+tvs_mac_pppoes_l4_mask = [
+    tv_mac_pppoes_ipv4_udp_l4_mask_in_queue_01,
+    tv_mac_pppoes_ipv4_tcp_l4_mask_in_queue_02,
+    tv_mac_pppoes_ipv6_udp_l4_mask_queue_region_03,
+    tv_mac_pppoes_ipv6_tcp_l4_mask_drop_04,
+]
+
+#vlan non-pipeline mode
+
+mac_vlan_pppoes_ipv4_udp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=50,dport=1024)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=50,dport=1281)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_vlan_pppoes_ipv4_udp_l4_mask_in_queue_01 = {
+    "name":"tv_mac_vlan_pppoes_ipv4_udp_l4_mask_in_queue_01",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp dst is 1280 dst mask 0x00ff / end actions queue index 1 / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_vlan_pppoes_ipv4_udp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":1}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_vlan_pppoes_ipv4_udp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":1}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_vlan_pppoes_ipv4_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=50,dport=1024)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=50,dport=1281)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_vlan_pppoes_ipv4_tcp_l4_mask_queue_region_02 = {
+    "name":"tv_mac_vlan_pppoes_ipv4_tcp_l4_mask_queue_region_02",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp dst is 1280 dst mask 0x00ff / end actions rss queues 4 5 end / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_vlan_pppoes_ipv4_tcp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_queue_region,
+                             "param":{"expect_port":0, "expect_queues":[4, 5]}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_vlan_pppoes_ipv4_tcp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
+                                "param":{"expect_port":0, "expect_queues":[4, 5]}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+#vlan pipeline mode
+mac_vlan_pppoes_ipv6_udp_l4_mask_scapy_str = {
+    "matched":[
+        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=16,dport=23)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=17,dport=23)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_vlan_pppoes_ipv6_udp_l4_mask_drop_03 = {
+    "name":"tv_mac_vlan_pppoes_ipv6_udp_l4_mask_drop_03",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 32 src mask 0x0f / end actions drop / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_vlan_pppoes_ipv6_udp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_drop,
+                             "param":{"expect_port":0, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_vlan_pppoes_ipv6_udp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
+                                "param":{"expect_port":0, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_vlan_pppoes_ipv6_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=16)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=17)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_vlan_pppoes_ipv6_tcp_l4_mask_in_queue_04 = {
+    "name":"tv_mac_vlan_pppoes_ipv6_tcp_l4_mask_in_queue_04",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp dst is 32 dst mask 0x0f / end actions queue index 7 / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_vlan_pppoes_ipv6_tcp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":7}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_vlan_pppoes_ipv6_tcp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":7}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+tvs_mac_vlan_pppoes_l4_mask = [
+    tv_mac_vlan_pppoes_ipv4_udp_l4_mask_in_queue_01,
+    tv_mac_vlan_pppoes_ipv4_tcp_l4_mask_queue_region_02,
+    tv_mac_vlan_pppoes_ipv6_udp_l4_mask_drop_03,
+    tv_mac_vlan_pppoes_ipv6_tcp_l4_mask_in_queue_04,
+
+]
+
 #20.08
 mac_vlan_pppoe_ipv4_pay_session_id_proto_id_scapy_str = {
     "matched": [
@@ -2461,6 +2673,14 @@ class CVLSwitchFilterPPPOETest(TestCase):
         #create a pppoe rss rule to make the pppoe packets have hash value, and queue group action work
         self.dut.send_expect("flow create 0 ingress pattern eth / pppoes / end actions rss types pppoe end key_len 0 queues end / end", "testpmd> ", 15)
         self._rte_flow_validate_pattern(tvs_ethertype_filter_pppoes, False)
+
+    #l4 mask
+    def test_mac_pppoes_l4_mask(self):
+        self._rte_flow_validate_pattern(tvs_mac_pppoes_l4_mask)
+
+    def test_mac_vlan_pppoes_l4_mask(self):
+        self._rte_flow_validate_pattern(tvs_mac_vlan_pppoes_l4_mask)
+
 
     # 20.08
     def test_mac_vlan_pppoe_ipv4_pay_non_pipeline_mode(self):
