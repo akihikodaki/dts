@@ -81,8 +81,6 @@ class TestVswitchSampleCBDMA(TestCase):
         self.vm_dst_mac0 = '52:54:00:00:00:01'
         self.vm_dst_mac1 = '52:54:00:00:00:02'
         self.vm_num = 2
-        self.vm_dut = []
-        self.vm = []
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
@@ -106,7 +104,11 @@ class TestVswitchSampleCBDMA(TestCase):
         Run before each test case.
         """
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
+        self.dut.send_expect("killall -I dpdk-vhost", '#', 20)
+        self.dut.send_expect("killall -I dpdk-testpmd", '#', 20)
         self.dut.send_expect("killall -I qemu-system-x86_64", '#', 20)
+        self.vm_dut = []
+        self.vm = []
 
     def set_max_queues(self, max_queues=512):
         self.logger.info("Configure MAX_QUEUES to {}".format(max_queues))
@@ -154,40 +156,38 @@ class TestVswitchSampleCBDMA(TestCase):
         time.sleep(3)
 
     def start_virtio_testpmd(self, pmd_session, dev_mac, dev_id, cores, prefix, enable_queues=1, nb_cores=1,
-                             used_queues=1):
+                             used_queues=1, force_max_simd_bitwidth=False, power2=False):
         """
         launch the testpmd as virtio with vhost_net0
         """
+        txd_rxd = 1024
         eal_params = " --vdev=net_virtio_user0,mac={},path=./vhost-net{},queues={},mrg_rxbuf={},in_order={}" \
             .format(dev_mac, dev_id, enable_queues, self.mrg_rxbuf, self.in_order)
         if self.vectorized == 1:
-            eal_params = eal_params + ",vectorized=1"
+            eal_params += ",vectorized=1"
         if self.packed_vq == 1:
-            eal_params = eal_params + ',packed_vq=1'
+            eal_params +=',packed_vq=1'
         if self.server:
-            eal_params = eal_params + ",server=1"
+            eal_params += ",server=1"
+        if power2:
+            txd_rxd += 1
+            eal_params += ",queue_size={}".format(txd_rxd)
         if self.check_2M_env:
             eal_params += " --single-file-segments"
-        params = "--rxq={} --txq={} --txd=1024 --rxd=1024 --nb-cores={}".format(used_queues, used_queues, nb_cores)
+        if force_max_simd_bitwidth:
+            eal_params += " --force-max-simd-bitwidth=512"
+        params = "--rxq={} --txq={} --txd={} --rxd={} --nb-cores={}".format(used_queues, used_queues,txd_rxd,txd_rxd, nb_cores)
         pmd_session.start_testpmd(cores=cores, param=params, eal_param=eal_params, no_pci=True, ports=[], prefix=prefix,
                                   fixed_prefix=True)
 
-    def start_vms(self, mode=0, mergeable=True, server_mode=False, set_target=True):
+    def start_vms(self, mergeable=True, packed=False, server_mode=False, set_target=True, bind_dev=True, vm_diff_param=False):
         """
         start two VM, each VM has one virtio device
         """
-        if mode == 0:
-            setting_args = "disable-modern=true"
-        elif mode == 1:
-            setting_args = "disable-modern=false"
-        elif mode == 2:
-            setting_args = "disable-modern=true,packed=on"
-        if mergeable is True:
-            setting_args += "," + "mrg_rxbuf=on"
-        else:
-            setting_args += "," + "mrg_rxbuf=off"
-        setting_args += ",csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
-
+        mergeable = 'on' if mergeable else 'off'
+        setting_args = "disable-modern=true,mrg_rxbuf={0},csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on".format(mergeable)
+        if packed:
+            setting_args = setting_args + ',packed=on'
         for i in range(self.vm_num):
             vm_dut = None
             vm_info = VM(self.dut, 'vm%d' % i, 'vhost_sample')
@@ -198,11 +198,14 @@ class TestVswitchSampleCBDMA(TestCase):
             else:
                 vm_params['opt_path'] = self.base_dir + '/vhost-net%d' % i
             vm_params['opt_mac'] = "52:54:00:00:00:0%d" % (i + 1)
-            vm_params['opt_settings'] = setting_args
+            if vm_diff_param and i > 0:
+                vm_params['opt_settings'] = setting_args + ',packed=on'
+            else:
+                vm_params['opt_settings'] = setting_args
             vm_info.set_vm_device(**vm_params)
             time.sleep(3)
             try:
-                vm_dut = vm_info.start(set_target=set_target)
+                vm_dut = vm_info.start(set_target=set_target, bind_dev=bind_dev)
                 if vm_dut is None:
                     raise Exception("Set up VM ENV failed")
             except Exception as e:
@@ -238,7 +241,7 @@ class TestVswitchSampleCBDMA(TestCase):
         out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
         device_info = out.split('\n')
         for device in device_info:
-            pci_info = re.search('\s*(0000:\d*:\d*.\d*)', device)
+            pci_info = re.search('\s*(0000:\S*:\d*.\d*)', device)
             if pci_info is not None:
                 dev_info = pci_info.group(1)
                 # the numa id of ioat dev, only add the device which on same socket with nic dev
@@ -254,7 +257,7 @@ class TestVswitchSampleCBDMA(TestCase):
         dmas_info = ''
         for dmas in used_cbdma:
             number = used_cbdma.index(dmas)
-            dmas = 'txd{}@{},'.format(number, dmas.replace('0000:', ''))
+            dmas = 'txd{}@{},'.format(number, dmas)
             dmas_info += dmas
         self.dmas_info = dmas_info[:-1]
         self.device_str = ' '.join(used_cbdma)
@@ -281,7 +284,7 @@ class TestVswitchSampleCBDMA(TestCase):
             self.dut.send_expect('./usertools/dpdk-devbind.py -u %s' % self.device_str, '# ', 30)
             self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str, '# ', 60)
 
-    def config_stream(self, frame_size, port_num, dst_mac_list):
+    def config_stream(self, frame_size, dst_mac_list):
         tgen_input = []
         rx_port = self.tester.get_local_port(self.dut_ports[0])
         tx_port = self.tester.get_local_port(self.dut_ports[0])
@@ -303,7 +306,7 @@ class TestVswitchSampleCBDMA(TestCase):
         test_result = {}
         for frame_size in frame_sizes:
             self.logger.info("Test running at parameters: " + "framesize: {}".format(frame_size))
-            tgenInput = self.config_stream(frame_size, self.tester_tx_port_num, dst_mac_list)
+            tgenInput = self.config_stream(frame_size, dst_mac_list)
             # clear streams before add new streams
             self.tester.pktgen.clear_streams()
             # run packet generator
@@ -311,9 +314,7 @@ class TestVswitchSampleCBDMA(TestCase):
             # set traffic option
             traffic_opt = {'duration': 5}
             _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
-            self.virtio_user0_pmd.execute_cmd('show port stats all')
             throughput = pps / 1000000.0
-            self.verify(throughput > 0, "No traffic detected")
             test_result[frame_size] = throughput
             self.result_table_add([frame_size, throughput])
         self.result_table_print()
@@ -338,42 +339,62 @@ class TestVswitchSampleCBDMA(TestCase):
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
 
         self.start_vhost_app(with_cbdma=True, cbdma_num=1, socket_num=1, client_mode=True)
-        # launch packed ring in_order vectorized with cbdma
+        # packed ring
         self.mrg_rxbuf = 0
         self.in_order = 1
         self.vectorized = 1
         self.packed_vq = 1
         self.server = 1
         self.start_virtio_testpmd(pmd_session=self.virtio_user0_pmd, dev_mac=self.virtio_dst_mac0, dev_id=0,
-                                  cores=self.vuser0_core_list, prefix='testpmd0', nb_cores=1, used_queues=1)
+                                  cores=self.vuser0_core_list, prefix='testpmd0', nb_cores=1, used_queues=1,
+                                  force_max_simd_bitwidth=True, power2=False)
         packed_ring_result = self.pvp_test_with_cbdma()
 
-        # relaunch split ring in_order vectorized with cbdma
-        self.mrg_rxbuf = 1
+        # packed ring of power2
+        self.virtio_user0_pmd.execute_cmd("quit", "# ")
+        self.mrg_rxbuf = 0
+        self.in_order = 1
+        self.vectorized = 1
+        self.packed_vq = 1
+        self.server = 1
+
+        self.start_virtio_testpmd(pmd_session=self.virtio_user0_pmd, dev_mac=self.virtio_dst_mac0, dev_id=0,
+                                  cores=self.vuser0_core_list, prefix='testpmd0', nb_cores=1, used_queues=1,
+                                  force_max_simd_bitwidth=True, power2=True)
+        packed_ring_power2_result = self.pvp_test_with_cbdma()
+
+        # split ring
+        self.virtio_user0_pmd.execute_cmd("quit", "# ")
+        self.mrg_rxbuf = 0
         self.in_order = 1
         self.vectorized = 1
         self.packed_vq = 0
         self.server = 1
-        self.virtio_user0_pmd.execute_cmd("quit", "#")
+
         self.start_virtio_testpmd(pmd_session=self.virtio_user0_pmd, dev_mac=self.virtio_dst_mac0, dev_id=0,
-                                  cores=self.vuser0_core_list, prefix='testpmd0', nb_cores=1, used_queues=1)
+                                  cores=self.vuser0_core_list, prefix='testpmd0', nb_cores=1, used_queues=1,
+                                  force_max_simd_bitwidth=False, power2=False)
         split_ring_reult = self.pvp_test_with_cbdma()
-        self.virtio_user0_pmd.execute_cmd("quit", "#")
-        self.vhost_user.send_expect("^C", "# ", 20)
 
         self.table_header = ['Frame Size(Byte)', 'Mode', 'Throughput(Mpps)']
         self.result_table_create(self.table_header)
         for key in packed_ring_result.keys():
             perf_result.append([key, 'packed_ring', packed_ring_result[key]])
+        for key in packed_ring_power2_result.keys():
+            perf_result.append([key, 'packed_ring_power2', packed_ring_power2_result[key]])
         for key in split_ring_reult.keys():
             perf_result.append([key, 'split_ring', split_ring_reult[key]])
         for table_row in perf_result:
             self.result_table_add(table_row)
         self.result_table_print()
-        self.virtio_user0_pmd.execute_cmd("quit", "#")
-        self.vhost_user.send_expect("^C", "# ", 20)
+        for key in packed_ring_result.keys():
+            self.verify(packed_ring_result[key] > 1, "The perf test result is lower than 1 Mpps")
+        for key in packed_ring_power2_result.keys():
+            self.verify(packed_ring_power2_result[key] > 1, "The perf test result is lower than 1 Mpps")
+        for key in split_ring_reult.keys():
+            self.verify(split_ring_reult[key] > 1, "The perf test result is lower than 1 Mpps")
 
-    def config_stream_imix(self, frame_sizes, port_num, dst_mac_list):
+    def config_stream_imix(self, frame_sizes, dst_mac_list):
         tgen_input = []
         rx_port = self.tester.get_local_port(self.dut_ports[0])
         tx_port = self.tester.get_local_port(self.dut_ports[0])
@@ -395,7 +416,7 @@ class TestVswitchSampleCBDMA(TestCase):
         self.result_table_create(table_header)
         # Begin test perf
         test_result = {}
-        tgenInput = self.config_stream_imix(frame_sizes, self.tester_tx_port_num, dst_mac_list)
+        tgenInput = self.config_stream_imix(frame_sizes, dst_mac_list)
         fields_config = {'ip': {'src': {'action': 'random'}, }, }
         # clear streams before add new streams
         self.tester.pktgen.clear_streams()
@@ -404,10 +425,7 @@ class TestVswitchSampleCBDMA(TestCase):
         # set traffic option
         traffic_opt = {'delay': 5, 'duration': 5}
         _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
-        self.virtio_user0_pmd.execute_cmd("show port stats all")
-        self.virtio_user1_pmd.execute_cmd("show port stats all")
         throughput = pps / 1000000.0
-        self.verify(throughput > 0, "traffic is too low: throughput=%s" % throughput)
         test_result['imix'] = throughput
         self.result_table_add(['imix', throughput])
         self.result_table_print()
@@ -443,10 +461,10 @@ class TestVswitchSampleCBDMA(TestCase):
 
         self.logger.info("Launch vhost app perf test")
         self.start_vhost_app(with_cbdma=True, cbdma_num=2, socket_num=2, client_mode=True)
-        self.mrg_rxbuf = 0
-        self.in_order = 1
-        self.vectorized = 1
-        self.packed_vq = 0
+        self.mrg_rxbuf = 1
+        self.in_order = 0
+        self.vectorized = 0
+        self.packed_vq = 1
         self.server = 1
         self.start_virtio_testpmd(pmd_session=self.virtio_user0_pmd, dev_mac=self.virtio_dst_mac0, dev_id=0,
                                   cores=self.vuser0_core_list, prefix='testpmd0', nb_cores=1, used_queues=1)
@@ -473,9 +491,10 @@ class TestVswitchSampleCBDMA(TestCase):
         for table_row in perf_result:
             self.result_table_add(table_row)
         self.result_table_print()
-        self.virtio_user0_pmd.execute_cmd("quit", "#")
-        self.virtio_user1_pmd.execute_cmd("quit", "#")
-        self.vhost_user.send_expect("^C", "# ", 20)
+        for key in before_relunch.keys():
+            self.verify(before_relunch[key] > 1, "The perf test result is lower than 1 Mpps")
+        for key in after_relunch.keys():
+            self.verify(after_relunch[key] > 1, "The perf test result is lower than 1 Mpps")
 
     def get_receive_throughput(self, pmd_session, count=10):
         i = 0
@@ -513,9 +532,11 @@ class TestVswitchSampleCBDMA(TestCase):
         frame_sizes = [64, 2000, 8000, 'imix']
         if relaunch:
             self.virtio_user0_pmd.execute_cmd('stop')
-            self.virtio_user0_pmd.execute_cmd('clear port stats all')
             self.virtio_user1_pmd.execute_cmd('stop')
+            self.virtio_user0_pmd.execute_cmd('clear port stats all')
             self.virtio_user1_pmd.execute_cmd('clear port stats all')
+            self.virtio_user0_pmd.execute_cmd('show port stats all')
+            self.virtio_user1_pmd.execute_cmd('show port stats all')
         self.set_testpmd0_param(self.virtio_user0_pmd, self.virtio_dst_mac1)
         self.set_testpmd1_param(self.virtio_user1_pmd, self.virtio_dst_mac0)
 
@@ -541,9 +562,9 @@ class TestVswitchSampleCBDMA(TestCase):
         self.logger.info("Launch vhost app perf test")
         self.start_vhost_app(with_cbdma=True, cbdma_num=2, socket_num=2, client_mode=True)
         self.mrg_rxbuf = 1
-        self.in_order = 1
-        self.vectorized = 1
-        self.packed_vq = 0
+        self.in_order = 0
+        self.vectorized = 0
+        self.packed_vq = 1
         self.server = 1
         self.start_virtio_testpmd(pmd_session=self.virtio_user0_pmd, dev_mac=self.virtio_dst_mac0, dev_id=0,
                                   cores=self.vuser0_core_list, prefix='testpmd0', nb_cores=1, used_queues=1)
@@ -555,6 +576,7 @@ class TestVswitchSampleCBDMA(TestCase):
         self.start_virtio_testpmd(pmd_session=self.virtio_user1_pmd, dev_mac=self.virtio_dst_mac1, dev_id=1,
                                   cores=self.vuser1_core_list, prefix='testpmd1', nb_cores=1, used_queues=1)
         before_relunch_result = self.vm2vm_check_with_two_cbdma()
+
         self.logger.info("Relaunch vhost app perf test")
         self.vhost_user.send_expect("^C", "# ", 20)
         self.start_vhost_app(with_cbdma=True, cbdma_num=2, socket_num=2, client_mode=True)
@@ -569,9 +591,16 @@ class TestVswitchSampleCBDMA(TestCase):
         for table_row in perf_result:
             self.result_table_add(table_row)
         self.result_table_print()
-        self.virtio_user0_pmd.execute_cmd("quit", "# ")
-        self.virtio_user1_pmd.execute_cmd("quit", "# ")
-        self.vhost_user.send_expect("^C", "# ", 20)
+        for key in before_relunch_result.keys():
+            if key == 64:
+                self.verify(before_relunch_result[key] > 1, "The perf test result is lower than 1 Mpps")
+            else:
+                self.verify(before_relunch_result[key] > 0.1, "The perf test result is lower than 0.1 Mpps")
+        for key in after_relunch_result.keys():
+            if key == 64:
+                self.verify(after_relunch_result[key] > 1, "The perf test result is lower than 1 Mpps")
+            else:
+                self.verify(after_relunch_result[key] > 0.1, "The perf test result is lower than 0.1 Mpps")
 
     def vm2vm_check_with_two_vhost_device(self):
         rx_throughput = {}
@@ -589,7 +618,7 @@ class TestVswitchSampleCBDMA(TestCase):
 
     def start_vms_testpmd_and_test(self, need_start_vm=True):
         if need_start_vm:
-            self.start_vms(mode=2, mergeable=True, server_mode=True)
+            self.start_vms(mergeable=True, packed=False, server_mode=True, set_target=True, bind_dev=True, vm_diff_param=True)
             self.vm0_pmd = PmdOutput(self.vm_dut[0])
             self.vm1_pmd = PmdOutput(self.vm_dut[1])
         self.start_vm_testpmd(self.vm0_pmd)
@@ -608,11 +637,11 @@ class TestVswitchSampleCBDMA(TestCase):
         perf_result = []
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
 
-        self.logger.info("Before rebind perf VM Driver test")
+        self.logger.info("Before rebind VM Driver perf test")
         self.start_vhost_app(with_cbdma=True, cbdma_num=2, socket_num=2, client_mode=True)
         before_rebind = self.start_vms_testpmd_and_test(need_start_vm=True)
 
-        self.logger.info("After rebind perf VM Driver test")
+        self.logger.info("After rebind VM Driver perf test")
         # repeat bind 50 time from virtio-pci to vfio-pci
         self.repeat_bind_driver(dut=self.vm_dut[0], repeat_times=50)
         self.repeat_bind_driver(dut=self.vm_dut[1], repeat_times=50)
@@ -622,9 +651,6 @@ class TestVswitchSampleCBDMA(TestCase):
         # repeat bind 50 time from virtio-pci to vfio-pci
         self.repeat_bind_driver(dut=self.vm_dut[0], repeat_times=50)
         self.repeat_bind_driver(dut=self.vm_dut[1], repeat_times=50)
-        for i in range(len(self.vm)):
-            self.vm[i].stop()
-        self.vhost_user.send_expect("^C", "# ", 20)
 
         self.table_header = ['Frame Size(Byte)', 'Before/After Bind VM Driver', 'Throughput(Mpps)']
         self.result_table_create(self.table_header)
@@ -710,9 +736,9 @@ class TestVswitchSampleCBDMA(TestCase):
         md5_revd = md5_revd[: md5_revd.find(' ')]
         self.verify(md5_send == md5_revd, 'the received file is different with send file')
 
-    def start_iperf_and_scp_test_in_vms(self, need_start_vm=True, mode=0, mergeable=False, server_mode=False):
+    def start_iperf_and_scp_test_in_vms(self, need_start_vm=True, mergeable=False, packed=False, server_mode=False):
         if need_start_vm:
-            self.start_vms(mode=mode, mergeable=mergeable, server_mode=server_mode, set_target=False)
+            self.start_vms(mergeable=mergeable, packed=packed, server_mode=server_mode, set_target=True, bind_dev=False)
             self.vm0_pmd = PmdOutput(self.vm_dut[0])
             self.vm1_pmd = PmdOutput(self.vm_dut[1])
             self.config_vm_env()
@@ -730,7 +756,7 @@ class TestVswitchSampleCBDMA(TestCase):
 
         self.logger.info("launch vhost")
         self.start_vhost_app(with_cbdma=True, cbdma_num=2, socket_num=2, client_mode=True)
-        before_rerun = self.start_iperf_and_scp_test_in_vms(need_start_vm=True, mode=0, mergeable=False, server_mode=True)
+        before_rerun = self.start_iperf_and_scp_test_in_vms(need_start_vm=True, mergeable=False, packed=False, server_mode=True)
 
         self.logger.info("relaunch vhost")
         self.vhost_user.send_expect("^C", "# ", 20)
@@ -762,7 +788,7 @@ class TestVswitchSampleCBDMA(TestCase):
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
 
         self.start_vhost_app(with_cbdma=True, cbdma_num=2, socket_num=2, client_mode=False)
-        before_rerun = self.start_iperf_and_scp_test_in_vms(need_start_vm=True, mode=2, mergeable=False, server_mode=False)
+        before_rerun = self.start_iperf_and_scp_test_in_vms(need_start_vm=True, mergeable=False, packed=True, server_mode=False)
 
         self.logger.info("rerun scp and iperf test")
         rerun_test_1 = self.start_iperf_and_scp_test_in_vms(need_start_vm=False)
@@ -770,6 +796,7 @@ class TestVswitchSampleCBDMA(TestCase):
         rerun_test_3 = self.start_iperf_and_scp_test_in_vms(need_start_vm=False)
         rerun_test_4 = self.start_iperf_and_scp_test_in_vms(need_start_vm=False)
         rerun_test_5 = self.start_iperf_and_scp_test_in_vms(need_start_vm=False)
+
         self.table_header = ['Path', 'Before/After rerun scp/iperf', 'Throughput(Mpps)']
         self.result_table_create(self.table_header)
         perf_result.append(['packed ring', 'Before rerun test', before_rerun])
@@ -794,6 +821,10 @@ class TestVswitchSampleCBDMA(TestCase):
         """
         Run after each test case.
         """
+        self.dut.kill_all()
+        for i in range(len(self.vm)):
+            self.vm[i].stop()
+        self.vhost_user.send_expect("^C", "# ", 20)
         self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
@@ -801,5 +832,4 @@ class TestVswitchSampleCBDMA(TestCase):
         Run after each test suite.
         """
         self.set_max_queues(128)
-        self.dut.build_install_dpdk(self.target)
         self.close_all_session()
