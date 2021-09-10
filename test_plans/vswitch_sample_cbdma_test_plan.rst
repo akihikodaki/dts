@@ -40,8 +40,7 @@ Description
 Vswitch sample can leverage IOAT to accelerate vhost async data-path from dpdk 20.11. This plan test
 vhost DMA operation callbacks for CBDMA PMD and vhost async data-path in vhost sample.
 From 20.11 to 21.02, only split ring support cbdma copy with vhost enqueue direction;
-from 21.05,packed ring also can support cbdma copy with vhost enqueue direction;
-from 21.08, split ring support cbdma copy both vhost enqueue and dequeue direction.
+from 21.05,packed ring also can support cbdma copy with vhost enqueue direction.
 
 Prerequisites
 =============
@@ -67,12 +66,12 @@ Test Case1: PVP performance check with CBDMA channel using vhost async driver
 
 2. On host, launch dpdk-vhost by below command::
 
-	./dpdk-vhost -c 0x1c000000 -n 4 -- \
+	./dpdk-vhost -l 31-32 -n 4 -- \
 	-p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat --stats 1 --socket-file /tmp/vhost-net --dmas [txd0@0000:00:04.0] --client
 
 3. Launch virtio-user with packed ring::
 
-	./dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 \
+	./dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 --force-max-simd-bitwidth=512 \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,queues=1,mrg_rxbuf=0,in_order=1,vectorized=1,packed_vq=1,server=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
 
 4. Start pkts from virtio-user side to let vswitch know the mac addr::
@@ -80,14 +79,21 @@ Test Case1: PVP performance check with CBDMA channel using vhost async driver
 	testpmd>set fwd mac
 	testpmd>start tx_first
 
-5. Inject pkts (packets length=64...1518) separately with VLAN_id=1000 and dest_mac=virtio_mac_addresss (specific in above cmd with 00:11:22:33:44:10) to NIC using packet generator, record pvp (PG>nic>vswitch>virtio-user>vswitch>nic>PG) performance number can get expected.
+5. Inject pkts (packets length=64...1518) separately with dest_mac=virtio_mac_address (specific in above cmd with 00:11:22:33:44:10) to NIC using packet generator, record pvp (PG>nic>vswitch>virtio-user>vswitch>nic>PG) performance number can get expected.
 
-6. Quit and re-launch virtio-user with split ring::
+6. Quit and re-launch virtio-user with packed ring size not power of 2::
 
-	./dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 \
-	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,queues=1,mrg_rxbuf=1,in_order=1,vectorized=1,server=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
+	./dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 --force-max-simd-bitwidth=512 \
+	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,queues=1,mrg_rxbuf=0,in_order=1,vectorized=1,packed_vq=1,server=1,queue_size=1025 -- -i --rxq=1 --txq=1 --txd=1025 --rxd=1025 --nb-cores=1
 
 7. Re-test step 4-5, record performance of different packet length.
+
+8. Quit and re-launch virtio-user with split ring::
+
+	./dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 \
+	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,queues=1,mrg_rxbuf=0,in_order=1,vectorized=1,server=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
+
+9. Re-test step 4-5, record performance of different packet length.
 
 Test Case2: PVP test with two VM and two CBDMA channels using vhost async driver
 =================================================================================
@@ -97,12 +103,12 @@ Test Case2: PVP test with two VM and two CBDMA channels using vhost async driver
 2. On host, launch dpdk-vhost by below command::
 
 	./dpdk-vhost -l 26-28 -n 4 -- \
-	-p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat --stats 1 --socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:04.0,txd1@0000:00:04.1] --client
+	-p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat --stats 1 --socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:01.0,txd1@0000:00:01.1] --client
 
 3. launch two virtio-user ports::
 
 	./dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 \
-	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net0,queues=1,server=1,mrg_rxbuf=0,in_order=1,vectorized=1,packed_vq=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
+	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net0,queues=1,server=1,mrg_rxbuf=1,in_order=0,packed_vq=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
 	
 	./dpdk-testpmd -l 31-32 -n 4 --no-pci --file-prefix=testpmd1 \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:11,path=/tmp/vhost-net1,queues=1,server=1,mrg_rxbuf=1,in_order=1,vectorized=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
@@ -114,7 +120,7 @@ Test Case2: PVP test with two VM and two CBDMA channels using vhost async driver
 	testpmd1>start tx_first
 	testpmd1>start tx_first
 
-5. Inject IMIX packets (64b...1518b) with VLAN_id=1000 and dest_mac=virtio_mac_addresss (00:11:22:33:44:10 and 00:11:22:33:44:11) to NIC using packet generator,record performance number can get expected from Packet generator rx side.
+5. Inject IMIX packets (64b...1518b) with dest_mac=virtio_mac_address (00:11:22:33:44:10 and 00:11:22:33:44:11) to NIC using packet generator,record performance number can get expected from Packet generator rx side.
 
 6. Stop dpdk-vhost side and relaunch it with same cmd as step2.
 
@@ -125,7 +131,7 @@ Test Case2: PVP test with two VM and two CBDMA channels using vhost async driver
     testpmd1>stop
     testpmd1>start tx_first
 
-8. Inject IMIX packets (64b...1518b) to NIC using packet generator, ensure get same throughput as step5.
+8. Inject IMIX packets (64b...1518b) with dest_mac=virtio_mac_address (00:11:22:33:44:10 and 00:11:22:33:44:11) to NIC using packet generator, ensure get same throughput as step5.
 
 Test Case3: VM2VM forwarding test with two CBDMA channels
 =========================================================
@@ -134,15 +140,15 @@ Test Case3: VM2VM forwarding test with two CBDMA channels
 
 2. On host, launch dpdk-vhost by below command::
 
-	./x86_64-native-linuxapp-gcc/examples/dpdk-vhost -l 26-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
+	./dpdk-vhost -l 26-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
 	--socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:04.0,txd1@0000:00:04.1]  --client
 
 3. Launch virtio-user::
 
-	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 \
-	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net0,queues=1,server=1,mrg_rxbuf=1,in_order=1,vectorized=1,packed_vq=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
+	./dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 \
+	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net0,queues=1,server=1,mrg_rxbuf=1,in_order=0,packed_vq=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
 
-	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 31-32 -n 4 --no-pci --file-prefix=testpmd1 \
+	./dpdk-testpmd -l 31-32 -n 4 --no-pci --file-prefix=testpmd1 \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:11,path=/tmp/vhost-net1,queues=1,server=1,mrg_rxbuf=1,in_order=1,vectorized=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
 
 4. Loop pkts between two virtio-user sides, record performance number with 64b/2000b/8000b/IMIX pkts can get expected::
