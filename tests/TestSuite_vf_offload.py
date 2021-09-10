@@ -252,7 +252,7 @@ class TestVfOffload(TestCase):
         sndIPv6 = '::1'
         pkts = {'IP/UDP': 'Ether(dst="%s", src="52:00:00:00:00:00")/IP(src="%s", chksum=0xf)/UDP(chksum=0xf)/("X"*46)' % (mac, sndIP),
                 'IP/TCP': 'Ether(dst="%s", src="52:00:00:00:00:00")/IP(src="%s", chksum=0xf)/TCP(chksum=0xf)/("X"*46)' % (mac, sndIP),
-                'IP/SCTP': 'Ether(dst="%s", src="52:00:00:00:00:00")/IP(src="%s", chksum=0xf)/SCTP(chksum=0xf)/("X"*48)' % (mac, sndIP),
+                'IP/SCTP': 'Ether(dst="%s", src="52:00:00:00:00:00")/IP(src="%s", chksum=0xf)/SCTP(chksum=0x0)/("X"*48)' % (mac, sndIP),
                 'IPv6/UDP': 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="%s")/UDP(chksum=0xf)/("X"*46)' % (mac, sndIPv6),
                 'IPv6/TCP': 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="%s")/TCP(chksum=0xf)/("X"*46)' % (mac, sndIPv6)}
 
