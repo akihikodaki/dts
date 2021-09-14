@@ -104,15 +104,6 @@ class TestPVPMultiPathPerformance(TestCase):
         self.path=self.dut.apps_name['test-pmd']
         self.testpmd_name = self.path.split("/")[-1]
 
-    @property
-    def check_value(self):
-        check_dict = dict.fromkeys(self.frame_sizes)
-        linerate = {64: 0.085, 128: 0.12, 256: 0.20, 512: 0.35, 1024: 0.50, 1280: 0.55, 1518: 0.60}
-        for size in self.frame_sizes:
-            speed = self.wirespeed(self.nic, size, self.number_of_ports)
-            check_dict[size] = round(speed * linerate[size], 2)
-        return check_dict
-
     def send_and_verify(self, case_info):
         """
         Send packet with packet generator and verify
@@ -138,9 +129,6 @@ class TestPVPMultiPathPerformance(TestCase):
             streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100, None, self.tester.pktgen)
             _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
             Mpps = pps / 1000000.0
-            self.verify(Mpps > self.check_value[frame_size],
-                        "%s of frame size %d speed verify failed, expect %s, result %s" % (
-                        self.running_case, frame_size, self.check_value[frame_size], Mpps))
             self.throughput[frame_size][self.nb_desc] = Mpps
             linerate = Mpps * 100 / \
                        float(self.wirespeed(self.nic, frame_size, self.number_of_ports))
