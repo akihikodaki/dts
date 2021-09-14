@@ -34,11 +34,16 @@ DPDK Test suite.
 Virtio user for container networking
 """
 
+import json
+import rst
+import os
 import utils
 import time
 from test_case import TestCase
 from settings import HEADER_SIZE
 from pktgen import PacketGeneratorHelper
+from settings import UPDATE_EXPECTED, load_global_setting
+from copy import deepcopy
 
 
 class TestVirtioUserForContainer(TestCase):
@@ -47,7 +52,6 @@ class TestVirtioUserForContainer(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.frame_sizes = [64, 128, 256, 512, 1024, 1518]
         self.queue_number = 1
         self.nb_cores = 1
         self.dut_ports = self.dut.get_ports()
@@ -56,15 +60,9 @@ class TestVirtioUserForContainer(TestCase):
         self.verify(len(self.dut_ports) >= 1, 'Insufficient ports for testing')
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip'] + HEADER_SIZE['udp']
 
-        self.verify('docker_image' in self.get_suite_cfg(),
-                'Pls config docker image in the conf %s' % self.suite_name)
-        self.docker_image = self.get_suite_cfg()['docker_image']
+        self.docker_image = "ubuntu:latest"
         self.container_base_dir = self.dut.base_dir
         self.container_base_dir = self.container_base_dir.replace('~', '/root')
-        self.logger.info("You can config packet_size in file %s.cfg," % self.suite_name + \
-                        " in region 'suite' like packet_sizes=[64, 128, 256]")
-        if 'packet_sizes' in self.get_suite_cfg():
-            self.frame_sizes = self.get_suite_cfg()['packet_sizes']
         self.out_path = '/tmp'
         out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
         if 'No such file or directory' in out:
@@ -74,6 +72,8 @@ class TestVirtioUserForContainer(TestCase):
         self.number_of_ports = 1
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
         self.testpmd_name = self.app_testpmd_path.split("/")[-1]
+        self.save_result_flag = True
+        self.json_obj = {}
 
     def set_up(self):
         """
@@ -86,11 +86,20 @@ class TestVirtioUserForContainer(TestCase):
         # Prepare the result table
         self.virtio_mac = '00:11:22:33:44:10'
         self.table_header = ['Frame']
-        self.table_header.append('Mode')
-        self.table_header.append('Mpps')
+        self.table_header.append('Mode/RXD-TXD')
         self.table_header.append('Queue Num')
+        self.table_header.append('Mpps')
         self.table_header.append('% linerate')
         self.result_table_create(self.table_header)
+        self.throughput = {}
+        self.test_result = {}
+        # test parameters include: frames size, descriptor numbers
+        self.test_parameters = self.get_suite_cfg()['test_parameters']
+        # traffic duraion in second
+        self.test_duration = self.get_suite_cfg()['test_duration']
+        self.nb_desc = self.test_parameters[64][0]
+        # Accepted tolerance in Mpps
+        self.gap = self.get_suite_cfg()['accepted_tolerance']
 
     def get_core_mask(self):
         core_config = '1S/%dC/1T' % (self.nb_cores*2 + 2)
@@ -104,20 +113,12 @@ class TestVirtioUserForContainer(TestCase):
         self.core_list_virtio_user = core_list[self.nb_cores+1:self.nb_cores*2+2]
         self.core_mask_virtio_user = utils.create_mask(core_list_virtio_user)
 
-    @property
-    def check_value(self):
-        check_dict = dict.fromkeys(self.frame_sizes)
-        linerate = {64: 0.085, 128: 0.12, 256: 0.20, 512: 0.35, 1024: 0.50, 1280: 0.55, 1518: 0.60}
-        for size in self.frame_sizes:
-            speed = self.wirespeed(self.nic, size, self.number_of_ports)
-            check_dict[size] = round(speed * linerate[size], 2)
-        return check_dict
-
     def send_and_verify(self):
         """
         Send packet with packet generator and verify
         """
-        for frame_size in self.frame_sizes:
+        for frame_size in self.test_parameters.keys():
+            self.throughput[frame_size] = dict()
             payload_size = frame_size - self.headers_size
             tgen_input = []
             rx_port = self.tester.get_local_port(self.dut_ports[0])
@@ -134,16 +135,12 @@ class TestVirtioUserForContainer(TestCase):
                         vm_config, self.tester.pktgen)
             _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
             Mpps = pps / 1000000.0
-            self.verify(Mpps > self.check_value[frame_size],
-                        "%s of frame size %d speed verify failed, expect %s, result %s" % (
-                            self.running_case, frame_size, self.check_value[frame_size], Mpps))
-            throughput = Mpps * 100 / \
-                     float(self.wirespeed(self.nic, frame_size, 1))
-
+            self.throughput[frame_size][self.nb_desc] = Mpps
+            throughput = Mpps * 100 / float(self.wirespeed(self.nic, frame_size, 1))
             results_row = [frame_size]
-            results_row.append('virtio in container')
-            results_row.append(Mpps)
+            results_row.append(self.nb_desc)
             results_row.append(self.queue_number)
+            results_row.append(Mpps)
             results_row.append(throughput)
             self.result_table_add(results_row)
 
@@ -199,10 +196,103 @@ class TestVirtioUserForContainer(TestCase):
         self.dut.close_session(self.vhost_user)
         self.dut.close_session(self.virtio_user)
 
+    def handle_expected(self):
+        """
+        Update expected numbers to configurate file: conf/$suite_name.cfg
+        """
+        if load_global_setting(UPDATE_EXPECTED) == "yes":
+            for frame_size in self.test_parameters.keys():
+                for nb_desc in self.test_parameters[frame_size]:
+                    self.expected_throughput[frame_size][nb_desc] = round(self.throughput[frame_size][nb_desc], 3)
+
+    def handle_results(self):
+        """
+        results handled process:
+        1, save to self.test_results
+        2, create test results table
+        3, save to json file for Open Lab
+        """
+        header = self.table_header
+        header.append("Expected Throughput")
+        header.append("Throughput Difference")
+        for frame_size in self.test_parameters.keys():
+            wirespeed = self.wirespeed(self.nic, frame_size, self.number_of_ports)
+            ret_datas = {}
+            for nb_desc in self.test_parameters[frame_size]:
+                ret_data = {}
+                ret_data[header[0]] = frame_size
+                ret_data[header[1]] = nb_desc
+                ret_data[header[2]] = self.queue_number
+                ret_data[header[3]] = "{:.3f} Mpps".format(self.throughput[frame_size][nb_desc])
+                ret_data[header[4]] = "{:.3f}%".format(self.throughput[frame_size][nb_desc] * 100 / wirespeed)
+                ret_data[header[5]] = "{:.3f} Mpps".format(self.expected_throughput[frame_size][nb_desc])
+                ret_data[header[6]] = "{:.3f} Mpps".format(self.throughput[frame_size][nb_desc] - self.expected_throughput[frame_size][nb_desc])
+                ret_datas[nb_desc] = deepcopy(ret_data)
+            self.test_result[frame_size] = deepcopy(ret_datas)
+        # Create test results table
+        self.result_table_create(header)
+        for frame_size in self.test_parameters.keys():
+            for nb_desc in self.test_parameters[frame_size]:
+                table_row = list()
+                for i in range(len(header)):
+                    table_row.append(
+                        self.test_result[frame_size][nb_desc][header[i]])
+                self.result_table_add(table_row)
+        # present test results to screen
+        self.result_table_print()
+        # save test results as a file
+        if self.save_result_flag:
+            self.save_result(self.test_result)
+
+    def save_result(self, data):
+        '''
+        Saves the test results as a separated file named with
+        self.nic+_perf_virtio_user_pvp.json in output folder
+        if self.save_result_flag is True
+        '''
+        case_name = self.running_case
+        self.json_obj[case_name] = list()
+        status_result = []
+        for frame_size in self.test_parameters.keys():
+            for nb_desc in self.test_parameters[frame_size]:
+                row_in = self.test_result[frame_size][nb_desc]
+                row_dict0 = dict()
+                row_dict0['performance'] = list()
+                row_dict0['parameters'] = list()
+                row_dict0['parameters'] = list()
+                result_throughput = float(row_in['Mpps'].split()[0])
+                expected_throughput = float(row_in['Expected Throughput'].split()[0])
+                # delta value and accepted tolerance in percentage
+                delta = result_throughput - expected_throughput
+                gap = expected_throughput * -self.gap * 0.01
+                delta = float(delta)
+                gap = float(gap)
+                self.logger.info("Accept tolerance are (Mpps) %f" % gap)
+                self.logger.info("Throughput Difference are (Mpps) %f" % delta)
+                if result_throughput > expected_throughput + gap:
+                    row_dict0['status'] = 'PASS'
+                else:
+                    row_dict0['status'] = 'FAIL'
+                row_dict1 = dict(name="Throughput", value=result_throughput, unit="Mpps", delta=delta)
+                row_dict2 = dict(name="Txd/Rxd", value=row_in["Mode/RXD-TXD"], unit="descriptor")
+                row_dict3 = dict(name="frame_size", value=row_in["Frame"], unit="bytes")
+                row_dict0['performance'].append(row_dict1)
+                row_dict0['parameters'].append(row_dict2)
+                row_dict0['parameters'].append(row_dict3)
+                self.json_obj[case_name].append(row_dict0)
+                status_result.append(row_dict0['status'])
+        with open(os.path.join(rst.path2Result,
+                               '{0:s}_{1}.json'.format(
+                                   self.nic, self.suite_name)), 'w') as fp:
+            json.dump(self.json_obj, fp)
+        self.verify("FAIL" not in status_result, "Exceeded Gap")
+
     def test_perf_packet_fwd_for_container(self):
         """
         packet forward test for container networking
         """
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
         self.queue_number = 1
         self.nb_cores = 1
         self.get_core_mask()
@@ -210,12 +300,16 @@ class TestVirtioUserForContainer(TestCase):
         self.launch_testpmd_as_virtio_in_container()
         self.send_and_verify()
         self.result_table_print()
+        self.handle_expected()
+        self.handle_results()
         self.close_all_apps()
 
     def test_perf_packet_fwd_with_multi_queues_for_container(self):
         """
         packet forward with multi-queues for container networking
         """
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
         self.queue_number = 2
         self.nb_cores = 2
         self.get_core_mask()
@@ -223,6 +317,8 @@ class TestVirtioUserForContainer(TestCase):
         self.launch_testpmd_as_virtio_in_container()
         self.send_and_verify()
         self.result_table_print()
+        self.handle_expected()
+        self.handle_results()
         self.close_all_apps()
 
     def tear_down(self):
