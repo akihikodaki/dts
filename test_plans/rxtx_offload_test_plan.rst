@@ -732,6 +732,7 @@ Test case: Tx offload multi_segs setting
     No MULTI_SEGS in Tx Offloading Configuration of ports
 
 5. Enable tx_offload multi_segs ::
+
     testpmd> port stop all
     testpmd> port config 0 tx_offload multi_segs on
     testpmd> port config 1 tx_offload multi_segs on
