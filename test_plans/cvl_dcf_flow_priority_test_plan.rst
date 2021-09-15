@@ -118,16 +118,16 @@ test steps for supported pattern
 ================================
 1. validate rules: two rules have same pattern, input set but different priority and action(priority 0 -> to vf 1, priority 1 -> to vf 2).
 2. create rules and list rules.
-3. send matched packets, check vf 2 receive the packets for hiting the priority 1.
+3. send matched packets, check vf 1 receive the packets for hiting the priority 0.
 4. send mismatched packets, check the packets are not received by vf 1 or 2.
-5. destroy rule with priority 1, list rules.
-6. send matched packets, check vf 1 receive the packets for hiting the priority 0.
+5. destroy rule with priority 0, list rules.
+6. send matched packets, check vf 2 receive the packets for hiting the priority 1.
 7. send mismatched packets, check the packets are not received by vf 1 or 2.
-8. recreate rules which priority is 1, list rule.
-9. destroy rule with priority 0, list rules.
-10. send matched packets, check vf 2 receive the packets for hiting the priority 1.
+8. recreate rules which priority is 0, list rule.
+9. destroy rule with priority 1, list rules.
+10. send matched packets, check vf 1 receive the packets for hiting the priority 0.
 11. send mismatched packets, check the packets are not received by vf 1 or 2.
-12. destroy rule with priority 1, list rules.
+12. destroy rule with priority 0, list rules.
 13. send matched packets, check the packets are not received by vf 1 or 2.
 
 
@@ -1745,12 +1745,12 @@ subcase 3: some rules overlap
 -----------------------------
 1. create rules::
 
-    flow create 0 priority 0 ingress pattern eth / vlan / vlan / pppoes / pppoe_proto_id is 0x21 / end actions vf id 1 / end
-    flow create 0 priority 0 ingress pattern eth / vlan / vlan tci is 2 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / vlan / vlan / pppoes seid is 1 / ipv4 / end actions vf id 2 / end
-    flow create 0 priority 1 ingress pattern eth dst is 00:00:00:01:03:03 / vlan / vlan / end actions vf id 2 / end
-    flow create 0 priority 1 ingress pattern eth dst is 00:00:00:01:03:03 / end actions vf id 3 / end
-    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / vlan tci is 2 / end actions vf id 3 / end
+    flow create 0 priority 1 ingress pattern eth / vlan / vlan / pppoes / pppoe_proto_id is 0x21 / end actions vf id 1 / end
+    flow create 0 priority 1 ingress pattern eth / vlan / vlan tci is 2 / end actions vf id 1 / end
+    flow create 0 priority 0 ingress pattern eth / vlan / vlan / pppoes seid is 1 / ipv4 / end actions vf id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 00:00:00:01:03:03 / vlan / vlan / end actions vf id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 00:00:00:01:03:03 / end actions vf id 3 / end
+    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / vlan tci is 2 / end actions vf id 3 / end
 
 2. check all the rules exist in the list::
 
