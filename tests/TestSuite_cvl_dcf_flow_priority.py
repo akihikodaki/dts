@@ -1277,8 +1277,8 @@ class CVLDCFFlowPriorityTest(TestCase):
             res = filter(bool, map(p_spec.match, out_lines))
             result = [i.group(1) for i in res]
         if need_verify:
-            self.verify(result == rule_list,
-                    "the rule list is not the same. expect %s, result %s" % (rule_list, result))
+            self.verify(sorted(result) == rule_list,
+                    "the rule list is not the same. expect %s, result %s" % (rule_list, sorted(result)))
         else:
             return result
 
@@ -1319,6 +1319,7 @@ class CVLDCFFlowPriorityTest(TestCase):
         rule1=rte_flow_pattern[0:14] + "priority 0" + rte_flow_pattern[13:length]
         rule2=rte_flow_pattern[0:14] + "priority 1" + rte_flow_pattern[13:length-7]+ "2" + rte_flow_pattern[length-6:length]
         rte_flow=[rule1, rule2]
+
         #validate 2 rule
         self.validate_switch_filter_rule(rte_flow)
         #create 2 rule
@@ -1326,31 +1327,34 @@ class CVLDCFFlowPriorityTest(TestCase):
         self.check_switch_filter_rule_list(0, rule_list)
         #send matched packets and check
         matched_dic = test_vector["matched"]
-        matched_dic["check_func"]["param"]["expect_port"]=2
         self.send_and_check_packets(matched_dic)
         #send mismatched packets and check
         mismatched_dic = test_vector["mismatched"]
         mismatched_dic["check_func"]["param"]["expect_port"]=[1,2]
         mismatched_dic["expect_results"]["expect_pkts"]=[0,0]
         self.send_and_check_packets(mismatched_dic)
-        #destroy rule with priority 1
-        self.destroy_switch_filter_rule(0, rule_list[1])
-        self.check_switch_filter_rule_list(0, ['0'])
-        #send matched packets and check
-        destroy_dict1 = copy.deepcopy(matched_dic)
-        destroy_dict1["check_func"]["param"]["expect_port"]=1
-        self.send_and_check_packets(destroy_dict1)
-        #recreate rule with priority 1
-        self.create_switch_filter_rule(rte_flow[1])
-        self.check_switch_filter_rule_list(0, rule_list)
+
         #destroy rule with priority 0
         self.destroy_switch_filter_rule(0, rule_list[0])
+        rule_list.remove('0')
         self.check_switch_filter_rule_list(0, ['1'])
+        #send matched packets and check
+        destroy_dict1 = copy.deepcopy(matched_dic)
+        destroy_dict1["check_func"]["param"]["expect_port"]=2
+        self.send_and_check_packets(destroy_dict1)
+
+        #recreate rule with priority 0 (rule 2)
+        self.create_switch_filter_rule(rte_flow[0])
+        rule_list.insert(0, '2')
+        #destroy rule with priority 1
+        self.destroy_switch_filter_rule(0, rule_list[1])
+        self.check_switch_filter_rule_list(0, ['2'])
         #send matched packets and check
         destroy_dict2 = copy.deepcopy(matched_dic)
         self.send_and_check_packets(destroy_dict2)
-        #destroy rule with priority 1 and check
-        self.destroy_switch_filter_rule(0, rule_list[1])
+
+        #destroy rule with priority 0 and check
+        self.destroy_switch_filter_rule(0, rule_list[0])
         self.check_switch_filter_rule_list(0, [])
         destroy_dict3 = copy.deepcopy(matched_dic)
         if isinstance(destroy_dict3["expect_results"]["expect_pkts"], list):
@@ -1678,7 +1682,6 @@ class CVLDCFFlowPriorityTest(TestCase):
         rule=["flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions vf id 2 / end",
                    "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions vf id 2 / end"]
         rule_list=self.create_switch_filter_rule(rule)
-        #self.check_switch_filter_rule_list(0, rule_list)
         matched_dic = {"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=2)/TCP()/("X"*480)'],
                        "check_func":{"func":rfc.check_vf_rx_packets_number,
                                      "param":{"expect_port":2, "expect_queue":"null"}},
@@ -1693,7 +1696,6 @@ class CVLDCFFlowPriorityTest(TestCase):
         rule=["flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions vf id 1 / end",
                    "flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions vf id 2 / end"]
         rule_list=self.create_switch_filter_rule(rule)
-        self.check_switch_filter_rule_list(0, rule_list)
         matched_dic = {"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=2)/TCP()/("X"*480)'],
                        "check_func":{"func":rfc.check_vf_rx_packets_number,
                                      "param":{"expect_port":[1,2], "expect_queue":"null"}},
@@ -1705,12 +1707,12 @@ class CVLDCFFlowPriorityTest(TestCase):
 
         #subcase 3: some rules overlap
         self.launch_testpmd()
-        rule=["flow create 0 priority 0 ingress pattern eth / vlan / vlan / pppoes / pppoe_proto_id is 0x21 / end actions vf id 1 / end",
-                   "flow create 0 priority 0 ingress pattern eth / vlan / vlan tci is 2 / end actions vf id 1 / end",
-                   "flow create 0 priority 1 ingress pattern eth / vlan / vlan / pppoes seid is 1 / ipv4 / end actions vf id 2 / end",
-                   "flow create 0 priority 1 ingress pattern eth dst is 00:00:00:01:03:03 / vlan / vlan / end actions vf id 2 / end",
-                   "flow create 0 priority 1 ingress pattern eth dst is 00:00:00:01:03:03 / end actions vf id 3 / end",
-                   "flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / vlan tci is 2 / end actions vf id 3 / end"]
+        rule=["flow create 0 priority 1 ingress pattern eth / vlan / vlan / pppoes / pppoe_proto_id is 0x21 / end actions vf id 1 / end",
+                   "flow create 0 priority 1 ingress pattern eth / vlan / vlan tci is 2 / end actions vf id 1 / end",
+                   "flow create 0 priority 0 ingress pattern eth / vlan / vlan / pppoes seid is 1 / ipv4 / end actions vf id 2 / end",
+                   "flow create 0 priority 0 ingress pattern eth dst is 00:00:00:01:03:03 / vlan / vlan / end actions vf id 2 / end",
+                   "flow create 0 priority 0 ingress pattern eth dst is 00:00:00:01:03:03 / end actions vf id 3 / end",
+                   "flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / vlan tci is 2 / end actions vf id 3 / end"]
         rule_list=self.create_switch_filter_rule(rule)
         self.check_switch_filter_rule_list(0, rule_list)
         matched_dic = {"scapy_str":['Ether(dst="00:00:00:01:03:03")/Dot1Q(vlan=1)/Dot1Q(vlan=2)/Raw("x"*480)'],
