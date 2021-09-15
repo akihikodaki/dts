@@ -95,7 +95,9 @@ Disable promisc mode, add a new MAC to VF0 and then start testpmd::
     testpmd> start
 
 Use scapy to send 100 random packets with current VF0's MAC, verify the
-packets can be received and forwarded by the VF
+packets can be received and forwarded by the VF::
+
+    p=Ether(dst="00:01:23:45:67:89")/IP()/Raw(load='X'*30)
 
 Use scapy to send 100 random packets with new added VF0's MAC, verify the
 packets can be received and forwarded by the VF::
@@ -112,6 +114,8 @@ Remove the MAC 00:11:22:33:44:55::
 Use scapy to send 100 random packets with removed VF0's MAC, verify the
 packets can't be received and forwarded by the VF::
 
+    p=Ether(dst="00:11:22:33:44:55")/IP()/Raw(load='X'*30)
+
 Set the default mac address to other mac, check the mac address has be changed
 to new set mac::
 
@@ -119,10 +123,14 @@ to new set mac::
     testpmd> show port info 0
 
 Use scapy to send 100 random packets with original VF0's MAC, verify the
-packets can't be received and forwarded by the VF
+packets can't be received and forwarded by the VF::
+
+    p=Ether(dst="00:01:23:45:67:89")/IP()/Raw(load='X'*30)
 
 Use scapy to send 100 random packets with new set VF0's MAC, verify the
-packets can be received and forwarded by the VF
+packets can be received and forwarded by the VF::
+
+    p=Ether(dst="00:01:23:45:67:11")/IP()/Raw(load='X'*30)
 
 Reset to original mac address
 
