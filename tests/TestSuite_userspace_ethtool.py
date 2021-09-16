@@ -510,7 +510,7 @@ class TestUserspaceEthtool(TestCase):
             port = self.ports[index]
             mac = self.dut.ports_info[port]['mac']
             dump_mac = self.strip_mac(index)
-            self.verify(mac == dump_mac, "Userspace tool failed to dump mac")
+            self.verify(mac.lower() == dump_mac.lower(), "Userspace tool failed to dump mac")
             self.dut.send_expect("macaddr %d %s" % (port, valid_mac), "EthApp>")
             dump_mac = self.strip_mac(index)
             self.verify(dump_mac == valid_mac, "Userspace tool failed to set mac")
