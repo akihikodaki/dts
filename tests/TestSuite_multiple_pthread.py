@@ -54,6 +54,7 @@ class TestMultiplePthread(TestCase):
         # get socket and cores
         self.socket = self.dut.get_numa_id(self.dut_ports[0])
         self.cores = self.dut.get_core_list("1S/8C/1T", socket=self.socket)
+        self.cores.sort(key=lambda i: int(i))
         self.verify(self.cores is not None, "Requested 8 cores failed")
         self.out_view = {'header': [], 'data': []}
         self.path=self.dut.apps_name["test-pmd"].rstrip()
