@@ -484,64 +484,6 @@ class TestFortvilleRssGranularityConfig(TestCase):
             flag = 0
             self.verify(flag, "The two hash values are different, rss_granularity_config failed!")
 
-    def test_dual_vlan(self):
-        """
-        Test with flow type dual vlan(QinQ).
-        """
-        flag = 1
-
-        # test with different rss queues
-        for queue in testQueues:
-            self.pmdout.start_testpmd(
-                "Default", "  --portmask=0x1 --rxq=%d --txq=%d" % (queue, queue))
-
-            self.dut.send_expect("set verbose 8", "testpmd> ")
-            self.dut.send_expect("set fwd rxonly", "testpmd> ")
-
-            self.dut.send_expect("port stop all", "testpmd> ")
-            self.dut.send_expect("vlan set extend on 0", "testpmd> ")
-            self.dut.send_expect(
-                "set_hash_global_config  0 toeplitz l2_payload enable", "testpmd> ")
-            self.dut.send_expect("port start all", "testpmd> ")
-            res = self.pmdout.wait_link_status_up("all")
-            self.verify(res is True, "link is donw")
-
-            self.dut.send_expect(
-                "port config all rss ether", "testpmd> ")
-            self.send_packet(self.itf, "l2_payload")
-
-            # set hash input set to "none" by testpmd on dut
-            self.dut.send_expect("set_hash_input_set 0 l2_payload none select", "testpmd> ")
-            self.send_packet(self.itf, "l2_payload")
-
-            # set hash input set by testpmd on dut, enable ovlan
-            self.dut.send_expect("set_hash_input_set 0 l2_payload ovlan add", "testpmd> ")
-            self.send_packet(self.itf, "l2_payload")
-
-            # set hash input set by testpmd on dut, enable ovlan & ivlan
-            self.dut.send_expect("set_hash_input_set 0 l2_payload ivlan add", "testpmd> ")
-            self.send_packet(self.itf, "l2_payload")
-
-            self.dut.send_expect("quit", "# ", 30)
-
-        self.result_table_print()
-        result_rows = self.result_table_getrows()
-        self.verify(len(result_rows) > 1, "There is no data in the table, testcase failed!")
-
-        # check the results
-        if ((result_rows[1][1] != result_rows[2][1])or(result_rows[1][3] != result_rows[2][3])):
-            flag = 0
-            self.verify(flag, "The two hash values are different, rss_granularity_config failed!")
-        elif ((result_rows[1][1] == result_rows[3][1])or(result_rows[1][3] == result_rows[3][3])):
-            flag = 0
-            self.verify(flag, "The two hash values are the same, rss_granularity_config failed!")
-        elif ((result_rows[1][1] == result_rows[4][1])or(result_rows[1][3] == result_rows[4][3])):
-            flag = 0
-            self.verify(flag, "The two hash values are the same, rss_granularity_config failed!")
-        elif ((result_rows[3][1] == result_rows[4][1])or(result_rows[3][3] == result_rows[4][3])):
-            flag = 0
-            self.verify(flag, "The two hash values are the same, rss_granularity_config failed!")
-
     def test_GRE_keys(self):
         """
         Test with 32-bit GRE keys and 24-bit GRE keys.
