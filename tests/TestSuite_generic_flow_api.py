@@ -59,6 +59,8 @@ from scapy.utils import rdpcap
 
 MAX_VLAN = 4095
 MAX_QUEUE = 15
+testQueues = [16]
+reta_lines = []
 MAX_VFQUEUE = 3
 MAX_PORT = 65535
 MAX_TTL = 255
@@ -642,6 +644,80 @@ class TestGeneric_flow_api(TestCase):
         self.pkt_obj.append_pkt(pktstr)
         self.pkt_obj.send_pkt(self.tester, tx_port=self.tester_itf, count=count)
 
+    def send_packet(self, itf, tran_type, enable=None):
+        """
+        Sends packets for l2_payload.
+        """
+        global reta_lines
+        global name
+        global value
+        self.tester.scapy_foreground()
+        self.dut.send_expect("start", "testpmd>")
+        mac = self.dut.get_mac_address(0)
+
+        # send packet with different source and dest ip
+        if tran_type == "l2_payload":
+            if enable == "ovlan":
+                packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/Dot1Q(id=0x8100,vlan=4)/Dot1Q(id=0x8100,vlan=2,type=0xaaaa)/Raw(load="x"*60)], iface="%s")' % (
+                mac, itf, itf)
+            elif enable == "ivlan":
+                packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/Dot1Q(id=0x8100,vlan=1)/Dot1Q(id=0x8100,vlan=3,type=0xaaaa)/Raw(load="x"*60)], iface="%s")' % (
+                mac, itf, itf)
+            else:
+                packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/Dot1Q(id=0x8100,vlan=1)/Dot1Q(id=0x8100,vlan=2,type=0xaaaa)/Raw(load="x"*60)], iface="%s")' % (
+                mac, itf, itf)
+            self.tester.scapy_append(packet)
+            self.tester.scapy_execute()
+            time.sleep(.5)
+        else:
+            print("\ntran_type error!\n")
+
+        out = self.dut.get_session_output(timeout=1)
+        self.dut.send_expect("stop", "testpmd>")
+        lines = out.split("\r\n")
+        reta_line = {}
+        # collect the hash result and the queue id
+        for line in lines:
+            line = line.strip()
+            if len(line) != 0 and line.strip().startswith("port "):
+                reta_line = {}
+                rexp = r"port (\d)/queue (\d{1,2}): received (\d) packets"
+                m = re.match(rexp, line.strip())
+                if m:
+                    reta_line["port"] = m.group(1)
+                    reta_line["queue"] = m.group(2)
+
+            elif len(line) != 0 and line.startswith(("src=",)):
+                for item in line.split("-"):
+                    item = item.strip()
+
+                    if(item.startswith("RSS hash")):
+                        name, value = item.split("=", 1)
+
+                reta_line[name.strip()] = value.strip()
+                reta_lines.append(reta_line)
+
+        self.append_result_table()
+
+    def append_result_table(self):
+        """
+        Append the hash value and queue id into table.
+        """
+
+        global reta_lines
+
+        # append the the hash value and queue id into table
+        self.result_table_create(
+            ['packet index', 'hash value', 'hash index', 'queue id'])
+        i = 0
+
+        for tmp_reta_line in reta_lines:
+
+            # compute the hash result of five tuple into the 7 LSBs value.
+            hash_index = int(tmp_reta_line["RSS hash"], 16)
+            self.result_table_add(
+                [i, tmp_reta_line["RSS hash"], hash_index, tmp_reta_line["queue"]])
+            i = i + 1
     def test_syn_filter(self):
         """
         Only supported by ixgbe and igb.
@@ -2398,6 +2474,51 @@ class TestGeneric_flow_api(TestCase):
         self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
         self.sendpkt(pktstr='Ether(dst="%s")/IP()/UDP(dport=32)/Raw("x" * 20)' % self.pf_mac)
         self.verify_result("pf", expect_rxpkts="1", expect_queue="2", verify_mac=self.pf_mac)
+
+    def test_dual_vlan(self):
+        """
+        Test with flow type dual vlan(QinQ).
+        """
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g",
+                                 "carlsville"], "NIC Unsupported: " + str(self.nic))
+        for queue in testQueues:
+            self.pmdout.start_testpmd(
+                "Default", "  --portmask=0x1 --rxq=%d --txq=%d" % (queue, queue))
+
+            self.dut.send_expect("set verbose 8", "testpmd> ")
+            self.dut.send_expect("set fwd rxonly", "testpmd> ")
+
+            self.dut.send_expect("port stop all", "testpmd> ")
+            self.dut.send_expect("vlan set extend on 0", "testpmd> ")
+            self.dut.send_expect(
+                "flow create 0 ingress pattern eth / end actions rss types l2-payload end queues end func toeplitz / end", "testpmd> ")
+            self.dut.send_expect("port start all", "testpmd> ")
+            res = self.pmdout.wait_link_status_up("all")
+            self.verify(res is True, "link is down")
+
+            self.send_packet(self.tester_itf, "l2_payload")
+
+            # set flow rss type s-vlan c-vlan set by testpmd on dut
+            self.dut.send_expect("flow create 0 ingress pattern eth / end actions rss types s-vlan c-vlan end key_len 0 queues end / end", "testpmd> ")
+            self.send_packet(self.tester_itf, "l2_payload")
+
+            self.send_packet(self.tester_itf, "l2_payload", enable="ovlan")
+
+            self.send_packet(self.tester_itf, "l2_payload", enable="ivlan")
+
+            self.dut.send_expect("quit", "# ", 30)
+
+        self.result_table_print()
+        result_rows = self.result_table_getrows()
+        self.verify(len(result_rows) > 1, "There is no data in the table, testcase failed!")
+
+        # check the results
+        self.verify(result_rows[1][1] != result_rows[2][1], "The hash values should be different when setting rss to 'l2-payload' and 's-vlan c-vlan and sending the same packets.")
+        self.verify(result_rows[1][1] != result_rows[3][1], "The hash values should be different when setting rss to 'l2-payload' and 's-vlan c-vlan' and sending packets with different ovlan.")
+        self.verify(result_rows[1][1] != result_rows[4][1], "The hash values should be different when setting rss to 'l2-payload' and 's-vlan c-vlan' and sending packets with different ivlan.")
+        self.verify(result_rows[2][1] != result_rows[3][1], "The hash values should be different when setting rss to 's-vlan c-vlan' and sending packet with different ovlan.")
+        self.verify(result_rows[2][1] != result_rows[4][1], "The hash values should be different when setting rss to 's-vlan c-vlan' and sending packet with different ivlan.")
+        self.verify(result_rows[3][1] != result_rows[4][1], "The hash values should be different when setting rss to 's-vlan c-vlan' and sending packet with different ovlan and ivlan")
 
     def tear_down(self):
         """
