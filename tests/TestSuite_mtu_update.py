@@ -95,7 +95,7 @@ class TestMtuUpdate(TestCase):
         return self.dut.get_mac_address(port_id)
 
     def send_scapy_packet(self, port_id: int, packet: str):
-        itf = self.tester.get_interface(port_id)
+        itf = self.tester.get_interface(self.tester.get_local_port(port_id))
 
         self.tester.scapy_foreground()
         mac = self.dut.get_mac_address(port_id)
