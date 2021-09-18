@@ -275,7 +275,6 @@ The following are the test plans for the DPDK DTS automated test system.
     hello_world_test_plan
     keep_alive_test_plan
     multiprocess_test_plan
-    netmap_compat_test_plan
     rxtx_callbacks_test_plan
     skeleton_test_plan
     timer_test_plan
