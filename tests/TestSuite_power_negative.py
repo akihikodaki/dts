@@ -487,9 +487,9 @@ class TestPowerNegative(TestCase):
         # ========================================================================================
         # Step1. Generate 1 VF under igb_uio driver, launch vm_power_mgr sample with PF, for example:
         # 	echo 1 > /sys/bus/pci/drivers/igb_uio/0000\:82\:00.0/max_vfs
-        # 	./examples/vm_power_manager/build/vm_power_mgr -l 1-4 -n 4 --socket-mem=1024,1024 --file-prefix=test1 -w 82:00.0 -- -p 0x01
+        # 	./examples/vm_power_manager/build/vm_power_mgr -l 1-4 -n 4 --socket-mem=1024,1024 --file-prefix=test1 -a 82:00.0 -- -p 0x01
         # Step 2. Launch testpmd with VF
-        # 	./x86_64-native-linuxapp-gcc/app/testpmd -l 5-6 -n 4 --socket-mem=1024,1024 --file-prefix=test2 -w 0000:82:02.0 -- -i
+        # 	./x86_64-native-linuxapp-gcc/app/testpmd -l 5-6 -n 4 --socket-mem=1024,1024 --file-prefix=test2 -a 0000:82:02.0 -- -i
         # 	>set fwd macswap
         # 	>start
         # Step 3. Prepare traffic policy in JSON format then send it to the power demon sample, put the VF MAC into the mac_list:
@@ -508,7 +508,7 @@ class TestPowerNegative(TestCase):
         self.d_con([f'echo 1 > "/sys/bus/pci/drivers/vfio-pci/{self.port_pci}/sriov_numvfs"', '#', 10])
 
         # start vm_power_mgr
-        cmd = f'{self.vm_power_mgr} -l 1-4 -n 4 --socket-mem=1024,1024 --file-prefix=test1 -w {self.port_pci} -- -p 0x01'
+        cmd = f'{self.vm_power_mgr} -l 1-4 -n 4 --socket-mem=1024,1024 --file-prefix=test1 -a {self.port_pci} -- -p 0x01'
         self.d_a_con([cmd, 'vmpower>', 30])
         self.is_mgr_on = True
 
@@ -516,7 +516,7 @@ class TestPowerNegative(TestCase):
         self.logger.info(vm_info)
 
         # Step 2.  Launch testpmd with VF
-        cmd = f'{self.testpmd} -l 5-6 -n 4 --socket-mem=1024,1024 --file-prefix=test2 -w {self.port_pci} -- -i'
+        cmd = f'{self.testpmd} -l 5-6 -n 4 --socket-mem=1024,1024 --file-prefix=test2 -a {self.port_pci} -- -i'
         self.d_con([cmd, 'testpmd>', 30])
         self.is_testpmd_on = True
 

@@ -149,11 +149,11 @@ Test Case4: TRAFFIC Policy Test based on JSON configure file with large integer 
 Step 1. Generate 1 VF under vfio-pci driver, launch vm_power_mgr sample with PF, for example::
 
     echo 1 > /sys/bus/pci/drivers/vfio-pci/0000\:82\:00.0/max_vfs
-    ./examples/vm_power_manager/build/vm_power_mgr -l 1-4 -n 4 --socket-mem=1024,1024 --file-prefix=test1 -w 82:00.0 -- -p 0x01
+    ./examples/vm_power_manager/build/vm_power_mgr -l 1-4 -n 4 --socket-mem=1024,1024 --file-prefix=test1 -a 82:00.0 -- -p 0x01
 
 Step 2. Launch testpmd with VF::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -l 5-6 -n 4 --socket-mem=1024,1024 --file-prefix=test2 -w 0000:82:02.0 -- -i
+     ./x86_64-native-linuxapp-gcc/app/testpmd -l 5-6 -n 4 --socket-mem=1024,1024 --file-prefix=test2 -a 0000:82:02.0 -- -i
        > set fwd macswap
        > start
 
