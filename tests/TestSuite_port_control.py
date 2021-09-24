@@ -159,7 +159,7 @@ class TestPortControl(TestCase):
         terminal.send_expect("ip addr flush %s " % vf_if[1], "#")
         terminal.send_expect("./usertools/dpdk-devbind.py -b vfio-pci --force %s" % vf_pci[1], "#")
         app_name = terminal.apps_name['test-pmd']
-        cmd = app_name + "-n 1 -w %s --vfio-intr=legacy -- -i" % vf_pci[1]
+        cmd = app_name + "-n 1 -a %s --vfio-intr=legacy -- -i" % vf_pci[1]
         terminal.send_expect(cmd, "testpmd>", 10)
 
     def start_testpmd(self, terminal):
