@@ -251,13 +251,13 @@ class TestDcfLifeCycle(TestCase):
         pf2_vf0 = self.vf_ports_info[1].get('vfs_pci')[0] \
             if len(self.vf_ports_info) >= 2 else ''
         allowlist = {
-            'pf1_vf0_dcf': f"-w {pf1_vf0},cap=dcf",
-            'pf1_vf1_dcf': f"-w {pf1_vf1},cap=dcf",
-            'pf1_vf0_pf2_vf0_dcf': f"-w {pf1_vf0},cap=dcf -w {pf2_vf0},cap=dcf",
-            'pf1_vf1_vf2': f"-w {pf1_vf1} -w {pf1_vf2}",
-            'pf1_vf1': f"-w {pf1_vf1}",
-            'pf2_vf0_dcf': f"-w {pf2_vf0},cap=dcf",
-            'pf1_vf0': f"-w {pf1_vf0}",
+            'pf1_vf0_dcf': f"-a {pf1_vf0},cap=dcf",
+            'pf1_vf1_dcf': f"-a {pf1_vf1},cap=dcf",
+            'pf1_vf0_pf2_vf0_dcf': f"-a {pf1_vf0},cap=dcf -a {pf2_vf0},cap=dcf",
+            'pf1_vf1_vf2': f"-a {pf1_vf1} -a {pf1_vf2}",
+            'pf1_vf1': f"-a {pf1_vf1}",
+            'pf2_vf0_dcf': f"-a {pf2_vf0},cap=dcf",
+            'pf1_vf0': f"-a {pf1_vf0}",
         }
         return allowlist
 
