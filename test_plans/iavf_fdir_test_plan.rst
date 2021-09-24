@@ -236,7 +236,7 @@ Prerequisites
 
 5. Launch the app ``testpmd`` with the following arguments::
 
-    ./testpmd -c 0xff -n 6 -w 86:01.0 -w 86:01.1 --file-prefix=vf -- -i --rxq=16 --txq=16
+    ./testpmd -c 0xff -n 6 -a 86:01.0 -a 86:01.1 --file-prefix=vf -- -i --rxq=16 --txq=16
     testpmd> set fwd rxonly
     testpmd> set verbose 1
 
@@ -4269,7 +4269,7 @@ Subcase 1: same rules
 
 3. start testpmd on vf00 and vf01::
 
-    ./testpmd -c 0xff -n 6 -w 86:01.0 -w 86:01.1 --file-prefix=vf0 -- -i --rxq=16 --txq=16
+    ./testpmd -c 0xff -n 6 -a 86:01.0 -a 86:01.1 --file-prefix=vf0 -- -i --rxq=16 --txq=16
 
    create same rules with pf::
 
@@ -4287,7 +4287,7 @@ Subcase 1: same rules
 
 4. start testpmd on vf10 and vf11::
 
-    ./testpmd -c 0xff00 -n 6 -w 86:11.0 -w 86:11.1 --file-prefix=vf1 -- -i --rxq=16 --txq=16
+    ./testpmd -c 0xff00 -n 6 -a 86:11.0 -a 86:11.1 --file-prefix=vf1 -- -i --rxq=16 --txq=16
 
    create same rules with pf::
 
@@ -4372,7 +4372,7 @@ Subcase 2: same input set, different actions
 
 2. start testpmd on vf00 and vf01::
 
-    ./testpmd -c 0xff -n 6 -w 86:01.0 -w 86:01.1 --file-prefix=vf0 -- -i --rxq=16 --txq=16
+    ./testpmd -c 0xff -n 6 -a 86:01.0 -a 86:01.1 --file-prefix=vf0 -- -i --rxq=16 --txq=16
 
    create same rules with pf::
 
@@ -4381,7 +4381,7 @@ Subcase 2: same input set, different actions
 
 3. start testpmd on vf10 and vf11::
 
-    ./testpmd -c 0xff00 -n 6 -w 86:11.0 -w 86:11.1 --file-prefix=vf1 -- -i --rxq=16 --txq=16
+    ./testpmd -c 0xff00 -n 6 -a 86:11.0 -a 86:11.1 --file-prefix=vf1 -- -i --rxq=16 --txq=16
 
    create same rules with pf::
 
@@ -4434,7 +4434,7 @@ Subcase 3: different patterns, different actions
 
 2. start testpmd on vf00 and vf01::
 
-    ./testpmd -c 0xff -n 6 -w 86:01.0 -w 86:01.1 --file-prefix=vf0 -- -i --rxq=16 --txq=16
+    ./testpmd -c 0xff -n 6 -a 86:01.0 -a 86:01.1 --file-prefix=vf0 -- -i --rxq=16 --txq=16
 
    create same rules with pf::
 
@@ -4443,7 +4443,7 @@ Subcase 3: different patterns, different actions
 
 3. start testpmd on vf10 and vf11::
 
-    ./testpmd -c 0xff00 -n 6 -w 86:11.0 -w 86:11.1 --file-prefix=vf1 -- -i --rxq=16 --txq=16
+    ./testpmd -c 0xff00 -n 6 -a 86:11.0 -a 86:11.1 --file-prefix=vf1 -- -i --rxq=16 --txq=16
 
    create same rules with pf::
 
@@ -4893,7 +4893,7 @@ Subcase 1: PFCP FDIR vlan strip on HW checksum offload check
 ------------------------------------------------------------
 1. start testpmd on vf00::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 6 -w 86:01.0 --file-prefix=vf -- -i --rxq=16 --txq=16 --enable-rx-cksum --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 6 -a 86:01.0 --file-prefix=vf -- -i --rxq=16 --txq=16 --enable-rx-cksum --port-topology=loop
 
 2. Enable vlan filter and receipt of VLAN packets with VLAN Tag Identifier 1 on port 0.
    Enable vlan strip on port 0::
@@ -4963,7 +4963,7 @@ subcase 2: PFCP FDIR vlan strip off SW checksum offload check
 -------------------------------------------------------------
 1. start testpmd on vf00::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 6 -w 86:01.0 --file-prefix=vf -- -i --rxq=16 --txq=16 --enable-rx-cksum --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 6 -a 86:01.0 --file-prefix=vf -- -i --rxq=16 --txq=16 --enable-rx-cksum --port-topology=loop
 
 2. Enable vlan filter and receipt of VLAN packets with VLAN Tag Identifier 1 on port 0.
    Disable vlan strip on port 0::
@@ -5031,7 +5031,7 @@ subcase 3: PFCP FDIR vlan insert on
 -----------------------------------
 1. start testpmd on vf00::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 6 -w 86:01.0 --file-prefix=vf -- -i --rxq=16 --txq=16
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 6 -a 86:01.0 --file-prefix=vf -- -i --rxq=16 --txq=16
 
 2. Enable vlan filter and insert VLAN Tag Identifier 1 to vlan packet sent from port 0::
 

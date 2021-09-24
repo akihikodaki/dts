@@ -7593,7 +7593,7 @@ class TestIAVFFdir(TestCase):
     def launch_testpmd(self):
         self.pmd_output.start_testpmd(cores="1S/4C/1T",
                                       param="--rxq={} --txq={}".format(self.cvlq_num, self.cvlq_num),
-                                      eal_param="-w %s -w %s" % (
+                                      eal_param="-a %s -a %s" % (
                                            self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf0[1].pci),
                                       socket=self.ports_socket)
         self.config_testpmd()
@@ -8282,12 +8282,12 @@ class TestIAVFFdir(TestCase):
         m0 = p.search(out_pf0)
         m1 = p.search(out_pf1)
 
-        eal_param = "-c 0xf -n 6 -w %s -w %s --file-prefix=pf0" % (self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf0[1].pci)
+        eal_param = "-c 0xf -n 6 -a %s -a %s --file-prefix=pf0" % (self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf0[1].pci)
         command = self.path + eal_param + " -- -i --rxq=%s --txq=%s" % (self.cvlq_num, self.cvlq_num)
         self.dut.send_expect(command, "testpmd> ", 300)
         self.config_testpmd()
 
-        eal_param = "-c 0xf0 -n 6 -w %s -w %s --file-prefix=pf1" % (self.sriov_vfs_pf1[0].pci,self.sriov_vfs_pf1[1].pci)
+        eal_param = "-c 0xf0 -n 6 -a %s -a %s --file-prefix=pf1" % (self.sriov_vfs_pf1[0].pci,self.sriov_vfs_pf1[1].pci)
         command = self.path + eal_param + " -- -i --rxq=%s --txq=%s" % (self.cvlq_num, self.cvlq_num)
         self.session_secondary.send_expect(command, "testpmd> ", 300)
         #self.session_secondary.config_testpmd()
@@ -8435,12 +8435,12 @@ class TestIAVFFdir(TestCase):
         m0 = p.search(out_pf0)
         m1 = p.search(out_pf1)
 
-        eal_param = "-c 0xf -n 6 -w %s -w %s --file-prefix=pf0" % (self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf0[1].pci)
+        eal_param = "-c 0xf -n 6 -a %s -a %s --file-prefix=pf0" % (self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf0[1].pci)
         command = self.path + eal_param + " -- -i --rxq=%s --txq=%s" % (self.cvlq_num, self.cvlq_num)
         self.dut.send_expect(command, "testpmd> ", 300)
         self.config_testpmd()
 
-        eal_param = "-c 0xf0 -n 6 -w %s -w %s --file-prefix=pf1" % (self.sriov_vfs_pf1[0].pci,self.sriov_vfs_pf1[1].pci)
+        eal_param = "-c 0xf0 -n 6 -a %s -a %s --file-prefix=pf1" % (self.sriov_vfs_pf1[0].pci,self.sriov_vfs_pf1[1].pci)
         command = self.path + eal_param + " -- -i --rxq=%s --txq=%s" % (self.cvlq_num, self.cvlq_num)
         self.session_secondary.send_expect(command, "testpmd> ", 300)
         #self.session_secondary.config_testpmd()
@@ -8588,12 +8588,12 @@ class TestIAVFFdir(TestCase):
         m0 = p.search(out_pf0)
         m1 = p.search(out_pf1)
 
-        eal_param = "-c 0xf -n 6 -w %s -w %s --file-prefix=pf0" % (self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf0[1].pci)
+        eal_param = "-c 0xf -n 6 -a %s -a %s --file-prefix=pf0" % (self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf0[1].pci)
         command = self.path + eal_param + " -- -i --rxq=%s --txq=%s" % (self.cvlq_num, self.cvlq_num)
         self.dut.send_expect(command, "testpmd> ", 300)
         self.config_testpmd()
 
-        eal_param = "-c 0xf0 -n 6 -w %s -w %s --file-prefix=pf1" % (self.sriov_vfs_pf1[0].pci,self.sriov_vfs_pf1[1].pci)
+        eal_param = "-c 0xf0 -n 6 -a %s -a %s --file-prefix=pf1" % (self.sriov_vfs_pf1[0].pci,self.sriov_vfs_pf1[1].pci)
         command = self.path + eal_param + " -- -i --rxq=%s --txq=%s" % (self.cvlq_num, self.cvlq_num)
         self.session_secondary.send_expect(command, "testpmd> ", 300)
         #self.session_secondary.config_testpmd()
@@ -9171,7 +9171,7 @@ class TestIAVFFdir(TestCase):
         self.dut.send_expect("quit", "# ")
         self.pmd_output.start_testpmd(cores="1S/4C/1T",
                                       param="--rxq={} --txq={} --enable-rx-cksum --port-topology=loop".format(self.cvlq_num, self.cvlq_num),
-                                      eal_param="-w %s" % self.sriov_vfs_pf0[0].pci,
+                                      eal_param="-a %s" % self.sriov_vfs_pf0[0].pci,
                                       socket=self.ports_socket)
         vlan = 51
         mac = "00:11:22:33:44:55"
@@ -9268,7 +9268,7 @@ class TestIAVFFdir(TestCase):
         self.dut.send_expect("quit", "# ")
         self.pmd_output.start_testpmd(cores="1S/4C/1T",
                                       param="--rxq={} --txq={} --enable-rx-cksum --port-topology=loop".format(self.cvlq_num, self.cvlq_num),
-                                      eal_param="-w %s" % self.sriov_vfs_pf0[0].pci,
+                                      eal_param="-a %s" % self.sriov_vfs_pf0[0].pci,
                                       socket=self.ports_socket)
         vlan = 51
         mac = "00:11:22:33:44:55"
@@ -9358,7 +9358,7 @@ class TestIAVFFdir(TestCase):
         self.dut.send_expect("quit", "# ")
         self.pmd_output.start_testpmd(cores="1S/4C/1T",
                                       param="--rxq={} --txq={} --enable-rx-cksum --port-topology=loop".format(self.cvlq_num, self.cvlq_num),
-                                      eal_param="-w %s" % self.sriov_vfs_pf0[0].pci,
+                                      eal_param="-a %s" % self.sriov_vfs_pf0[0].pci,
                                       socket=self.ports_socket)
         vlan = 51
         mac = "00:11:22:33:44:55"
