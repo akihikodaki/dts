@@ -70,6 +70,22 @@ class TestLinkStatusInterrupt(TestCase):
             self.basic_intr_mode = ["msix", "legacy"]
         if self.drivername == "vfio-pci":
             self.basic_intr_mode.append("msi")
+        self.intfs = [self.tester.get_interface(self.tester.get_local_port(i)) for i in self.dut_ports]
+        # check link-down-on-close flag
+        self.flag = "link-down-on-close"
+        for intf in self.intfs:
+            check_flag = "ethtool --show-priv-flags %s" % intf
+            set_flag = "ethtool --set-priv-flags %s %s on" % (intf, self.flag)
+            out = self.tester.send_expect(check_flag, "#")
+            p = re.compile('%s\s+:\s+(\w+)' % self.flag)
+            res = re.search(p, out).group(1)
+            if res == "off":
+                self.tester.send_expect(set_flag, "#")
+                time.sleep(0.5)
+                out = self.tester.send_expect(check_flag, "#")
+                self.verify(re.search(p, out).group(1) == "on", "set %s %s on failed" % (intf, self.flag))
+            elif not res:
+                self.logger.info("NIC %s might not support this case" % intf)
 
     def set_link_status_and_verify(self, dutPort, status):
         """
@@ -193,4 +209,6 @@ class TestLinkStatusInterrupt(TestCase):
         """
         Run after each test suite.
         """
-        pass
+        if self.dut.get_os_type() != 'freebsd':
+            for intf in self.intfs:
+                self.tester.send_expect("ethtool --set-priv-flags %s %s off" % (intf, self.flag), "#", 10)
