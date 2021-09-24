@@ -165,7 +165,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
         queue_nums = [1, random_queue, self.max_queue]
         for nr_queue in queue_nums:
             self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-            eal_param = '-w %(vf0)s' % {'vf0': self.vm_dut_0.vm_pci0}
+            eal_param = '-a %(vf0)s' % {'vf0': self.vm_dut_0.vm_pci0}
             tx_port = self.tester.get_local_port(self.dut_ports[0])
             tester_mac = self.tester.get_mac(tx_port)
             iface = self.tester.get_interface(tx_port)
@@ -209,7 +209,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
             self.vm0_testpmd = PmdOutput(self.vm_dut_0)
             self.vm_dut_0.session_secondary = self.vm_dut_0.new_session()
             app_name = self.vm_dut_0.apps_name['test-pmd']
-            cmd = app_name + "-c 0xf -n 1 -w %s -- -i --txq=%s --rxq=%s" % (self.vm_dut_0.vm_pci0, i, i)
+            cmd = app_name + "-c 0xf -n 1 -a %s -- -i --txq=%s --rxq=%s" % (self.vm_dut_0.vm_pci0, i, i)
             out = self.vm_dut_0.session_secondary.send_expect(cmd, "# ", 40)
             if i == 0:
                 self.verify('Either rx or tx queues should be non-zero' in out, "queue number can't be zero")
@@ -221,7 +221,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
         random_queue = random.randint(2, 15)
         queue_nums = [1, random_queue, self.max_queue]
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        eal_param = '-w %(vf0)s' % {'vf0': self.vm_dut_0.vm_pci0}
+        eal_param = '-a %(vf0)s' % {'vf0': self.vm_dut_0.vm_pci0}
         tx_port = self.tester.get_local_port(self.dut_ports[0])
         tester_mac = self.tester.get_mac(tx_port)
         iface = self.tester.get_interface(tx_port)
@@ -272,7 +272,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
     def test_set_invalid_vf_queue_num_with_testpmd_command(self):
         invalid_queue_num = [0, 257]
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        eal_param = '-w %(vf0)s' % {'vf0': self.vm_dut_0.vm_pci0}
+        eal_param = '-a %(vf0)s' % {'vf0': self.vm_dut_0.vm_pci0}
         self.vm0_testpmd.start_testpmd("all", eal_param=eal_param)
         self.vm0_testpmd.execute_cmd('set promisc all off')
         self.vm0_testpmd.execute_cmd('set fwd mac')
