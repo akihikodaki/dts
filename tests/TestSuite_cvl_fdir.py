@@ -334,6 +334,50 @@ L2_Ethertype = [
     'Ether(dst="00:11:22:33:44:55",type=0x88f7)/"\\x00\\x02"',
     'Ether(dst="00:11:22:33:44:55",type=0x8847)']
 
+MAC_IPV4_ESP = {
+    "matched": [
+        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.20',dst='192.168.0.21',proto=50)/ESP(spi=7)/Raw('x'*480)",
+    ],
+    "unmatched": [
+        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.22',dst='192.168.0.21',proto=50)/ESP(spi=7)/Raw('x'*480)",
+        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.20',dst='192.168.0.11',proto=50)/ESP(spi=7)/Raw('x'*480)",
+        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.20',dst='192.168.0.21',proto=50)/ESP(spi=17)/Raw('x'*480)",
+    ]
+}
+
+MAC_IPV6_ESP = {
+    "matched": [
+        "Ether(dst='00:11:22:33:44:55')/IPv6(src='2001::1',dst='2001::2',nh=50)/ESP(spi=7)/Raw('x'*480)",
+    ],
+    "unmatched": [
+        "Ether(dst='00:11:22:33:44:55')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:8888',dst='2001::2',nh=50)/ESP(spi=7)/Raw('x'*480)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6(src='2001::1',dst='1111:2222:3333:4444:5555:6666:7777:9999',nh=50)/ESP(spi=7)/Raw('x'*480)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6(src='2001::1',dst='2001::2',nh=50)/ESP(spi=17)/Raw('x'*480)",
+    ]
+}
+
+MAC_IPV4_NAT_T_ESP = {
+    "matched": [
+        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.20',dst='192.168.0.21')/UDP(dport=4500)/ESP(spi=7)/Raw('x'*480)",
+    ],
+    "unmatched": [
+        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.22',dst='192.168.0.21')/UDP(dport=4500)/ESP(spi=7)/Raw('x'*480)",
+        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.20',dst='192.168.0.11')/UDP(dport=4500)/ESP(spi=7)/Raw('x'*480)",
+        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.20',dst='192.168.0.21')/UDP(dport=4500)/ESP(spi=77)/Raw('x'*480)",
+    ]
+}
+
+MAC_IPV6_NAT_T_ESP = {
+    "matched": [
+        "Ether(dst='00:11:22:33:44:55')/IPv6(src='2001::1',dst='2001::2')/UDP(dport=4500)/ESP(spi=7)/Raw('x'*480)",
+    ],
+    "unmatched": [
+        "Ether(dst='00:11:22:33:44:55')/IPv6(src='2001::8',dst='2001::2')/UDP(dport=4500)/ESP(spi=7)/Raw('x'*480)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6(src='2001::1',dst='2001::9')/UDP(dport=4500)/ESP(spi=7)/Raw('x'*480)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6(src='2001::1',dst='2001::2')/UDP(dport=4500)/ESP(spi=77)/Raw('x'*480)",
+    ]
+}
+
 tv_mac_ipv4_pay_queue_index = {
     "name": "test_mac_ipv4_pay_queue_index",
     "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / end",
@@ -2148,6 +2192,282 @@ vectors_l2_ethertype = [tv_l2_ethertype_queue_index,
                         tv_l2_ethertype_mark_rss,
                         tv_l2_ethertype_mark]
 
+tv_mac_ipv4_esp_queue_index = {
+    "name": "tv_mac_ipv4_esp_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / esp spi is 7 / end actions queue index 13 / mark id 7 / end",
+    "scapy_str": {"match": MAC_IPV4_ESP['matched'],
+                  "unmatched": MAC_IPV4_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 7, "queue": 13}
+}
+
+tv_mac_ipv4_esp_queue_group = {
+    "name": "tv_mac_ipv4_esp_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / esp spi is 7 / end actions rss queues 1 2 3 4 end / mark id 6 / end",
+    "scapy_str": {"match": MAC_IPV4_ESP['matched'],
+                  "unmatched": MAC_IPV4_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 6, "queue": [1, 2, 3, 4]}
+}
+
+tv_mac_ipv4_esp_passthru = {
+    "name": "tv_mac_ipv4_esp_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / esp spi is 7 / end actions passthru / mark id 1 / end",
+    "scapy_str": {"match": MAC_IPV4_ESP['matched'],
+                  "unmatched": MAC_IPV4_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "rss": True, "mark_id": 1}
+}
+
+tv_mac_ipv4_esp_drop = {
+    "name": "tv_mac_ipv4_esp_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / esp spi is 7 / end actions drop / end",
+    "scapy_str": {"match": MAC_IPV4_ESP['matched'],
+                  "unmatched": MAC_IPV4_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_esp_mark_rss = {
+    "name": "tv_mac_ipv4_esp_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / esp spi is 7 / end actions mark id 2 / rss / end",
+    "scapy_str": {"match": MAC_IPV4_ESP['matched'],
+                  "unmatched": MAC_IPV4_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 2, "rss": True}
+}
+
+tv_mac_ipv4_esp_mark = {
+    "name": "tv_mac_ipv4_esp_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / esp spi is 7 / end actions mark id 15 / end",
+    "scapy_str": {"match": MAC_IPV4_ESP['matched'],
+                  "unmatched": MAC_IPV4_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 15}
+}
+
+vectors_mac_ipv4_esp = [
+    tv_mac_ipv4_esp_queue_index,
+    tv_mac_ipv4_esp_queue_group,
+    tv_mac_ipv4_esp_passthru,
+    tv_mac_ipv4_esp_drop,
+    tv_mac_ipv4_esp_mark_rss,
+    tv_mac_ipv4_esp_mark,
+]
+
+tv_mac_ipv6_esp_queue_index = {
+    "name": "tv_mac_ipv6_esp_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv6 src is 2001::1 dst is 2001::2 / esp spi is 7 / end actions queue index 13 / mark id 7 / end",
+    "scapy_str": {"match": MAC_IPV6_ESP['matched'],
+                  "unmatched": MAC_IPV6_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 7, "queue": 13}
+}
+
+tv_mac_ipv6_esp_queue_group = {
+    "name": "tv_mac_ipv6_esp_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv6 src is 2001::1 dst is 2001::2 / esp spi is 7 / end actions rss queues 1 2 3 4 end / mark id 6 / end",
+    "scapy_str": {"match": MAC_IPV6_ESP['matched'],
+                  "unmatched": MAC_IPV6_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 6, "queue": [1, 2, 3, 4]}
+}
+
+tv_mac_ipv6_esp_passthru = {
+    "name": "tv_mac_ipv6_esp_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv6 src is 2001::1 dst is 2001::2 / esp spi is 7 / end actions passthru / mark id 1 / end",
+    "scapy_str": {"match": MAC_IPV6_ESP['matched'],
+                  "unmatched": MAC_IPV6_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "rss": True, "mark_id": 1}
+}
+
+tv_mac_ipv6_esp_drop = {
+    "name": "tv_mac_ipv6_esp_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv6 src is 2001::1 dst is 2001::2 / esp spi is 7 / end actions drop / end",
+    "scapy_str": {"match": MAC_IPV6_ESP['matched'],
+                  "unmatched": MAC_IPV6_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv6_esp_mark_rss = {
+    "name": "tv_mac_ipv6_esp_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv6 src is 2001::1 dst is 2001::2 / esp spi is 7 / end actions mark / rss / end",
+    "scapy_str": {"match": MAC_IPV6_ESP['matched'],
+                  "unmatched": MAC_IPV6_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 0, "rss": True}
+}
+
+tv_mac_ipv6_esp_mark = {
+    "name": "tv_mac_ipv6_esp_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv6 src is 2001::1 dst is 2001::2 / esp spi is 7 / end actions mark id 15 / end",
+    "scapy_str": {"match": MAC_IPV6_ESP['matched'],
+                  "unmatched": MAC_IPV6_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 15}
+}
+
+vectors_mac_ipv6_esp = [
+    tv_mac_ipv6_esp_queue_index,
+    tv_mac_ipv6_esp_queue_group,
+    tv_mac_ipv6_esp_passthru,
+    tv_mac_ipv6_esp_drop,
+    tv_mac_ipv6_esp_mark_rss,
+    tv_mac_ipv6_esp_mark,
+]
+
+tv_mac_ipv4_nat_t_esp_queue_index = {
+    "name": "tv_mac_ipv4_nat_t_esp_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / esp spi is 7 / end actions queue index 13 / mark id 7 / end",
+    "scapy_str": {"match": MAC_IPV4_NAT_T_ESP['matched'],
+                  "unmatched": MAC_IPV4_NAT_T_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 7, "queue": 13}
+}
+
+tv_mac_ipv4_nat_t_esp_queue_group = {
+    "name": "tv_mac_ipv4_nat_t_esp_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / esp spi is 7 / end actions rss queues 1 2 3 4 end / mark id 6 / end",
+    "scapy_str": {"match": MAC_IPV4_NAT_T_ESP['matched'],
+                  "unmatched": MAC_IPV4_NAT_T_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 6, "queue": [1, 2, 3, 4]}
+}
+
+tv_mac_ipv4_nat_t_esp_passthru = {
+    "name": "tv_mac_ipv4_nat_t_esp_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / esp spi is 7 / end actions passthru / mark id 1 / end",
+    "scapy_str": {"match": MAC_IPV4_NAT_T_ESP['matched'],
+                  "unmatched": MAC_IPV4_NAT_T_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "rss": True, "mark_id": 1}
+}
+
+tv_mac_ipv4_nat_t_esp_drop = {
+    "name": "tv_mac_ipv4_nat_t_esp_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / esp spi is 7 / end actions drop / end",
+    "scapy_str": {"match": MAC_IPV4_NAT_T_ESP['matched'],
+                  "unmatched": MAC_IPV4_NAT_T_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_nat_t_esp_mark_rss = {
+    "name": "tv_mac_ipv4_nat_t_esp_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / esp spi is 7 / end actions mark id 2 / rss / end",
+    "scapy_str": {"match": MAC_IPV4_NAT_T_ESP['matched'],
+                  "unmatched": MAC_IPV4_NAT_T_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 2, "rss": True}
+}
+
+tv_mac_ipv4_nat_t_esp_mark = {
+    "name": "tv_mac_ipv4_nat_t_esp_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / esp spi is 7 / end actions mark id 15 / end",
+    "scapy_str": {"match": MAC_IPV4_NAT_T_ESP['matched'],
+                  "unmatched": MAC_IPV4_NAT_T_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 15}
+}
+
+vectors_mac_ipv4_nat_t_esp = [
+    tv_mac_ipv4_nat_t_esp_queue_index,
+    tv_mac_ipv4_nat_t_esp_queue_group,
+    tv_mac_ipv4_nat_t_esp_passthru,
+    tv_mac_ipv4_nat_t_esp_drop,
+    tv_mac_ipv4_nat_t_esp_mark_rss,
+    tv_mac_ipv4_nat_t_esp_mark,
+]
+
+tv_mac_ipv6_nat_t_esp_queue_index = {
+    "name": "tv_mac_ipv6_nat_t_esp_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv6 src is 2001::1 dst is 2001::2 / udp / esp spi is 7 / end actions queue index 13 / mark id 7 / end",
+    "scapy_str": {"match": MAC_IPV6_NAT_T_ESP['matched'],
+                  "unmatched": MAC_IPV6_NAT_T_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 7, "queue": 13}
+}
+
+tv_mac_ipv6_nat_t_esp_queue_group = {
+    "name": "tv_mac_ipv6_nat_t_esp_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv6 src is 2001::1 dst is 2001::2 / udp / esp spi is 7 / end actions rss queues 1 2 3 4 end / mark id 6 / end",
+    "scapy_str": {"match": MAC_IPV6_NAT_T_ESP['matched'],
+                  "unmatched": MAC_IPV6_NAT_T_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 6, "queue": [1, 2, 3, 4]}
+}
+
+tv_mac_ipv6_nat_t_esp_passthru = {
+    "name": "tv_mac_ipv6_nat_t_esp_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv6 src is 2001::1 dst is 2001::2 / udp / esp spi is 7 / end actions passthru / mark id 1 / end",
+    "scapy_str": {"match": MAC_IPV6_NAT_T_ESP['matched'],
+                  "unmatched": MAC_IPV6_NAT_T_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "rss": True, "mark_id": 1}
+}
+
+tv_mac_ipv6_nat_t_esp_drop = {
+    "name": "tv_mac_ipv6_nat_t_esp_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv6 src is 2001::1 dst is 2001::2 / udp / esp spi is 7 / end actions drop / end",
+    "scapy_str": {"match": MAC_IPV6_NAT_T_ESP['matched'],
+                  "unmatched": MAC_IPV6_NAT_T_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv6_nat_t_esp_mark_rss = {
+    "name": "tv_mac_ipv6_nat_t_esp_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv6 src is 2001::1 dst is 2001::2 / udp / esp spi is 7 / end actions mark id 2 / rss / end",
+    "scapy_str": {"match": MAC_IPV6_NAT_T_ESP['matched'],
+                  "unmatched": MAC_IPV6_NAT_T_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 2, "rss": True}
+}
+
+tv_mac_ipv6_nat_t_esp_mark = {
+    "name": "tv_mac_ipv6_nat_t_esp_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv6 src is 2001::1 dst is 2001::2 / udp / esp spi is 7 / end actions mark id 15 / end",
+    "scapy_str": {"match": MAC_IPV6_NAT_T_ESP['matched'],
+                  "unmatched": MAC_IPV6_NAT_T_ESP['unmatched'],
+                  },
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 15}
+}
+
+vectors_mac_ipv6_nat_t_esp = [
+    tv_mac_ipv6_nat_t_esp_queue_index,
+    tv_mac_ipv6_nat_t_esp_queue_group,
+    tv_mac_ipv6_nat_t_esp_passthru,
+    tv_mac_ipv6_nat_t_esp_drop,
+    tv_mac_ipv6_nat_t_esp_mark_rss,
+    tv_mac_ipv6_nat_t_esp_mark,
+]
+
 class TestCVLFdir(TestCase):
 
     def query_count(self, hits_set, hits, port_id=0, rule_id=0):
@@ -3182,6 +3502,22 @@ class TestCVLFdir(TestCase):
 
     def test_l2_ethertype(self):
         self._multirules_process(vectors_l2_ethertype)
+
+    @skip_unsupported_pkg('os default')
+    def test_mac_ipv4_esp(self):
+        self._rte_flow_validate(vectors_mac_ipv4_esp)
+
+    @skip_unsupported_pkg('os default')
+    def test_mac_ipv6_esp(self):
+        self._rte_flow_validate(vectors_mac_ipv6_esp)
+
+    @skip_unsupported_pkg('os default')
+    def test_mac_ipv4_nat_t_esp(self):
+        self._rte_flow_validate(vectors_mac_ipv4_nat_t_esp)
+
+    @skip_unsupported_pkg('os default')
+    def test_mac_ipv6_nat_t_esp(self):
+        self._rte_flow_validate(vectors_mac_ipv6_nat_t_esp)
 
     def test_unsupported_ethertype(self):
         rule = ['flow create 0 ingress pattern eth type is 0x0800 / end actions queue index 1 / end',
