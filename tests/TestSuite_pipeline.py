@@ -418,16 +418,22 @@ class TestPipeline(TestCase):
 
     def run_dpdk_app(self, cli_file):
 
-        cmd = "sed -i -e 's/0000:00:04.0/%s/' {}".format(cli_file) % self.dut_p0_pci
-        self.dut.send_expect(cmd, "# ", 20)
-        cmd = "sed -i -e 's/0000:00:05.0/%s/' {}".format(cli_file) % self.dut_p1_pci
-        self.dut.send_expect(cmd, "# ", 20)
-        cmd = "sed -i -e 's/0000:00:06.0/%s/' {}".format(cli_file) % self.dut_p2_pci
-        self.dut.send_expect(cmd, "# ", 20)
-        cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
-        self.dut.send_expect(cmd, "# ", 20)
-        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
-        self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
+        cmd = "test -f {} && echo \"File exists!\"".format(cli_file)
+        self.dut.send_expect(cmd, "File exists!", 1)
+        try:
+            cmd = "sed -i -e 's/0000:00:04.0/%s/' {}".format(cli_file) % self.dut_p0_pci
+            self.dut.send_expect(cmd, "# ", 20)
+            cmd = "sed -i -e 's/0000:00:05.0/%s/' {}".format(cli_file) % self.dut_p1_pci
+            self.dut.send_expect(cmd, "# ", 20)
+            cmd = "sed -i -e 's/0000:00:06.0/%s/' {}".format(cli_file) % self.dut_p2_pci
+            self.dut.send_expect(cmd, "# ", 20)
+            cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
+            self.dut.send_expect(cmd, "# ", 20)
+            cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
+            self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
+        except Exception:
+            self.dut.send_expect("^C", "# ", 20)
+            self.verify(0, "ERROR in running DPDK application")
 
     def send_pkts(self, from_port, to_port, in_pcap):
         """
@@ -4486,12 +4492,31 @@ class TestPipeline(TestCase):
     def test_ring_port_001(self):
 
         cli_file = '/tmp/pipeline/ring_port_001/ring_port_001.cli'
-        self.run_dpdk_app(cli_file)
+        cmd = "test -f {} && echo \"File exists!\"".format(cli_file)
+        self.dut.send_expect(cmd, "File exists!", 10)
+        try:
+            cmd = "sed -i -e 's/0000:00:04.0/%s/' {}".format(cli_file) % self.dut_p0_pci
+            self.dut.send_expect(cmd, "# ", 10)
+            cmd = "sed -i -e 's/0000:00:05.0/%s/' {}".format(cli_file) % self.dut_p1_pci
+            self.dut.send_expect(cmd, "# ", 10)
+            cmd = "sed -i -e 's/0000:00:06.0/%s/' {}".format(cli_file) % self.dut_p2_pci
+            self.dut.send_expect(cmd, "# ", 10)
+            cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
+            self.dut.send_expect(cmd, "# ", 10)
+
+            ports = [self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci]
+            vdevs = ['net_ring0']
+            eal_params = self.dut.create_eal_parameters(cores=list(range(4)), ports=ports, vdevs=vdevs)
+            cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, eal_params, cli_file)
+            self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
+        except Exception:
+            self.dut.send_expect("^C", "# ", 20)
+            self.verify(0, "ERROR in running DPDK application")
 
         in_pcap = 'pipeline/ring_port_001/pcap_files/in_1.txt'
         out_pcap = 'pipeline/ring_port_001/pcap_files/out_1.txt'
         self.send_and_sniff_pkts(0, 1, in_pcap, out_pcap, "udp")
-        self.dut.send_expect("^C", "# ", 20)
+        self.dut.send_expect("^C", "# ", 10)
 
     def test_u100_001(self):
 
@@ -4878,6 +4903,95 @@ class TestPipeline(TestCase):
 
         # self.send_scapy_pkts(0)
         pass
+
+    def test_profile_001(self):
+
+        cli_file = '/tmp/pipeline/profile_001/profile_001.cli'
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ['pipeline/profile_001/pcap_files/in_1.txt']
+        out_pcap_1 = 'pipeline/profile_001/pcap_files/out_1.txt'
+        out_pcap_2 = 'pipeline/profile_001/pcap_files/out_2.txt'
+        out_pcap_3 = 'pipeline/profile_001/pcap_files/out_3.txt'
+        out_pcap_4 = 'pipeline/profile_001/pcap_files/out_4.txt'
+        out_pcap = [out_pcap_1, out_pcap_2, out_pcap_3, out_pcap_4]
+        filters = ["tcp"] * 4
+        tx_port = [0]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_varbit_001(self):
+
+        cli_file = '/tmp/pipeline/varbit_001/varbit_001.cli'
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = 'pipeline/varbit_001/pcap_files/in_1.txt'
+        out_pcap = 'pipeline/varbit_001/pcap_files/out_1.txt'
+        self.send_and_sniff_pkts(0, 1, in_pcap, out_pcap, "tcp")
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_001(self):
+
+        cli_file = '/tmp/pipeline/learner_001/learner_001.cli'
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ['pipeline/learner_001/pcap_files/in_1.txt']
+        out_pcap = ['pipeline/learner_001/pcap_files/out_1.txt']
+        filters = ["tcp"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        in_pcap = ['pipeline/learner_001/pcap_files/in_2.txt']
+        out_pcap = ['pipeline/learner_001/pcap_files/out_2.txt']
+        filters = ["tcp"]
+        tx_port = [1]
+        rx_port = [1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        in_pcap = ['pipeline/learner_001/pcap_files/in_3.txt']
+        out_pcap = ['pipeline/learner_001/pcap_files/out_3.txt']
+        filters = ["tcp"]
+        tx_port = [2]
+        rx_port = [2]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        in_pcap = ['pipeline/learner_001/pcap_files/in_4.txt']
+        out_pcap = ['pipeline/learner_001/pcap_files/out_4.txt']
+        filters = ["tcp"]
+        tx_port = [3]
+        rx_port = [3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_002(self):
+
+        cli_file = '/tmp/pipeline/learner_002/learner_002.cli'
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ['pipeline/learner_002/pcap_files/in_1.txt']
+        out_pcap = ['pipeline/learner_002/pcap_files/out_1.txt']
+        filters = ["tcp"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        in_pcap = ['pipeline/learner_002/pcap_files/in_2.txt']
+        out_pcap = ['pipeline/learner_002/pcap_files/out_2.txt']
+        filters = ["tcp"]
+        tx_port = [1]
+        rx_port = [1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        in_pcap = ['pipeline/learner_002/pcap_files/in_3.txt']
+        out_pcap = ['pipeline/learner_002/pcap_files/out_3.txt']
+        filters = ["tcp"]
+        tx_port = [2]
+        rx_port = [2]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        in_pcap = ['pipeline/learner_002/pcap_files/in_4.txt']
+        out_pcap = ['pipeline/learner_002/pcap_files/out_4.txt']
+        filters = ["tcp"]
+        tx_port = [3]
+        rx_port = [3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
 
     def tear_down(self):
         """
