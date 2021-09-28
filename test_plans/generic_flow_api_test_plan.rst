@@ -2042,3 +2042,115 @@ Test case: create different rule after destroy
     pkt2 = Ether()/IP()/UDP(dport=32)/Raw('x' * 20)
 
     verify match pkt2 to queue 2, verify mismatch pkt1 to queue 0.
+
+Test Case: 10GB Multiple filters
+======================================
+
+1. config testpmd on DUT
+
+   1. set up testpmd with Fortville NICs::
+
+         ./testpmd -l 1,2,3,4,5,6,7,8 -n 4 -- -i --disable-rss --rxq=16 --txq=16
+
+   2. verbose configuration::
+
+         testpmd> set verbose 1
+
+   3. PMD fwd only receive the packets::
+
+         testpmd> set fwd rxonly
+
+   4. start packet receive::
+
+         testpmd> start
+
+   5. create rule,Enable ethertype filter, SYN filter and 5-tuple Filter on the port 0 at same
+   time. Assigning different filters to different queues on port 0::
+
+         testpmd> flow validate 0 ingress pattern eth / ipv4 / tcp flags spec 0x02 flags mask 0x02 / end actions queue index 1 / end
+         testpmd> flow validate 0 ingress pattern eth type is 0x0806  / end actions queue index 2 /  end
+         testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 2.2.2.5 src is 2.2.2.4 proto is 17 / udp dst is 1 src is 1  / end actions queue index 3 /  end
+         testpmd> flow create 0 ingress pattern eth / ipv4 / tcp flags spec 0x02 flags mask 0x02 / end actions queue index 1 / end
+         testpmd> flow create 0 ingress pattern eth type is 0x0806  / end actions queue index 2 /  end
+         testpmd> flow create 0 ingress pattern eth / ipv4 dst is 2.2.2.5 src is 2.2.2.4 proto is 17 / udp dst is 1 src is 1  / end actions queue index 3 /  end
+
+2. Configure the traffic generator to send different packets. Such as,SYN packets, ARP packets, IP packets and
+packets with(`dst_ip` = 2.2.2.5 `src_ip` = 2.2.2.4 `dst_port` = 1 `src_port` = 1 `protocol` = udp)::
+
+    sendp([Ether(dst="90:e2:ba:36:99:34")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(dport=80,flags="S")/Raw("x" * 20)],iface="ens224f0",count=1,inter=0,verbose=False)
+    sendp([Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.1.1")/Raw("x" * 20)],iface="ens224f0",count=1,inter=0,verbose=False)
+    sendp([Ether(dst="90:e2:ba:36:99:34")/Dot1Q(prio=3)/IP(src="2.2.2.4",dst="2.2.2.5")/UDP(sport=1,dport=1)],iface="ens224f0",count=1,inter=0,verbose=False)
+
+3. Verify that all packets are received (RX-packets incremented)on the assigned
+queue, remove 5-tuple filter::
+
+    testpmd> stop
+    testpmd> start
+    testpmd> flow destroy 0 rule 2
+4. Send different packets such as,SYN packets, ARP packets, packets with
+(`dst_ip` = 2.2.2.5 `src_ip` = 2.2.2.4 `dst_port` = 1 `src_port` = 1
+`protocol` = udp)::
+
+    testpmd> stop
+
+5. Verify that different packets are received (RX-packets incremented)on the
+assigned queue export 5-tuple filter, remove ethertype filter::
+
+    testpmd> start
+    testpmd> flow destroy 0 rule 1
+
+Send different packets such as,SYN packets, ARP packets, packets with
+(`dst_ip` = 2.2.2.5 `src_ip` = 2.2.2.4 `dst_port` = 1 `src_port` = 1
+`protocol` = udp)::
+
+    testpmd>stop
+
+Verify that only SYN packets are received (RX-packets incremented)on the
+assigned queue set off SYN filter,remove syn filter::
+
+    testpmd>start
+    testpmd>flow destroy 0 rule 0
+
+Configure the traffic generator to send SYN packets::
+
+    testpmd>stop
+
+Verify that the packets are not received (RX-packets do not increased)on the
+queue 1.
+
+Test Case: jumbo framesize filter
+===================================
+
+This case is designed for NIC (niantic,I350, 82576 and 82580). Since
+``Testpmd`` could transmits packets with jumbo frame size , it also could
+transmit above packets on assigned queue.  Launch the app ``testpmd`` with the
+following arguments::
+
+    testpmd -l 1,2,3,4,5,6,7,8 -n 4 -- -i --disable-rss --rxq=4 --txq=4 --portmask=0x3 --nb-cores=4 --nb-ports=1 --mbcache=200 --mbuf-size=2048 --max-pkt-len=9600
+    testpmd> set fwd rxonly
+    testpmd> set verbose 1
+    testpmd> start
+
+Enable the syn filters with large size::
+
+    testpmd> flow validate 0 ingress pattern eth / ipv4 / tcp flags spec 0x02 flags mask 0x02 / end actions queue index 2 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / tcp flags spec 0x02 flags mask 0x02 / end actions queue index 2 / end
+
+Configure the traffic generator to send syn packets::
+
+    sendp([Ether(dst="90:e2:ba:36:99:34")/IP(src="2.2.2.5",dst="2.2.2.4")/TCP(dport=80,flags="S")/Raw(load="P"*8962)],iface="ens224f0",count=1,inter=0,verbose=False)
+    testpmd> stop
+
+Then Verify that the packet are received on the queue 2. Configure the traffic generator to send arp packets::
+
+    testpmd> start
+    sendp([Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.1.1")],iface="ens224f0",count=1,inter=0,verbose=False)
+
+Then Verify that the packet are not received on the queue 2.  Remove the filter::
+
+    testpmd> flow destroy 0 rule 0
+
+Configure the traffic generator to send syn packets. Then Verify that
+the packet are not received on the queue 2::
+
+    testpmd> stop
