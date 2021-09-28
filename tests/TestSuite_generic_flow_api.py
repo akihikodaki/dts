@@ -84,6 +84,10 @@ class TestGeneric_flow_api(TestCase):
             MAX_QUEUE = 3
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports(self.nic)
+        global valports
+        valports = [_ for _ in self.dut_ports if self.tester.get_local_port(_) != -1]
+        global portMask
+        portMask = utils.create_mask(valports[:2])
         # Verify that enough ports are available
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         self.cores = "1S/8C/1T"
@@ -2519,6 +2523,120 @@ class TestGeneric_flow_api(TestCase):
         self.verify(result_rows[2][1] != result_rows[3][1], "The hash values should be different when setting rss to 's-vlan c-vlan' and sending packet with different ovlan.")
         self.verify(result_rows[2][1] != result_rows[4][1], "The hash values should be different when setting rss to 's-vlan c-vlan' and sending packet with different ivlan.")
         self.verify(result_rows[3][1] != result_rows[4][1], "The hash values should be different when setting rss to 's-vlan c-vlan' and sending packet with different ovlan and ivlan")
+
+    def test_multiple_filters_10GB(self):
+        """
+        only supported by ixgbe and igb
+        """
+        self.verify(self.nic in ["niantic", "kawela_4", "kawela",
+                        "twinville", "foxville"], "%s nic not support n-tuple filter" % self.nic)
+        self.pmdout.start_testpmd("%s" % self.cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1))
+        self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
+        self.dut.send_expect("set verbose 1", "testpmd> ", 120)
+        self.dut.send_expect("start", "testpmd> ", 120)
+        time.sleep(2)
+
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth / ipv4 / tcp flags spec 0x02 flags mask 0x02 / end actions queue index 1 / end", "validated")
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth type is 0x0806  / end actions queue index 2 /  end", "validated")
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth / ipv4 dst is 2.2.2.5 src is 2.2.2.4 proto is 17 / udp dst is 1 src is 1  / end actions queue index 3 /  end",
+            "validated")
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth / ipv4 / tcp flags spec 0x02 flags mask 0x02 / end actions queue index 1 / end", "created")
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth type is 0x0806  / end actions queue index 2 /  end", "created")
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth / ipv4 dst is 2.2.2.5 src is 2.2.2.4 proto is 17 / udp dst is 1 src is 1  / end actions queue index 3 /  end", "create")
+        time.sleep(2)
+        self.sendpkt(pktstr='Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(dport=80,flags="S")/Raw("x" * 20)' % self.pf_mac)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="1", verify_mac=self.pf_mac)
+
+        self.sendpkt(pktstr='Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.1.1")/Raw("x" * 20)')
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="2", verify_mac="ff:ff:ff:ff:ff:ff")
+
+        self.sendpkt(pktstr='Ether(dst="%s")/Dot1Q(prio=3)/IP(src="2.2.2.4",dst="2.2.2.5")/UDP(sport=1,dport=1)' % self.pf_mac)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="3", verify_mac=self.pf_mac)
+        # destroy rule 2
+        out = self.dut.send_expect("flow destroy 0 rule 2", "testpmd> ")
+        p = re.compile(r"Flow rule #(\d+) destroyed")
+        m = p.search(out)
+        self.verify(m, "flow rule 2 delete failed" )
+        self.sendpkt(pktstr='Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(dport=80,flags="S")/Raw("x" * 20)' % self.pf_mac)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="1", verify_mac=self.pf_mac)
+
+        self.sendpkt(pktstr='Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.1.1")/Raw("x" * 20)')
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="2", verify_mac="ff:ff:ff:ff:ff:ff")
+
+        self.sendpkt(pktstr='Ether(dst="%s")/Dot1Q(prio=3)/IP(src="2.2.2.4",dst="2.2.2.5")/UDP(sport=1,dport=1)' % self.pf_mac)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
+        # destroy rule 1
+        out = self.dut.send_expect("flow destroy 0 rule 1", "testpmd> ")
+        p = re.compile(r"Flow rule #(\d+) destroyed")
+        m = p.search(out)
+        self.verify(m, "flow rule 1 delete failed" )
+
+        self.sendpkt(pktstr='Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.1.1")/Raw("x" * 20)')
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac="ff:ff:ff:ff:ff:ff")
+
+        self.sendpkt(pktstr='Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(dport=80,flags="S")/Raw("x" * 20)' % self.pf_mac)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="1", verify_mac=self.pf_mac)
+        # destroy rule 0
+        out = self.dut.send_expect("flow destroy 0 rule 0", "testpmd> ")
+        p = re.compile(r"Flow rule #(\d+) destroyed")
+        m = p.search(out)
+        self.verify(m, "flow rule 0 delete failed" )
+
+        self.sendpkt(pktstr='Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(dport=80,flags="S")/Raw("x" * 20)' % self.pf_mac)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
+        self.dut.send_expect("stop", "testpmd> ")
+
+    def test_jumbo_frame_size(self):
+
+        self.verify(self.nic in ["niantic", "kawela_4", "kawela", "bartonhills", "twinville", "sagepond", "sageville",
+                                 "powerville", "foxville"], "%s nic not support" % self.nic)
+        if (self.nic in ["cavium_a063", "cavium_a064", "foxville"]):
+            self.pmdout.start_testpmd(
+                "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1 --mbcache=200 --mbuf-size=2048 --max-pkt-len=9200" % portMask)
+        else:
+            self.pmdout.start_testpmd(
+                "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1 --mbcache=200 --mbuf-size=2048 --max-pkt-len=9600" % portMask)
+        port = self.tester.get_local_port(valports[0])
+        txItf = self.tester.get_interface(port)
+
+        port = self.tester.get_local_port(valports[1])
+        rxItf = self.tester.get_interface(port)
+        self.tester.send_expect("ifconfig %s mtu %s" % (txItf, 9200), "# ")
+        self.tester.send_expect("ifconfig %s mtu %s" % (rxItf, 9200), "# ")
+        self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
+        self.dut.send_expect("set verbose 1", "testpmd> ", 120)
+        self.dut.send_expect("start", "testpmd> ", 120)
+        time.sleep(2)
+
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth / ipv4 / tcp flags spec 0x02 flags mask 0x02 / end actions queue index 2 / end",
+            "validated")
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth / ipv4 / tcp flags spec 0x02 flags mask 0x02 / end actions queue index 2 / end",
+            "created")
+
+        self.sendpkt(pktstr='Ether(dst="%s")/IP(src="2.2.2.5",dst="2.2.2.4")/TCP(dport=80,flags="S")/Raw(load="\x50"*8962)' % self.pf_mac)
+        time.sleep(1)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="2", verify_mac=self.pf_mac)
+
+        self.sendpkt(pktstr='Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.1.1")')
+        time.sleep(1)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac="ff:ff:ff:ff:ff:ff")
+        # destroy rule
+        self.dut.send_expect("flow destroy 0 rule 0", "testpmd> ")
+        self.sendpkt(pktstr='Ether(dst="%s")/IP(src="2.2.2.5",dst="2.2.2.4")/TCP(dport=80,flags="S")/Raw(load="\x50"*8962)' % self.pf_mac)
+        time.sleep(1)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
+        self.dut.send_expect("stop", "testpmd> ")
+
+        self.tester.send_expect("ifconfig %s mtu %s" % (txItf, 1500), "# ")
+        self.tester.send_expect("ifconfig %s mtu %s" % (rxItf, 1500), "# ")
 
     def tear_down(self):
         """
