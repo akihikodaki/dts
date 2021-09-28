@@ -114,8 +114,16 @@
                 "ALL"
             ],
             "NIC": [
+                "fortville_25g",
+                "fortville_eagle",
+                "fortville_spirit",
                 "fortville_spirit_single",
                 "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond",
+                "cavium_a034",
+                "cavium_a011",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
                 "carlsville"
@@ -136,6 +144,9 @@
                 "kawela_4",
                 "bartonhills",
                 "powerville",
+                "fortville_25g",
+                "fortville_eagle",
+                "fortville_spirit",
                 "fortville_spirit_single",
                 "springville",
                 "ironpond",
@@ -146,7 +157,9 @@
                 "fortpark_TLV",
                 "fortpark_BASE-T",
                 "carlsville",
-		"foxville"
+                "columbiaville_25g",
+                "columbiaville_100g",
+                "foxville"
             ],
             "Target": [
                 "ALL"
