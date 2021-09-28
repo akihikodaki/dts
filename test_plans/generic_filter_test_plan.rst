@@ -210,60 +210,6 @@ For instance, enable priority filter(just support niantic)::
 
     testpmd> ethertype_filter 0 add ethertype 0x0806 priority enable 1 queue 2
 
-Test Case 4:     10GB Multiple filters
-======================================
-
-Enable ethertype filter, SYN filter and 5-tuple Filter on the port 0 at same
-time. Assigning different filters to different queues on port 0::
-
-    testpmd> syn_filter 0 add priority high queue 1
-    testpmd> ethertype_filter  0 add ethertype 0x0806 priority disable 0 queue 3
-    testpmd> 5tuple_filter 0 add dst_ip 2.2.2.5 src_ip 2.2.2.4 dst_port 1 src_port 1 protocol tcp mask 0x1f priority 3 queue 3
-    testpmd> start
-
-Configure the traffic generator to send different packets. Such as,SYN
-packets, ARP packets, IP packets and packets with(`dst_ip` = 2.2.2.5 `src_ip`
-= 2.2.2.4 `dst_port` = 1 `src_port` = 1 `protocol` = tcp)::
-
-    testpmd> stop
-
-Verify that different packets are received (RX-packets incremented)on the
-assigned queue.  Remove ethertype filter::
-
-    testpmd> ethertype_filter  0 del ethertype 0x0806 priority disable 0 queue 3
-    testpmd>start
-
-Send SYN packets, ARP packets and packets with (`dst_ip` = 2.2.2.5 `src_ip` =
-2.2.2.4 `dst_port` = 1 `src_port` = 1 `protocol` = tcp)::
-
-    testpmd> stop
-
-Verify that all packets are received (RX-packets incremented)on the assigned
-queue except arp packets, remove 5-tuple filter::
-
-    testpmd>5tuple_filter 0 del dst_ip 2.2.2.5 src_ip 2.2.2.4 dst_port 1 src_port 1 protocol tcp mask 0x1f priority 3 queue 3
-    testpmd> start
-
-Send different packets such as,SYN packets, ARP packets, packets with
-(`dst_ip` = 2.2.2.5 `src_ip` = 2.2.2.4 `dst_port` = 1 `src_port` = 1
-`protocol` = tcp)::
-
-    testpmd>stop
-
-Verify that only SYN packets are received (RX-packets incremented)on the
-assigned queue set off SYN filter::
-
-    testpmd>syn_filter 0 del priority high queue 1
-    testpmd>start
-
-Configure the traffic generator to send 5 SYN packets::
-
-    testpmd>stop
-
-Verify that the packets are not received (RX-packets do not increased)on the
-queue 1.
-
-
 Test Case 5:     2-tuple filter
 ===============================
 
@@ -448,42 +394,6 @@ the filter::
 
 Configure the traffic generator to send udp packets and arp packets. Then
 Verify that the packet are not received on the queue 1 and queue 3::
-
-    testpmd> quit
-
-Test Case 9: jumbo framesize filter
-===================================
-
-This case is designed for NIC (niantic,I350, 82576 and 82580). Since
-``Testpmd`` could transmits packets with jumbo frame size , it also could
-transmit above packets on assigned queue.  Launch the app ``testpmd`` with the
-following arguments::
-
-    testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --rxd=1024 --txd=1024 --burst=144 --txpt=32 --txht=8 --txwt=0 --txfreet=0 --rxfreet=64 --mbcache=200 --mbuf-size=2048 --max-pkt-len=9600
-
-    testpmd>set stat_qmap rx 0 0 0
-    testpmd>set stat_qmap rx 0 1 1
-    testpmd>set stat_qmap rx 0 2 2
-    testpmd>vlan set strip off 0
-    testpmd>vlan set strip off 1
-    testpmd>vlan set filter off 0
-    testpmd>vlan set filter off 1
-
-Enable the syn filters with large size::
-
-    testpmd> syn_filter 0 add priority high queue 1
-    testpmd> start
-
-Configure the traffic generator to send syn packets(framesize=2000)::
-
-    testpmd> stop
-
-Then Verify that the packet are received on the queue 1.  Remove the filter::
-
-    testpmd> syn_filter 0 del priority high queue 1
-
-Configure the traffic generator to send syn packets and s. Then Verify that
-the packet are not received on the queue 1::
 
     testpmd> quit
 
