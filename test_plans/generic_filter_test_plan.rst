@@ -396,39 +396,3 @@ Configure the traffic generator to send udp packets and arp packets. Then
 Verify that the packet are not received on the queue 1 and queue 3::
 
     testpmd> quit
-
-Test Case 10: 128 queues
-========================
-
-This case is designed for NIC(niantic). Since NIC(niantic) has 128 transmit
-queues, it should be supports 128 kinds of filter if Hardware have enough
-cores.  
-DPDK enable 64 queues in ixgbe driver by default. Enlarge queue number to 128
-for 128 queues test::
-
-    sed -i -e 's/#define IXGBE_NONE_MODE_TX_NB_QUEUES 64$/#define IXGBE_NONE_MODE_TX_NB_QUEUES 128/' drivers/net/ixgbe/ixgbe_ethdev.h
-
-Launch the app ``testpmd`` with the following arguments::
-
-    ./testpmd -c fffff -n 4 -- -i --disable-rss --rxq=128 --txq=128 --nb-cores=16 --nb-ports=2 --total-num-mbufs=60000
-
-    testpmd>set stat_qmap rx 0 0 0
-    testpmd>set stat_qmap rx 0 64 1
-    testpmd>set stat_qmap rx 0 64 2
-    testpmd>vlan set strip off 0
-    testpmd>vlan set strip off 1
-    testpmd>vlan set filter off 0
-    testpmd>vlan set filter off 1
-
-Enable the 5-tuple Filters with different queues (64,127) on port 0 for
-niantic::
-
-    testpmd> 5tuple_filter 0 add dst_ip 2.2.2.5 src_ip 2.2.2.4 dst_port 1 src_port 1 protocol 0x06 mask 0x1f flags 0x0 priority 3 queue 64 index 1
-    testpmd> 5tuple_filter 0 add dst_ip 2.2.2.5 src_ip 2.2.2.4 dst_port 2 src_port 1 protocol 0x06 mask 0x1f flags 0x0 priority 3 queue 127 index 1
-
-Send packets(`dst_ip` = 2.2.2.5 `src_ip` = 2.2.2.4 `dst_port` = 1 `src_port` =
-1 `protocol` = tcp) and (`dst_ip` = 2.2.2.5 `src_ip` = 2.2.2.4 `dst_port` = 2
-`src_port` = 1 `protocol` = tcp ). Then reading the stats for port 0 after
-sending packets. packets are received on the queue 64 and queue 127 When
-setting 5-tuple Filter with queue(128), it will display failure because the
-number of queues no more than 128.
