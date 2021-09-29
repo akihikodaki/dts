@@ -152,6 +152,12 @@ class TestGeneric_flow_api(TestCase):
             time.sleep(2)
         self.vf_flag = 0
 
+    def request_mbufs(self, queue_num):
+        """
+        default txq/rxq descriptor is 64
+        """
+        return 1024 * queue_num + 512
+
     def verify_result(self, pf_vf, expect_rxpkts, expect_queue, verify_mac):
         """
         verify the packet to the expected queue or be dropped
@@ -2635,6 +2641,75 @@ class TestGeneric_flow_api(TestCase):
 
         self.tester.send_expect("ifconfig %s mtu %s" % (txItf, 1500), "# ")
         self.tester.send_expect("ifconfig %s mtu %s" % (rxItf, 1500), "# ")
+
+    def test_128_queues(self):
+
+        set_filter_flag = 1
+        packet_flag = 1
+        if self.kdriver == "ixgbe":
+            self.dut.send_expect("sed -i -e 's/#define IXGBE_NONE_MODE_TX_NB_QUEUES 64$/#define IXGBE_NONE_MODE_TX_NB_QUEUES 128/' drivers/net/ixgbe/ixgbe_ethdev.h", "# ",30)
+            self.dut.build_install_dpdk(self.target)
+            global valports
+            total_mbufs = self.request_mbufs(128) * len(valports)
+            self.pmdout.start_testpmd(
+                "all", "--disable-rss --rxq=128 --txq=128 --portmask=%s --nb-cores=4 --total-num-mbufs=%d" % (portMask, total_mbufs))
+            self.dut.send_expect(
+                "set stat_qmap rx %s 0 0" % valports[0], "testpmd> ")
+            self.dut.send_expect(
+                "set stat_qmap rx %s 0 0" % valports[1], "testpmd> ")
+            self.dut.send_expect(
+                "vlan set strip off %s" % valports[0], "testpmd> ")
+            self.dut.send_expect(
+                "vlan set strip off %s" % valports[1], "testpmd> ")
+            self.dut.send_expect(
+                "vlan set filter off %s" % valports[0], "testpmd> ")
+            self.dut.send_expect(
+                "vlan set filter off %s" % valports[1], "testpmd> ")
+            queue = ['64', '127', '128']
+            for i in [0, 1, 2]:
+                if i == 2:
+                    out = self.dut.send_expect(
+                        "set stat_qmap rx %s %s %s" % (valports[0], queue[i], (i + 1)), "testpmd> ")
+                    if 'Invalid RX queue %s' % (queue[i]) not in out:
+                        set_filter_flag = 0
+                        break
+                    cmd = "flow create {} ingress pattern eth / ".format(
+                        valports[0]) + "ipv4 dst is 2.2.2.5 src is 2.2.2.4 / tcp dst is {} src is 1 / ".format(
+                        i + 1) + "end actions queue index {} / end".format(queue[i])
+                    out = self.dut.send_expect(cmd, "testpmd> ")
+                    if 'Invalid argument' not in out:
+                        set_filter_flag = 0
+                        break
+                    continue
+                else:
+                    self.dut.send_expect("set stat_qmap rx %s %s %s" %
+                                         (valports[0], queue[i], (i + 1)), "testpmd> ")
+                    cmd = "flow create {} ingress pattern eth / ".format(
+                        valports[0]) + "ipv4 dst is 2.2.2.5 src is 2.2.2.4 / tcp dst is {} src is 1 / ".format(
+                        i + 1) + "end actions queue index {} / end".format(queue[i])
+                    self.dut.send_expect(cmd, "testpmd> ")
+                    self.dut.send_expect("start", "testpmd> ", 120)
+                global filters_index
+                filters_index = i
+                if (filters_index == 0):
+                    self.sendpkt(pktstr='Ether(dst="%s")/IP(src="2.2.2.4",dst="2.2.2.5")/TCP(sport=1,dport=1,flags=0)' % self.pf_mac)
+                if (filters_index == 1):
+                    self.sendpkt(pktstr='Ether(dst="%s")/Dot1Q(prio=3)/IP(src="2.2.2.4",dst="2.2.2.5")/TCP(sport=1,dport=2,flags=0)' % self.pf_mac)
+                time.sleep(1)
+                out = self.dut.send_expect("stop", "testpmd> ")
+                p = re.compile(r"Forward Stats for RX Port= \d+/Queue=(\s?\d+)")
+                res = p.findall(out)
+                queues = [int(i) for i in res]
+                if queues[0] != int(queue[i]):
+                    packet_flag = 0
+                    break
+            self.dut.send_expect("quit", "#", timeout=30)
+            self.dut.send_expect("sed -i -e 's/#define IXGBE_NONE_MODE_TX_NB_QUEUES 128$/#define IXGBE_NONE_MODE_TX_NB_QUEUES 64/' drivers/net/ixgbe/ixgbe_ethdev.h", "# ",30)
+            self.dut.build_install_dpdk(self.target)
+            self.verify(set_filter_flag == 1, "set filters error")
+            self.verify(packet_flag == 1, "packet pass assert error")
+        else:
+            self.verify(False, "%s not support this test" % self.nic)
 
     def tear_down(self):
         """
