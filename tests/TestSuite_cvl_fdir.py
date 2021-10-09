@@ -3272,7 +3272,7 @@ class TestCVLFdir(TestCase):
         out7 = self.send_pkts_getouput(pkts[6], port_id=0, count=10)
         rfc.check_mark(out7, pkt_num=10, check_param={"port_id": 0, "queue": 1, "mark_id": 1})
         out8 = self.send_pkts_getouput(pkts[7], port_id=1, count=10)
-        rfc.check_mark(out8, pkt_num=10, check_param={"port_id": 1, "mark_id": 0})
+        rfc.check_mark(out8, pkt_num=10, check_param={"port_id": 1})
         self.query_count(1, 20, 1, 0)
         self.query_count(1, 20, 1, 1)
         self.query_count(1, 10, 1, 2)

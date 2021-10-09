@@ -4011,8 +4011,8 @@ Subcase 3: two ports multi patterns count query
    packet 1 to queue 1 of port 1, packet 2 to queue 6-7 of port 1, packet 3 to queue 6-7 of port 1,
    packet 4 to queue 2 of port 1, packet 5 dropped of port 1,
    packet 6 to dropped of port 0, packet 7 to queue 1 of port 0.
-   packet 8 received by port 1.
-   all the received packets have specified FDIR matched ID.
+   the received packets have specified FDIR matched ID.
+   packet 8 received by port 1 and not have matched ID.
 
 3. query count::
 
