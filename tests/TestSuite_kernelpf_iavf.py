@@ -68,6 +68,8 @@ class TestKernelpfIavf(TestCase):
         self.vf_mac = '00:01:23:45:67:89'
         self.add_addr = '00:11:22:33:44:55'
         self.wrong_mac = '00:11:22:33:44:99'
+        # get driver version
+        self.driver_version = self.nic_obj.driver_version
 
         self.port = self.dut_ports[0]
         self.vm_port = 0
@@ -155,10 +157,6 @@ class TestKernelpfIavf(TestCase):
             self.vf_mac = "00:01:23:45:67:89"
             self.dut.send_expect("ip link set %s vf 0 mac %s" %
                                  (self.host_intf, self.vf_mac), "# ")
-
-        # get driver version
-        out = self.dut.send_expect("ethtool -i %s | awk -F':' 'NR==2{print $2}'" % self.host_intf, "# ")
-        self.driver_version = out.replace(" ", "")
 
         try:
 
@@ -432,7 +430,7 @@ class TestKernelpfIavf(TestCase):
         out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
         tcpdump_out = self.get_tcpdump_package()
         receive_pkt = re.findall('vlan %s' % random_vlan, tcpdump_out)
-        if self.driver_version < "2.13.10" or self.kdriver == 'ice':
+        if self.kdriver == 'i40e' and self.driver_version < "2.13.10":
             self.verify(len(receive_pkt) == 2, "fail to tester received vlan packet!!!")
             self.verify(self.vf_mac in out, "Failed to received vlan packet!!!")
         else:
@@ -501,7 +499,7 @@ class TestKernelpfIavf(TestCase):
 
         # send vlan 1 packet, vf can receive packet
         out = self.send_and_getout(vlan=1, pkt_type="VLAN_UDP")
-        if self.driver_version < "2.13.10" or self.kdriver == 'ice':
+        if self.kdriver == 'i40e' and self.driver_version < "2.13.10":
             self.verify(self.vf_mac in out, "received vlan 1 packet!!!")
         else:
             self.verify(self.vf_mac not in out, "Received vlan 1 packet!!!")
@@ -586,7 +584,7 @@ class TestKernelpfIavf(TestCase):
         time.sleep(1)
         tcpdump_out = self.get_tcpdump_package()
         receive_pkt = re.findall('vlan %s' % random_vlan, tcpdump_out)
-        if self.driver_version < "2.13.10" or self.kdriver == 'ice':
+        if self.kdriver == 'i40e' and self.driver_version < "2.13.10":
             self.verify(len(receive_pkt) == 2, 'Failed to received vlan packet!!!')
         else:
             self.verify(len(receive_pkt) == 1, 'Failed to received vlan packet!!!')
@@ -958,7 +956,7 @@ class TestKernelpfIavf(TestCase):
         self.scapy_send_packet(self.vf_mac, self.tester_intf, vlan_flags=True, count=10)
         out = self.vm_dut.get_session_output()
         packets = len(re.findall('received 1 packets', out))
-        if self.driver_version < "2.13.10" or self.kdriver == 'ice':
+        if self.kdriver == 'i40e' and self.driver_version < "2.13.10":
             self.verify(packets == 10, "Not receive expected packet")
         else:
             self.verify(packets == 0, "Receive expected packet")
