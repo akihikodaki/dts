@@ -65,6 +65,9 @@ class TestVfVlan(TestCase):
             self.vf_assign_method = 'vfio-pci'
             self.dut.send_expect('modprobe vfio-pci', '#')
 
+        # get driver version
+        self.driver_version = self.nic_obj.driver_version
+
     def set_up(self):
         self.setup_vm_env()
 
@@ -107,9 +110,6 @@ class TestVfVlan(TestCase):
         self.host_intf0 = self.dut.ports_info[self.used_dut_port_0]['intf']
         tester_port = self.tester.get_local_port(self.used_dut_port_0)
         self.tester_intf0 = self.tester.get_interface(tester_port)
-        # get driver version
-        out = self.dut.send_expect("ethtool -i %s | awk -F':' 'NR==2{print $2}'" % self.host_intf0, "# ")
-        self.driver_version = out.replace(" ", "")
 
         self.dut.generate_sriov_vfs_by_port(
             self.used_dut_port_0, 1, driver=driver)
@@ -276,7 +276,7 @@ class TestVfVlan(TestCase):
         self.vm0_testpmd.execute_cmd("start")
 
         out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
-        if self.driver_version < "2.13.10" or self.kdriver == 'ice':
+        if self.kdriver == 'i40e' and self.driver_version < "2.13.10":
             self.verify("received" in out, "Failed to received vlan packet!!!")
         else:
             self.verify(
@@ -398,7 +398,7 @@ class TestVfVlan(TestCase):
 
         # send packet with vlan
         out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
-        if self.driver_version < "2.13.10" or self.kdriver == 'ice':
+        if self.kdriver == 'i40e' and self.driver_version < "2.13.10":
             self.verify(
                 "received 1 packets" in out, "Received mismatched vlan packet while vlan filter on")
         else:
