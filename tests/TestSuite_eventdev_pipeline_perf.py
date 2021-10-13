@@ -143,13 +143,13 @@ class TestEventdevPipelinePerf(TestCase):
     def eventdev_cmd(self, stlist, nports, wmask):
 
         self.Port_pci_ids = []
-        command_line1 = self.app_command + " -c %s -w %s"
+        command_line1 = self.app_command + " -c %s -a %s"
         for i in range(0, nports):
             self.Port_pci_ids.append(self.dut.ports_info[i]['pci'])
             ## Adding core-list and pci-ids
-            command_line1 = command_line1 + " -w %s "
+            command_line1 = command_line1 + " -a %s "
         ## Adding test and stage types
-        command_line2 = "-- -w %s -n=0 --dump %s -m 16384" % (wmask , stlist )
+        command_line2 = "-- -a %s -n=0 --dump %s -m 16384" % (wmask , stlist )
         return command_line1 + command_line2
 
     def test_perf_eventdev_pipeline_1ports_atomic_performance(self):

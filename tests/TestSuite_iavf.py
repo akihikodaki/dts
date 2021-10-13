@@ -114,7 +114,7 @@ class TestIavf(TestCase):
 
         # start testpmd for pf
         self.dut_testpmd = PmdOutput(self.dut)
-        host_eal_param = '-w %s -w %s' % (self.pf_pci0, self.pf_pci1)
+        host_eal_param = '-a %s -a %s' % (self.pf_pci0, self.pf_pci1)
         self.dut_testpmd.start_testpmd(
             "Default", "--rxq=4 --txq=4 --port-topology=chained", eal_param=host_eal_param)
 

@@ -301,5 +301,5 @@ class TestStatsChecks(TestCase):
         self.vf_port = self.dut.ports_info[self.dut_ports[0]]["vfs_port"][0]
         self.vf_port.bind_driver(driver="vfio-pci")
         self.vf_port_pci = self.dut.ports_info[self.dut_ports[0]]['sriov_vfs_pci'][0]
-        self.pmdout.start_testpmd('default', '--rxq=4 --txq=4', eal_param='-w %s' % self.vf_port_pci)
+        self.pmdout.start_testpmd('default', '--rxq=4 --txq=4', eal_param='-a %s' % self.vf_port_pci)
         self.xstats_check(0, 0, if_vf=True)

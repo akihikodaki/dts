@@ -225,7 +225,7 @@ class TestVfSingleCorePerf(TestCase):
         # ports allowlist
         eal_para = ""
         for i in range(port_num):
-            eal_para += " -w " + self.sriov_vfs_port[i][0].pci
+            eal_para += " -a " + self.sriov_vfs_port[i][0].pci
         port_mask = utils.create_mask(self.dut_ports)
         # parameters for application/testpmd
         param = " --portmask=%s" % (port_mask)

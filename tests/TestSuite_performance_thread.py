@@ -189,7 +189,7 @@ class TestPerformanceThread(TestCase):
         self.test_results["data"] = []
         eal_param = ""
         for i in valports:
-            eal_param += " -w %s" % self.dut.ports_info[i]['pci']
+            eal_param += " -a %s" % self.dut.ports_info[i]['pci']
 
         for cores in self.nb_cores:
             core_list, core_mask = self.create_cores(cores)

@@ -252,9 +252,9 @@ class TestSuiteMaliciousDrvEventIndication(TestCase):
         # get whitelist and cores
         socket = self.dut.get_numa_id(self.dut_ports[0])
         corelist = self.dut.get_core_list("1S/6C/1T", socket=socket)[2:]
-        self.pf_pmd_whitelist = '-w ' + self.vf_ports_info[0].get('pf_pci')
+        self.pf_pmd_whitelist = '-a ' + self.vf_ports_info[0].get('pf_pci')
         self.pf_pmd_cores = corelist[:2]
-        self.vf_pmd_allowlst = '-w ' + self.vf_ports_info[0].get('vfs_pci')[0]
+        self.vf_pmd_allowlst = '-a ' + self.vf_ports_info[0].get('vfs_pci')[0]
         self.vf_pmd_cores = corelist[2:]
 
     def init_params(self):

@@ -153,7 +153,7 @@ class L2tpEspCoverage(TestCase):
             param_str = " --rxq=16 --txq=16 --port-topology=loop --enable-rx-cksum "
         else:
             param_str = " --rxq=16 --txq=16 --port-topology=loop "
-        self.pmd_output.start_testpmd(cores="1S/8C/1T", param=param_str, eal_param="-w %s" % port_pci)
+        self.pmd_output.start_testpmd(cores="1S/8C/1T", param=param_str, eal_param="-a %s" % port_pci)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
         self.dut.send_expect("set verbose 1", "testpmd> ", 15)
 

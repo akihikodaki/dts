@@ -219,10 +219,10 @@ class TestRuntimeVfQn(TestCase):
         """
         valid_qn = (2, 4, 8,)
         for qn in valid_qn:
-            host_eal_param = '-w %s,queue-num-per-vf=%d --file-prefix=test1 --socket-mem 1024,1024' % (self.pf_pci, qn)
+            host_eal_param = '-a %s,queue-num-per-vf=%d --file-prefix=test1 --socket-mem 1024,1024' % (self.pf_pci, qn)
             self.host_testpmd.start_testpmd(self.pmdout.default_cores, param='', eal_param=host_eal_param)
 
-            gest_eal_param = '-w %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
+            gest_eal_param = '-a %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
             self.vm0_testpmd = PmdOutput(self.vm_dut_0)
             self.vm0_testpmd.start_testpmd(self.pmdout.default_cores, eal_param=gest_eal_param, param='')
             guest_cmds = self.testpmd_config_cmd_list(qn)
@@ -253,7 +253,7 @@ class TestRuntimeVfQn(TestCase):
         :return:
         """
         for invalid_qn in (0, 3, 5, 6, 7, 9, 11, 15, 17, 25,):
-            eal_param = '-w %s,queue-num-per-vf=%d --file-prefix=test1 --socket-mem 1024,1024' % (self.pf_pci, invalid_qn)
+            eal_param = '-a %s,queue-num-per-vf=%d --file-prefix=test1 --socket-mem 1024,1024' % (self.pf_pci, invalid_qn)
             testpmd_out = self.host_testpmd.start_testpmd(self.pmdout.default_cores, param='', eal_param=eal_param)
             self.verify("it must be power of 2 and equal or less than 16" in testpmd_out, "there is no 'Wrong VF queue number = 0' logs.")
             self.dut.send_expect("quit", "# ")
@@ -263,10 +263,10 @@ class TestRuntimeVfQn(TestCase):
         Test case 3: set valid VF queue number in testpmd command-line options
         :return:
         """
-        host_eal_param = '-w %s --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
+        host_eal_param = '-a %s --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
         self.host_testpmd.start_testpmd(self.pmdout.default_cores, param='', eal_param=host_eal_param)
 
-        gest_eal_param = '-w %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
+        gest_eal_param = '-a %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         for valid_qn in range(1, 17):
             count = valid_qn * 10
@@ -292,9 +292,9 @@ class TestRuntimeVfQn(TestCase):
         Test case 4: set invalid VF queue number in testpmd command-line options
         :return:
         """
-        host_eal_param = '-w %s --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
+        host_eal_param = '-a %s --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
         self.host_testpmd.start_testpmd(self.pmdout.default_cores, param='', eal_param=host_eal_param)
-        gest_eal_param = '-w %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
+        gest_eal_param = '-a %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
 
         app_name = self.dut.apps_name['test-pmd']
@@ -312,10 +312,10 @@ class TestRuntimeVfQn(TestCase):
         Test case 5: set valid VF queue number with testpmd function command
         :return:
         """
-        host_eal_param = '-w %s --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
+        host_eal_param = '-a %s --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
         self.host_testpmd.start_testpmd(self.pmdout.default_cores, param='', eal_param=host_eal_param)
 
-        gest_eal_param = '-w %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
+        gest_eal_param = '-a %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         self.vm0_testpmd.start_testpmd(self.pmdout.default_cores, eal_param=gest_eal_param, param='')
         for valid_qn in range(1, 17):
@@ -343,9 +343,9 @@ class TestRuntimeVfQn(TestCase):
         expect_str = ["Warning: Either rx or tx queues should be non zero",
                       "Fail: input rxq (257) can't be greater than max_rx_queues (256) of port 0",
                       "Fail: input txq (257) can't be greater than max_tx_queues (256) of port 0"]
-        host_eal_param = '-w %s --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
+        host_eal_param = '-a %s --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
         self.host_testpmd.start_testpmd(self.pmdout.default_cores, param='', eal_param=host_eal_param)
-        gest_eal_param = '-w %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
+        gest_eal_param = '-a %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         self.vm0_testpmd.start_testpmd(self.pmdout.default_cores, eal_param=gest_eal_param, param='')
         for invalid_qn in [0, 257]:
@@ -361,7 +361,7 @@ class TestRuntimeVfQn(TestCase):
         Test case 7: Reserve VF queue number when VF bind to kernel driver
         :return:
         """
-        host_eal_param = '-w %s,queue-num-per-vf=2 --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
+        host_eal_param = '-a %s,queue-num-per-vf=2 --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
         self.host_testpmd.start_testpmd(self.pmdout.default_cores, param='', eal_param=host_eal_param)
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         self.vm_dut_0.restore_interfaces()

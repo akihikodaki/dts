@@ -6971,7 +6971,7 @@ class TestCVLAdvancedIAVFRSSGTPU(TestCase):
             # if support add --disable-rss
             param = "--rxq=16 --txq=16"
         self.pmd_output.start_testpmd(cores="1S/4C/1T", param=param,
-                                          eal_param=f"-w {self.vf0_pci}", socket=self.ports_socket)
+                                          eal_param=f"-a {self.vf0_pci}", socket=self.ports_socket)
         '''
         self.symmetric = symmetric
         if symmetric:

@@ -231,7 +231,7 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         # start testpmd with PF on the host
         self.dut_testpmd = PmdOutput(self.dut)
         self.dut_testpmd.start_testpmd(
-            "%s" % self.cores, "--rxq=4 --txq=4 --nb-cores=4", "-w %s" % self.pf_pci)
+            "%s" % self.cores, "--rxq=4 --txq=4 --nb-cores=4", "-a %s" % self.pf_pci)
         self.dut_testpmd.execute_cmd("port stop 0")
         self.dut_testpmd.execute_cmd("port config 0 dcb vt on 4 pfc off")
         self.dut_testpmd.execute_cmd("port start 0")
@@ -257,7 +257,7 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         # start testpmd with PF on the host
         self.dut_testpmd = PmdOutput(self.dut)
         self.dut_testpmd.start_testpmd(
-            "%s" % self.cores, "--rxq=2 --txq=2 --nb-cores=2", "-w %s" % self.pf_pci)
+            "%s" % self.cores, "--rxq=2 --txq=2 --nb-cores=2", "-a %s" % self.pf_pci)
         self.dut_testpmd.execute_cmd("start")
         time.sleep(5)
         self.setup_vm_env()

@@ -863,7 +863,7 @@ class TestGeneric_flow_api(TestCase):
                                  "powerville", "fortville_eagle", "fortville_25g", "fortville_spirit", "carlsville",
                                  "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "foxville","columbiaville_25g","columbiaville_100g"], "%s nic not support ethertype filter" % self.nic)
 
-        self.pmdout.start_testpmd("%s" % self.cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
+        self.pmdout.start_testpmd("%s" % self.cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-a %s --file-prefix=test1" % self.pf_pci)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
@@ -916,19 +916,19 @@ class TestGeneric_flow_api(TestCase):
 
         self.setup_env()
         # start testpmd on pf
-        self.pmdout.start_testpmd("1S/4C/1T", "--rxq=4 --txq=4", "-w %s --file-prefix=pf -m 1024" % self.pf_pci)
+        self.pmdout.start_testpmd("1S/4C/1T", "--rxq=4 --txq=4", "-a %s --file-prefix=pf -m 1024" % self.pf_pci)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
         # start testpmd on vf0
-        self.session_secondary.send_expect("%s -c 0x1e0 -n 4 -m 1024 -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+        self.session_secondary.send_expect("%s -c 0x1e0 -n 4 -m 1024 -a %s --file-prefix=vf1 -- -i --rxq=4 --txq=4" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
         self.session_secondary.send_expect("set fwd rxonly", "testpmd> ")
         self.session_secondary.send_expect("set verbose 1", "testpmd> ")
         self.session_secondary.send_expect("start", "testpmd> ")
         time.sleep(2)
         # start testpmd on vf1
-        self.session_third.send_expect("%s -c 0x1e00 -n 4 -m 1024 -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+        self.session_third.send_expect("%s -c 0x1e00 -n 4 -m 1024 -a %s --file-prefix=vf2 -- -i --rxq=4 --txq=4" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
         self.session_third.send_expect("set fwd rxonly", "testpmd> ")
         self.session_third.send_expect("set verbose 1", "testpmd> ")
         self.session_third.send_expect("start", "testpmd> ")
@@ -962,7 +962,7 @@ class TestGeneric_flow_api(TestCase):
         self.verify(self.nic in ["fortville_eagle", "fortville_25g", "fortville_spirit", "carlsville",
                                  "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "foxville","columbiaville_25g","columbiaville_100g"], "%s nic not support fdir L2 payload filter" % self.nic)
 
-        self.pmdout.start_testpmd("%s" % self.pf_cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
+        self.pmdout.start_testpmd("%s" % self.pf_cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-a %s --file-prefix=test1" % self.pf_pci)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
@@ -1009,7 +1009,7 @@ class TestGeneric_flow_api(TestCase):
                                  "fortville_spirit_single", "fortpark_TLV",
                                  "fortpark_BASE-T","fortville_25g","carlsville","columbiaville_25g","columbiaville_100g"], "%s nic not support fdir vlan filter" % self.nic)
 
-        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-a %s --file-prefix=test1" % self.pf_pci)
         self.dut.send_expect("port config all rss all", "testpmd> ", 120)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -1098,7 +1098,7 @@ class TestGeneric_flow_api(TestCase):
                                  "fortville_spirit_single", "fortpark_TLV",
                                  "fortpark_BASE-T","fortville_25g","carlsville","columbiaville_25g","columbiaville_100g"], "%s nic not support fdir vlan filter" % self.nic)
 
-        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-a %s --file-prefix=test1" % self.pf_pci)
         self.dut.send_expect("port config all rss all", "testpmd> ", 120)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -1187,7 +1187,7 @@ class TestGeneric_flow_api(TestCase):
                                  "fortville_spirit_single", "fortpark_TLV",
                                  "fortpark_BASE-T","fortville_25g","carlsville","columbiaville_25g","columbiaville_100g"], "%s nic not support fdir vlan filter" % self.nic)
 
-        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-a %s --file-prefix=test1" % self.pf_pci)
         self.dut.send_expect("port config all rss all", "testpmd> ", 120)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -1276,7 +1276,7 @@ class TestGeneric_flow_api(TestCase):
                                  "fortville_spirit_single", "fortpark_TLV",
                                  "fortpark_BASE-T","fortville_25g","carlsville","columbiaville_25g","columbiaville_100g"], "%s nic not support fdir vlan filter" % self.nic)
 
-        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-a %s --file-prefix=test1" % self.pf_pci)
         self.dut.send_expect("port config all rss all", "testpmd> ", 120)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -1364,7 +1364,7 @@ class TestGeneric_flow_api(TestCase):
                                  "fortville_spirit_single", "fortpark_TLV",
                                  "fortpark_BASE-T","fortville_25g","carlsville","columbiaville_25g","columbiaville_100g"], "%s nic not support fdir vlan filter" % self.nic)
 
-        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-a %s --file-prefix=test1" % self.pf_pci)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
@@ -1427,19 +1427,19 @@ class TestGeneric_flow_api(TestCase):
                                  "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "foxville","columbiaville_25g","columbiaville_100g"], "%s nic not support fdir vlan filter" % self.nic)
         self.setup_env()
         # start testpmd on pf
-        self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
+        self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-a %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
         # start testpmd on vf0
-        self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+        self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -a %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set verbose 1", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
         time.sleep(2)
         # start testpmd on vf1
-        self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+        self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -a %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
         self.session_third.send_expect("set fwd rxonly", "testpmd>")
         self.session_third.send_expect("set verbose 1", "testpmd>")
         self.session_third.send_expect("start", "testpmd>")
@@ -1539,19 +1539,19 @@ class TestGeneric_flow_api(TestCase):
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "foxville", "carlsville"]):
             self.setup_env()
             # start testpmd on pf
-            self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
+            self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-a %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
             self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
             self.dut.send_expect("set verbose 1", "testpmd> ", 120)
             self.dut.send_expect("start", "testpmd> ", 120)
             time.sleep(2)
             # start testpmd on vf0
-            self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+            self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -a %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
             self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
             self.session_secondary.send_expect("set verbose 1", "testpmd>")
             self.session_secondary.send_expect("start", "testpmd>")
             time.sleep(2)
             # start testpmd on vf1
-            self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+            self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -a %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
             self.session_third.send_expect("set fwd rxonly", "testpmd>")
             self.session_third.send_expect("set verbose 1", "testpmd>")
             self.session_third.send_expect("start", "testpmd>")
@@ -1685,17 +1685,17 @@ class TestGeneric_flow_api(TestCase):
         if (self.nic in ["fortville_eagle", "fortville_25g", "fortville_spirit","columbiaville_25g","columbiaville_100g",
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "carlsville"]):
             self.setup_env()
-            self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
+            self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-a %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
             self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
             self.dut.send_expect("set verbose 1", "testpmd> ", 120)
             self.dut.send_expect("start", "testpmd> ", 120)
             time.sleep(2)
-            self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+            self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -a %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
             self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
             self.session_secondary.send_expect("set verbose 1", "testpmd>")
             self.session_secondary.send_expect("start", "testpmd>")
             time.sleep(2)
-            self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+            self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -a %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
             self.session_third.send_expect("set fwd rxonly", "testpmd>")
             self.session_third.send_expect("set verbose 1", "testpmd>")
             self.session_third.send_expect("start", "testpmd>")
@@ -1850,7 +1850,7 @@ class TestGeneric_flow_api(TestCase):
         # i40e
         if (self.nic in ["fortville_eagle", "fortville_25g", "fortville_spirit", "carlsville",
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"]):
-            self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf" % self.pf_pci)
+            self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-a %s --file-prefix=pf" % self.pf_pci)
             self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
             self.dut.send_expect("set verbose 1", "testpmd> ", 120)
             self.dut.send_expect("start", "testpmd> ", 120)
@@ -1954,7 +1954,7 @@ class TestGeneric_flow_api(TestCase):
             self.dut.send_expect("quit", "# ")
             time.sleep(2)
 
-            self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024" % self.pf_pci)
+            self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-a %s --file-prefix=pf --socket-mem 1024,1024" % self.pf_pci)
             self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
             self.dut.send_expect("set verbose 1", "testpmd> ", 120)
             self.dut.send_expect("start", "testpmd> ", 120)
@@ -2306,18 +2306,18 @@ class TestGeneric_flow_api(TestCase):
                     "%s nic not support tunnel vxlan filter" % self.nic)
 
         self.setup_env()
-        self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
+        self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-a %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
         self.dut.send_expect("rx_vxlan_port add 4789 0", "testpmd> ", 120)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
-        self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+        self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -a %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set verbose 1", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
         time.sleep(2)
-        self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+        self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -a %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
         self.session_third.send_expect("set fwd rxonly", "testpmd>")
         self.session_third.send_expect("set verbose 1", "testpmd>")
         self.session_third.send_expect("start", "testpmd>")
@@ -2377,17 +2377,17 @@ class TestGeneric_flow_api(TestCase):
                     "%s nic not support tunnel nvgre filter" % self.nic)
 
         self.setup_env()
-        self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024  --legacy-mem" % self.pf_pci)
+        self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-a %s --file-prefix=pf --socket-mem 1024,1024  --legacy-mem" % self.pf_pci)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
-        self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024  --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+        self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024  --legacy-mem -a %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set verbose 1", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
         time.sleep(2)
-        self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+        self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -a %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
         self.session_third.send_expect("set fwd rxonly", "testpmd>")
         self.session_third.send_expect("set verbose 1", "testpmd>")
         self.session_third.send_expect("start", "testpmd>")

@@ -4526,7 +4526,7 @@ class Advanced_rss_pppoe(TestCase):
         else:
             param = "--rxq=64 --txq=64 --disable-rss --rxd=384 --txd=384"
         out = self.pmd_output.start_testpmd(cores="1S/4C/1T", param=param,
-                                            eal_param=f"-w {self.pci_list[0]}", socket=self.ports_socket)
+                                            eal_param=f"-a {self.pci_list[0]}", socket=self.ports_socket)
         self.symmetric = symmetric
         if symmetric:
             # Need config rss in setup

@@ -2585,7 +2585,7 @@ class TestCVLFdir(TestCase):
         self.pmd_output.start_testpmd(cores="1S/4C/1T",
                                       param="--portmask=%s --rxq=%d --txq=%d --port-topology=loop" % (
                                           self.portMask, rxq, txq),
-                                      eal_param="-w %s -w %s --log-level=ice,7" % (
+                                      eal_param="-a %s -a %s --log-level=ice,7" % (
                                           self.pci0, self.pci1), socket=self.ports_socket)
         self.config_testpmd()
 
@@ -3387,7 +3387,7 @@ class TestCVLFdir(TestCase):
             out = self.pmd_output.start_testpmd(cores="1S/4C/1T",
                                                 param="--portmask=%s --rxq=%d --txq=%d --port-topology=loop --cmdline-file=%s" % (
                                                     self.portMask, 64, 64, cmd_path),
-                                                eal_param="-w %s -w %s --log-level='ice,7'" % (
+                                                eal_param="-a %s -a %s --log-level='ice,7'" % (
                                                     self.pci0, self.pci1), socket=self.ports_socket)
             self.verify('Failed to create flow' not in out, "create some rule failed")
             self.config_testpmd()

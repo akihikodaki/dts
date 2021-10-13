@@ -344,7 +344,7 @@ class TestSriovKvm(TestCase):
             if driver == 'igb_uio':
                 # start testpmd with the two VFs on the host
                 self.host_testpmd = PmdOutput(self.dut)
-                eal_param = '-w %s ' % self.dut.ports_info[0]['pci']
+                eal_param = '-a %s ' % self.dut.ports_info[0]['pci']
                 self.host_testpmd.start_testpmd(
                     "1S/2C/2T", "--rxq=4 --txq=4", eal_param=eal_param)
                 self.host_testpmd.execute_cmd('set fwd rxonly')

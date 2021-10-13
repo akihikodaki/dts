@@ -151,7 +151,7 @@ class TestVM2VMVirtioPMD(TestCase):
         """
         # deal with ports
         w_pci_list = []
-        w_pci_list.append('-w %s,%s' % (virtio_net_pci, 'vectorized=1'))
+        w_pci_list.append('-a %s,%s' % (virtio_net_pci, 'vectorized=1'))
         w_pci_str = ' '.join(w_pci_list)
         if path_mode == "mergeable":
             command = self.app_testpmd_path + " -c 0x3 -n 4 " + \

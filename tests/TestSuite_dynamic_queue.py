@@ -65,7 +65,7 @@ class TestDynamicQueue(TestCase):
         elif (self.nic in ["cavium_a063", "cavium_a064"]):
             eal_opts = ""
             for port in self.dut_ports:
-                eal_opts += "-w %s,max_pools=256 "%(self.dut.get_port_pci(self.dut_ports[port]))
+                eal_opts += "-a %s,max_pools=256 "%(self.dut.get_port_pci(self.dut_ports[port]))
             self.dut_testpmd.start_testpmd(
                 "Default", "--port-topology=chained --txq=%s --rxq=%s"
                 % (self.PF_QUEUE, self.PF_QUEUE), eal_param = eal_opts)

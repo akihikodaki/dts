@@ -116,7 +116,7 @@ class DpdkHugetlbfsMountSize(TestCase):
         # Bind one nic port to igb_uio driver, launch testpmd
         self.dut.send_expect("mount -t hugetlbfs hugetlbfs %s" % MNT_PATH[0], "#", 15)
         self.logger.info("test default hugepage size start testpmd without numa")
-        ttd = '%s -l %s -n %d --huge-dir %s --file-prefix=%s -w %s -- -i'
+        ttd = '%s -l %s -n %d --huge-dir %s --file-prefix=%s -a %s -- -i'
         launch_ttd = ttd % (self.app_path, self.core_list1, self.mem_channels, MNT_PATH[0], vhost_name[0], self.pci_info_0)
         self.dut.send_expect(launch_ttd, "testpmd> ", 120)
         self.dut.send_expect("set promisc all off", "testpmd> ", 120)
@@ -128,7 +128,7 @@ class DpdkHugetlbfsMountSize(TestCase):
 
         # resart testpmd with numa support
         self.logger.info("test default hugepage size start testpmd with numa")
-        ttd_secondary = '%s -l %s -n %d --huge-dir %s --file-prefix=%s -w %s -- -i --numa'
+        ttd_secondary = '%s -l %s -n %d --huge-dir %s --file-prefix=%s -a %s -- -i --numa'
         launch_ttd_secondary = ttd_secondary % (self.app_path, self.core_list1, self.mem_channels, MNT_PATH[0], vhost_name[0], self.pci_info_0)
         self.dut.send_expect(launch_ttd_secondary, "testpmd> ", 120)
         self.dut.send_expect("set promisc all off", "testpmd> ", 120)
@@ -148,7 +148,7 @@ class DpdkHugetlbfsMountSize(TestCase):
 
         self.logger.info("start first testpmd")
         ttd = 'numactl --membind=%d %s -l %s -n %d --legacy-mem --socket-mem %s' \
-                  ' --huge-dir %s --file-prefix=%s -w %s -- -i --socket-num=%d --no-numa'
+                  ' --huge-dir %s --file-prefix=%s -a %s -- -i --socket-num=%d --no-numa'
         launch_ttd = ttd % (self.numa_id, self.app_path, self.core_list1, self.mem_channels, self.socket_mem2, MNT_PATH[0], vhost_name[0], self.pci_info_0, self.numa_id)
         self.session_first.send_expect(launch_ttd, "testpmd> ", 120)
         self.session_first.send_expect("set promisc all off", "testpmd> ", 120)
@@ -157,7 +157,7 @@ class DpdkHugetlbfsMountSize(TestCase):
 
         self.logger.info("start secondary testpmd")
         ttd_secondary = 'numactl --membind=%d %s -l %s -n %d --legacy-mem --socket-mem %s' \
-                            ' --huge-dir %s --file-prefix=%s -w %s -- -i --socket-num=%d --no-numa'
+                            ' --huge-dir %s --file-prefix=%s -a %s -- -i --socket-num=%d --no-numa'
         launch_ttd_secondary = ttd_secondary % (self.numa_id, self.app_path, self.core_list2, self.mem_channels, self.socket_mem2, MNT_PATH[1], vhost_name[1], self.pci_info_1, self.numa_id)
         self.session_secondary.send_expect(launch_ttd_secondary, "testpmd> ", 120)
         self.session_secondary.send_expect("set promisc all off", "testpmd> ", 120)
@@ -175,7 +175,7 @@ class DpdkHugetlbfsMountSize(TestCase):
     def test_mount_size_greater_than_hugepage_size_single_mount_point(self):
         # Bind one nic port to igb_uio driver
         self.dut.send_expect("mount -t hugetlbfs -o size=9G hugetlbfs %s" % MNT_PATH[0], "#", 15)
-        ttd = '%s -l %s -n %d --legacy-mem --huge-dir %s --file-prefix=%s -w %s -- -i'
+        ttd = '%s -l %s -n %d --legacy-mem --huge-dir %s --file-prefix=%s -a %s -- -i'
         launch_ttd = ttd % (self.app_path, self.core_list1, self.mem_channels, MNT_PATH[0], vhost_name[0], self.pci_info_0)
         self.dut.send_expect(launch_ttd, "testpmd> ", 120)
         self.dut.send_expect("set promisc all off", "testpmd> ", 120)
@@ -196,7 +196,7 @@ class DpdkHugetlbfsMountSize(TestCase):
         # launch first testpmd
         self.logger.info("launch first testpmd")
         ttd = 'numactl --membind=%d %s -l %s -n %d  --legacy-mem --socket-mem %s --huge-dir %s' \
-              '  --file-prefix=%s -w %s -- -i --socket-num=%d --no-numa'
+              '  --file-prefix=%s -a %s -- -i --socket-num=%d --no-numa'
         launch_ttd = ttd % (self.numa_id, self.app_path, self.core_list1, self.mem_channels, self.socket_mem2, MNT_PATH[0], vhost_name[0], self.pci_info_0, self.numa_id)
         self.session_first.send_expect(launch_ttd, "testpmd> ", 120)
         self.session_first.send_expect("set promisc all off", "testpmd> ", 120)
@@ -206,7 +206,7 @@ class DpdkHugetlbfsMountSize(TestCase):
         # launch secondary testpmd
         self.logger.info("launch secondary testpmd")
         ttd_secondary = 'numactl --membind=%d %s -l %s -n %d  --legacy-mem --socket-mem %s --huge-dir' \
-                            ' %s --file-prefix=%s -w %s -- -i --socket-num=%d --no-numa'
+                            ' %s --file-prefix=%s -a %s -- -i --socket-num=%d --no-numa'
         launch_ttd_secondary = ttd_secondary % (self.numa_id, self.app_path, self.core_list2, self.mem_channels, self.socket_mem2, MNT_PATH[1], vhost_name[1], self.pci_info_1, self.numa_id)
         self.session_secondary.send_expect(launch_ttd_secondary, "testpmd> ", 120)
         self.session_secondary.send_expect("set promisc all off", "testpmd> ", 120)
@@ -216,7 +216,7 @@ class DpdkHugetlbfsMountSize(TestCase):
         # launch third testpmd
         self.logger.info("launch third testpmd")
         ttd_third = 'numactl --membind=%d %s -l %s -n %d  --legacy-mem --socket-mem %s --huge-dir' \
-                        ' %s --file-prefix=%s -w %s -- -i --socket-num=%d --no-numa'
+                        ' %s --file-prefix=%s -a %s -- -i --socket-num=%d --no-numa'
         launch_ttd_third = ttd_third % (self.numa_id, self.app_path, self.core_list3, self.mem_channels, self.socket_mem, MNT_PATH[2], vhost_name[2], self.pci_info_0, self.numa_id)
         expect_str = 'Not enough memory available on socket'
         self.dut.get_session_output(timeout=2)
@@ -248,7 +248,7 @@ class DpdkHugetlbfsMountSize(TestCase):
         self.dut.send_expect("mount -t hugetlbfs nodev %s" % MNT_PATH[0], "#", 15)
         self.dut.send_expect("cgcreate -g hugetlb:/test-subgroup", "# ", 15)
         self.dut.send_expect("cgset -r hugetlb.1GB.limit_in_bytes=2147483648 test-subgroup", "#", 15)
-        ttd = 'cgexec -g hugetlb:test-subgroup numactl -m %d %s -l %s -n %d -w %s -- -i --socket-num=%d --no-numa'
+        ttd = 'cgexec -g hugetlb:test-subgroup numactl -m %d %s -l %s -n %d -a %s -- -i --socket-num=%d --no-numa'
         launch_ttd = ttd % (self.numa_id, self.app_path, self.core_list1, self.mem_channels, self.pci_info_0, self.numa_id)
         self.dut.send_expect(launch_ttd, "testpmd> ", 120)
         self.dut.send_expect("set promisc all off", "testpmd> ", 120)

@@ -397,7 +397,7 @@ class TestPmd(TestCase):
 
         eal_opts = ""
         for port in self.dut_ports:
-            eal_opts += "-w %s,scalar_enable=1 "%(self.dut.get_port_pci(self.dut_ports[port]))
+            eal_opts += "-a %s,scalar_enable=1 "%(self.dut.get_port_pci(self.dut_ports[port]))
 
 
         self.pmdout.start_testpmd("1S/2C/1T", "--portmask=%s" % port_mask, eal_param = eal_opts, socket=self.ports_socket)

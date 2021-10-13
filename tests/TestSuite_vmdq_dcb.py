@@ -107,7 +107,7 @@ class TestVmdqDcb(TestCase):
         port_mask = utils.create_mask(self.dut_ports)
         eal_param = ""
         for i in self.dut_ports:
-            eal_param += " -w %s" % self.dut.ports_info[i]['pci']
+            eal_param += " -a %s" % self.dut.ports_info[i]['pci']
         # Run the application
         app_name = self.dut.apps_name['vmdq_dcb']
         command = app_name + "-c %s -n 4 %s -- -p %s --nb-pools %s --nb-tcs %s " \

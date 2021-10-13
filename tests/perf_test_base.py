@@ -743,7 +743,7 @@ class PerfTestBase(object):
         self.__is_pmd_on = False
 
     def __get_topo_option(self):
-        port_num = len(re.findall('-w', self.__bin_ps_allow_list)) \
+        port_num = len(re.findall('-a', self.__bin_ps_allow_list)) \
             if self.__bin_ps_allow_list else len(self.__valports)
         return 'loop' if port_num == 1 else 'chained'
 
@@ -1410,16 +1410,16 @@ class PerfTestBase(object):
                 pci = self.dut.ports_info[port_index].get('pci')
                 if not pci:
                     continue
-                allowlist += '-w {} '.format(pci)
+                allowlist += '-a {} '.format(pci)
         else:
-            allowlist = ''.join(['-w {} '.format(pci)
+            allowlist = ''.join(['-a {} '.format(pci)
                                  for _, info in self.__vf_ports_info.items()
                                  for pci in info.get('vfs_pci')])
 
         return allowlist
 
     def __get_host_testpmd_allowlist(self):
-        allowlist = ''.join(['-w {} '.format(info.get('pf_pci'))
+        allowlist = ''.join(['-a {} '.format(info.get('pf_pci'))
                              for _, info in self.__vf_ports_info.items()])
         return allowlist
 

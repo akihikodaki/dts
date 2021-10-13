@@ -113,7 +113,7 @@ class TestVmdq(TestCase):
         port_mask = utils.create_mask(self.dut_ports)
         eal_param = ""
         for i in self.dut_ports:
-            eal_param += " -w %s" % self.dut.ports_info[i]['pci']
+            eal_param += " -a %s" % self.dut.ports_info[i]['pci']
         # Run the application
         self.dut.send_expect("./%s -c %s -n 4 %s -- -p %s --nb-pools %s --enable-rss" %
                              (self.app_vmdq_path, core_mask, eal_param, port_mask, str(npools)), "reading queues", 120)

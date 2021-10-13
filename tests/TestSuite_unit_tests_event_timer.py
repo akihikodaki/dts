@@ -78,9 +78,9 @@ class TestUnitTestEventTimer(TestCase):
         """
 
         if self.nic == "cavium_a063" or self.nic == "cavium_a064":
-            self.dut.send_expect("./%s -n 1 -c %s -w %s,single_ws=1,tim_stats_ena=1" % (self.app_name, self.coremask, self.eventdev_device_bus_id), "R.*T.*E.*>.*>", 60)
+            self.dut.send_expect("./%s -n 1 -c %s -a %s,single_ws=1,tim_stats_ena=1" % (self.app_name, self.coremask, self.eventdev_device_bus_id), "R.*T.*E.*>.*>", 60)
         elif self.nic == "cavium_a034":
-            self.dut.send_expect("./%s -n 1 -c %s -w %s,timvf_stats=1" % (self.app_name, self.coremask, self.eventdev_timer_device_bus_id), "R.*T.*E.*>.*>", 60)
+            self.dut.send_expect("./%s -n 1 -c %s -a %s,timvf_stats=1" % (self.app_name, self.coremask, self.eventdev_timer_device_bus_id), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("event_timer_adapter_test", "RTE>>", 300)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")

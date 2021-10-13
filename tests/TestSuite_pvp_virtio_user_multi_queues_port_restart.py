@@ -96,7 +96,7 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         vdev = "'net_vhost0,iface=vhost-net,queues=2,client=0'"
         param = "--nb-cores=2 --rxq={} --txq={} --rss-ip".format(self.queue_number, self.queue_number)
         self.vhost_pmd.start_testpmd(cores=self.core_list[2:5], param=param, \
-                eal_param="-w {} --file-prefix=vhost --vdev {}".format(self.pci_info, vdev))
+                eal_param="-a {} --file-prefix=vhost --vdev {}".format(self.pci_info, vdev))
 
         self.vhost_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
         self.vhost_pmd.execute_cmd("start", "testpmd> ", 120)

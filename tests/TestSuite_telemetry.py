@@ -231,7 +231,7 @@ class TestTelemetry(TestCase):
             if info['pci'] not in pci_addrs:
                 continue
             self.used_ports.append(index)
-        allow_list = ' '.join(['-w ' + pci_addr for pci_addr in pci_addrs])
+        allow_list = ' '.join(['-a ' + pci_addr for pci_addr in pci_addrs])
         return allow_list
 
     def start_telemetry_server(self, allowlist=None):

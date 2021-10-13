@@ -128,7 +128,7 @@ class TestVfL3fwd(TestCase):
                 self.host_testpmd = PmdOutput(self.dut)
                 eal_param = '--socket-mem=1024,1024 --file-prefix=pf'
                 for i in valports:
-                    eal_param += ' -w %s' % self.dut.ports_info[i]['pci']
+                    eal_param += ' -a %s' % self.dut.ports_info[i]['pci']
                 core_config = self.cores[:len(valports)]
                 self.host_testpmd.start_testpmd(core_config, "", eal_param=eal_param)
                 for i in valports:
@@ -256,7 +256,7 @@ class TestVfL3fwd(TestCase):
         self.setup_vf_env(host_driver, vf_driver)
         eal_param = ""
         for i in valports:
-            eal_param += " -w " + self.sriov_vfs_port[i][0].pci
+            eal_param += " -a " + self.sriov_vfs_port[i][0].pci
         port_mask = utils.create_mask(self.dut_ports)
 
         # for fvl40g, fvl25g, use 2c/2q per VF port for performance test ,

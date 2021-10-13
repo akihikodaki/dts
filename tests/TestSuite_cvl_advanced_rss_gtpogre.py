@@ -3158,7 +3158,7 @@ class TestCVLAdvancedRSSGTPoGRE(TestCase):
         else:
             param = "--rxq=64 --txq=64 --disable-rss  --rxd=384 --txd=384"
         self.pmd_output.start_testpmd(cores="1S/4C/1T", param=param,
-                                            eal_param=f"-w {self.pci0}", socket=self.ports_socket)
+                                            eal_param=f"-a {self.pci0}", socket=self.ports_socket)
         self.enable_rss = enable_rss
         if set_rss:
             self.pmd_output.execute_cmd('port config all rss all')

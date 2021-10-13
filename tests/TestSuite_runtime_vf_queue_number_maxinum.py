@@ -145,7 +145,7 @@ class TestRuntimeVfQnMaxinum(TestCase):
         for each vf, when requested queues exceed 4 queues, it need to realloc queues
         in the left queues, the reserved queues generally can't be reused.
         """
-        pf_eal_param = '-w {} --file-prefix=test1 --socket-mem 1024,1024'.format(self.pf_pci)
+        pf_eal_param = '-a {} --file-prefix=test1 --socket-mem 1024,1024'.format(self.pf_pci)
         self.pf_pmdout.start_testpmd(self.pf_pmdout.default_cores, eal_param=pf_eal_param)
         vf1_allow_index = 0
         vf1_allow_list = ''
@@ -180,9 +180,9 @@ class TestRuntimeVfQnMaxinum(TestCase):
             vf_pcis.append(vf.pci)
         vf_pcis.sort()
         for pci in vf_pcis[:vf1_allow_index]:
-            vf1_allow_list = vf1_allow_list + '-w {} '.format(pci)
+            vf1_allow_list = vf1_allow_list + '-a {} '.format(pci)
         for pci in vf_pcis[vf1_allow_index:vf1_allow_index+vf3_allow_index]:
-            vf3_allow_list = vf3_allow_list + '-w {} '.format(pci)
+            vf3_allow_list = vf3_allow_list + '-a {} '.format(pci)
 
         self.logger.info('vf1 allow list: {}'.format(vf1_allow_list))
         self.logger.info('vf3_allow_list: {}'.format(vf3_allow_list))
@@ -196,7 +196,7 @@ class TestRuntimeVfQnMaxinum(TestCase):
             self.start_testpmd_multiple_times(self.vf3_pmdout, '--rxq=16 --txq=16', vf3_eal_param)
 
         if vf2_queue_number > 0:
-            vf2_eal_param = '-w {} --file-prefix=vf2 --socket-mem 1024,1024'.format(
+            vf2_eal_param = '-a {} --file-prefix=vf2 --socket-mem 1024,1024'.format(
                 vf_pcis[vf1_allow_index+vf3_allow_index])
             self.vf2_pmdout.start_testpmd(self.vf2_pmdout.default_cores, param='--rxq={0} --txq={0}'.format(
                 vf2_queue_number), eal_param=vf2_eal_param)
@@ -265,7 +265,7 @@ class TestRuntimeVfQnMaxinum(TestCase):
         Testpmd should not crash.
         """
         # test queue-number-per-vf exceed hardware maximum
-        pf_eal_param = '-w {},queue-num-per-vf=16 --file-prefix=test1 --socket-mem 1024,1024'.format(self.pf_pci)
+        pf_eal_param = '-a {},queue-num-per-vf=16 --file-prefix=test1 --socket-mem 1024,1024'.format(self.pf_pci)
         out = self.pf_pmdout.start_testpmd(self.pf_pmdout.default_cores, eal_param=pf_eal_param)
         self.verify('exceeds the hardware maximum' in out, 'queue number per vf limited error')
         out = self.pf_pmdout.execute_cmd('start')

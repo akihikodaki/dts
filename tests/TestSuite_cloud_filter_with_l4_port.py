@@ -84,7 +84,7 @@ class TestCloudFilterWithL4Port(TestCase):
         """
         self.dut.kill_all()
 
-        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d --disable-rss" % (MAX_QUEUE, MAX_QUEUE), "-w %s --file-prefix=test1" % self.pf_pci)
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d --disable-rss" % (MAX_QUEUE, MAX_QUEUE), "-a %s --file-prefix=test1" % self.pf_pci)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set promisc all off", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)

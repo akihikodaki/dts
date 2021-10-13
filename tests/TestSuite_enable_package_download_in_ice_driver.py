@@ -95,7 +95,7 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
         self.eal_param = ""
         if safe_mode_support == "true":
             for i in range(len(self.dut_ports)):
-                self.eal_param = self.eal_param + "-w %s,safe-mode-support=1 " % self.dut.ports_info[i]['pci']
+                self.eal_param = self.eal_param + "-a %s,safe-mode-support=1 " % self.dut.ports_info[i]['pci']
         out = self.dut_testpmd.start_testpmd("all", "--nb-cores=8 --rxq=%s --txq=%s --port-topology=chained" % (self.PF_QUEUE, self.PF_QUEUE), eal_param=self.eal_param)
         if ice_pkg == "false":
             if safe_mode_support == "true":
@@ -340,7 +340,7 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
             self.copy_specify_ice_pkg(self.new_pkgs[i])
             self.generate_delete_specify_pkg(pkg_ver=self.new_pkgs[i], sn=self.nic_sn[i], key="true")
 
-        eal_param = "-w %s " % self.nic_pci[0] + "-w %s " % self.nic_pci[1] + "--log-level=8"
+        eal_param = "-a %s " % self.nic_pci[0] + "-a %s " % self.nic_pci[1] + "--log-level=8"
         out = self.dut_testpmd.execute_cmd(self.path + eal_param + " -- -i ")
         self.dut_testpmd.quit()
 

@@ -62,7 +62,7 @@ class TestQosApi(TestCase):
         # each flow to 200Mbps
         self.bps = 200000000
         self.bps_rate = [0, 0.1]
-        self.eal_param = ' --master-lcore=1'
+        self.eal_param = ' --main-lcore=1'
         # Verify that enough threads are available
         cores = self.dut.get_core_list("1S/1C/1T")
         self.verify(cores is not None, "Insufficient cores for speed testing")

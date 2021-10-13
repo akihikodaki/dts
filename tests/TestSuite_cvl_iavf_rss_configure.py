@@ -311,7 +311,7 @@ class IAVFRSSConfigureTest(TestCase):
         """
         #Prepare testpmd EAL and parameters
         self.pmdout.start_testpmd(cores=self.cores, param=param,
-                                          eal_param=f"-w {self.vf0_pci}", socket=self.ports_socket)
+                                          eal_param=f"-a {self.vf0_pci}", socket=self.ports_socket)
         # test link status
         res = self.pmdout.wait_link_status_up('all', timeout=15)
         self.verify(res is True, 'there have port link is down')

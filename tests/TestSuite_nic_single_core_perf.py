@@ -220,7 +220,7 @@ class TestNicSingleCorePerf(TestCase):
         # ports allowlist
         eal_para = ""
         for i in range(port_num):
-            eal_para += " -w " + self.dut.ports_info[i]['pci']
+            eal_para += " -a " + self.dut.ports_info[i]['pci']
 
         port_mask = utils.create_mask(self.dut_ports)
 

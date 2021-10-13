@@ -98,7 +98,7 @@ class Testiavf_package_and_driver_check(TestCase):
         self.eal_param = ""
         if safe_mode_support == "true":
             for i in range(len(self.dut_ports)):
-                self.eal_param = self.eal_param + "-w %s,safe-mode-support=1 " % self.dut.ports_info[i]['pci']
+                self.eal_param = self.eal_param + "-a %s,safe-mode-support=1 " % self.dut.ports_info[i]['pci']
         out = self.dut_testpmd.start_testpmd("all", "--nb-cores=8 --rxq=%s --txq=%s --port-topology=chained" % (self.PF_QUEUE, self.PF_QUEUE), eal_param=self.eal_param)
         if ice_pkg == "false":
             if safe_mode_support == "true":

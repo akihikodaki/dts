@@ -340,7 +340,7 @@ class FlexibleRxdBase(object):
         cmd = (
             "-l 1,2,3 "
             "-n {mem_channel} "
-            "-w {pci},{param_type}=vxlan "
+            "-a {pci},{param_type}=vxlan "
             "-- -i "
             "{port_opt}").format(**{
                 'mem_channel': self.dut.get_memory_channels(),
@@ -364,7 +364,7 @@ class FlexibleRxdBase(object):
         cmd = (
             "-l 1,2,3 "
             "-n {mem_channel} "
-            "-w {pci} "
+            "-a {pci} "
             "--log-level='ice,8' "
             "-- -i "
             "{port_opt}").format(**{
@@ -501,7 +501,7 @@ class FlexibleRxdBase(object):
     def check_effect_replace_pkg_RXID_22_to_RXID_16(self):
         self.logger.info("replace ice-1.3.7.0.pkg with RXID 16")
         self.replace_pkg('os_default')
-        out = self.__pmdout.start_testpmd(cores="1S/4C/1T", param='--rxq=64 --txq=64', eal_param=f"-w {self.__pci}")
+        out = self.__pmdout.start_testpmd(cores="1S/4C/1T", param='--rxq=64 --txq=64', eal_param=f"-a {self.__pci}")
         self.verify("Fail to start port 0" in out, "RXID #16 not support start testpmd")
         self.__pmdout.execute_cmd("quit", "# ")
         self.replace_pkg('comms')

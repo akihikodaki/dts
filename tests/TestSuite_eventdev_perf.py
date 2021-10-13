@@ -143,11 +143,11 @@ class TestEventdevPerf(TestCase):
     def eventdev_cmd(self, test_type, stlist, nports, worker_cores):
 
         self.Port_pci_ids = []
-        command_line1 = self.app_command + " -l %s -w %s"
+        command_line1 = self.app_command + " -l %s -a %s"
         for i in range(0, nports):
             self.Port_pci_ids.append(self.dut.ports_info[i]['pci'])
             ## Adding core-list and pci-ids
-            command_line1 = command_line1 + " -w %s "
+            command_line1 = command_line1 + " -a %s "
         ## Adding test and stage types
         command_line2 = "-- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=%s --stlist=%s --wlcores=%s" %(test_type, stlist, worker_cores)
         return command_line1 + command_line2

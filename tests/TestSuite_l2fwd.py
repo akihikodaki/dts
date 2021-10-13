@@ -175,7 +175,7 @@ class TestL2fwd(TestCase):
         eal_params = self.dut.create_eal_parameters(cores=cores)
         eal_param = ""
         for i in ports:
-            eal_param += " -w %s" % self.dut.ports_info[i]['pci']
+            eal_param += " -a %s" % self.dut.ports_info[i]['pci']
 
         for frame_size in self.frame_sizes:
 

@@ -75,7 +75,7 @@ class TestSoftnic(TestCase):
         self.dut.session.copy_file_to(self.firmware, self.root_path)
         self.dut.session.copy_file_to(self.tm_firmware, self.root_path)
         self.dut.session.copy_file_to(self.nat_firmware, self.root_path)
-        self.eal_param = " -w %s" % self.dut.ports_info[0]['pci']
+        self.eal_param = " -a %s" % self.dut.ports_info[0]['pci']
         self.path = self.dut.apps_name['test-pmd']
         self.pmdout = PmdOutput(self.dut)
         # get dts output path

@@ -217,13 +217,13 @@ class TestQinqFilter(TestCase):
         self.dut.send_expect(r'flow create 0 ingress pattern eth / vlan tci is 3 / vlan tci is 4094 / end actions pf / queue index 1 / end', "testpmd> ")
 
         vf0_session.send_expect(r'%s -c %s -n 4  \
-                               --socket-mem=1024,1024 --file-prefix=vf0 -w %s -- -i --port-topology=loop \
+                               --socket-mem=1024,1024 --file-prefix=vf0 -a %s -- -i --port-topology=loop \
                                --rxq=4 --txq=4  --disable-rss' 
                                % (self.path, self.coreMask, vf_list[0]),
                                "testpmd> ", 30)
                                                               
         vf1_session.send_expect(r'%s -c %s -n 4 \
-                               --socket-mem=1024,1024 --file-prefix=vf1 -w %s -- -i --port-topology=loop \
+                               --socket-mem=1024,1024 --file-prefix=vf1 -a %s -- -i --port-topology=loop \
                                --rxq=4 --txq=4  --disable-rss' 
                                % (self.path, self.coreMask, vf_list[1]),
                                "testpmd>", 30)
@@ -289,13 +289,13 @@ class TestQinqFilter(TestCase):
         self.dut.send_expect('vlan set outer tpid 0x88a8 0', "testpmd")
         
         vf0_session.send_expect(r'%s -c %s -n 4 \
-                               --socket-mem=1024,1024 --file-prefix=vf0 -w %s -- -i --port-topology=loop \
+                               --socket-mem=1024,1024 --file-prefix=vf0 -a %s -- -i --port-topology=loop \
                                --rxq=4 --txq=4  --disable-rss' 
                                % (self.path, self.coreMask, vf_list[0]),
                                "testpmd> ", 30)
                                                               
         vf1_session.send_expect(r'%s -c %s -n 4 \
-                               --socket-mem=1024,1024 --file-prefix=vf1 -w %s -- -i --port-topology=loop \
+                               --socket-mem=1024,1024 --file-prefix=vf1 -a %s -- -i --port-topology=loop \
                                --rxq=4 --txq=4  --disable-rss' 
                                % (self.path, self.coreMask, vf_list[1]),
                                "testpmd>", 30)
