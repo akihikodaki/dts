@@ -95,7 +95,7 @@ Prerequisites
 
 9. Launch dpdk on VF0, and VF0 request DCF mode::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -w 0000:86:01.0,cap=dcf --file-prefix=vf0 --log-level="ice,7" -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:86:01.0,cap=dcf --file-prefix=vf0 --log-level="ice,7" -- -i
     testpmd> set fwd mac
     testpmd> set verbose 1
     testpmd> start
@@ -106,7 +106,7 @@ Prerequisites
 
 10. Launch dpdk on VF1::
 
-     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf0 -n 4 -w 86:01.1 --file-prefix=vf1 -- -i
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf0 -n 4 -a 86:01.1 --file-prefix=vf1 -- -i
      testpmd> set fwd rxonly
      testpmd> set verbose 1
      testpmd> start
@@ -118,7 +118,7 @@ Prerequisites
 
 or launch one testpmd on VF0 and VF1::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -w 0000:86:01.0,cap=dcf -w 86:01.1 --file-prefix=vf0 --log-level="ice,7" -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:86:01.0,cap=dcf -a 86:01.1 --file-prefix=vf0 --log-level="ice,7" -- -i
 
 Common steps of basic cases
 ===========================
@@ -516,11 +516,11 @@ while we can create 256 ipv4-udp/ipv4-tcp/ipv4-sctp rules at most.
 
 1. launch DPDK on VF0, request DCF mode::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc -n 4 -w 86:01.0,cap=dcf -- -i --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc -n 4 -a 86:01.0,cap=dcf -- -i --port-topology=loop
 
    Launch dpdk on VF1::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf0 -n 4 -w 86:01.1 --file-prefix=vf1 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf0 -n 4 -a 86:01.1 --file-prefix=vf1 -- -i
 
 2. create a full mask rule, it's created as a switch rule::
 
@@ -592,11 +592,11 @@ Test Case 6: max entry number ipv4-other
 ========================================
 1. launch DPDK on VF0, request DCF mode::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc -n 4 -w 86:01.0,cap=dcf -- -i --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc -n 4 -a 86:01.0,cap=dcf -- -i --port-topology=loop
 
    Launch dpdk on VF1::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf0 -n 4 -w 86:01.1 --file-prefix=vf1 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf0 -n 4 -a 86:01.1 --file-prefix=vf1 -- -i
 
 2. create a full mask rule, it's created as a switch rule::
 
@@ -669,11 +669,11 @@ Test Case 7: max entry number combined patterns
 ===============================================
 1. launch DPDK on VF0, request DCF mode::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc -n 4 -w 86:01.0,cap=dcf -- -i --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc -n 4 -a 86:01.0,cap=dcf -- -i --port-topology=loop
 
    Launch dpdk on VF1::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf0 -n 4 -w 86:01.1 --file-prefix=vf1 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf0 -n 4 -a 86:01.1 --file-prefix=vf1 -- -i
 
 2. create 32 ipv4-other ACL rules::
 
@@ -912,7 +912,7 @@ Test Case 11: switch/acl/fdir/rss rules combination
 ===================================================
 1. launch testpmd::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc -n 4 -w 86:01.0,cap=dcf -w 86:01.1 --log-level="ice,7" -- -i --port-topology=loop --rxq=4 --txq=4
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc -n 4 -a 86:01.0,cap=dcf -a 86:01.1 --log-level="ice,7" -- -i --port-topology=loop --rxq=4 --txq=4
 
 2. create rules::
 

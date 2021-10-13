@@ -80,7 +80,7 @@ Bind the interface to the driver ::
 
 Start testpmd in a loop configuration ::
 
-    # x86_64-native-linux-gcc/app/testpmd  -l 1,2 -n 4 -w xxxx:xx:xx.x \
+    # x86_64-native-linux-gcc/app/testpmd  -l 1,2 -n 4 -a xxxx:xx:xx.x \
        -- -i --port-topology=loop
 
 Start packet forwarding ::
@@ -122,7 +122,7 @@ Grant permissions for all users to access the new character device ::
 
 Start testpmd in a loop configuration ::
 
-    $ x86_64-native-linux-gcc/app/testpmd  -l 1,2 -n 4 -w xxxx:xx:xx.x --in-memory \
+    $ x86_64-native-linux-gcc/app/testpmd  -l 1,2 -n 4 -a xxxx:xx:xx.x --in-memory \
        -- -i --port-topology=loop
 
 Start packet forwarding ::

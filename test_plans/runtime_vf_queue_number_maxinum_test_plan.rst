@@ -108,7 +108,7 @@ Test case 1:  VF consume max queue number on one PF port
 ================================================================
 1. Start the PF testpmd::
 
-    ./testpmd -c f -n 4 -w 05:00.0 --file-prefix=test1 \
+    ./testpmd -c f -n 4 -a 05:00.0 --file-prefix=test1 \
     --socket-mem 1024,1024 -- -i
 
 2. Start the two testpmd to consume maximum queues::
@@ -120,10 +120,10 @@ Test case 1:  VF consume max queue number on one PF port
    The driver will alloc queues as power of 2, and queue must be equal or less than 16,
    so the second VF testpmd can only start '--rxq=8 --txq=8'::
 
-    ./testpmd -c 0xf0 -n 4 -w 05:02.0 -w 05:02.1 -w 05:02.2 -w... --file-prefix=test2 \
+    ./testpmd -c 0xf0 -n 4 -a 05:02.0 -a 05:02.1 -a 05:02.2 -a... --file-prefix=test2 \
     --socket-mem 1024,1024 -- -i --rxq=16 --txq=16
 
-    ./testpmd -c 0xf00 -n 4 -w 05:05.7 --file-prefix=test3 \
+    ./testpmd -c 0xf00 -n 4 -a 05:05.7 --file-prefix=test3 \
     --socket-mem 1024,1024 -- -i --rxq=8 --txq=8
 
    Check the Max possible RX queues and TX queues of the two VFs are both 16::
@@ -154,7 +154,7 @@ Test case 2: set max queue number per vf on one pf port
    As the feature description describe, the max value of queue-num-per-vf is 8
    for Both two and four ports Fortville NIC::
 
-    ./testpmd -c f -n 4 -w 05:00.0,queue-num-per-vf=16 --file-prefix=test1 \
+    ./testpmd -c f -n 4 -a 05:00.0,queue-num-per-vf=16 --file-prefix=test1 \
     --socket-mem 1024,1024 -- -i
 
     PF port failed to started with "i40e_pf_parameter_init():

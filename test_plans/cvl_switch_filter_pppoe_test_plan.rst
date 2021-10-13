@@ -203,7 +203,7 @@ Prerequisites
 
 6. Launch dpdk with the following arguments in non-pipeline mode::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -w 0000:18:00.0 --log-level="ice,8" -- -i --txq=16 --rxq=16 --cmdline-file=testpmd_fdir_rules
+     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:18:00.0 --log-level="ice,8" -- -i --txq=16 --rxq=16 --cmdline-file=testpmd_fdir_rules
      testpmd> port config 0 rss-hash-key ipv4 1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd
      testpmd> set fwd rxonly
      testpmd> set verbose 1
@@ -217,7 +217,7 @@ Prerequisites
 
    Launch dpdk in pipeline mode with the following testpmd command line::
 
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -w 0000:18:00.0,pipeline-mode-support=1 --log-level="ice,8" -- -i --txq=16 --rxq=16
+      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:18:00.0,pipeline-mode-support=1 --log-level="ice,8" -- -i --txq=16 --rxq=16
 
 Test case: Ethertype filter
 ===========================

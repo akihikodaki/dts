@@ -292,7 +292,7 @@ Build shared libraries, (just enable i40e pmd for testing)::
 
 Run testpmd application refer to Common Test steps with ixgbe pmd NIC.::
 
-  testpmd -c 0xf -n 4 -d <dpdk_2002> -w 18:00.0 -- -i
+  testpmd -c 0xf -n 4 -d <dpdk_2002> -a 18:00.0 -- -i
 
 Test txonly::
 

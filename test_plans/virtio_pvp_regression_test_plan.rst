@@ -150,7 +150,7 @@ Test Case 3: pvp test with virtio 0.95 vrctor_rx path
 
 3. On VM, bind virtio net to igb_uio and run testpmd without tx-offloads, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
 
-    ./testpmd -c 0x7 -n 3 -w 0000:xx.00,vectorized -- -i \
+    ./testpmd -c 0x7 -n 3 -a 0000:xx.00,vectorized -- -i \
     --nb-cores=2 --rxq=2 --txq=2 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -267,7 +267,7 @@ Test Case 6: pvp test with virtio 1.0 vrctor_rx path
 
 3. On VM, bind virtio net to igb_uio and run testpmd without tx-offloads, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
 
-    ./testpmd -c 0x7 -n 3 -w 0000:xx.00,vectorized -- -i \
+    ./testpmd -c 0x7 -n 3 -a 0000:xx.00,vectorized -- -i \
     --nb-cores=2 --rxq=2 --txq=2 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start

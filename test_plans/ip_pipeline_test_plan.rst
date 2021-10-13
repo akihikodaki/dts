@@ -178,7 +178,7 @@ Test Case: traffic management pipeline
 
 3. Run ip_pipeline app as the following::
 
-    ./build/ip_pipeline -c 0x3 -n 4 -w 0000:81:00.0 -- -s examples/traffic_manager.cli
+    ./build/ip_pipeline -c 0x3 -n 4 -a 0000:81:00.0 -- -s examples/traffic_manager.cli
 
 4. Config traffic with dst ipaddr increase from 0.0.0.0 to 15.255.0.0, total 4096 streams,
    also config flow tracked-by dst ipaddr, verify each flow's throughput is about linerate/4096.
@@ -220,7 +220,7 @@ Test Case: vf l2fwd pipeline(pf bound to dpdk driver)
 
 2. Start testpmd with the four pf ports::
 
-    ./testpmd -c 0xf0 -n 4 -w 05:00.0 -w 05:00.1 -w 05:00.2 -w 05:00.3 --file-prefix=pf --socket-mem 1024,1024 -- -i
+    ./testpmd -c 0xf0 -n 4 -a 05:00.0 -a 05:00.1 -a 05:00.2 -a 05:00.3 --file-prefix=pf --socket-mem 1024,1024 -- -i
 
    Set vf mac address from pf port::
 
@@ -235,8 +235,8 @@ Test Case: vf l2fwd pipeline(pf bound to dpdk driver)
 
 4. Run ip_pipeline app as the following::
 
-    ./build/ip_pipeline -c 0x3 -n 4 -w 0000:05:02.0 -w 0000:05:06.0 \
-    -w 0000:05:0a.0 -w 0000:05:0e.0 --file-prefix=vf --socket-mem 1024,1024 -- -s examples/vf.cli
+    ./build/ip_pipeline -c 0x3 -n 4 -a 0000:05:02.0 -a 0000:05:06.0 \
+    -a 0000:05:0a.0 -a 0000:05:0e.0 --file-prefix=vf --socket-mem 1024,1024 -- -s examples/vf.cli
 
    The exact format of port allowlist: domain:bus:devid:func
 
@@ -331,7 +331,7 @@ Test Case: crypto pipeline - AEAD algorithm in aesni_gcm
 
 4. Run ip_pipeline app as the following::
 
-    ./examples/ip_pipeline/build/ip_pipeline -w 0000:81:00.0 --vdev crypto_aesni_gcm0
+    ./examples/ip_pipeline/build/ip_pipeline -a 0000:81:00.0 --vdev crypto_aesni_gcm0
     --socket-mem 0,2048 -l 23,24,25 -- -s ./examples/ip_pipeline/examples/flow_crypto.cli
 
 5. Send packets with IXIA port,
@@ -365,7 +365,7 @@ Test Case: crypto pipeline - cipher algorithm in aesni_mb
 
 4. Run ip_pipeline app as the following::
 
-    ./examples/ip_pipeline/build/ip_pipeline -w 0000:81:00.0 --vdev crypto_aesni_mb0 --socket-mem 0,2048 -l 23,24,25 -- -s ./examples/ip_pipeline/examples/flow_crypto.cli
+    ./examples/ip_pipeline/build/ip_pipeline -a 0000:81:00.0 --vdev crypto_aesni_mb0 --socket-mem 0,2048 -l 23,24,25 -- -s ./examples/ip_pipeline/examples/flow_crypto.cli
 
 5. Send packets with IXIA port,
    Use a tool to caculate the ciphertext from plaintext and key as an expected value.
@@ -395,7 +395,7 @@ Test Case: crypto pipeline - cipher_auth algorithm in aesni_mb
 
 4. Run ip_pipeline app as the following::
 
-    ./examples/ip_pipeline/build/ip_pipeline -w 0000:81:00.0 --vdev crypto_aesni_mb0 --socket-mem 0,2048 -l 23,24,25 -- -s ./examples/ip_pipeline/examples/flow_crypto.cli
+    ./examples/ip_pipeline/build/ip_pipeline -a 0000:81:00.0 --vdev crypto_aesni_mb0 --socket-mem 0,2048 -l 23,24,25 -- -s ./examples/ip_pipeline/examples/flow_crypto.cli
 
 5. Send packets with IXIA port,
    Use a tool to caculate the ciphertext from plaintext and cipher key with AES-CBC algorithm.

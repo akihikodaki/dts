@@ -49,7 +49,7 @@ Prerequisites
     ./usertools/dpdk-devbind.py --force --bind=vfio-pci 0000:81:00.0
 
 4.Launch the testpmd::
-    ./testpmd -l 0-3 -n 4 -w 81:00.0 --file-prefix=test -- -i --rxq=16 --txq=16 --disable-rss
+    ./testpmd -l 0-3 -n 4 -a 81:00.0 --file-prefix=test -- -i --rxq=16 --txq=16 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set promisc all off
     testpmd> set verbose 1

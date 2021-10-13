@@ -96,7 +96,7 @@ Test Case 1: VF_packet_IO_kernel_PF_dpdk_VF
    and then start testpmd, set it in mac forward mode::
 
       ./usertools/dpdk-devbind.py -s --bind=igb_uio 00:06.0 00:07.0
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -w 00:06.0 -w 00:07.0 \
+      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 \
                                                -- -i --portmask=0x3 --tx-offloads=0x8fff
 
       testpmd> set fwd mac
@@ -165,7 +165,7 @@ Test Case 2: VF_packet_IO_dpdk_PF_dpdk_VF
    and then start testpmd, set it in mac forward mode::
 
       ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -w 00:06.0 -w 00:07.0 \
+      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 \
                                                -- -i
 
       testpmd> set fwd mac

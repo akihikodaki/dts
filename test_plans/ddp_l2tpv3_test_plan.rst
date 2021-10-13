@@ -100,7 +100,7 @@ any DDP functionality*
 
 5. Start the TESTPMD::
 
-    ./x86_64-native-linuxapp-gcc/build/app/test-pmd/testpmd -c f -n 4 -w
+    ./x86_64-native-linuxapp-gcc/build/app/test-pmd/testpmd -c f -n 4 -a
     <PCI address of device> -- -i --port-topology=chained --txq=64 --rxq=64
     --pkt-filter-mode=perfect
 

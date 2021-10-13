@@ -160,11 +160,11 @@ Test Case 2: vf reset -- create two vfs on one pf, run testpmd separately
 2. Start testpmd on two vf ports::
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4  \
-     --socket-mem 1024,1024 -w 81:02.0 --file-prefix=test1  \
+     --socket-mem 1024,1024 -a 81:02.0 --file-prefix=test1  \
      -- -i --eth-peer=0,00:11:22:33:44:12  \
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf0 -n 4  \
-     --socket-mem 1024,1024 -w 81:02.1 --file-prefix=test2  \
+     --socket-mem 1024,1024 -a 81:02.1 --file-prefix=test2  \
      -- -i
 
 3. Set fwd mode on vf0::
@@ -545,7 +545,7 @@ test Case 9: vf reset (two vfs passed through to one VM)
 
      ./usertools/dpdk-devbind.py -b igb_uio 00:05.0 00:05.1
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 \
-     -w 00:05.0 -w 00:05.1 -- -i --portmask=0x3
+     -a 00:05.0 -a 00:05.1 -- -i --portmask=0x3
 
 5. Add MAC address to the vf0 ports, set it in mac forward mode::
 

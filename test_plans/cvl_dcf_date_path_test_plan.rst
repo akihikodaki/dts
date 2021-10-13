@@ -17,7 +17,7 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-10 -n 4 -w 18:01.0,cap=dcf --file-prefix=vf -- -i
+    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=vf -- -i
 
 
 Test Case: Launch DCF and do macfwd

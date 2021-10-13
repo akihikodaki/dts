@@ -87,7 +87,7 @@ Prerequisites
 
 5. Start testpmd, set it in rxonly mode and enable verbose output::
 
-     testpmd -c 0x0f -n 4 -w 00:04.0 -w 00:05.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
+     testpmd -c 0x0f -n 4 -a 00:04.0 -a 00:05.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
      testpmd> set fwd rxonly
      testpmd> set verbose 1
      testpmd> start

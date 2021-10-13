@@ -62,10 +62,10 @@ Test Case1:  Check log output when malicious driver events is detected
     echo 1 > /sys/bus/pci/devices/0000\:18\:00.1/max_vfs
 
 2. Launch PF by testpmd
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x03 -n 4 --file-prefix=test1 -w [pci of PF] -- -i
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x03 -n 4 --file-prefix=test1 -a [pci of PF] -- -i
      
 3. Launch VF by testpmd
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x03 -n 4 --file-prefix=lei1 -w [pci of VF] -- -i
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x03 -n 4 --file-prefix=lei1 -a [pci of VF] -- -i
     > set fwd txonly
     > start
     
@@ -83,11 +83,11 @@ Test Case2:  Check the event counter number for malicious driver events
     echo 1 > /sys/bus/pci/devices/0000\:18\:00.1/max_vfs
 
 2. Launch PF by testpmd
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x03 -n 4 --file-prefix=test1 -w [pci of PF] -- -i
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x03 -n 4 --file-prefix=test1 -a [pci of PF] -- -i
 
 3. launch VF by testpmd and start txonly mode 3 times:
     repeat following step 3 times
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x03 -n 4 --file-prefix=lei1 -w [pci of VF] -- -i
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x03 -n 4 --file-prefix=lei1 -a [pci of VF] -- -i
     > set fwd txonly
     > start
     > quit

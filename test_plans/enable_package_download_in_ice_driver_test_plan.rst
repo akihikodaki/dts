@@ -104,7 +104,7 @@ Test case 2: Driver enters Safe Mode successfully
 2. Start testpmd::
 
     ./testpmd -c 0x3fe -n 6 \
-    -w PORT0_PCI,safe-mode-support=1 -w PORT1_PCI,safe-mode-support=1 \
+    -a PORT0_PCI,safe-mode-support=1 -a PORT1_PCI,safe-mode-support=1 \
     -- -i --nb-cores=8 --rxq=8 --txq=8 --port-topology=chained
 
    There will be an error reported::
@@ -176,7 +176,7 @@ Compile DPDK and testpmd::
 
 Launch testpmd with 1 default interface and 1 specific interface::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -w 18:00.0 -w b1:00.0 --log-level=8 -- -i
+  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0 -a b1:00.0 --log-level=8 -- -i
 
 In this case, b1:00.0 interface is specific interface.
 

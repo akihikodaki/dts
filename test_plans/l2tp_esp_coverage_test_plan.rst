@@ -88,7 +88,7 @@ Test Case 1: test MAC_IPV4_L2TPv3 HW checksum offload
 
 1. DUT enable rx checksum with "--enable-rx-cksum" when start testpmd::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -w af:01.0 -- -i --enable-rx-cksum
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -a af:01.0 -- -i --enable-rx-cksum
 
 2. DUT setup csum forwarding mode::
 
@@ -163,7 +163,7 @@ Test Case 2: test MAC_IPV4_ESP HW checksum offload
 
 1. DUT enable rx checksum with "--enable-rx-cksum" when start testpmd, setup csum forwarding mode::
  
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -w af:01.0 -- -i --enable-rx-cksum
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -a af:01.0 -- -i --enable-rx-cksum
 
 2. DUT setup csum forwarding mode::
 
@@ -1095,7 +1095,7 @@ Test Case 14: MAC_IPV4_L2TPv3 vlan strip on + HW checksum offload check
 
 The pre-steps are as l2tp_esp_iavf_test_plan.
 
-1. ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-9 -n 4 -w af:01.0 -- -i --rxq=16 --txq=16 --portmask=0x1 --nb-cores=2 --enable-rx-cksum
+1. ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-9 -n 4 -a af:01.0 -- -i --rxq=16 --txq=16 --portmask=0x1 --nb-cores=2 --enable-rx-cksum
 
 2. DUT create fdir rules for MAC_IPV4_L2TPv3 with queue index and mark::
 
@@ -1189,7 +1189,7 @@ The pre-steps are as l2tp_esp_iavf_test_plan.
 Test Case 15: MAC_IPV4_L2TPv3 vlan insert on + SW checksum offload check
 ========================================================================
 
-1. ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-9 -n 4 -w af:01.0 -- -i --rxq=16 --txq=16 --portmask=0x1 --nb-cores=2 --enable-rx-cksum
+1. ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-9 -n 4 -a af:01.0 -- -i --rxq=16 --txq=16 --portmask=0x1 --nb-cores=2 --enable-rx-cksum
 
 2. DUT create fdir rules for MAC_IPV4_L2TPv3 with queue index and mark::
 
@@ -1279,7 +1279,7 @@ Test Case 16: MAC_IPV4_ESP vlan strip on + HW checksum offload check
 
 The pre-steps are as l2tp_esp_iavf_test_plan.
 
-1. ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-9 -n 4 -w af:01.0 -- -i --rxq=16 --txq=16 --portmask=0x1 --nb-cores=2 --enable-rx-cksum
+1. ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-9 -n 4 -a af:01.0 -- -i --rxq=16 --txq=16 --portmask=0x1 --nb-cores=2 --enable-rx-cksum
 
 2. DUT create fdir rules for MAC_IPV4_ESP with queue index and mark::
 
@@ -1372,7 +1372,7 @@ The pre-steps are as l2tp_esp_iavf_test_plan.
 Test Case 17: MAC_IPV6_NAT-T-ESP vlan insert on + SW checksum offload check
 ===========================================================================
 
-1. ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-9 -n 4 -w af:01.0 -- -i --rxq=16 --txq=16 --portmask=0x1 --nb-cores=2 --enable-rx-cksum
+1. ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-9 -n 4 -a af:01.0 -- -i --rxq=16 --txq=16 --portmask=0x1 --nb-cores=2 --enable-rx-cksum
 
 2. DUT create fdir rules for MAC_IPV6_NAT-T-ESP with queue index and mark::
 

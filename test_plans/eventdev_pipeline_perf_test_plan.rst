@@ -51,12 +51,12 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device_bus_id -- -w 0xc00000 -n=0 --dump
+   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device_bus_id -- -w 0xc00000 -n=0 --dump
 
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-allowlist  : Add a PCI device in allow list.
+        -a, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).
@@ -75,12 +75,12 @@ Description: Execute performance test with Parallel_atq type of stage in multi-f
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device_bus_id -- -w 0xc00000 -n=0 -p --dump
+   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device_bus_id -- -w 0xc00000 -n=0 -p --dump
 
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-allowlist  : Add a PCI device in allow list.
+        -a, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).
@@ -100,12 +100,12 @@ Description: Execute performance test with Ordered_atq type of stage in multi-fl
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device_bus_id -- -w 0xc00000 -n=0 -o --dump
+   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device_bus_id -- -w 0xc00000 -n=0 -o --dump
 
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-allowlist  : Add a PCI device in allow list.
+        -a, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).
@@ -125,12 +125,12 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device0_bus_id -w device1_bus_id -- -w 0xc00000 -n=0 --dump
+   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- -w 0xc00000 -n=0 --dump
 
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-allowlist  : Add a PCI device in allow list.
+        -a, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).
@@ -149,12 +149,12 @@ Description: Execute performance test with Parallel_atq type of stage in multi-f
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device0_bus_id -w device1_bus_id -- -w 0xc00000 -n=0 -p --dump
+   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- -w 0xc00000 -n=0 -p --dump
 
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-allowlist  : Add a PCI device in allow list.
+        -a, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).
@@ -174,12 +174,12 @@ Description: Execute performance test with Ordered_atq type of stage in multi-fl
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device0_bus_id -w device1_bus_id -- -w 0xc00000 -n=0 -o --dump
+   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- -w 0xc00000 -n=0 -o --dump
 
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-allowlist  : Add a PCI device in allow list.
+        -a, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).
@@ -199,12 +199,12 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device0_bus_id -w device1_bus_id -w device2_bus_id -w device3_bus_id -- -w 0xc00000 -n=0 --dump
+   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- -w 0xc00000 -n=0 --dump
 
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-allowlist  : Add a PCI device in allow list.
+        -a, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).
@@ -223,12 +223,12 @@ Description: Execute performance test with Parallel_atq type of stage in multi-f
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device0_bus_id -w device1_bus_id -w device2_bus_id -w device3_bus_id -- -w 0xc00000 -n=0 -p --dump
+   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- -w 0xc00000 -n=0 -p --dump
 
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-allowlist  : Add a PCI device in allow list.
+        -a, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).
@@ -248,12 +248,12 @@ Description: Execute performance test with Ordered_atq type of stage in multi-fl
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device0_bus_id -w device1_bus_id -w device2_bus_id -w device3_bus_id -- -w 0xc00000 -n=0 -o --dump
+   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- -w 0xc00000 -n=0 -o --dump
 
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-allowlist  : Add a PCI device in allow list.
+        -a, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).

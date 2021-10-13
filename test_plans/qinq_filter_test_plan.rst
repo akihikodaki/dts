@@ -134,7 +134,7 @@ Test Case 3: qinq packet filter to VF queues
  
 #. set up testpmd with fortville PF NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 --socket-mem=1024,1024 --file-prefix=pf -w 81:00.0 -- -i --rxq=4 --txq=4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 --socket-mem=1024,1024 --file-prefix=pf -a 81:00.0 -- -i --rxq=4 --txq=4
 
 #. enable qinq::
 
@@ -160,7 +160,7 @@ Test Case 3: qinq packet filter to VF queues
 
 #. set up testpmd with fortville VF0 NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3e0 -n 4 --socket-mem=1024,1024 --file-prefix=vf0 -w 81:02.0 -- -i --rxq=4 --txq=4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3e0 -n 4 --socket-mem=1024,1024 --file-prefix=vf0 -a 81:02.0 -- -i --rxq=4 --txq=4
 
 #. PMD fwd only receive the packets::
 
@@ -176,7 +176,7 @@ Test Case 3: qinq packet filter to VF queues
 
 #. set up testpmd with fortville VF1 NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7c0 -n 4 --socket-mem=1024,1024 --file-prefix=vf1 -w 81:02.1 -- -i --rxq=4 --txq=4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7c0 -n 4 --socket-mem=1024,1024 --file-prefix=vf1 -a 81:02.1 -- -i --rxq=4 --txq=4
 
 #. PMD fwd only receive the packets::
 
@@ -211,7 +211,7 @@ Test Case 4: qinq packet filter with different tpid
  
 #. set up testpmd with fortville PF NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 --socket-mem=1024,1024 --file-prefix=pf -w 81:00.0 -- -i --rxq=4 --txq=4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 --socket-mem=1024,1024 --file-prefix=pf -a 81:00.0 -- -i --rxq=4 --txq=4
 
 #. enable qinq::
 
@@ -241,7 +241,7 @@ Test Case 4: qinq packet filter with different tpid
 
 #. set up testpmd with fortville VF0 NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3e0 -n 4 --socket-mem=1024,1024 --file-prefix=vf0 -w 81:02.0 -- -i --rxq=4 --txq=4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3e0 -n 4 --socket-mem=1024,1024 --file-prefix=vf0 -a 81:02.0 -- -i --rxq=4 --txq=4
 
 #. PMD fwd only receive the packets::
 
@@ -257,7 +257,7 @@ Test Case 4: qinq packet filter with different tpid
 
 #. set up testpmd with fortville VF1 NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7c0 -n 4 --socket-mem=1024,1024 --file-prefix=vf1 -w 81:02.1 -- -i --rxq=4 --txq=4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7c0 -n 4 --socket-mem=1024,1024 --file-prefix=vf1 -a 81:02.1 -- -i --rxq=4 --txq=4
 
 #. PMD fwd only receive the packets::
 

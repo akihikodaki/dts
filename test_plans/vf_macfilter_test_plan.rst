@@ -97,7 +97,7 @@ Test Case 1: test_kernel_2pf_2vf_1vm_iplink_macfilter
    disable promisc mode,set it in mac forward mode::
 
       ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -w 00:06.0 -w 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
+      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
 
       testpmd> port stop all
       testpmd> port config all crc-strip on
@@ -175,7 +175,7 @@ Test Case 2: test_kernel_2pf_2vf_1vm_mac_add_filter
    VF, disable promisc mode, add a new MAC to VF0 and then start::
 
       ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -w 00:06.0 -w 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
+      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
 
       testpmd> port stop all
       testpmd> port config all crc-strip on
@@ -269,7 +269,7 @@ Test Case 3: test_dpdk_2pf_2vf_1vm_mac_add_filter
    VF, disable promisc mode, add a new MAC to VF0 and then start::
 
       ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -w 00:06.0 -w 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
+      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
 
       testpmd> port stop all
       testpmd> port config all crc-strip on
@@ -365,7 +365,7 @@ Test Case 4: test_dpdk_2pf_2vf_1vm_iplink_macfilter
    disable promisc mode, set it in mac forward mode::
 
       ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -w 00:06.0 -w 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
+      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
 
       testpmd> port stop all
       testpmd> port config all crc-strip on

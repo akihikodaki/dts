@@ -112,7 +112,7 @@ Details:
 1. In VF1, run testpmd::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 4 --socket-mem 1024,1024
-    -w 05:02.0 --file-prefix=test1 -- -i --crc-strip --eth-peer=0,00:11:22:33:44:12
+    -a 05:02.0 --file-prefix=test1 -- -i --crc-strip --eth-peer=0,00:11:22:33:44:12
     testpmd>set fwd txonly
     testpmd>set promisc all off
     testpmd>start
@@ -120,7 +120,7 @@ Details:
    In VF2, run testpmd::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xa -n 4 --socket-mem 1024,1024
-    -w 05:02.1 --file-prefix=test2 -- -i --crc-strip
+    -a 05:02.1 --file-prefix=test2 -- -i --crc-strip
     testpmd>set fwd rxonly
     testpmd>set promisc all off
     testpmd>start
@@ -140,7 +140,7 @@ Details:
 1. In VF1, run testpmd::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 4 --socket-mem 1024,1024
-    -w 05:02.0 --file-prefix=test1 -- -i --crc-strip --eth-peer=0,00:11:22:33:44:12
+    -a 05:02.0 --file-prefix=test1 -- -i --crc-strip --eth-peer=0,00:11:22:33:44:12
     testpmd>set fwd mac
     testpmd>set promisc all off
     testpmd>start
@@ -148,7 +148,7 @@ Details:
    In VF2, run testpmd::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xa -n 4 --socket-mem 1024,1024
-    -w 05:02.1 --file-prefix=test2 -- -i --crc-strip
+    -a 05:02.1 --file-prefix=test2 -- -i --crc-strip
     testpmd>set fwd rxonly
     testpmd>set promisc all off
     testpmd>start
@@ -174,7 +174,7 @@ Details:
 
 2. In VF1, run testpmd::
 
-    ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w 0000:05:02.0
+    ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 -a 0000:05:02.0
     --file-prefix=test1 -- -i --crc-strip --eth-peer=0,00:11:22:33:44:12
     testpmd>set fwd mac
     testpmd>set promisc all off
@@ -182,7 +182,7 @@ Details:
 
    In VF2, run testpmd::
 
-    ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 0000:05:02.1
+    ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -a 0000:05:02.1
     --file-prefix=test2 -- -i --crc-strip
     testpmd>set fwd rxonly
     testpmd>set promisc all off
@@ -216,14 +216,14 @@ Details:
 1. vf->pf
    PF, launch testpmd::
 
-    ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w 0000:05:00.0 --file-prefix=test1 -- -i
+    ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 -a 0000:05:00.0 --file-prefix=test1 -- -i
     testpmd>set fwd rxonly
     testpmd>set promisc all off
     testpmd>start
 
    VF1, run testpmd::
 
-    ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 0000:05:02.0 --file-prefix=test2 -- -i --eth-peer=0,pf_mac_addr
+    ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -a 0000:05:02.0 --file-prefix=test2 -- -i --eth-peer=0,pf_mac_addr
     testpmd>set fwd txonly
     testpmd>set promisc all off
     testpmd>start
@@ -234,14 +234,14 @@ Details:
 2. pf->vf
    PF, launch testpmd::
 
-    ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w 0000:05:00.0 --file-prefix=test1 -- -i --eth-peer=0,vf1_mac_addr
+    ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 -a 0000:05:00.0 --file-prefix=test1 -- -i --eth-peer=0,vf1_mac_addr
     testpmd>set fwd txonly
     testpmd>set promisc all off
     testpmd>start
 
    VF1, run testpmd::
 
-    ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 0000:05:02.0 --file-prefix=test2 -- -i
+    ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -a 0000:05:02.0 --file-prefix=test2 -- -i
     testpmd>mac_addr add 0 vf1_mac_addr
     testpmd>set fwd rxonly
     testpmd>set promisc all off
@@ -253,14 +253,14 @@ Details:
 3. tester->vf
    PF, launch testpmd::
 
-    ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w 0000:05:00.0 --file-prefix=test1 -- -i
+    ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 -a 0000:05:00.0 --file-prefix=test1 -- -i
     testpmd>set fwd mac
     testpmd>set promisc all off
     testpmd>start
 
    VF1, run testpmd::
 
-    ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 0000:05:02.0 --file-prefix=test2 -- -i
+    ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -a 0000:05:02.0 --file-prefix=test2 -- -i
     testpmd>mac_addr add 0 vf1_mac_addr
     testpmd>set fwd rxonly
     testpmd>set promisc all off
@@ -273,19 +273,19 @@ Details:
 4. vf1->vf2
    PF, launch testpmd::
 
-    ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w 0000:05:00.0 --file-prefix=test1 -- -i
+    ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 -a 0000:05:00.0 --file-prefix=test1 -- -i
     testpmd>set promisc all off
 
    VF1, run testpmd::
 
-    ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 0000:05:02.0 --file-prefix=test2 -- -i --eth-peer=0,vf2_mac_addr
+    ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -a 0000:05:02.0 --file-prefix=test2 -- -i --eth-peer=0,vf2_mac_addr
     testpmd>set fwd txonly
     testpmd>set promisc all off
     testpmd>start
 
    VF2, run testpmd::
 
-    ./testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -w 0000:05:02.1 --file-prefix=test3 -- -i
+    ./testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -a 0000:05:02.1 --file-prefix=test3 -- -i
     testpmd>mac_addr add 0 vf2_mac_addr
     testpmd>set fwd rxonly
     testpmd>set promisc all off

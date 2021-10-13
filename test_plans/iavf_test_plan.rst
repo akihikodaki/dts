@@ -425,7 +425,7 @@ create 2 VFs from 1 PF, and start PF::
     echo 2 > /sys/bus/pci/devices/0000\:08\:00.0/max_vfs;
     ./usertools/dpdk-devbind.py --bind=vfio-pci 09:02.0 09:0a.0
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1,2 -n 4 --socket-mem=1024,1024 --file-prefix=pf -w 08:00.0 -- -i
+    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1,2 -n 4 --socket-mem=1024,1024 --file-prefix=pf -a 08:00.0 -- -i
 
     testpmd>set vf mac addr 0 0 00:12:34:56:78:01
     testpmd>set vf mac addr 0 1 00:12:34:56:78:02
@@ -433,7 +433,7 @@ create 2 VFs from 1 PF, and start PF::
 start testpmd with 2VFs individually::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 3-5 -n 4 --master-lcore=3 --socket-mem=1024,1024 --file-prefix=vf1 \
-      -w 09:02.0 -- -i --txq=2 --rxq=2 --rxd=512 --txd=512 --nb-cores=2 --rss-ip --eth-peer=0,00:12:34:56:78:02
+      -a 09:02.0 -- -i --txq=2 --rxq=2 --rxd=512 --txd=512 --nb-cores=2 --rss-ip --eth-peer=0,00:12:34:56:78:02
 
     testpmd>set promisc all off
     testpmd>set fwd mac
@@ -442,7 +442,7 @@ start testpmd with 2VFs individually::
 ::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-8 -n 4 --master-lcore=6 --socket-mem=1024,1024 --file-prefix=vf2 \
-       -w 09:0a.0 -- -i --txq=2 --rxq=2 --rxd=512 --txd=512 --nb-cores=2 --rss-ip
+       -a 09:0a.0 -- -i --txq=2 --rxq=2 --rxd=512 --txd=512 --nb-cores=2 --rss-ip
 
     testpmd>set promisc all off
     testpmd>set fwd mac
@@ -461,7 +461,7 @@ Test Case: vector vf performance
 2. start testpmd for PF::
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x6 -n 4 --socket-mem=1024,1024 --file-prefix=pf \
-       -w 08:00.0 -w 08:00.1 -- -i
+       -a 08:00.0 -a 08:00.1 -- -i
 
        testpmd>set vf mac addr 0 0 00:12:34:56:78:01
        testpmd>set vf mac addr 1 0 00:12:34:56:78:02
@@ -469,7 +469,7 @@ Test Case: vector vf performance
 3. start testpmd for VF::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f8 -n 4 --master-lcore=3 --socket-mem=1024,1024 --file-prefix=vf \
-        -w 09:0a.0 -w 09:02.0 -- -i --txq=2 --rxq=2 --rxd=512 --txd=512 --nb-cores=4 --rss-ip
+        -a 09:0a.0 -a 09:02.0 -- -i --txq=2 --rxq=2 --rxd=512 --txd=512 --nb-cores=4 --rss-ip
 
      testpmd>set promisc all off
      testpmd>set fwd mac

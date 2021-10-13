@@ -175,7 +175,7 @@ stdout.
 The steps to run the unit test manually are as follow::
 
   # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff -w|-b pci_address
+  # ./app/test/test -n 1 -c ffff -a|-b pci_address
   RTE>> dump_devargs
 
 The final output of the test will be the pci address of allow list

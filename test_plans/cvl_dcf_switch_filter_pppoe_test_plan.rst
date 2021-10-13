@@ -201,7 +201,7 @@ Prerequisites
 
 9. Launch dpdk on VF0 and VF1, and VF0 request DCF mode::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -w 0000:18:01.0,cap=dcf -w 0000:18:01.1 -- -i
+     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -- -i
      testpmd> set portlist 1
      testpmd> set fwd rxonly
      testpmd> set verbose 1

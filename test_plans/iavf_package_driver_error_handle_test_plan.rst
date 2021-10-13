@@ -78,7 +78,7 @@ Test Case 1: Check old driver and latest commes pkg compatibility
     ./usertools/dpdk-devbind.py -b vfio-pci 0000:b1:01.0
 
 4. Launch the testpmd
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-9 -n 4 -w b1:01.0 --file-prefix=vf -- -i --rxq=16 --txq=16  --nb-cores=2
+    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-9 -n 4 -a b1:01.0 --file-prefix=vf -- -i --rxq=16 --txq=16  --nb-cores=2
 
 5. Create a rss rule
     testpmd> flow create 0 ingress pattern eth / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end

@@ -156,7 +156,7 @@ take XL710 for example::
 
 4, Start dpdk l3fwd with 1:1 matched cores and queues::
 
-  ./examples/l3fwd/build/l3fwd -c 0x3c -n 4 -w 0000:18:02.0 -w 0000:18:06.0 -- -p 0x3 --config '(0,0,2),(1,0,3),(0,1,4),(1,1,5)'
+  ./examples/l3fwd/build/l3fwd -c 0x3c -n 4 -a 0000:18:02.0 -a 0000:18:06.0 -- -p 0x3 --config '(0,0,2),(1,0,3),(0,1,4),(1,1,5)'
 
 5, Send packet with frame size from 64bytes to 1518bytes with ixia traffic generator,
 make sure your traffic configuration meets LPM rules, and will go to all queues, all ports.

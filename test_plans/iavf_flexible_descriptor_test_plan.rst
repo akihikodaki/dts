@@ -129,7 +129,7 @@ VLAN cases
 
 1. Launch testpmd by::
 
-     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -w af:01.0,proto_xtr=vlan -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a af:01.0,proto_xtr=vlan -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
      testpmd>set verbose 1
      testpmd>set fwd io
      testpmd>start
@@ -139,7 +139,7 @@ VLAN cases
       expected: RXDID[17]
 
 .. note::
-    Please change the core setting (-l option) and port's PCI (-w option) by your DUT environment
+    Please change the core setting (-l option) and port's PCI (-a option) by your DUT environment
 
 Test Case: Check single VLAN fields in RXD (802.1Q)
 ---------------------------------------------------
@@ -218,7 +218,7 @@ Test steps are same to ``VLAN cases``, just change the launch command of testpmd
 
 Launch testpmd command::
 
-  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -w af:01.0,proto_xtr=ipv4 -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a af:01.0,proto_xtr=ipv4 -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
 
 check RXDID value correct::
 
@@ -244,7 +244,7 @@ Test steps are same to ``VLAN cases``, just change the launch command of testpmd
 
 Launch testpmd command::
 
-  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -w af:01.0,proto_xtr=ipv6 -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a af:01.0,proto_xtr=ipv6 -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
 
 check RXDID value correct::
 
@@ -270,7 +270,7 @@ Test steps are same to ``VLAN cases``, just change the launch command of testpmd
 
 Launch testpmd command::
 
-  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -w af:01.0,proto_xtr=ipv6_flow -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a af:01.0,proto_xtr=ipv6_flow -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
 
 check RXDID value correct::
 
@@ -294,7 +294,7 @@ Test steps are same to ``VLAN cases``, just change the launch command of testpmd
 
 Launch testpmd command::
 
-  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -w af:01.0,proto_xtr=tcp -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a af:01.0,proto_xtr=tcp -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
 
 check RXDID value correct::
 
@@ -317,7 +317,7 @@ Test steps are same to ``VLAN cases``, just change the launch command of testpmd
 
 Launch testpmd command::
 
-  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -w af:01.0,proto_xtr=tcp -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a af:01.0,proto_xtr=tcp -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
 
 check RXDID value correct::
 
@@ -340,7 +340,7 @@ Test steps are same to ``VLAN cases``, just change the launch command of testpmd
 
 Launch testpmd command::
 
-  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -w af:01.0,proto_xtr='[(2):ipv4,(3):ipv6,(4):tcp]' -- -i --rxq=16 --txq=16 --portmask=0x1
+  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a af:01.0,proto_xtr='[(2):ipv4,(3):ipv6,(4):tcp]' -- -i --rxq=16 --txq=16 --portmask=0x1
 
 check RXDID value correct::
 
@@ -385,13 +385,13 @@ Test steps are same to ``VLAN cases``, use different "proto_xtr" parameters the 
 
 use error parameter Launch testpmd::
 
-  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -w af:01.0,proto_xtr=vxlan -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a af:01.0,proto_xtr=vxlan -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
 
 testpmd can't started, check "iavf_lookup_flex_desc_type(): wrong flex_desc type, it should be: vlan|ipv4|ipv6|ipv6_flow|tcp|ovs|ip_offset" in testpmd output.
 
 don't use parameter launch testpmd::
 
-   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -w af:01.0 -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
+   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a af:01.0 -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
 
 testpmd started, check "iavf_configure_queues(): request RXDID[16] in Queue[0]" in testpmd output
 
@@ -403,7 +403,7 @@ Test steps are same to ``VLAN cases``, just change the launch command of testpmd
 
 MPLS cases use same parameter Launch testpmd::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -w af:01.0,proto_xtr=ip_offset -- -i  --portmask=0x1 --nb-cores=2
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a af:01.0,proto_xtr=ip_offset -- -i  --portmask=0x1 --nb-cores=2
 
 check RXDID value correct::
 

@@ -144,7 +144,7 @@ Test Case: IPSec Encryption
 ===========================
 Start ipsec-secgw with two 82599 ports and assign port 1 to unprotected mode::
 
-	sudo ./build/ipsec-secgw -l 20,21 -w 83:00.0 -w 83:00.1 --vdev 
+	sudo ./build/ipsec-secgw -l 20,21 -a 83:00.0 -a 83:00.1 --vdev 
 	"crypto_null" --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 
 	0x2 --config="(0,0,20),(1,0,21)" -f ./enc.cfg
 
@@ -194,7 +194,7 @@ Test Case: IPSec Encryption with Jumboframe
 ===========================================
 Start ipsec-secgw with two 82599 ports and assign port 1 to unprotected mode::
 
-	sudo ./build/ipsec-secgw -l 20,21 -w 83:00.0 -w 83:00.1 --vdev 
+	sudo ./build/ipsec-secgw -l 20,21 -a 83:00.0 -a 83:00.1 --vdev 
 	"crypto_null" --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 
 	0x2 --config="(0,0,20),(1,0,21)" -f ./enc.cfg
 
@@ -214,7 +214,7 @@ Check burst esp packets can't be received from unprotected port.
 
 Set jumbo frames size as 9000, start it with port 1 assigned to unprotected mode::
 
-	sudo ./build/ipsec-secgw -l 20,21 -w 83:00.0 -w 83:00.1 --vdev 
+	sudo ./build/ipsec-secgw -l 20,21 -a 83:00.0 -a 83:00.1 --vdev 
 	"crypto_null" --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 
 	0x2 -j 9000 --config="(0,0,20),(1,0,21)" -f ./enc.cfg
 
@@ -239,7 +239,7 @@ Create configuration file with multiple SP/SA/RT rules for different ip address.
 
 Start ipsec-secgw with two queues enabled on each port and port 1 assigned to unprotected mode::
 
-	sudo ./build/ipsec-secgw -l 20,21 -w 83:00.0 -w 83:00.1 --vdev 
+	sudo ./build/ipsec-secgw -l 20,21 -a 83:00.0 -a 83:00.1 --vdev 
 	"crypto_null" --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 
 	0x2 --config="(0,0,20),(0,1,20),(1,0,21),(1,1,21)" -f ./enc_rss.cfg
 
@@ -259,7 +259,7 @@ Test Case: IPSec Decryption
 ===========================
 Start ipsec-secgw with two 82599 ports and assign port 1 to unprotected mode::
 
-	sudo ./build/ipsec-secgw -l 20,21 -w 83:00.0 -w 83:00.1 --vdev 
+	sudo ./build/ipsec-secgw -l 20,21 -a 83:00.0 -a 83:00.1 --vdev 
 	"crypto_null" --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 
 	0x2 --config="(0,0,20),(1,0,21)" -f ./dec.cfg
 
@@ -275,7 +275,7 @@ Test Case: IPSec Decryption with wrong key
 ==========================================
 Start ipsec-secgw with two 82599 ports and assign port 1 to unprotected mode::
 
-	sudo ./build/ipsec-secgw -l 20,21 -w 83:00.0 -w 83:00.1 --vdev 
+	sudo ./build/ipsec-secgw -l 20,21 -a 83:00.0 -a 83:00.1 --vdev 
 	"crypto_null" --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 
 	0x2 --config="(0,0,20),(1,0,21)" -f ./dec.cfg
 
@@ -295,7 +295,7 @@ IPsec application will produce error "IPSEC_ESP: failed crypto op".
 Test Case: IPSec Decryption with Jumboframe
 ===========================================
 Start ipsec-secgw with two 82599 ports and assign port 1 to unprotected mode::
-	sudo ./build/ipsec-secgw -l 20,21 -w 83:00.0 -w 83:00.1 --vdev 
+	sudo ./build/ipsec-secgw -l 20,21 -a 83:00.0 -a 83:00.1 --vdev 
 	"crypto_null" --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 
 	0x2 --config="(0,0,20),(1,0,21)" -f ./dec.cfg
 
@@ -312,7 +312,7 @@ Check burst(8192) packets which have been decapsulated can't be received from pr
 
 Set jumbo frames size as 9000, start it with port 1 assigned to unprotected mode::
 
-	sudo ./build/ipsec-secgw -l 20,21 -w 83:00.0 -w 83:00.1 --vdev 
+	sudo ./build/ipsec-secgw -l 20,21 -a 83:00.0 -a 83:00.1 --vdev 
 	"crypto_null" --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 
 	0x2 -j 9000 --config="(0,0,20),(1,0,21)" -f ./dec.cfg
 
@@ -334,8 +334,8 @@ Create configuration file with multiple SA rule for different ip address.
 
 Start ipsec-secgw with two 82599 ports and assign port 1 to unprotected mode::
 
-	sudo ./build/ipsec-secgw -l 20,21 -w 83:00.0 -w 83:00.1 --vdev 
-	"crypto_null" --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 
+	sudo ./build/ipsec-secgw -l 20,21 -a 83:00.0 -a 83:00.1 --vdev 
+        "crypto_null" --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 
 	0x2 -config="(0,0,20),(0,1,20),(1,0,21),(1,1,21)" -f ./dec_rss.cfg
 
 Send two burst(32) esp packets with different ip to unprotected port.
@@ -351,7 +351,7 @@ Test Case: IPSec Encryption/Decryption simultaneously
 =====================================================
 Start ipsec-secgw with two 82599 ports and assign port 1 to unprotected mode::
 
-	sudo ./build/ipsec-secgw -l 20,21 -w 83:00.0 -w 83:00.1 
+	sudo ./build/ipsec-secgw -l 20,21 -a 83:00.0 -a 83:00.1
         --vdev "crypto_null" --log-level 8 --socket-mem 1024,1 
         -- -p 0xf -P -u 0x2 --config="(0,0,20),(1,0,21)" -f ./enc_dec.cfg
 	

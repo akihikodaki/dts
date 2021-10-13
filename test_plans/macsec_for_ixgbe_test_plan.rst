@@ -113,7 +113,7 @@ Test Case 1: MACsec packets send and receive
 
   1. Start the testpmd of rx port::
 
-      ./testpmd -c 0xf --socket-mem 1024,0 --file-prefix=rx -w 0000:07:00.1 \
+      ./testpmd -c 0xf --socket-mem 1024,0 --file-prefix=rx -a 0000:07:00.1 \
       -- -i --port-topology=chained
 
   2. Set MACsec offload on::
@@ -150,7 +150,7 @@ Test Case 1: MACsec packets send and receive
 
   1. Start the testpmd of tx port::
 
-      ./testpmd -c 0xf0 --socket-mem 1024,0 --file-prefix=tx -w 0000:07:00.0 \
+      ./testpmd -c 0xf0 --socket-mem 1024,0 --file-prefix=tx -a 0000:07:00.0 \
       -- -i --port-topology=chained
 
   2. Set MACsec offload on::
@@ -422,7 +422,7 @@ Test Case 7: performance test of MACsec offload packets
    with cable, connect 05:00.0 to IXIA. Bind the three ports to dpdk driver.
    Start two testpmd::
 
-      ./testpmd -c 0xf --socket-mem 1024,0 --file-prefix=rx -w 0000:07:00.1 \
+      ./testpmd -c 0xf --socket-mem 1024,0 --file-prefix=rx -a 0000:07:00.1 \
       -- -i --port-topology=chained
 
       testpmd> set macsec offload 0 on encrypt on replay-protect on

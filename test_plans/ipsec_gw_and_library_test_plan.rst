@@ -202,7 +202,7 @@ Cryptodev AES-NI algorithm validation matrix is showed in table below.
 
 AESNI_MB device start cmd::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -w 0000:60:00.0
+    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0
     --vdev=net_tap0,mac=fixed --vdev crypto_aesni_mb_pmd_1 --vdev=crypto_aesni_mb_pmd_2 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)"
     -u 0x1 -p 0x3 -f /root/dts/local_conf/ipsec_test.cfg
 
@@ -230,8 +230,8 @@ Cryptodev QAT algorithm validation matrix is showed in table below.
 
 QAT device start cmd::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem --vdev=net_tap0,mac=fixed -w 0000:60:00.0
-    -w 0000:1a:01.0 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)" -u 0x1 -p 0x3
+    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem --vdev=net_tap0,mac=fixed -a 0000:60:00.0
+    -a 0000:1a:01.0 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)" -u 0x1 -p 0x3
     -f /root/dts/local_conf/ipsec_test.cfg
 
 AES_GCM_PMD algorithm validation matrix is showed in table below.
@@ -244,7 +244,7 @@ AES_GCM_PMD algorithm validation matrix is showed in table below.
 
 AESNI_GCM device start cmd::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -w 0000:60:00.0 --vdev=net_tap0,mac=fixed
+    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0 --vdev=net_tap0,mac=fixed
     --vdev crypto_aesni_gcm_pmd_1 --vdev=crypto_aesni_gcm_pmd_2 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)"
     -u 0x1 -p 0x3 -f /root/dts/local_conf/ipsec_test.cfg
 

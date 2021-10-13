@@ -213,7 +213,7 @@ Prerequisites
 
 5. Launch the testpmd to configuration queue of rx and tx number 16 in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/testpmd  -c 0xff -n 4 -w 0000:18:01.0 -- -i --rxq=16 --txq=16
+    testpmd>./x86_64-native-linuxapp-gcc/app/testpmd  -c 0xff -n 4 -a 0000:18:01.0 -- -i --rxq=16 --txq=16
     testpmd>set fwd rxonly
     testpmd>set verbose 1
 

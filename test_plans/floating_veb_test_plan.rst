@@ -124,14 +124,14 @@ MAC switch when PF is link down as well as up.
 1. Launch PF testpmd::
 
       ./testpmd -c 0xf -n 4 --socket-mem 1024,1024
-      -w 05:00.0,enable_floating_veb=1 --file-prefix=test1 -- -i
+      -a 05:00.0,enable_floating_veb=1 --file-prefix=test1 -- -i
       testpmd> port start all
       testpmd> show port info all
 
 2. VF1, run testpmd::
 
       ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024
-      -w 05:02.0 --file-prefix=test2 -- -i --crc-strip
+      -a 05:02.0 --file-prefix=test2 -- -i --crc-strip
       testpmd> mac_addr add 0 vf1_mac_address
       testpmd> set fwd rxonly
       testpmd> set promisc all off
@@ -140,7 +140,7 @@ MAC switch when PF is link down as well as up.
 
    VF2, run testpmd::
 
-      ./testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -w 05:02.1 --file-prefix=test3
+      ./testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -a 05:02.1 --file-prefix=test3
       -- -i --crc-strip --eth-peer=0,vf1_mac_address
       testpmd> set fwd txonly
       testpmd> start
@@ -162,7 +162,7 @@ send traffic from VF0 to PF, PF can't receive any packets either.
 
 1. In PF, launch testpmd::
 
-      ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w 05:00.0,enable_floating_veb=1 --file-prefix=test1 -- -i
+      ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 -a 05:00.0,enable_floating_veb=1 --file-prefix=test1 -- -i
       testpmd> set fwd rxonly
       testpmd> set promisc all off
       testpmd> port start all
@@ -171,7 +171,7 @@ send traffic from VF0 to PF, PF can't receive any packets either.
 
 2. VF1, run testpmd::
 
-      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.0 --file-prefix=test2 -- -i --eth-peer=0,pf_mac_addr
+      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -a 05:02.0 --file-prefix=test2 -- -i --eth-peer=0,pf_mac_addr
       testpmd> set fwd txonly
       testpmd> start
       testpmd> show port stats all
@@ -193,7 +193,7 @@ in floating mode, check VF1 can't receive traffic from tester.
 
 2. PF, launch testpmd::
 
-      ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w 05:00.0,enable_floating_veb=1 --file-prefix=test1 -- -i --eth-peer=0,VF_mac_address
+      ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 -a 05:00.0,enable_floating_veb=1 --file-prefix=test1 -- -i --eth-peer=0,VF_mac_address
       testpmd> set fwd mac
       testpmd> port start all
       testpmd> start
@@ -201,7 +201,7 @@ in floating mode, check VF1 can't receive traffic from tester.
 
    VF1, run testpmd::
 
-      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.0 --file-prefix=test2 -- -i
+      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -a 05:02.0 --file-prefix=test2 -- -i
       testpmd> set fwd rxonly
       testpmd> start
       testpmd> show port stats all
@@ -237,7 +237,7 @@ Details:
 1. Launch PF testpmd, run testpmd with floating parameters and make the link down::
 
       ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 \
-      \"-w "05:00.0,enable_floating_veb=1,floating_veb_list=0;2-3\" \
+      \"-a "05:00.0,enable_floating_veb=1,floating_veb_list=0;2-3\" \
       --file-prefix=test1 -- -i
       //VF0, VF2 and VF3in floating VEB, VF1 in legacy VEB
 
@@ -251,7 +251,7 @@ Details:
 
    VF0, run testpmd::
 
-      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.0 \
+      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -a 05:02.0 \
       --file-prefix=test2 -- -i --eth-peer=0,vf1_mac_address
       testpmd> set fwd rxonly
       testpmd> mac_addr add 0 vf0_mac_address     //set the vf0_mac_address
@@ -260,7 +260,7 @@ Details:
 
    VF1, run testpmd::
 
-      ./testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -w 05:02.1 \
+      ./testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -a 05:02.1 \
        --file-prefix=test3 -- -i --eth-peer=0,vf1_mac_address
       testpmd> set fwd txonly
       testpmd> mac_addr add 0 vf1_mac_addres
@@ -275,7 +275,7 @@ Details:
 
    VF2, run testpmd::
 
-      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.2 \
+      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -a 05:02.2 \
       --file-prefix=test2 -- -i
       testpmd> set fwd rxonly
       testpmd> mac_addr add 0 vf2_mac_addres
@@ -284,7 +284,7 @@ Details:
 
    VF0, run testpmd::
 
-      ./testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -w 05:02.0 \
+      ./testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -a 05:02.0 \
        --file-prefix=test3 -- -i --eth-peer=0,vf2_mac_address
       testpmd> set fwd txonly
       testpmd> start
@@ -319,7 +319,7 @@ Details:
 1. In PF, launch testpmd::
 
       ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 \
-      \"-w 05:00.0,enable_floating_veb=1,floating_veb_list=0;3\" \
+      \"-a 05:00.0,enable_floating_veb=1,floating_veb_list=0;3\" \
       --file-prefix=test1 -- -i
       testpmd> set fwd rxonly
       testpmd> port start all
@@ -328,7 +328,7 @@ Details:
 
 2. VF0, run testpmd::
 
-      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.0 \
+      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -a 05:02.0 \
       --file-prefix=test2 -- -i --eth-peer=0,pf_mac_addr
       testpmd> set fwd txonly
       testpmd> start
@@ -337,7 +337,7 @@ Details:
 
 3. VF1, run testpmd::
 
-      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.1 \
+      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -a 05:02.1 \
       --file-prefix=test2 -- -i --eth-peer=0,pf_mac_addr
       testpmd> set fwd txonly
       testpmd> start
@@ -346,7 +346,7 @@ Details:
 
 4. VF0, run testpmd::
 
-     ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.0 --file-prefix=test2 -- -i
+     ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -a 05:02.0 --file-prefix=test2 -- -i
       testpmd> mac_addr add 0 VF0_mac_address
       testpmd> set promisc all off
       testpmd> set fwd rxonly
@@ -361,7 +361,7 @@ Details:
 
 5. VF1, run testpmd::
 
-      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.1 --file-prefix=test2 -- -i
+      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -a 05:02.1 --file-prefix=test2 -- -i
       testpmd> mac_addr add 0 VF1_mac_address
       testpmd> set promisc all off
       testpmd> set fwd rxonly
@@ -376,7 +376,7 @@ Details:
 
 6. VF1, run testpmd::
 
-      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.1 --file-prefix=test2 -- -i
+      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -a 05:02.1 --file-prefix=test2 -- -i
       testpmd> mac_addr add 0 VF1_mac_address
       testpmd> set promisc all off
       testpmd> set fwd rxonly
@@ -384,7 +384,7 @@ Details:
 
    VF2, run testpmd::
 
-      ./testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -w 05:02.2 \
+      ./testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -a 05:02.2 \
       --file-prefix=test3 -- -i --eth-peer=0,VF1_mac_address
       testpmd> set fwd txonly
       testpmd> start

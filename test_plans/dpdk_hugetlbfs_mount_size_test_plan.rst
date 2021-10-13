@@ -51,14 +51,14 @@ Test Case 1: default hugepage size w/ and w/o numa
 
 2. Bind one nic port to igb_uio driver, launch testpmd::
 
-    ./testpmd -c 0x3 -n 4 --huge-dir /mnt/huge --file-prefix=abc -- -i
+    ./dpdk-testpmd -c 0x3 -n 4 --huge-dir /mnt/huge --file-prefix=abc -- -i
     testpmd>start
 
 3. Send packet with packet generator, check testpmd could forward packets correctly.
 
 4. Goto step 2 resart testpmd with numa support::
 
-    ./testpmd -c 0x3 -n 4 --huge-dir /mnt/huge --file-prefix=abc -- -i --numa
+    ./dpdk-testpmd -c 0x3 -n 4 --huge-dir /mnt/huge --file-prefix=abc -- -i --numa
     testpmd>start
 
 5. Send packets with packet generator, make sure testpmd could receive and fwd packets correctly.
@@ -73,10 +73,10 @@ Test Case 2: mount size exactly match total hugepage size with two mount points
 
 2. Bind two nic ports to igb_uio driver, launch testpmd with numactl::
 
-    numactl --membind=1 ./testpmd -l 31-32 -n 4 --legacy-mem --socket-mem 0,2048 --huge-dir /mnt/huge1 --file-prefix=abc -w 82:00.0 -- -i --socket-num=1 --no-numa
+    numactl --membind=1 ./dpdk-testpmd -l 31-32 -n 4 --legacy-mem --socket-mem 0,2048 --huge-dir /mnt/huge1 --file-prefix=abc -a 82:00.0 -- -i --socket-num=1 --no-numa
     testpmd>start
 
-    numactl --membind=1 ./testpmd -l 33-34 -n 4 --legacy-mem --socket-mem 0,2048  --huge-dir /mnt/huge2 --file-prefix=bcd -w 82:00.1 -- -i --socket-num=1 --no-numa
+    numactl --membind=1 ./dpdk-testpmd -l 33-34 -n 4 --legacy-mem --socket-mem 0,2048  --huge-dir /mnt/huge2 --file-prefix=bcd -a 82:00.1 -- -i --socket-num=1 --no-numa
     testpmd>start
 
 3. Send packets with packet generator, make sure two testpmd could receive and fwd packets correctly.
@@ -90,7 +90,7 @@ Test Case 3: mount size greater than total hugepage size with single mount point
 
 2. Bind one nic port to igb_uio driver, launch testpmd::
 
-    ./testpmd -c 0x3 -n 4 --legacy-mem --huge-dir /mnt/huge --file-prefix=abc -- -i
+    ./dpdk-testpmd -c 0x3 -n 4 --legacy-mem --huge-dir /mnt/huge --file-prefix=abc -- -i
     testpmd>start
 
 3. Send packets with packet generator, make sure testpmd could receive and fwd packets correctly.
@@ -106,13 +106,13 @@ Test Case 4: mount size greater than total hugepage size with multiple mount poi
 
 2. Bind one nic port to igb_uio driver, launch testpmd::
 
-    numactl --membind=0 ./testpmd -c 0x3 -n 4  --legacy-mem --socket-mem 2048,0 --huge-dir /mnt/huge1 --file-prefix=abc -- -i --socket-num=0 --no-numa
+    numactl --membind=0 ./dpdk-testpmd -c 0x3 -n 4  --legacy-mem --socket-mem 2048,0 --huge-dir /mnt/huge1 --file-prefix=abc -- -i --socket-num=0 --no-numa
     testpmd>start
 
-    numactl --membind=0 ./testpmd -c 0xc -n 4  --legacy-mem --socket-mem 2048,0 --huge-dir /mnt/huge2 --file-prefix=bcd -- -i --socket-num=0 --no-numa
+    numactl --membind=0 ./dpdk-testpmd -c 0xc -n 4  --legacy-mem --socket-mem 2048,0 --huge-dir /mnt/huge2 --file-prefix=bcd -- -i --socket-num=0 --no-numa
     testpmd>start
 
-    numactl --membind=0 ./testpmd -c 0x30 -n 4  --legacy-mem --socket-mem 1024,0 --huge-dir /mnt/huge3 --file-prefix=fgh -- -i --socket-num=0 --no-numa
+    numactl --membind=0 ./dpdk-testpmd -c 0x30 -n 4  --legacy-mem --socket-mem 1024,0 --huge-dir /mnt/huge3 --file-prefix=fgh -- -i --socket-num=0 --no-numa
     testpmd>start
 
 3. Send packets with packet generator, check first and second testpmd will start correctly while third one will report error with not enough mem in socket 0.
@@ -124,6 +124,6 @@ Test Case 5: run dpdk app in limited hugepages controlled by cgroup
 
     cgcreate -g hugetlb:/test-subgroup
     cgset -r hugetlb.1GB.limit_in_bytes=2147483648 test-subgroup
-    cgexec -g hugetlb:test-subgroup numactl -m 1 ./testpmd -c 0x3000 -n 4 -- -i --socket-num=1 --no-numa
+    cgexec -g hugetlb:test-subgroup numactl -m 1 ./dpdk-testpmd -c 0x3000 -n 4 -- -i --socket-num=1 --no-numa
 
 2. Start testpmd and send packets with packet generator, make sure testpmd could receive and fwd packets correctly.

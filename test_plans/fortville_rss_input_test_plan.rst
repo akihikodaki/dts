@@ -54,7 +54,7 @@ Prerequisites
 
 2.Start testpmd on host::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4  -w 81:00.0 -- -i --txq=8 --rxq=8
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4  -a 81:00.0 -- -i --txq=8 --rxq=8
     testpmd>set verbose 1
     testpmd>start
 

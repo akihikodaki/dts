@@ -105,7 +105,7 @@ Test Case: Packet Checking in scalar mode
 The linuxapp is started with the following parameters:
 
 ::
-  -c 0x6 -n 4 -w <devid>,scalar_enable=1  -- -i --portmask=<portmask>
+  -c 0x6 -n 4 -a <devid>,scalar_enable=1  -- -i --portmask=<portmask>
 
 
 This test is applicable for Marvell devices. The tester sends 1 packet at a

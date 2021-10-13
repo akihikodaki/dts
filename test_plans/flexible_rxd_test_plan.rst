@@ -94,13 +94,13 @@ Test Case 01: Check single VLAN fields in RXD (802.1Q)
 
 Launch testpmd by::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -w 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
   testpmd>set verbose 1
   testpmd>set fwd io
   testpmd>start
 
-Please change the core setting (-l option) and port's PCI (-w option) \
+Please change the core setting (-l option) and port's PCI (-a option) \
 by your DUT environment
 
 Send a packet with VLAN tag from test network interface::
@@ -130,7 +130,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -w 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
 Test packet::
 
@@ -148,7 +148,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -w 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
 Test packet::
 
@@ -167,7 +167,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -w 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
 Test packet::
 
@@ -186,7 +186,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -w 18:00.0,proto_xtr=ipv4 -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=ipv4 -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
 Test packet::
 
@@ -208,7 +208,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -w 18:00.0,proto_xtr=ipv6 -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=ipv6 -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
 Test packet::
 
@@ -230,7 +230,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -w 18:00.0,proto_xtr=ipv6_flow -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=ipv6_flow -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
 Test packet::
 
@@ -250,7 +250,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -w 18:00.0,proto_xtr=tcp -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=tcp -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
 Test packet::
 
@@ -269,7 +269,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -w 18:00.0,proto_xtr=tcp -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=tcp -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
 Test packet::
 
@@ -288,7 +288,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -w 18:00.0,proto_xtr='[(2):ipv4,(3):ipv6,(4):tcp]' -- -i --rxq=64 --txq=64 --portmask=0x1
+  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr='[(2):ipv4,(3):ipv6,(4):tcp]' -- -i --rxq=64 --txq=64 --portmask=0x1
 
 Create generic flow on NIC::
 
@@ -360,7 +360,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 MPLS cases use same parameter Launch testpmd::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -w af:01.0,proto_xtr=ip_offset -- -i  --portmask=0x1 --nb-cores=2
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a af:01.0,proto_xtr=ip_offset -- -i  --portmask=0x1 --nb-cores=2
 
 check RXDID value correct::
 
