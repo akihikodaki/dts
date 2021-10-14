@@ -77,14 +77,14 @@ Patterns in this case:
 
 #. Create a rule with priority 0, Check the flow can be created but it will map to fdir filter::
 
-    testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions queue index 2 / end
+    testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions queue index 2 / mark / end
     ice_interrupt_handler(): OICR: MDD event
     ice_flow_create(): Succeeded to create (1) flow
     Flow rule #0 created
 
 #. Create a rule with priority 1, check the flow can not be created for the vallue of priority is 0 in non-pipeline mode::
 
-    testpmd> flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions queue index 2 / end
+    testpmd> flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions queue index 2 / mark / end
     ice_flow_create(): Failed to create flow
     Caught error type 4 (priority field): cause: 0x7ffe24e65738, Not support priority.: Invalid argument
 

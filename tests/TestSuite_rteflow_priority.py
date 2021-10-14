@@ -207,9 +207,9 @@ class TestRteflowPriority(TestCase):
         out = self.dut.send_expect(command, "testpmd> ", 120)
         self.logger.debug(out)
         
-        out=self.dut.send_expect("flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions queue index 2 / end", "testpmd>", 15)       
+        out=self.dut.send_expect("flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions queue index 2 / mark / end", "testpmd>", 15)
         self.verify( "Successed" and "(1)" in out, "failed: rule can't be created to fdir")
-        out=self.dut.send_expect("flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions queue index 2 / end", "testpmd>", 15)       
+        out=self.dut.send_expect("flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions queue index 2 / mark / end", "testpmd>", 15)
         self.verify( "Failed" in out, "failed: default value of priority is 0 in non-pipeline mode")
         self.dut.send_expect("flow flush 0", "testpmd>", 20)
         self.dut.send_expect("quit", "#", 50)
@@ -219,9 +219,9 @@ class TestRteflowPriority(TestCase):
         out = self.dut.send_expect(command, "testpmd> ", 120)
         self.logger.debug(out)
         
-        out=self.dut.send_expect("flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions queue index 2 / end", "testpmd>", 15)       
+        out=self.dut.send_expect("flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions queue index 2 / mark / end", "testpmd>", 15)
         self.verify( "Successed" and "(1)" in out, "failed: rule can't be created to fdir")
-        out=self.dut.send_expect("flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions queue index 2 / end", "testpmd>", 15)       
+        out=self.dut.send_expect("flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions queue index 2 / mark / end", "testpmd>", 15)
         self.verify( "Failed" in out, "failed: default value of priority is 0 in non-pipeline mode")
         self.dut.send_expect("flow flush 0", "testpmd>", 20)
         self.dut.send_expect("quit", "#", 50)
