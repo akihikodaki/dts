@@ -55,6 +55,27 @@ available BW (min, max) per TC etc. To be accomplished by way of new advance vir
 
 Note: The AVF inherits TCs that are configured on the PF. DCF tunes the BW allocation per TC for the target AVF.
 
+QoS configuration ownership::
+
+    --------- ---------  --------- ---------     --------- --------- --------- ---------
+    | queue | | queue |  | queue | | queue | ... | queue | | queue | | queue | | queue |
+    --------- ---------  --------- ---------     --------- --------- --------- ---------
+        |_________|          |_________|             |_________|         |_________|
+             |                    |                       |                   |
+         ---------            ---------               ---------           ---------
+         |  VSI0 |            |  VSI1 |      ...      |  VSI0 |           |  VSI1 |
+         ---------            ---------               ---------           ---------
+             |____________________|                       |___________________|
+                       |                                            |
+                    -------                                      -------
+                    | TC0 |                  ...                 | TCn |
+                    -------                                      -------
+                       |____________________________________________|
+                                              |
+                                           --------
+                                           | ROOT |
+                                           --------
+
 Prerequisites
 =============
 
@@ -1176,18 +1197,49 @@ the case is to check the support to query QoS settings.
     show port tm level cap 1 1
     show port tm level cap 1 2
 
+   check shaper_private_rate_max are the same::
+
+    shaper_private_rate_max 12500000000
+
+   the value is speed of the port.
+   the shaper_private_rate_min is 0.
+
    show port tm node capability::
 
     show port tm node cap 1 900
     show port tm node cap 1 800
 
-   check all the unit of rate is consistent.
+   check shaper_private_rate_max and shaper_private_rate_min,
+   the TC node value is consistent to profile setting.
+   node 900::
+
+    cap.shaper_private_rate_min 1000000
+    cap.shaper_private_rate_max 2000000
+
+   node 800::
+
+    cap.shaper_private_rate_min 1000000
+    cap.shaper_private_rate_max 4000000
+
+   check all the unit of rate is consistent which is Bps.
+   show capability of node 0-7 for port 1::
+
+    show port tm node cap 1 1
+    node parameter null: not support capability get (error 22)
+
+   it's not supported by queue node.
 
 4. show port tm node type::
 
     show port tm node type 1 0
     show port tm node type 1 900
     show port tm node type 1 1000
+
+   the result is::
+
+    leaf node
+    nonleaf node
+    nonleaf node
 
    check the type is correct.
 
@@ -1769,3 +1821,68 @@ the sum of the streams's throughput is limited by the tcbw distribution or peak_
    only send steam 2 and 5 synchronously, the throughput is 4MBps, mapping queue 4-5
    only send steam 3 and 7 synchronously, the throughput is 4MBps, mapping queue 6-7
    send all the streams synchronously, the throughput is 10MBps, queue mapping is correct.
+
+Test case 20: delete qos setting
+================================
+the case is to check the support to delete QoS settings.
+
+1. DCB setting, set 3 TCs bandwidth with strict mode::
+
+    ./dcbgetset ens785f0  --ieee --up2tc 0,0,0,1,2,0,0,0 --tcbw 10,30,60,0,0,0,0,0 --tsa 0,0,0,0,0,0,0,0 --pfc 0,0,0,0,0,0,0,0
+    ifconfig ens785f0 up
+
+2. start testpmd with 100G setting, then set profile and TC mapping::
+
+    port stop all
+    add port tm node shaper profile 0 1 1000000 0 2000000 0 0 0
+    add port tm node shaper profile 0 2 1000000 0 4000000 0 0 0
+    add port tm nonleaf node 0 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 0 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 0 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 0 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 0 0 900 0 1 2 1 0 0xffffffff 0 0
+    add port tm leaf node 0 1 900 0 1 2 1 0 0xffffffff 0 0
+    add port tm leaf node 0 2 800 0 1 2 2 0 0xffffffff 0 0
+    add port tm leaf node 0 3 800 0 1 2 2 0 0xffffffff 0 0
+    add port tm leaf node 0 4 700 0 1 2 2 0 0xffffffff 0 0
+    add port tm leaf node 0 5 700 0 1 2 2 0 0xffffffff 0 0
+
+3. delete the shaper profile and nonleaf node::
+
+    del port tm node 0 1000
+    node id: cannot delete a node which has children (error 33)
+    del port tm node 0 700
+    node id: cannot delete a node which has children (error 33)
+    del port tm node shaper profile 0 1
+    shaper profile null: profile in use (error 10)
+
+   the nodes can't be deleted due to the children nodes.
+   delete the leaf nodes first, then delete the nonleaf nodes and shaper profile::
+
+    del port tm node 0 5
+    del port tm node 0 4
+    del port tm node 0 3
+    del port tm node 0 2
+    del port tm node 0 1
+    del port tm node 0 0
+    del port tm node 0 700
+    del port tm node 0 800
+    del port tm node 0 900
+    del port tm node 0 1000
+    del port tm node shaper profile 0 1
+    del port tm node shaper profile 0 2
+
+   deleted successfully.
+
+4. add the settings again as step2, then commit the configuration::
+
+    port tm hierarchy commit 0 no
+
+   delete the leaf node::
+
+    del port tm node 0 5
+    cause unspecified: already committed (error 1)
+
+   check the node can't be deleted after committed.
+
+5. all the operation has the same result on port 1.
