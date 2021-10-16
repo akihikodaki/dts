@@ -62,6 +62,7 @@ class Crb(object):
         self.stage = 'pre-init'
         self.name = name
         self.trex_prefix = None
+        self.default_hugepages_cleared = False
 
         self.logger = getLogger(name)
         self.session = SSHConnection(self.get_ip_address(), name,
@@ -205,24 +206,25 @@ class Crb(object):
         else:
             return ''
 
-    def set_huge_pages(self, huge_pages, numa=-1):
+    def set_huge_pages(self, huge_pages, numa=""):
         """
         Set numbers of huge pages
         """
         page_size = self.send_expect("awk '/Hugepagesize/ {print $2}' /proc/meminfo", "# ")
 
-        if numa == -1:
+        if not numa:
             self.send_expect('echo %d > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (huge_pages, page_size), '# ', 5)
         else:
-            # sometimes we set hugepage on kernel cmdline, so we clear all nodes' default hugepages at the first time.
-            if numa == 0:
+            # sometimes we set hugepage on kernel cmdline, so we clear it
+            if not self.default_hugepages_cleared:
                 self.send_expect('echo 0 > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (page_size), '# ', 5)
+                self.default_hugepages_cleared = True
 
             # some platform not support numa, example vm dut
             try:
-                self.send_expect('echo %d > /sys/devices/system/node/node%d/hugepages/hugepages-%skB/nr_hugepages' % (huge_pages, numa, page_size), '# ', 5)
+                self.send_expect('echo %d > /sys/devices/system/node/%s/hugepages/hugepages-%skB/nr_hugepages' % (huge_pages, numa, page_size), '# ', 5)
             except:
-                self.logger.warning("set %d hugepage on socket %d error" % (huge_pages, numa))
+                self.logger.warning("set %d hugepage on %s error" % (huge_pages, numa))
                 self.send_expect('echo %d > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (huge_pages. page_size), '# ', 5)
 
     def set_speedup_options(self, read_cache, skip_setup):
