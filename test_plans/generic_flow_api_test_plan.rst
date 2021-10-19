@@ -2087,6 +2087,7 @@ queue, remove 5-tuple filter::
     testpmd> stop
     testpmd> start
     testpmd> flow destroy 0 rule 2
+
 4. Send different packets such as,SYN packets, ARP packets, packets with
 (`dst_ip` = 2.2.2.5 `src_ip` = 2.2.2.4 `dst_port` = 1 `src_port` = 1
 `protocol` = udp)::
