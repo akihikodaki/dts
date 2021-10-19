@@ -37,16 +37,16 @@ Test VEB Switch and floating VEB Features by Poll Mode Drivers.
 
 import re
 import time
-import utils
 
-from virt_dut import VirtDut
-from project_dpdk import DPDKdut
-from dut import Dut
-from test_case import TestCase
-from pmd_output import PmdOutput
-from settings import HEADER_SIZE
-from packet import Packet
-from utils import RED
+import framework.utils as utils
+from framework.dut import Dut
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.project_dpdk import DPDKdut
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
+from framework.utils import RED
+from framework.virt_dut import VirtDut
 
 
 class TestVEBSwitching(TestCase):

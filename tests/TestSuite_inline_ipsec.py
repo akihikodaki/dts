@@ -35,13 +35,14 @@ DPDK Test suite.
 Test inline_ipsec.
 """
 
-import utils
-import time
-import re
 import random
+import re
+import time
 
-from scapy.all import ESP, IP, Ether, sendp, SecurityAssociation
-from test_case import TestCase
+from scapy.all import ESP, IP, Ether, SecurityAssociation, sendp
+
+import framework.utils as utils
+from framework.test_case import TestCase
 
 ETHER_STANDARD_MTU = 1300
 ETHER_JUMBO_FRAME_MTU = 9000

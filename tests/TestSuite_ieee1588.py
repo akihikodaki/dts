@@ -34,12 +34,13 @@ DPDK Test suite.
 Test support of IEEE1588 Precise Time Protocol.
 """
 
-import utils
-import time
 import re
-from test_case import TestCase
-from pmd_output import PmdOutput
-from packet import Packet
+import time
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 DEV_TX_OFFLOAD_MULTI_SEGS = '0x00008000'
 

@@ -30,10 +30,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-import utils
-from test_case import TestCase
 
-import cryptodev_common as cc
+import framework.utils as utils
+import tests.cryptodev_common as cc
+from framework.test_case import TestCase
 
 
 class UnitTestsCryptodev(TestCase):

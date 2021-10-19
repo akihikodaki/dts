@@ -38,14 +38,15 @@ vm2vm split ring and packed ring vhost-user/virtio-net check the payload of larg
 mergeable and non-mergeable dequeue zero copy.
 please use qemu version greater 4.1.94 which support packed feathur to test this suite.
 """
-import re
-import time
-import string
 import random
-import utils
-from virt_common import VM
-from test_case import TestCase
-from pmd_output import PmdOutput
+import re
+import string
+import time
+
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 
 class TestVM2VMVirtioNetPerf(TestCase):

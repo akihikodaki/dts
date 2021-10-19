@@ -32,15 +32,17 @@
 import os
 import re
 import time
-import settings
-from config import PortConf,AppNameConf
-from settings import NICS, LOG_NAME_SEP
-from ssh_connection import SSHConnection
-from crb import Crb
-from net_device import GetNicObj
-from virt_resource import VirtResource
-from utils import RED, remove_old_rsa_key
 from uuid import uuid4
+
+import framework.settings as settings
+from nics.net_device import GetNicObj
+
+from .config import AppNameConf, PortConf
+from .crb import Crb
+from .settings import LOG_NAME_SEP, NICS
+from .ssh_connection import SSHConnection
+from .utils import RED, remove_old_rsa_key
+from .virt_resource import VirtResource
 
 
 class Dut(Crb):

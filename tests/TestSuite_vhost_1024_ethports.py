@@ -34,8 +34,8 @@ DPDK Test suite.
 Basic test for launch vhost with 1024 ethports
 """
 
-import utils
-from test_case import TestCase
+import framework.utils as utils
+from framework.test_case import TestCase
 
 
 class TestVhost1024Ethports(TestCase):

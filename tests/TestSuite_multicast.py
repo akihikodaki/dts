@@ -36,8 +36,9 @@ multicast test script.
 """
 
 import time
-from test_case import TestCase
-import utils
+
+import framework.utils as utils
+from framework.test_case import TestCase
 
 routeTbl = [
     ["224.0.0.101", "P1"], ["224.0.0.102", "P2"],

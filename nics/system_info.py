@@ -30,12 +30,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import time
 import re
-
+import time
 from collections import OrderedDict
+
 #install GitPython
 from git import Repo
+
 
 class SystemInfo(object):
 

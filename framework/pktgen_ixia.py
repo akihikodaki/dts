@@ -34,16 +34,19 @@ import string
 import time
 from pprint import pformat
 
-from ssh_connection import SSHConnection
-from settings import SCAPY2IXIA
-from utils import (convert_int2ip, convert_ip2int,
-                   convert_mac2long, convert_mac2str)
-
-from pktgen_base import (PacketGenerator, PKTGEN_IXIA,
-                         TRANSMIT_CONT, TRANSMIT_M_BURST, TRANSMIT_S_BURST)
-
 from scapy.packet import Packet
 from scapy.utils import wrpcap
+
+from .pktgen_base import (
+    PKTGEN_IXIA,
+    TRANSMIT_CONT,
+    TRANSMIT_M_BURST,
+    TRANSMIT_S_BURST,
+    PacketGenerator,
+)
+from .settings import SCAPY2IXIA
+from .ssh_connection import SSHConnection
+from .utils import convert_int2ip, convert_ip2int, convert_mac2long, convert_mac2str
 
 
 class Ixia(SSHConnection):

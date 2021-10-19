@@ -29,19 +29,17 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import json
-import time
-import re
 import copy
-
-from test_case import TestCase, skip_unsupported_pkg, check_supported_nic
-from pmd_output import PmdOutput
-from packet import Packet
-from utils import BLUE, RED, GREEN
-import rte_flow_common as rfc
-
+import json
 import os
+import re
+import time
 
+import tests.rte_flow_common as rfc
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase, check_supported_nic, skip_unsupported_pkg
+from framework.utils import BLUE, GREEN, RED
 
 tv_mac_vlan_pppoe_ipv4_pay_session_id_proto_id = {
     "name":"tv_mac_vlan_pppoe_ipv4_pay_session_id_proto_id",

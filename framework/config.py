@@ -32,14 +32,27 @@
 """
 Generic port and crbs configuration file load function
 """
+import argparse  # parse arguments module
+import configparser  # config parse module
 import os
 import re
-import configparser  # config parse module
-import argparse      # parse arguments module
-from settings import (PKTGEN, PKTGEN_DPDK, PKTGEN_TREX, PKTGEN_IXIA, PKTGEN_IXIA_NETWORK,
-                      CONFIG_ROOT_PATH, SUITE_SECTION_NAME)
-from settings import load_global_setting, DTS_CFG_FOLDER
-from exception import ConfigParseException, VirtConfigParseException, PortConfigParseException
+
+from .exception import (
+    ConfigParseException,
+    PortConfigParseException,
+    VirtConfigParseException,
+)
+from .settings import (
+    CONFIG_ROOT_PATH,
+    DTS_CFG_FOLDER,
+    PKTGEN,
+    PKTGEN_DPDK,
+    PKTGEN_IXIA,
+    PKTGEN_IXIA_NETWORK,
+    PKTGEN_TREX,
+    SUITE_SECTION_NAME,
+    load_global_setting,
+)
 
 PORTCONF = "%s/ports.cfg" % CONFIG_ROOT_PATH
 CRBCONF = "%s/crbs.cfg" % CONFIG_ROOT_PATH
@@ -99,7 +112,7 @@ class GlobalConf(UserConf):
             self.global_conf = UserConf(GLOBALCONF)
         except ConfigParseException:
             self.global_conf = None
-        
+
         # load global configuration
         self.global_cfg = self.load_global_config()
 
@@ -115,10 +128,10 @@ class GlobalConf(UserConf):
             return global_cfg
 
         global_cfg = dict(section_confs)
-        
+
         return global_cfg
-        
-        
+
+
 class SuiteConf(UserConf):
     def __init__(self, suite_name=""):
         self.suite_cfg = GlobalConf().load_global_config()

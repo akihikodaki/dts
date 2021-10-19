@@ -36,13 +36,14 @@ DPDK Test suite.
 Test  example vmdq_dcb.
 
 """
-import utils
 import os
-import re
 import random
-from test_case import TestCase
-from settings import HEADER_SIZE
-from pktgen import PacketGeneratorHelper
+import re
+
+import framework.utils as utils
+from framework.pktgen import PacketGeneratorHelper
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 
 class TestVmdqDcb(TestCase):

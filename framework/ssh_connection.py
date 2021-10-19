@@ -29,8 +29,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from ssh_pexpect import SSHPexpect
-from settings import USERNAME
+from .settings import USERNAME
+from .ssh_pexpect import SSHPexpect
 
 """
 Global structure for saving connections

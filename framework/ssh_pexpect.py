@@ -1,9 +1,11 @@
 import time
+
 import pexpect
 from pexpect import pxssh
-from debugger import ignore_keyintr, aware_keyintr
-from exception import TimeoutException, SSHConnectionException, SSHSessionDeadException
-from utils import RED, GREEN, parallel_lock
+
+from .debugger import aware_keyintr, ignore_keyintr
+from .exception import SSHConnectionException, SSHSessionDeadException, TimeoutException
+from .utils import GREEN, RED, parallel_lock
 
 """
 Module handle ssh sessions between tester and DUT.

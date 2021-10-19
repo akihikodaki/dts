@@ -32,9 +32,10 @@
 
 import re
 import time
-from pmd_output import PmdOutput
-from test_case import TestCase
-from packet import Packet
+
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 
 class DcfDatePathTest(TestCase):

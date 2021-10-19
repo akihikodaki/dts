@@ -30,15 +30,16 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import shutil
 import re
-from exception import VerifyFailure
+import shutil
+
+from .exception import VerifyFailure
 
 """
 Generate Rst Test Result Report
 
 Example:
-    import rst
+    import framework.rst as rst
     rst.write_title("Test Case: " + test_case.__name__)
     out = table.draw()
     rst.write_text('\n' + out + '\n\n')

@@ -29,14 +29,15 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+import os
 import re
 import time
-import os
 
-from test_case import TestCase
-from dut import Dut
-from pktgen import PacketGeneratorHelper
-from packet import Packet
+from framework.dut import Dut
+from framework.packet import Packet
+from framework.pktgen import PacketGeneratorHelper
+from framework.test_case import TestCase
+
 
 class TestMacsecForIxgbe(TestCase):
     def set_up_all(self):

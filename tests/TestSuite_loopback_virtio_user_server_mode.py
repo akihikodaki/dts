@@ -35,11 +35,12 @@
 DPDK Test suite.
 Test loopback virtio-user server mode
 """
-import utils
-import time
 import re
-from pmd_output import PmdOutput
-from test_case import TestCase
+import time
+
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 
 class TestLoopbackVirtioUserServerMode(TestCase):

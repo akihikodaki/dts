@@ -29,18 +29,17 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import json
-import time
-import re
 import copy
-
-from test_case import TestCase
-from pmd_output import PmdOutput
-from packet import Packet
-from utils import BLUE, RED, GREEN
-import rte_flow_common as rfc
-
+import json
 import os
+import re
+import time
+
+import tests.rte_flow_common as rfc
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+from framework.utils import BLUE, GREEN, RED
 
 vf1_mac = "00:01:23:45:67:89"
 

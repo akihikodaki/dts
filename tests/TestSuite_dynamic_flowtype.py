@@ -29,12 +29,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import time
 import re
-import utils
-from test_case import TestCase
-from pmd_output import PmdOutput
-import packet
+import time
+
+import framework.packet as packet
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 VM_CORES_MASK = 'all'
 

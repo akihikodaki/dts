@@ -33,21 +33,24 @@ import time
 import traceback
 
 # import dts/framework libs
-import utils
-from test_case import TestCase
-from exception import VerifyFailure
+import framework.utils as utils
 
 # import bonding lib
-import bonding
-from bonding import (
-                MODE_ROUND_ROBIN,
-                MODE_ACTIVE_BACKUP,
-                MODE_XOR_BALANCE,
-                MODE_BROADCAST,
-                MODE_LACP,
-                MODE_TLB_BALANCE,
-                MODE_ALB_BALANCE,
-                FRAME_SIZE_64)
+import tests.bonding as bonding
+from framework.exception import VerifyFailure
+from framework.test_case import TestCase
+
+from .bonding import (
+    FRAME_SIZE_64,
+    MODE_ACTIVE_BACKUP,
+    MODE_ALB_BALANCE,
+    MODE_BROADCAST,
+    MODE_LACP,
+    MODE_ROUND_ROBIN,
+    MODE_TLB_BALANCE,
+    MODE_XOR_BALANCE,
+)
+
 
 class TestBondingStacked(TestCase):
 

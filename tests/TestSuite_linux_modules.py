@@ -37,10 +37,9 @@ Linux Kernel Modules example.
 import os
 import time
 
-from pmd_output import PmdOutput
-from test_case import TestCase
-
 from framework import settings
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 ETHER_HEADER_LEN = 18
 IP_HEADER_LEN = 20

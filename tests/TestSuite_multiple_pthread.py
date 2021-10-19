@@ -29,14 +29,15 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import time
 import os
-import re
 import random
+import re
 import string
-import utils
-from test_case import TestCase
-from packet import Packet
+import time
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.test_case import TestCase
 
 
 class TestMultiplePthread(TestCase):

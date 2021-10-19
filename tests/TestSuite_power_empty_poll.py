@@ -39,12 +39,12 @@ import traceback
 from copy import deepcopy
 from pprint import pformat
 
-from utils import create_mask as dts_create_mask
-from exception import VerifyFailure
-from test_case import TestCase
-from settings import HEADER_SIZE, PKTGEN_TREX
-from packet import Packet
-from pktgen import TRANSMIT_CONT
+from framework.exception import VerifyFailure
+from framework.packet import Packet
+from framework.pktgen import TRANSMIT_CONT
+from framework.settings import HEADER_SIZE, PKTGEN_TREX
+from framework.test_case import TestCase
+from framework.utils import create_mask as dts_create_mask
 
 
 class TestPowerEmptyPoll(TestCase):

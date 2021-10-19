@@ -37,14 +37,14 @@ Tests for TSO.
 
 """
 import os
-import utils
-import time
 import re
-import os
-from test_case import TestCase
-from settings import HEADER_SIZE
-from pktgen import PacketGeneratorHelper
-from packet import Packet
+import time
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pktgen import PacketGeneratorHelper
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 DEFAULT_MUT = 1500
 TSO_MTU = 9000

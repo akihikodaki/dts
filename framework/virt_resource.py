@@ -30,7 +30,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from random import randint
 
-from utils import get_obj_funcs, parallel_lock, RED
+from .utils import RED, get_obj_funcs, parallel_lock
 
 INIT_FREE_PORT = 6000
 INIT_SERIAL_PORT = 7000

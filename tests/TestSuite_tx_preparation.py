@@ -39,16 +39,18 @@ Test tx preparation feature
 """
 
 import os
-import time
-import dut
+import random
 import re
 import subprocess
-from config import PortConf
-from test_case import TestCase
-from pmd_output import PmdOutput
-from settings import FOLDERS
-from packet import Packet
-import random
+import time
+
+import framework.dut as dut
+from framework.config import PortConf
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.settings import FOLDERS
+from framework.test_case import TestCase
+
 #
 #
 # Test class.

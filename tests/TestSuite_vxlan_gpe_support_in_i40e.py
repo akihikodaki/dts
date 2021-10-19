@@ -36,17 +36,19 @@ Test VXLAN-GPE behaviour in DPDK.
 
 """
 
-import utils
 import os
 import re
-from pmd_output import PmdOutput
-from scapy.utils import wrpcap, rdpcap
-from scapy.layers.inet import Ether, IP, UDP
+
+from scapy.config import conf
+from scapy.layers.inet import IP, UDP, Ether
 from scapy.layers.l2 import Dot1Q
 from scapy.layers.vxlan import VXLAN
-from scapy.config import conf
-from test_case import TestCase
-from settings import FOLDERS
+from scapy.utils import rdpcap, wrpcap
+
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.settings import FOLDERS
+from framework.test_case import TestCase
 
 #
 #

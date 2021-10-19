@@ -36,8 +36,8 @@ This TestSuite runs the unit tests included in DPDK for Random Early
 Detection, Metering and Scheduling QoS features.
 """
 
-from test_case import TestCase
-import utils
+import framework.utils as utils
+from framework.test_case import TestCase
 
 #
 #

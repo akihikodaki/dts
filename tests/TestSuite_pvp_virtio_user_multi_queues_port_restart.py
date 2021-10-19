@@ -39,12 +39,14 @@ mergeable, in-order non-mergeable, mergeable, non-mergeable, vector_rx path test
 and packed virtqueue in-order mergeable, in-order non-mergeable, mergeable,
 non-mergeable path, also cover port restart test with each path.
 """
-import time
 import re
-from test_case import TestCase
-from packet import Packet
-from pktgen import PacketGeneratorHelper
-from pmd_output import PmdOutput
+import time
+
+from framework.packet import Packet
+from framework.pktgen import PacketGeneratorHelper
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+
 
 class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
 

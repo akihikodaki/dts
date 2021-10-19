@@ -33,24 +33,21 @@
 DPDK Test suite.
 l3fwd-power test suite.
 """
+import json
 import os
 import re
-import time
 import textwrap
+import time
 import traceback
-import json
 from copy import deepcopy
 from pprint import pformat
 
-from settings import load_global_setting
-from settings import HOST_BUILD_TYPE_SETTING
-from utils import create_mask as dts_create_mask
-from settings import HEADER_SIZE
-from test_case import TestCase
-from pktgen import TRANSMIT_CONT
-from exception import VerifyFailure
-
-from packet import Packet
+from framework.exception import VerifyFailure
+from framework.packet import Packet
+from framework.pktgen import TRANSMIT_CONT
+from framework.settings import HEADER_SIZE, HOST_BUILD_TYPE_SETTING, load_global_setting
+from framework.test_case import TestCase
+from framework.utils import create_mask as dts_create_mask
 
 
 class TestPowerTelemetry(TestCase):

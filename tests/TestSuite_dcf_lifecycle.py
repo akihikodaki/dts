@@ -48,16 +48,15 @@ import re
 import time
 import traceback
 from contextlib import contextmanager
-from pprint import pformat
 from functools import partial
+from pprint import pformat
 
-
-from settings import HEADER_SIZE
-from test_case import TestCase
-from exception import VerifyFailure
-from packet import Packet
-from pmd_output import PmdOutput
-import utils
+import framework.utils as utils
+from framework.exception import VerifyFailure
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 
 class TestDcfLifeCycle(TestCase):

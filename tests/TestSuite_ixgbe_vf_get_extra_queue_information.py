@@ -33,17 +33,19 @@
 DPDK Test suite.
 Test Niantic ixgbe_get_vf_queue Include Extra Information function.
 """
-import time
 import random
 import re
-import utils
+import time
+
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.qemu_kvm import QEMUKvm
 
 # Use scapy to send packets with different source and dest ip.
 # and collect the hash result of five tuple and the queue id.
-from test_case import TestCase
-from pmd_output import PmdOutput
-from virt_common import VM
-from qemu_kvm import QEMUKvm
+from framework.test_case import TestCase
+from framework.virt_common import VM
+
 
 class TestIxgbeVfGetExtraInfo(TestCase):
 

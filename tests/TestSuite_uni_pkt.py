@@ -43,12 +43,13 @@ translate the offloaded packet types into these 7 fields of information, for
 user applications
 """
 
-import utils
-from test_case import TestCase
-from exception import VerifyFailure
-from packet import Packet
 import time
-from pmd_output import PmdOutput
+
+import framework.utils as utils
+from framework.exception import VerifyFailure
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 
 class TestUniPacket(TestCase):

@@ -34,15 +34,16 @@ DPDK Test suite.
 Test PVP performance using virtio_user on 8 tx/rx path.
 """
 import json
-import rst
 import os
-import utils
-from test_case import TestCase
-from packet import Packet
-from pktgen import PacketGeneratorHelper
-from settings import UPDATE_EXPECTED, load_global_setting
 from copy import deepcopy
-from pmd_output import PmdOutput
+
+import framework.rst as rst
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pktgen import PacketGeneratorHelper
+from framework.pmd_output import PmdOutput
+from framework.settings import UPDATE_EXPECTED, load_global_setting
+from framework.test_case import TestCase
 
 
 class TestPVPMultiPathPerformance(TestCase):

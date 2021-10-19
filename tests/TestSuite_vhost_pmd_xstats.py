@@ -34,16 +34,18 @@ DPDK Test suite.
 
 vhost pmd xstats test suite.
 """
+import copy
+import datetime
 import re
 import time
-import utils
-import datetime
-import copy
-from test_case import TestCase
-from settings import HEADER_SIZE
-from qemu_kvm import QEMUKvm
-from packet import Packet
-from pmd_output import PmdOutput
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.qemu_kvm import QEMUKvm
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
+
 ETHER_JUMBO_FRAME_MTU = 9000
 DEFAULT_JUMBO_FRAME_MTU = 1500
 

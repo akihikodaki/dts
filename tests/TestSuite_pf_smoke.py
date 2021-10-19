@@ -29,14 +29,17 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from packet import Packet
-from pmd_output import PmdOutput
-from test_case import TestCase
-from smoke_base import SmokeTest
-from smoke_base import JUMBO_FRAME_LENGTH
-from smoke_base import JUMBO_FRAME_MTU
-from smoke_base import DEFAULT_MTU_VALUE
-from smoke_base import LAUNCH_QUEUE
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+
+from .smoke_base import (
+    DEFAULT_MTU_VALUE,
+    JUMBO_FRAME_LENGTH,
+    JUMBO_FRAME_MTU,
+    LAUNCH_QUEUE,
+    SmokeTest,
+)
 
 
 class TestPfSmoke(TestCase):

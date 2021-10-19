@@ -34,21 +34,20 @@ DPDK Test suite.
 Test userland 10Gb/25Gb/40Gb/100Gb
 """
 
-import utils
+import os
 import re
 import time
-import os
-
-from test_case import TestCase
-from time import sleep
-from settings import HEADER_SIZE
-from pmd_output import PmdOutput
-from pktgen import PacketGeneratorHelper
-
-from settings import FOLDERS
-from system_info import SystemInfo
-import perf_report
 from datetime import datetime
+from time import sleep
+
+import framework.utils as utils
+import nics.perf_report as perf_report
+from framework.pktgen import PacketGeneratorHelper
+from framework.pmd_output import PmdOutput
+from framework.settings import FOLDERS, HEADER_SIZE
+from framework.test_case import TestCase
+from nics.system_info import SystemInfo
+
 
 class TestEventdevPerf(TestCase):
 

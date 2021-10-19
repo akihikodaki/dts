@@ -36,13 +36,13 @@ mode, stats reset, etc. our statistical data information is
 independent on the control plane and data plane.
 """
 
-import time
 import re
+import time
 
-from test_case import TestCase
-from dut import Dut
-from packet import Packet
-from pmd_output import PmdOutput
+from framework.dut import Dut
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 
 class TestPortRepresentor(TestCase):

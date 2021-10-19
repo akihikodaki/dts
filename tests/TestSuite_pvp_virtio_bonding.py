@@ -36,12 +36,13 @@ link bonding devices from within testpmd interactive prompt.
 """
 import re
 import time
-import utils
-from test_case import TestCase
-from virt_common import VM
-from pmd_output import PmdOutput
-from packet import Packet
-from pktgen import PacketGeneratorHelper
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pktgen import PacketGeneratorHelper
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 
 class TestPVPVirtIOBonding(TestCase):

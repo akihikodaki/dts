@@ -1,11 +1,13 @@
-import time
 import re
-import threadpool
-import traceback
 import threading
-from settings import DTS_ERR_TBL, save_global_setting, DTS_PARALLEL_SETTING
-from utils import RED
-from logger import getLogger
+import time
+import traceback
+
+import threadpool
+
+from .logger import getLogger
+from .settings import DTS_ERR_TBL, DTS_PARALLEL_SETTING, save_global_setting
+from .utils import RED
 
 
 class MultipleVM(object):
@@ -74,7 +76,8 @@ class MultipleVM(object):
         self.logger.info("Parallel task start for DUT%d %s" % (dut_id, vm_name))
         threading.current_thread().name = vm_name
 
-        from qemu_kvm import QEMUKvm
+        from .qemu_kvm import QEMUKvm
+
         # VM configured by configuration file 
         if 'virt_config' in args:
             suite_name = args['virt_config']['suite_name']

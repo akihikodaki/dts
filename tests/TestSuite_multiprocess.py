@@ -34,13 +34,14 @@ DPDK Test suite.
 Multi-process Test.
 """
 
-import utils
-import time
 import os
+import time
+
+import framework.utils as utils
 
 executions = []
-from test_case import TestCase
-from pktgen import PacketGeneratorHelper
+from framework.pktgen import PacketGeneratorHelper
+from framework.test_case import TestCase
 
 
 class TestMultiprocess(TestCase):

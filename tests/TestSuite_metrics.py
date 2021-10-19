@@ -34,20 +34,20 @@ DPDK Test suite.
 '''
 
 import os
+import random
 import re
 import time
-import random
 import traceback
 from copy import deepcopy
 from pprint import pformat
 
-from test_case import TestCase
-from pmd_output import PmdOutput
-from exception import VerifyFailure
-from settings import HEADER_SIZE
-from packet import Packet
-from pktgen import TRANSMIT_CONT
-from config import SuiteConf
+from framework.config import SuiteConf
+from framework.exception import VerifyFailure
+from framework.packet import Packet
+from framework.pktgen import TRANSMIT_CONT
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 
 class TestMetrics(TestCase):

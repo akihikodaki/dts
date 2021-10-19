@@ -30,9 +30,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import re
-from test_case import TestCase
-from pmd_output import PmdOutput
-from packet import Packet
+
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 vf0_mac = "00:11:22:33:44:55"
 vf1_mac = "00:11:22:33:44:66"

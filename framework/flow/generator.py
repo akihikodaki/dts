@@ -33,17 +33,26 @@ from __future__ import annotations
 
 import os
 import sys
-from typing import List, Set, Generator, Iterable, FrozenSet, Tuple
+from typing import FrozenSet, Generator, Iterable, List, Set, Tuple
 
 path = os.path.dirname(os.path.dirname(__file__))
 if path not in sys.path:
     sys.path.append(path)
 
-from flow.flow import Flow
-from flow.flow_pattern_items import PATTERN_ITEMS_TYPE_CLASS_MAPPING, PatternFlowItem, \
-    PATTERN_OPERATION_TYPES, ALWAYS_ALLOWED_ITEMS, FlowItemVxlan, FlowItemIpv4, \
-    FlowItemEth, FlowItemGre, L3_FLOW_TYPES, FlowItemUdp
-from flow.flow_rule import FlowItemType
+from .flow import Flow
+from .flow_pattern_items import (
+    ALWAYS_ALLOWED_ITEMS,
+    L3_FLOW_TYPES,
+    PATTERN_ITEMS_TYPE_CLASS_MAPPING,
+    PATTERN_OPERATION_TYPES,
+    FlowItemEth,
+    FlowItemGre,
+    FlowItemIpv4,
+    FlowItemUdp,
+    FlowItemVxlan,
+    PatternFlowItem,
+)
+from .flow_rule import FlowItemType
 
 
 def get_valid_next_protocols(current_protocol, protocol_stack, type_denylist):

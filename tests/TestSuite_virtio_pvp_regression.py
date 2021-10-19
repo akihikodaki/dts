@@ -43,11 +43,12 @@ qemu =
 """
 import re
 import time
-import utils
-from test_case import TestCase
-from settings import HEADER_SIZE
-from virt_common import VM
-from pktgen import PacketGeneratorHelper
+
+import framework.utils as utils
+from framework.pktgen import PacketGeneratorHelper
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 
 class TestVirtioPVPRegression(TestCase):

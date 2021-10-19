@@ -30,13 +30,14 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import utils
-import time
 import re
-import packet
-from test_case import TestCase
-from pmd_output import PmdOutput
-from virt_common import VM
+import time
+
+import framework.packet as packet
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 
 class TestPortControl(TestCase):

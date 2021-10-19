@@ -29,7 +29,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from config import UserConf
+from framework.config import UserConf
 
 conf_file = 'conf/vhost_peer_conf.cfg'
 conf_peer = UserConf(conf_file)

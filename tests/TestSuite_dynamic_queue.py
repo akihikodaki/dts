@@ -29,14 +29,15 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import time
-import re
-import utils
-from test_case import TestCase
-from pmd_output import PmdOutput
-from settings import get_nic_name
-from packet import Packet
 import random
+import re
+import time
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.settings import get_nic_name
+from framework.test_case import TestCase
 
 test_loop = 3
 

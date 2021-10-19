@@ -34,17 +34,17 @@
 DPDK Test suite.
 Stats Checks example.
 """
-from time import sleep
-from typing import List, Iterator, Tuple
 import random
-import struct
-import socket
 import re
-import utils
-from pmd_output import PmdOutput
-import packet
+import socket
+import struct
+from time import sleep
+from typing import Iterator, List, Tuple
 
-from test_case import TestCase
+import framework.packet as packet
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 ETHER_HEADER_LEN = 18
 IP_HEADER_LEN = 20

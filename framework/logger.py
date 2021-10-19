@@ -29,14 +29,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import inspect
 import logging
 import os
-import sys
-import inspect
 import re
+import sys
 
-from settings import LOG_NAME_SEP, FOLDERS, load_global_setting, DTS_PARALLEL_SETTING
-from utils import RED
+from .settings import DTS_PARALLEL_SETTING, FOLDERS, LOG_NAME_SEP, load_global_setting
+from .utils import RED
 
 """
 DTS logger module with several log level. DTS framework and TestSuite log

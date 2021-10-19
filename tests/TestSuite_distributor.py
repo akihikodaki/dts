@@ -32,11 +32,12 @@
 """
 DPDK Test suite.
 """
-import re
-import utils
 import os
-from test_case import TestCase
-from pktgen import PacketGeneratorHelper
+import re
+
+import framework.utils as utils
+from framework.pktgen import PacketGeneratorHelper
+from framework.test_case import TestCase
 
 
 class TestDistributor(TestCase):

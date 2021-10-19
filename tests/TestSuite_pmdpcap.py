@@ -31,12 +31,13 @@
 
 '''
 '''
-from test_case import TestCase
-
 from time import sleep
-from scapy.layers.inet import Ether, IP
+
+from scapy.layers.inet import IP, Ether
 from scapy.utils import wrpcap
-import utils
+
+import framework.utils as utils
+from framework.test_case import TestCase
 
 
 #

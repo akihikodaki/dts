@@ -30,10 +30,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-import time
 import re
-from utils import GREEN, RED
-from packet import Packet
+import time
+
+from framework.packet import Packet
+from framework.utils import GREEN, RED
 
 CVL_TXQ_RXQ_NUMBER = 16
 

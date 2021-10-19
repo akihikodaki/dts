@@ -30,19 +30,22 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import time
 import re
+import smtplib
+import time
+from collections import OrderedDict
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 import jinja2
-import smtplib
 
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from collections import OrderedDict
 #install GitPython
 from git import Repo
-from system_info import SystemInfo
-import utils
+
+import framework.utils as utils
+
+from .system_info import SystemInfo
+
 
 def get_dpdk_git_info(repo_dir="/root/dpdk"):
 
@@ -63,14 +66,14 @@ def get_dpdk_git_info(repo_dir="/root/dpdk"):
     return commit
 
 def generate_html_report(file_tpl, perf_data, git_info, nic_info, system_info):
-   
+
     if not os.path.exists(file_tpl):
         return None
 
     templateLoader = jinja2.FileSystemLoader(searchpath = "/")
     templateEnv = jinja2.Environment(loader=templateLoader)
     template = templateEnv.get_template(file_tpl)
- 
+
     templateVars = { "title" : "Daily Performance Test Report", \
                      "test_results" : perf_data, \
                      "system_infos" : system_info, \
@@ -106,6 +109,6 @@ def send_email(sender, mailto, message, smtp_server):
         print(utils.RED("Failed to send email " + str(e)))
 
 def send_html_report(sender, mailto, subject, html_msg, smtp_server):
-    
+
     message = html_message(sender, mailto, subject, html_msg)
     send_email(sender, mailto, message, smtp_server)

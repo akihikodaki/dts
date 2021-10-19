@@ -37,16 +37,15 @@ Test userland 10Gb PMD.
 
 """
 
-import re
 import pdb
-import time
 import random
+import re
+import time
 
-from virt_common import VM
-from test_case import TestCase
-
-from pmd_output import PmdOutput
-from settings import PROTOCOL_PACKET_SIZE
+from framework.pmd_output import PmdOutput
+from framework.settings import PROTOCOL_PACKET_SIZE
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 FRAME_SIZE_64 = 64
 VM_CORES_MASK = 'all'

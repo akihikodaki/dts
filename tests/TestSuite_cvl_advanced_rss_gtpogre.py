@@ -32,11 +32,12 @@
 
 import re
 import time
-from packet import Packet
-from pmd_output import PmdOutput
-from test_case import TestCase
-from rte_flow_common import RssProcessing
 
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+
+from .rte_flow_common import RssProcessing
 
 mac_ipv4_gtpu_ipv4_basic = {
     'gtpogre-ipv4-nonfrag': 'Ether(dst="68:05:CA:BB:26:E0")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)',

@@ -35,10 +35,11 @@ VM power manager test suite.
 """
 
 import re
-import utils
-from test_case import TestCase
-from settings import HEADER_SIZE
-from qemu_libvirt import LibvirtKvm
+
+import framework.utils as utils
+from framework.qemu_libvirt import LibvirtKvm
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 
 class TestVmPowerManager(TestCase):

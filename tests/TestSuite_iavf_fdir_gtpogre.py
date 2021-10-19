@@ -29,14 +29,16 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from packet import Packet
-from pmd_output import PmdOutput
-from test_case import TestCase
 import re
-from utils import GREEN, RED
 import time
+
 from scapy.all import *
-import rte_flow_common as rfc
+
+import tests.rte_flow_common as rfc
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+from framework.utils import GREEN, RED
 
 LAUNCH_QUEUE = 16
 

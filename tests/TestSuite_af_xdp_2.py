@@ -32,10 +32,11 @@
 import os
 import re
 import time
-from settings import HEADER_SIZE
-from test_case import TestCase
-from packet import Packet
-from pktgen import PacketGeneratorHelper
+
+from framework.packet import Packet
+from framework.pktgen import PacketGeneratorHelper
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 
 class TestAfXdp(TestCase):

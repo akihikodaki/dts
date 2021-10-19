@@ -4,4 +4,6 @@
 
 PWD=`dirname $0`
 
-(cd $PWD/framework; ./main.py $@)
+pushd $PWD
+./main.py $@
+popd

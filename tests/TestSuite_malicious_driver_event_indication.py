@@ -38,12 +38,11 @@ import re
 import time
 import traceback
 from contextlib import contextmanager
-from pmd_output import PmdOutput
 
-
-from exception import VerifyFailure
-from test_case import TestCase
-import utils
+import framework.utils as utils
+from framework.exception import VerifyFailure
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 
 class TestSuiteMaliciousDrvEventIndication(TestCase):

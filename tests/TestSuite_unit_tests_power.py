@@ -35,8 +35,8 @@ DPDK Test suite.
 This TestSuite runs the unit tests included in DPDK for power feature.
 """
 
-from test_case import TestCase
-import utils
+import framework.utils as utils
+from framework.test_case import TestCase
 
 #
 #

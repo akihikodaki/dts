@@ -29,15 +29,17 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import time
 import re
 import sys
-import utils
+import time
+
 from scapy.all import *
-from test_case import TestCase
-from pmd_output import PmdOutput
-from settings import get_nic_name
-import packet
+
+import framework.packet as packet
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.settings import get_nic_name
+from framework.test_case import TestCase
 
 
 class TestDdpGtpQregion(TestCase):

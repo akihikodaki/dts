@@ -29,17 +29,19 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import time
 import re
+import time
 import traceback
 
-# import dts/framework libs
-from test_case import TestCase
-from exception import VerifyFailure
-
 # import bonding lib(common methods for pmd bonding command)
-import bonding
-from bonding import MODE_LACP, FRAME_SIZE_64
+import tests.bonding as bonding
+from framework.exception import VerifyFailure
+
+# import dts/framework libs
+from framework.test_case import TestCase
+
+from .bonding import FRAME_SIZE_64, MODE_LACP
+
 
 ######################
 # bonding 802.3ad mode

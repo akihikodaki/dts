@@ -34,23 +34,23 @@ DPDK Test suite.
 virtual power manager policy (traffic/time) test suite.
 """
 import os
-import re
-import time
-import textwrap
 import random
+import re
+import textwrap
+import time
 import traceback
-from itertools import product
-from datetime import datetime, timedelta
 from copy import deepcopy
+from datetime import datetime, timedelta
+from itertools import product
 from pprint import pformat
 
-from utils import create_mask as dts_create_mask
-from test_case import TestCase
-from pmd_output import PmdOutput
-from qemu_libvirt import LibvirtKvm
-from pktgen import TRANSMIT_CONT
-from exception import VerifyFailure
-from packet import Packet
+from framework.exception import VerifyFailure
+from framework.packet import Packet
+from framework.pktgen import TRANSMIT_CONT
+from framework.pmd_output import PmdOutput
+from framework.qemu_libvirt import LibvirtKvm
+from framework.test_case import TestCase
+from framework.utils import create_mask as dts_create_mask
 
 
 class TestVmPwMgmtPolicy(TestCase):

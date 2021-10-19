@@ -22,16 +22,15 @@
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
 # A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
 
-import sys
+import code
+import imp
 import os
 import signal
-import code
+import sys
 import time
-import imp
-from settings import load_global_setting, DEBUG_SETTING, DTS_PARALLEL_SETTING
-from utils import get_subclasses, copy_instance_attr, GREEN
 
-from test_case import TestCase
+from .settings import DEBUG_SETTING, DTS_PARALLEL_SETTING, load_global_setting
+from .utils import GREEN, copy_instance_attr, get_subclasses
 
 console = None      # global console object
 debug_cmd = ''      # global debug state
@@ -59,7 +58,7 @@ def list_command():
     List all connection sessions and can be reference of connect command.
     """
     index = 0
-    from ssh_connection import CONNECTIONS
+    from .ssh_connection import CONNECTIONS
     for connection in CONNECTIONS:
         for name, session in list(connection.items()):
             console.push('print \'connect %d: %10s\'' % (index, name))
@@ -70,7 +69,7 @@ def connect_command(connect):
     """
     Connect to ssh session and give control to user.
     """
-    from ssh_connection import CONNECTIONS
+    from .ssh_connection import CONNECTIONS
     if type(connect) == int:
         name, session = list(CONNECTIONS[connect].items())[0]
         print(GREEN("Connecting to session[%s]" % name))
@@ -87,6 +86,7 @@ def rerun_command():
     """
     Rerun test case specified in command line
     """
+    from .test_case import TestCase
     global AliveSuite, AliveModule, AliveCase
     new_module = imp.reload(AliveModule)
 

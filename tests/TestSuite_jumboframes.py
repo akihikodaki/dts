@@ -34,12 +34,13 @@ DPDK Test suite.
 Test the support of Jumbo Frames by Poll Mode Drivers
 """
 
-import utils
 import re
 from time import sleep
-from test_case import TestCase
-from pmd_output import PmdOutput
-from settings import PROTOCOL_PACKET_SIZE
+
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.settings import PROTOCOL_PACKET_SIZE
+from framework.test_case import TestCase
 
 ETHER_HEADER_LEN = 18
 IP_HEADER_LEN = 20

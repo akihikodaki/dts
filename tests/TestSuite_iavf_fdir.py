@@ -32,17 +32,16 @@
 
 import re
 import time
+from multiprocessing import Manager, Process
 
-from packet import Packet
-from pmd_output import PmdOutput
-from test_case import TestCase, skip_unsupported_pkg
-import rte_flow_common as rfc
-from rte_flow_common import CVL_TXQ_RXQ_NUMBER
-from multiprocessing import Process
-from multiprocessing import Manager
+import framework.utils as utils
+import tests.rte_flow_common as rfc
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase, skip_unsupported_pkg
+from framework.utils import GREEN, RED
 
-from utils import GREEN, RED
-import utils
+from .rte_flow_common import CVL_TXQ_RXQ_NUMBER
 
 MAC_IPV4_PAY = {
     "match": [

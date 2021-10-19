@@ -35,15 +35,15 @@ Virtio user for container networking
 """
 
 import json
-import rst
 import os
-import utils
 import time
-from test_case import TestCase
-from settings import HEADER_SIZE
-from pktgen import PacketGeneratorHelper
-from settings import UPDATE_EXPECTED, load_global_setting
 from copy import deepcopy
+
+import framework.rst as rst
+import framework.utils as utils
+from framework.pktgen import PacketGeneratorHelper
+from framework.settings import HEADER_SIZE, UPDATE_EXPECTED, load_global_setting
+from framework.test_case import TestCase
 
 
 class TestVirtioUserForContainer(TestCase):

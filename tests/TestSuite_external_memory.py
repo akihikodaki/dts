@@ -35,10 +35,11 @@ DPDK Test suite.
 Test external memory.
 """
 
-import time
 import re
-import utils
-from test_case import TestCase
+import time
+
+import framework.utils as utils
+from framework.test_case import TestCase
 
 
 class TestExternalMemory(TestCase):

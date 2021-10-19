@@ -29,13 +29,15 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import re
 import random
+import re
 import string
-from test_case import TestCase, skip_unsupported_pkg
-from pmd_output import PmdOutput
-from packet import Packet
-from rte_flow_common import RssProcessing
+
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase, skip_unsupported_pkg
+
+from .rte_flow_common import RssProcessing
 
 mac_pppoe_pay_packets = {
     'mismatch': [

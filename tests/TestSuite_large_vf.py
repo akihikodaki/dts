@@ -32,11 +32,10 @@
 import re
 import time
 
-from packet import Packet
-from pmd_output import PmdOutput
-from test_case import TestCase
-
-from utils import GREEN, RED
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+from framework.utils import GREEN, RED
 
 multi_fdir_queue_group = {
     "match": [

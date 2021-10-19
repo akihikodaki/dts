@@ -38,12 +38,13 @@ Test short live dpdk app Feature
 
 """
 
-import time
-import re
 import os
-from test_case import TestCase
-from pmd_output import PmdOutput
-from settings import FOLDERS
+import re
+import time
+
+from framework.pmd_output import PmdOutput
+from framework.settings import FOLDERS
+from framework.test_case import TestCase
 
 #
 #

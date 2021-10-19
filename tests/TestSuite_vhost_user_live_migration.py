@@ -31,11 +31,12 @@
 
 import re
 import time
-import utils
-from virt_common import VM
-from test_case import TestCase
-from config import UserConf
-from exception import VirtDutInitException
+
+import framework.utils as utils
+from framework.config import UserConf
+from framework.exception import VirtDutInitException
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 
 class TestVhostUserLiveMigration(TestCase):

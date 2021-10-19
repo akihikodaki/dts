@@ -35,10 +35,12 @@ Layer-3 forwarding ACL test script.
 """
 
 import re
-import utils
 import time
-from test_case import TestCase
-import packet
+
+import framework.packet as packet
+import framework.utils as utils
+from framework.test_case import TestCase
+
 
 class TestL3fwdacl(TestCase):
 

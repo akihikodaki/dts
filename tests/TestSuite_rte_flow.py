@@ -34,17 +34,14 @@
 DPDK Test suite.
 MTU Checks example.
 """
-import time
 import ipaddress
+import time
 from typing import Callable
 
-import utils
-from pmd_output import PmdOutput
-from test_case import TestCase
-
-from test_case import TestCase
-
-from flow import generator
+import framework.utils as utils
+from framework.flow import generator
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 
 class RteFlow(TestCase):

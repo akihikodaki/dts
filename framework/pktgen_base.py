@@ -29,17 +29,18 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import time
 import logging
+import time
 from abc import abstractmethod
 from copy import deepcopy
-from logger import getLogger
-from pprint import pformat
 from enum import Enum, unique
+from pprint import pformat
 
-from config import PktgenConf
+from .config import PktgenConf
+from .logger import getLogger
+
 # packet generator name
-from settings import PKTGEN_DPDK, PKTGEN_TREX, PKTGEN_IXIA, PKTGEN_IXIA_NETWORK, PKTGEN
+from .settings import PKTGEN, PKTGEN_DPDK, PKTGEN_IXIA, PKTGEN_IXIA_NETWORK, PKTGEN_TREX
 
 # macro definition
 TRANSMIT_CONT = 'continuous'

@@ -33,22 +33,33 @@
 A base class for creating DTF test cases.
 """
 import re
-import debugger
-import traceback
 import signal
 import time
-
-from exception import VerifyFailure, VerifySkip, TimeoutException
-from settings import DRIVERS, NICS, get_nic_name, load_global_setting
-from settings import PERF_SETTING, FUNC_SETTING, DEBUG_SETTING
-from settings import DEBUG_CASE_SETTING, HOST_DRIVER_SETTING
-from settings import UPDATE_EXPECTED, SUITE_SECTION_NAME
-from rst import RstReport
-from test_result import ResultTable, Result
-from logger import getLogger
-from config import SuiteConf
-from utils import BLUE, RED
+import traceback
 from functools import wraps
+
+import framework.debugger as debugger
+
+from .config import SuiteConf
+from .exception import TimeoutException, VerifyFailure, VerifySkip
+from .logger import getLogger
+from .rst import RstReport
+from .settings import (
+    DEBUG_CASE_SETTING,
+    DEBUG_SETTING,
+    DRIVERS,
+    FUNC_SETTING,
+    HOST_DRIVER_SETTING,
+    NICS,
+    PERF_SETTING,
+    SUITE_SECTION_NAME,
+    UPDATE_EXPECTED,
+    get_nic_name,
+    load_global_setting,
+)
+from .test_result import Result, ResultTable
+from .utils import BLUE, RED
+
 
 class TestCase(object):
 
@@ -377,7 +388,9 @@ class TestCase(object):
         # prepare debugger rerun case environment
         if self._enable_debug or self._debug_case:
             debugger.AliveSuite = self
-            debugger.AliveModule = __import__('TestSuite_' + self.suite_name)
+            _suite_full_name = 'TestSuite_' + self.suite_name
+            debugger.AliveModule = __import__('tests.' + _suite_full_name,
+                                              fromlist=[_suite_full_name])
 
         if load_global_setting(FUNC_SETTING) == 'yes':
             for case_obj in self._get_functional_cases():

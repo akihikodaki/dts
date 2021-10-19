@@ -35,13 +35,15 @@ DPDK Test suite.
 Test vf_interrupt_pmd.
 """
 
-import utils
-import time
-import re
 import pdb
-from virt_common import VM
-from test_case import TestCase
-from packet import Packet
+import re
+import time
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.test_case import TestCase
+from framework.virt_common import VM
+
 
 class TestVfInterruptPmd(TestCase):
     supported_vf_driver = ['pci-stub', 'vfio-pci']

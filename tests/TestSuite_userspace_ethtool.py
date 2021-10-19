@@ -35,17 +35,17 @@ Test support of userspace ethtool feature
 """
 
 import os
-import utils
-import time
-import re
-from test_case import TestCase
-from packet import Packet
 import random
-from settings import HEADER_SIZE
-from settings import SCAPY2IXIA
-from pktgen import PacketGeneratorHelper
-from utils import RED
-from exception import VerifyFailure
+import re
+import time
+
+import framework.utils as utils
+from framework.exception import VerifyFailure
+from framework.packet import Packet
+from framework.pktgen import PacketGeneratorHelper
+from framework.settings import HEADER_SIZE, SCAPY2IXIA
+from framework.test_case import TestCase
+from framework.utils import RED
 
 
 class TestUserspaceEthtool(TestCase):

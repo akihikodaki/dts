@@ -34,13 +34,14 @@ DPDK Test suite.
 vhost virtio pmd interrupt need test with l3fwd-power sample
 """
 
-import utils
-import time
 import re
-from virt_common import VM
-from test_case import TestCase
-from packet import Packet
-from pktgen import PacketGeneratorHelper
+import time
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pktgen import PacketGeneratorHelper
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 
 class TestVhostVirtioPmdInterrupt(TestCase):

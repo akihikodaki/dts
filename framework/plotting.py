@@ -31,13 +31,15 @@
 
 import os
 import shutil
-from plotgraph import Plot2DGraph
-from docutils.parsers.rst.directives import path
-from rst import path2Result
-import plotgraph
-import utils
-from exception import VerifyFailure
 
+from docutils.parsers.rst.directives import path
+
+import framework.plotgraph as plotgraph
+import framework.utils as utils
+
+from .exception import VerifyFailure
+from .plotgraph import Plot2DGraph
+from .rst import path2Result
 
 """
 Generate Plots for performance test results

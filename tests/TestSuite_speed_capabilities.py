@@ -33,9 +33,9 @@
 """
 DPDK Test suite.
 """
-import utils
-from pmd_output import PmdOutput
-from test_case import TestCase
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 
 class TestSpeedCapabilities(TestCase):

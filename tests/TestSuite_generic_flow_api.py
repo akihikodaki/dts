@@ -36,26 +36,24 @@ Test the support of generic flow API by Poll Mode Drivers.
 
 """
 
-import utils
-import time
-import re
-
-from test_case import TestCase
-from settings import HEADER_SIZE
-from pmd_output import PmdOutput
-from settings import DRIVERS
-from crb import Crb
-
-from virt_dut import VirtDut
-from project_dpdk import DPDKdut
-from dut import Dut
-import packet
-
 import os
 import random
-from exception import VerifyFailure
+import re
+import time
+
 import scapy.layers.inet
 from scapy.utils import rdpcap
+
+import framework.packet as packet
+import framework.utils as utils
+from framework.crb import Crb
+from framework.dut import Dut
+from framework.exception import VerifyFailure
+from framework.pmd_output import PmdOutput
+from framework.project_dpdk import DPDKdut
+from framework.settings import DRIVERS, HEADER_SIZE
+from framework.test_case import TestCase
+from framework.virt_dut import VirtDut
 
 MAX_VLAN = 4095
 MAX_QUEUE = 15

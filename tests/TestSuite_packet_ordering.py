@@ -36,9 +36,10 @@ Packet ordering example app test cases.
 
 import os
 import time
-import utils
-from test_case import TestCase
-from packet import Packet
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.test_case import TestCase
 
 
 class TestPacketOrdering(TestCase):

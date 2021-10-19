@@ -51,12 +51,16 @@ DPDK Test suite.
 Test support of ABI .
 
 """
-import utils
 import time
 
-from test_case import TestCase
-from pmd_output import PmdOutput
-from settings import load_global_setting, HOST_SHARED_LIB_SETTING, HOST_SHARED_LIB_PATH
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.settings import (
+    HOST_SHARED_LIB_PATH,
+    HOST_SHARED_LIB_SETTING,
+    load_global_setting,
+)
+from framework.test_case import TestCase
 
 
 class TestABIStable(TestCase):

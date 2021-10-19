@@ -36,21 +36,18 @@ virtual power manager policy branch ratio test suite.
 import os
 import re
 import time
+import traceback
 from contextlib import contextmanager
 from copy import deepcopy
 from pprint import pformat
-import traceback
 
-
-from settings import load_global_setting
-from settings import HOST_BUILD_TYPE_SETTING
-from utils import create_mask as dts_create_mask
-from qemu_libvirt import LibvirtKvm
-from pktgen import TRANSMIT_CONT
-from exception import VerifyFailure
-from settings import HEADER_SIZE
-from packet import Packet
-from test_case import TestCase
+from framework.exception import VerifyFailure
+from framework.packet import Packet
+from framework.pktgen import TRANSMIT_CONT
+from framework.qemu_libvirt import LibvirtKvm
+from framework.settings import HEADER_SIZE, HOST_BUILD_TYPE_SETTING, load_global_setting
+from framework.test_case import TestCase
+from framework.utils import create_mask as dts_create_mask
 
 
 class TestPowerBranchRatio(TestCase):

@@ -42,17 +42,18 @@ Here is an example:
  $ ./testpmd -c f -n 4 \
    --vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas=[txq0@80:04.0],dmathr=1024'
 """
-import rst, json
+import json
 import os
 import re
 import time
-from test_case import TestCase
-from settings import HEADER_SIZE
-from packet import Packet
-from pktgen import PacketGeneratorHelper
-from pmd_output import PmdOutput
-from settings import UPDATE_EXPECTED, load_global_setting
 from copy import deepcopy
+
+import framework.rst as rst
+from framework.packet import Packet
+from framework.pktgen import PacketGeneratorHelper
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE, UPDATE_EXPECTED, load_global_setting
+from framework.test_case import TestCase
 
 
 class TestVirTioVhostCbdma(TestCase):

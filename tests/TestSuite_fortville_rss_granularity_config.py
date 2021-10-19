@@ -47,12 +47,13 @@ keys for GRE should be supported. the test plan is to test the API to switch bet
 
 Support 4*10G, 1*40G and 2*40G NICs.
 """
-import time
 import random
 import re
-import utils
-import dut
-from pmd_output import PmdOutput
+import time
+
+import framework.dut as dut
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
 
 testQueues = [16]
 reta_entries = []
@@ -60,7 +61,8 @@ reta_lines = []
 
 # Use scapy to send packets with different source and dest ip.
 # and collect the hash result of five tuple and the queue id.
-from test_case import TestCase
+from framework.test_case import TestCase
+
 #
 #
 # Test class.

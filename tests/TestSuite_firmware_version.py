@@ -33,9 +33,10 @@
 """
 DPDK Test suite.
 """
-from pmd_output import PmdOutput
-from test_case import TestCase
 import re
+
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 
 class TestFirmwareVersion(TestCase):

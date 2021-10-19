@@ -37,10 +37,11 @@ Test the support of Dual VLAN Offload Features by Poll Mode Drivers.
 
 """
 
-import utils
 import random
 import re
 import time
+
+import framework.utils as utils
 
 txvlan = 3
 outvlan = 1
@@ -71,8 +72,8 @@ vlanCase = ["OUTER+INNER", "INNER", ("OUTER+INNER", "NONE"), ("INNER", "NONE"),
             "TX+OUTER+INNER", "TX+OUTER", ("NONE", "TX+OUTER+INNER"), ("NONE", "TX+OUTER")]
 
 
-from test_case import TestCase
-from pmd_output import PmdOutput
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 
 class TestDualVlan(TestCase):

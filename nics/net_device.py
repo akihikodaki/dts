@@ -32,14 +32,13 @@
 
 import os
 import re
-from functools import wraps
 import time
+from functools import wraps
 
-
-import settings
-from crb import Crb
-from settings import TIMEOUT, HEADER_SIZE
-from utils import RED
+import framework.settings as settings
+from framework.crb import Crb
+from framework.settings import HEADER_SIZE, TIMEOUT
+from framework.utils import RED
 
 NICS_LIST = []      # global list for save nic objects
 

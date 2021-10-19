@@ -29,17 +29,18 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import time
+import random
 import sys
-import utils 
+import time
+
 from scapy.utils import rdpcap
 
-from qemu_kvm import QEMUKvm
-from test_case import TestCase
-from pmd_output import PmdOutput
-from packet import Packet
-from settings import get_nic_name
-import random
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.qemu_kvm import QEMUKvm
+from framework.settings import get_nic_name
+from framework.test_case import TestCase
 
 VM_CORES_MASK = 'all'
 MAX_VLAN = 4095

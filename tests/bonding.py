@@ -30,20 +30,20 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import time
 import re
-import struct
 import socket
+import struct
+import time
 from socket import htonl
 
-from packet import Packet, TMP_PATH
 from scapy.sendrecv import sendp
 from scapy.utils import wrpcap
 
-import utils
-from exception import TimeoutException, VerifyFailure
-from pmd_output import PmdOutput
-from settings import HEADER_SIZE
+import framework.utils as utils
+from framework.exception import TimeoutException, VerifyFailure
+from framework.packet import TMP_PATH, Packet
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE
 
 # define bonding mode
 MODE_ROUND_ROBIN = 0

@@ -33,14 +33,14 @@ DPDK Test suite
 Test vf to vf nic bridge
 """
 
-import re
-import utils
-import time
 import pdb
+import re
+import time
 
-from test_case import TestCase
-from virt_common import VM
-from pmd_output import PmdOutput
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 VF_NUMS_ON_ONE_PF = 2
 VF_TEMP_MAC = "52:54:12:45:67:1%d"

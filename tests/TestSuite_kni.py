@@ -36,14 +36,15 @@ DPDK Test suite.
 Test Kernel NIC Interface.
 """
 
-import utils
-import re
 import os
+import re
 import time
 from random import randint
-from pktgen import PacketGeneratorHelper
-from test_case import TestCase
-import packet
+
+import framework.packet as packet
+import framework.utils as utils
+from framework.pktgen import PacketGeneratorHelper
+from framework.test_case import TestCase
 
 dut_ports = []
 port_virtual_interaces = []

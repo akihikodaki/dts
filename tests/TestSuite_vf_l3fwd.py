@@ -29,14 +29,15 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import time
 import os
 import string
-import utils
-from test_case import TestCase
-from pmd_output import PmdOutput
-from settings import HEADER_SIZE
-from pktgen import PacketGeneratorHelper
+import time
+
+import framework.utils as utils
+from framework.pktgen import PacketGeneratorHelper
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 
 class TestVfL3fwd(TestCase):

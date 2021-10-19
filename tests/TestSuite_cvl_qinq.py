@@ -30,14 +30,16 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+import random
 import re
 import time
-import random
-from packet import Packet
-from pmd_output import PmdOutput
-from test_case import TestCase, check_supported_nic, skip_unsupported_pkg
-from utils import GREEN, RED
-from rte_flow_common import RssProcessing
+
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase, check_supported_nic, skip_unsupported_pkg
+from framework.utils import GREEN, RED
+
+from .rte_flow_common import RssProcessing
 
 mac_qinq_ipv4_pay_src_ip = {
     'name': 'mac_qinq_ipv4_pay_src_ip',

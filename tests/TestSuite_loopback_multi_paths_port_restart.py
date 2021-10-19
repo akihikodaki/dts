@@ -37,11 +37,12 @@ Benchmark Vhost loopback for 7 RX/TX PATHs.
 Includes Mergeable, Normal, Vector_RX,Inorder_mergeable,
 Inorder_no_mergeable, VIRTIO1.1_mergeable, VIRTIO1.1_normal Path.
 """
-import utils
-import time
 import re
-from pmd_output import PmdOutput
-from test_case import TestCase
+import time
+
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 
 class TestLoopbackPortRestart(TestCase):

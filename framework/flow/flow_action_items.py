@@ -30,10 +30,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from typing import FrozenSet, Dict, Tuple
+from typing import Dict, FrozenSet, Tuple
 
-from flow.enums import FlowActionType
-from flow.flow_pattern_items import FlowItem
+from .enums import FlowActionType
+from .flow_items import FlowItem
 
 ALWAYS_ALLOWED_ACTIONS = {FlowActionType.VOID}
 

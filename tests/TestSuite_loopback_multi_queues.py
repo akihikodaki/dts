@@ -36,11 +36,12 @@ Includes Mergeable, Normal, Vector_RX, Inorder mergeable,
 Inorder no-mergeable, Virtio 1.1 mergeable, Virtio 1.1 no-mergeable Path.
 """
 
-import utils
-import time
 import re
-from pmd_output import PmdOutput
-from test_case import TestCase
+import time
+
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 
 class TestLoopbackMultiQueues(TestCase):

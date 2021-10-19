@@ -34,10 +34,11 @@ DPDK Test suite.
 Vhost enqueue interrupt need test with l3fwd-power sample
 """
 
-import utils
-import time
 import re
-from test_case import TestCase
+import time
+
+import framework.utils as utils
+from framework.test_case import TestCase
 
 
 class TestVhostUserInterrupt(TestCase):

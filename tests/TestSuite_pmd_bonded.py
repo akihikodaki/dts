@@ -37,17 +37,17 @@ Test userland 10Gb PMD.
 
 """
 
-import time
-import re
 import random
-from socket import htons, htonl
+import re
+import time
 from functools import wraps
+from socket import htonl, htons
 
-import utils
-from test_case import TestCase
-from exception import TimeoutException
-from settings import TIMEOUT
-from pmd_output import PmdOutput
+import framework.utils as utils
+from framework.exception import TimeoutException
+from framework.pmd_output import PmdOutput
+from framework.settings import TIMEOUT
+from framework.test_case import TestCase
 
 SOCKET_0 = 0
 SOCKET_1 = 1

@@ -35,18 +35,18 @@ DPDK Test suite.
 Test VF kernel
 """
 
-import utils
-import time
 import datetime
+import random
 import re
-import random
 import threading
-from test_case import TestCase
-from qemu_kvm import QEMUKvm
-from pmd_output import PmdOutput
-from packet import Packet
-import random
-from utils import GREEN, RED
+import time
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.qemu_kvm import QEMUKvm
+from framework.test_case import TestCase
+from framework.utils import GREEN, RED
 
 
 class TestVfKernel(TestCase):

@@ -29,13 +29,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import time
-import re
 import os
-from settings import TIMEOUT
-from ssh_connection import SSHConnection
-from logger import getLogger
-from config import PortConf, PORTCONF, PktgenConf
+import re
+import time
+
+from .config import PORTCONF, PktgenConf, PortConf
+from .logger import getLogger
+from .settings import TIMEOUT
+from .ssh_connection import SSHConnection
 
 """
 CRB (customer reference board) basic functions and handlers
@@ -578,7 +579,7 @@ class Crb(object):
         """
         Get OS type from execution configuration file.
         """
-        from dut import Dut
+        from .dut import Dut
         if isinstance(self, Dut) and 'OS' in self.crb:
             return str(self.crb['OS']).lower()
 
@@ -588,7 +589,7 @@ class Crb(object):
         """
         Check real OS type whether match configured type.
         """
-        from dut import Dut
+        from .dut import Dut
         expected = 'Linux.*#'
         if isinstance(self, Dut) and self.get_os_type() == 'freebsd':
             expected = 'FreeBSD.*#'

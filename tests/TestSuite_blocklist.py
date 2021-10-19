@@ -33,10 +33,11 @@
 DPDK Test suite.
 Test device blocklisting.
 """
-import utils
-from test_case import TestCase
-from pmd_output import PmdOutput
-from settings import DRIVERS
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.settings import DRIVERS
+from framework.test_case import TestCase
+
 
 class TestBlockList(TestCase):
     def set_up_all(self):

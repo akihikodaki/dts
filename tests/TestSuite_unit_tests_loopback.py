@@ -35,10 +35,11 @@ DPDK Test suite.
 This TestSuite runs the unit tests included in DPDK for X710/XL710/XXV710 loopback mode.
 """
 
-import utils
 import re
 import time
-from test_case import TestCase
+
+import framework.utils as utils
+from framework.test_case import TestCase
 
 #
 #

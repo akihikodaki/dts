@@ -29,41 +29,36 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import utils
-import re
-import time
-import socket
-
-from settings import HEADER_SIZE
-from test_case import TestCase
-from pmd_output import PmdOutput
-from settings import DRIVERS
-from crb import Crb
-
-from virt_dut import VirtDut
-from project_dpdk import DPDKdut
-from dut import Dut
-from packet import Packet
-
+import itertools
 import os
 import random
-from exception import VerifyFailure
-import scapy.layers.inet
-from scapy.utils import rdpcap
-
+import re
+import socket
+import time
 from time import sleep
-# from scapy.all import conf
-from scapy.utils import wrpcap, rdpcap, hexstr
-from scapy.layers.inet import Ether, IP, TCP, UDP, ICMP
-from scapy.layers.l2 import Dot1Q, ARP, GRE
-from scapy.layers.sctp import SCTP, SCTPChunkData
-from scapy.route import *
-from scapy.packet import bind_layers, Raw
-from scapy.arch import get_if_hwaddr
-from scapy.sendrecv import sniff
-from scapy.sendrecv import sendp
 
-import itertools
+import scapy.layers.inet
+from scapy.arch import get_if_hwaddr
+from scapy.layers.inet import ICMP, IP, TCP, UDP, Ether
+from scapy.layers.l2 import ARP, GRE, Dot1Q
+from scapy.layers.sctp import SCTP, SCTPChunkData
+from scapy.packet import Raw, bind_layers
+from scapy.route import *
+from scapy.sendrecv import sendp, sniff
+
+# from scapy.all import conf
+from scapy.utils import hexstr, rdpcap, wrpcap
+
+import framework.utils as utils
+from framework.crb import Crb
+from framework.dut import Dut
+from framework.exception import VerifyFailure
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.project_dpdk import DPDKdut
+from framework.settings import DRIVERS, HEADER_SIZE
+from framework.test_case import TestCase
+from framework.virt_dut import VirtDut
 
 TIMESTAMP = re.compile(r'\d{2}\:\d{2}\:\d{2}\.\d{6}')
 PAYLOAD = re.compile(r'\t0x([0-9a-fA-F]+):  ([0-9a-fA-F ]+)')

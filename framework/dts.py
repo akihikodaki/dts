@@ -29,39 +29,44 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import re           # regular expressions module
+import atexit  # register callback when exit
 import configparser  # config parse module
-import os           # operation system module
-import texttable    # text format
-import traceback    # exception traceback
-import inspect      # load attribute
-import atexit       # register callback when exit
-import json         # json format
-import signal       # signal module for debug mode
-import time         # time module for unique output folder
-import copy         # copy module for duplicate variable
-
-import rst          # rst file support
-import sys          # system module
-import settings     # dts settings
-from tester import Tester
-from dut import Dut
-from serializer import Serializer
-from test_case import TestCase
-from test_result import Result
-from stats_reporter import StatsReporter
-from excel_reporter import ExcelReporter
-from json_reporter import JSONReporter
-from exception import TimeoutException, ConfigParseException, VerifyFailure
-from logger import getLogger
-import logger
-import debugger
-from config import CrbsConf
-from checkCase import CheckCase
-from utils import (get_subclasses, copy_instance_attr, create_parallel_locks,
-                   check_dts_python_version)
-import sys
+import copy  # copy module for duplicate variable
 import imp
+import inspect  # load attribute
+import json  # json format
+import os  # operation system module
+import re  # regular expressions module
+import signal  # signal module for debug mode
+import sys  # system module
+import time  # time module for unique output folder
+import traceback  # exception traceback
+
+import framework.debugger as debugger
+import framework.logger as logger
+import framework.rst as rst  # rst file support
+import framework.settings as settings  # dts settings
+import framework.texttable as texttable  # text format
+
+from .checkCase import CheckCase
+from .config import CrbsConf
+from .dut import Dut
+from .excel_reporter import ExcelReporter
+from .exception import ConfigParseException, TimeoutException, VerifyFailure
+from .json_reporter import JSONReporter
+from .logger import getLogger
+from .serializer import Serializer
+from .stats_reporter import StatsReporter
+from .test_case import TestCase
+from .test_result import Result
+from .tester import Tester
+from .utils import (
+    check_dts_python_version,
+    copy_instance_attr,
+    create_parallel_locks,
+    get_subclasses,
+)
+
 imp.reload(sys)
 
 requested_tests = None
@@ -247,7 +252,9 @@ def get_project_obj(project_name, super_class, crbInst, serializer, dut_id):
     project_obj = None
     PROJECT_MODULE_PREFIX = 'project_'
     try:
-        project_module = __import__(PROJECT_MODULE_PREFIX + project_name)
+        _project_name = PROJECT_MODULE_PREFIX + project_name
+        project_module = __import__('framework.' + _project_name,
+                                    fromlist=[_project_name])
 
         for project_subclassname, project_subclass in get_subclasses(project_module, super_class):
             project_obj = project_subclass(crbInst, serializer, dut_id)
@@ -445,7 +452,9 @@ def dts_run_suite(duts, tester, test_suites, target, subtitle):
                 append_requested_case_list = case_list.split('\\')
                 suite_name = suite_name[:suite_name.find(':')]
             result.test_suite = suite_name
-            suite_module = __import__('TestSuite_' + suite_name)
+            _suite_full_name = 'TestSuite_' + suite_name
+            suite_module = __import__('tests.' + _suite_full_name,
+                                      fromlist=[_suite_full_name])
             for test_classname, test_class in get_subclasses(suite_module, TestCase):
 
                 suite_obj = test_class(duts, tester, target, suite_name)
@@ -523,9 +532,6 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
 
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
-
-    # add python module search path
-    sys.path.append(suite_dir)
 
     # enable debug mode
     if debug is True:

@@ -33,10 +33,12 @@
 DPDK Test suite.
 Test Scattered Packets.
 """
-from test_case import TestCase
-from pmd_output import PmdOutput
-from packet import Packet, strip_pktload
 import time
+
+from framework.packet import Packet, strip_pktload
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+
 #
 #
 # Test class.

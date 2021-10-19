@@ -35,11 +35,12 @@ Test QOS API in DPDK.
 The DUT must have two 10G Ethernet ports connected to two ports of IXIA.
 """
 import os
-from test_case import TestCase
-from  settings import HEADER_SIZE
-from pktgen import TRANSMIT_CONT
-from pmd_output import PmdOutput
-from packet import Packet
+
+from framework.packet import Packet
+from framework.pktgen import TRANSMIT_CONT
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 
 class TestQosMeter(TestCase):

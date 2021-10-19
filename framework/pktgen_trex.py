@@ -29,14 +29,20 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import logging
 import os
 import sys
 import time
-import logging
 from pprint import pformat
 
-from pktgen_base import (PacketGenerator, PKTGEN_TREX, PKTGEN,
-                         TRANSMIT_CONT, TRANSMIT_M_BURST, TRANSMIT_S_BURST)
+from .pktgen_base import (
+    PKTGEN,
+    PKTGEN_TREX,
+    TRANSMIT_CONT,
+    TRANSMIT_M_BURST,
+    TRANSMIT_S_BURST,
+    PacketGenerator,
+)
 
 
 class TrexConfigVm(object):
@@ -44,7 +50,7 @@ class TrexConfigVm(object):
     config one stream vm format of trex
     '''
     def __init__(self):
-        from trex_stl_lib.api import (ipv4_str_to_num, mac2str, is_valid_ipv4_ret)
+        from trex_stl_lib.api import ipv4_str_to_num, is_valid_ipv4_ret, mac2str
         self.ipv4_str_to_num = ipv4_str_to_num
         self.is_valid_ipv4_ret = is_valid_ipv4_ret
         self.mac2str = mac2str
@@ -214,10 +220,16 @@ class TrexConfigStream(object):
 
     def __init__(self):
         from trex_stl_lib.api import (
-                    STLTXCont, STLTXSingleBurst, STLTXMultiBurst,
-                    STLPktBuilder, STLProfile, STLVM,
-                    STLStream, STLStreamDstMAC_PKT,
-                    STLFlowLatencyStats)
+            STLVM,
+            STLFlowLatencyStats,
+            STLPktBuilder,
+            STLProfile,
+            STLStream,
+            STLStreamDstMAC_PKT,
+            STLTXCont,
+            STLTXMultiBurst,
+            STLTXSingleBurst,
+        )
 
         # set trex class
         self.STLStream = STLStream
@@ -447,6 +459,7 @@ class TrexPacketGenerator(PacketGenerator):
         # import t-rex libs
         sys.path.insert(0, trex_lib_dir)
         from trex_stl_lib.api import STLClient
+
         # set trex class
         self.STLClient = STLClient
         # get configuration from pktgen config file

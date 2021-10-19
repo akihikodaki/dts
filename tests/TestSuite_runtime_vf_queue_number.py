@@ -34,12 +34,13 @@ DPDK Test suite.
 
 '''
 
-import time
 import re
-from qemu_kvm import QEMUKvm
-from test_case import TestCase
-from pmd_output import PmdOutput
-from packet import Packet
+import time
+
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.qemu_kvm import QEMUKvm
+from framework.test_case import TestCase
 
 RSS_KEY = '6EA6A420D5138E712433B813AE45B3C4BECB2B405F31AD6C331835372D15E2D5E49566EE0ED1962AFA1B7932F3549520FD71C75E'
 PACKET_COUNT = 100

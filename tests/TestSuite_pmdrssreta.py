@@ -33,19 +33,22 @@
 DPDK Test suite.
 Test RSS reta (redirection table) update function.
 """
-import time
 import random
 import re
-import utils
 import textwrap
+import time
+
+import framework.utils as utils
+
 testQueues = [2, 9, 16]
 reta_entries = []
 reta_lines = []
 
+from framework.pmd_output import PmdOutput
+
 # Use scapy to send packets with different source and dest ip.
 # and collect the hash result of five tuple and the queue id.
-from test_case import TestCase
-from pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 
 class TestPmdrssreta(TestCase):

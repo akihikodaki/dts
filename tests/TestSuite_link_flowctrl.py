@@ -34,15 +34,15 @@ DPDK Test suite.
 Test for Ethernet Link Flow Control Features by Poll Mode Drivers
 """
 
-import utils
-import re
 import os
-
+import re
 from time import sleep
-from test_case import TestCase
-from pmd_output import PmdOutput
-from settings import HEADER_SIZE
-from pktgen import PacketGeneratorHelper
+
+import framework.utils as utils
+from framework.pktgen import PacketGeneratorHelper
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 
 class TestLinkFlowctrl(TestCase):

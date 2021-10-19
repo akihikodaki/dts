@@ -37,11 +37,11 @@ runtime_vf_queue_number_kernel test script.
 import random
 import time
 
-import utils
-from pmd_output import PmdOutput
-from test_case import TestCase
-from virt_common import VM
-from packet import Packet
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 VM_CORES_MASK = 'all'
 

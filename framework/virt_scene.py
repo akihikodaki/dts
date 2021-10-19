@@ -29,15 +29,15 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import time
-import utils
 
-from settings import CONFIG_ROOT_PATH, get_netdev
-from config import VirtConf
-from config import VIRTCONF
-from exception import *
-from qemu_kvm import QEMUKvm
-from pmd_output import PmdOutput
-from utils import create_mask
+import framework.utils as utils
+
+from .config import VIRTCONF, VirtConf
+from .exception import *
+from .pmd_output import PmdOutput
+from .qemu_kvm import QEMUKvm
+from .settings import CONFIG_ROOT_PATH, get_netdev
+from .utils import create_mask
 
 # scenario module for handling scenario
 # 1. load configurations

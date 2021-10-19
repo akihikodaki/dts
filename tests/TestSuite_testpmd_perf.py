@@ -34,8 +34,9 @@ DPDK Test suite.
 testpmd perf test script.
 """
 
-from test_case import TestCase
-from perf_test_base import PerfTestBase, BIN_TYPE, MATCH_MODE, IP_TYPE
+from framework.test_case import TestCase
+
+from .perf_test_base import BIN_TYPE, IP_TYPE, MATCH_MODE, PerfTestBase
 
 
 class TestPmdPerf(TestCase, PerfTestBase):

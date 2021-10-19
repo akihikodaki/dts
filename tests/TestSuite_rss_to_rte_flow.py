@@ -36,12 +36,12 @@ Test moving RSS to rte_flow.
 
 """
 
-import time
 import re
-import packet
+import time
 
-from test_case import TestCase
-from pmd_output import PmdOutput
+import framework.packet as packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 
 class TestRSS_to_Rteflow(TestCase):

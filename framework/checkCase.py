@@ -1,9 +1,10 @@
-import xlrd
 import collections
 import json
 
-from settings import get_nic_name, load_global_setting, HOST_DRIVER_SETTING
-from utils import RED
+import xlrd
+
+from .settings import HOST_DRIVER_SETTING, get_nic_name, load_global_setting
+from .utils import RED
 
 filter_json_file = './conf/test_case_checklist.json'
 support_json_file = './conf/test_case_supportlist.json'

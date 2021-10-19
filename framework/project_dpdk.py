@@ -32,16 +32,25 @@
 import os
 import re
 
-from settings import NICS, load_global_setting, save_global_setting, accepted_nic
-from settings import DPDK_RXMODE_SETTING, HOST_DRIVER_SETTING, HOST_DRIVER_MODE_SETTING, HOST_BUILD_TYPE_SETTING
-from settings import HOST_SHARED_LIB_SETTING, HOST_SHARED_LIB_PATH
-from ssh_connection import SSHConnection
-from crb import Crb
-from dut import Dut
-from tester import Tester
-from logger import getLogger
-from settings import DRIVERS
-from utils import RED
+from .crb import Crb
+from .dut import Dut
+from .logger import getLogger
+from .settings import (
+    DPDK_RXMODE_SETTING,
+    DRIVERS,
+    HOST_BUILD_TYPE_SETTING,
+    HOST_DRIVER_MODE_SETTING,
+    HOST_DRIVER_SETTING,
+    HOST_SHARED_LIB_PATH,
+    HOST_SHARED_LIB_SETTING,
+    NICS,
+    accepted_nic,
+    load_global_setting,
+    save_global_setting,
+)
+from .ssh_connection import SSHConnection
+from .tester import Tester
+from .utils import RED
 
 
 class DPDKdut(Dut):
@@ -131,7 +140,7 @@ class DPDKdut(Dut):
 
         elif drivername == "mlx5_core":
             pass
- 
+
         elif drivername == "igb_uio":
             self.send_expect("modprobe uio", "#", 70)
             out = self.send_expect("lsmod | grep igb_uio", "#")

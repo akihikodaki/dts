@@ -30,21 +30,20 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import json
-import time
-import re
 import copy
+import json
+import os
 import random
+import re
+import time
+from collections import OrderedDict
 from itertools import groupby
 
-from test_case import TestCase, skip_unsupported_pkg
-from pmd_output import PmdOutput
-from packet import Packet
-from utils import BLUE, RED, GREEN
-from collections import OrderedDict
-import rte_flow_common as rfc
-
-import os
+import tests.rte_flow_common as rfc
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase, skip_unsupported_pkg
+from framework.utils import BLUE, GREEN, RED
 
 #vxlan non-pipeline mode
 #test vector mac_ipv4_vxlan_ipv4

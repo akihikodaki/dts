@@ -33,9 +33,13 @@ Generic packet create, transmit and analyze module
 Base on scapy(python program for packet manipulation)
 """
 
-from socket import AF_INET6
 from importlib import import_module
+from socket import AF_INET6
+
 from scapy.all import *
+
+from .utils import convert_int2ip, convert_ip2int
+
 # load extension layers
 exec_file = os.path.realpath(__file__)
 DTS_PATH = exec_file.replace('/framework/packet.py', '')
@@ -44,43 +48,27 @@ TMP_PATH = DTS_PATH[:-1] + '/output/tmp/pcap/' if exec_file.endswith('.pyc') els
 if not os.path.exists(TMP_PATH):
     os.system('mkdir -p %s' % TMP_PATH)
 
-DEP_FOLDER = DTS_PATH + '/dep'
-sys.path.append(DEP_FOLDER)
-sys.path.append(DEP_FOLDER + '/scapy_modules')
-
-from utils import convert_ip2int
-from utils import convert_int2ip
-
-scapy_modules_required = {'gtp': ['GTP_U_Header', 'GTPPDUSessionContainer'],
-                          'lldp': ['LLDPDU', 'LLDPDUManagementAddress'],
-                          'Dot1BR': ['Dot1BR'],
-                          'pfcp': ['PFCP'],
-                          'nsh': ['NSH'],
-                          'igmp': ['IGMP'],
-                          'mpls': ['MPLS'],
+scapy_modules_required = {'scapy.contrib.gtp': ['GTP_U_Header', 'GTPPDUSessionContainer'],
+                          'scapy.contrib.lldp': ['LLDPDU', 'LLDPDUManagementAddress'],
+                          'dep.scapy_modules.Dot1BR': ['Dot1BR'],
+                          'scapy.contrib.pfcp': ['PFCP'],
+                          'scapy.contrib.nsh': ['NSH'],
+                          'scapy.contrib.igmp': ['IGMP'],
+                          'scapy.contrib.mpls': ['MPLS'],
                           }
-local_modules = [m[:-3] for m in os.listdir(DEP_FOLDER + '/scapy_modules') if (m.endswith('.py') and not m.startswith('__'))]
 
 for m in scapy_modules_required:
     try:
-        if m in local_modules:
-            module = import_module(m)
-            for clazz in scapy_modules_required[m]:
-                locals().update({clazz: getattr(module, clazz)})
-        else:
-            module = import_module(f'scapy.contrib.{m}')
-            for clazz in scapy_modules_required[m]:
-                locals().update({clazz: getattr(module, clazz)})
+        module = import_module(m)
+        for clazz in scapy_modules_required[m]:
+            locals().update({clazz: getattr(module, clazz)})
     except Exception as e:
         print(e)
 
 def get_scapy_module_impcmd():
     cmd_li = list()
     for m in scapy_modules_required:
-        if m in local_modules:
-            cmd_li.append(f'from {m} import {",".join(scapy_modules_required[m])}')
-        else:
-            cmd_li.append(f'from scapy.contrib.{m} import {",".join(scapy_modules_required[m])}')
+        cmd_li.append(f'from {m} import {",".join(scapy_modules_required[m])}')
     return ';'.join(cmd_li)
 
 SCAPY_IMP_CMD = get_scapy_module_impcmd()

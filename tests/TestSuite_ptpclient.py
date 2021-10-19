@@ -34,10 +34,12 @@ DPDK Test suite.
 Test support of IEEE1588 Precise Time Protocol.
 """
 
-import utils
 import re
 import time
-from test_case import TestCase
+
+import framework.utils as utils
+from framework.test_case import TestCase
+
 
 class TestPtpClient(TestCase):
 

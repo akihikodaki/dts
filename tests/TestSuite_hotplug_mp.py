@@ -34,10 +34,11 @@ DPDK Test suite.
 Hotplug Multi-process Test.
 """
 
-import utils
-import time
-from test_case import TestCase
 import itertools
+import time
+
+import framework.utils as utils
+from framework.test_case import TestCase
 
 test_loop = 2
 

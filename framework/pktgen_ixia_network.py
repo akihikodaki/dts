@@ -33,7 +33,7 @@ import time
 import traceback
 from pprint import pformat
 
-from pktgen_base import PacketGenerator, PKTGEN_IXIA_NETWORK
+from .pktgen_base import PKTGEN_IXIA_NETWORK, PacketGenerator
 
 
 class IxNetworkPacketGenerator(PacketGenerator):

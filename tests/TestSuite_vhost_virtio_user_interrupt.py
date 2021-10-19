@@ -36,8 +36,9 @@ Virtio-user interrupt need test with l3fwd-power sample
 
 import re
 import time
-import utils
-from test_case import TestCase
+
+import framework.utils as utils
+from framework.test_case import TestCase
 
 
 class TestVirtioUserInterrupt(TestCase):

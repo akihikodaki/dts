@@ -36,18 +36,16 @@ Test the support of VLAN Offload Features by Poll Mode Drivers.
 
 """
 
-import utils
-import time
 import re
+import time
 
-from test_case import TestCase
-from settings import HEADER_SIZE
-from pmd_output import PmdOutput
-from settings import DRIVERS
-
-from project_dpdk import DPDKdut
-from dut import Dut
-from packet import Packet
+import framework.utils as utils
+from framework.dut import Dut
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.project_dpdk import DPDKdut
+from framework.settings import DRIVERS, HEADER_SIZE
+from framework.test_case import TestCase
 
 
 class TestQueue_region(TestCase):

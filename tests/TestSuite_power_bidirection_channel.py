@@ -37,10 +37,10 @@ import os
 import time
 import traceback
 
-from utils import create_mask as dts_create_mask
-from qemu_libvirt import LibvirtKvm
-from exception import VerifyFailure
-from test_case import TestCase
+from framework.exception import VerifyFailure
+from framework.qemu_libvirt import LibvirtKvm
+from framework.test_case import TestCase
+from framework.utils import create_mask as dts_create_mask
 
 
 class TestPowerBidirectionChannel(TestCase):

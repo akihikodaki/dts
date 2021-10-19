@@ -30,15 +30,14 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import time
-import re
 import os
+import re
+import time
 
-from virt_base import VirtBase
-from virt_base import ST_NOTSTART, ST_PAUSE, ST_RUNNING, ST_UNKNOWN
-from exception import StartVMFailedException
-from settings import get_host_ip, load_global_setting, DTS_PARALLEL_SETTING
-from utils import parallel_lock, RED
+from .exception import StartVMFailedException
+from .settings import DTS_PARALLEL_SETTING, get_host_ip, load_global_setting
+from .utils import RED, parallel_lock
+from .virt_base import ST_NOTSTART, ST_PAUSE, ST_RUNNING, ST_UNKNOWN, VirtBase
 
 # This name is directly defined in the qemu guest service
 # So you can not change it except it is changed by the service

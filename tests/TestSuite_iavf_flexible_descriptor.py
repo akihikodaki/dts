@@ -34,9 +34,9 @@
 import time
 import traceback
 
+from framework.test_case import TestCase, check_supported_nic, skip_unsupported_pkg
 
-from test_case import TestCase, skip_unsupported_pkg, check_supported_nic
-from flexible_common import FlexibleRxdBase
+from .flexible_common import FlexibleRxdBase
 
 
 class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):

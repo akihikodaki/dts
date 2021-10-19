@@ -36,27 +36,27 @@ Test NVGRE features in DPDK.
 
 """
 
-import utils
-import string
-import re
-import time
 import os
-from pmd_output import PmdOutput
-from packet import IncreaseIP, IncreaseIPv6
+import re
+import string
+import time
 from random import randint
-
 from socket import AF_INET6
-from scapy.utils import struct, socket, wrpcap, rdpcap
-from scapy.layers.inet import Ether, IP, TCP, UDP
-from scapy.layers.inet6 import IPv6
-from scapy.layers.l2 import Dot1Q, GRE
-from scapy.layers.sctp import SCTP, SCTPChunkData
-from scapy.sendrecv import sniff
-from scapy.config import conf
-from scapy.route import *
 
-from test_case import TestCase
-from settings import HEADER_SIZE
+from scapy.config import conf
+from scapy.layers.inet import IP, TCP, UDP, Ether
+from scapy.layers.inet6 import IPv6
+from scapy.layers.l2 import GRE, Dot1Q
+from scapy.layers.sctp import SCTP, SCTPChunkData
+from scapy.route import *
+from scapy.sendrecv import sniff
+from scapy.utils import rdpcap, socket, struct, wrpcap
+
+import framework.utils as utils
+from framework.packet import IncreaseIP, IncreaseIPv6
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 #
 #

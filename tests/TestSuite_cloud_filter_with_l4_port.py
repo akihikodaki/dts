@@ -36,19 +36,20 @@ Test the support of generic flow API by Poll Mode Drivers.
 
 """
 
-import utils
-import time
 import re
+import time
 
-from test_case import TestCase
-from pmd_output import PmdOutput
-from settings import DRIVERS
-from crb import Crb
-from dut import Dut
-import packet
-from exception import VerifyFailure
 import scapy.layers.inet
 from scapy.utils import rdpcap
+
+import framework.packet as packet
+import framework.utils as utils
+from framework.crb import Crb
+from framework.dut import Dut
+from framework.exception import VerifyFailure
+from framework.pmd_output import PmdOutput
+from framework.settings import DRIVERS
+from framework.test_case import TestCase
 
 MAX_QUEUE = 16
 

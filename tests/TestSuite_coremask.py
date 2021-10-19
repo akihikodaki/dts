@@ -36,10 +36,9 @@ Test coremask parsing in DPDK.
 
 """
 
-import utils
-
-from exception import VerifyFailure
-from test_case import TestCase
+import framework.utils as utils
+from framework.exception import VerifyFailure
+from framework.test_case import TestCase
 
 #
 #

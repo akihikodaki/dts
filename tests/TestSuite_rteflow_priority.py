@@ -35,23 +35,26 @@ DPDK Test suite.
 Test rte_flow priority
 """
 
-import re
-import time
-import string
-from time import sleep
-from scapy.utils import struct, socket, PcapWriter
-
-import utils
-from test_case import TestCase
-from settings import HEADER_SIZE
-from pmd_output import PmdOutput
-import sys
 import imp
+import re
+import string
+import sys
+import time
+from time import sleep
+
+from scapy.utils import PcapWriter, socket, struct
+
+import framework.utils as utils
+from framework.pktgen import PacketGeneratorHelper
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
+
 imp.reload(sys)
 
 
 class TestRteflowPriority(TestCase):
-    
+
     def set_up_all(self):
         """
         Run at the start of each test suite.

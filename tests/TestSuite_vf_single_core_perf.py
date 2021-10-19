@@ -32,15 +32,16 @@
 DPDK Test suite.
 """
 
-import utils
 import json
 import os
-from test_case import TestCase
-from settings import HEADER_SIZE, UPDATE_EXPECTED, load_global_setting
-from pmd_output import PmdOutput
 from copy import deepcopy
-import rst
-from pktgen import PacketGeneratorHelper
+
+import framework.rst as rst
+import framework.utils as utils
+from framework.pktgen import PacketGeneratorHelper
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE, UPDATE_EXPECTED, load_global_setting
+from framework.test_case import TestCase
 
 
 class TestVfSingleCorePerf(TestCase):

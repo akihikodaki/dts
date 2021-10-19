@@ -34,9 +34,8 @@ DPDK Test suite.
 Test cmdline.
 """
 
-import utils
-
-from test_case import TestCase
+import framework.utils as utils
+from framework.test_case import TestCase
 
 
 class TestCmdline(TestCase):

@@ -30,11 +30,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import os
-from test_case import TestCase
-import json
 import copy
-import compress_common as cc
+import json
+import os
+
+import tests.compress_common as cc
+from framework.test_case import TestCase
 
 
 class TestCompressdevQatPmd(TestCase):

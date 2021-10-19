@@ -29,22 +29,22 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
-import time
-import random
 import json
+import os
+import random
 import re
 import shutil
+import time
 import traceback
 from collections import Counter
 from pprint import pformat
 
-# import dts libs
-from settings import load_global_setting
-from settings import HOST_BUILD_TYPE_SETTING
-from test_case import TestCase
-from exception import VerifyFailure
-from utils import create_mask
+from framework.exception import VerifyFailure
+
+# import framework.dts as dts libs
+from framework.settings import HOST_BUILD_TYPE_SETTING, load_global_setting
+from framework.test_case import TestCase
+from framework.utils import create_mask
 
 
 class TestPowerPbf(TestCase):

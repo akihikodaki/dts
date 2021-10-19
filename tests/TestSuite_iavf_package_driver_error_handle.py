@@ -29,12 +29,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import time
-import re
 import os
-from test_case import TestCase
-from pmd_output import PmdOutput
-from config import UserConf
+import re
+import time
+
+from framework.config import UserConf
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+
 
 class Testiavf_package_and_driver_check(TestCase):
 

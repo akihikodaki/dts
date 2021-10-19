@@ -32,9 +32,12 @@
 
 
 import time
-from test_case import TestCase, skip_unsupported_pkg, check_supported_nic
-from flexible_common import FlexibleRxdBase
-import rte_flow_common as rfc
+
+import tests.rte_flow_common as rfc
+from framework.test_case import TestCase, check_supported_nic, skip_unsupported_pkg
+
+from .flexible_common import FlexibleRxdBase
+
 
 class TestFlexibleRxd(TestCase, FlexibleRxdBase):
     supported_nic = ['columbiaville_100g', 'columbiaville_25g', 'columbiaville_25gx2', 'foxville']

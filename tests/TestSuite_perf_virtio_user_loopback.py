@@ -37,16 +37,17 @@ Inorder non-mergeable, packed ring mergeable, non-mergeable, inorder mergeable,
 inorder non-mergeable Path.
 """
 
-import utils
-import time
-import re
 import json
-import rst
 import os
-from pmd_output import PmdOutput
+import re
+import time
 from copy import deepcopy
-from test_case import TestCase
-from settings import UPDATE_EXPECTED, load_global_setting
+
+import framework.rst as rst
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.settings import UPDATE_EXPECTED, load_global_setting
+from framework.test_case import TestCase
 
 
 class TestPerfVirtioUserLoopback(TestCase):

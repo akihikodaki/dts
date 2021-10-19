@@ -32,25 +32,30 @@
 """
 Layer-3 forwarding test script base class.
 """
+import json
 import os
 import re
 import time
 import traceback
-import texttable
-import json
-import numpy as np
-from enum import Enum, unique
-from pprint import pformat
-from itertools import product
 from copy import deepcopy
+from enum import Enum, unique
+from itertools import product
+from pprint import pformat
 
-from config import SuiteConf
-from packet import Packet
-from pktgen import TRANSMIT_CONT, PKTGEN_TREX, PKTGEN_IXIA, PKTGEN_IXIA_NETWORK
-from utils import convert_int2ip, convert_ip2int
-from exception import VerifyFailure
-import utils
+import numpy as np
 
+import framework.texttable as texttable
+import framework.utils as utils
+from framework.config import SuiteConf
+from framework.exception import VerifyFailure
+from framework.packet import Packet
+from framework.pktgen import (
+    PKTGEN_IXIA,
+    PKTGEN_IXIA_NETWORK,
+    PKTGEN_TREX,
+    TRANSMIT_CONT,
+)
+from framework.utils import convert_int2ip, convert_ip2int
 
 VF_L3FWD_NIC_SUPPORT = frozenset((
     "niantic",

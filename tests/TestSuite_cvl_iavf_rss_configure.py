@@ -30,14 +30,17 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-import time
-import re
-import packet
 import os
+import re
+import time
+
 from scapy.contrib.gtp import *
-from test_case import TestCase
-from pmd_output import PmdOutput
-from rte_flow_common import RssProcessing
+
+import framework.packet as packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+
+from .rte_flow_common import RssProcessing
 
 tv_packets_basic = {
     'tv_mac_ipv4': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.3")/("X"*40)',

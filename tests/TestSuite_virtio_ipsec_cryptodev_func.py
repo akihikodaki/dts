@@ -32,15 +32,17 @@
 DPDK Test suite
 Test DPDK vhost + virtio scenarios
 """
-import os
-import utils
-import time
-import subprocess
 import binascii
-from test_case import TestCase
-from qemu_kvm import QEMUKvm
-import cryptodev_common as cc
-from packet import Packet
+import os
+import subprocess
+import time
+
+import framework.utils as utils
+import tests.cryptodev_common as cc
+from framework.packet import Packet
+from framework.qemu_kvm import QEMUKvm
+from framework.test_case import TestCase
+
 
 class VirtioCryptodevIpsecTest(TestCase):
     def set_up_all(self):

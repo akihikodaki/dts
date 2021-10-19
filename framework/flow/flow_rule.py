@@ -32,9 +32,10 @@
 
 from typing import Union
 
-from flow.enums import *
-from flow.flow import Flow
-import flow.flow_action_items as flow_action_items
+import framework.flow.flow_action_items as flow_action_items
+
+from .enums import *
+from .flow import Flow
 
 
 class FlowPattern(Flow):

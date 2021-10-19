@@ -35,10 +35,12 @@ DPDK Test suite.
 Test keep alive
 """
 
-import time
 import re
-import utils
-from test_case import TestCase
+import time
+
+import framework.utils as utils
+from framework.test_case import TestCase
+
 
 class TestKeepAlive(TestCase):
 

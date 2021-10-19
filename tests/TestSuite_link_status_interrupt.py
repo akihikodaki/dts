@@ -35,12 +35,13 @@ DPDK Test suite.
 Test link status.
 """
 
-import utils
+import re
 import string
 import time
-import re
-from test_case import TestCase
-from packet import Packet
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.test_case import TestCase
 
 
 class TestLinkStatusInterrupt(TestCase):

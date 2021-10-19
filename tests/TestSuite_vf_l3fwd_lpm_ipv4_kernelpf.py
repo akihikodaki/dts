@@ -31,8 +31,16 @@
 
 import os
 import time
-from test_case import TestCase
-from perf_test_base import PerfTestBase, IP_TYPE, MATCH_MODE, SUITE_TYPE, VF_L3FWD_NIC_SUPPORT
+
+from framework.test_case import TestCase
+
+from .perf_test_base import (
+    IP_TYPE,
+    MATCH_MODE,
+    SUITE_TYPE,
+    VF_L3FWD_NIC_SUPPORT,
+    PerfTestBase,
+)
 
 
 class TestVfL3fwdLpmIpv4KernelPf(TestCase, PerfTestBase):

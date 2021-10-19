@@ -28,14 +28,16 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-import re
 import random
+import re
 import string
-from test_case import TestCase, skip_unsupported_pkg, check_supported_nic
-from pmd_output import PmdOutput
-from packet import Packet
-from rte_flow_common import RssProcessing
-from config import UserConf
+
+from framework.config import UserConf
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase, check_supported_nic, skip_unsupported_pkg
+
+from .rte_flow_common import RssProcessing
 
 mac_ipv4_pfcp_session_packets = {
     'match': [

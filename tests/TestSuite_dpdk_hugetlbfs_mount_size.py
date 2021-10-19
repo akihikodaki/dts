@@ -34,9 +34,10 @@ This feature is to limit DPDK to use the exact size which is the mounted hugepag
 """
 
 import re
-import utils
 import time
-from test_case import TestCase
+
+import framework.utils as utils
+from framework.test_case import TestCase
 
 DEFAULT_MNT = '/mnt/huge'
 MNT_PATH = ["/mnt/huge1", "/mnt/huge2", "/mnt/huge3"]

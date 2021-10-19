@@ -29,16 +29,17 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
-import time
 import json
+import os
 import re
 import textwrap
+import time
 from pprint import pformat
 
-# import dts libs
-from test_case import TestCase
-from pmd_output import PmdOutput
+from framework.pmd_output import PmdOutput
+
+# import framework.dts as dts libs
+from framework.test_case import TestCase
 
 
 class TestTelemetry(TestCase):

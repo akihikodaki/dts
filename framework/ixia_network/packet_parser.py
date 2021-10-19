@@ -32,9 +32,9 @@ import os
 from collections import OrderedDict
 
 from scapy.all import conf
+from scapy.fields import ConditionalField
 from scapy.packet import NoPayload
 from scapy.packet import Packet as scapyPacket
-from scapy.fields import ConditionalField
 from scapy.utils import rdpcap
 
 

@@ -37,10 +37,11 @@ Test the support of Malicious Driver Detection
 
 import re
 import time
-from packet import Packet
-from virt_common import VM
-from test_case import TestCase
-from pmd_output import PmdOutput
+
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 VM_CORES_MASK = 'all'
 send_pks_num = 2000

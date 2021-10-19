@@ -38,13 +38,14 @@ Test queue start stop Feature
 
 """
 
-import time
-import re
 import os
-from test_case import TestCase
-from pmd_output import PmdOutput
-from settings import FOLDERS
-from packet import Packet, strip_pktload
+import re
+import time
+
+from framework.packet import Packet, strip_pktload
+from framework.pmd_output import PmdOutput
+from framework.settings import FOLDERS
+from framework.test_case import TestCase
 
 #
 #

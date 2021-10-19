@@ -30,11 +30,14 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import math
+
 import matplotlib as mp
+
 mp.use('Agg')
+import itertools
+
 import matplotlib.pyplot as plt
 import numpy as np
-import itertools
 
 """
 Generate graphs for each test suite

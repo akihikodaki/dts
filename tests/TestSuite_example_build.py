@@ -35,9 +35,11 @@ DPDK Test suite.
 Test example_build.
 """
 
-import time
 import re
-from test_case import TestCase
+import time
+
+from framework.test_case import TestCase
+
 
 class TestExamplebuild(TestCase):
 

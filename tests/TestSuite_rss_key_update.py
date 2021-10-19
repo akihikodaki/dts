@@ -37,13 +37,13 @@ Test the support of RSS Key Update by Poll Mode Drivers.
 
 """
 
-import time
-import re
 import random
-import utils
+import re
+import time
 
-from test_case import TestCase
-from pmd_output import PmdOutput
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 queue = 16
 reta_entries = []

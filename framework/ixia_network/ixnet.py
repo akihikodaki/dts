@@ -32,19 +32,20 @@
 This module implant from pei,yulong ixNetwork tool.
 """
 
-import os
-import time
-import re
-import requests
-import json
 import csv
+import json
+import os
+import re
+import time
 from collections import OrderedDict
 from datetime import datetime
 
+import requests
+
+from .ixnet_stream import IxnetConfigStream
 
 # local lib deps
 from .packet_parser import PacketParser
-from .ixnet_stream import IxnetConfigStream
 
 
 class IxnetTrafficGenerator(object):

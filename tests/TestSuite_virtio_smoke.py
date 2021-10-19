@@ -34,8 +34,10 @@ DPDK Test suite.
 """
 
 import re
-from test_case import TestCase
-from pmd_output import PmdOutput
+
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+
 DEFAULT_MTU = 1500
 TSO_MTU = 9000
 

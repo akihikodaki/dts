@@ -30,13 +30,15 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import utils
-from test_case import TestCase
-from exception import VerifyFailure
-from pmd_output import PmdOutput
-from packet import Packet
-import time
 import re
+import time
+
+import framework.utils as utils
+from framework.exception import VerifyFailure
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+
 
 class TestPtype_Mapping(TestCase):
 

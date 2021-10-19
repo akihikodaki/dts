@@ -35,10 +35,11 @@ DPDK Test suite.
 Test L2fwd Jobstats
 """
 
-import time
 import re
-import utils
-from test_case import TestCase
+import time
+
+import framework.utils as utils
+from framework.test_case import TestCase
 
 
 class TestL2fwdJobstats(TestCase):

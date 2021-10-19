@@ -38,10 +38,11 @@ hostcpu to start qemu and only have one vcpu
 """
 import re
 import time
-import utils
-from test_case import TestCase
-from virt_common import VM
-import vhost_peer_conf as peer
+
+import framework.utils as utils
+import tests.vhost_peer_conf as peer
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 
 class TestDPDKGROLib(TestCase):

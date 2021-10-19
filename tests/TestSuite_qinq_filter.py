@@ -37,10 +37,12 @@ Test the support of VLAN Offload Features by Poll Mode Drivers.
 
 """
 
-from test_case import TestCase
-import utils
 import time
-from pmd_output import PmdOutput
+
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+
 
 class TestQinqFilter(TestCase):
 

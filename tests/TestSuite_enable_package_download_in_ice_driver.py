@@ -29,11 +29,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import time
-import re
 import os
-from test_case import TestCase
-from pmd_output import PmdOutput
+import re
+import time
+
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+
 
 class TestEnable_Package_Download_In_Ice_Driver(TestCase):
 

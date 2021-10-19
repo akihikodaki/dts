@@ -37,19 +37,19 @@ Test the support of VLAN Offload Features by Poll Mode Drivers.
 
 """
 
-import dts
-import time
-import utils
-
-from test_case import TestCase
-from pmd_output import PmdOutput
-from scapy.utils import struct, socket, wrpcap, rdpcap
-from scapy.layers.inet import Ether, IP, TCP, UDP, ICMP
-from scapy.layers.l2 import Dot1Q, ARP, GRE
-from settings import DPDK_RXMODE_SETTING
-from settings import load_global_setting
-
 import random
+import time
+
+from scapy.layers.inet import ICMP, IP, TCP, UDP, Ether
+from scapy.layers.l2 import ARP, GRE, Dot1Q
+from scapy.utils import rdpcap, socket, struct, wrpcap
+
+import framework.dts as dts
+import framework.utils as utils
+from framework.pmd_output import PmdOutput
+from framework.settings import DPDK_RXMODE_SETTING, load_global_setting
+from framework.test_case import TestCase
+
 MAX_VLAN = 4095
 
 

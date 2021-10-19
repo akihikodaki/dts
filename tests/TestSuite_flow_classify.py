@@ -30,19 +30,19 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import time
 import re
+import time
 from collections import Counter
 from datetime import datetime
+from functools import reduce
 
-from packet import Packet
 from scapy.sendrecv import sendp
 
-from utils import create_mask as dts_create_mask
-from test_case import TestCase
-from exception import VerifyFailure
-from settings import HEADER_SIZE
-from functools import reduce
+from framework.exception import VerifyFailure
+from framework.packet import Packet
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
+from framework.utils import create_mask as dts_create_mask
 
 
 class TestFlowClassify(TestCase):

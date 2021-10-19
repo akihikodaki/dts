@@ -29,22 +29,22 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import time
-import re
 import os
-
-import utils
-from dut import Dut
-from ssh_connection import SSHConnection
-from virt_base import VirtBase
-from virt_resource import VirtResource
-from logger import getLogger
-from config import VirtConf
-from config import VIRTCONF
-from exception import StartVMFailedException
+import re
+import time
 import xml.etree.ElementTree as ET
-from xml.etree.ElementTree import ElementTree
 from xml.dom import minidom
+from xml.etree.ElementTree import ElementTree
+
+import framework.utils as utils
+
+from .config import VIRTCONF, VirtConf
+from .dut import Dut
+from .exception import StartVMFailedException
+from .logger import getLogger
+from .ssh_connection import SSHConnection
+from .virt_base import VirtBase
+from .virt_resource import VirtResource
 
 
 class LibvirtKvm(VirtBase):

@@ -30,13 +30,15 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import re
 import random
+import re
 import time
-from packet import Packet
-from pmd_output import PmdOutput
-from test_case import TestCase, skip_unsupported_pkg, check_supported_nic
-from rte_flow_common import RssProcessing
+
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase, check_supported_nic, skip_unsupported_pkg
+
+from .rte_flow_common import RssProcessing
 
 mac_ipv4_gtpu_ipv4_basic = {
     'ipv4-nonfrag': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)',

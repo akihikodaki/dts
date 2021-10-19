@@ -35,12 +35,13 @@ from __future__ import annotations
 import copy
 import itertools
 from functools import reduce
-from typing import FrozenSet, Union, Any, Set, Dict, Tuple, Iterable, Hashable
+from typing import Any, Dict, FrozenSet, Hashable, Iterable, Set, Tuple, Union
 
-from flow.enums import FlowItemType, FlowActionType
-from flow.exceptions import InvalidFlowItemException
-from flow import flow_action_items
-from flow import flow_pattern_items
+import framework.flow.flow_action_items as flow_action_items
+import framework.flow.flow_pattern_items as flow_pattern_items
+
+from .enums import FlowActionType, FlowItemType
+from .exceptions import InvalidFlowItemException
 
 PATTERN_ACTION_ITEMS = {FlowItemType.INVERT, FlowItemType.VOID, FlowItemType.MARK, FlowItemType.META}
 
@@ -90,7 +91,7 @@ class FlowItem(object):
             raise InvalidFlowItemException(self, other)
         elif other.type in self.valid_next_items:
             # This import is in here so there is no circular import
-            from flow.flow import Flow
+            from .flow import Flow
             if isinstance(self, flow_pattern_items.PatternFlowItem):
                 return Flow(pattern_items=[self, other])
             elif isinstance(self, flow_action_items.ActionFlowItem):

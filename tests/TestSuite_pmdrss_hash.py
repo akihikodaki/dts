@@ -36,10 +36,11 @@ Test DPDK1.8 feature: Fortville RSS full support - configuring hash functions.
 It can select Toeplitz or simple XOR hash function and it can configure symmetric hash functions.
 Support 4*10G, 1*40G and 2*40G NICs.
 """
-import time
 import random
 import re
-import utils
+import time
+
+import framework.utils as utils
 
 queue = 16
 reta_entries = []
@@ -60,7 +61,9 @@ iptypes = {'ipv4-sctp': 'sctp',
 
 # Use scapy to send packets with different source and dest ip.
 # and collect the hash result of five tuple and the queue id.
-from test_case import TestCase
+from framework.test_case import TestCase
+
+
 #
 #
 # Test class.

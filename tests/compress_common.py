@@ -32,8 +32,9 @@
 
 import os
 import re
-import utils
-from config import SuiteConf
+
+import framework.utils as utils
+from framework.config import SuiteConf
 
 conf = SuiteConf('compressdev_sample')
 

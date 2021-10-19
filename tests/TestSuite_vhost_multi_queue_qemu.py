@@ -36,13 +36,14 @@ Vhost PVP performance using Qemu test suite.
 """
 import re
 import time
-import utils
-from test_case import TestCase
-from settings import HEADER_SIZE
-from virt_common import VM
-from packet import Packet
-from pmd_output import PmdOutput
-from pktgen import PacketGeneratorHelper
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pktgen import PacketGeneratorHelper
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 
 class TestVhostMultiQueueQemu(TestCase):

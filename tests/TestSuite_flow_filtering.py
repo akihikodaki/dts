@@ -30,13 +30,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import utils
-import time
 import re
-import os
-import packet
-from test_case import TestCase
-from settings import HEADER_SIZE
+import time
+
+import framework.packet as packet
+import framework.utils as utils
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 
 class TestFlowFiltering(TestCase):

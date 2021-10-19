@@ -31,10 +31,11 @@
 
 import re
 import time
-from packet import Packet
-from pmd_output import PmdOutput
-from test_case import TestCase, skip_unsupported_pkg, check_supported_nic
-import rte_flow_common as rfc
+
+import tests.rte_flow_common as rfc
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase, check_supported_nic, skip_unsupported_pkg
 
 vf0_mac = "00:11:22:33:44:55"
 

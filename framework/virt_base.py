@@ -30,19 +30,18 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 import sys
-import traceback
 import threading
+import traceback
 from random import randint
 
+import framework.exception as exception
+import framework.utils as utils
 
-import utils
-import exception
-from dut import Dut
-from config import VirtConf
-from config import VIRTCONF
-from logger import getLogger
-from settings import CONFIG_ROOT_PATH
-from virt_dut import VirtDut
+from .config import VIRTCONF, VirtConf
+from .dut import Dut
+from .logger import getLogger
+from .settings import CONFIG_ROOT_PATH
+from .virt_dut import VirtDut
 
 ST_NOTSTART = "NOTSTART"
 ST_PAUSE = "PAUSE"

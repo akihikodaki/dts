@@ -32,7 +32,7 @@
 """
 Generic result container and reporters
 """
-import texttable    # text format
+import framework.texttable as texttable  # text format
 
 
 class Result(object):

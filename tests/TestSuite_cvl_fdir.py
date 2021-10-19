@@ -30,18 +30,17 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import re
-import time
 import copy
 import os
+import re
+import time
 
-from packet import Packet
-from pmd_output import PmdOutput
-from test_case import TestCase, skip_unsupported_pkg
-import rte_flow_common as rfc
-
-from utils import GREEN, RED
-import utils
+import framework.utils as utils
+import tests.rte_flow_common as rfc
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase, skip_unsupported_pkg
+from framework.utils import GREEN, RED
 
 MAC_IPV4_PAY = {
     "match": [

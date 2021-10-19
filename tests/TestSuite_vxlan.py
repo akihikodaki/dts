@@ -36,29 +36,29 @@ Test VXLAN behaviour in DPDK.
 
 """
 
-import utils
-import string
-import re
-import time
 import os
-from pmd_output import PmdOutput
-from packet import IncreaseIP, IncreaseIPv6
+import re
+import string
+import time
 from random import randint
 
-from scapy.utils import wrpcap, rdpcap
-from scapy.layers.inet import Ether, IP, TCP, UDP
+from scapy.config import conf
+from scapy.layers.inet import IP, TCP, UDP, Ether
 from scapy.layers.inet6 import IPv6
 from scapy.layers.l2 import Dot1Q
-from scapy.layers.vxlan import VXLAN
 from scapy.layers.sctp import SCTP, SCTPChunkData
-from scapy.sendrecv import sniff
-from scapy.config import conf
+from scapy.layers.vxlan import VXLAN
 from scapy.route import *
+from scapy.sendrecv import sniff
+from scapy.utils import rdpcap, wrpcap
 
-from test_case import TestCase
-from settings import HEADER_SIZE, FOLDERS
-from pktgen import PacketGeneratorHelper
-import packet
+import framework.packet as packet
+import framework.utils as utils
+from framework.packet import IncreaseIP, IncreaseIPv6
+from framework.pktgen import PacketGeneratorHelper
+from framework.pmd_output import PmdOutput
+from framework.settings import FOLDERS, HEADER_SIZE
+from framework.test_case import TestCase
 
 #
 #
@@ -622,7 +622,7 @@ class TestVxlan(TestCase):
 
         out = self.dut.send_expect("stop", "testpmd>", 10)
         self.dut.send_expect("quit", "#", 10)
-        
+
     def test_vxlan_ipv6_detect(self):
         """
         verify vxlan packet detection with ipv6 header

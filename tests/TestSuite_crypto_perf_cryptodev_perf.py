@@ -29,10 +29,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import re
 import json
-from test_case import TestCase
-import cryptodev_common as cc
+import re
+
+import tests.cryptodev_common as cc
+from framework.test_case import TestCase
 
 
 class PerfTestsCryptodev(TestCase):

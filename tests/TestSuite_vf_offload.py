@@ -30,17 +30,18 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import re
-import time
 import string
+import time
 
-import utils
-from virt_common import VM
-from test_case import TestCase
-from pmd_output import PmdOutput
-from utils import RED, GREEN
-from net_device import NetDevice
-from crb import Crb
-from settings import HEADER_SIZE
+import framework.utils as utils
+from framework.crb import Crb
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
+from framework.utils import GREEN, RED
+from framework.virt_common import VM
+from nics.net_device import NetDevice
+
 VM_CORES_MASK = 'all'
 DEFAULT_MTU = 1500
 TSO_MTU = 9000

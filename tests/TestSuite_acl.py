@@ -30,7 +30,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from test_case import TestCase
+from framework.test_case import TestCase
 
 
 class TestACL(TestCase):

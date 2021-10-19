@@ -30,12 +30,14 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import re
 import random
-from packet import Packet
-from pmd_output import PmdOutput
-from test_case import TestCase
-from rte_flow_common import RssProcessing
+import re
+
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+
+from .rte_flow_common import RssProcessing
 
 # toeplitz related data start
 mac_ipv4_toeplitz_basic_pkt = {

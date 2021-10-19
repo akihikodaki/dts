@@ -33,22 +33,37 @@
 Interface for bulk traffic generators.
 """
 
+import os
+import random
 import re
 import subprocess
-import os
-from time import sleep
-from settings import NICS, load_global_setting, PERF_SETTING
-from settings import USERNAME, PKTGEN, PKTGEN_GRP
-from crb import Crb
-from net_device import GetNicObj
-import random
-from utils import (GREEN, convert_int2ip, convert_ip2int,
-                   check_crb_python_version)
-from exception import ParameterInvalidException
 from multiprocessing import Process
-from pktgen import getPacketGenerator
-from config import PktgenConf
-from packet import SCAPY_IMP_CMD
+from time import sleep
+
+from nics.net_device import GetNicObj
+
+from .config import PktgenConf
+from .crb import Crb
+from .exception import ParameterInvalidException
+from .packet import (
+    SCAPY_IMP_CMD,
+    Packet,
+    compare_pktload,
+    start_tcpdump,
+    stop_and_load_tcpdump_packets,
+    strip_pktload,
+)
+from .pktgen import getPacketGenerator
+from .settings import (
+    NICS,
+    PERF_SETTING,
+    PKTGEN,
+    PKTGEN_GRP,
+    USERNAME,
+    load_global_setting,
+)
+from .utils import GREEN, check_crb_python_version, convert_int2ip, convert_ip2int
+
 
 class Tester(Crb):
 
@@ -665,11 +680,6 @@ class Tester(Crb):
         """
         Send several random packets and check rx packets matched
         """
-        # load functions in packet module
-        module = __import__("packet")
-        pkt_c = getattr(module, "Packet")
-        compare_f = getattr(module, "compare_pktload")
-        strip_f = getattr(module, "strip_pktload")
         tx_pkts = {}
         rx_inst = {}
         # packet type random between tcp/udp/ipv6
@@ -678,13 +688,13 @@ class Tester(Crb):
             txIntf = self.get_interface(txport)
             rxIntf = self.get_interface(rxport)
             self.logger.info(GREEN("Preparing transmit packets, please wait few minutes..."))
-            pkt = pkt_c()
+            pkt = Packet()
             pkt.generate_random_pkts(pktnum=pktnum, random_type=random_type, ip_increase=True, random_payload=True,
                                      options={"layers_config": params})
 
             tx_pkts[txport] = pkt
             # sniff packets
-            inst = module.start_tcpdump(self, rxIntf, count=pktnum,
+            inst = start_tcpdump(self, rxIntf, count=pktnum,
                                         filters=[{'layer': 'network', 'config': {'srcport': '65535'}},
                                                  {'layer': 'network', 'config': {'dstport': '65535'}}])
             rx_inst[rxport] = inst
@@ -708,10 +718,10 @@ class Tester(Crb):
                     break
             else:
                 self.logger.info('exceeded timeout, force to stop background packet sending to avoid dead loop')
-                pkt_c.stop_send_pkt_bg(i)
+                Packet.stop_send_pkt_bg(i)
         prev_id = -1
         for txport, rxport in portList:
-            p = module.stop_and_load_tcpdump_packets(rx_inst[rxport])
+            p = stop_and_load_tcpdump_packets(rx_inst[rxport])
             recv_pkts = p.pktgen.pkts
             # only report when received number not matched
             if len(tx_pkts[txport].pktgen.pkts) > len(recv_pkts):
@@ -744,11 +754,11 @@ class Tester(Crb):
                     else:
                         prev_id = t_idx
 
-                if compare_f(tx_pkts[txport].pktgen.pkts[idx], recv_pkts[idx], "L4") is False:
+                if compare_pktload(tx_pkts[txport].pktgen.pkts[idx], recv_pkts[idx], "L4") is False:
                     self.logger.warning("Pkt received index %d not match original " \
                           "index %d" % (idx, idx))
-                    self.logger.info("Sent: %s" % strip_f(tx_pkts[txport].pktgen.pkts[idx], "L4"))
-                    self.logger.info("Recv: %s" % strip_f(recv_pkts[idx], "L4"))
+                    self.logger.info("Sent: %s" % strip_pktload(tx_pkts[txport].pktgen.pkts[idx], "L4"))
+                    self.logger.info("Recv: %s" % strip_pktload(recv_pkts[idx], "L4"))
                     return False
 
         return True
@@ -757,19 +767,14 @@ class Tester(Crb):
         """
         Wrapper for packet module sniff_packets
         """
-        # load functions in packet module
-        packet = __import__("packet")
-        inst = packet.start_tcpdump(self, intf=intf, count=count, filters=filters, lldp_forbid=lldp_forbid)
+        inst = start_tcpdump(self, intf=intf, count=count, filters=filters, lldp_forbid=lldp_forbid)
         return inst
 
     def load_tcpdump_sniff_packets(self, index='', timeout=1):
         """
         Wrapper for packet module load_pcapfile
         """
-        # load functions in packet module
-        packet = __import__("packet")
-        p = packet.stop_and_load_tcpdump_packets(index, timeout=timeout)
-
+        p = stop_and_load_tcpdump_packets(index, timeout=timeout)
         return p
 
     def kill_all(self, killall=False):

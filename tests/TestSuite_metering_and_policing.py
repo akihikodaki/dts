@@ -34,15 +34,16 @@ Test metering_and_policing.
 """
 
 import os
-import utils
+import re
 import string
 import time
-import re
-from test_case import TestCase
-from plotting import Plotting
-from settings import HEADER_SIZE
-from dut import Dut
-from pmd_output import PmdOutput
+
+import framework.utils as utils
+from framework.dut import Dut
+from framework.plotting import Plotting
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 
 class TestMeteringAndPolicing(TestCase):

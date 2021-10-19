@@ -37,12 +37,13 @@ Becase this suite will use the reconnet feature, the VM will start as
 server mode, so the qemu version should greater than 2.7
 """
 import re
-import utils
 import time
-from test_case import TestCase
-from virt_common import VM
-from packet import Packet
-from pktgen import PacketGeneratorHelper
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pktgen import PacketGeneratorHelper
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 
 class TestPVPVhostUserReconnect(TestCase):

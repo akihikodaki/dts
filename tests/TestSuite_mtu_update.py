@@ -35,24 +35,19 @@ DPDK Test suite.
 MTU Checks example.
 """
 import os
+import re
 import subprocess
+import time
 from time import sleep
 from typing import List, Tuple
 
-import utils
-from pmd_output import PmdOutput
-from test_case import TestCase
-
-from pktgen_base import TRANSMIT_S_BURST
-
-import utils
-import re
-import time
-from test_case import TestCase
-from pktgen import TRANSMIT_CONT
-
-from packet import Packet
-from settings import HEADER_SIZE
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pktgen import TRANSMIT_CONT
+from framework.pktgen_base import TRANSMIT_S_BURST
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 ETHER_HEADER_LEN = 18
 VLAN=4

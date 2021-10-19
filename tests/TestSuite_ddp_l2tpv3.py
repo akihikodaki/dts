@@ -33,12 +33,14 @@
 DPDK Test suite.
 l2tpv3 test script.
 """
-import time
-import re
-from test_case import TestCase
-from pmd_output import PmdOutput
-from scapy.all import *
 import random
+import re
+import time
+
+from scapy.all import *
+
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 
 class TestDdpL2tpv3(TestCase):

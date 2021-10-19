@@ -30,17 +30,19 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-import time
-import re
-import packet
 import os
-from scapy.contrib.gtp import *
-from test_case import TestCase
-from pmd_output import PmdOutput
-from utils import BLUE, RED
+import re
+import time
 from collections import OrderedDict
-from packet import IncreaseIP, IncreaseIPv6
-import rte_flow_common as rfc
+
+from scapy.contrib.gtp import *
+
+import framework.packet as packet
+import tests.rte_flow_common as rfc
+from framework.packet import IncreaseIP, IncreaseIPv6
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+from framework.utils import BLUE, RED
 
 out = os.popen("pip list|grep scapy ")
 version_result =out.read()

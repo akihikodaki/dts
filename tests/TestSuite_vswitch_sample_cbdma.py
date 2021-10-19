@@ -33,18 +33,19 @@
 DPDK Test suite.
 """
 
-import utils
-import re
-import time
 import os
-from test_case import TestCase
-from packet import Packet
-from pktgen import PacketGeneratorHelper
-from pmd_output import PmdOutput
-from virt_common import VM
-from settings import HEADER_SIZE
 import random
+import re
 import string
+import time
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pktgen import PacketGeneratorHelper
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 
 class TestVswitchSampleCBDMA(TestCase):

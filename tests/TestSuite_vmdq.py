@@ -35,13 +35,14 @@ DPDK Test suite.
 Tests for vmdq.
 
 """
-import utils
 import os
 import re
-from test_case import TestCase
 from time import sleep
-from settings import HEADER_SIZE
-from pktgen import PacketGeneratorHelper
+
+import framework.utils as utils
+from framework.pktgen import PacketGeneratorHelper
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 
 class TestVmdq(TestCase):

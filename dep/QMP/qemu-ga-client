@@ -276,9 +276,9 @@ def main(address, cmd, args):
 
 
 if __name__ == '__main__':
-    import sys
-    import os
     import optparse
+    import os
+    import sys
 
     address = os.environ['QGA_CLIENT_ADDRESS'] if 'QGA_CLIENT_ADDRESS' in os.environ else None
 

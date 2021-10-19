@@ -1,9 +1,15 @@
-import sys
-import os
-import parse_opt
-import re
-import time
 import configparser
+import os
+import re
+import sys
+import time
+
+import framework.utils as utils
+import tools.parse_opt as parse_opt
+from framework.settings import NICS
+from framework.utils import GREEN, RED
+
+from .parse_opt import Option
 
 exec_file = os.path.realpath(__file__)
 DTS_PATH = exec_file.replace('/tools/setup.py', '')
@@ -21,11 +27,6 @@ DTS_IXIA_CFG = DTS_PATH + '/conf/ixia.cfg'
 
 sys.path.append(DTS_FRAMEWORK)
 sys.path.append(DTS_TOOLS)
-
-import utils
-from parse_opt import Option
-from settings import NICS
-from utils import GREEN, RED
 
 global def_opt
 global dut_ip

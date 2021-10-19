@@ -34,16 +34,16 @@ DPDK Test suite.
 Test IPv4 fragmentation features in DPDK.
 """
 
-import utils
-import string
-import re
-import time
 import os
-from settings import HEADER_SIZE
-from packet import Packet
-from pktgen import PacketGeneratorHelper
-from test_case import TestCase
+import re
+import string
+import time
 
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pktgen import PacketGeneratorHelper
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 lpm_table_ipv4 = [
     "{RTE_IPV4(100,10,0,0), 16, P1}",

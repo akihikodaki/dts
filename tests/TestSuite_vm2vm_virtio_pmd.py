@@ -40,11 +40,13 @@ About mergeable path check the large packet payload.
 """
 import re
 import time
-import utils
-from virt_common import VM
-from test_case import TestCase
-from packet import Packet
-from pmd_output import PmdOutput
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+from framework.virt_common import VM
+
 
 class TestVM2VMVirtioPMD(TestCase):
     def set_up_all(self):

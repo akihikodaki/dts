@@ -28,10 +28,10 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-import os
 import json
+import os
 
-from utils import convert_int2ip, convert_ip2int
+from framework.utils import convert_int2ip, convert_ip2int
 
 
 class IxnetConfigStream(object):

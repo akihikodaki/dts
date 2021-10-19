@@ -94,9 +94,9 @@ Maximilian Hils:
     - fix minor bug for Python 3 compatibility
 """
 
-import sys
-import string
 import re
+import string
+import sys
 
 try:
     if sys.version >= '2.3':

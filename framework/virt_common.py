@@ -30,11 +30,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 
-from config import VirtConf
-from settings import CONFIG_ROOT_PATH
+from .config import VirtConf
+from .qemu_kvm import QEMUKvm
+from .qemu_libvirt import LibvirtKvm
+from .settings import CONFIG_ROOT_PATH
 
-from qemu_kvm import QEMUKvm
-from qemu_libvirt import LibvirtKvm
 
 def VM(dut, vm_name, suite_name):
     conf = VirtConf(CONFIG_ROOT_PATH + os.sep + suite_name + '.cfg')

@@ -31,7 +31,8 @@
 
 import re
 import time
-from settings import HEADER_SIZE
+
+from framework.settings import HEADER_SIZE
 
 JUMBO_FRAME_MTU = 9600
 DEFAULT_MTU_VALUE = 1500

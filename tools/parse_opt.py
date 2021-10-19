@@ -1,6 +1,6 @@
-import sys
 import os.path
 import re
+import sys
 
 
 def RED(text):

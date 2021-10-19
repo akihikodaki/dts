@@ -34,12 +34,14 @@ DPDK Test suite.
 Test the support of Allowlist Features by Poll Mode Drivers
 """
 
-import utils
-import time
-from test_case import TestCase
-from pmd_output import PmdOutput
-from packet import Packet
 import operator
+import time
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+
 
 class TestMacFilter(TestCase):
 

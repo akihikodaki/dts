@@ -31,18 +31,18 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Allows the type system to handle referencing a class inside it's definition
-from typing import FrozenSet, Dict, List, Tuple, Iterable
+from typing import Dict, FrozenSet, Iterable, List, Tuple
 
-from scapy.layers.inet import UDP, TCP, IP, ICMP
+from scapy.layers.inet import ICMP, IP, TCP, UDP
 from scapy.layers.inet6 import IPv6
-from scapy.layers.l2 import Ether, Dot1Q, GRE, ARP
+from scapy.layers.l2 import ARP, GRE, Dot1Q, Ether
 from scapy.layers.sctp import SCTP
 from scapy.layers.vxlan import VXLAN
 from scapy.packet import Packet
 
-from flow.enums import FlowItemType
-from flow.exceptions import InvalidFlowItemException
-from flow.flow_items import FlowItem
+from .enums import FlowItemType
+from .exceptions import InvalidFlowItemException
+from .flow_items import FlowItem
 
 ALWAYS_ALLOWED_ITEMS = {
     FlowItemType.RAW,
@@ -89,7 +89,7 @@ class PatternFlowItem(FlowItem):
         if other.type in self.valid_next_items or \
                 other.type == FlowItemType.END:
             # This import is in here so there is no circular import
-            from flow.flow import Flow
+            from .flow import Flow
             return Flow(pattern_items=[self, other])
         else:
             raise InvalidFlowItemException(self, other)

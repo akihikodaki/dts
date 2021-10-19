@@ -34,10 +34,11 @@
 DPDK Test suite.
 Test Rxtx_Callbacks.
 """
-import utils
 import string
 import time
-from test_case import TestCase
+
+import framework.utils as utils
+from framework.test_case import TestCase
 
 
 class TestRxtxCallbacks(TestCase):

@@ -39,22 +39,22 @@ inside virtual point-to-point links over an Internet Protocol network.
 Fortville support GRE packet detecting, checksum computing and filtering.
 """
 
-import utils
+import os
 import re
 import time
-import os
 
-from packet import Packet
-
-from scapy.utils import wrpcap, rdpcap
-from scapy.packet import split_layers,bind_layers
-from scapy.layers.inet import Ether, IP, TCP, UDP
-from scapy.layers.sctp import SCTP
+from scapy.layers.inet import IP, TCP, UDP, Ether
 from scapy.layers.l2 import GRE
+from scapy.layers.sctp import SCTP
+from scapy.packet import bind_layers, split_layers
+from scapy.utils import rdpcap, wrpcap
 
-from test_case import TestCase
-from exception import VerifyFailure
-from pmd_output import PmdOutput
+import framework.utils as utils
+from framework.exception import VerifyFailure
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+
 
 class TestIpgre(TestCase):
 

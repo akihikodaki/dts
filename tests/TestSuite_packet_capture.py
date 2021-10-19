@@ -32,25 +32,24 @@
 DPDK Test suite.
 Test support dpdk pdump tool features
 '''
-import random
 import os
-import traceback
-import time
+import random
 import re
 import signal
 import subprocess
+import time
+import traceback
 from pprint import pformat
 
-from scapy.utils import rdpcap
+from scapy.fields import ConditionalField
 from scapy.packet import NoPayload
 from scapy.packet import Packet as scapyPacket
-from scapy.fields import ConditionalField
+from scapy.utils import rdpcap
 
-from test_case import TestCase
-from exception import VerifyFailure
-from pmd_output import PmdOutput
-from packet import Packet
-
+from framework.exception import VerifyFailure
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 # These source code copy from packet.py module before sniff_packets/load_sniff_packets
 # refactor. New refactor methods have much more longer time consumption than

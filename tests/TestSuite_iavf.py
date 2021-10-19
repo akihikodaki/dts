@@ -36,17 +36,16 @@ Test some iavf function in i40e driver
 
 """
 
+import math
+import random
 import re
 import time
-import math
 
-from virt_common import VM
-from test_case import TestCase
-from pmd_output import PmdOutput
-from packet import Packet
-from settings import get_nic_name
-import random
-from settings import HEADER_SIZE
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE, get_nic_name
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 VM_CORES_MASK = 'Default'
 

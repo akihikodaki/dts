@@ -1,8 +1,8 @@
-import sys
-import os
-import re
 import inspect
 import json
+import os
+import re
+import sys
 
 exec_file = os.path.realpath(__file__)
 DTS_PATH = exec_file.replace('/tools/dump_case.py', '')
@@ -13,9 +13,9 @@ DTS_FRAMEWORK = DTS_PATH + '/framework'
 sys.path.append(DTS_SUITES)
 sys.path.append(DTS_FRAMEWORK)
 
-import dts
-from test_case import TestCase
-from utils import pprint
+import framework.dts as dts
+from framework.test_case import TestCase
+from framework.utils import pprint
 
 
 def get_subclasses(module, clazz):
@@ -79,7 +79,9 @@ def load_cases():
     suite_func_list = {}
     suite_perf_list = {}
     for suite in suites:
-        test_module = __import__('TestSuite_' + suite)
+        _suite_full_name = 'TestSuite_' + suite
+        test_module = __import__('tests.' + _suite_full_name,
+                                 fromlist=[_suite_full_name])
         for classname, test_class in get_subclasses(test_module, TestCase):
             test_suite = test_class(dut, None, None, suite)
             func_cases = get_functional_test_cases(test_suite)

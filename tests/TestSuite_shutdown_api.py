@@ -36,19 +36,19 @@ Test Shutdown API Feature
 
 """
 
-import utils
-import time
-import re
 import os
 import random
-from test_case import TestCase
-from pmd_output import PmdOutput
-from settings import HEADER_SIZE, PROTOCOL_PACKET_SIZE
-from exception import VerifyFailure
-from qemu_kvm import QEMUKvm
-from settings import get_nic_name
+import re
+import time
 from random import randint
-from settings import DRIVERS
+
+import framework.utils as utils
+from framework.exception import VerifyFailure
+from framework.pmd_output import PmdOutput
+from framework.qemu_kvm import QEMUKvm
+from framework.settings import DRIVERS, HEADER_SIZE, PROTOCOL_PACKET_SIZE, get_nic_name
+from framework.test_case import TestCase
+
 #
 #
 # Test class.

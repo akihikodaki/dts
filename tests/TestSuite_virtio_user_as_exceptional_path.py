@@ -36,11 +36,13 @@ virtio user as exception path test suite.
 """
 import re
 import time
-import utils
-from test_case import TestCase
-from settings import HEADER_SIZE
-import vhost_peer_conf as peer
-from pktgen import PacketGeneratorHelper
+
+import framework.utils as utils
+import tests.vhost_peer_conf as peer
+from framework.pktgen import PacketGeneratorHelper
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
+
 
 class TestVirtioUserAsExceptionalPath(TestCase):
 

@@ -36,7 +36,8 @@ This TestSuite runs the unit tests included in DPDK for pmd performance.
 """
 
 import re
-from test_case import TestCase
+
+from framework.test_case import TestCase
 
 #
 #

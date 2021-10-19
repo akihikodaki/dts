@@ -34,11 +34,12 @@ DPDK Test suite.
 vhost/virtio-user pvp with 2M hugepage.
 """
 
-import utils
 import time
-from test_case import TestCase
-from settings import HEADER_SIZE
-from pktgen import PacketGeneratorHelper
+
+import framework.utils as utils
+from framework.pktgen import PacketGeneratorHelper
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 
 class TestPVPVirtioWith2Mhuge(TestCase):

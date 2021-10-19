@@ -36,16 +36,16 @@ import copy
 import itertools
 import operator
 from functools import reduce
-from typing import List, FrozenSet, Union, Iterable, Tuple
+from typing import FrozenSet, Iterable, List, Tuple, Union
 
 from scapy.layers.l2 import Ether
 from scapy.packet import Raw
 
-from flow.enums import FlowItemType, FlowActionType
-from flow.exceptions import InvalidFlowItemException
-from flow.flow_action_items import ActionFlowItem
-from flow.flow_items import FlowItem
-from flow.flow_pattern_items import PatternFlowItem, TUNNELING_PROTOCOLS
+from .enums import FlowActionType, FlowItemType
+from .exceptions import InvalidFlowItemException
+from .flow_action_items import ActionFlowItem
+from .flow_items import FlowItem
+from .flow_pattern_items import TUNNELING_PROTOCOLS, PatternFlowItem
 
 # Get reserved mac addresses
 NEVER_MATCH_PACKET = Ether(src="", dst="") / Raw('\x00' * 64)

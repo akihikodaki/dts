@@ -34,12 +34,11 @@ DPDK Test suite.
 Test Timer.
 """
 
-import utils
 import re
 import time
 
-
-from test_case import TestCase
+import framework.utils as utils
+from framework.test_case import TestCase
 
 
 class TestTimer(TestCase):

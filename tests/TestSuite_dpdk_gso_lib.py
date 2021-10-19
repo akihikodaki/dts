@@ -36,13 +36,14 @@ DPDK gso lib test suite.
 In this suite, in order to check the performance of gso lib, will use one
 hostcpu to start qemu and only have one vcpu
 """
-import time
-import utils
 import re
-from test_case import TestCase
-from virt_common import VM
-from config import UserConf
-import vhost_peer_conf as peer
+import time
+
+import framework.utils as utils
+import tests.vhost_peer_conf as peer
+from framework.config import UserConf
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 
 class TestDPDKGsoLib(TestCase):

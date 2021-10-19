@@ -1,11 +1,12 @@
 import re
-from packet import Packet
-from pmd_output import PmdOutput
-from test_case import TestCase
-import rte_flow_common as rfc
-import utils
-from utils import GREEN, RED
 import time
+
+import framework.utils as utils
+import tests.rte_flow_common as rfc
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+from framework.utils import GREEN, RED
 
 Mac_list = ['00:11:22:33:44:55', '00:11:22:33:44:11', '00:11:22:33:44:22', '00:11:22:33:44:33']
 

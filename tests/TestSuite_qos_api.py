@@ -34,14 +34,15 @@ DPDK Test suite.
 Test QOS API in DPDK.
 """
 
-import utils
-import string
-import re
-import time
 import os
-from pktgen import PacketGeneratorHelper
-from test_case import TestCase
-from pmd_output import PmdOutput
+import re
+import string
+import time
+
+import framework.utils as utils
+from framework.pktgen import PacketGeneratorHelper
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 
 class TestQosApi(TestCase):

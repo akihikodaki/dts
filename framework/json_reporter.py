@@ -31,6 +31,7 @@
 
 import json
 
+
 class JSONReporter(object):
 
     def __init__(self, filename):

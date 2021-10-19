@@ -41,11 +41,12 @@ RX queue in each case. Those packets are then forwarded by each process which
 sends them out by writing them directly to a suitable TX queue.
 """
 
-import time
 import re
-import utils
-from test_case import TestCase
-from virt_common import VM
+import time
+
+import framework.utils as utils
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 
 class TestVdevPrimarySecondary(TestCase):

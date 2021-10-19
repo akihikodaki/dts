@@ -32,9 +32,9 @@
 Folders for framework running environment.
 """
 import os
-import sys
 import re
 import socket
+import sys
 
 FOLDERS = {
     'Framework': 'framework',

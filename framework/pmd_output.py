@@ -32,8 +32,9 @@
 import os
 import re
 from time import sleep
-from settings import TIMEOUT, PROTOCOL_PACKET_SIZE, get_nic_driver
-from utils import create_mask
+
+from .settings import PROTOCOL_PACKET_SIZE, TIMEOUT, get_nic_driver
+from .utils import create_mask
 
 
 class PmdOutput():

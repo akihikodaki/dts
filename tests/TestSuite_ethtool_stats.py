@@ -34,20 +34,20 @@ DPDK Test suite.
 Test support of dpdk-procinfo tool feature
 '''
 
+import os
 import re
 import time
-import os
 import traceback
-
-from utils import create_mask as dts_create_mask
-from test_case import TestCase
-from pmd_output import PmdOutput
-from exception import VerifyFailure
-
-from packet import Packet
-from scapy.sendrecv import sendp
-from settings import HEADER_SIZE
 from functools import reduce
+
+from scapy.sendrecv import sendp
+
+from framework.exception import VerifyFailure
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
+from framework.utils import create_mask as dts_create_mask
 
 
 class TestEthtoolStats(TestCase):

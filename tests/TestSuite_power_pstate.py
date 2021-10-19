@@ -29,18 +29,19 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
-import time
 import json
+import os
 import shutil
+import time
 import traceback
 from collections import Counter
 from pprint import pformat
 
-# import dts libs
-from test_case import TestCase
-from exception import VerifyFailure
-from utils import create_mask
+from framework.exception import VerifyFailure
+
+# import framework.dts as dts libs
+from framework.test_case import TestCase
+from framework.utils import create_mask
 
 
 class TestPowerPstate(TestCase):

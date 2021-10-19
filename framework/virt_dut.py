@@ -32,14 +32,21 @@
 import os
 import re
 import time
-import settings
-from utils import RED, parallel_lock
-from config import PortConf, AppNameConf
-from settings import NICS, LOG_NAME_SEP, get_netdev, load_global_setting, HOST_BUILD_TYPE_SETTING
-from project_dpdk import DPDKdut
-from dut import Dut
-from net_device import GetNicObj
-from net_device import RemoveNicObj
+
+import framework.settings as settings
+from nics.net_device import GetNicObj, RemoveNicObj
+
+from .config import AppNameConf, PortConf
+from .dut import Dut
+from .project_dpdk import DPDKdut
+from .settings import (
+    HOST_BUILD_TYPE_SETTING,
+    LOG_NAME_SEP,
+    NICS,
+    get_netdev,
+    load_global_setting,
+)
+from .utils import RED, parallel_lock
 
 
 class VirtDut(DPDKdut):

@@ -29,13 +29,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import json         # json format
-import re
-import os
-import sys
 import inspect
+import json  # json format
+import os
+import re
 import socket
 import struct
+import sys
 import threading
 import types
 from functools import wraps

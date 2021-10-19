@@ -33,8 +33,9 @@
 DPDK Test suite.
 Layer-3 forwarding test script.
 """
-from test_case import TestCase
-from perf_test_base import PerfTestBase, MATCH_MODE, IP_TYPE
+from framework.test_case import TestCase
+
+from .perf_test_base import IP_TYPE, MATCH_MODE, PerfTestBase
 
 
 class TestL3fwd(TestCase, PerfTestBase):

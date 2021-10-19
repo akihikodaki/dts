@@ -35,12 +35,13 @@ DPDK Test suite.
 Test port hot plug.
 """
 
-import time
-import re
-import utils
-from test_case import TestCase
-from packet import Packet
 import os
+import re
+import time
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.test_case import TestCase
 
 
 class TestPortHotPlug(TestCase):

@@ -29,8 +29,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from net_device import GetNicObj
-from config import SuiteConf
+from framework.config import SuiteConf
+from nics.net_device import GetNicObj
 
 conf = SuiteConf('cryptodev_sample')
 

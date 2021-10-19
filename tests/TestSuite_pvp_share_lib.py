@@ -34,10 +34,10 @@ DPDK Test suite.
 The feature need compile dpdk as shared libraries.
 """
 
-import utils
-from test_case import TestCase
-from settings import HEADER_SIZE
-from pktgen import PacketGeneratorHelper
+import framework.utils as utils
+from framework.pktgen import PacketGeneratorHelper
+from framework.settings import HEADER_SIZE
+from framework.test_case import TestCase
 
 
 class TestPVPShareLib(TestCase):

@@ -29,15 +29,15 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import random
 import re
 import time
 
-from virt_common import VM
-from test_case import TestCase
-from pmd_output import PmdOutput
-from packet import Packet
-from settings import get_nic_name
-import random
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.settings import get_nic_name
+from framework.test_case import TestCase
+from framework.virt_common import VM
 
 VM_CORES_MASK = 'all'
 MAX_VLAN = 4095

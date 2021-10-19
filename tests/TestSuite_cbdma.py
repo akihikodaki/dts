@@ -33,13 +33,14 @@
 DPDK Test suite.
 """
 
-import utils
 import re
 import time
-from test_case import TestCase
-from packet import Packet
-from pktgen import TRANSMIT_CONT
-from pmd_output import PmdOutput
+
+import framework.utils as utils
+from framework.packet import Packet
+from framework.pktgen import TRANSMIT_CONT
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
 
 
 class TestCBDMA(TestCase):

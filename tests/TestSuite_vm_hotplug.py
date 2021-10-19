@@ -39,9 +39,10 @@ Test some vm hotplug function with vfio
 import os
 import re
 import time
-from qemu_kvm import QEMUKvm
-from test_case import TestCase
-from pmd_output import PmdOutput
+
+from framework.pmd_output import PmdOutput
+from framework.qemu_kvm import QEMUKvm
+from framework.test_case import TestCase
 
 VM_CORES_MASK = 'all'
 

@@ -38,12 +38,13 @@ Test the IP reassembly feature
 
 import os
 import time
-from scapy.utils import struct, socket, PcapWriter
-from scapy.layers.inet import Ether, IP, TCP, fragment
-from scapy.route import *
 
-import utils
-from test_case import TestCase
+from scapy.layers.inet import IP, TCP, Ether, fragment
+from scapy.route import *
+from scapy.utils import PcapWriter, socket, struct
+
+import framework.utils as utils
+from framework.test_case import TestCase
 
 
 class IpReassemblyTestConfig(object):

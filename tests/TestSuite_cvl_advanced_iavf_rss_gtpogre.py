@@ -32,10 +32,12 @@
 
 import re
 import time
-from packet import Packet
-from pmd_output import PmdOutput
-from test_case import TestCase
-from rte_flow_common import RssProcessing
+
+from framework.packet import Packet
+from framework.pmd_output import PmdOutput
+from framework.test_case import TestCase
+
+from .rte_flow_common import RssProcessing
 
 # ipv4+ipv4+ipv4
 mac_ipv4_gre_ipv4_gtpu_ipv4_basic = {

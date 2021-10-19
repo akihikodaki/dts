@@ -41,31 +41,25 @@ import os
 import re
 import subprocess
 import time
-from typing import List, Union, Tuple, Pattern
+from typing import List, Pattern, Tuple, Union
 
-import time
-
-from rst import RstReport
-import utils
-from exception import VerifyFailure
-from pktgen import PacketGeneratorHelper
-from scapy.layers.inet import UDP, TCP, IP
+from scapy.layers.inet import IP, TCP, UDP
 from scapy.layers.inet6 import IPv6
-from scapy.layers.l2 import Ether, GRE
+from scapy.layers.l2 import GRE, Ether
 from scapy.layers.sctp import SCTP
 from scapy.layers.vxlan import VXLAN
 from scapy.packet import Raw
-from scapy.utils import wrpcap, rdpcap
-from test_capabilities import DRIVER_TEST_LACK_CAPA
-from test_case import TestCase
+from scapy.utils import rdpcap, wrpcap
 
-from pmd_output import PmdOutput
-from test_capabilities import DRIVER_TEST_LACK_CAPA
-from pktgen import PacketGeneratorHelper
-from exception import VerifyFailure
-import packet
-
-from settings import FOLDERS
+import framework.packet as packet
+import framework.utils as utils
+from framework.exception import VerifyFailure
+from framework.pktgen import PacketGeneratorHelper
+from framework.pmd_output import PmdOutput
+from framework.rst import RstReport
+from framework.settings import FOLDERS
+from framework.test_capabilities import DRIVER_TEST_LACK_CAPA
+from framework.test_case import TestCase
 
 l3_proto_classes = [
     IP,

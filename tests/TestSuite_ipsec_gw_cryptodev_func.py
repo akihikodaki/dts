@@ -31,11 +31,12 @@
 
 import binascii
 import time
-import utils
-from test_case import TestCase
-import packet
 
-import cryptodev_common as cc
+import framework.packet as packet
+import framework.utils as utils
+import tests.cryptodev_common as cc
+from framework.test_case import TestCase
+
 
 class TestIPsecGW(TestCase):
 
