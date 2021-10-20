@@ -45,6 +45,656 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase, skip_unsupported_pkg
 from framework.utils import BLUE, GREEN, RED
 
+#l4 mask
+#ipv4/ipv6 + udp/tcp pipeline mode
+mac_ipv4_udp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=2048,dport=1)/Raw("x"*80)',
+        'Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=2303,dport=3841)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=2047,dport=2)/Raw("x"*80)',
+        'Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=2058,dport=3586)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_ipv4_udp_l4_mask_in_queue_01 = {
+    "name":"tv_mac_ipv4_udp_l4_mask_queue_01",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp src is 2152 src mask 0xff00 dst is 1281 dst mask 0x00ff / end actions queue index 2 / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv4_udp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":2}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv4_udp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":2}},
+                  "expect_results":{"expect_pkts":2}}
+}
+
+mac_ipv4_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/TCP(sport=2313,dport=23)/Raw("x"*80)',
+        'Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/TCP(sport=2553,dport=23)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/TCP(sport=2344,dport=23)/Raw("x"*80)',
+        'Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/TCP(sport=2601,dport=23)/Raw("x"*80)'
+    ]
+}
+tv_mac_ipv4_tcp_l4_mask_drop_02 = {
+    "name":"tv_mac_ipv4_tcp_l4_mask_drop_02",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / tcp src is 2345 src mask 0x0f0f / end actions drop / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv4_tcp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_drop,
+                             "param":{"expect_port":0, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv4_tcp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
+                                "param":{"expect_port":0, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":2}}
+}
+
+mac_ipv6_udp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=10,dport=3328)/Raw("x"*80)',
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=20,dport=3343)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=50,dport=3077)/Raw("x"*80)',
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=50,dport=3349)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_ipv6_udp_l4_mask_in_queue_03 = {
+    "name":"tv_mac_ipv6_udp_l4_mask_queue_03",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv6 / udp dst is 3333 dst mask 0x0ff0 / end actions queue index 5 / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv6_udp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":5}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv6_udp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":5}},
+                  "expect_results":{"expect_pkts":2}}
+}
+
+mac_ipv6_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=10,dport=3328)/Raw("x"*80)',
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=20,dport=3343)/Raw("x"*80)'],
+     "mismatched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=50,dport=3077)/Raw("x"*80)',
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=50,dport=3349)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_ipv6_tcp_l4_mask_drop_04 = {
+    "name":"tv_mac_ipv6_tcp_l4_mask_frag_drop_04",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv6 / tcp dst is 3333 dst mask 0x0ff0 / end actions drop / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv6_tcp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_drop,
+                             "param":{"expect_port":0, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv6_tcp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
+                                "param":{"expect_port":0, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":2}}
+}
+
+tvs_mac_non_tunnle_l4_mask_pipeline_mode = [
+    tv_mac_ipv4_udp_l4_mask_in_queue_01,
+    tv_mac_ipv4_tcp_l4_mask_drop_02,
+    tv_mac_ipv6_udp_l4_mask_in_queue_03,
+    tv_mac_ipv6_tcp_l4_mask_drop_04
+    ]
+
+
+#test vxlan pipeline mode
+mac_ipv4_udp_vxlan_eth_ipv4_udp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=32,dport=22)/Raw("x"*80)',
+        'Ether()/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=16,dport=22)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=33,dport=22)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_ipv4_udp_vxlan_eth_ipv4_udp_l4_mask_in_queue_01 = {
+    "name":"tv_mac_ipv4_udp_vxlan_eth_ipv4_udp_l4_mask_in_queue_01",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 / udp src is 32 src mask 0x0f / end actions queue index 2 / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv4_udp_vxlan_eth_ipv4_udp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":2}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv4_udp_vxlan_eth_ipv4_udp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":2}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_ipv4_udp_vxlan_eth_ipv4_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=32,dport=22)/Raw("x"*80)',
+        'Ether()/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=16,dport=22)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=33,dport=22)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_ipv4_udp_vxlan_eth_ipv4_tcp_l4_mask_in_queue_02 = {
+    "name":"tv_mac_ipv4_udp_vxlan_eth_ipv4_tcp_l4_mask_in_queue_02",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 / tcp src is 32 src mask 0x0f / end actions queue index 3 / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv4_udp_vxlan_eth_ipv4_tcp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":3}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv4_udp_vxlan_eth_ipv4_tcp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":3}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+tvs_mac_ipv4_udp_vxlan_eth_ipv4_l4_mask_pipeline_mode = [
+    tv_mac_ipv4_udp_vxlan_eth_ipv4_udp_l4_mask_in_queue_01,
+    tv_mac_ipv4_udp_vxlan_eth_ipv4_tcp_l4_mask_in_queue_02
+    ]
+
+
+#test nvgre non-pipeline mode
+mac_ipv4_nvgre_eth_ipv4_udp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=1536)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=1281)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_ipv4_nvgre_eth_ipv4_udp_l4_mask_in_queue_01 = {
+    "name":"tv_mac_ipv4_nvgre_eth_ipv4_udp_l4_mask_in_queue_01",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 1280 src mask 0x00ff / end actions queue index 7 / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv4_nvgre_eth_ipv4_udp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":7}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_ipv4_nvgre_eth_ipv4_udp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":7}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_ipv4_nvgre_eth_ipv4_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=50,dport=1536)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=50,dport=1281)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_ipv4_nvgre_eth_ipv4_tcp_l4_mask_in_queue_02 = {
+    "name":"tv_mac_ipv4_nvgre_eth_ipv4_tcp_l4_mask_in_queue_02",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp dst is 1280 dst mask 0x00ff / end actions queue index 4 / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv4_nvgre_eth_ipv4_tcp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":4}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_ipv4_nvgre_eth_ipv4_tcp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":4}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+tvs_mac_ipv4_nvgre_eth_ipv4_l4_mask_non_pipeline_mode = [
+    tv_mac_ipv4_nvgre_eth_ipv4_udp_l4_mask_in_queue_01,
+    tv_mac_ipv4_nvgre_eth_ipv4_tcp_l4_mask_in_queue_02
+]
+
+
+
+#test gtpu pipeline mode
+mac_ipv4_gtpu_ipv4_udp_l4_mask_scapy_str = {
+    "matched":[
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/UDP(sport=1280)/Raw("x"*80)',
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/UDP(sport=1535)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/UDP(sport=1536)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_l4_mask_queue_region_01 = {
+    "name":"tv_mac_ipv4_gtpu_ipv4_udp_l4_mask_queue_region_01",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp src is 1280 src mask 0xf00 / end actions rss queues 4 5 end / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv4_gtpu_ipv4_udp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_queue_region,
+                             "param":{"expect_port":0, "expect_queues":[4, 5]}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv4_gtpu_ipv4_udp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
+                                "param":{"expect_port":0, "expect_queues":[4, 5]}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_ipv4_gtpu_ipv4_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/TCP(sport=1280)/Raw("x"*80)',
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/TCP(sport=1535)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/TCP(sport=1536)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_l4_mask_in_queue_02 = {
+    "name":"tv_mac_ipv4_gtpu_ipv4_tcp_l4_mask_in_queue_02",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp src is 1280 src mask 0xf00 / end actions queue index 3 / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv4_gtpu_ipv4_tcp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":3}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv4_gtpu_ipv4_tcp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":3}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_ipv4_gtpu_eh_ipv4_udp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.1.1")/UDP(dport=224)/("x"*80)',
+        'Ether()/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.1.1")/UDP(dport=239)/("x"*80)'],
+    "mismatched": [
+        'Ether()/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.1.1")/UDP(dport=241)/("x"*80)'
+    ]
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_l4_mask_in_queue_03 = {
+    "name":"tv_mac_ipv4_gtpu_eh_ipv4_udp_l4_mask_in_queue_03",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / udp dst is 230 dst mask 0x0f0 / end actions queue index 7 / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv4_gtpu_eh_ipv4_udp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":7}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv4_gtpu_eh_ipv4_udp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":7}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_ipv4_gtpu_eh_ipv4_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.1.1")/TCP(dport=224)/("x"*80)',
+        'Ether()/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.1.1")/TCP(dport=239)/("x"*80)'],
+    "mismatched": [
+        'Ether()/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.1.1")/UDP(dport=241)/("x"*80)'
+    ]
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4_mask_drop_04 = {
+    "name":"tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4_mask_frag_drop_04",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / tcp dst is 230 dst mask 0x0f0 / end actions drop / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv4_gtpu_eh_ipv4_tcp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_drop,
+                             "param":{"expect_port":0, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv4_gtpu_eh_ipv4_tcp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
+                                "param":{"expect_port":0, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_ipv4_gtpu_ipv6_udp_l4_mask_scapy_str = {
+    "matched":[
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=1280)/Raw("x"*80)',
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=1535)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=1536)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_l4_mask_queue_region_05 = {
+    "name":"tv_mac_ipv4_gtpu_ipv6_udp_l4_mask_queue_region_05",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 1280 src mask 0xf00 / end actions rss queues 4 5 end / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv4_gtpu_ipv6_udp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_queue_region,
+                             "param":{"expect_port":0, "expect_queues":[4, 5]}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv4_gtpu_ipv6_udp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
+                                "param":{"expect_port":0, "expect_queues":[4, 5]}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_ipv4_gtpu_ipv6_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=1280)/Raw("x"*80)',
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=1535)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=1536)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_l4_mask_in_queue_06 = {
+    "name":"tv_mac_ipv4_gtpu_ipv6_tcp_l4_mask_in_queue_06",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 1280 src mask 0xf00 / end actions queue index 7 / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv4_gtpu_ipv6_tcp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":7}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv4_gtpu_ipv6_tcp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":7}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_ipv4_gtpu_eh_ipv6_udp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=224)/Raw("x"*80)',
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=239)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=245)/Raw("x"*80)'
+        ]
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_l4_mask_in_queue_07 = {
+    "name":"tv_mac_ipv4_gtpu_eh_ipv6_udp_l4_mask_in_queue_07",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 230 src mask 0x0f0 / end actions queue index 5 / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv4_gtpu_eh_ipv6_udp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":5}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv4_gtpu_eh_ipv6_udp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":5}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_ipv4_gtpu_eh_ipv6_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=224)/Raw("x"*80)',
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=239)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=245)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_l4_mask_drop_08 = {
+    "name":"tv_mac_ipv4_gtpu_eh_ipv6_tcp_l4_mask_frag_drop_08",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp dst is 230 dst mask 0x0f0 / end actions drop / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv4_gtpu_eh_ipv6_tcp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_drop,
+                             "param":{"expect_port":0, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv4_gtpu_eh_ipv6_tcp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
+                                "param":{"expect_port":0, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+tvs_mac_ipv4_gtpu_l4_mask_pipeline_mode = [
+    tv_mac_ipv4_gtpu_ipv4_udp_l4_mask_queue_region_01,
+    tv_mac_ipv4_gtpu_ipv4_tcp_l4_mask_in_queue_02,
+    tv_mac_ipv4_gtpu_eh_ipv4_udp_l4_mask_in_queue_03,
+    tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4_mask_drop_04,
+    tv_mac_ipv4_gtpu_ipv6_udp_l4_mask_queue_region_05,
+    tv_mac_ipv4_gtpu_ipv6_tcp_l4_mask_in_queue_06,
+    tv_mac_ipv4_gtpu_eh_ipv6_udp_l4_mask_in_queue_07,
+    tv_mac_ipv4_gtpu_eh_ipv6_tcp_l4_mask_drop_08
+]
+
+#test gtpu non-pipeline mode
+mac_ipv6_gtpu_ipv4_udp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=1280)/Raw("x"*80)',
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=1535)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=1536)/Raw("x"*80)'
+        ]
+}
+
+tv_mac_ipv6_gtpu_ipv4_udp_l4_mask_in_queue_01 = {
+    "name":"tv_mac_ipv6_gtpu_ipv4_udp_l4_mask_in_queue_01",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 / udp / gtpu / ipv4 / udp src is 1280 src mask 0xf00 / end actions queue index 8 / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv6_gtpu_ipv4_udp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":8}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv6_gtpu_ipv4_udp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":8}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_ipv6_gtpu_ipv4_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(dport=1280)/Raw("x"*80)',
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(dport=1535)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(dport=1536)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_ipv6_gtpu_ipv4_tcp_l4_mask_drop_02 = {
+    "name":"tv_mac_ipv6_gtpu_ipv4_tcp_l4_mask_frag_drop_02",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 / udp / gtpu / ipv4 / tcp dst is 1280 dst mask 0xf00 / end actions drop / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv6_gtpu_ipv4_tcp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_drop,
+                             "param":{"expect_port":0, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv6_gtpu_ipv4_tcp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
+                                "param":{"expect_port":0, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_ipv6_gtpu_eh_ipv4_udp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=224)/Raw("x"*80)',
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=239)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=245)/Raw("x"*80)'
+        ]
+}
+
+tv_mac_ipv6_gtpu_eh_ipv4_udp_l4_mask_in_queue_03 = {
+    "name":"tv_mac_ipv6_gtpu_eh_ipv4_udp_l4_mask_in_queue_03",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc / ipv4 / udp src is 230 src mask 0x0f0 / end actions queue index 5 / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv6_gtpu_eh_ipv4_udp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":5}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv6_gtpu_eh_ipv4_udp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":5}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_ipv6_gtpu_eh_ipv4_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(dport=224)/Raw("x"*80)',
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(dport=239)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(dport=245)/Raw("x"*80)'
+     ]
+}
+
+tv_mac_ipv6_gtpu_eh_ipv4_tcp_l4_mask_drop_04 = {
+    "name":"tv_mac_ipv6_gtpu_eh_ipv4_tcp_l4_mask_frag_drop_04",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc / ipv4 / tcp dst is 230 dst mask 0x0f0 / end actions drop / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv6_gtpu_eh_ipv4_tcp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_drop,
+                             "param":{"expect_port":0, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv6_gtpu_eh_ipv4_tcp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
+                                "param":{"expect_port":0, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_ipv6_gtpu_ipv6_udp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=1280)/Raw("x"*80)',
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=1535)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=1536)/Raw("x"*80)'
+        ]
+}
+
+tv_mac_ipv6_gtpu_ipv6_udp_l4_mask_in_queue_05 = {
+    "name":"tv_mac_ipv6_gtpu_ipv6_udp_l4_mask_in_queue_05",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 1280 src mask 0xf00 / end actions queue index 3 / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv6_gtpu_ipv6_udp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":3}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv6_gtpu_ipv6_udp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":3}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_ipv6_gtpu_ipv6_tcp_l4_mask_scapy_str = {
+    "matched":[
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=224)/Raw("x"*80)',
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=239)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=245)/Raw("x"*80)'
+    ]
+}
+
+tv_mac_ipv6_gtpu_ipv6_tcp_l4_mask_queue_region_06 = {
+    "name":"tv_mac_ipv6_gtpu_ipv6_tcp_l4_mask_queue_region_06",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp dst is 230 dst mask 0x0f0 / end actions rss queues 2 3 end / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv6_gtpu_ipv6_tcp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_queue_region,
+                             "param":{"expect_port":0, "expect_queues":[2, 3]}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv6_gtpu_ipv6_tcp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
+                                "param":{"expect_port":0, "expect_queues":[2, 3]}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_ipv6_gtpu_eh_ipv6_udp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=32)/Raw("x"*80)',
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=16)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=33)/Raw("x"*80)'
+     ]
+}
+
+tv_mac_ipv6_gtpu_eh_ipv6_udp_l4_mask_drop_07 = {
+    "name":"tv_mac_ipv6_gtpu_eh_ipv6_udp_l4_mask_frag_drop_07",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp dst is 32 dst mask 0x0f / end actions drop / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv6_gtpu_eh_ipv6_udp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_drop,
+                             "param":{"expect_port":0, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv6_gtpu_eh_ipv6_udp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
+                                "param":{"expect_port":0, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+mac_ipv6_gtpu_eh_ipv6_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=32)/Raw("x"*80)',
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=16)/Raw("x"*80)'],
+    "mismatched": [
+        'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=33)/Raw("x"*80)'
+        ]
+}
+
+tv_mac_ipv6_gtpu_eh_ipv6_tcp_l4_mask_in_queue_08 = {
+    "name":"tv_mac_ipv6_gtpu_eh_ipv6_tcp_l4_mask_in_queue_08",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 32 src mask 0x0f / end actions queue index 7 / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_ipv6_gtpu_eh_ipv6_tcp_l4_mask_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":7}},
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":mac_ipv6_gtpu_eh_ipv6_tcp_l4_mask_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":7}},
+                  "expect_results":{"expect_pkts":1}}
+}
+
+tvs_mac_ipv6_gtpu_l4_mask_non_pipeline_mode = [
+    tv_mac_ipv6_gtpu_ipv4_udp_l4_mask_in_queue_01,
+    tv_mac_ipv6_gtpu_ipv4_tcp_l4_mask_drop_02,
+    tv_mac_ipv6_gtpu_eh_ipv4_udp_l4_mask_in_queue_03,
+    tv_mac_ipv6_gtpu_eh_ipv4_tcp_l4_mask_drop_04,
+    tv_mac_ipv6_gtpu_ipv6_udp_l4_mask_in_queue_05,
+    tv_mac_ipv6_gtpu_ipv6_tcp_l4_mask_queue_region_06,
+    tv_mac_ipv6_gtpu_eh_ipv6_udp_l4_mask_drop_07,
+    tv_mac_ipv6_gtpu_eh_ipv6_tcp_l4_mask_in_queue_08
+]
+
 #vxlan non-pipeline mode
 #test vector mac_ipv4_vxlan_ipv4
 mac_ipv4_vxlan_ipv4_scapy_str = {
@@ -2708,6 +3358,23 @@ class CVLSwitchFilterTest(TestCase):
             overall_result = self.save_results(pattern_name, "matched packets after destroying", result_flag, log_msg, overall_result)
         self.display_results()
         self.verify(overall_result == True, "Some subcase failed.")
+
+     #l4 mask
+    def test_mac_non_tunnle_l4_mask_pipeline_mode(self):
+        self._rte_flow_validate_pattern(tvs_mac_non_tunnle_l4_mask_pipeline_mode)
+
+    def test_mac_ipv4_udp_vxlan_eth_ipv4_l4_mask_pipeline_mode(self):
+        self._rte_flow_validate_pattern(tvs_mac_ipv4_udp_vxlan_eth_ipv4_l4_mask_pipeline_mode)
+
+    def test_mac_ipv4_nvgre_eth_ipv4_l4_mask_non_pipeline_mode(self):
+        self._rte_flow_validate_pattern(tvs_mac_ipv4_nvgre_eth_ipv4_l4_mask_non_pipeline_mode)
+
+    def test_mac_ipv4_gtpu_l4_mask_pipeline_mode(self):
+        self._rte_flow_validate_pattern(tvs_mac_ipv4_gtpu_l4_mask_pipeline_mode)
+
+    def test_mac_ipv6_gtpu_l4_mask_non_pipeline_mode(self):
+        self._rte_flow_validate_pattern(tvs_mac_ipv6_gtpu_l4_mask_non_pipeline_mode)
+
 
     #vxlan non-pipeline mode
     def test_mac_ipv4_vxlan_ipv4(self):
