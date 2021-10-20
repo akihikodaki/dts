@@ -315,7 +315,10 @@ class TestVfKernel(TestCase):
         self.verify("Link detected: yes" in out, "Wrong link status")
 
         # Unload VF1 kernel driver and expect no problem for VF0
-        self.vm1_dut.send_expect("rmmod %svf" % self.kdriver, "#")
+        if self.kdriver == "i40e":
+            self.vm1_dut.send_expect("rmmod iavf", "#")
+        else:
+            self.vm1_dut.send_expect("rmmod %svf" % self.kdriver, "#")
         out = self.vm0_dut.send_expect("ethtool %s" % self.vm0_intf0, "#")
         self.verify("Link detected: yes" in out, "Wrong link status")
         vm0_vf0_mac = self.vm0_dut.ports_info[0]['port'].get_mac_addr()
@@ -330,20 +333,29 @@ class TestVfKernel(TestCase):
         self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0,
                                            vm0_vf0_mac), "reset PF testpmd impact VF RX failure")
 
-        self.vm1_dut.send_expect("modprobe %svf" % self.kdriver, "#")
+        if self.kdriver == "i40e":
+            self.vm1_dut.send_expect("modprobe iavf", "#")
+        else:
+            self.vm1_dut.send_expect("modprobe %svf" % self.kdriver, "#")
         out = self.vm0_dut.send_expect("ethtool %s" % self.vm0_intf0, "#")
         self.verify("Link detected: yes" in out, "Wrong link status")
         vm0_vf0_mac = self.vm0_dut.ports_info[0]['port'].get_mac_addr()
         self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0,
                                            vm0_vf0_mac), "load VF1 kernel driver impact VF0")
 
-        self.vm1_dut.send_expect("rmmod %svf" % self.kdriver, "#")
+        if self.kdriver == "i40e":
+            self.vm1_dut.send_expect("rmmod iavf", "#")
+        else:
+            self.vm1_dut.send_expect("rmmod %svf" % self.kdriver, "#")
         out = self.vm0_dut.send_expect("ethtool %s" % self.vm0_intf0, "#")
         self.verify("Link detected: yes" in out, "Wrong link status")
         vm0_vf0_mac = self.vm0_dut.ports_info[0]['port'].get_mac_addr()
         self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0,
                                            vm0_vf0_mac), "Reset VF1 kernel driver impact VF0")
-        self.vm1_dut.send_expect("modprobe %svf" % self.kdriver, "#")
+        if self.kdriver == "i40e":
+            self.vm1_dut.send_expect("modprobe iavf", "#")
+        else:
+            self.vm1_dut.send_expect("modprobe %svf" % self.kdriver, "#")
 
     def test_address(self):
         """
@@ -1048,12 +1060,19 @@ class TestVfKernel(TestCase):
         Load kernel driver stress
         """
         for i in range(100):
-            out = self.vm0_dut.send_expect("rmmod %svf" % self.kdriver, "#")
-            self.verify('error' not in out,
+            if self.kdriver == "i40e":
+                out = self.vm0_dut.send_expect("rmmod iavf", "#")
+                self.verify('error' not in out,
+                        "stress error for rmmod iavf:%s" %out)
+                out = self.vm0_dut.send_expect("modprobe iavf", "#")
+                self.verify('error' not in out, "stress error for modprobe iavf:%s" %out)
+            else:
+                out = self.vm0_dut.send_expect("rmmod %svf" % self.kdriver, "#")
+                self.verify('error' not in out,
                         "stress error for rmmod %svf:%s" % (self.kdriver, out))
-            out = self.vm0_dut.send_expect("modprobe %svf" % self.kdriver, "#")
-            self.verify('error' not in out, "stress error for modprobe %svf:%s" % (
-                self.kdriver, out))
+                out = self.vm0_dut.send_expect("modprobe %svf" % self.kdriver, "#")
+                self.verify('error' not in out, "stress error for modprobe %svf:%s" % (
+                    self.kdriver, out))
 
     def tear_down(self):
         """
