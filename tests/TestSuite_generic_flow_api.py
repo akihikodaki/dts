@@ -2488,7 +2488,7 @@ class TestGeneric_flow_api(TestCase):
         Test with flow type dual vlan(QinQ).
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g",
-                                 "carlsville"], "NIC Unsupported: " + str(self.nic))
+                                 "carlsville", "fortpark_BASE-T", "fortpark_TLV"], "NIC Unsupported: " + str(self.nic))
         for queue in testQueues:
             self.pmdout.start_testpmd(
                 "Default", "  --portmask=0x1 --rxq=%d --txq=%d" % (queue, queue))
