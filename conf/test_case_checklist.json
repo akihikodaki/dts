@@ -3757,5 +3757,21 @@
              "Bug ID": "",
              "Comments": "NIC not support this case"
          }
+    ],
+"dual_vlan": [
+         {
+             "OS": [
+                 "ALL"
+             ],
+             "NIC": [
+                 "niantic",
+                 "foxville"
+             ],
+             "Target": [
+                 "ALL"
+             ],
+             "Bug ID": "",
+             "Comments": "NIC not support this case"
+         }
     ]
 }
