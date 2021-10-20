@@ -398,7 +398,7 @@ tv_mac_ipv4_pay_passthru = {
 
 tv_mac_ipv4_pay_drop = {
     "name": "test_mac_ipv4_pay_drop",
-    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions drop / end",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions drop / mark / end",
     "scapy_str": MAC_IPV4_PAY,
     "check_func": rfc.check_mark,
     "check_param": {"port_id": 0, "drop": True}
@@ -449,7 +449,7 @@ tv_mac_ipv4_udp_passthru = {
 
 tv_mac_ipv4_udp_drop = {
     "name": "test_mac_ipv4_udp_drop",
-    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / udp src is 22 dst is 23 / end actions drop / end",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / udp src is 22 dst is 23 / end actions drop / mark / end",
     "scapy_str": MAC_IPV4_UDP,
     "check_func": rfc.check_mark,
     "check_param": {"port_id": 0, "drop": True}
@@ -991,7 +991,7 @@ tv_mac_ipv4_tun_mac_ipv4_pay_passthru = {
 
 tv_mac_ipv4_tun_mac_ipv4_pay_drop = {
     "name": "test_mac_ipv4_tun_mac_ipv4_pay_drop",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / mark / end",
     "scapy_str": MAC_IPV4_TUN_IPV4_PAY_MAC_IPV4_TUN_MAC_IPV4_PAY,
     "check_func": rfc.check_mark,
     "check_param": {"port_id": 0, "drop": True}
@@ -1458,7 +1458,7 @@ tv_mac_ipv4_gtpu_passthru = {
 
 tv_mac_ipv4_gtpu_drop = {
     "name": "test_mac_ipv4_gtpu_drop",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / end actions drop / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / end actions drop / mark / end",
     "scapy_str": MAC_IPV4_GTPU,
     "check_func": rfc.check_mark,
     "check_param": {"port_id": 0, "drop": True}
@@ -1506,7 +1506,7 @@ tv_mac_ipv4_gtpu_3tuple_passthru = {
 
 tv_mac_ipv4_gtpu_3tuple_drop = {
     "name": "test_mac_ipv4_gtpu_3tuple_drop",
-    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / gtpu teid is 0x12345678 / end actions drop / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / gtpu teid is 0x12345678 / end actions drop / mark / end",
     "scapy_str": MAC_IPV4_GTPU,
     "check_func": rfc.check_mark,
     "check_param": {"port_id": 0, "drop": True}
@@ -1561,7 +1561,7 @@ tv_mac_ipv4_gtpu_dstip_passthru = {
 
 tv_mac_ipv4_gtpu_dstip_drop = {
     "name": "test_mac_ipv4_gtpu_dstip_drop",
-    "rule": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp / gtpu / end actions drop / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp / gtpu / end actions drop / mark / end",
     "scapy_str": {"match":
         [
             'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/IPv6()/TCP()/Raw("x"*20)'],
@@ -1626,7 +1626,7 @@ tv_mac_ipv4_gtpu_srcip_passthru = {
 
 tv_mac_ipv4_gtpu_srcip_drop = {
     "name": "test_mac_ipv4_gtpu_srcip_drop",
-    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / gtpu / end actions drop / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / gtpu / end actions drop / mark / end",
     "scapy_str": {"match":
         [
             'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.20", dst="192.168.0.22")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/IPv6()/UDP()/Raw("x"*20)'],
@@ -1924,7 +1924,7 @@ tv_mac_ipv6_gtpu_dstip_passthru = {
 
 tv_mac_ipv6_gtpu_dstip_drop = {
     "name": "test_mac_ipv6_gtpu_dstip_drop",
-    "rule": "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu / end actions drop / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu / end actions drop / mark / end",
     "scapy_str": {"match":
         [
             'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::3", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)'],
@@ -1989,7 +1989,7 @@ tv_mac_ipv6_gtpu_srcip_passthru = {
 
 tv_mac_ipv6_gtpu_srcip_drop = {
     "name": "test_mac_ipv6_gtpu_srcip_drop",
-    "rule": "flow create 0 ingress pattern eth / ipv6 src is 2001::2 / udp / gtpu / end actions drop / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 src is 2001::2 / udp / gtpu / end actions drop / mark / end",
     "scapy_str": {"match":
         [
             'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/IPv6()/TCP(sport=22, dport=23)/Raw("x"*20)'],
@@ -2136,11 +2136,11 @@ tv_l2_ethertype_mark = {
 tv_l2_ethertype_drop = {
     "name": "test_l2_ethertype_drop",
     "rule": [
-        "flow create 0 ingress pattern eth type is 0x8863 / end actions drop / end",
-        "flow create 0 ingress pattern eth type is 0x8864 / end actions drop / end",
-        "flow create 0 ingress pattern eth type is 0x0806 / end actions drop / end",
-        "flow create 0 ingress pattern eth type is 0x8100 / end actions drop / end",
-        "flow create 0 ingress pattern eth type is 0x88f7 / end actions drop / end"],
+        "flow create 0 ingress pattern eth type is 0x8863 / end actions drop / mark / end",
+        "flow create 0 ingress pattern eth type is 0x8864 / end actions drop / mark / end",
+        "flow create 0 ingress pattern eth type is 0x0806 / end actions drop / mark / end",
+        "flow create 0 ingress pattern eth type is 0x8100 / end actions drop / mark / end",
+        "flow create 0 ingress pattern eth type is 0x88f7 / end actions drop / mark / end"],
     "scapy_str": L2_Ethertype,
     "check_param": [
         {"port_id": 0, "drop": 1},
@@ -2194,7 +2194,7 @@ tv_mac_ipv4_esp_passthru = {
 
 tv_mac_ipv4_esp_drop = {
     "name": "tv_mac_ipv4_esp_drop",
-    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / esp spi is 7 / end actions drop / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / esp spi is 7 / end actions drop / mark / end",
     "scapy_str": {"match": MAC_IPV4_ESP['matched'],
                   "unmatched": MAC_IPV4_ESP['unmatched'],
                   },
@@ -2332,7 +2332,7 @@ tv_mac_ipv4_nat_t_esp_passthru = {
 
 tv_mac_ipv4_nat_t_esp_drop = {
     "name": "tv_mac_ipv4_nat_t_esp_drop",
-    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / esp spi is 7 / end actions drop / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / esp spi is 7 / end actions drop / mark / end",
     "scapy_str": {"match": MAC_IPV4_NAT_T_ESP['matched'],
                   "unmatched": MAC_IPV4_NAT_T_ESP['unmatched'],
                   },
@@ -2748,9 +2748,6 @@ class TestCVLFdir(TestCase):
             'flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 63 64 end / end',
             check_stats=False, check_msg='Invalid argument')
         self.validate_fdir_rule(
-            'flow validate 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x100 / end actions queue index 1 / end',
-            check_stats=False, check_msg='Bad arguments')
-        self.validate_fdir_rule(
             'flow validate 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / gtp_psc qfi is 0x5 / end actions queue index 2 / end',
             check_stats=False, check_msg='Bad arguments')
         self.validate_fdir_rule(
@@ -2916,7 +2913,6 @@ class TestCVLFdir(TestCase):
 
     def test_invalid_parameters_of_input_set(self):
         rule = [
-            "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x100 / end actions queue index 1 / end",
             "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / gtp_psc qfi is 0x5 / end actions queue index 2 / end",
             "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / end actions queue index 1 / end"
         ]
@@ -2929,19 +2925,19 @@ class TestCVLFdir(TestCase):
         self.check_fdir_rule(stats=False)
 
     def test_duplicated_rules(self):
-        rule = "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 1 / end"
+        rule = "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 1 / mark / end"
         rule_li = self.create_fdir_rule(rule, check_stats=True)
         self.create_fdir_rule(rule, check_stats=False, msg="Rule already exists!: File exists", validate=False)
         self.check_fdir_rule(stats=True, rule_list=rule_li)
 
     def test_conflicted_rules(self):
         rule1 = [
-            'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 1 / end',
+            'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 1 / mark / end',
             'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 1 / mark / end']
         rule_li = self.create_fdir_rule(rule1, check_stats=True)
         rule2 = [
-            "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 2 / end",
-            "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions drop / end",
+            "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 2 / mark / end",
+            "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions drop / mark / end",
             'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 2 / mark / end',
             'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions rss queues 2 3 end / mark / end',
             'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 3 / mark / end',
@@ -2949,8 +2945,7 @@ class TestCVLFdir(TestCase):
             'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2021 / end actions mark / end',
             'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end']
         self.create_fdir_rule(rule2[0:4], check_stats=False, msg="Rule already exists!: File exists", validate=False)
-        self.create_fdir_rule(rule2[4:7], check_stats=False, msg="error", validate=False)
-        self.create_fdir_rule(rule2[7:], check_stats=False, msg="Invalid input set: Invalid argument", validate=False)
+        self.create_fdir_rule(rule2[4:], check_stats=False, msg="error", validate=False)
         self.check_fdir_rule(stats=True, rule_list=rule_li)
 
     def test_conflicted_actions(self):
@@ -3000,29 +2995,31 @@ class TestCVLFdir(TestCase):
         switch_flag = "ice_flow_create(): Succeeded to create (2) flow"
         pkts = ['Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/Raw("x" * 80)',
                 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21") /UDP(sport=22, dport=23)/ Raw("x" * 80)']
-        rule1 = 'flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / end actions queue index 1 / end'
+        rule1 = 'flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / end actions queue index 1 / mark id 1 / end'
         out = self.pmd_output.execute_cmd(rule1)
         self.verify(fdir_flag in out, "fdir rule should be created")
         out = self.send_pkts_getouput(pkts=pkts)
-        rfc.check_mark(out, pkt_num=2, check_param={"port_id": 0, "queue": 1}, stats=True)
+        rfc.check_mark(out, pkt_num=2, check_param={"port_id": 0, "queue": 1,"mark_id":1}, stats=True)
 
         rule2 = "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 2 / end"
         out = self.pmd_output.execute_cmd(rule2)
         self.verify(switch_flag in out, "switch rule should be created")
         out = self.send_pkts_getouput(pkts=pkts[0])
-        rfc.check_mark(out, pkt_num=1, check_param={"port_id": 0, "queue": 1}, stats=True)
+        rfc.check_mark(out, pkt_num=1, check_param={"port_id": 0, "queue": 1,"mark_id":1}, stats=True)
         out = self.send_pkts_getouput(pkts=pkts[1])
         rfc.check_mark(out, pkt_num=1, check_param={"port_id": 0, "queue": 2}, stats=True)
 
+        rule3 = "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 2 / mark id 1 / end"
+        rule4 = "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / end actions queue index 1 / end"
         self.pmd_output.execute_cmd('flow flush 0')
-        out = self.pmd_output.execute_cmd(rule2)
+        out = self.pmd_output.execute_cmd(rule3)
         self.verify(fdir_flag in out, "fdir rule should be created")
         out = self.send_pkts_getouput(pkts=pkts[1])
-        rfc.check_mark(out, pkt_num=1, check_param={"port_id": 0, "queue": 2}, stats=True)
-        out = self.pmd_output.execute_cmd(rule1)
+        rfc.check_mark(out, pkt_num=1, check_param={"port_id": 0, "queue": 2,"mark_id":1}, stats=True)
+        out = self.pmd_output.execute_cmd(rule4)
         self.verify(switch_flag in out, "switch rule should be created")
         out = self.send_pkts_getouput(pkts=pkts[1])
-        rfc.check_mark(out, pkt_num=1, check_param={"port_id": 0, "queue": 1}, stats=True)
+        rfc.check_mark(out, pkt_num=1, check_param={"port_id": 0, "queue": 1,"mark_id":1}, stats=True)
 
     def test_count_for_1_rule(self):
         rule = ["flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / count / end",
