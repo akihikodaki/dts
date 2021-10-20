@@ -509,8 +509,7 @@ class Dut(Crb):
                         break
                 else:
                     # try to bind nic with iavf
-                    if driver == 'i40evf':
-                        driver = 'iavf'
+                    if driver == 'iavf':
                         self.send_expect('modprobe %s' % driver, '# ')
                         self.send_expect('echo %s > /sys/bus/pci/drivers/%s/bind'
                                          % (pci_bus, driver), '# ')
