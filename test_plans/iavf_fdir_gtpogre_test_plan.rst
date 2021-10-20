@@ -635,8 +635,6 @@ negative test case
     iavf_flow_create(): Failed to create flow
     port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Failed to create parser engine.: Invalid argument
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 src is 1.1.2.4 dst is 1.1.2.5 / gre / ipv6 / udp / gtpu teid is 0x12 / gtp_psc pdu_t is 1 qfi is 0x100 / end actions rss queues 4 5 end / mark id 23 / end
-    Bad arguments
 
     testpmd> flow create 0 ingress pattern eth / ipv4 src is 1.1.2.4 dst is 1.1.2.5 / gre / ipv4 / udp / gtpu teid is 0x100000000 / gtp_psc pdu_t is 1 qfi is 0x3 / end actions drop / end
     Bad arguments
