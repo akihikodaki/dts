@@ -682,7 +682,6 @@ Note: there may be error message change.
 
 7. Invalid value of input set::
 
-    flow validate 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x100 / end actions queue index 1 / end
     flow validate 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / gtp_psc qfi is 0x5 / end actions queue index 2 / end
     flow validate 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / end actions queue index 1 / end
 
@@ -773,7 +772,7 @@ Subcase 4: MAC_IPV4_PAY drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions drop / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped
    send unmatched packets, check the packets are not dropped.
@@ -903,7 +902,7 @@ Subcase 4: MAC_IPV4_UDP drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / udp src is 22 dst is 23 / end actions drop / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / udp src is 22 dst is 23 / end actions drop / mark / end
 
 2. send matched packet, check the packet is dropped.
    send unmatched packets, check the packets are not dropped.
@@ -1431,7 +1430,7 @@ Subcase 4: MAC_IPV4_TUN_MAC_IPV4_PAY drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped.
    send unmatched packets, check the packets are not dropped.
@@ -2014,7 +2013,7 @@ Subcase 4: MAC_IPV4_GTPU drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped.
    send unmatched packets, check the packets are not dropped.
@@ -2106,7 +2105,7 @@ Subcase 10: MAC_IPV4_GTPU 3 tuple drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / gtpu teid is 0x12345678  / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / gtpu teid is 0x12345678  / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped.
    send unmatched packets, check the packets are not dropped without FDIR matched ID.
@@ -2181,7 +2180,7 @@ Subcase 15: MAC_IPV4_GTPU outer dst ip drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp / gtpu / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp / gtpu / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped.
    send unmatched packets, check the packets are not dropped without FDIR matched ID.
@@ -2261,7 +2260,7 @@ Subcase 20: MAC_IPV4_GTPU outer src ip drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / gtpu  / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / gtpu  / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped.
    send unmatched packets, check the packets are not dropped without FDIR matched ID.
@@ -2673,7 +2672,7 @@ Subcase 9: MAC_IPV6_GTPU outer dst ipv6 drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth /  ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu / end actions drop / end
+    flow create 0 ingress pattern eth /  ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped.
    send unmatched packets, check the packets are not dropped without FDIR matched ID.
@@ -2753,7 +2752,7 @@ Subcase 14: MAC_IPV6_GTPU outer src ipv6 drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv6 src is 2001::2 / udp / gtpu / end actions drop / end
+    flow create 0 ingress pattern eth / ipv6 src is 2001::2 / udp / gtpu / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped.
    send unmatched packets, check the packets are not dropped without FDIR matched ID.
@@ -2882,7 +2881,7 @@ Subcase 4: L2 Ethertype drop
 
 1. create rules for PPPoED with drop action::
 
-    flow create 0 ingress pattern eth type is 0x8863 / end actions drop / end
+    flow create 0 ingress pattern eth type is 0x8863 / end actions drop / mark / end
 
 2. send matched packet,
    check the packets are dropped,
@@ -3008,7 +3007,7 @@ Subcase 4: MAC_IPV4_ESP drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / esp spi is 7 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / esp spi is 7 / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped
    send mismatched packets, check the packets are not dropped.
@@ -3208,7 +3207,7 @@ Subcase 4: MAC_IPV4_NAT-T-ESP drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / esp spi is 7 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / esp spi is 7 / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped
    send mismatched packets, check the packets are not dropped.
@@ -3414,7 +3413,6 @@ Subcase 3: Invalid parameters of input set
 
 1. Invalid value of teid and qfi::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x100 / end actions queue index 1 / end
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / gtp_psc qfi is 0x5 / end actions queue index 2 / end
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / end actions queue index 1 / end
 
@@ -3438,7 +3436,7 @@ Subcase 5: Duplicated rules
 
 1. Create a FDIR rule::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 1 / mark / end
 
    the rule is created successfully.
 
@@ -3453,15 +3451,15 @@ Subcase 6: conflicted rules
 
 1. Create a FDIR rule::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 1 / mark / end
     flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 1 / mark / end
 
    the rule is created successfully.
 
 2. Create a rule with same input set but different action or with different input set::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 2 / end
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions drop / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 2 / mark / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions drop / mark / end
     flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 3 / mark / end
     flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / udp src is 22 dst is 23 / end actions queue index 3 / mark / end
     flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 2 / mark / end
@@ -3583,14 +3581,14 @@ set "--log-level=ice,7", then check::
 
 1. set MAC_IPV4_PAY rule firstly::
 
-    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / end actions queue index 1 / mark id 1 / end
 
    the first flow rule is set to fdir filter, send matched packet::
 
     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/Raw('x' * 80)],iface="enp175s0f0", count=10)
     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21") /UDP(sport=22, dport=23)/ Raw('x' * 80)],iface="enp175s0f0", count=10)
 
-   the two packets are both redirected to queue 1.
+   the two packets are both redirected to queue 1 with mark ID 1.
    then create MAC_IPV4_UDP flow, it is set to switch filter::
 
     flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 2 / end
@@ -3601,13 +3599,13 @@ set "--log-level=ice,7", then check::
 
 3. set MAC_IPV4_UDP rule firstly::
 
-    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 2 / end
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 2 / mark id 1 / end
 
    the first rule is set to fdir filter, send matched packet::
 
     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21") /UDP(sport=22, dport=23)/ Raw('x' * 80)],iface="enp175s0f0", count=10)
 
-   the packet is redirected to queue 2.
+   the packet is redirected to queue 2 with mark ID 1.
    then create MAC_IPV4_PAY rule, it is set to switch filter::
 
     flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / end actions queue index 1 / end
