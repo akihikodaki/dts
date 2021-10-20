@@ -338,7 +338,7 @@ Verify error information::
 Test case 7: Reserve VF queue number when VF bind to kernel driver
 ==================================================================
 
-1. bind vf to kernel driver i40evf::
+1. bind vf to kernel driver iavf::
 
      ./usertools/dpdk-devbind.py -b i40e 0000:18:02.0
 

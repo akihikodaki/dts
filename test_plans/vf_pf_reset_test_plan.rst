@@ -589,11 +589,11 @@ test Case 10: vf reset (two vfs passed through to two VM)
    using `lspci -nn|grep -i ethernet` got VF device id, for example "8086 154c"::
 
      echo "8086 154c" > /sys/bus/pci/drivers/pci-stub/new_id
-     echo "0000:82:02.0" > /sys/bus/pci/drivers/i40evf/unbind
+     echo "0000:82:02.0" > /sys/bus/pci/drivers/iavf/unbind
      echo "0000:82:02.0" > /sys/bus/pci/drivers/pci-stub/bind
 
      echo "8086 154c" > /sys/bus/pci/drivers/pci-stub/new_id
-     echo "0000:82:02.1" > /sys/bus/pci/drivers/i40evf/unbind
+     echo "0000:82:02.1" > /sys/bus/pci/drivers/iavf/unbind
      echo "0000:82:02.1" > /sys/bus/pci/drivers/pci-stub/bind
 
 3. Pass through VF0 81:02.0 to vm0, VF1 81:02.1 to vm1::

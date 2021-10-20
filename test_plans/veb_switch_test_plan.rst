@@ -86,8 +86,8 @@ Prerequisites for VEB testing
       ./dpdk-devbind.py -b igb_uio 05:00.0
       echo 2 >/sys/bus/pci/devices/0000:05:00.0/max_vfs
       ./dpdk-devbind.py --st
-      0000:05:02.0 'XL710/X710 Virtual Function' unused=i40evf,igb_uio
-      0000:05:02.1 'XL710/X710 Virtual Function' unused=i40evf,igb_uio
+      0000:05:02.0 'XL710/X710 Virtual Function' unused=iavf,igb_uio
+      0000:05:02.1 'XL710/X710 Virtual Function' unused=iavf,igb_uio
 
 4. Bind the VFs to dpdk driver::
 

@@ -70,7 +70,7 @@ Prerequisites
 
 3. Detach VF from the host::
 
-    rmmod i40evf
+    rmmod iavf
 
 4. Pass through VF 81:10.0 to vm0, start vm0.
 
