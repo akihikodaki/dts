@@ -312,8 +312,11 @@ Test case: VF vlan strip
 
 Enable VF vlan strip::
 
+    testpmd> vlan set filter on 0
+    testpmd> rx_vlan add 20 0
     testpmd> vlan set strip on 0
     testpmd> set fwd mac
+    testpmd> set verbose 1
     testpmd> start
 
 Send packets with vlan tag::
