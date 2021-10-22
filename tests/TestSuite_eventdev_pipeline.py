@@ -101,7 +101,7 @@ class TestEventdevPipeline(TestCase):
                     ports=[self.dut.ports_info[0]['pci']])
         command_line = "taskset -c %s " + self.app_command + \
                        "/build/eventdev_pipeline %s " + \
-                       "--vdev event_sw0 -- -r%s -t%s -e%s -a %s -s1 -n0 -c32 -W1000 %s -D"
+                       "--vdev event_sw0 -- -r%s -t%s -e%s -w %s -s1 -n0 -c32 -W1000 %s -D"
         command_line = command_line % (
                     self.taskset_core_list, eal_params, self.core_mask_rx,
                     self.core_mask_tx, self.core_mask_sd, self.core_mask_wk, cmd_type)

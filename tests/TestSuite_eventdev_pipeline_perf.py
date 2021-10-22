@@ -148,7 +148,7 @@ class TestEventdevPipelinePerf(TestCase):
             ## Adding core-list and pci-ids
             command_line1 = command_line1 + " -a %s "
         ## Adding test and stage types
-        command_line2 = "-- -a %s -n=0 --dump %s -m 16384" % (wmask , stlist )
+        command_line2 = "-- -w %s -n=0 --dump %s -m 16384" % (wmask , stlist )
         return command_line1 + command_line2
 
     def test_perf_eventdev_pipeline_1ports_atomic_performance(self):
