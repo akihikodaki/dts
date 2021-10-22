@@ -528,29 +528,31 @@ class TestKernelpfIavf(TestCase):
         random_vlan = random.randint(1, MAX_VLAN)
         self.vm_testpmd.start_testpmd("all")
         self.vm_testpmd.execute_cmd("port stop all")
-        self.vm_testpmd.execute_cmd("vlan set filter off 0")
+        self.vm_testpmd.execute_cmd("vlan set filter on 0")
+        self.vm_testpmd.execute_cmd("rx_vlan add %s 0" % random_vlan)
         self.vm_testpmd.execute_cmd("vlan set strip off 0")
-        self.vm_testpmd.execute_cmd("vlan set strip on 0")
         self.vm_testpmd.execute_cmd("port start all")
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set verbose 1")
         self.vm_testpmd.execute_cmd("start")
+
+        #enable strip
+        self.vm_testpmd.execute_cmd("vlan set strip on 0")
         self.start_tcpdump(self.tester_intf)
         self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
         tcpdump_out = self.get_tcpdump_package()
-        receive_pkt = re.findall('vlan %s' % random_vlan, tcpdump_out)
-        self.verify(len(receive_pkt) == 1, 'Failed to received vlan packet!!!')
+        self.verify('> %s' % self.vf_mac in tcpdump_out and '%s >' % self.vf_mac in tcpdump_out, 'Failed to received packet!!!')
+        receive_vlan_pkt = re.findall('vlan %s' % random_vlan, tcpdump_out)
+        self.verify(len(receive_vlan_pkt) == 1, 'Failed to received vlan packet!!!')
 
         # disable strip
         self.vm_testpmd.execute_cmd("vlan set strip off 0")
         self.start_tcpdump(self.tester_intf)
         self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
         tcpdump_out = self.get_tcpdump_package()
-        receive_pkt = re.findall('vlan %s' % random_vlan, tcpdump_out)
-        if self.driver_version < "2.13.10" or self.kdriver == 'ice':
-            self.verify(len(receive_pkt) == 2, 'Failed to not received vlan packet!!!')
-        else:
-            self.verify(len(receive_pkt) == 1, 'Failed to not received vlan packet!!!')
+        self.verify('> %s' % self.vf_mac in tcpdump_out and '%s >' % self.vf_mac in tcpdump_out, 'Failed to received packet!!!')
+        receive_vlan_pkt = re.findall('vlan %s' % random_vlan, tcpdump_out)
+        self.verify(len(receive_vlan_pkt) == 2, 'Failed to not received vlan packet!!!')
 
     def test_vf_vlan_filter(self):
         random_vlan = random.randint(2, MAX_VLAN)
