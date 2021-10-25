@@ -128,7 +128,6 @@ The following are the test plans for the DPDK DTS automated test system.
     ntb_test_plan
     nvgre_test_plan
     perf_virtio_user_loopback_test_plan
-    perf_vm2vm_virtio_net_perf_test_plan
     pf_smoke_test_plan
     pipeline_test_plan
     pvp_virtio_user_multi_queues_port_restart_test_plan
