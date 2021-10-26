@@ -182,45 +182,6 @@ Test Case 3: Set VLAN antispoof for VF from PF
     packet with matching vlan id
 
 
-Test Case 4: Set mac antispoof for VF from PF
-===============================================
-1. Add fake mac and use fake mac instead of transmitted mac in the
-   macswap mode, so default is non-matching SA::
-
-      .addr_bytes = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55}
-
-      On VF0, add below two line code in file app/test-pmd/macswap_sse.h:
-      struct rte_ether_addr fake_mac = {.addr_bytes = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55},};
-      rte_ether_addr_copy(&fake_mac, &eth_hdr[0]->s_addr);
-
-2. Disable VF0 mac antispoof from PF::
-
-      testpmd> set vf mac antispoof 0 0 off
-
-3. Start testpmd on VF0, set it in macswap forwarding mode and enable
-   verbose output::
-
-      testpmd> set fwd macswap
-
-4. Send packet from tester to VF0 with correct SA, but code has changed
-   to use fake SA
-
-5. Stop VF0 testpmd and check VF0 can receive then transmit packet
-
-6. Enable VF0 mac antispoof from PF::
-
-      testpmd> set vf mac antispoof 0 0 on
-
-7. Start VF0 testpmd
-
-8. Send packet from tester to VF0 with correct SA, but code has changed
-   to use fake SA
-
-9. Stop VF0 testpmd and check VF0 can receive packet but can't transmit packet
-
-10. Recover original code
-
-
 Test Case 5: Set the MAC address for VF from PF
 ===============================================
 
