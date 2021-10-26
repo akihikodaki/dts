@@ -8344,6 +8344,7 @@ class TestIAVFFdir(TestCase):
         create same rules on pf and vf, no conflict
         """
         self.dut.kill_all()
+        self.setup_2pf_4vf_env()
         self.session_secondary = self.dut.new_session()
         self.session_third = self.dut.new_session()
 
@@ -8495,6 +8496,7 @@ class TestIAVFFdir(TestCase):
         create same input set but different action rules on pf and vf, no conflict.
         """
         self.dut.kill_all()
+        self.setup_2pf_4vf_env()
         self.session_secondary = self.dut.new_session()
         self.session_third = self.dut.new_session()
 
@@ -8814,6 +8816,15 @@ class TestIAVFFdir(TestCase):
             nex_cnt = 94 // 8
         elif len(self.dut_ports) == 2:
             nex_cnt = 110 // 8
+            # check the card is chapman beach 100g*2 or not
+            pf_pci = self.dut.ports_info[0]['pci']
+            out = self.dut.send_expect('lspci -s {} -vvv |grep "Product Name"'.format(pf_pci), '#')
+            res = re.search(r"Network Adapter\s+(?P<product_name>E810-.*)", out)
+            self.verify(res, "product name not found'")
+            # if card is chapman beach 100g*2, one pf port equals a general 100g*2 card,so 118 profiles can be used for vf
+            if 'E810-2CQDA2' in res.group('product_name'):
+                nex_cnt = 118 // 8
+
         else:
             self.verify(False, 'The number of ports is not supported')
 
@@ -8823,43 +8834,46 @@ class TestIAVFFdir(TestCase):
         self.config_testpmd()
 
         for port_id in range(nex_cnt):
+            # The number of rules created is affected by the profile and TCAM. The maximum profile is 128 and the maximum
+            # TCAM is 512. In order to test the maximum profile, need to create rules that consume less TCAM to ensure
+            # that the profile will reach the maximum before TCAM exhausted
             rules = [
-                "flow create %d ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end" % port_id,
-                "flow create %d ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end" % port_id,
-                "flow create %d ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / sctp src is 22 dst is 23 / end actions queue index 1 / mark / end" % port_id,
-                "flow create %d ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end" % port_id,
-                "flow create %d ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end" % port_id,
-                "flow create %d ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / sctp src is 22 dst is 23 / end actions queue index 1 / mark / end" % port_id,
-                "flow create %d ingress pattern eth type is 0x8863 / end actions queue index 1 / mark id 1 / end" % port_id,
-                "flow create %d ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions queue index 2 / end" % port_id]
-            self.create_fdir_rule(rules, check_stats=True)
+                "flow create {} ingress pattern eth / ipv4 / l2tpv3oip session_id is 1 / end actions queue index 1 / mark / end",
+                "flow create {} ingress pattern eth / ipv6 / l2tpv3oip session_id is 2 / end actions queue index 1 / mark / end",
+                "flow create {} ingress pattern eth / ipv4 / tcp / end actions queue index 2 / mark / end",
+                "flow create {} ingress pattern eth / ipv6 / tcp / end actions queue index 2 / mark / end",
+                "flow create {} ingress pattern eth / ipv4 / esp spi is 1 / end actions queue index 3 / mark / end",
+                "flow create {} ingress pattern eth / ipv6 / esp spi is 2 / end actions queue index 3 / mark / end",
+                "flow create {} ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions queue index 4 / mark id 1 / end",
+                "flow create {} ingress pattern eth / ipv6 / udp / pfcp s_field is 1 / end actions queue index 4 / end"]
+            self.create_fdir_rule([rule.format(port_id) for rule in rules], check_stats=True)
 
         rules = [
-            "flow create {} ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end".format(nex_cnt),
-            "flow create {} ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end".format(nex_cnt),
-            "flow create {} ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / sctp src is 22 dst is 23 / end actions queue index 1 / mark / end".format(nex_cnt),
-            "flow create {} ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end".format(nex_cnt),
-            "flow create {} ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end".format(nex_cnt),
-            "flow create {} ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / sctp src is 22 dst is 23 / end actions queue index 1 / mark / end".format(nex_cnt)]
-        self.create_fdir_rule(rules, check_stats=True)
+            "flow create {} ingress pattern eth / ipv4 / l2tpv3oip session_id is 1 / end actions queue index 1 / mark / end",
+            "flow create {} ingress pattern eth / ipv6 / l2tpv3oip session_id is 2 / end actions queue index 1 / mark / end",
+            "flow create {} ingress pattern eth / ipv4 / tcp / end actions queue index 2 / mark / end",
+            "flow create {} ingress pattern eth / ipv6 / tcp / end actions queue index 2 / mark / end",
+            "flow create {} ingress pattern eth / ipv4 / esp spi is 1 / end actions queue index 3 / mark / end",
+            "flow create {} ingress pattern eth / ipv6 / esp spi is 2 / end actions queue index 3 / mark / end"]
+        self.create_fdir_rule([rule.format(nex_cnt) for rule in rules], check_stats=True)
 
-        rule = "flow create {} ingress pattern eth type is 0x8863 / end actions queue index 1 / mark id 1 / end".format(nex_cnt)
+        rule = "flow create {} ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions queue index 4 / mark id 1 / end".format(nex_cnt)
         self.create_fdir_rule(rule, check_stats=False)
-        pkt1 = 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22, dport=23)/ Raw("x" * 80)'
+        pkt1 =  'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/TCP()/Raw("x" * 80)'
         out = self.send_pkts_getouput(pkts=pkt1)
-        rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": nex_cnt, "mark_id": 0, "queue": 1}, stats=True)
-        pkt2 = 'Ether(dst="00:11:22:33:44:55", type=0x8863)/IP()/Raw("x" * 80)'
+        rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": nex_cnt, "mark_id": 0, "queue": 2}, stats=True)
+        pkt2 = 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(dport=8805)/PFCP(S=0)/Raw("x" * 80)'
         out = self.send_pkts_getouput(pkts=pkt2)
-        rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": nex_cnt, "mark_id": 1, "queue": 1}, stats=False)
+        rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": nex_cnt, "mark_id": 1, "queue": 4}, stats=False)
 
         self.dut.send_expect("flow flush {}".format(nex_cnt), "testpmd> ")
         self.check_fdir_rule(port_id=(nex_cnt), stats=False)
         out = self.send_pkts_getouput(pkts=pkt1)
-        rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": nex_cnt, "mark_id": 0, "queue": 1}, stats=False)
+        rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": nex_cnt, "mark_id": 0, "queue": 2}, stats=False)
 
         self.create_fdir_rule(rule, check_stats=True)
         out = self.send_pkts_getouput(pkts=pkt2)
-        rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": nex_cnt, "mark_id": 1, "queue": 1}, stats=True)
+        rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": nex_cnt, "mark_id": 1, "queue": 4}, stats=True)
 
     def test_stress_port_stop_start(self):
         """
