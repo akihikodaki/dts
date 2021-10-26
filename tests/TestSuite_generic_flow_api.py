@@ -912,53 +912,6 @@ class TestGeneric_flow_api(TestCase):
             rule_num = extrapkt_rulenum['rulenum']
             self.verify_rulenum(rule_num)
 
-    def test_L2_tunnel_filter(self):
-        """
-        only supported by ixgbe
-        """
-        self.verify(self.nic in ["sagepond", "sageville", "foxville"], "%s nic not support fdir L2 tunnel filter" % self.nic)
-
-        self.setup_env()
-        # start testpmd on pf
-        self.pmdout.start_testpmd("1S/4C/1T", "--rxq=4 --txq=4", "-a %s --file-prefix=pf -m 1024" % self.pf_pci)
-        self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
-        self.dut.send_expect("set verbose 1", "testpmd> ", 120)
-        self.dut.send_expect("start", "testpmd> ", 120)
-        time.sleep(2)
-        # start testpmd on vf0
-        self.session_secondary.send_expect("%s -c 0x1e0 -n 4 -m 1024 -a %s --file-prefix=vf1 -- -i --rxq=4 --txq=4" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
-        self.session_secondary.send_expect("set fwd rxonly", "testpmd> ")
-        self.session_secondary.send_expect("set verbose 1", "testpmd> ")
-        self.session_secondary.send_expect("start", "testpmd> ")
-        time.sleep(2)
-        # start testpmd on vf1
-        self.session_third.send_expect("%s -c 0x1e00 -n 4 -m 1024 -a %s --file-prefix=vf2 -- -i --rxq=4 --txq=4" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
-        self.session_third.send_expect("set fwd rxonly", "testpmd> ")
-        self.session_third.send_expect("set verbose 1", "testpmd> ")
-        self.session_third.send_expect("start", "testpmd> ")
-        time.sleep(2)
-
-        # Enabling ability of parsing E-tag packet
-        self.dut.send_expect("port config 0 l2-tunnel E-tag enable", "testpmd> ")
-        # Enable E-tag packet forwarding, set on pf
-        self.dut.send_expect("E-tag set forwarding on port 0", "testpmd> ")
-
-        # create the flow rules
-        basic_flow_actions = [
-            {'create': 'validate', 'flows': ['etag'], 'actions': ['vf0']},
-            {'create': 'validate', 'flows': ['etag'], 'actions': ['vf1']},
-            {'create': 'validate', 'flows': ['etag'], 'actions': ['pf']},
-            {'create': 'create', 'flows': ['etag'], 'actions': ['vf0']},
-            {'create': 'create', 'flows': ['etag'], 'actions': ['vf1']},
-            {'create': 'create', 'flows': ['etag'], 'actions': ['pf']},
-        ]
-        extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
-        extra_packet = extrapkt_rulenum['extrapacket']
-        self.sendpkt('Ether(dst="%s")/Dot1BR(GRP=0x2, ECIDbase=%s)/Raw("x" * 20)' % (self.pf_mac, extra_packet[0]['etag']))
-        self.verify_result("pf", expect_rxpkts="0", expect_queue="NULL", verify_mac=self.pf_mac)
-        rule_num = extrapkt_rulenum['rulenum']
-        self.verify_rulenum(rule_num)
-
     def test_fdir_for_L2_payload(self):
         """
         only supported by i40e
