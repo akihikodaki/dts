@@ -517,59 +517,6 @@ class TestVfDaemon(TestCase):
         out = self.vm0_testpmd.execute_cmd('show port stats 0')
         self.verify("RX-packets: 40" in out, 
             "Failed to enable all queues drop!!!")
-    
-
-    def test_mac_antispoof(self):
-        """
-        Enable/disable mac anti-spoof for a VF from PF
-        """
-        fake_mac = '00:11:22:33:44:55'
-        time.sleep(5)
-        self.vm0_dut.send_expect("sed -i -e '/int r;/a " +\
-            "\        struct rte_ether_addr fake_mac = {.addr_bytes = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55},};'" +\
-            " app/test-pmd/macswap_sse.h", "# ", 30)
-        line_num = self.vm0_dut.send_expect("sed -n '/_mm_storeu_si128/=' app/test-pmd/macswap_sse.h |sed -n 5p", "# ",30)
-        self.vm0_dut.send_expect("sed -i -e '%sa\\rte_ether_addr_copy(&fake_mac, &eth_hdr[0]->s_addr);'" % str(line_num)+\
-                    " app/test-pmd/macswap_sse.h", "# ", 30)
-        time.sleep(3)
-
-        self.vm0_dut.build_install_dpdk(self.target) 
-        time.sleep(5)
-
-        self.check_vf_link_status()
-        self.vf0_mac = self.vm0_testpmd.get_port_mac(0)
-
-        self.vm0_testpmd.execute_cmd('set fwd macswap')
-        self.dut_testpmd.execute_cmd('set vf mac antispoof 0 0 off')
-        self.vm0_testpmd.execute_cmd('start')
-        time.sleep(5)
-
-        dumpout = self.send_and_macstrip(self.vf0_mac)
-        out = self.vm0_testpmd.execute_cmd('stop')
-
-        self.verify(fake_mac in dumpout, 
-            "Failed to disable vf mac anspoof!!!")
-        self.verify("RX-packets: 1" in out, "Failed to receive packet!!!")
-        self.verify("TX-packets: 1" in out, 
-            "Failed to disable mac antispoof!!!")
-
-        self.dut_testpmd.execute_cmd('set vf mac antispoof 0 0 on')
-        self.vm0_testpmd.execute_cmd('start')
-        time.sleep(3)
-        dumpout = self.send_and_macstrip(self.vf0_mac)
-        out = self.vm0_testpmd.execute_cmd('stop')
-        self.verify(fake_mac not in dumpout, "Failed to enable vf mac anspoof!!!")
-        self.verify("RX-packets: 1" in out, "Failed to receive packet!!!")
-        self.verify("TX-packets: 0" in out, "Failed to enable mac antispoof!!!")
-
-        self.vm0_testpmd.quit()
-        self.dut_testpmd.quit()
-        self.vm0_dut.send_expect("sed -i '/struct rte_ether_addr fake_mac = {.addr_bytes = " +\
-            "{0x00, 0x11, 0x22, 0x33, 0x44, 0x55},};/d' app/test-pmd/macswap_sse.h", "# ", 30)
-        self.vm0_dut.send_expect("sed -i '%sd'" % line_num +\
-            " app/test-pmd/macswap_sse.h", "# ", 30)
-        self.vm0_dut.build_install_dpdk(self.target)
-
 
     def test_vf_mac_set(self):
         """
