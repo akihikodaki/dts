@@ -2296,7 +2296,7 @@ class CVLSwitchFilterPPPOETest(TestCase):
         """
         #Prepare testpmd EAL and parameters
         all_eal_param = self.dut.create_eal_parameters(cores='1S/4C/1T', ports=[0])
-        command = self.path + all_eal_param + " --log-level=\"ice,8\" -- -i --rxq=16 --txq=16 --cmdline-file=%s" % self.fdir_file
+        command = self.path + all_eal_param + " --log-level=\"ice,8\" -- -i --rxq=16 --txq=16 "
         # command = "./%s/app/testpmd %s --log-level=\"ice,8\" -- -i %s" % (self.dut.target, all_eal_param, "--rxq=16 --txq=16")
         return command
 
@@ -2473,9 +2473,6 @@ class CVLSwitchFilterPPPOETest(TestCase):
             out_lines = out.splitlines()
             res = filter(bool, map(p_spec.match, out_lines))
             result = [i.group(1) for i in res]
-            if is_non_pipeline:
-                #remove 15360 fdir rules id
-                del result[:self.fdir_rule_number]
             if is_need_rss_rule:
                 #remove rss rule id
                 del result[0]
