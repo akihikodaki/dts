@@ -4693,20 +4693,20 @@ Subcase 1: 128 profiles
 
 2. create 8 rules with different patterns on each port::
 
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / sctp src is 22 dst is 23 / end actions queue index 1 / mark / end
-    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end
-    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end
-    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / sctp src is 22 dst is 23 / end actions queue index 1 / mark / end
-    flow create 0 ingress pattern eth type is 0x8863 / end actions queue index 1 / mark id 1 / end
-    flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions queue index 2 / end
+    flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 1 / end actions queue index 1 / mark / end
+    flow create 0 ingress pattern eth / ipv6 / l2tpv3oip session_id is 2 / end actions queue index 1 / mark / end
+    flow create 0 ingress pattern eth / ipv4 / tcp / end actions queue index 2 / mark / end
+    flow create 0 ingress pattern eth / ipv6 / tcp / end actions queue index 2 / mark / end
+    flow create 0 ingress pattern eth / ipv4 / esp spi is 1 / end actions queue index 3 / mark / end
+    flow create 0 ingress pattern eth / ipv6 / esp spi is 2 / end actions queue index 3 / mark / end
+    flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions queue index 4 / mark id 1 / end
+    flow create 0 ingress pattern eth / ipv6 / udp / pfcp s_field is 1 / end actions queue index 4 / end
+
 
    created successfully on port 0-12,
    failed from rule 6 on port 13::
 
-    testpmd> flow create 13 ingress pattern eth type is 0x8863 / end actions queue index 1 / mark id 1 / end
-    eth
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions queue index 4 / mark id 1 / end
     iavf_execute_vf_cmd(): No response or return failure (-5) for cmd 47
     iavf_fdir_add(): fail to execute command OP_ADD_FDIR_FILTER
     iavf_flow_create(): Failed to create flow
@@ -4735,6 +4735,7 @@ Subcase 1: 128 profiles
    profile 0 and profile 1 are default profile for specific packet.
    we design case with 2*100G card, so 110 profiles can be used for vf.
    if we use 4*25G card, only 94 profiles can be used for vf.
+   if card is chapman beach 100g*2, one pf port equals a general 100g*2 card,so 118 profiles can be used for vf
 
 4. send matched packets to vf 12,
    the packets are redirected to the expected queue.
