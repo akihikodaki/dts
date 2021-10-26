@@ -803,67 +803,6 @@ Test case: IXGBE ethertype
 
     testpmd> flow list 0
 
-
-Test case: IXGBE L2-tunnel(supported by x552 and x550)
-======================================================
-
-   Prerequisites:
-
-   add two vfs on dpdk pf, then bind the vfs to vfio-pci::
-
-    echo 2 >/sys/bus/pci/devices/0000:05:00.0/max_vfs
-    ./usertools/dpdk-devbind.py -b vfio-pci 05:02.0 05:02.1
-
-1. Launch the app ``testpmd`` with the following arguments::
-
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss
-    testpmd> set fwd rxonly
-    testpmd> set verbose 1
-    testpmd> start
-
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1e0000 -n 4 -a 05:02.0 --file-prefix=vf0 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss
-    testpmd> set fwd rxonly
-    testpmd> set verbose 1
-    testpmd> start
-
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1e00000 -n 4 -a 05:02.1 --file-prefix=vf1 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss
-    testpmd> set fwd rxonly
-    testpmd> set verbose 1
-    testpmd> start
-
-   Enabling ability of parsing E-tag packet, set on pf::
-
-    testpmd> port config 0 l2-tunnel E-tag enable
-
-   Enable E-tag packet forwarding, set on pf::
-
-    testpmd> E-tag set forwarding on port 0
-
-2. create filter rules::
-
-    testpmd> flow create 0 ingress pattern e_tag grp_ecid_b is 0x1309 / end actions queue index 0 / end
-    testpmd> flow create 0 ingress pattern e_tag grp_ecid_b is 0x1308 / end actions queue index 1 / end
-    testpmd> flow create 0 ingress pattern e_tag grp_ecid_b is 0x1307 / end actions queue index 2 / end
-
-3. send packets::
-
-    pkt1 = Ether(dst="00:11:22:33:44:55")/Dot1BR(GRP=0x1, ECIDbase=0x309)/Raw('x' * 20)
-    pkt2 = Ether(dst="00:11:22:33:44:55")/Dot1BR(GRP=0x1, ECIDbase=0x308)/Raw('x' * 20)
-    pkt3 = Ether(dst="00:11:22:33:44:55")/Dot1BR(GRP=0x1, ECIDbase=0x307)/Raw('x' * 20)
-    pkt4 = Ether(dst="00:11:22:33:44:55")/Dot1BR(GRP=0x2, ECIDbase=0x309)/Raw('x' * 20)
-
-   verify pkt1 to vf0 queue0, pkt2 to vf1 queue0, pkt3 to pf queue0,
-   pkt4 can't received by pf and vfs.
-
-4. verify rules can be listed and destroyed::
-
-    testpmd> flow list 0
-    testpmd> flow destroy 0 rule 0
-    testpmd> flow list 0
-    testpmd> flow flush 0
-    testpmd> flow list 0
-
-
 Test case: IXGBE fdir for ipv4
 ==============================
 
