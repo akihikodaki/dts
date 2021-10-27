@@ -112,9 +112,9 @@ tvs_ethertype_filter_pppoes = [
 #ipv4/ipv6 + udp/tcp pipeline mode
 mac_pppoes_ipv4_udp_l4_mask_scapy_str = {
     "matched": [
-        'Ether()/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=2304,dport=23)/Raw("x"*80)'],
+        'Ether()/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=2304,dport=23)/Raw("x"*80)'],
     "mismatched": [
-        'Ether()/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=2244,dport=23)/Raw("x"*80)'
+        'Ether()/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=2244,dport=23)/Raw("x"*80)'
     ]
 }
 
@@ -136,9 +136,9 @@ tv_mac_pppoes_ipv4_udp_l4_mask_in_queue_01 = {
 
 mac_pppoes_ipv4_tcp_l4_mask_scapy_str = {
     "matched": [
-        'Ether()/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=2304,dport=23)/Raw("x"*80)'],
+        'Ether()/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=2304,dport=23)/Raw("x"*80)'],
     "mismatched": [
-        'Ether()/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=2244,dport=23)/Raw("x"*80)'
+        'Ether()/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=2244,dport=23)/Raw("x"*80)'
     ]
 }
 
@@ -160,9 +160,9 @@ tv_mac_pppoes_ipv4_tcp_l4_mask_in_queue_02 = {
 
 mac_pppoes_ipv6_udp_l4_mask_scapy_str = {
     "matched":[
-        'Ether()/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=1282)/Raw("x"*80)'],
+        'Ether()/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=1282)/Raw("x"*80)'],
     "mismatched": [
-        'Ether()/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=1040)/Raw("x"*80)'
+        'Ether()/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=1040)/Raw("x"*80)'
     ]
 }
 
@@ -184,9 +184,9 @@ tv_mac_pppoes_ipv6_udp_l4_mask_queue_region_03 = {
 
 mac_pppoes_ipv6_tcp_l4_mask_scapy_str = {
     "matched":[
-        'Ether()/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=1282)/Raw("x"*80)'],
+        'Ether()/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=1282)/Raw("x"*80)'],
     "mismatched": [
-        'Ether()/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=1040)/Raw("x"*80)'
+        'Ether()/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=1040)/Raw("x"*80)'
     ]
 }
 
@@ -217,9 +217,9 @@ tvs_mac_pppoes_l4_mask = [
 
 mac_vlan_pppoes_ipv4_udp_l4_mask_scapy_str = {
     "matched": [
-        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=50,dport=1024)/Raw("x"*80)'],
+        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=50,dport=1024)/Raw("x"*80)'],
     "mismatched": [
-        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=50,dport=1281)/Raw("x"*80)'
+        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=50,dport=1281)/Raw("x"*80)'
     ]
 }
 
@@ -241,9 +241,9 @@ tv_mac_vlan_pppoes_ipv4_udp_l4_mask_in_queue_01 = {
 
 mac_vlan_pppoes_ipv4_tcp_l4_mask_scapy_str = {
     "matched": [
-        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=50,dport=1024)/Raw("x"*80)'],
+        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=50,dport=1024)/Raw("x"*80)'],
     "mismatched": [
-        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=50,dport=1281)/Raw("x"*80)'
+        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=50,dport=1281)/Raw("x"*80)'
     ]
 }
 
@@ -266,9 +266,9 @@ tv_mac_vlan_pppoes_ipv4_tcp_l4_mask_queue_region_02 = {
 #vlan pipeline mode
 mac_vlan_pppoes_ipv6_udp_l4_mask_scapy_str = {
     "matched":[
-        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=16,dport=23)/Raw("x"*80)'],
+        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=16,dport=23)/Raw("x"*80)'],
     "mismatched": [
-        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=17,dport=23)/Raw("x"*80)'
+        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=17,dport=23)/Raw("x"*80)'
     ]
 }
 
@@ -290,9 +290,9 @@ tv_mac_vlan_pppoes_ipv6_udp_l4_mask_drop_03 = {
 
 mac_vlan_pppoes_ipv6_tcp_l4_mask_scapy_str = {
     "matched": [
-        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=16)/Raw("x"*80)'],
+        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=16)/Raw("x"*80)'],
     "mismatched": [
-        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=17)/Raw("x"*80)'
+        'Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=17)/Raw("x"*80)'
     ]
 }
 
