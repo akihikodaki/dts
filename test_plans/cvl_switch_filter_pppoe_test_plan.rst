@@ -774,11 +774,11 @@ MAC_PPPOE_IPV4_UDP + L4 MASK
 
 matched packets::
 
-  sendp([Ether()/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=2304,dport=23)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=2304,dport=23)/Raw("x"*80)],iface="ens260f0",count=1)
 
 mismatched packets::
 
-  sendp([Ether()/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=2244,dport=23)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=2244,dport=23)/Raw("x"*80)],iface="ens260f0",count=1)
 
 queue index
 ...........
@@ -791,11 +791,11 @@ MAC_PPPOE_IPV4_TCP + L4 MASK
 
 matched packets::
 
-  sendp([Ether()/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=2304,dport=23)/Raw("x" * 80)],iface="ens260f0",count=1)
+  sendp([Ether()/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=2304,dport=23)/Raw("x" * 80)],iface="ens260f0",count=1)
 
 mismatched packets::
 
-  sendp([Ether()/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=2244,dport=23)/Raw("x" * 80)],iface="ens260f0",count=1)
+  sendp([Ether()/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=2244,dport=23)/Raw("x" * 80)],iface="ens260f0",count=1)
 
 queue index
 ...........
@@ -807,11 +807,11 @@ MAC_PPPOE_IPV6_UDP + L4 MASK
 
 matched packets::
 
-  sendp([Ether()/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=1282)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=1282)/Raw("x"*80)],iface="ens260f0",count=1)
 
 mismatched packets::
 
-  sendp([Ether()/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=1040)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=1040)/Raw("x"*80)],iface="ens260f0",count=1)
 
 rss queues
 ..........             
@@ -822,11 +822,11 @@ MAC_PPPOE_IPV6_TCP + L4 MASK
 
 matched packets::
 
-  sendp([Ether()/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=1282)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=1282)/Raw("x"*80)],iface="ens260f0",count=1)
 
 mismatched packets::
 
-  sendp([Ether()/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=1040)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=1040)/Raw("x"*80)],iface="ens260f0",count=1)
 
 drop
 ....    
@@ -840,11 +840,11 @@ MAC_VLAN_PPPOE_IPV4_UDP + L4 MASK
 ---------------------------------
 matched packets::
 
-  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=50,dport=1024)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=50,dport=1024)/Raw("x"*80)],iface="ens260f0",count=1)
 
 mismatched packets::
 
-  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=50,dport=1281)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=50,dport=1281)/Raw("x"*80)],iface="ens260f0",count=1)
         
 queue index
 ...........
@@ -854,11 +854,11 @@ MAC_VLAN_PPPOE_IPV4_TCP + L4 MASK
 ---------------------------------
 matched packets::
 
-  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=50,dport=1024)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=50,dport=1024)/Raw("x"*80)],iface="ens260f0",count=1)
 
 mismatched packets::
 
-  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=50,dport=1281)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=50,dport=1281)/Raw("x"*80)],iface="ens260f0",count=1)
 
 rss queues
 ..........
@@ -871,11 +871,11 @@ MAC_VLAN_PPPOE_IPV6_UDP + L4 MASK
 
 matched packets::
 
-  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=16,dport=23)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=16,dport=23)/Raw("x"*80)],iface="ens260f0",count=1)
 
 mismatched packets::
 
-  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=17,dport=23)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=17,dport=23)/Raw("x"*80)],iface="ens260f0",count=1)
 
 drop
 ....
@@ -886,11 +886,11 @@ MAC_VLAN_PPPOE_IPV6_TCP + L4 MASK
 
 matched packets::
 
-  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=16)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=16)/Raw("x"*80)],iface="ens260f0",count=1)
 
 mismatched packets::
 
-  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=17)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=17)/Raw("x"*80)],iface="ens260f0",count=1)
 
 queue index
 ...........
