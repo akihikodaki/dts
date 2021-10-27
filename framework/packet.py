@@ -35,22 +35,24 @@ Base on scapy(python program for packet manipulation)
 
 from importlib import import_module
 from socket import AF_INET6
-
 from scapy.all import *
-
 from .utils import convert_int2ip, convert_ip2int
 
 # load extension layers
 exec_file = os.path.realpath(__file__)
 DTS_PATH = exec_file.replace('/framework/packet.py', '')
+
 # exec_file might be .pyc file, if so, remove 'c'.
 TMP_PATH = DTS_PATH[:-1] + '/output/tmp/pcap/' if exec_file.endswith('.pyc') else DTS_PATH + '/output/tmp/pcap/'
 if not os.path.exists(TMP_PATH):
     os.system('mkdir -p %s' % TMP_PATH)
 
+# add /tmp/dep to sys.path
+sys.path.append('/tmp/dep')
+
 scapy_modules_required = {'scapy.contrib.gtp': ['GTP_U_Header', 'GTPPDUSessionContainer'],
                           'scapy.contrib.lldp': ['LLDPDU', 'LLDPDUManagementAddress'],
-                          'dep.scapy_modules.Dot1BR': ['Dot1BR'],
+                          'Dot1BR': ['Dot1BR'],
                           'scapy.contrib.pfcp': ['PFCP'],
                           'scapy.contrib.nsh': ['NSH'],
                           'scapy.contrib.igmp': ['IGMP'],
