@@ -2705,10 +2705,10 @@ class TestCVLFdir(TestCase):
         self.validate_fdir_rule(rule)
         rules3 = [
             'flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 1 / mark / count / end',
-            'flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss queues 0 1 end / mark id 1 / count identifier 0x1234 shared on / end',
-            'flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions passthru / mark id 2 / count identifier 0x34 shared off / end',
-            'flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions mark id 3 / rss / count shared on / end',
-            'flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / count shared off / end']
+            'flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss queues 0 1 end / mark id 1 / count identifier 0x1234 / end',
+            'flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions passthru / mark id 2 / count identifier 0x34 / end',
+            'flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions mark id 3 / rss / count / end',
+            'flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / count / end']
         self.validate_fdir_rule(rules3)
         self.check_fdir_rule(stats=False)
 
@@ -3058,13 +3058,13 @@ class TestCVLFdir(TestCase):
         self.verify("Flow rule #0 not found" in out, "query should failed")
 
     def test_count_query_identifier_share(self):
-        rule1 = 'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions queue index 1 / count identifier 0x1234 shared on / end'
-        rule2 = 'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 / end actions rss queues 2 3 end / count identifier 0x1234 shared on / end'
-        rule3 = 'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.3 / end actions passthru / mark / count identifier 0x1234 shared off / end'
+        rule1 = 'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions queue index 1 / count identifier 0x1234 / end'
+        rule2 = 'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 / end actions rss queues 2 3 end / count identifier 0x1234 / end'
+        rule3 = 'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.3 / end actions passthru / mark / count identifier 0x1234 / end'
         rule4 = 'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.4 / end actions mark id 1 / rss / count identifier 0x1234 / end'
-        rule5 = 'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.5 / end actions queue index 5 / count shared on / end'
-        rule6 = 'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.6 / end actions drop / count shared on / end'
-        rule7 = 'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.7 / end actions drop / count identifier 0x1235 shared on / end'
+        rule5 = 'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.5 / end actions queue index 5 / count / end'
+        rule6 = 'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.6 / end actions drop / count / end'
+        rule7 = 'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.7 / end actions drop / count identifier 0x1235 / end'
         rule8 = 'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.8 / end actions rss / count / end'
 
         pkt1 = 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.1",dst="192.168.0.21") / Raw("x" * 80)'
@@ -3095,12 +3095,12 @@ class TestCVLFdir(TestCase):
         out8 = self.send_pkts_getouput(pkt8, count=10)
         rfc.check_mark(out8, pkt_num=10, check_param={"rss": True}, stats=True)
 
-        self.query_count(1, 20, 0, 0)
-        self.query_count(1, 20, 0, 1)
+        self.query_count(1, 10, 0, 0)
+        self.query_count(1, 10, 0, 1)
         self.query_count(1, 10, 0, 2)
         self.query_count(1, 10, 0, 3)
-        self.query_count(1, 20, 0, 4)
-        self.query_count(1, 20, 0, 5)
+        self.query_count(1, 10, 0, 4)
+        self.query_count(1, 10, 0, 5)
         self.query_count(1, 10, 0, 6)
         self.query_count(1, 10, 0, 7)
 
@@ -3235,13 +3235,13 @@ class TestCVLFdir(TestCase):
     @skip_unsupported_pkg('os default')
     def test_two_ports_multi_patterns_count_query(self):
         rules = [
-            'flow create 1 ingress pattern eth / ipv4 dst is 192.168.0.21 proto is 255  tos is 4 / end actions queue index 1 / mark id 1 / count identifier 0x1234 shared on / end',
-            'flow create 1 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / sctp src is 22 dst is 23 / end actions rss queues 6 7 end / mark id 2 / count identifier 0x1234 shared on / end',
+            'flow create 1 ingress pattern eth / ipv4 dst is 192.168.0.21 proto is 255  tos is 4 / end actions queue index 1 / mark id 1 / count identifier 0x1234 / end',
+            'flow create 1 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / sctp src is 22 dst is 23 / end actions rss queues 6 7 end / mark id 2 / count identifier 0x1234 / end',
             'flow create 1 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / udp src is 22 dst is 23 / end actions rss queues 6 7 end / mark id 1 / count / end',
             'flow create 1 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / tcp src is 22 dst is 23 / end actions queue index 2 / mark / count / end',
             'flow create 1 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / count / end',
             'flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 tos is 4 / tcp src is 22 dst is 23 / end actions drop / count / end',
-            'flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 1 / mark id 1 / count identifier 0x1234 shared on / end']
+            'flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 1 / mark id 1 / count identifier 0x1234 / end']
         pkts = [
             'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=255, ttl=2, tos=4) / Raw("x" * 80)',
             'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", tc=1, hlim=2)/SCTP(sport=22,dport=23)/("X"*480)',
@@ -3270,8 +3270,8 @@ class TestCVLFdir(TestCase):
         rfc.check_mark(out7, pkt_num=10, check_param={"port_id": 0, "queue": 1, "mark_id": 1})
         out8 = self.send_pkts_getouput(pkts[7], port_id=1, count=10)
         rfc.check_mark(out8, pkt_num=10, check_param={"port_id": 1})
-        self.query_count(1, 20, 1, 0)
-        self.query_count(1, 20, 1, 1)
+        self.query_count(1, 10, 1, 0)
+        self.query_count(1, 10, 1, 1)
         self.query_count(1, 10, 1, 2)
         self.query_count(1, 10, 1, 3)
         self.query_count(1, 10, 1, 4)
