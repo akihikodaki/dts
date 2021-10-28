@@ -593,10 +593,10 @@ Test case: flow validation
 
     flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions count / end
     flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 1 / mark / count / end
-    flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss queues 0 1 end / mark id 1 / count identifier 0x1234 shared on / end
-    flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions passthru / mark id 2 / count identifier 0x34 shared off / end
-    flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions mark id 3 / rss / count shared on / end
-    flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / count shared off / end
+    flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss queues 0 1 end / mark id 1 / count identifier 0x1234 / end
+    flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions passthru / mark id 2 / count identifier 0x34 / end
+    flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions mark id 3 / rss / count / end
+    flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / count / end
 
    get the message::
 
@@ -3670,13 +3670,13 @@ Subcase 2: count query identifier share
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions queue index 1 / count identifier 0x1234 shared on / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 / end actions rss queues 2 3 end / count identifier 0x1234 shared on / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.3 / end actions passthru / mark / count identifier 0x1234 shared off / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions queue index 1 / count identifier 0x1234 / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 / end actions rss queues 2 3 end / count identifier 0x1234 / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.3 / end actions passthru / mark / count identifier 0x1234 / end
     flow create 0 ingress pattern eth / ipv4 src is 192.168.0.4 / end actions mark id 1 / rss / count identifier 0x1234 / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.5 / end actions queue index 5 / count shared on / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.6 / end actions drop / count shared on / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.7 / end actions drop / count identifier 0x1235 shared on / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.5 / end actions queue index 5 / count / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.6 / end actions drop / count / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.7 / end actions drop / count identifier 0x1235 / end
     flow create 0 ingress pattern eth / ipv4 src is 192.168.0.8 / end actions rss / count / end
 
 2. send matched packets::
@@ -3704,13 +3704,13 @@ Subcase 2: count query identifier share
     COUNT:
      hits_set: 1
      bytes_set: 0
-     hits: 20
+     hits: 10
      bytes: 0
     testpmd> flow query 0 1 count
     COUNT:
      hits_set: 1
      bytes_set: 0
-     hits: 20
+     hits: 10
      bytes: 0
     testpmd> flow query 0 2 count
     COUNT:
@@ -3728,13 +3728,13 @@ Subcase 2: count query identifier share
     COUNT:
      hits_set: 1
      bytes_set: 0
-     hits: 20
+     hits: 10
      bytes: 0
     testpmd> flow query 0 5 count
     COUNT:
      hits_set: 1
      bytes_set: 0
-     hits: 20
+     hits: 10
      bytes: 0
     testpmd> flow query 0 6 count
     COUNT:
@@ -3986,13 +3986,13 @@ Subcase 3: two ports multi patterns count query
 
 1. create filter rules::
 
-    flow create 1 ingress pattern eth / ipv4 dst is 192.168.0.21 proto is 255  tos is 4 / end actions queue index 1 / mark id 1 / count identifier 0x1234 shared on / end
-    flow create 1 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / sctp src is 22 dst is 23 / end actions rss queues 6 7 end / mark id 2 / count identifier 0x1234 shared on / end
+    flow create 1 ingress pattern eth / ipv4 dst is 192.168.0.21 proto is 255  tos is 4 / end actions queue index 1 / mark id 1 / count identifier 0x1234 / end
+    flow create 1 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / sctp src is 22 dst is 23 / end actions rss queues 6 7 end / mark id 2 / count identifier 0x1234 / end
     flow create 1 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / udp src is 22 dst is 23 / end actions rss queues 6 7 end / mark id 1 / count / end
     flow create 1 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / tcp src is 22 dst is 23 / end actions queue index 2 / mark / count / end
     flow create 1 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / count / end
     flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 tos is 4 / tcp src is 22 dst is 23 / end actions drop / count / end
-    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 1 / mark id 1 / count identifier 0x1234 shared on / end
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 1 / mark id 1 / count identifier 0x1234 / end
 
 2. send matched packets::
 
@@ -4018,13 +4018,13 @@ Subcase 3: two ports multi patterns count query
     COUNT:
      hits_set: 1
      bytes_set: 0
-     hits: 20
+     hits: 10
      bytes: 0
     testpmd> flow query 1 1 count
     COUNT:
      hits_set: 1
      bytes_set: 0
-     hits: 20
+     hits: 10
      bytes: 0
     testpmd> flow query 1 2 count
     COUNT:
