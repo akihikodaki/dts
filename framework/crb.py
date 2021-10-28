@@ -890,3 +890,20 @@ class Crb(object):
     def enable_promisc(self, intf):
         if intf != 'N/A':
             self.send_expect("ifconfig %s promisc" % intf, "# ", alt_session=True)
+
+    def get_priv_flags_state(self, intf, flag, timeout=TIMEOUT):
+        '''
+
+        :param intf: nic name
+        :param flag: priv-flags flag
+        :return: flag state
+        '''
+        check_flag = "ethtool --show-priv-flags %s" % intf
+        out = self.send_expect(check_flag, "# ", timeout)
+        p = re.compile('%s\s+:\s+(\w+)' % flag)
+        state = re.search(p, out)
+        if state:
+            return state.group(1)
+        else:
+            self.logger.info("NIC %s may be not find %s" % (intf, flag))
+            return False

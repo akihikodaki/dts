@@ -75,18 +75,12 @@ class TestLinkStatusInterrupt(TestCase):
         # check link-down-on-close flag
         self.flag = "link-down-on-close"
         for intf in self.intfs:
-            check_flag = "ethtool --show-priv-flags %s" % intf
             set_flag = "ethtool --set-priv-flags %s %s on" % (intf, self.flag)
-            out = self.tester.send_expect(check_flag, "#")
-            p = re.compile('%s\s+:\s+(\w+)' % self.flag)
-            res = re.search(p, out).group(1)
-            if res == "off":
-                self.tester.send_expect(set_flag, "#")
+            self.flag_default_stats = self.tester.get_priv_flags_state(intf, self.flag)
+            if self.flag_default_stats == "off":
+                self.tester.send_expect(set_flag, "# ")
                 time.sleep(0.5)
-                out = self.tester.send_expect(check_flag, "#")
-                self.verify(re.search(p, out).group(1) == "on", "set %s %s on failed" % (intf, self.flag))
-            elif not res:
-                self.logger.info("NIC %s might not support this case" % intf)
+                self.verify(self.tester.get_priv_flags_state(intf, self.flag) == "on", "set %s %s on failed" % (intf, self.flag))
 
     def set_link_status_and_verify(self, dutPort, status):
         """
@@ -94,7 +88,7 @@ class TestLinkStatusInterrupt(TestCase):
         """
         self.intf = self.tester.get_interface(
             self.tester.get_local_port(dutPort))
-        if self.dut.get_os_type() != 'freebsd':
+        if self.dut.get_os_type() != 'freebsd' and self.flag_default_stats:
             self.tester.send_expect("ethtool --set-priv-flags %s link-down-on-close on" % self.intf, "#", 10)
         self.tester.send_expect("ifconfig %s %s" %
                                 (self.intf, status.lower()), "# ", 10)
@@ -210,6 +204,6 @@ class TestLinkStatusInterrupt(TestCase):
         """
         Run after each test suite.
         """
-        if self.dut.get_os_type() != 'freebsd':
+        if self.dut.get_os_type() != 'freebsd' and self.flag_default_stats:
             for intf in self.intfs:
-                self.tester.send_expect("ethtool --set-priv-flags %s %s off" % (intf, self.flag), "#", 10)
+                self.tester.send_expect("ethtool --set-priv-flags %s %s %s" % (intf, self.flag, self.flag_default_stats), "# ")
