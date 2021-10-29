@@ -5072,9 +5072,9 @@ mac_ipv4_gre_ipv4_udp_symmetric = eval(str(mac_ipv4_gre_ipv4_tcp_symmetric).repl
 
 mac_ipv6_gre_ipv4_udp_symmetric = eval(str(mac_ipv6_gre_ipv4_tcp_symmetric).replace('tcp','udp').replace('TCP','UDP').replace('proto=6','proto=17'))
 
-mac_ipv4_gre_ipv6_udp_symmetric = eval(str(mac_ipv4_gre_ipv6_tcp_symmetric).replace('tcp','udp').replace('TCP','UDP').replace('proto=6','proto=17'))
+mac_ipv4_gre_ipv6_udp_symmetric = eval(str(mac_ipv4_gre_ipv6_tcp_symmetric).replace('tcp','udp').replace('TCP','UDP').replace('nh=6','nh=17'))
 
-mac_ipv6_gre_ipv6_udp_symmetric = eval(str(mac_ipv6_gre_ipv6_tcp_symmetric).replace('tcp','udp').replace('TCP','UDP').replace('proto=6','proto=17'))
+mac_ipv6_gre_ipv6_udp_symmetric = eval(str(mac_ipv6_gre_ipv6_tcp_symmetric).replace('tcp','udp').replace('TCP','UDP').replace('nh=6','nh=17'))
 #gre tunnel end
 
 class AdvancedIavfRSSTest(TestCase):
