@@ -2326,22 +2326,22 @@ Test case: symmetric MAC_IPV6_GRE_IPV6_TCP
     sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2020",dst="CDCD:910A:2222:5498:8475:1111:3900:2929", nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
     sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/GRE()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/TCP(sport=23,dport=22)/("X"*480)],iface="enp134s0f0")
 
-Test case: symmetric MAC_IPV4_GRE_IPV4_TCP
+Test case: symmetric MAC_IPV4_GRE_IPV4_UDP
 ==========================================
 test steps same as Test case: symmetric MAC_IPV4_GRE_IPV4_TCP, just only pattern is different,
 replace "tcp" with "udp"
 
-Test case: symmetric MAC_IPV6_GRE_IPV4_TCP
+Test case: symmetric MAC_IPV6_GRE_IPV4_UDP
 ==========================================
 test steps same as Test case: symmetric MAC_IPV6_GRE_IPV4_TCP, just only pattern is different,
 replace "tcp" with "udp"
 
-Test case: symmetric MAC_IPV4_GRE_IPV6_TCP
+Test case: symmetric MAC_IPV4_GRE_IPV6_UDP
 ==========================================
 test steps same as Test case: symmetric MAC_IPV4_GRE_IPV6_TCP, just only pattern is different,
 replace "tcp" with "udp"
 
-Test case: symmetric MAC_IPV6_GRE_IPV6_TCP
+Test case: symmetric MAC_IPV6_GRE_IPV6_UDP
 ==========================================
 test steps same as Test case: symmetric MAC_IPV6_GRE_IPV6_TCP, just only pattern is different,
 replace "tcp" with "udp"
