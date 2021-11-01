@@ -1252,6 +1252,11 @@ class FdirProcessing(object):
                 drop = tv["check_param"].get("drop")
                 # create rule
                 self.test_case.dut.send_expect("flow flush %d" % port_id, "testpmd> ", 120)
+                rule_rss = []
+                if "tv_mac_ipv4_frag_fdir" in tv['name']:
+                    rule_rss = self.create_rule("flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4-frag end key_len 0 queues end / end")
+                elif "tv_mac_ipv6_frag_fdir" in tv['name']:
+                    rule_rss = self.create_rule("flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext / end actions rss types ipv6-frag end key_len 0 queues end / end")
                 rule_li = self.create_rule(tv["rule"])
                 # send and check match packets
                 out1 = self.send_pkt_get_output(pkts=tv["scapy_str"]["matched"], port_id=port_id, drop=drop)
@@ -1274,7 +1279,10 @@ class FdirProcessing(object):
                     self.verify(matched_queue == matched_queue2 and None not in matched_queue,
                                      "send twice matched packet, received in deferent queues")
                 # check not rule exists
-                self.check_rule(port_id=port_id, stats=False)
+                if rule_rss:
+                    self.check_rule(port_id=tv["check_param"]["port_id"], rule_list=rule_rss)
+                else:
+                    self.check_rule(port_id=port_id, stats=False)
                 test_results[tv["name"]] = True
                 self.logger.info((GREEN("case passed: %s" % tv["name"])))
             except Exception as e:
