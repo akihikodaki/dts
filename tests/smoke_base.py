@@ -87,7 +87,7 @@ class SmokeTest(object):
         queues = queue_pattern.findall(out)
         # get dpdk statistical information
         stats = self.test_case.pmd_out.get_pmd_stats(self.test_case.smoke_dut_ports[0])
-        if 'PKT_RX_RSS_HASH' in out:
+        if 'RTE_MBUF_F_RX_RSS_HASH' in out:
             hash_flag = True
 
         if rss:

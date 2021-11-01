@@ -439,7 +439,7 @@ class TestVfVlan(TestCase):
             vlan_hex = hex(rx_vlan)
             self.verify("VLAN tci=%s" %
                         vlan_hex in out, "Failed to strip vlan packet!!!")
-            self.verify("PKT_RX_VLAN_STRIPPED" in out, "Failed to strip vlan packet!")
+            self.verify("RTE_MBUF_F_RX_VLAN_STRIPPED" in out, "Failed to strip vlan packet!")
 
             self.vm0_testpmd.execute_cmd('vlan set strip off 0')
 
@@ -447,7 +447,7 @@ class TestVfVlan(TestCase):
             self.verify(
                 "received 1 packets" in out, "Not received vlan packet as expected!!!")
             self.verify(
-                "PKT_RX_VLAN_STRIPPED" not in out, "Failed to disable strip vlan!!!")
+                "RTE_MBUF_F_RX_VLAN_STRIPPED" not in out, "Failed to disable strip vlan!!!")
 
         self.vm0_testpmd.quit()
 

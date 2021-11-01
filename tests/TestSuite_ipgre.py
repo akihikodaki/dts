@@ -247,21 +247,21 @@ class TestIpgre(TestCase):
                 "MAC_IPv6_GRE_IPv4-TUNNEL_UDP_PKT":           ["TUNNEL_GRENAT", "INNER_L4_UDP"],
                 "MAC_IPv6_GRE_IPv4-TUNNEL_TCP_PKT":           ["TUNNEL_GRENAT", "INNER_L4_TCP"],
                 "MAC_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT":          ["TUNNEL_GRENAT", "INNER_L4_SCTP"],
-                "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_UDP_PKT":      ["TUNNEL_GRENAT", "INNER_L4_UDP", "PKT_RX_VLAN"],
-                "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_TCP_PKT":      ["TUNNEL_GRENAT", "INNER_L4_TCP", "PKT_RX_VLAN"],
-                "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT":     ["TUNNEL_GRENAT", "INNER_L4_SCTP", "PKT_RX_VLAN"]
+                "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_UDP_PKT":      ["TUNNEL_GRENAT", "INNER_L4_UDP", "RTE_MBUF_F_RX_VLAN"],
+                "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_TCP_PKT":      ["TUNNEL_GRENAT", "INNER_L4_TCP", "RTE_MBUF_F_RX_VLAN"],
+                "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT":     ["TUNNEL_GRENAT", "INNER_L4_SCTP", "RTE_MBUF_F_RX_VLAN"]
             }
 
             pkt_types_ipv6_ipv6 = {
                 "MAC_IPv6_GRE_IPv6-TUNNEL_UDP_PKT":         ["TUNNEL_GRENAT", "INNER_L4_UDP"],
                 "MAC_IPv6_GRE_IPv6-TUNNEL_TCP_PKT":         ["TUNNEL_GRENAT", "INNER_L4_TCP"],
-                "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_UDP_PKT":    ["TUNNEL_GRENAT", "INNER_L4_UDP", "PKT_RX_VLAN"],
-                "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_TCP_PKT":    ["TUNNEL_GRENAT", "INNER_L4_TCP", "PKT_RX_VLAN"]
+                "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_UDP_PKT":    ["TUNNEL_GRENAT", "INNER_L4_UDP", "RTE_MBUF_F_RX_VLAN"],
+                "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_TCP_PKT":    ["TUNNEL_GRENAT", "INNER_L4_TCP", "RTE_MBUF_F_RX_VLAN"]
             }
 
             pkt_types_ipv6_ipv6_SCTP = {
                 "MAC_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT":        ["TUNNEL_GRENAT", "INNER_L4_SCTP"],
-                "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT":   ["TUNNEL_GRENAT", "INNER_L4_SCTP", "PKT_RX_VLAN"]
+                "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT":   ["TUNNEL_GRENAT", "INNER_L4_SCTP", "RTE_MBUF_F_RX_VLAN"]
             }
 
         # Start testpmd and enable rxonly forwarding mode
@@ -379,7 +379,7 @@ class TestIpgre(TestCase):
         self.dut.send_expect("start", "testpmd>")
 
         # Send packet with wrong outer IP checksum and check forwarded packet IP checksum is correct
-        pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT": ["PKT_TX_IP_CKSUM"]}
+        pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT": ["RTE_MBUF_F_TX_IP_CKSUM"]}
         config_layers = {'ether': {'src': self.outer_mac_src,
                                    'dst': self.outer_mac_dst},
                          'ipv4': {'proto': 'gre',
@@ -400,7 +400,7 @@ class TestIpgre(TestCase):
         self.compare_checksum(pkt)
 
         # Send packet with wrong inner IP checksum and check forwarded packet IP checksum is correct
-        pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT": ["PKT_TX_IP_CKSUM"]}
+        pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT": ["RTE_MBUF_F_TX_IP_CKSUM"]}
         config_layers = {'ether': {'src': self.outer_mac_src,
                                    'dst': self.outer_mac_dst},
                          'ipv4': {'proto': 'gre',
@@ -421,7 +421,7 @@ class TestIpgre(TestCase):
         self.compare_checksum(pkt)
 
         # Send packet with wrong inner TCP checksum and check forwarded packet TCP checksum is correct
-        pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT": ["PKT_TX_TCP_CKSUM"]}
+        pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT": ["RTE_MBUF_F_TX_TCP_CKSUM"]}
         config_layers = {'ether': {'src': self.outer_mac_src,
                                    'dst': self.outer_mac_dst},
                          'ipv4': {'proto': 'gre',
@@ -444,7 +444,7 @@ class TestIpgre(TestCase):
         self.compare_checksum(pkt)
 
         # Send packet with wrong inner UDP checksum and check forwarded packet UDP checksum is correct
-        pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT": ["PKT_TX_UDP_CKSUM"]}
+        pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT": ["RTE_MBUF_F_TX_UDP_CKSUM"]}
         config_layers = {'ether': {'src': self.outer_mac_src,
                                    'dst': self.outer_mac_dst},
                          'ipv4': {'proto': 'gre',
@@ -465,7 +465,7 @@ class TestIpgre(TestCase):
         self.compare_checksum(pkt)
         if self.nic != "cavium_a063":
             # Send packet with wrong inner SCTP checksum and check forwarded packet SCTP checksum is correct
-            pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_SCTP_PKT": ["PKT_TX_SCTP_CKSUM"]}
+            pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_SCTP_PKT": ["RTE_MBUF_F_TX_SCTP_CKSUM"]}
             config_layers = {'ether': {'src': self.outer_mac_src,
                                        'dst': self.outer_mac_dst},
                              'ipv4': {'proto': 'gre',

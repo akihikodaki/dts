@@ -212,10 +212,10 @@ Test case: Rx offload per-port setting in command-line
 
 2) Check the rx flags::
 
-    PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD
-    PKT_RX_L4_CKSUM_BAD PKT_RX_IP_CKSUM_BAD
-    PKT_RX_L4_CKSUM_BAD PKT_RX_IP_CKSUM_GOOD
-    PKT_RX_L4_CKSUM_UNKNOWN PKT_RX_IP_CKSUM_BAD
+    RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD
+    RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_BAD
+    RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD
+    RTE_MBUF_F_RX_L4_CKSUM_UNKNOWN RTE_MBUF_F_RX_IP_CKSUM_BAD
 
 2. Disable the rx cksum per_port::
 
@@ -292,7 +292,7 @@ Test case: NNT Rx offload per-queue setting
     pkt2 = Ether(dst="00:00:00:00:01:00", src="00:02:00:00:00:01")/Dot1Q(vlan=1)/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=33,dport=34)/Raw('x'*20)
 
    Port0 receive the two packets in queue2 and queue3.
-   Queue2 should capture strip vlan information like "VLAN tci=0x1" and "PKT_RX_VLAN_STRIPPED",
+   Queue2 should capture strip vlan information like "VLAN tci=0x1" and "RTE_MBUF_F_RX_VLAN_STRIPPED",
    queue3 doesn't support vlan strip.
 
    If set "set fwd mac",
@@ -315,7 +315,7 @@ Test case: NNT Rx offload per-queue setting
       Queue[ 3] : VLAN_STRIP
 
    Send the same packets,
-   Queue3 should capture strip vlan information like "VLAN tci=0x1" and "PKT_RX_VLAN_STRIPPED",
+   Queue3 should capture strip vlan information like "VLAN tci=0x1" and "RTE_MBUF_F_RX_VLAN_STRIPPED",
    queue2 doesn't support vlan strip.
 
 6. Enable vlan_strip per_port::
@@ -542,7 +542,7 @@ Test case: Tx offload checksum
 
 2) Check the tx flags::
 
-    PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+    RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
 
 2. Enable the tx ipv4_cksum of port 1::
 
@@ -564,23 +564,23 @@ Test case: Tx offload checksum
 
     sendp([Ether(dst="00:00:00:00:01:00")/IP(src="100.0.0.1", dst="100.0.0.2")/UDP(sport=1024,dport=1025)], iface="enp131s0f3")
 
-   There is printing "PKT_TX_IP_CKSUM" and "PKT_TX_L4_NO_CKSUM" in the tx line.
+   There is printing "RTE_MBUF_F_TX_IP_CKSUM" and "RTE_MBUF_F_TX_L4_NO_CKSUM" in the tx line.
 
 4. Disable tx ipv4_cksum and enable tx udp_cksum,
-   then send the same ipv4-udp packet, there is printing "PKT_TX_UDP_CKSUM",
-   but no "PKT_TX_IP_CKSUM".
+   then send the same ipv4-udp packet, there is printing "RTE_MBUF_F_TX_UDP_CKSUM",
+   but no "RTE_MBUF_F_TX_IP_CKSUM".
 
 5. Try step 4 with "tcp_cksum" on, then send an ipv4-tcp packet::
 
     sendp([Ether(dst="00:00:00:00:01:00")/IP(src="100.0.0.1", dst="100.0.0.2")/TCP(sport=1024,dport=1025)], iface="enp131s0f3")
 
-   There is printing "PKT_TX_TCP_CKSUM".
+   There is printing "RTE_MBUF_F_TX_TCP_CKSUM".
 
 6. Try step 4 with "sctp_cksum" on, then send an ipv4-sctp packet::
 
     sendp([Ether(dst="00:00:00:00:01:00")/IP(src="100.0.0.1", dst="100.0.0.2")/sctp(sport=1024,dport=1025)], iface="enp131s0f3")
 
-   There is printing "PKT_TX_SCTP_CKSUM".
+   There is printing "RTE_MBUF_F_TX_SCTP_CKSUM".
 
 Test case: Tx offload per-queue and per-port setting
 ====================================================

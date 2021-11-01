@@ -240,7 +240,7 @@ class TestDdpGtpQregion(TestCase):
                 pkt = packet.Packet(pkts[packet_type])
                 pkt.send_pkt(crb=self.tester, tx_port=self.tester_intf)
                 out = self.dut.get_session_output(timeout=2)
-                self.verify("PKT_RX_RSS_HASH" in out, "Failed to test RSS!!!")
+                self.verify("RTE_MBUF_F_RX_RSS_HASH" in out, "Failed to test RSS!!!")
                 pattern = "port (\d)/queue (\d{1,2}): received (\d) packets"
                 qnum = self.element_strip(out, pattern)
                 if opt is 'word_opt':

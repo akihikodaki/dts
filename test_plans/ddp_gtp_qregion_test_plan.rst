@@ -179,7 +179,7 @@ Test Case: Outer IPv6 dst controls GTP-C queue in queue region
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send outer dst GTP-C packet, check RSS could work, verify the queue is 
-   between 40 and 55, print PKT_RX_RSS_HASH::
+   between 40 and 55, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP(dport=2123)/
@@ -229,7 +229,7 @@ Test Case: TEID controls GTP-C queue in queue region
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send teid GTP-C packet, check RSS could work, verify the queue is 
-   between 40 and 55, print PKT_RX_RSS_HASH::
+   between 40 and 55, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IPv6()/UDP(dport=2123)/GTP_U_Header(teid=0xfe)/Raw('x'*20) 
 
@@ -269,7 +269,7 @@ Test Case: TEID controls GTP-U IPv4 queue in queue region
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send teid GTP-U IPv4 packet, check RSS could work, verify the queue is 
-   between 1 and 8, print PKT_RX_RSS_HASH::
+   between 1 and 8, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IP()/Raw('x'*20)
 	
@@ -309,7 +309,7 @@ Test Case: Sport controls GTP-U IPv4 queue in queue region
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send sport GTP-U IPv4 packet, check RSS could work, verify the queue is 
-   between 1 and 8, print PKT_RX_RSS_HASH::
+   between 1 and 8, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=30)/IP()/
     UDP(sport=100,dport=200)/Raw('x'*20)
@@ -351,7 +351,7 @@ Test Case: Dport controls GTP-U IPv4 queue in queue region
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send dprot GTP-U IPv4 packet, check RSS could work, verify the queue is 
-   between 1 and 8, print PKT_RX_RSS_HASH::
+   between 1 and 8, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=30)/IP()/
     UDP(sport=100,dport=200)/Raw('x'*20)
@@ -393,7 +393,7 @@ Test Case: Inner IP src controls GTP-U IPv4 queue in queue region
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send inner src GTP-U IPv4 packet, check RSS could work, verify the queue is 
-   between 1 and 8, print PKT_RX_RSS_HASH::
+   between 1 and 8, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
     IP(src="1.1.1.1",dst="2.2.2.2")/UDP()/Raw('x'*20)
@@ -441,7 +441,7 @@ Test Case: Inner IP dst controls GTP-U IPv4 queue in queue region
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send inner dst GTP-U IPv4 packet, check RSS could work, verify the queue is 
-   between 1 and 8, print PKT_RX_RSS_HASH::
+   between 1 and 8, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
     IP(src="1.1.1.1",dst="2.2.2.2")/UDP()/Raw('x'*20)
@@ -488,7 +488,7 @@ Test Case: TEID controls GTP-U IPv6 queue in queue region
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send teid GTP-U IPv6 packet, check RSS could work, verify the queue is 
-   between 10 and 25, print PKT_RX_RSS_HASH::
+   between 10 and 25, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IPv6()/
     UDP(sport=100,dport=200)/Raw('x'*20)
@@ -530,7 +530,7 @@ Test Case: Sport controls GTP-U IPv6 queue in queue region
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send sport GTP-U IPv6 packet, check RSS could work, verify the queue is 
-   between 10 and 25, print PKT_RX_RSS_HASH::
+   between 10 and 25, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/IPv6()/
     UDP(sport=100,dport=200)/Raw('x'*20)
@@ -572,7 +572,7 @@ Test Case: Dport controls GTP-U IPv6 queue in queue region
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send dport GTP-U IPv6 packet, check RSS could work, verify the queue 
-   is between 10 and 25, print PKT_RX_RSS_HASH::
+   is between 10 and 25, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/IPv6()/
     UDP(sport=100,dport=200)/Raw('x'*20)
@@ -621,7 +621,7 @@ Test Case: Inner IPv6 src controls GTP-U IPv6 queue in queue region
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send inner src address GTP-U IPv6 packets, check RSS could work, verify 
-   the queue is between 10 and 25, print PKT_RX_RSS_HASH::
+   the queue is between 10 and 25, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
@@ -677,7 +677,7 @@ Test Case: Inner IPv6 dst controls GTP-U IPv6 queue in queue region
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send inner dst GTP-U IPv6 packets, check RSS could work, verify the 
-   queue is between 10 and 25, print PKT_RX_RSS_HASH::
+   queue is between 10 and 25, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
@@ -1141,7 +1141,7 @@ Test Case: Outer 64 bit prefix dst controls GTP-C queue
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send outer dst GTP-C packet, check RSS could work, verify the queue is
-   between 40 and 55, print PKT_RX_RSS_HASH::
+   between 40 and 55, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP(dport=2123)/
@@ -1201,7 +1201,7 @@ Test Case: Inner 48 bit prefix src controls GTP-U IPv6 queue
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send inner src address GTP-U IPv6 packets, check RSS could work, verify
-   the queue is between 10 and 25, print PKT_RX_RSS_HASH::
+   the queue is between 10 and 25, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
@@ -1260,7 +1260,7 @@ Test Case: Inner 32 bit prefix dst controls GTP-U IPv6 queue
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send inner dst GTP-U IPv6 packets, check RSS could work, verify the
-   queue is between 10 and 25, print PKT_RX_RSS_HASH::
+   queue is between 10 and 25, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",

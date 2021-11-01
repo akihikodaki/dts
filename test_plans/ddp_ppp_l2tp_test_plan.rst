@@ -164,7 +164,7 @@ Test Case: RSS for PPPoE with default input set
 5. Start testpmd, set fwd rxonly, enable output print
 
 6. Default hash input set are MAC SA, session ID. Send sessionid
-   PPPoE PAY packet, check RSS could work, print PKT_RX_RSS_HASH::
+   PPPoE PAY packet, check RSS could work, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether(src="3C:FD:FE:A3:A0:01", dst="4C:FD:FE:A3:A0:01")/
     PPPoE(sessionid=0x7)
@@ -208,7 +208,7 @@ Test Case: RSS for PPPoE Ipv4 with default input set
 5. Start testpmd, set fwd rxonly, enable output print
 
 6. Default hash input set are IPv4 SA, IPv4 DA, sport, dport. Send PPPoE
-   IPv4 packet, check RSS could work, print PKT_RX_RSS_HASH::
+   IPv4 packet, check RSS could work, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/PPPoE(sessionid=0x7)/PPP(proto=0x21)/IP(src="1.1.1.1",
     dst="2.2.2.2")/UDP(sport=4000,dport=8000)/Raw('x' * 20)
@@ -251,7 +251,7 @@ Test Case: RSS for PPPoE IPv6 with default input set
 5. Start testpmd, set fwd rxonly, enable output print
 
 6. Default hash input set are IPv6 SA, IPv6 DA, sport, dport. Send PPPoE
-   IPv6 packet, check RSS could work, print PKT_RX_RSS_HASH::
+   IPv6 packet, check RSS could work, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/PPPoE(sessionid=0x7)/PPP(proto=0x57)/
     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
@@ -306,7 +306,7 @@ Test Case: RSS for L2TPv2 PAY with default input set
 5. Start testpmd, set fwd rxonly, enable output print
 
 6. Default hash input set are MAC SA, session ID. Send sessionid
-   L2TP PAY packet, check RSS could work, print PKT_RX_RSS_HASH::
+   L2TP PAY packet, check RSS could work, print RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether(src="3C:FD:FE:A3:A0:01", dst="4C:FD:FE:A3:A0:01")/IP()/
     UDP(dport=1701, sport=1701)/L2TP(sessionid=0x7)/Raw('x' * 20)
@@ -357,7 +357,7 @@ Test Case: RSS for PPPoE according to sessionid
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send sessionid PPPoE PAY packet, check RSS could work, print
-   PKT_RX_RSS_HASH::
+   RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether(src="3C:FD:FE:A3:A0:01", dst="4C:FD:FE:A3:A0:01")/
     PPPoE(sessionid=0x7)
@@ -398,7 +398,7 @@ Test Case: RSS for PPPoE according to source address
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send source address PPPoE PAY packet, check RSS could work, print
-   PKT_RX_RSS_HASH::
+   RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether(src="3C:FD:FE:A3:A0:01", dst="4C:FD:FE:A3:A0:01")/
     PPPoE(sessionid=0x7)
@@ -444,7 +444,7 @@ Test Case: RSS for PPPoL2TP IPv4 according to inner source IPv4
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send inner source IPv4 PPPoL2TP IPv4 packet, check RSS could work, print
-   PKT_RX_RSS_HASH::
+   RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IP()/UDP(dport=1701, sport=1701)/PPP_L2TP(proto=0x0021)/
     IP(src="1.1.1.1",dst="2.2.2.2")/UDP(sport=4000, dport=8000)/Raw('x' * 20)
@@ -490,7 +490,7 @@ Test Case: RSS for PPPoL2TP IPv4 according to inner destination IPv4
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send inner destination IPv4 PPPoL2TP IPv4 packet, check RSS could work, print
-   PKT_RX_RSS_HASH::
+   RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IP()/UDP(dport=1701, sport=1701)/PPP_L2TP(proto=0x0021)/
     IP(src="1.1.1.1",dst="2.2.2.2")/UDP(sport=4000, dport=8000)/Raw('x' * 20)
@@ -535,7 +535,7 @@ Test Case: RSS for PPPoL2TP IPv4 according to sport
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send sport PPPoL2TP IPv4 packet, check RSS could work, print
-   PKT_RX_RSS_HASH::
+   RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IP()/UDP(dport=1701, sport=1701)/PPP_L2TP(proto=0x0021)/
     IP(src="1.1.1.1",dst="2.2.2.2")/UDP(sport=4000, dport=8000)/Raw('x' * 20)
@@ -580,7 +580,7 @@ Test Case: RSS for PPPoL2TP IPv4 according to dport
 7. Start testpmd, set fwd rxonly, enable output print
 
 8. Send dport PPPoL2TP IPv4 packet, check RSS could work, print
-   PKT_RX_RSS_HASH::
+   RTE_MBUF_F_RX_RSS_HASH::
 
     p=Ether()/IP()/UDP(dport=1701, sport=1701)/PPP_L2TP(proto=0x0021)/
     IP(src="1.1.1.1",dst="2.2.2.2")/UDP(sport=4000, dport=8000)/Raw('x' * 20)

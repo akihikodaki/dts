@@ -208,12 +208,12 @@ class TestDynamicFlowtype(TestCase):
             pkt.send_pkt(crb=self.tester, tx_port=self.tester_intf)
             out = self.dut.get_session_output(timeout=2)
             if match_opt == 'matched':
-                self.verify("PKT_RX_RSS_HASH" in out,
+                self.verify("RTE_MBUF_F_RX_RSS_HASH" in out,
                             "Failed to receive packet in rss queue!!!")
             elif match_opt == 'not matched':
                 self.verify("port 0/queue 0" in out,
                             "Failed to receive packet in queue 0!!!")
-                self.verify("PKT_RX_RSS_HASH" not in out,
+                self.verify("RTE_MBUF_F_RX_RSS_HASH" not in out,
                             "Failed to receive packet in queue 0!!!")
 
     def dynamic_flowtype_test(self, pctype=22, flowtype=26, reset=False):

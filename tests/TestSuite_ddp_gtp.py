@@ -380,7 +380,7 @@ class TestDdpGtp(TestCase):
                                 layer_type in out,
                                 "Failed to output ptype information!!!")
                     if queue != 0 and type is 'fdir':
-                        self.verify(count == out.count("PKT_RX_FDIR"),
+                        self.verify(count == out.count("RTE_MBUF_F_RX_FDIR"),
                                     "Failed to test flow director!!!")
                     count = 0
                     if teid == wrong_teid or match_opt == 'not matched':

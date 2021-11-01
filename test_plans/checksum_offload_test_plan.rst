@@ -247,14 +247,14 @@ Start the packet forwarding::
 Send a packet with a good checksum::
 
    port=0, mbuf=0x2269df8780, pkt_len=96, nb_segs=1:
-   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD  PKT_RX_OUTER_L4_CKSUM_UNKNOWN
-   tx: flags=PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD  RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
 
 Send a packet with a bad checksum::
 
    port=0, mbuf=0x2269df7e40, pkt_len=96, nb_segs=1:
-   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_L4_CKSUM_BAD PKT_RX_IP_CKSUM_BAD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
-   tx: flags=PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_BAD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
 
 Verify flags are as expected.
 
@@ -282,14 +282,14 @@ Start the packet forwarding::
 Send a packet with a good checksum::
 
    port=0, mbuf=0x2269df8780, pkt_len=96, nb_segs=1:
-   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD  PKT_RX_OUTER_L4_CKSUM_UNKNOWN
-   tx: flags=PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD  RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
 
 Send a packet with a bad checksum::
 
    port=0, mbuf=0x2269df7e40, pkt_len=96, nb_segs=1:
-   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_L4_CKSUM_BAD PKT_RX_IP_CKSUM_BAD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
-   tx: flags=PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_BAD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
 
 Verify flags are as expected.
 
@@ -325,14 +325,14 @@ Start a packet capture on the tester in the background::
 Send a packet with a good checksum::
 
    port=0, mbuf=0x2269df8780, pkt_len=96, nb_segs=1:
-   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD  PKT_RX_OUTER_L4_CKSUM_UNKNOWN
-   tx: flags=PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD  RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
 
 Send a packet with a bad checksum::
 
    port=0, mbuf=0x2269df7e40, pkt_len=96, nb_segs=1:
-   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_L4_CKSUM_BAD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
-   tx: flags=PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
 
 Inspect the pcap file from the packet capture and verify the checksums.
 
@@ -365,14 +365,14 @@ Start a packet capture on the tester in the background::
 Send a packet with a good checksum with a 1 in it's payload::
 
    port=0, mbuf=0x2269df8780, pkt_len=96, nb_segs=1:
-   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD  PKT_RX_OUTER_L4_CKSUM_UNKNOWN
-   tx: flags=PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD  RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
 
 Send a packet with a bad checksum with a 0 in it's payload::
 
    port=0, mbuf=0x2269df7e40, pkt_len=96, nb_segs=1:
-   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_BAD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
-   tx: flags=PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_BAD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
 
 Inspect the pcap file from the packet capture and verify the checksums.
 

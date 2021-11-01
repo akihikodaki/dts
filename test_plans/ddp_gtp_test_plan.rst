@@ -139,7 +139,7 @@ Test Case: GTP-C FDIR packet for PF
     p=Ether()/IP()/UDP(dport=2123)/GTP_U_Header(teid=0x3456)/Raw('x'*20) 
 
 4. Check PF could receive configured TEID GTP-C packet, checksum is good,
-   queue is configured queue, ptypes are correct, check PKT_RX_FDIR print.
+   queue is configured queue, ptypes are correct, check RTE_MBUF_F_RX_FDIR print.
 
 5. Send GTP-C packet with bad checksum, dport is 2123, TEID is same
    as configured rule::
@@ -147,11 +147,11 @@ Test Case: GTP-C FDIR packet for PF
     p=Ether()/IP()/UDP(chksum=0x1234,dport=2123)/GTP_U_Header(teid=0x3456)/Raw('x'*20) 
    
 6. Check PF could receive configured TEID GTP packet, checksum is good, 
-   queue is configured queue, ptypes are correct, check PKT_RX_FDIR print.
+   queue is configured queue, ptypes are correct, check RTE_MBUF_F_RX_FDIR print.
    
 7. Send some TEIDs are not same as configured rule or other types packets, 
    check checksum are good, queue is 0, ptypes are correct, check no 
-   PKT_RX_FDIR print.
+   RTE_MBUF_F_RX_FDIR print.
   
 
 Test Case: GTP-C Cloud filter packet for PF
@@ -170,7 +170,7 @@ Test Case: GTP-C Cloud filter packet for PF
     p=Ether()/IP()/UDP(dport=2123)/GTP_U_Header(teid=0x12345678)/Raw('x'*20)
 
 4. Check PF could receive configured TEID GTP-C packet, checksum is good,
-   queue is configured queue, ptypes are correct, check no PKT_RX_FDIR print.
+   queue is configured queue, ptypes are correct, check no RTE_MBUF_F_RX_FDIR print.
 
 5. Send GTP-C packet with bad checksum, dport is 2123, TEID is same
    as configured rule::
@@ -178,11 +178,11 @@ Test Case: GTP-C Cloud filter packet for PF
     p=Ether()/IP()/UDP(chksum=0x1234,dport=2123)/GTP_U_Header(teid=0x12345678)/Raw('x'*20)
 
 6. Check PF could receive configured TEID GTP packet, checksum is good, 
-   queue is configured queue, ptypes are correct, check no PKT_RX_FDIR print.
+   queue is configured queue, ptypes are correct, check no RTE_MBUF_F_RX_FDIR print.
 
 7. Send some TEIDs are not same as configured rule or other types packets, 
    check checksum are good, queue is 0, ptypes are correct, no 
-   PKT_RX_FDIR print.
+   RTE_MBUF_F_RX_FDIR print.
 
 
 Test Case: GTP-U FDIR packet for PF
@@ -205,7 +205,7 @@ Test Case: GTP-U FDIR packet for PF
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0x123456)/IPv6()/Raw('x'*20)
 
 4. Check PF could receive configured TEID GTP-U packet, checksum is good,
-   queue is configured queue, ptypes are correct, check PKT_RX_FDIR print.
+   queue is configured queue, ptypes are correct, check RTE_MBUF_F_RX_FDIR print.
    
 5. Send GTP-U packet with bad checksum, dport is 2152, TEID is same
    as configured rule::
@@ -215,11 +215,11 @@ Test Case: GTP-U FDIR packet for PF
     p=Ether()/IP()/UDP(chksum=0x1234,dport=2152)/GTP_U_Header(teid=0x123456)/IPv6()/Raw('x'*20)
 
 6. Check PF could receive configured TEID GTP packet, checksum is good, queue 
-   is configured queue, ptypes are corrcet, check PKT_RX_FDIR print.
+   is configured queue, ptypes are corrcet, check RTE_MBUF_F_RX_FDIR print.
    
 7. Send some TEIDs are not same as configured rule or other types packets, 
    check checksum are good, queue is 0, pytpes are correct, check no 
-   PKT_RX_FDIR print.
+   RTE_MBUF_F_RX_FDIR print.
 
 
 Test Case: GTP-U Cloud filter packet for PF
@@ -238,7 +238,7 @@ Test Case: GTP-U Cloud filter packet for PF
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0x12345678)/Raw('x'*20)
    		
 4. Check PF could receive configured TEID GTP-U packet, checksum is good,
-   queue is configured queue, ptypes are correct, check no PKT_RX_FDIR print.
+   queue is configured queue, ptypes are correct, check no RTE_MBUF_F_RX_FDIR print.
 
 5. Send GTP-U packet with bad checksum, dport is 2152, TEID is same
    as configured rule::
@@ -246,11 +246,11 @@ Test Case: GTP-U Cloud filter packet for PF
     p=Ether()/IP()/UDP(chksum=0x1234,dport=2152)/GTP_U_Header(teid=0x12345678)/Raw('x'*20)
 
 6. Check PF could receive configured TEID GTP packet, checksum is good, queue
-   is configured queue, ptypes are correct, check no PKT_RX_FDIR print.
+   is configured queue, ptypes are correct, check no RTE_MBUF_F_RX_FDIR print.
 
 7. Send some TEIDs are not same as configured rule or other types packets, 
    check checksum are good, queue is 0, ptypes are correct, no 
-   PKT_RX_FDIR print.
+   RTE_MBUF_F_RX_FDIR print.
    
    
 Test Case: GTP-C Cloud filter packet for VF

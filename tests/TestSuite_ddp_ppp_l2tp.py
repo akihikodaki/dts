@@ -185,7 +185,7 @@ class TestDdpPppL2tp(TestCase):
             out = self.dut.get_session_output(timeout=2)
             print(out)
             if type is 'rss':
-                self.verify("PKT_RX_RSS_HASH" in out, "Failed to test RSS!!!")
+                self.verify("RTE_MBUF_F_RX_RSS_HASH" in out, "Failed to test RSS!!!")
             pattern = "port (\d)/queue (\d{1,2}): received (\d) packets"
             qnum = self.element_strip(out, pattern)
             ptypes = packet_type.split('/')

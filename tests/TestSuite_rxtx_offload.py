@@ -263,9 +263,9 @@ class TestRxTx_Offload(TestCase):
         m = scanner.search(outstring)
         queue_id = m.group(1)
         if int(queue_id) in queue:
-            self.verify("PKT_RX_VLAN_STRIPPED" in outstring, "Fail to configure offload by queue.")
+            self.verify("RTE_MBUF_F_RX_VLAN_STRIPPED" in outstring, "Fail to configure offload by queue.")
         else:
-            self.verify("PKT_RX_VLAN_STRIPPED" not in outstring, "Fail to configure offload by queue.")
+            self.verify("RTE_MBUF_F_RX_VLAN_STRIPPED" not in outstring, "Fail to configure offload by queue.")
         self.dut.send_expect("stop", "testpmd>")
 
     def checksum_valid_flags(self, packet, direction, flags):
@@ -285,28 +285,28 @@ class TestRxTx_Offload(TestCase):
                 line = line.strip()
                 if len(line) != 0 and line.startswith("rx") and ("flags" in line):
                     if ("ipv4" in flags):
-                        self.verify("PKT_RX_IP_CKSUM_BAD" in line, "ipv4 checksum flag is wrong!")
+                        self.verify("RTE_MBUF_F_RX_IP_CKSUM_BAD" in line, "ipv4 checksum flag is wrong!")
                     else:
-                        self.verify("PKT_RX_IP_CKSUM_GOOD" in line, "ipv4 checksum flag is wrong!")
+                        self.verify("RTE_MBUF_F_RX_IP_CKSUM_GOOD" in line, "ipv4 checksum flag is wrong!")
                     if ("udp" in flags) or ("tcp" in flags):
-                        self.verify("PKT_RX_L4_CKSUM_BAD" or "PKT_RX_L4_CKSUM_UNKNOWN" in line, "L4 checksum flag is wrong!")
+                        self.verify("RTE_MBUF_F_RX_L4_CKSUM_BAD" or "RTE_MBUF_F_RX_L4_CKSUM_UNKNOWN" in line, "L4 checksum flag is wrong!")
                     else:
-                        self.verify(("PKT_RX_L4_CKSUM_GOOD" in line) or ("PKT_RX_L4_CKSUM_UNKNOWN" in line), "L4 checksum flag is wrong!")
+                        self.verify(("RTE_MBUF_F_RX_L4_CKSUM_GOOD" in line) or ("RTE_MBUF_F_RX_L4_CKSUM_UNKNOWN" in line), "L4 checksum flag is wrong!")
         # collect the tx checksum result
         if (direction == "tx"):
             for line in lines:
                 line = line.strip()
                 if len(line) != 0 and line.startswith("tx") and ("flags" in line):
                     if ("ipv4" in flags):
-                        self.verify("PKT_TX_IP_CKSUM" in line, "There is no ipv4 tx checksum flag!")
+                        self.verify("RTE_MBUF_F_TX_IP_CKSUM" in line, "There is no ipv4 tx checksum flag!")
                     if ("udp" in flags):
-                        self.verify("PKT_TX_UDP_CKSUM" in line, "There is no udp tx checksum flag!")
+                        self.verify("RTE_MBUF_F_TX_UDP_CKSUM" in line, "There is no udp tx checksum flag!")
                     if ("tcp") in flags:
-                        self.verify("PKT_TX_TCP_CKSUM" in line, "There is no tcp tx checksum flag!")
+                        self.verify("RTE_MBUF_F_TX_TCP_CKSUM" in line, "There is no tcp tx checksum flag!")
                     if ("sctp") in flags:
-                        self.verify("PKT_TX_SCTP_CKSUM" in line, "There is no sctp tx checksum flag!")
+                        self.verify("RTE_MBUF_F_TX_SCTP_CKSUM" in line, "There is no sctp tx checksum flag!")
                     if (flags == []):
-                        self.verify(("PKT_TX_L4_NO_CKSUM" in line) and ("PKT_TX_IP_CKSUM" not in line), "The tx checksum flag is wrong!")
+                        self.verify(("RTE_MBUF_F_TX_L4_NO_CKSUM" in line) and ("RTE_MBUF_F_TX_IP_CKSUM" not in line), "The tx checksum flag is wrong!")
         self.dut.send_expect("stop", "testpmd>")
 
     def verify_result(self, packet, expect_rxpkts, expect_queue):

@@ -181,25 +181,25 @@ class TestChecksumOffload(TestCase):
                 if len(line) != 0 and line.startswith("rx"):
                     # IPv6 don't be checksum, so always show "GOOD"
                     if packet_type.startswith("IPv6"):
-                        if "PKT_RX_L4_CKSUM" not in line:
+                        if "RTE_MBUF_F_RX_L4_CKSUM" not in line:
                             self.verify(0, "There is no checksum flags appeared!")
                         else:
                             if (flag == 1):
-                                self.verify("PKT_RX_L4_CKSUM_GOOD" in line, "Packet Rx L4 checksum valid-flags error!")
+                                self.verify("RTE_MBUF_F_RX_L4_CKSUM_GOOD" in line, "Packet Rx L4 checksum valid-flags error!")
                             elif (flag == 0):
-                                self.verify("PKT_RX_L4_CKSUM_BAD" in line or "PKT_RX_L4_CKSUM_UNKNOWN" in line, "Packet Rx L4 checksum valid-flags error!")
+                                self.verify("RTE_MBUF_F_RX_L4_CKSUM_BAD" in line or "RTE_MBUF_F_RX_L4_CKSUM_UNKNOWN" in line, "Packet Rx L4 checksum valid-flags error!")
                     else:
-                        if "PKT_RX_L4_CKSUM" not in line:
+                        if "RTE_MBUF_F_RX_L4_CKSUM" not in line:
                             self.verify(0, "There is no L4 checksum flags appeared!")
-                        elif "PKT_RX_IP_CKSUM" not in line:
+                        elif "RTE_MBUF_F_RX_IP_CKSUM" not in line:
                             self.verify(0, "There is no IP checksum flags appeared!")
                         else:
                             if (flag == 1):
-                                self.verify("PKT_RX_L4_CKSUM_GOOD" in line, "Packet Rx L4 checksum valid-flags error!")
-                                self.verify("PKT_RX_IP_CKSUM_GOOD" in line, "Packet Rx IP checksum valid-flags error!")
+                                self.verify("RTE_MBUF_F_RX_L4_CKSUM_GOOD" in line, "Packet Rx L4 checksum valid-flags error!")
+                                self.verify("RTE_MBUF_F_RX_IP_CKSUM_GOOD" in line, "Packet Rx IP checksum valid-flags error!")
                             elif (flag == 0):
-                                self.verify("PKT_RX_L4_CKSUM_BAD" in line or "PKT_RX_L4_CKSUM_UNKNOWN" in line, "Packet Rx L4 checksum valid-flags error!")
-                                self.verify("PKT_RX_IP_CKSUM_BAD" in line, "Packet Rx IP checksum valid-flags error!")
+                                self.verify("RTE_MBUF_F_RX_L4_CKSUM_BAD" in line or "RTE_MBUF_F_RX_L4_CKSUM_UNKNOWN" in line, "Packet Rx L4 checksum valid-flags error!")
+                                self.verify("RTE_MBUF_F_RX_IP_CKSUM_BAD" in line, "Packet Rx IP checksum valid-flags error!")
 
         self.dut.send_expect("stop", "testpmd>")
 
@@ -264,10 +264,10 @@ class TestChecksumOffload(TestCase):
         return self.tester.scapy_execute()
 
     def get_pkt_rx_l4_cksum(self, testpmd_output: str) -> bool:
-        return self.checksum_flags_are_good("PKT_RX_L4_CKSUM_", testpmd_output)
+        return self.checksum_flags_are_good("RTE_MBUF_F_RX_L4_CKSUM_", testpmd_output)
 
     def get_pkt_rx_ip_cksum(self, testpmd_output: str) -> bool:
-        return self.checksum_flags_are_good("PKT_RX_IP_CKSUM_", testpmd_output)
+        return self.checksum_flags_are_good("RTE_MBUF_F_RX_IP_CKSUM_", testpmd_output)
 
     def send_pkt_expect_good_bad_from_flag(self, pkt_str: str, flag: str, test_name: str, should_pass: bool = True):
         self.pmdout.get_output(timeout=1)  # Remove any old output
@@ -686,7 +686,7 @@ class TestChecksumOffload(TestCase):
             for chksum in "", "chksum=0xf":
                 vf = self.send_pkt_expect_good_bad_from_flag_catch_failure(
                     f"eth/IP({chksum})/{l4}()/('X'*50)",
-                    "PKT_RX_IP_CKSUM_", f"{l4}",
+                    "RTE_MBUF_F_RX_IP_CKSUM_", f"{l4}",
                     should_pass=(chksum == ""))
                 if vf is not None:
                     verification_errors.append(vf)
@@ -760,7 +760,7 @@ class TestChecksumOffload(TestCase):
                 for chksum in "", "chksum=0xf":
                     vf = self.send_pkt_expect_good_bad_from_flag_catch_failure(
                         f"eth/{l3}()/{l4}({chksum})/('X'*48)",
-                        "PKT_RX_L4_CKSUM_", f"{l3}/{l4}",
+                        "RTE_MBUF_F_RX_L4_CKSUM_", f"{l3}/{l4}",
                         should_pass=(chksum == ""))
                     if vf is not None:
                         verification_errors.append(vf)
@@ -771,10 +771,10 @@ class TestChecksumOffload(TestCase):
             for l4 in l4_protos:
                 for outer_arg in "", "chksum=0xf":
                     for inner_arg in "", "chksum=0xf":
-                        for flag in "PKT_RX_L4_CKSUM_", "PKT_RX_OUTER_L4_CKSUM_":
-                            if flag == "PKT_RX_L4_CKSUM_":
+                        for flag in "RTE_MBUF_F_RX_L4_CKSUM_", "RTE_MBUF_F_RX_OUTER_L4_CKSUM_":
+                            if flag == "RTE_MBUF_F_RX_L4_CKSUM_":
                                 should_pass = inner_arg == ""
-                            else:  # flag == PKT_RX_OUTER_L4_CKSUM_
+                            else:  # flag == RTE_MBUF_F_RX_OUTER_L4_CKSUM_
                                 # fortville not support outer checksum
                                 if 'fortville' in self.nic:
                                     continue
@@ -795,7 +795,7 @@ class TestChecksumOffload(TestCase):
                     should_pass: bool = inner_arg == ""
                     vf = self.send_pkt_expect_good_bad_from_flag_catch_failure(
                         f"eth/{l3}()/GRE()/{l3}()/{l4}({inner_arg})/('X'*48)",
-                        "PKT_RX_L4_CKSUM_", f"{l3}/GRE/{l3}/{l4}",
+                        "RTE_MBUF_F_RX_L4_CKSUM_", f"{l3}/GRE/{l3}/{l4}",
                         should_pass=should_pass)
 
                     if vf is not None:
@@ -814,8 +814,8 @@ class TestChecksumOffload(TestCase):
         #             for l4 in l4_protos:
         #                 for outer_arg in "", "chksum=0xf":
         #                     for inner_arg in "", "chksum=0xf":
-        #                         for flag in "PKT_RX_L4_CKSUM_", "PKT_RX_OUTER_L4_CKSUM_":
-        #                             should_pass: bool = inner_arg == "" if flag == "PKT_RX_L4_CKSUM_" else outer_arg == ""
+        #                         for flag in "RTE_MBUF_F_RX_L4_CKSUM_", "RTE_MBUF_F_RX_OUTER_L4_CKSUM_":
+        #                             should_pass: bool = inner_arg == "" if flag == "RTE_MBUF_F_RX_L4_CKSUM_" else outer_arg == ""
         #                             vf = self.send_pkt_expect_good_bad_from_flag_catch_failure(
         #                                 f"eth/{l3_outer}()/{l4_outer}({outer_arg})/GENEVE()/eth/{l3_inner}()/"
         #                                 f"{l4}({inner_arg})/('X'*50)",

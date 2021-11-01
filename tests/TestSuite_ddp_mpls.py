@@ -215,7 +215,7 @@ class Testddp_mpls(TestCase):
 
                 self.verify("port 0/queue %d" % queue in out,
                     "Failed to receive packet in this queue!!!")
-                self.verify("PKT_RX_L4_CKSUM_GOOD" in out,"Failed to check CKSUM!!!")
+                self.verify("RTE_MBUF_F_RX_L4_CKSUM_GOOD" in out,"Failed to check CKSUM!!!")
             label = wrong_label
             queue = 0
 

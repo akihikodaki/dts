@@ -157,7 +157,7 @@ Test Case: Reset flow type to pctype mapping
 
 6. Start testpmd
 
-7. Send normal packet to port, check RSS could work, print PKT_RX_RSS_HASH::
+7. Send normal packet to port, check RSS could work, print RTE_MBUF_F_RX_RSS_HASH::
     
     >>> p=Ether()/IP()/Raw('x'*20)
 
@@ -182,13 +182,13 @@ Test Case: Update flow type to GTP-U IPv4 pctype mapping item
 
 5. Start testpmd
 
-6. Send GTP-U IPv4 packets, check RSS could work, print PKT_RX_RSS_HASH::
+6. Send GTP-U IPv4 packets, check RSS could work, print RTE_MBUF_F_RX_RSS_HASH::
 
     >>> p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header()/IP()/Raw('x'*20)
     >>> p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IP()/Raw('x'*20)
 
 7. Send GTP-U IPv6, GTP-U PAY4 and GTP-C PAY4 packets, check receive packets 
-   from queue 0 and don't have PKT_RX_RSS_HASH print.
+   from queue 0 and don't have RTE_MBUF_F_RX_RSS_HASH print.
   
 
 Test Case: Update flow type to GTP-U IPv6 pctype mapping item
@@ -211,13 +211,13 @@ Test Case: Update flow type to GTP-U IPv6 pctype mapping item
 
 5. Start testpmd
 
-6. Send GTP-U IPv6 packets, check RSS could work, print PKT_RX_RSS_HASH::
+6. Send GTP-U IPv6 packets, check RSS could work, print RTE_MBUF_F_RX_RSS_HASH::
 
     >>> p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6()/Raw('x'*20)
     >>> p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IPv6()/Raw('x'*20)
 
 7. Send GTP-U IPv4, GTP-U PAY4 and GTP-C PAY4 packets, check receive 
-   packets from queue 0 and don't have PKT_RX_RSS_HASH print
+   packets from queue 0 and don't have RTE_MBUF_F_RX_RSS_HASH print
   
 
   
@@ -241,13 +241,13 @@ Test Case: Update flow type to GTP-U PAY4 pctype mapping item
 
 5. Start testpmd
 
-6. Send GTP-U, PAY4 packets, check RSS could work, print PKT_RX_RSS_HASH::
+6. Send GTP-U, PAY4 packets, check RSS could work, print RTE_MBUF_F_RX_RSS_HASH::
 
     >>> p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header()/Raw('x'*20)
     >>> p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/Raw('x'*20)
 
 7. Send GTP-U IPv4, GTP-U IPv6 and GTP-C PAY4 packets, check receive 
-   packets from queue 0 and don't have PKT_RX_RSS_HASH print.
+   packets from queue 0 and don't have RTE_MBUF_F_RX_RSS_HASH print.
  
 	  
 Test Case: Update flow type to GTP-C PAY4 pctype mapping item
@@ -268,13 +268,13 @@ Test Case: Update flow type to GTP-C PAY4 pctype mapping item
 
 5. Start testpmd
 
-6. Send GTP-C PAY4 packets, check RSS could work, print PKT_RX_RSS_HASH::
+6. Send GTP-C PAY4 packets, check RSS could work, print RTE_MBUF_F_RX_RSS_HASH::
 
     >>> p=Ether()/IP()/UDP(dport=2123)/GTP_U_Header()/Raw('x'*20)
     >>> p=Ether()/IPv6()/UDP(dport=2123)/GTP_U_Header()/Raw('x'*20)
 
 7. Send GTP-U IPv4, GTP-U IPv6 and GTP-U PAY4 packets, check receive packets
-   from queue 0 and don't have PKT_RX_RSS_HASH print.
+   from queue 0 and don't have RTE_MBUF_F_RX_RSS_HASH print.
 
    
 GTP packet
