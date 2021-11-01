@@ -72,7 +72,7 @@ tv_mac_ipv4_frag_fdir_passthru = {
 
 tv_mac_ipv4_frag_fdir_drop = {
     "name": "tv_mac_ipv4_frag_fdir_drop",
-    "rule": "flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions drop / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions drop / mark / end",
     "scapy_str": {"matched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
                   "unmatched": ["Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"]
                   },
@@ -106,12 +106,12 @@ tvs_mac_ipv4_fragment_fdir = [
     tv_mac_ipv4_frag_fdir_mark,
 ]
 
-tvs_mac_ipv4_fragment_fdir_l3src = [eval(str(element).replace('mac_ipv4_frag', 'mac_ipv4_frag_l3src')
+tvs_mac_ipv4_fragment_fdir_l3src = [eval(str(element).replace('mac_ipv4_frag_fdir', 'mac_ipv4_frag_fdir_l3src')
                                                      .replace('ipv4 fragment_offset', 'ipv4 src is 192.168.1.1 fragment_offset')
                                                      .replace("IP(id=47750)", "IP(id=47750, src='192.168.1.1')"))
                                     for element in tvs_mac_ipv4_fragment_fdir]
 
-tvs_mac_ipv4_fragment_fdir_l3dst = [eval(str(element).replace('mac_ipv4_frag', 'mac_ipv4_frag_l3dst')
+tvs_mac_ipv4_fragment_fdir_l3dst = [eval(str(element).replace('mac_ipv4_frag_fdir', 'mac_ipv4_frag_fdir_l3dst')
                                                      .replace('ipv4 fragment_offset', 'ipv4 dst is 192.168.1.2 fragment_offset')
                                                      .replace("IP(id=47750)", "IP(id=47750, dst='192.168.1.2')"))
                                     for element in tvs_mac_ipv4_fragment_fdir]
@@ -147,7 +147,7 @@ tv_mac_ipv6_frag_fdir_passthru = {
 
 tv_mac_ipv6_frag_fdir_drop = {
     "name": "tv_mac_ipv6_frag_fdir_drop",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions drop / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions drop / mark / end",
     "scapy_str": {"matched": ["Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
                   "unmatched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"]
                   },
@@ -181,12 +181,12 @@ tvs_mac_ipv6_fragment_fdir = [
     tv_mac_ipv6_frag_fdir_mark,
 ]
 
-tvs_mac_ipv6_fragment_fdir_l3src = [eval(str(element).replace('mac_ipv6_frag', 'mac_ipv6_frag_l3src')
+tvs_mac_ipv6_fragment_fdir_l3src = [eval(str(element).replace('mac_ipv6_frag_fdir', 'mac_ipv6_frag_fdir_l3src')
                                                      .replace('/ ipv6 /', '/ ipv6 src is 2001::1 /')
                                                      .replace("IPv6()", "IPv6(src='2001::1')"))
                                     for element in tvs_mac_ipv6_fragment_fdir]
 
-tvs_mac_ipv6_fragment_fdir_l3dst = [eval(str(element).replace('mac_ipv6_frag', 'mac_ipv6_frag_l3dst')
+tvs_mac_ipv6_fragment_fdir_l3dst = [eval(str(element).replace('mac_ipv6_frag_fdir', 'mac_ipv6_frag_fdir_l3dst')
                                                      .replace('/ ipv6 /', '/ ipv6 dst is 2001::2 /')
                                                      .replace("IPv6()", "IPv6(dst='2001::2')"))
                                     for element in tvs_mac_ipv6_fragment_fdir]
@@ -373,7 +373,8 @@ class TestCvlIavfIpFragmentRteFlow(TestCase):
         rule_list_fdir = [
             'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / end actions queue index 1 / end',
             'flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 2 / end']
-        pkt_fdir = "Ether()/IP(src='192.168.0.20', id=47750)/Raw('X'*666)"
+        pkt_fdir = ["Ether()/IP(src='192.168.0.20', id=47750)/Raw('X'*666)"]
+        p = re.compile(r"port\s+%s/queue\s+(\d+):\s+received\s+(\d+)\s+packets" % 0)
 
         self.logger.info('Subcase 1: exclusive validation fdir rule')
         self.launch_testpmd(param_fdir=True)
@@ -382,11 +383,12 @@ class TestCvlIavfIpFragmentRteFlow(TestCase):
         except Exception as e:
             self.logger.warning('Subcase 1 failed: %s' % e)
             result = False
-        hashes, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkt_fdir)
-        for queue in queues:
-            if '0x2' != queue:
+        out = self.fdirprocess.send_pkt_get_output(pkt_fdir)
+        res = p.findall(out)
+        for queue in res:
+            if queue[0][0].strip() != '2':
                 result = False
-                self.logger.error('Error: queue index {} != 2'.format(queue))
+                self.logger.error("Error: queue index {} != '2'".format(queue[0][0]))
                 continue
         result_list.append(result)
         self.dut.send_expect("quit", "# ")
@@ -400,11 +402,12 @@ class TestCvlIavfIpFragmentRteFlow(TestCase):
         except Exception as e:
             self.logger.warning('Subcase 2 failed: %s' % e)
             result = False
-        hashes, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkt_fdir)
-        for queue in queues:
-            if '0x2' != queue:
+        out = self.fdirprocess.send_pkt_get_output(pkt_fdir)
+        res = p.findall(out)
+        for queue in res:
+            if queue[0][0].strip() != '2':
                 result = False
-                self.logger.error('Error: queue index {} != 2'.format(queue))
+                self.logger.error("Error: queue index {} != '2'".format(queue[0][0]))
                 continue
         result_list.append(result)
         self.dut.send_expect("quit", "# ")
