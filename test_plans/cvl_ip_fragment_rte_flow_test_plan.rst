@@ -102,8 +102,17 @@ The steps same as FDIR/RSS test steps
 
 take 'MAC_IPV4_FRAG fdir queue index' for fdir example
 ------------------------------------------------------
+
+.. note::
+
+   The default rss not support ipfragment, need take a rss rule to enable ipfragment rss.
+
 1. validate and create rule::
 
+      take a ipfragment rss rule:
+      flow create 0 ingress pattern eth / ipv4 / end actions rss types eth ipv4-frag end key_len 0 queues end / end
+
+      take fdir rule:
       flow validate 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 1 / mark / end
       Flow rule validated
       flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 1 / mark / end
@@ -283,7 +292,7 @@ Subcase 4: MAC_IPV4_FRAG fdir drop
 
 1. rules::
 
-     flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions drop / end
+     flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions drop / mark / end
 
 2. matched packets::
 
@@ -376,7 +385,7 @@ Subcase 4: MAC_IPV6_FRAG fdir drop
 
 1. rules::
 
-     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions drop / end
+     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions drop / mark / end
 
 2. matched packets::
 
@@ -575,8 +584,8 @@ Subcase 1: exclusive validation fdir rule
 -----------------------------------------
 1. create fdir filter rules::
 
-     flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 / end actions queue index 1 / end
-     flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 2 / end
+     flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 / end actions queue index 1 / mark / end
+     flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 2 / mark / end
 
 2. hit pattern/defined input set id, the pkt received for queue 2::
 
@@ -586,8 +595,8 @@ Subcase 2: exclusive validation fdir rule
 -----------------------------------------
 1. create fdir filter rules::
 
-     flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 2 / end
-     flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 / end actions queue index 1 / end
+     flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 2 / mark / end
+     flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 / end actions queue index 1 / mark / end
 
 2. hit pattern/defined input set id, the pkt received for queue 2::
 
@@ -600,7 +609,7 @@ Subcase 3: exclusive validation rss rule
      flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
      flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4-frag end key_len 0 queues end / end
 
-2. hit pattern/defined input set id, the pkt received for rss same queue::
+2. hit pattern/defined input set id, the pkt received for rss different queue::
 
      p=Ether()/IP(id=47750)/Raw('X'*666); pkts=fragment6(p, 500)
      p=Ether()/IP(id=47751)/Raw('X'*666); pkts=fragment6(p, 500)
@@ -612,7 +621,7 @@ Subcase 4: exclusive validation rss rule
      flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4-frag end key_len 0 queues end / end
      flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
 
-2. hit pattern/defined input set id, the pkt received for rss same queue::
+2. hit pattern/defined input set id, the pkt received for rss different queue::
 
      p=Ether()/IP(id=47750)/Raw('X'*666); pkts=fragment6(p, 500)
      p=Ether()/IP(id=47751)/Raw('X'*666); pkts=fragment6(p, 500)
