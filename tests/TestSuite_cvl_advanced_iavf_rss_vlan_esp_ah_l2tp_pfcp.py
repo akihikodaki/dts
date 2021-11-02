@@ -858,7 +858,11 @@ class Cvl_advance_iavf_rss_vlan_ah_l2tp_pfcp(TestCase):
     def create_iavf(self):
         if self.vf_flag is False:
             self.dut.bind_interfaces_linux('ice')
-            self.dut.send_expect("ethtool --set-priv-flags %s vf-vlan-prune-disable on" % self.pf_interface, "# ")
+            # get priv-flags default stats
+            self.flag = 'vf-vlan-pruning'
+            self.default_stats = self.dut.get_priv_flags_state(self.pf_interface, self.flag)
+            if self.default_stats:
+                self.dut.send_expect("ethtool --set-priv-flags %s %s off" % (self.pf_interface, self.flag), "# ")
             self.dut.generate_sriov_vfs_by_port(self.used_dut_port, 1)
             self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port]['vfs_port']
             self.vf_flag = True
@@ -893,7 +897,8 @@ class Cvl_advance_iavf_rss_vlan_ah_l2tp_pfcp(TestCase):
         """
         self.dut.kill_all()
         self.destroy_iavf()
-        self.dut.send_expect("ethtool --set-priv-flags %s vf-vlan-prune-disable off" % self.pf_interface, "# ")
+        if self.default_stats:
+            self.dut.send_expect("ethtool --set-priv-flags %s %s %s" % (self.pf_interface, self.flag, self.default_stats), "# ")
 
     def launch_testpmd(self, symmetric=False):
         param = "--rxq=16 --txq=16"
