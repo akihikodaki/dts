@@ -240,6 +240,9 @@ class TestCvlQinq(TestCase):
         self.pf_interface = self.dut.ports_info[self.dut_ports[0]]['intf']
         port = self.dut.ports_info[0]['port']
         port.bind_driver()
+        # get priv-flags default stats
+        self.flag = 'vf-vlan-pruning'
+        self.default_stats = self.dut.get_priv_flags_state(self.pf_interface, self.flag)
 
         self.vf_flag = False
         self.vf0_mac = ''
@@ -255,7 +258,8 @@ class TestCvlQinq(TestCase):
         Run before each test case.
         '''
         self.pci_list = []
-        self.dut.send_expect('ethtool --set-priv-flags %s vf-vlan-prune-disable on' % self.pf_interface, "#")
+        if self.default_stats:
+            self.dut.send_expect('ethtool --set-priv-flags %s %s %s' % (self.pf_interface,self.flag, self.default_stats), "# ")
 
     def setup_pf_vfs_env(self, vfs_num=4):
 
@@ -646,7 +650,8 @@ class TestCvlQinq(TestCase):
                      'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=11,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac]
         pkt_list2 = ['Ether(dst="%s",type=0x8100)/Dot1Q(vlan=21,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac,
                      'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=21,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac]
-        self.dut.send_expect('ethtool --set-priv-flags %s vf-vlan-prune-disable off' % self.pf_interface, '#')
+        if self.default_stats:
+            self.dut.send_expect('ethtool --set-priv-flags %s %s on' % (self.pf_interface, self.flag), '# ')
         self.setup_pf_vfs_env()
         self.launch_testpmd(dcf_param=True)
         self.pmd_output.execute_cmd("vlan set filter on 1")
@@ -679,7 +684,8 @@ class TestCvlQinq(TestCase):
                      'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac]
         pkt_list2 = ['Ether(dst="%s",type=0x8100)/Dot1Q(vlan=11,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac,
                      'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=11,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac]
-        self.dut.send_expect('ethtool --set-priv-flags %s vf-vlan-prune-disable off' % self.pf_interface, '#')
+        if self.default_stats:
+            self.dut.send_expect('ethtool --set-priv-flags %s %s on' % (self.pf_interface, self.flag), '# ')
         self.setup_pf_vfs_env(vfs_num=1)
         self.launch_testpmd(vfs_num=1)
         self.pmd_output.execute_cmd("vlan set filter on 0")
@@ -712,7 +718,8 @@ class TestCvlQinq(TestCase):
         """
         pkt_list = ['Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac,
                     'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac]
-        self.dut.send_expect('ethtool --set-priv-flags %s vf-vlan-prune-disable off' % self.pf_interface, '#')
+        if self.default_stats:
+            self.dut.send_expect('ethtool --set-priv-flags %s %s on' % (self.pf_interface, self.flag), '# ')
         self.setup_pf_vfs_env(vfs_num=1)
         self.launch_testpmd(vfs_num=1)
         self.pmd_output.execute_cmd("vlan set filter on 0")
@@ -746,7 +753,8 @@ class TestCvlQinq(TestCase):
         out_vlan = 1
         pkt_list = ['Ether(dst="%s",type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac,
                     'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=11,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac]
-        self.dut.send_expect('ethtool --set-priv-flags %s vf-vlan-prune-disable on' % self.pf_interface, '#')
+        if self.default_stats:
+            self.dut.send_expect('ethtool --set-priv-flags %s %s off' % (self.pf_interface, self.flag), '# ')
         self.setup_pf_vfs_env(vfs_num=1)
         self.launch_testpmd(vfs_num=1)
         self.pmd_output.execute_cmd("stop")
@@ -789,7 +797,8 @@ class TestCvlQinq(TestCase):
         """
         param = '--rxq=16 --txq=16 --disable-crc-strip'
         pkt = 'Ether(dst="%s",type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac
-        self.dut.send_expect('ethtool --set-priv-flags %s vf-vlan-prune-disable off' % self.pf_interface, '#')
+        if self.default_stats:
+            self.dut.send_expect('ethtool --set-priv-flags %s %s on' % (self.pf_interface, self.flag), '# ')
         self.setup_pf_vfs_env(vfs_num=1)
         self.pmd_output.start_testpmd(cores='1S/4C/1T', param=param, ports=self.pci_list, socket=self.ports_socket)
         self.pmd_output.execute_cmd("set fwd mac")
@@ -821,7 +830,8 @@ class TestCvlQinq(TestCase):
         AVF CRC strip and Vlan strip co-exists
         """
         pkt = 'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac
-        self.dut.send_expect('ethtool --set-priv-flags %s vf-vlan-prune-disable off' % self.pf_interface, "#")
+        if self.default_stats:
+            self.dut.send_expect('ethtool --set-priv-flags %s %s on' % (self.pf_interface, self.flag), '# ')
         self.setup_pf_vfs_env(vfs_num=1)
         self.launch_testpmd(vfs_num=1)
         self.check_vlan_offload(vlan_type="strip", stats="off")
@@ -875,4 +885,5 @@ class TestCvlQinq(TestCase):
         self.destroy_iavf()
 
     def tear_down_all(self):
-        self.dut.send_expect('ethtool --set-priv-flags %s vf-vlan-prune-disable off' % self.pf_interface, '#')
+        if self.default_stats:
+            self.dut.send_expect('ethtool --set-priv-flags %s %s %s' % (self.pf_interface, self.flag, self.default_stats), "# ")

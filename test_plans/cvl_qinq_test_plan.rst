@@ -71,9 +71,9 @@ Prerequisites
     0000:18:00.0 'Device 159b' if=ens785f0 drv=ice unused=vfio-pci
     0000:18:00.1 'Device 159b' if=ens785f1 drv=ice unused=vfio-pci
 
-6. Enable vlan prune flag::
+6. Disable vlan prune flag::
 
-    ethtool --set-priv-flags ens785f0 vf-vlan-prune-disable on
+    ethtool --set-priv-flags ens785f0 vf-vlan-pruning off
 
 7. Generate 4 VFs on PF0(not all the VFs are used)::
 
@@ -130,7 +130,7 @@ Prerequisites
 13. For AVF QinQ test cases(10-14), recreate Generate 1 VFs on PF0, reconfig the VF then launch testpmd::
 
      echo 0 > /sys/bus/pci/devices/0000:18:00.0/sriov_numvfs
-     ethtool --set-priv-flags ens785f0 vf-vlan-prune-disable off
+     ethtool --set-priv-flags ens785f0 vf-vlan-pruning on
      echo 1 > /sys/bus/pci/devices/0000:18:00.0/sriov_numvfs
      ip link set ens785f0 vf 0 mac 00:11:22:33:44:11
      ip link set dev ens785f0 vf 0 spoofchk off
@@ -906,9 +906,9 @@ Test case 08: vlan insertion when pvid enable
 Test case 09: vlan filter when pvid enable
 ==========================================
 
-1. reset test environment, create vfs and disable vlan prune flag::
+1. reset test environment, create vfs and enable vlan prune flag::
 
-    ethtool --set-priv-flags ens785f0 vf-vlan-prune-disable off
+    ethtool --set-priv-flags ens785f0 vf-vlan-pruning on
 
 2. repeat Prerequisites steps from 7 to 12
 
@@ -1113,10 +1113,10 @@ Test case 11: Enable/Disable IAVF VLAN header stripping
 Test case 12: Enable/Disable IAVF VLAN header insertion
 =======================================================
 
-1. enable vf-vlan-prune-disable flag::
+1. disable vf-vlan-pruning flag::
 
     echo 0 > /sys/bus/pci/devices/0000:18:00.0/sriov_numvfs
-    ethtool --set-priv-flags ens785f0 vf-vlan-prune-disable on
+    ethtool --set-priv-flags ens785f0 vf-vlan-pruning off
 
 2. set up test environment again::
 
