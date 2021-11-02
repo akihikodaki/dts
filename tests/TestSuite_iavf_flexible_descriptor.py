@@ -81,7 +81,16 @@ class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
         # set vf assign method and vf driver
         vf_driver = 'vfio-pci'
         self.pf0_intf = self.dut.ports_info[self.dut_ports[dut_index]]['intf']
-        self.dut.send_expect('ethtool --set-priv-flags {} vf-vlan-prune-disable on'.format(self.pf0_intf),'#')
+        # get priv-flags default stats
+        if self.nic.startswith('columbiaville'):
+            self.flag = 'vf-vlan-pruning'
+        else:
+            self.flag = 'vf-vlan-prune-disable'
+        self.default_stats = self.dut.get_priv_flags_state(self.pf0_intf, self.flag)
+        if self.nic.startswith('columbiaville') and self.default_stats:
+            self.dut.send_expect('ethtool --set-priv-flags %s %s off' %(self.pf0_intf, self.flag),'# ')
+        else:
+            self.dut.send_expect('ethtool --set-priv-flags %s %s on' %(self.pf0_intf, self.flag),'# ')
         # generate 2 VFs on PF
         self.dut.generate_sriov_vfs_by_port(
             used_dut_port, 1, driver=self.kdriver)
@@ -118,7 +127,8 @@ class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
         """
         self.destroy_vf()
         self.restore_compilation()
-        self.dut.send_expect('ethtool --set-priv-flags {} vf-vlan-prune-disable off'.format(self.pf0_intf), '#')
+        if self.default_stats:
+            self.dut.send_expect('ethtool --set-priv-flags %s %s %s' % (self.pf0_intf, self.flag, self.default_stats), '# ')
 
     def set_up(self):
         """
