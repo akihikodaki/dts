@@ -75,6 +75,11 @@ class TestCvlVfSupportMulticastAdress(TestCase):
         # Generate 2 VFs on PF
         if self.vf_flag is False:
             self.dut.bind_interfaces_linux('ice')
+            # get priv-flags default stats
+            self.flag = 'vf-vlan-pruning'
+            self.default_stats = self.dut.get_priv_flags_state(self.pf_interface, self.flag)
+            if self.default_stats:
+                self.dut.send_expect('ethtool --set-priv-flags %s %s on' % (self.pf_interface, self.flag), "# ")
             self.dut.generate_sriov_vfs_by_port(self.used_dut_port, 2)
             self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port]['vfs_port']
             self.vf_flag = True
@@ -533,3 +538,5 @@ class TestCvlVfSupportMulticastAdress(TestCase):
         """
         self.dut.kill_all()
         self.destroy_iavf()
+        if self.default_stats:
+            self.dut.send_expect('ethtool --set-priv-flags %s %s %s' % (self.pf_interface, self.flag, self.default_stats), "# ")
