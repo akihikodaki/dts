@@ -71,9 +71,9 @@ Prerequisites
     0000:18:00.0 'Device 159b' if=ens785f0 drv=ice unused=vfio-pci
     0000:18:00.1 'Device 159b' if=ens785f1 drv=ice unused=vfio-pci
 
-6. Enable vlan prune flag::
+6. Disable vlan prune flag::
 
-    ethtool --set-priv-flags ens785f0 vf-vlan-prune-disable on
+    ethtool --set-priv-flags ens785f0 vf-vlan-pruning off
 
 7. Generate 4 VFs on PF0(not all the VFs are used)::
 

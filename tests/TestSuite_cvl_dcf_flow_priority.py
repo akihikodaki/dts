@@ -1128,6 +1128,11 @@ class CVLDCFFlowPriorityTest(TestCase):
         self.testpmd_status = "close"
         #bind pf to kernel
         self.bind_nics_driver(self.dut_ports, driver="ice")
+        # get PF interface name
+        self.pf0_intf = self.dut.ports_info[self.dut_ports[0]]['intf']
+        # get priv-flags default stats
+        self.flag = 'vf-vlan-pruning'
+        self.default_stats = self.dut.get_priv_flags_state(self.pf0_intf, self.flag)
 
         #set vf driver
         self.vf_driver = 'vfio-pci'
@@ -1139,7 +1144,8 @@ class CVLDCFFlowPriorityTest(TestCase):
         self.used_dut_port_0 = self.dut_ports[pf_port]
         #get PF interface name
         self.pf0_intf = self.dut.ports_info[self.used_dut_port_0]['intf']
-        self.dut.send_expect('ethtool --set-priv-flags %s vf-vlan-prune-disable on' % self.pf0_intf, '#')
+        if self.default_stats:
+            self.dut.send_expect('ethtool --set-priv-flags %s %s off' % (self.pf0_intf, self.flag), "# ")
         #generate 4 VFs on PF
         self.dut.generate_sriov_vfs_by_port(self.used_dut_port_0, 4, driver=driver)
         self.sriov_vfs_port_0 = self.dut.ports_info[self.used_dut_port_0]['vfs_port']
@@ -1768,4 +1774,6 @@ class CVLDCFFlowPriorityTest(TestCase):
         Run after each test suite.
         """
         self.dut.kill_all()
+        if self.default_stats:
+            self.dut.send_expect('ethtool --set-priv-flags %s %s %s' % (self.pf0_intf, self.flag, self.default_stats), "# ")
 
