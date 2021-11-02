@@ -97,6 +97,12 @@ class TestKernelpfIavf(TestCase):
         self.tester_intf1 = self.tester.get_interface(tester_port1)
         self.l3fwdpower_name = self.dut.apps_name['l3fwd-power'].strip().split('/')[-1]
 
+        # bind to default driver
+        self.bind_nic_driver(self.dut_ports, driver="")
+        # get priv-flags default stats
+        self.flag = 'vf-vlan-pruning'
+        self.default_stats = self.dut.get_priv_flags_state(self.host_intf, self.flag)
+
     def set_up(self):
 
         if self.running_case == "test_vf_mac_filter":
@@ -143,6 +149,8 @@ class TestKernelpfIavf(TestCase):
         # bind to default driver
         self.bind_nic_driver(self.dut_ports, driver="")
         self.used_dut_port = self.dut_ports[0]
+        if self.nic.startswith('columbiaville') and self.default_stats:
+            self.dut.send_expect('ethtool --set-priv-flags %s %s on' % (self.host_intf, self.flag), "# ")
         self.dut.generate_sriov_vfs_by_port(
             self.used_dut_port, 1, driver=driver)
         self.sriov_vfs_port = self.dut.ports_info[
@@ -1037,3 +1045,5 @@ class TestKernelpfIavf(TestCase):
         if self.env_done:
             self.destroy_vm_env()
 
+        if self.nic.startswith('columbiaville') and self.default_stats:
+            self.dut.send_expect('ethtool --set-priv-flags %s %s %s' % (self.host_intf, self.flag, self.default_stats), "# ")
