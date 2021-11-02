@@ -68,6 +68,13 @@ class TestVfVlan(TestCase):
         # get driver version
         self.driver_version = self.nic_obj.driver_version
 
+        # bind to default driver
+        self.bind_nic_driver(self.dut_ports[:2], driver="")
+        self.host_intf0 = self.dut.ports_info[self.dut_ports[0]]['intf']
+        # get priv-flags default stats
+        self.flag = 'vf-vlan-pruning'
+        self.default_stats = self.dut.get_priv_flags_state(self.host_intf0, self.flag)
+
     def set_up(self):
         self.setup_vm_env()
 
@@ -103,14 +110,12 @@ class TestVfVlan(TestCase):
         if self.env_done:
             return
 
-        # bind to default driver
-        self.bind_nic_driver(self.dut_ports[:2], driver="")
-
         self.used_dut_port_0 = self.dut_ports[0]
         self.host_intf0 = self.dut.ports_info[self.used_dut_port_0]['intf']
         tester_port = self.tester.get_local_port(self.used_dut_port_0)
         self.tester_intf0 = self.tester.get_interface(tester_port)
-
+        if self.nic.startswith('columbiaville') and self.default_stats:
+            self.dut.send_expect("ethtool --set-priv-flags %s %s on" % (self.host_intf0, self.flag), "# ")
         self.dut.generate_sriov_vfs_by_port(
             self.used_dut_port_0, 1, driver=driver)
         self.sriov_vfs_port_0 = self.dut.ports_info[
@@ -123,6 +128,8 @@ class TestVfVlan(TestCase):
 
         self.used_dut_port_1 = self.dut_ports[1]
         self.host_intf1 = self.dut.ports_info[self.used_dut_port_1]['intf']
+        if self.nic.startswith('columbiaville') and self.default_stats:
+            self.dut.send_expect("ethtool --set-priv-flags %s %s on" % (self.host_intf1, self.flag), "# ")
         self.dut.generate_sriov_vfs_by_port(
             self.used_dut_port_1, 1, driver=driver)
         self.sriov_vfs_port_1 = self.dut.ports_info[
@@ -181,7 +188,7 @@ class TestVfVlan(TestCase):
             port = self.dut.ports_info[self.used_dut_port_1]['port']
             self.used_dut_port_1 = None
 
-        self.bind_nic_driver(self.dut_ports[:2], driver='default')
+        self.bind_nic_driver(self.dut_ports[:2], driver="")
 
         self.env_done = False
 
@@ -271,7 +278,7 @@ class TestVfVlan(TestCase):
         self.verify("vlan %d" % random_vlan not in out, "Failed to remove pvid on VF0")
 
         # send packet with vlan
-        self.vm0_testpmd.execute_cmd("port reset 0")
+        self.vm0_testpmd.execute_cmd("port reset 0", 'testpmd> ', 120)
         self.vm0_testpmd.execute_cmd("port start all")
         self.vm0_testpmd.execute_cmd("start")
 
@@ -449,4 +456,5 @@ class TestVfVlan(TestCase):
 
     def tear_down_all(self):
         self.destroy_vm_env()
-        pass
+        if self.nic.startswith('columbiaville') and self.default_stats:
+            self.dut.send_expect("ethtool --set-priv-flags %s %s %s" % (self.host_intf0, self.flag, self.default_stats), "# ")
