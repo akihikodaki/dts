@@ -3366,9 +3366,11 @@ class CVLSwitchFilterTest(TestCase):
     def test_mac_ipv4_nvgre_eth_ipv4_l4_mask_non_pipeline_mode(self):
         self._rte_flow_validate_pattern(tvs_mac_ipv4_nvgre_eth_ipv4_l4_mask_non_pipeline_mode)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_l4_mask_pipeline_mode(self):
         self._rte_flow_validate_pattern(tvs_mac_ipv4_gtpu_l4_mask_pipeline_mode)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv6_gtpu_l4_mask_non_pipeline_mode(self):
         self._rte_flow_validate_pattern(tvs_mac_ipv6_gtpu_l4_mask_non_pipeline_mode)
 
