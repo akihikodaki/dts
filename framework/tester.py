@@ -46,9 +46,9 @@ from .config import PktgenConf
 from .crb import Crb
 from .exception import ParameterInvalidException
 from .packet import (
-    SCAPY_IMP_CMD,
-    Packet,
     compare_pktload,
+    get_scapy_module_impcmd,
+    Packet,
     start_tcpdump,
     stop_and_load_tcpdump_packets,
     strip_pktload,
@@ -92,7 +92,6 @@ class Tester(Crb):
         self.bgItf = ''
         self.re_run_time = 0
         self.pktgen = None
-        self.tmp_scapy_module_dir = '/tmp/dep'
         # prepare for scapy env
         self.scapy_sessions_li = list()
         self.scapy_session = self.prepare_scapy_env()
@@ -109,17 +108,20 @@ class Tester(Crb):
         session.send_expect('scapy', '>>> ')
         file_dir = os.path.dirname(__file__).split(os.path.sep)
         lib_path = os.path.sep.join(file_dir[:-1]) + '/dep/scapy_modules/'
-        exists_flag = self.alt_session.session.send_expect(f'ls {self.tmp_scapy_module_dir}', '# ', verify=True)
-        if exists_flag == 2:
-            self.alt_session.session.send_expect(f'mkdir -p {self.tmp_scapy_module_dir}', '# ', verify=True)
-        scapy_modules_path = [lib_path+i for i in os.listdir(lib_path) if i.endswith('.py')]
-        path = ' '.join(scapy_modules_path)
-        session.copy_file_to(src=path, dst=self.tmp_scapy_module_dir)
-        session.session.send_expect(f"sys.path.append('{self.tmp_scapy_module_dir}')", ">>> ")
 
-        out = session.session.send_expect(SCAPY_IMP_CMD, '>>> ')
+        # get contrib module path on tester
+        scapy_module_path = session.session.send_expect("os.path.dirname(sys.modules['scapy'].__file__)", '>>>')
+        contrib_module_path = scapy_module_path.replace("'", "") + '/contrib'
+
+        # copy scapy module to tester
+        scapy_dep_module_path = lib_path + 'Dot1BR.py'
+        session.copy_file_to(src=scapy_dep_module_path, dst=contrib_module_path)
+
+        # import scapy moudle to scapy APP
+        out = session.session.send_expect(get_scapy_module_impcmd(), '>>> ')
         if 'ImportError' in out:
             session.logger.warning(f'entering import error: {out}')
+
         return session
 
     def check_scapy_version(self):

@@ -32,11 +32,12 @@
 Generic packet create, transmit and analyze module
 Base on scapy(python program for packet manipulation)
 """
+import shutil
 
 from importlib import import_module
 from socket import AF_INET6
 from scapy.all import *
-from .utils import convert_int2ip, convert_ip2int
+from .utils import convert_int2ip, convert_ip2int, get_module_path
 
 # load extension layers
 exec_file = os.path.realpath(__file__)
@@ -47,12 +48,13 @@ TMP_PATH = DTS_PATH[:-1] + '/output/tmp/pcap/' if exec_file.endswith('.pyc') els
 if not os.path.exists(TMP_PATH):
     os.system('mkdir -p %s' % TMP_PATH)
 
-# add /tmp/dep to sys.path
-sys.path.append('/tmp/dep')
+# copy dep/Dot1BR to scapy
+_contrib_module_path = get_module_path('scapy.contrib')
+shutil.copy(DTS_PATH + '/dep/scapy_modules/Dot1BR.py', _contrib_module_path)
 
 scapy_modules_required = {'scapy.contrib.gtp': ['GTP_U_Header', 'GTPPDUSessionContainer'],
                           'scapy.contrib.lldp': ['LLDPDU', 'LLDPDUManagementAddress'],
-                          'Dot1BR': ['Dot1BR'],
+                          'scapy.contrib.Dot1BR': ['Dot1BR'],
                           'scapy.contrib.pfcp': ['PFCP'],
                           'scapy.contrib.nsh': ['NSH'],
                           'scapy.contrib.igmp': ['IGMP'],
@@ -73,7 +75,6 @@ def get_scapy_module_impcmd():
         cmd_li.append(f'from {m} import {",".join(scapy_modules_required[m])}')
     return ';'.join(cmd_li)
 
-SCAPY_IMP_CMD = get_scapy_module_impcmd()
 
 # packet generator type should be configured later
 PACKETGEN = "scapy"

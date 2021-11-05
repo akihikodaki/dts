@@ -308,3 +308,10 @@ def check_dts_python_version():
              "it is deprecated for use in DTS, "
              "and will not work in future releases.")), file=sys.stderr)
         print(RED("Please use Python >= 3.6.9 instead"), file=sys.stderr)
+
+def get_module_path(module_name):
+    from importlib import import_module
+    _module = import_module(module_name)
+    _module_file_path = _module.__file__
+    del _module
+    return os.path.dirname(_module_file_path)
