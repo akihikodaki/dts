@@ -89,7 +89,6 @@ The following are the test plans for the DPDK DTS automated test system.
     flow_classify_softnic_test_plan
     fortville_rss_granularity_config_test_plan
     fortville_rss_input_test_plan
-    generic_filter_test_plan
     generic_flow_api_test_plan
     hotplug_mp_test_plan
     hotplug_test_plan
