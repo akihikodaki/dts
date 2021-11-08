@@ -60,9 +60,9 @@ class TestCBDMA(TestCase):
         self.cbdma_proc = '--proc-type=primary'
         # default v_dev is None, case 1-6 use default None values, case7 use --vdev net_null_0
         self.v_dev = ''
-        out = self.dut.build_dpdk_apps('./examples/ioat')
-        self.ioat_path = self.dut.apps_name['ioat']
-        self.verify('Error' not in out, 'compilation ioat error')
+        out = self.dut.build_dpdk_apps('./examples/dma')
+        self.dma_path = self.dut.apps_name['dma']
+        self.verify('Error' not in out, 'compilation dma error')
 
     def set_up(self):
         """
@@ -92,16 +92,14 @@ class TestCBDMA(TestCase):
         get all cbdma ports
         """
         # check driver name in execution.cfg
-        self.verify(self.drivername == 'igb_uio',
-                    "CBDMA test case only use igb_uio driver, need config drivername=igb_uio in execution.cfg")
         str_info = 'Misc (rawdev) devices using kernel driver'
-        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
+        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev dma', '# ', 30)
         device_info = out.split('\n')
         for device in device_info:
             pci_info = re.search('\s*(0000:\d*:\d*.\d*)', device)
             if pci_info is not None:
                 dev_info = pci_info.group(1)
-                # the numa id of ioat dev, only add the device which
+                # the numa id of dma dev, only add the device which
                 # on same socket with nic dev
                 bus = int(dev_info[5:7], base=16)
                 if bus >= 128:
@@ -124,13 +122,13 @@ class TestCBDMA(TestCase):
         dev_info = []
         for i in range(self.cbdma_nic_dev_num):
             dev_info.append(self.dut.ports_info[i]['pci'])
-        for i in range(self.cbdma_ioat_dev_num):
+        for i in range(self.cbdma_dma_dev_num):
             dev_info.append(self.cbdma_dev_infos[i])
         return dev_info
 
-    def launch_ioatfwd_app(self, eal_params, session=None):
+    def launch_dma_app(self, eal_params, session=None):
         """
-        launch ioatfwd with different params
+        launch dma with different params
         """
         port_info = 0
         for i in range(self.cbdma_nic_dev_num):
@@ -139,6 +137,8 @@ class TestCBDMA(TestCase):
         mac_info = ''
         if self.cbdma_updating_mac == 'disable':
             mac_info = '--no-mac-updating'
+        elif self.cbdma_updating_mac == 'enable':
+            mac_info = '--mac-updating'
         '''
         when start cbdma app, default cores num is 2, it will only one thread
         when the cores num > 2, there will have 2 thread, and the max value of thread
@@ -146,11 +146,11 @@ class TestCBDMA(TestCase):
         '''
         if session is None:
             session = self.send_session
-        expected = self.ioat_path.split('/')[-1].strip()
+        expected = self.dma_path.split('/')[-1].strip()
         self.logger.info('expected: {}'.format(expected))
-        cmd_command = '%s %s %s %s -- -p %s -q %d %s -c %s' % (self.ioat_path, eal_params,
+        cmd_command = '%s %s %s %s -- -p %s -q %d %s -c %s' % (self.dma_path, eal_params,
                         self.cbdma_proc, self.v_dev, hex(port_info),
-                        self.cbdma_ioat_dev_num/self.cbdma_nic_dev_num, mac_info,
+                        self.cbdma_dma_dev_num/self.cbdma_nic_dev_num, mac_info,
                         self.cbdma_copy_mode)
         out = session.send_expect(cmd_command, expected)
         time.sleep(1)
@@ -160,7 +160,7 @@ class TestCBDMA(TestCase):
         o_thread_info = 'Worker Threads = %d' % thread_num
         o_copy_info = 'Copy Mode = %s' % self.cbdma_copy_mode
         o_update_mac = 'Updating MAC = %s' % self.cbdma_updating_mac
-        o_queue_info = 'Rx Queues = %d' % (self.cbdma_ioat_dev_num/self.cbdma_nic_dev_num)
+        o_queue_info = 'Rx Queues = %d' % (self.cbdma_dma_dev_num/self.cbdma_nic_dev_num)
         self.verify(o_thread_info in out and o_copy_info in out and
                     o_update_mac in out and o_queue_info in out,
                     'The output info not match setting for the cmd, please check')
@@ -215,15 +215,15 @@ class TestCBDMA(TestCase):
 
     def check_enqueue_packets_of_each_channel(self):
         """
-        Check stats of ioat app, each ioat channel can enqueue packets
+        Check stats of dma app, each dma channel can enqueue packets
         """
         out = self.send_session.get_session_before(timeout=2)
         index = out.rfind('Statistics for port 0')
         out = out[index:]
-        data_info = re.findall('successful_enqueues:\s*(\d*)', out)
-        self.verify(len(data_info) == self.cbdma_ioat_dev_num, 'There miss some queue, the run queue is '
-                    '%d, and expect queue num is %d' % (len(data_info), self.cbdma_ioat_dev_num))
-        for index in range(self.cbdma_ioat_dev_num):
+        data_info = re.findall('Total completed ops:\s*(\d*)', out)
+        self.verify((len(data_info) - 1) == self.cbdma_dma_dev_num, 'There miss some queue, the run queue is '
+                    '%d, and expect queue num is %d' % ((len(data_info) - 1), self.cbdma_dma_dev_num))
+        for index in range(self.cbdma_dma_dev_num):
             self.verify(data_info[index] != 0, 'the queue %d can not enqueues data' % index)
 
     def update_result_tables(self, frame_size, pps):
@@ -234,7 +234,7 @@ class TestCBDMA(TestCase):
         results_row = [frame_size]
         results_row.append(Mpps)
         results_row.append(thread_num)
-        results_row.append(self.cbdma_ioat_dev_num/self.cbdma_nic_dev_num)
+        results_row.append(self.cbdma_dma_dev_num/self.cbdma_nic_dev_num)
         results_row.append(self.cbdma_copy_mode)
         results_row.append(self.cbdma_updating_mac)
         results_row.append(throughput)
@@ -247,14 +247,14 @@ class TestCBDMA(TestCase):
         """
         self.cbdma_cores_num = 2
         self.cbdma_nic_dev_num = 1
-        self.cbdma_ioat_dev_num = 1
+        self.cbdma_dma_dev_num = 1
         self.cbdma_updating_mac = 'enable'
         self.cbdma_copy_mode = 'hw'
         self.get_core_list()
         dev_info = self.get_ports_info()
         eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=dev_info, prefix='cbdma')
-        self.launch_ioatfwd_app(eal_params)
-        self.send_and_verify_throughput(check_channel=False)
+        self.launch_dma_app(eal_params)
+        self.send_and_verify_throughput(check_channel=True)
         self.result_table_print()
 
     def test_perf_cbdma_with_multi_thread(self):
@@ -264,14 +264,14 @@ class TestCBDMA(TestCase):
         """
         self.cbdma_cores_num = 3
         self.cbdma_nic_dev_num = 1
-        self.cbdma_ioat_dev_num = 1
+        self.cbdma_dma_dev_num = 1
         self.cbdma_updating_mac = 'enable'
         self.cbdma_copy_mode = 'hw'
         self.get_core_list()
         dev_info = self.get_ports_info()
         eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=dev_info, prefix='cbdma')
-        self.launch_ioatfwd_app(eal_params)
-        self.send_and_verify_throughput(check_channel=False)
+        self.launch_dma_app(eal_params)
+        self.send_and_verify_throughput(check_channel=True)
         self.result_table_print()
 
     def test_perf_cbdma_with_multi_nic_ports(self):
@@ -281,13 +281,13 @@ class TestCBDMA(TestCase):
         """
         self.cbdma_cores_num = 5
         self.cbdma_nic_dev_num = 2
-        self.cbdma_ioat_dev_num = 2
+        self.cbdma_dma_dev_num = 2
         self.cbdma_updating_mac = 'enable'
         self.cbdma_copy_mode = 'hw'
         self.get_core_list()
         dev_info = self.get_ports_info()
         eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=dev_info, prefix='cbdma')
-        self.launch_ioatfwd_app(eal_params)
+        self.launch_dma_app(eal_params)
         self.send_and_verify_throughput(check_channel=True)
         self.result_table_print()
 
@@ -303,10 +303,10 @@ class TestCBDMA(TestCase):
         queue_num_list = [2, 4, 8]
         self.get_core_list()
         for queue_num in queue_num_list:
-            self.cbdma_ioat_dev_num = queue_num
+            self.cbdma_dma_dev_num = queue_num
             dev_info = self.get_ports_info()
             eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=dev_info, prefix='cbdma')
-            self.launch_ioatfwd_app(eal_params)
+            self.launch_dma_app(eal_params)
             self.send_and_verify_throughput(check_channel=True)
             self.send_session.send_expect('^c', '# ')
         self.result_table_print()
@@ -318,18 +318,18 @@ class TestCBDMA(TestCase):
         """
         self.cbdma_cores_num = 2
         self.cbdma_nic_dev_num = 1
-        self.cbdma_ioat_dev_num = 2
+        self.cbdma_dma_dev_num = 2
         self.cbdma_updating_mac = 'enable'
         self.cbdma_copy_mode = 'hw'
         self.get_core_list()
         dev_info = self.get_ports_info()
         eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=dev_info, prefix='cbdma')
-        self.launch_ioatfwd_app(eal_params)
-        self.send_and_verify_throughput(check_channel=False)
+        self.launch_dma_app(eal_params)
+        self.send_and_verify_throughput(check_channel=True)
         self.send_session.send_expect('^c', '# ')
         self.cbdma_updating_mac = 'disable'
-        self.launch_ioatfwd_app(eal_params)
-        self.send_and_verify_throughput(check_channel=False)
+        self.launch_dma_app(eal_params)
+        self.send_and_verify_throughput(check_channel=True)
         self.result_table_print()
 
     def test_perf_cbdma_with_diff_copy_mode(self):
@@ -339,17 +339,17 @@ class TestCBDMA(TestCase):
         """
         self.cbdma_cores_num = 3
         self.cbdma_nic_dev_num = 1
-        self.cbdma_ioat_dev_num = 4
+        self.cbdma_dma_dev_num = 4
         self.cbdma_updating_mac = 'enable'
         self.cbdma_copy_mode = 'hw'
         self.get_core_list()
         dev_info = self.get_ports_info()
         eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=dev_info, prefix='cbdma')
-        self.launch_ioatfwd_app(eal_params)
+        self.launch_dma_app(eal_params)
         self.send_and_verify_throughput(check_channel=False)
         self.send_session.send_expect('^c', '# ')
         self.cbdma_copy_mode = 'sw'
-        self.launch_ioatfwd_app(eal_params)
+        self.launch_dma_app(eal_params)
         self.send_and_verify_throughput(check_channel=False)
         self.result_table_print()
 
@@ -360,7 +360,7 @@ class TestCBDMA(TestCase):
         """
         self.cbdma_cores_num = 3
         self.cbdma_nic_dev_num = 1
-        self.cbdma_ioat_dev_num = 4
+        self.cbdma_dma_dev_num = 4
         self.cbdma_updating_mac = 'disable'
         self.cbdma_copy_mode = 'hw'
         self.v_dev = "--vdev net_null_0"
@@ -372,7 +372,7 @@ class TestCBDMA(TestCase):
         self.pmdout.execute_cmd('port stop all')
         self.cbdma_proc = '--proc-type=secondary'
         eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=dev_info)
-        self.launch_ioatfwd_app(eal_params)
+        self.launch_dma_app(eal_params)
         self.send_session.send_expect('^C','#')
         self.pmdout.execute_cmd('^C')
         self.result_table_print()
