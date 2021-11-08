@@ -41,6 +41,7 @@ import re
 import time
 
 import framework.utils as utils
+from framework.test_case import skip_unsupported_nic
 
 queue = 16
 reta_entries = []
@@ -411,33 +412,18 @@ class TestPmdrssHash(TestCase):
         self.verify(
             sum(result) == 0, "the symmetric RSS hash function failed!")
 
+    @skip_unsupported_nic(["columbiaville_25g", "columbiaville_100g", "niantic", "foxville"])
     def set_up_all(self):
         """
         Run at the start of each test suite.
         """
 
-        self.verify(self.nic in ["columbiaville_25g", "columbiaville_100g","fortville_eagle", "fortville_spirit",
-                    "fortville_spirit_single", "fortpark_TLV", "fortpark_BASE-T","fortville_25g", "niantic", "carlsville", "foxville"],
-                    "NIC Unsupported: " + str(self.nic))
         global reta_num
         global iptypes
         global queue
-        if self.nic in ["foxville"]:
-            queue = 4
 
         if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV", "fortpark_BASE-T","fortville_25g", "carlsville"]:
             reta_num = 512
-        elif self.nic in ["niantic", "foxville"]:
-            reta_num = 128
-            iptypes = {'ipv4-other': 'ip',
-                       'ipv4-frag': 'ip',
-                       'ipv4-udp': 'udp',
-                       'ipv4-tcp': 'tcp',
-                       'ipv6-other': 'ip',
-                       'ipv6-udp': 'udp',
-                       'ipv6-tcp': 'tcp',
-                       'ipv6-frag': 'ip'
-                       }
         else:
             self.verify(False, "NIC Unsupported:%s" % str(self.nic))
         ports = self.dut.get_ports(self.nic)
@@ -453,9 +439,13 @@ class TestPmdrssHash(TestCase):
         self.coremask = utils.create_mask(cores)
 
     def test_toeplitz(self):
+        """
+            Test Case:  test_toeplitz
+        """
         dutPorts = self.dut.get_ports(self.nic)
         localPort = self.tester.get_local_port(dutPorts[0])
         itf = self.tester.get_interface(localPort)
+        rule_action = 'func toeplitz queues end / end'
         global reta_num
         global iptypes
 
@@ -474,8 +464,14 @@ class TestPmdrssHash(TestCase):
                 "set nbcore %d" % (queue + 1), "testpmd> ")
 
             self.dut.send_expect("port stop all", "testpmd> ")
-            self.dut.send_expect(
-                "set_hash_global_config  0 toeplitz %s enable" % iptype, "testpmd> ")
+            self.dut.send_expect("flow flush 0", "testpmd> ")
+            rule_cmd = f'flow create 0 ingress pattern eth / ipv4 / end actions rss types {iptype} end queues end {rule_action}'
+            if 'sctp' in iptype or 'udp' in iptype or 'tcp' in iptype:
+                rule_cmd = rule_cmd.replace('/ ipv4 /', f'/ ipv4 / {rsstype} /')
+            if 'ipv6' in iptype:
+                rule_cmd = rule_cmd.replace('ipv4', 'ipv6')
+            outx = self.dut.send_expect(rule_cmd, "testpmd> ")
+            self.verify("created" in outx, "Create flow failed")
             self.dut.send_expect("port start all", "testpmd> ")
             out = self.dut.send_expect(
                 "port config all rss %s" % rsstype, "testpmd> ")
@@ -491,6 +487,9 @@ class TestPmdrssHash(TestCase):
         self.dut.send_expect("quit", "# ", 30)
 
     def test_toeplitz_symmetric(self):
+        """
+            Test Case:  test_toeplitz_symmetric
+        """
         dutPorts = self.dut.get_ports(self.nic)
         localPort = self.tester.get_local_port(dutPorts[0])
         itf = self.tester.get_interface(localPort)
@@ -519,7 +518,8 @@ class TestPmdrssHash(TestCase):
                 rule_cmd = rule_cmd.replace('/ ipv4 /', f'/ ipv4 / {rsstype} /')
             if 'ipv6' in iptype:
                 rule_cmd = rule_cmd.replace('ipv4', 'ipv6')
-            self.dut.send_expect(rule_cmd, "testpmd> ")
+            outx = self.dut.send_expect(rule_cmd, "testpmd> ")
+            self.verify("created" in outx, "Create flow failed")
             self.dut.send_expect("port start all", "testpmd> ")
             out = self.dut.send_expect(
                 "port config all rss %s" % rsstype, "testpmd> ")
@@ -537,9 +537,13 @@ class TestPmdrssHash(TestCase):
         self.dut.send_expect("quit", "# ", 30)
 
     def test_simple(self):
+        """
+            Test Case:  test_simple
+        """
         dutPorts = self.dut.get_ports(self.nic)
         localPort = self.tester.get_local_port(dutPorts[0])
         itf = self.tester.get_interface(localPort)
+        rule_action = 'func simple_xor queues end / end'
         global reta_num
         global iptypes
 
@@ -560,8 +564,14 @@ class TestPmdrssHash(TestCase):
 
             self.dut.send_expect("port stop all", "testpmd> ")
             # some nic not support change hash algorithm
-            self.dut.send_expect(
-                "set_hash_global_config 0 simple_xor %s enable" % iptype, "testpmd> ")
+            self.dut.send_expect("flow flush 0", "testpmd> ")
+            rule_cmd = f'flow create 0 ingress pattern eth / ipv4 / end actions rss types {iptype} end queues end {rule_action}'
+            if 'sctp' in iptype or 'udp' in iptype or 'tcp' in iptype:
+                rule_cmd = rule_cmd.replace('/ ipv4 /', f'/ ipv4 / {rsstype} /')
+            if 'ipv6' in iptype:
+                rule_cmd = rule_cmd.replace('ipv4', 'ipv6')
+            outx = self.dut.send_expect(rule_cmd, "testpmd> ")
+            self.verify("created" in outx, "Create flow failed")
             self.dut.send_expect("port start all", "testpmd> ")
             out = self.dut.send_expect(
                 "port config all rss %s" % rsstype, "testpmd> ")
