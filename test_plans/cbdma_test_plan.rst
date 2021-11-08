@@ -67,7 +67,7 @@ The application requires a number of command line options:
 
 .. code-block:: console
 
-    ./build/ioatfwd [EAL options] -- -p MASK [-q NQ] [-s RS] [-c <sw|hw>]
+    x86_64-native-linuxapp-gcc/examples/dpdk-dma [EAL options] -- -p MASK [-q NQ] [-s RS] [-c <sw|hw>]
         [--[no-]mac-updating]
 
 where,
@@ -95,9 +95,9 @@ Test Case1: CBDMA basic test with differnet size packets
 
 1.Bind one cbdma port and one nic port to igb_uio driver.
 
-2.Launch ioatfwd app::
+2.Launch dma app::
 
-./build/ioatfwd -l 0-1 -n 2 -- -p 0x1 -c hw --mac-updating
+./x86_64-native-linuxapp-gcc/examples/dpdk-dma -l 0-1 -n 2 -- -p 0x1 --mac-updating -c hw
 
 3.Send different size packets (64B, 256B, 512B, 1024B, IMIX) from TG to NIC.
 
@@ -108,9 +108,9 @@ Test Case2: CBDMA test with multi-threads
 
 1.Bind one cbdma port and one nic port to igb_uio driver.
 
-2.Launch ioatfwd app with three cores::
+2.Launch dma app with three cores::
 
-./build/ioatfwd -l 0-2 -n 2 -- -p 0x1 -c hw
+./x86_64-native-linuxapp-gcc/examples/dpdk-dma -l 0-2 -n 2 -- -p 0x1 --mac-updating -c hw
 
 3. Send different size packets from TG to NIC.
 
@@ -121,9 +121,9 @@ Test Case3: CBDMA test with multi nic ports
 
 1.Bind two cbdma ports and two nic ports to igb_uio driver.
 
-2.Launch ioatfwd app with multi-ports::
+2.Launch dma app with multi-ports::
 
-./build/ioatfwd -l 0-4 -n 2 -- -p 0x3 -q 1 -c hw
+./x86_64-native-linuxapp-gcc/examples/dpdk-dma -l 0-4 -n 2 -- -p 0x3 -q 1 --mac-updating -c hw
 
 3.Send different size packets (64B, 256B, 512B, 1024B, IMIX) from TG to two NIC ports.
 
@@ -134,9 +134,9 @@ Test Case4: CBDMA test with multi-queues
 
 1.Bind two cbdma ports and one nic port to igb_uio driver.
 
-2.Launch ioatfwd app with multi-queues::
+2.Launch dma app with multi-queues::
 
-./build/ioatfwd -l 0-2 -n 2 -- -p 0x1 -q 2 -c hw
+./x86_64-native-linuxapp-gcc/examples/dpdk-dma -l 0-2 -n 2 -- -p 0x1 -q 2 --mac-updating -c hw
 
 3. Send random ip packets (64B, 256B, 512B, 1024B, IMIX) from TG to NIC port.
 
@@ -150,9 +150,9 @@ Test Case5: CBDMA performance cmparison between mac-updating and no-mac-updating
 
 1.Bind one cbdma ports and one nic port to igb_uio driver.
 
-2.Launch ioatfwd app::
+2.Launch dma app::
 
-./build/ioatfwd -l 0-1 -n 2 -- -p 0x1 -q 2 --no-mac-updating -c hw
+./x86_64-native-linuxapp-gcc/examples/dpdk-dma -l 0-1 -n 2 -- -p 0x1 -q 2 --no-mac-updating -c hw
 
 3. Send random ip 64B packets from TG.
 
@@ -160,9 +160,9 @@ Test Case5: CBDMA performance cmparison between mac-updating and no-mac-updating
 
     Total packets Tx:                   xxx [pps]
 
-5.Launch ioatfwd app::
+5.Launch dma app::
 
-./build/ioatfwd -l 0-1 -n 2 -- -p 0x1 -q 2 --mac-updating -c hw
+./x86_64-native-linuxapp-gcc/examples/dpdk-dma -l 0-1 -n 2 -- -p 0x1 -q 2 --mac-updating -c hw
 
 6. Send random ip 64B packets from TG.
 
@@ -175,9 +175,9 @@ Test Case6: CBDMA performance cmparison between HW copies and SW copies using di
 
 1.Bind four cbdma pors and one nic port to igb_uio driver.
 
-2.Launch ioatfwd app with three cores::
+2.Launch dma app with three cores::
 
-./build/ioatfwd -l 0-2 -n 2 -- -p 0x1 -q 4  -c hw
+./x86_64-native-linuxapp-gcc/examples/dpdk-dma -l 0-2 -n 2 -- -p 0x1 -q 4 --mac-updating  -c hw
 
 3. Send random ip packets from TG.
 
@@ -185,9 +185,9 @@ Test Case6: CBDMA performance cmparison between HW copies and SW copies using di
 
     Total packets Tx:                   xxx [pps]
 
-5.Launch ioatfwd app with three cores::
+5.Launch dma app with three cores::
 
-./build/ioatfwd -l 0-2 -n 2 -- -p 0x1 -q 4 -c sw
+./x86_64-native-linuxapp-gcc/examples/dpdk-dma -l 0-2 -n 2 -- -p 0x1 -q 4 --mac-updating -c sw
 
 6. Send random ip packets from TG.
 
@@ -202,10 +202,10 @@ Test Case7: CBDMA multi application mode test
 
 2.Launch test-pmd app with three cores and proc_type primary:
 
-./build/test-pmd -l 0-2 -n 2 -- -p 0x1 -q 4  --proc-type=primary
+ ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 0-2 -n 2 -- -p 0x1 -q 4  --proc-type=primary
 
-3. Launch another ioatfwd app with three cores and proc_type secondary:
+3. Launch another dma app with three cores and proc_type secondary:
 
-./build/ioatfwd -l 0-2 -n 2 -- -p 0x1 -q 4  --proc-type=secondary
+./x86_64-native-linuxapp-gcc/examples/dpdk-dma -l 0-2 -n 2 -- -p 0x1 -q 4  --proc-type=secondary
 
 4. check both the application should work and no one should report error.
