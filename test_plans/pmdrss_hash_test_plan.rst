@@ -95,9 +95,20 @@ Testpmd configuration - 16 RX/TX queues per port
 
        testpmd command: set verbose 8
 
-#. set hash functions, can choose symmetric or not, choose port and packet type::
+#. set hash functions, can choose symmetric or not, choose port, rss type and packet type::
 
-       testpmd command: set_hash_global_config 0 toeplitz ipv4-other enable
+       Toeplitz hash function: toeplitz
+       testpmd command:
+         flow create <port_id> ingress pattern eth / ipv4 / sctp / end actions rss types ipv4-sctp end queues end func toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv4 / end actions rss types ipv4-other end queues end func toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv4 / end actions rss types ipv4-frag end queues end func toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv4 / udp / end actions rss types ipv4-udp end queues end func toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv4 / tcp / end actions rss types ipv4-tcp end queues end func toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv6 / end actions rss types ipv6-other end queues end func toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv6 / sctp / end actions rss types ipv6-sctp end queues end func toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp end queues end func toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv6 / tcp / end actions rss types ipv6-tcp end queues end func toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv6 / end actions rss types ipv6-frag end queues end func toeplitz queues end / end
 
 #. start packet receive::
 
@@ -129,8 +140,18 @@ Test Case:  test_toeplitz_symmetric
 
 The same with the above steps, pay attention to "set hash function", should use::
 
-  set_hash_global_config 0 toeplitz ipv4-other enable
-  set_sym_hash_ena_per_port 0 enable
+       Symmetric Toeplitz hash function: symmetric_toeplitz
+       testpmd command:
+         flow create <port_id> ingress pattern eth / ipv4 / sctp / end actions rss types ipv4-sctp end queues end func symmetric_toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv4 / end actions rss types ipv4-other end queues end func symmetric_toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv4 / end actions rss types ipv4-frag end queues end func symmetric_toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv4 / udp / end actions rss types ipv4-udp end queues end func symmetric_toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv4 / tcp / end actions rss types ipv4-tcp end queues end func symmetric_toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv6 / end actions rss types ipv6-other end queues end func symmetric_toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv6 / sctp / end actions rss types ipv6-sctp end queues end func symmetric_toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp end queues end func symmetric_toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv6 / tcp / end actions rss types ipv6-tcp end queues end func symmetric_toeplitz queues end / end
+         flow create <port_id> ingress pattern eth / ipv6 / end actions rss types ipv6-frag end queues end func symmetric_toeplitz queues end / end
 
 And send packets with the same flow in different direction::
 
@@ -142,7 +163,20 @@ And the hash value and queue should be the same for these two flow .
 Test Case:  test_simple
 =======================
 
-The same as the above test case "test_toeplitz". Just pay attention to set the hash function to "simple xor"
+The same as the above test case "test_toeplitz". Just pay attention to set the hash function to "simple xor"::
+
+       simple XOR hash function: simple_xor
+       testpmd command:
+         flow create <port_id> ingress pattern eth / ipv4 / sctp / end actions rss types ipv4-sctp end queues end func simple_xor queues end / end
+         flow create <port_id> ingress pattern eth / ipv4 / end actions rss types ipv4-other end queues end func simple_xor queues end / end
+         flow create <port_id> ingress pattern eth / ipv4 / end actions rss types ipv4-frag end queues end func simple_xor queues end / end
+         flow create <port_id> ingress pattern eth / ipv4 / udp / end actions rss types ipv4-udp end queues end func simple_xor queues end / end
+         flow create <port_id> ingress pattern eth / ipv4 / tcp / end actions rss types ipv4-tcp end queues end func simple_xor queues end / end
+         flow create <port_id> ingress pattern eth / ipv6 / end actions rss types ipv6-other end queues end func simple_xor queues end / end
+         flow create <port_id> ingress pattern eth / ipv6 / sctp / end actions rss types ipv6-sctp end queues end func simple_xor queues end / end
+         flow create <port_id> ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp end queues end func simple_xor queues end / end
+         flow create <port_id> ingress pattern eth / ipv6 / tcp / end actions rss types ipv6-tcp end queues end func simple_xor queues end / end
+         flow create <port_id> ingress pattern eth / ipv6 / end actions rss types ipv6-frag end queues end func simple_xor queues end / end
 
 Test Case:  test_simple_symmetric
 =================================
