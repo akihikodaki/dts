@@ -7593,6 +7593,7 @@ class TestIAVFFdir(TestCase):
         """
         Run before each test case.
         """
+        self.dut.restore_interfaces_linux()
         self.setup_2pf_4vf_env()
         time.sleep(1)
         self.launch_testpmd()
@@ -8343,8 +8344,6 @@ class TestIAVFFdir(TestCase):
         """
         create same rules on pf and vf, no conflict
         """
-        self.dut.kill_all()
-        self.setup_2pf_4vf_env()
         self.session_secondary = self.dut.new_session()
         self.session_third = self.dut.new_session()
 
@@ -8495,8 +8494,6 @@ class TestIAVFFdir(TestCase):
         """
         create same input set but different action rules on pf and vf, no conflict.
         """
-        self.dut.kill_all()
-        self.setup_2pf_4vf_env()
         self.session_secondary = self.dut.new_session()
         self.session_third = self.dut.new_session()
 
@@ -8649,7 +8646,6 @@ class TestIAVFFdir(TestCase):
         """
         create different rules on pf and vf
         """
-        self.dut.kill_all()
         self.session_secondary = self.dut.new_session()
         self.session_third = self.dut.new_session()
 
