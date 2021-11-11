@@ -71,7 +71,6 @@ offloads = {'mbuf_fast_free': 'MBUF_FAST_FREE',
             'qinq_strip': 'QINQ_STRIP',
             'vlan_filter': 'VLAN_FILTER',
             'vlan_extend': 'VLAN_EXTEND',
-            'jumboframe': 'JUMBO_FRAME',
             'scatter': 'SCATTER',
             'keep_crc': 'KEEP_CRC',
             'macsec_strip': 'MACSEC_STRIP'
@@ -346,54 +345,6 @@ class TestRxTx_Offload(TestCase):
 
         self.tester.send_expect("killall tcpdump", "#")
         return self.tester.send_expect("tcpdump -nn -e -v -c 1024 -r ./getPackageByTcpdump.cap", "#", 120)
-
-    def test_rxoffload_port(self):
-        """
-        Set Rx offload by port.
-        """
-        # Define jumboframe packets
-        self.jumbo_pkt1 = r'sendp([Ether(dst="%s")/IP(dst="192.168.0.1",src="192.168.0.2", len=8981)/Raw(load="P"*8961)], iface="%s")' % (self.pf_mac, self.tester_itf0)
-        self.jumbo_pkt2 = r'sendp([Ether(dst="%s")/IP(dst="192.168.0.1",src="192.168.0.3", len=8981)/Raw(load="P"*8961)], iface="%s")' % (self.pf_mac, self.tester_itf0)
-
-        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4 --max-pkt-len=9000")
-        self.dut.send_expect("set fwd rxonly", "testpmd> ")
-        self.dut.send_expect("set verbose 1", "testpmd> ")
-        offload = ['jumboframe']
-        self.check_port_config("rx", offload)
-        self.tester.send_expect("ifconfig %s mtu %s" % (self.tester_itf0, ETHER_JUMBO_FRAME_MTU), "# ")
-        self.tester.send_expect("ifconfig %s mtu %s" % (self.tester_itf1, ETHER_JUMBO_FRAME_MTU), "# ")
-
-        pkt1_queue = self.get_queue_number(self.jumbo_pkt1)
-        pkt2_queue = self.get_queue_number(self.jumbo_pkt2)
-
-        # Failed to disable jumboframe per_queue, foxvillee 2.5g not support
-        if self.nic != 'foxville':
-            self.dut.send_expect("port stop 0", "testpmd> ")
-            self.dut.send_expect("port 0 rxq %s rx_offload jumbo_frame off" % pkt1_queue, "testpmd> ")
-            self.verify_result(self.jumbo_pkt1, 1, pkt1_queue)
-
-        # Succeed to disable jumboframe per_port
-        self.dut.send_expect("port stop 0", "testpmd> ")
-        self.dut.send_expect("port config 0 rx_offload jumbo_frame off", "testpmd> ")
-        self.check_port_config("rx", "NULL")
-        self.verify_result(self.jumbo_pkt1, 0, pkt1_queue)
-        self.verify_result(self.jumbo_pkt2, 0, pkt2_queue)
-
-        # Failed to enable jumboframe per_queue
-        self.dut.send_expect("port stop 0", "testpmd> ")
-        self.dut.send_expect("port 0 rxq %s rx_offload jumbo_frame on" % pkt1_queue, "testpmd> ")
-        outstring = self.dut.send_expect("port start 0", "testpmd> ")
-        self.verify("Fail" in outstring, "jumboframe can be set by queue.")
-
-        # Succeed to enable jumboframe per_port
-        self.dut.send_expect("port stop 0", "testpmd> ")
-        self.dut.send_expect("port config 0 rx_offload jumbo_frame on", "testpmd> ")
-        self.check_port_config("rx", offload)
-        self.verify_result(self.jumbo_pkt1, 1, pkt1_queue)
-        self.verify_result(self.jumbo_pkt2, 1, pkt2_queue)
-
-        self.tester.send_expect("ifconfig %s mtu %s" % (self.tester_itf0, ETHER_STANDARD_MTU), "# ")
-        self.tester.send_expect("ifconfig %s mtu %s" % (self.tester_itf1, ETHER_STANDARD_MTU), "# ")
 
     def test_rxoffload_port_cmdline(self):
         """
