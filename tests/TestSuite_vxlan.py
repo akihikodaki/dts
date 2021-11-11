@@ -754,6 +754,7 @@ class TestVxlan(TestCase):
         self.dut.send_expect("set fwd csum", "testpmd>", 10)
         self.csum_set_type('outer-ip', self.recv_port)
         self.csum_set_type('udp', self.recv_port)
+        self.csum_set_type('outer-udp', self.recv_port)
         self.csum_set_type('tcp', self.recv_port)
         self.csum_set_type('sctp', self.recv_port)
         self.dut.send_expect("csum parse-tunnel on %d" %

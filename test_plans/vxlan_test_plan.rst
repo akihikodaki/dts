@@ -240,6 +240,7 @@ Enable IP,UDP,TCP,SCTP,VXLAN checksum offload::
     csum set tcp hw 0
     csum set stcp hw 0
     csum set outer-ip hw 0
+    csum set outer-udp hw 0
 
 Send ipv6 packet with valid checksum and check there's no chksum error counter
 increased.
