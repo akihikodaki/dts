@@ -165,7 +165,10 @@ class TestRxTx_Offload(TestCase):
         scanner = re.compile(result_scanner, re.DOTALL)
         m = scanner.search(outstring)
         if offload == "NULL":
-            self.verify(m == None, "The offload failed to be disabled.")
+            if rxtx == "rx":
+                self.verify(m.group(1).strip() == 'RSS_HASH', "The offload failed to be disabled.")
+            elif rxtx == "tx":
+                self.verify(m == None, "The offload failed to be disabled.")
         else:
             exp_offload = m.group(1).split()
             self.verify(exp_offload != None, "There is no offload configured.")
