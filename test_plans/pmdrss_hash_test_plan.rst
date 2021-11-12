@@ -183,35 +183,3 @@ Test Case:  test_simple_symmetric
 
 The same as the above test case "test_toeplitz_symmetric". Just pay attention to set the hash function to "simple xor"
 
-Test Case:  test_dynamic_rss_bond_config
-========================================
-This case test bond slaves will auto sync rss hash config, it only support by fortville.
-
-#. set up testpmd with fortville NICs::
-
-      ./testpmd -c f -n 4 -- -i
-
-#. create bond device with mode 3::
-
-      create bonded device 3 0
-
-#. add slave to bond device::
-
-      add bonding slave 0 2
-      add bonding slave 1 2
-
-#. get default hash algorithm on slave::
-
-      get_hash_global_config 0
-      get_hash_global_config 1
-
-#. set hash algorithm on slave 0::
-
-      set_hash_global_config 0 simple_xor ipv4-other enable
-
-#. get hash algorithm on slave 0 and 1::
-
-      get_hash_global_config 0
-      get_hash_global_config 1
-
-#. check slave 0 and 1 use same hash algorithm
