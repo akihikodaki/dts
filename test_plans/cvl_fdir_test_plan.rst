@@ -3589,7 +3589,7 @@ set "--log-level=ice,7", then check::
     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21") /UDP(sport=22, dport=23)/ Raw('x' * 80)],iface="enp175s0f0", count=10)
 
    the two packets are both redirected to queue 1 with mark ID 1.
-   then create MAC_IPV4_UDP flow, it is set to switch filter::
+   then create MAC_IPV4_UDP flow, it is set to switch filter with mark ID 1::
 
     flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 2 / end
 
@@ -3610,7 +3610,7 @@ set "--log-level=ice,7", then check::
 
     flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / end actions queue index 1 / end
 
-   send same packet, it is redirected to queue 1, because the packet match switch filter first.
+   send same packet, it is redirected to queue 1 with mark ID 1, because the packet match switch filter first.
 
 
 Test case: count/query

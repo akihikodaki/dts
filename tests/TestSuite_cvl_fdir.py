@@ -3007,7 +3007,7 @@ class TestCVLFdir(TestCase):
         out = self.send_pkts_getouput(pkts=pkts[0])
         rfc.check_mark(out, pkt_num=1, check_param={"port_id": 0, "queue": 1,"mark_id":1}, stats=True)
         out = self.send_pkts_getouput(pkts=pkts[1])
-        rfc.check_mark(out, pkt_num=1, check_param={"port_id": 0, "queue": 2}, stats=True)
+        rfc.check_mark(out, pkt_num=1, check_param={"port_id": 0, "queue": 2,"mark_id":1}, stats=True)
 
         rule3 = "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 2 / mark id 1 / end"
         rule4 = "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / end actions queue index 1 / end"
