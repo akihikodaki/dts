@@ -39,26 +39,6 @@ to virtio side, check virtio-user cores can be wakeup status, and virtio-user co
 status after stop sending packets from traffic generator.This test plan cover both vhost-net and
 vhost-user as the backend.
 
-Prerequisites
-=============
-
-Modify l3fwd-power example code and recompile::
-
-        --- a/examples/l3fwd-power/main.c
-        +++ b/examples/l3fwd-power/main.c
-        @@ -245,10 +245,9 @@ uint16_t nb_lcore_params = RTE_DIM(lcore_params_array_default);
-
-         static struct rte_eth_conf port_conf = {
-                .rxmode = {
-        -               .mq_mode        = ETH_MQ_RX_RSS,
-        +               .mq_mode        = ETH_MQ_RX_NONE,
-                        .max_rx_pkt_len = RTE_ETHER_MAX_LEN,
-                        .split_hdr_size = 0,
-        -               .offloads = DEV_RX_OFFLOAD_CHECKSUM,
-                },
-                .rx_adv_conf = {
-                        .rss_conf = {
-
 Test Case1: Split ring virtio-user interrupt test with vhost-user as backend
 ============================================================================
 
