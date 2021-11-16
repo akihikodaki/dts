@@ -227,15 +227,15 @@ class TestPerformanceThread(TestCase):
         self.result_table_print()
 
     def test_perf_one_lcore_per_pcore(self):
-        params = "-n 4 -- -P -p {} --enable-jumbo --max-pkt-len=2500 --no-lthread" .format(self.port_mask)
+        params = "-n 4 -- -P -p {} --max-pkt-len=2500 --no-lthread" .format(self.port_mask)
         self.perf_test(params)
 
     def test_perf_n_lthreads_per_pcore(self):
-        params = "-n 4 -- -P -p {} --enable-jumbo --max-pkt-len=2500" .format(self.port_mask)
+        params = "-n 4 -- -P -p {} --max-pkt-len=2500" .format(self.port_mask)
         self.perf_test(params)
 
     def test_perf_n_lcore_per_pcore(self):
-        params = "-- -P -p {} --enable-jumbo --max-pkt-len 2500 --no-lthread" .format(self.port_mask)
+        params = "-- -P -p {} --max-pkt-len 2500 --no-lthread" .format(self.port_mask)
         self.perf_test(params)
 
     def set_fields(self):
