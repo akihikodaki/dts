@@ -42,21 +42,6 @@ from virtio-net to vhost side，check vhost-user cores can be wakeup status，an
 vhost-user cores should be sleep status after stop sending packets from virtio
 side.For packed virtqueue test, need using qemu version > 4.2.0.
 
-Prerequisites
-=============
-
-Modify l3fwd-power example code and recompile::
-
-        --- a/examples/l3fwd-power/main.c
-        +++ b/examples/l3fwd-power/main.c
-        @@ -248,7 +248,6 @@ static struct rte_eth_conf port_conf = {
-                .mq_mode        = ETH_MQ_RX_RSS,
-                .max_rx_pkt_len = RTE_ETHER_MAX_LEN,
-                .split_hdr_size = 0,
-        -       .offloads = DEV_RX_OFFLOAD_CHECKSUM,
-        },
-        .rx_adv_conf = {
-                .rss_conf = {
 
 Test flow
 =========
