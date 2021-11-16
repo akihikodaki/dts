@@ -88,11 +88,6 @@ class TestVirtioUserInterrupt(TestCase):
         self.dut.close_session(self.l3fwd)
 
     def prepare_l3fwd_power(self):
-        self.dut.send_expect("cp ./examples/l3fwd-power/main.c .", "#")
-        self.dut.send_expect(
-                "sed -i '/DEV_RX_OFFLOAD_CHECKSUM/d' ./examples/l3fwd-power/main.c", "#", 10)
-        self.dut.send_expect(
-                "sed -i 's/.mq_mode        = ETH_MQ_RX_RSS,/.mq_mode        = ETH_MQ_RX_NONE,/g' ./examples/l3fwd-power/main.c", "#", 10)
         out = self.dut.build_dpdk_apps("./examples/l3fwd-power")
         self.verify("Error" not in out, "compilation l3fwd-power error")
 
@@ -394,5 +389,4 @@ class TestVirtioUserInterrupt(TestCase):
         """
         run after each test suite.
         """
-        self.dut.send_expect("mv ./main.c ./examples/l3fwd-power/", "#")
-        self.dut.build_dpdk_apps('examples/l3fwd-power')
+        pass
