@@ -78,9 +78,6 @@ class TestVhostUserInterrupt(TestCase):
         self.virtio_user = self.dut.new_session(suite="virtio-user")
 
     def prepare_l3fwd_power(self):
-        self.dut.send_expect("cp ./examples/l3fwd-power/main.c .", "#")
-        self.dut.send_expect(
-                "sed -i '/DEV_RX_OFFLOAD_CHECKSUM/d' ./examples/l3fwd-power/main.c", "#")
         out = self.dut.build_dpdk_apps('examples/l3fwd-power')
         self.verify("Error" not in out, "compilation l3fwd-power error")
 
@@ -304,6 +301,4 @@ class TestVhostUserInterrupt(TestCase):
         """
         Run after each test suite.
         """
-        # revert the code
-        self.dut.send_expect("mv ./main.c ./examples/l3fwd-power/", "#")
-        self.dut.build_dpdk_apps('examples/l3fwd-power')
+        pass
