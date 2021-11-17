@@ -105,7 +105,7 @@ def config_crbs():
 
     passwd_option = {'prompt': 'DUT root password',
                      'type': 'string',
-                     'help': 'Please input password of DUT crb',
+                     'help': '[INSECURE] Please input password of DUT crb (leave blank to use preconfigured SSH keys)',
                      'default': ''}
     opt = Option(**passwd_option)
     dut_pass = opt.parse_input()
@@ -120,7 +120,7 @@ def config_crbs():
 
     passwd_option = {'prompt': 'Tester root password',
                      'type': 'string',
-                     'help': 'Please input password of Tester crb',
+                     'help': '[INSECURE] Please input password of Tester crb (leave blank to use preconfigured SSH keys)',
                      'default': ''}
     opt = Option(**passwd_option)
     tester_pass = opt.parse_input()
