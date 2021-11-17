@@ -533,6 +533,13 @@ class TestCase(object):
 
         return bitrate * num_ports / 8 / (frame_size + 20)
 
+    def bind_nic_driver(self, ports, driver=""):
+        for port in ports:
+            netdev = self.dut.ports_info[port]['port']
+            driver_now = netdev.get_nic_driver()
+            driver_new = driver if driver else netdev.default_driver
+            if driver_new != driver_now:
+                netdev.bind_driver(driver=driver_new)
 
 def skip_unsupported_pkg(pkgs):
     """

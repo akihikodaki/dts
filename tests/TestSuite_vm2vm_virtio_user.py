@@ -738,22 +738,6 @@ class TestVM2VMVirtioUser(TestCase):
             self.dut.send_expect('./usertools/dpdk-devbind.py -u %s' % self.device_str, '# ', 30)
             self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str, '# ', 60)
 
-    def bind_nic_driver(self, ports, driver=""):
-        if driver == "igb_uio":
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver = netdev.get_nic_driver()
-                if driver != 'igb_uio':
-                    netdev.bind_driver(driver='igb_uio')
-        else:
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver_now = netdev.get_nic_driver()
-                if driver == "":
-                    driver = netdev.default_driver
-                if driver != driver_now:
-                    netdev.bind_driver(driver=driver)
-
     def test_vm2vm_virtio_user_split_virtqueue_inorder_mergeable_path_with_cbdma(self):
         """
         Test Case 12: split virtqueue vm2vm inorder mergeable path multi-queues payload check with cbdma enabled

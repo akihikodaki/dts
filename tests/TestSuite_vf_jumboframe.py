@@ -84,31 +84,6 @@ class TestVfJumboFrame(TestCase):
     def set_up(self):
         pass
 
-    def bind_nic_driver(self, ports, driver=""):
-        # modprobe vfio driver
-        if driver == "vfio-pci":
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver = netdev.get_nic_driver()
-                if driver != 'vfio-pci':
-                    netdev.bind_driver(driver='vfio-pci')
-
-        elif driver == "igb_uio":
-            # igb_uio should insmod as default, no need to check
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver = netdev.get_nic_driver()
-                if driver != 'igb_uio':
-                    netdev.bind_driver(driver='igb_uio')
-        else:
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver_now = netdev.get_nic_driver()
-                if driver == None:
-                    driver = netdev.default_driver
-                if driver != driver_now:
-                    netdev.bind_driver(driver=driver)
-
     def setup_vm_env(self, driver='default'):
         """
         Create testing environment with 1VF generated from 1PF

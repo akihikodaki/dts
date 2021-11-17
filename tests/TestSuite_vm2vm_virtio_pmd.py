@@ -733,15 +733,6 @@ class TestVM2VMVirtioPMD(TestCase):
             self.dut.send_expect('./usertools/dpdk-devbind.py -u %s' % self.device_str, '# ', 30)
             self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str, '# ', 60)
 
-    def bind_nic_driver(self, ports, driver=""):
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver_now = netdev.get_nic_driver()
-                if driver == "":
-                    driver = netdev.default_driver
-                if driver != driver_now:
-                    netdev.bind_driver(driver=driver)
-
     def tear_down(self):
         #
         # Run after each test case.

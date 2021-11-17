@@ -339,22 +339,6 @@ class TestVM2VMVirtioNetPerf(TestCase):
         md5_revd = md5_revd[: md5_revd.find(' ')]
         self.verify(md5_send == md5_revd, 'the received file is different with send file')
 
-    def bind_nic_driver(self, ports, driver=""):
-        if driver == "igb_uio":
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver = netdev.get_nic_driver()
-                if driver != 'igb_uio':
-                    netdev.bind_driver(driver='igb_uio')
-        else:
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver_now = netdev.get_nic_driver()
-                if driver == "":
-                    driver = netdev.default_driver
-                if driver != driver_now:
-                    netdev.bind_driver(driver=driver)
-
     def test_vm2vm_split_ring_iperf_with_tso(self):
         """
         TestCase1: VM2VM split ring vhost-user/virtio-net test with tcp traffic

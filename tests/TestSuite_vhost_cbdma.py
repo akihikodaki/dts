@@ -112,15 +112,6 @@ class TestVirTioVhostCbdma(TestCase):
         self.dut.send_expect("rm -rf /tmp/s0", "#")
         self.mode_list = []
 
-    def bind_nic_driver(self, ports, driver=""):
-        for port in ports:
-            netdev = self.dut.ports_info[port]['port']
-            driver_now = netdev.get_nic_driver()
-            if driver == "":
-                driver = netdev.default_driver
-            if driver != driver_now:
-                netdev.bind_driver(driver=driver)
-
     def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num):
         """
         get all cbdma ports

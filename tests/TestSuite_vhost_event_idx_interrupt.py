@@ -277,15 +277,6 @@ class TestVhostEventIdxInterrupt(TestCase):
                 session_info[sess_index].send_expect("^c", "#")
                 self.vm_dut[vm_index].close_session(session_info[sess_index])
 
-    def bind_nic_driver(self, ports, driver=""):
-        for port in ports:
-            netdev = self.dut.ports_info[port]['port']
-            driver_now = netdev.get_nic_driver()
-            if driver == "":
-                driver = netdev.default_driver
-            if driver != driver_now:
-                netdev.bind_driver(driver=driver)
-
     def get_cbdma_ports_info_and_bind_to_dpdk(self):
         """
         get all cbdma ports

@@ -114,31 +114,6 @@ class TestKernelpfIavf(TestCase):
         elif self.env_done is False:
             self.setup_vm_env()
 
-    def bind_nic_driver(self, ports, driver=""):
-        # modprobe vfio driver
-        if driver == "vfio-pci":
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver = netdev.get_nic_driver()
-                if driver != 'vfio-pci':
-                    netdev.bind_driver(driver='vfio-pci')
-
-        elif driver == "igb_uio":
-            # igb_uio should insmod as default, no need to check
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver = netdev.get_nic_driver()
-                if driver != 'igb_uio':
-                    netdev.bind_driver(driver='igb_uio')
-        else:
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver_now = netdev.get_nic_driver()
-                if driver is None:
-                    driver = netdev.default_driver
-                if driver != driver_now:
-                    netdev.bind_driver(driver=driver)
-
     def setup_vm_env(self, driver='default', set_vf_mac=True):
         """
         Create testing environment with 1VF generated from 1PF

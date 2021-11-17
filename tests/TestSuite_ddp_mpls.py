@@ -72,24 +72,6 @@ class Testddp_mpls(TestCase):
     def set_up(self):
         self.setup_vm_env()
 
-
-    def bind_nic_driver(self, ports, driver=""):
-        if driver == "igb_uio":
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver = netdev.get_nic_driver()
-                if driver != 'igb_uio':
-                    netdev.bind_driver(driver='igb_uio')
-        else:
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver_now = netdev.get_nic_driver()
-                if driver == "":
-                    driver = netdev.default_driver
-                if driver != driver_now:
-                    netdev.bind_driver(driver=driver)
-
-
     def setup_vm_env(self, driver='default'):
         """
         Create testing environment with VF generated from 1PF
