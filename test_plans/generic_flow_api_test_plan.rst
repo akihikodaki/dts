@@ -1088,6 +1088,124 @@ Test case: IXGBE fdir for mac/vlan(support by x540, x552, x550)
     testpmd> flow flush 0
     testpmd> flow list 0
 
+Test case: IXGBE fdir for Control levels of FDir match reporting(supported by 82599)
+====================================================================================
+
+The status of FDir filter matching for each packet can be reported by the
+hardware through the RX descriptor of each received packet, and this information
+is copied into the packet mbuf, that can be examined by the application.
+
+There are three different reporting modes, that can be set in testpmd using the
+``--pkt-filter-report-hash`` command line argument:
+
+
+Sub-case: ``--pkt-filter-report-hash=none`` mode
+------------------------------------------------
+
+In this mode FDir reporting mode, matches are never reported.
+Start the ``testpmd`` application as follows::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect --pkt-filter-report-hash=none
+    testpmd> set verbose 1
+    testpmd> set fwd rxonly
+    testpmd> start
+
+Send the matched packet with Scapy on the traffic generator and check that no FDir information is printed::
+
+    packet: pkt0=Ether(dst="90:E2:BA:AC:99:FC")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)
+    testpmd> port 0/queue 0: received 1 packets
+    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=60 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4  -  sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+    ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+Add flow filter rule, and send the matched packet again.
+No Dir information is printed, but it can be seen that the packet goes to queue 1::
+
+    testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions queue index 1 / mark id 1 / end
+    testpmd> port 0/queue 1: received 1 packets
+    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=60 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x1
+    ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+    testpmd>  quit
+
+Sub-case: ``--pkt-filter-report-hash=match`` mode
+-------------------------------------------------
+
+In this mode FDir reporting mode, FDir information is printed for packets that match a filter.
+Start the ``testpmd`` application as follows::
+
+   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect --pkt-filter-report-hash=match
+    testpmd> set verbose 1
+    testpmd> set fwd rxonly
+    testpmd> start
+
+Send pkt0 packet with Scapy on the traffic generator and check that no FDir information is printed::
+
+    packet: pkt0=Ether(dst="90:E2:BA:AC:99:FC")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)
+    testpmd> port 0/queue 0: received 1 packets
+    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=60 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+    ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+Add flow filter rule, and send the pkt0 packet again.
+This time, the match is indicated (``RTE_MBUF_F_RX_FDIR``), and its details (hash, id) printed ::
+
+    testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions queue index 1 / mark id 1 / end
+    testpmd> port 0/queue 1: received 1 packets
+    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=60 - nb_segs=1 - FDIR matched hash=0x2f3 ID=0x1  - hw ptype: L2_ETHER L3_IPV4  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x1
+    ol_flags: RTE_MBUF_F_RX_FDIR RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+Add flow filter rule by using different src,dst, and send the matched pkt1 packet again.
+This time, the match is indicated (``RTE_MBUF_F_RX_FDIR``), and its details (hash, id) printed ::
+
+    packet: pkt1=Ether(dst="90:E2:BA:AC:99:FC")/IP(src="192.168.1.1", dst="192.168.1.2")/Raw('x' * 20)
+    testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions queue index 2 / mark id 2 / end
+    testpmd> port 0/queue 2: received 1 packets
+    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=64 - nb_segs=1 - FDIR matched hash=0x2f3 ID=0x2  - hw ptype: L2_ETHER L3_IPV4  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x2
+    ol_flags: RTE_MBUF_F_RX_FDIR RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+Remove rule1 and send the matched pkt0 packet again. Check that no FDir information is printed::
+
+    testpmd> flow destroy 0 rule 0
+    Flow rule #0 destroyed
+    testpmd> port 0/queue 0: received 1 packets
+    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=60 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+    ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+Remove rule2, and send the match pkt1 packet again. Check that no FDir information is printed::
+
+    testpmd> flow destroy 0 rule 1
+    Flow rule #1 destroyed
+    testpmd> port 0/queue 0: received 1 packets
+    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=60 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+    ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+    testpmd>  quit
+
+Sub-case: ``--pkt-filter-report-hash=always`` mode
+--------------------------------------------------
+
+In this mode FDir reporting mode, FDir information is printed for every received packet.
+Start the ``testpmd`` application as follows::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect --pkt-filter-report-hash=always
+    testpmd> set verbose 1
+    testpmd> set fwd rxonly
+    testpmd> start
+
+
+Send matched pkt0 packet with Scapy on the traffic generator and check the output (FDIR id=0x0)::
+
+    packet: pkt0=Ether(dst="90:E2:BA:AC:99:FC")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)
+    testpmd> port 0/queue 0: received 1 packets
+    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=60 - nb_segs=1 - FDIR matched hash=0x2f3 ID=0x0  - hw ptype: L2_ETHER L3_IPV4  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+    ol_flags: RTE_MBUF_F_RX_FDIR RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+Add flow filter rule, and send the matched pkt0 packet again.
+This time, the filter ID is different, and the packet goes to queue 1 ::
+
+    testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions queue index 1 / mark id 1 / end
+    testpmd> port 0/queue 1: received 1 packets
+    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=60 - nb_segs=1 - FDIR matched hash=0x2f3 ID=0x1  - hw ptype: L2_ETHER L3_IPV4  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x1
+    ol_flags: RTE_MBUF_F_RX_FDIR RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+    testpmd>  quit
+
 Test case: IXGBE fdir for tunnel (vxlan and nvgre)(support by x540, x552, x550)
 ===============================================================================
 
