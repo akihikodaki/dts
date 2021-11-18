@@ -300,61 +300,6 @@ class TestIpgre(TestCase):
         self.check_packet_transmission(pkt_types_ipv6_ipv6_SCTP, config_layers)
         self.dut.send_expect("quit", "#")
 
-    def test_GRE_packet_filter(self):
-        """
-        Start testpmd with multi queues, add GRE filter that forward
-        inner/outer ip address 0.0.0.0 to queue 3, Send packet inner
-        ip address matched and check packet received by queue 3
-        """
-        outer_mac = self.tester_iface_mac
-        inner_mac = "10:00:00:00:00:00"
-
-        # Start testpmd with multi queues
-        #testpmd_cmd = "./%s/app/testpmd -c ff -n 3 -- -i  --rxq=4 --txq=4" % self.target
-        self.pmdout.start_testpmd("Default", "--portmask=%s " %
-                                  (self.portMask) + " --enable-rx-cksum --rxq=4 --txq=4 "
-                                  , socket=self.ports_socket)
-        self.dut.send_expect("set fwd rxonly", "testpmd>")
-        self.dut.send_expect("set nbcore 4", "testpmd>")
-        self.dut.send_expect("set verbose 1", "testpmd>")
-        self.dut.send_expect("start", "testpmd>")
-
-        # Add GRE filter that forward inner ip address 0.0.0.0 to queue 3
-        cmd = "tunnel_filter add 0 %s %s 0.0.0.0 1 ipingre iip 0 3"%(outer_mac, inner_mac)
-        self.dut.send_expect( cmd, "testpmd>")
-
-        # Send packet inner ip address matched and check packet received by queue 3
-        pkt_types = {"MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT":  ["TUNNEL_GRENAT",  "INNER_L4_UDP"]}
-        config_layers = {'ether': {'src': self.outer_mac_src},
-                         'ipv4': {'proto': 'gre',
-                                  'src': self.outer_ip_src,
-                                  'dst': self.outer_ip_dst},
-                         'inner_ipv4':{'dst': "0.0.0.0"}}
-        self.check_packet_transmission(pkt_types, config_layers, "3", 1)
-
-        # Remove tunnel filter and check same packet received by queue 0
-        cmd = "tunnel_filter rm 0 %s %s 0.0.0.0 1 ipingre iip 0 3"%(outer_mac, inner_mac)
-        self.dut.send_expect( cmd, "testpmd>")
-        self.check_packet_transmission(pkt_types, config_layers, "3")
-
-        # Add GRE filter that forward outer ip address 0.0.0.0 to queue 3
-        cmd = "tunnel_filter add 0 %s %s 0.0.0.0 1 ipingre oip 0 3"%(outer_mac, inner_mac)
-        self.dut.send_expect( cmd, "testpmd>")
-
-        # Send packet outer ip address matched and check packet received by queue 3.
-        pkt_types = {"MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT": ["TUNNEL_GRENAT", "INNER_L4_UDP"]}
-        config_layers = {'ether': {'src': self.outer_mac_src},
-                         'ipv4': {'dst': "0.0.0.0", 'proto': 'gre'}}
-        self.check_packet_transmission(pkt_types, config_layers, "3", 1)
-
-        # Add GRE filter that forward outer ip address 0.0.0.0 to queue 3
-        cmd = "tunnel_filter rm 0 %s %s 0.0.0.0 1 ipingre oip 0 3"%(outer_mac, inner_mac)
-        self.dut.send_expect( cmd, "testpmd>")
-        self.check_packet_transmission(pkt_types, config_layers, "3")
-
-        time.sleep(2)
-        self.dut.send_expect("quit", "#")
-
     def test_GRE_packet_chksum_offload(self):
         """
         Start testpmd with hardware checksum offload enabled,
