@@ -84,37 +84,3 @@ Test Case 2: VXLAN-GPE tunnel remove test
 3. Expected result::
 
     testpmd should treat the packet as a normal UDP packet
-
-Test Case 3: Tunnel filter VXLAN-GPE support
-============================================
-1. Start testpmd with tunneling packet type to vxlan and disable receive side
-   scale for hardware limitation::
-
-    # testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --tx-offloads=0x8fff
-
-2. Set rxonly packet forwarding mode and enable verbose log::
-
-    testpmd> set fwd rxonly
-    testpmd> set verbose 1
-
-3. Add one new Cloud filter as table listed first::
-
-    testpmd> tunnel_filter add 0 11:22:33:44:55:66 00:00:20:00:00:01 192.168.2.2 1 vxlan-gpe imac-ivlan 1 3
-
-4. Then send one packet and check packet was forwarded into right queue.
-
-+------------+------------+------------+----------+----------+--------+-------+
-| Outer Mac  | Inner Mac  | Inner Vlan | Outer Ip | Inner Ip | Vni ID | Queue |
-+------------+------------+------------+----------+----------+--------+-------+
-| No         | Yes        | Yes        | No       | No       | No     | 1     |
-+------------+------------+------------+----------+----------+--------+-------+
-| No         | Yes        | Yes        | No       | No       | Yes    | 1     |
-+------------+------------+------------+----------+----------+--------+-------+
-| No         | Yes        | No         | No       | No       | Yes    | 1     |
-+------------+------------+------------+----------+----------+--------+-------+
-| No         | Yes        | No         | No       | No       | No     | 1     |
-+------------+------------+------------+----------+----------+--------+-------+
-| Yes        | Yes        | No         | No       | Yes      | Yes    | 1     |
-+------------+------------+------------+----------+----------+--------+-------+
-| No         | No         | No         | No       | Yes      | No     | 1     |
-+------------+------------+------------+----------+----------+--------+-------+
