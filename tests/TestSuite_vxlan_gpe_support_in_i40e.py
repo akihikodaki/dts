@@ -254,39 +254,6 @@ class TestVxlanGpeSupportInI40e(TestCase):
         self.pmdout.execute_cmd('quit', '#')
         self.verify('L3_IPV4_EXT_UNKNOWN' in out and '%s' % VXLAN_GPE_PORT not in out, 'no detect vxlan-gpe packet')
 
-    def test_tunnel_filter_vxlan_gpe(self):
-        """
-        verify tunnel filter feature
-        """
-        pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
-            "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
-            " --nb-cores=4 --portmask=%(PORT)s"
-        path = self.dut.apps_name['test-pmd']
-        pmd_cmd = pmd_temp % {'TARGET': path,
-                              'COREMASK': self.coremask,
-                              'CHANNEL': self.dut.get_memory_channels(),
-                              'PORT': self.portMask}
-        self.dut.send_expect(pmd_cmd, "testpmd>", 30)
-
-        self.dut.send_expect("set fwd rxonly", "testpmd>", 10)
-        self.dut.send_expect("set verbose 1", "testpmd>", 10)
-        self.enable_vxlan(self.dut_port)
-
-        # check inner mac + inner vlan filter can work
-        self.filter_and_check(filter_type="imac-ivlan", vlan=1)
-        # check inner mac + inner vlan + tunnel id filter can work
-        self.filter_and_check(filter_type="imac-ivlan-tenid", vlan=1)
-        # check inner mac + tunnel id filter can work
-        self.filter_and_check(filter_type="imac-tenid")
-        # check inner mac filter can work
-        self.filter_and_check(filter_type="imac")
-        # check outer mac + inner mac + tunnel id filter can work
-        self.filter_and_check(filter_type="omac-imac-tenid")
-        # iip not supported by now
-        self.filter_and_check(filter_type="iip")
-
-        self.dut.send_expect("quit", "#", 10)
-
     def enable_vxlan(self, port):
         self.dut.send_expect("rx_vxlan_port add %d %d"
                              % (VXLAN_GPE_PORT, port),
