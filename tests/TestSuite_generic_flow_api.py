@@ -54,6 +54,7 @@ from framework.project_dpdk import DPDKdut
 from framework.settings import DRIVERS, HEADER_SIZE
 from framework.test_case import TestCase
 from framework.virt_dut import VirtDut
+from framework.test_case import check_supported_nic
 
 MAX_VLAN = 4095
 MAX_QUEUE = 15
@@ -158,9 +159,10 @@ class TestGeneric_flow_api(TestCase):
         """
         return 1024 * queue_num + 512
 
-    def verify_result(self, pf_vf, expect_rxpkts, expect_queue, verify_mac):
+    def verify_result(self, pf_vf, expect_rxpkts, expect_queue, verify_mac, check_fdir=''):
         """
         verify the packet to the expected queue or be dropped
+        : check_fdir=[exist|non-exist]
         """
         # self.tester.scapy_execute()
         # time.sleep(2)
@@ -217,12 +219,39 @@ class TestGeneric_flow_api(TestCase):
                 queue_index = len(m) - 1
             curr_queue = int(m[queue_index][len("port 0/queue"):])
             self.verify(int(expect_queue) == curr_queue, "the actual queue doesn't equal to the expected queue.")
-
+        if check_fdir == 'exist':
+            self.verify("RTE_MBUF_F_RX_FDIR" in out_pf, 'FDIR information should be printed.')
+        elif check_fdir == 'non-exist':
+            self.verify("FDIR" not in out_pf, 'FDIR information should not be printed.')
         self.dut.send_expect("start", "testpmd> ")
 
         if self.vf_flag == 1:
             self.session_secondary.send_expect("start", "testpmd> ")
             self.session_third.send_expect("start", "testpmd> ")
+        return out_pf
+
+    def launch_start_testpmd(self, queue='', pkt_filter_mode='', report_hash='', disable_rss=False, fwd='', verbose=''):
+        """
+        Launch and start testpmd
+        """
+        param = ''
+        eal_param = ''
+        if queue:
+            param += '--rxq={} --txq={} '.format(queue, queue)
+        if pkt_filter_mode:
+            param += '--pkt-filter-mode={} '.format(pkt_filter_mode)
+        if disable_rss:
+            param += '--disable-rss '
+        if report_hash:
+            param += '--pkt-filter-report-hash={} '.format(report_hash)
+        self.pmdout.start_testpmd("{}".format(self.cores), param=param, eal_param=eal_param)
+        if fwd:
+            self.pmdout.execute_cmd('set fwd rxonly', )
+        if verbose:
+            self.pmdout.execute_cmd('set verbose 1')
+        self.pmdout.execute_cmd('start')
+        self.pmdout.execute_cmd('show port info all')
+        self.pmdout.wait_link_status_up(self.dut_ports[0])
 
     def compare_memory_rules(self, expectedRules):
         """
@@ -2663,6 +2692,86 @@ class TestGeneric_flow_api(TestCase):
             self.verify(packet_flag == 1, "packet pass assert error")
         else:
             self.verify(False, "%s not support this test" % self.nic)
+
+    @check_supported_nic(["niantic"])
+    def test_fdir_for_match_report(self):
+        """
+        Test case: IXGBE fdir for Control levels of FDir match reporting
+        only supported by ixgbe
+        """
+        fdir_scanner = re.compile("FDIR matched hash=(0x\w+) ID=(0x\w+)")
+        pkt0 = 'Ether(dst="{}")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw("x" * 20)'.format(self.pf_mac)
+        pkt1 = 'Ether(dst="{}")/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 20)'.format(self.pf_mac)
+        rule0 = "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions queue index 1 / mark id 1 / end"
+        rule1 = "flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions queue index 2 / mark id 2 / end"
+
+        self.logger.info("Sub-case1: ``--pkt-filter-report-hash=none`` mode")
+        pkt_filter_report_hash = "none"
+        self.launch_start_testpmd(queue=MAX_QUEUE + 1, pkt_filter_mode='perfect', report_hash=pkt_filter_report_hash,
+                                  disable_rss=True, fwd='rxonly', verbose='1')
+
+        # Send the matched packet with Scapy on the traffic generator and check that no FDir information is printed
+        self.sendpkt(pktstr=pkt0)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac, check_fdir="non-exist")
+
+        # Add flow filter rule, and send the matched packet again.
+        # No FDir information is printed, but it can be seen that the packet went to queue 1
+        self.pmdout.execute_cmd(rule0)
+        self.sendpkt(pktstr=pkt0)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="1", verify_mac=self.pf_mac, check_fdir="non-exist")
+        self.pmdout.quit()
+
+        self.logger.info("Sub-case2: ``--pkt-filter-report-hash=match`` mode")
+        pkt_filter_report_hash = "match"
+        self.launch_start_testpmd(queue=MAX_QUEUE + 1, pkt_filter_mode='perfect', report_hash=pkt_filter_report_hash,
+                                  disable_rss=True, fwd='rxonly', verbose='1')
+
+        # Send the matched packet with Scapy on the traffic generator and check that no FDir information is printed
+        self.sendpkt(pktstr=pkt0)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac, check_fdir="non-exist")
+
+        # Add flow filter rule, and send the matched packet again.
+        # the match is indicated (``RTE_MBUF_F_FDIR``), and its details (hash, id) printed
+        self.pmdout.execute_cmd(rule0)
+        self.sendpkt(pktstr=pkt0)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="1", verify_mac=self.pf_mac, check_fdir="exist")
+
+        # Add flow filter rule by using different scr,dst, and send the matched pkt1 packet again.
+        # the match is indicated (``RTE_MBUF_F_FDIR``), and its details (hash, id) printed
+        self.pmdout.execute_cmd(rule1)
+        self.sendpkt(pktstr=pkt1)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="2", verify_mac=self.pf_mac, check_fdir="exist")
+
+        # Remove rule1 and send the matched pkt0 packet again. Check that no FDir information is printed
+        self.pmdout.execute_cmd('flow destroy 0 rule 0')
+        self.sendpkt(pktstr=pkt0)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac, check_fdir="non-exist")
+
+        # Remove rule2, and send the match pkt1 packet again. Check that no FDir information is printed
+        self.pmdout.execute_cmd('flow destroy 0 rule 1')
+        self.sendpkt(pktstr=pkt1)
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac, check_fdir="non-exist")
+        self.pmdout.quit()
+
+        self.logger.info("Sub-case3: ``--pkt-filter-report-hash=always`` mode")
+        pkt_filter_report_hash = "always"
+        self.launch_start_testpmd(queue=MAX_QUEUE + 1, pkt_filter_mode='perfect', report_hash=pkt_filter_report_hash,
+                                  disable_rss=True, fwd='rxonly', verbose='1')
+
+        # Send matched pkt0 packet with Scapy on the traffic generator and check the output (FDIR id=0x0)
+        self.sendpkt(pktstr=pkt0)
+        out1 = self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac, check_fdir="exist")
+
+        # Add flow filter rule, and send the matched pkt0 packet again.
+        # the filter ID is different, and the packet goes to queue 1Add flow filter rule, and send the matched packet again.
+        self.pmdout.execute_cmd(rule0)
+        self.sendpkt(pktstr=pkt0)
+        out2 = self.verify_result("pf", expect_rxpkts="1", expect_queue="1", verify_mac=self.pf_mac, check_fdir="exist")
+
+        # check fdir id is different
+        self.logger.info("FDIR ID1=" + fdir_scanner.search(out1).group(0) + "; FDIR ID2=" + fdir_scanner.search(out2).group(0))
+        self.verify(fdir_scanner.search(out1).group(0) != fdir_scanner.search(out2).group(0),
+                    'Sub-case3.3: FDIR ID should be different')
 
     def tear_down(self):
         """
