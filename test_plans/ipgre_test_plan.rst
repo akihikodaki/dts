@@ -119,43 +119,6 @@ Send packet as table listed and packet type match each layer::
 | Yes        | Ipv6     | GRE       | Ipv6     | Sctp      |
 +------------+----------+-----------+----------+-----------+
 
-Test Case 3: GRE packet filter
-==============================
-
-Start testpmd with multi queues::
-
-    testpmd -c ff -n 3 -- -i  --rxq=4 --txq=4
-    testpmd> set fwd rxonly
-    testpmd> set nbcore 4
-    testpmd> set verbose 1
-    testpmd> start
-
-Add GRE filter that forward inner ip address 0.0.0.0 to queue 3::
-
-    testpmd> tunnel_filter add 0 XX:XX:XX:XX:XX:XX YY:YY:YY:YY:YY:YY \
-             0.0.0.0 1 ipingre iip 0 3
-
-Send packet inner ip address matched and check packet received by queue 3::
-
-    p = Ether()/IP()/GRE()/IP(dst="0.0.0.0")/UDP()
-
-Remove tunnel filter and check same packet received by queue 0::
-
-    testpmd> tunnel_filter rm 0 XX:XX:XX:XX:XX:XX YY:YY:YY:YY:YY:YY \
-             0.0.0.0 1 ipingre iip 0 3
-
-Add GRE filter that forward outer ip address 0.0.0.0 to queue 3::
-
-    testpmd> tunnel_filter add 0 XX:XX:XX:XX:XX:XX YY:YY:YY:YY:YY:YY \
-             0.0.0.0 1 ipingre oip 0 3
-
-Send packet outer ip address matched and check packet received by queue 3.
-
-Remove tunnel filter and check same packet received by queue 0::
-
-    testpmd> tunnel_filter rm 0 XX:XX:XX:XX:XX:XX YY:YY:YY:YY:YY:YY \
-             0.0.0.0 1 ipingre oip 0 3
-
 Test Case 4: GRE packet chksum offload
 ======================================
 
