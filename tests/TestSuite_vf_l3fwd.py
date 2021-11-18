@@ -48,7 +48,6 @@ class TestVfL3fwd(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.tester.extend_external_packet_generator(TestVfL3fwd, self)
         self.dut_ports = self.dut.get_ports(self.nic)
         self.requirt_ports_num = len(self.dut_ports)
         global valports
