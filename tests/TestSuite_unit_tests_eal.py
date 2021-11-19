@@ -286,16 +286,6 @@ class TestUnitTestsEal(TestCase):
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
-    def test_rwlock(self):
-        """
-        Run rwlock autotest.
-        """
-
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("rwlock_autotest", "RTE>>", self.run_cmd_time)
-        self.dut.send_expect("quit", "# ")
-        self.verify("Test OK" in out, "Test failed")
-
     def test_prefetch(self):
         """
         Run prefetch autotest.
@@ -354,19 +344,6 @@ class TestUnitTestsEal(TestCase):
         self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("debug_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
-        self.verify("Test OK" in out, "Test failed")
-
-    def test_flags(self):
-        """
-        Run eal flags autotest.
-        """
-
-        self.dut.unbind_interfaces_linux()
-        self.dut.send_expect(self.test_app_cmdline + ' -m 64', "R.*T.*E.*>.*>", self.start_test_time)
-        # on FreeBSD need more time than other OS
-        out = self.dut.send_expect("eal_flags_autotest", "RTE>>", 600)
-        self.dut.send_expect("quit", "# ")
-        self.dut.bind_interfaces_linux(driver=self.drivername)
         self.verify("Test OK" in out, "Test failed")
 
     def test_alarm(self):

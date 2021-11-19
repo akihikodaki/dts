@@ -111,27 +111,6 @@ Spinlock
   for each core, in the correct order. The autotest script checks that
   this order is correct.
 
-Rwlock
-======
-
-- There is a global rwlock and a table of rwlocks (one per lcore).
-
-- The test function takes all of these locks and launches the
-  ``test_rwlock_per_core()`` function on each core (except the master).
-
-  - The function takes the global write lock, display something,
-    then releases the global lock.
-  - Then, it takes the per-lcore write lock, display something, and
-    releases the per-core lock.
-  - Finally, a read lock is taken during 100 ms, then released.
-
-- The main function unlocks the per-lcore locks sequentially and
-  waits between each lock. This triggers the display of a message
-  for each core, in the correct order.
-
-  Then, it tries to take the global write lock and display the last
-  message. The autotest script checks that the message order is correct.
-
 Atomic Variables
 ================
 
