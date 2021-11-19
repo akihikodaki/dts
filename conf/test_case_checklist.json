@@ -396,7 +396,8 @@
             ],
             "NIC": [
                 "cavium_a034",
-                "cavium_0011"
+                "cavium_0011",
+                "niantic"
             ],
             "Target": [
                 "ALL"
