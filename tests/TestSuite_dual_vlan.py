@@ -87,18 +87,14 @@ class TestDualVlan(TestCase):
         global dutTxPortId
 
         # Based on h/w type, choose how many ports to use
-        ports = self.dut.get_ports(self.nic)
-        self.verify(len(ports) >= 2, "Insufficient ports")
-        self.ports_socket = self.dut.get_numa_id(ports[0])
+        self.dut_ports = self.dut.get_ports(self.nic)
+        self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
+        self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
 
         cores = self.dut.get_core_list('1S/2C/2T')
         coreMask = utils.create_mask(cores)
-
-        ports = self.dut.get_ports(self.nic)
-        valports = [_ for _ in ports if self.tester.get_local_port(_) != -1]
-
+        valports = [_ for _ in self.dut_ports if self.tester.get_local_port(_) != -1]
         portMask = utils.create_mask(valports[:2])
-
         dutRxPortId = valports[0]
         dutTxPortId = valports[1]
 
@@ -141,7 +137,8 @@ class TestDualVlan(TestCase):
         vlanString += 'IP(len=46)],iface="%s", count=4)' % txItf
 
         self.tester.scapy_append(vlanString)
-
+        # check link status before send pkg
+        self.pmdout.wait_link_status_up(self.dut_ports[0])
         self.tester.scapy_execute()
 
     def mode_config(self, **modeName):
@@ -185,17 +182,6 @@ class TestDualVlan(TestCase):
             else:
                 self.verify("%s %s" % (mode, modeName[mode]) in out, "%s setting error" % mode)
 
-    def verify_link_up(self):
-        ports = self.dut.get_ports(self.nic)
-        for port_id in range(len(ports)):
-            out = self.dut.send_expect("show port info %s" % port_id, "testpmd> ")
-            port_time_up = 0
-            while (port_time_up <= 10) and ("Link status: down" in out):
-                time.sleep(1)
-                out = self.dut.send_expect("show port info %s" % port_id, "testpmd> ")
-                port_time_up += 1
-            self.verify("Link status: down" not in out, "Port %s Link down, please check your link" % port_id)
-
     def multimode_test(self, caseIndex):
         """
         Setup Strip/Filter/Extend/Insert enable/disable for synthetic test.
@@ -217,7 +203,6 @@ class TestDualVlan(TestCase):
             self.dut.send_expect('tx_vlan set %s %s' % (dutTxPortId, txvlan), "testpmd> ")
             self.dut.send_expect('port start all', "testpmd> ")
             self.dut.send_expect('start', "testpmd> ")
-            self.verify_link_up()
 
         configMode = "Strip %s, filter %s 0x1, extend %s, insert %s" % (temp[0], temp[1], temp[2], "on" if (caseDef & txCase) != 0 else "off")
 
@@ -236,7 +221,6 @@ class TestDualVlan(TestCase):
                 self.dut.send_expect('tx_vlan reset %s' % dutTxPortId, "testpmd> ")
                 self.dut.send_expect('port start all', "testpmd> ")
                 self.dut.send_expect('start', "testpmd> ")
-                self.verify_link_up()
 
         else:
             self.dut.send_expect('rx_vlan add %s %s' % (invlan, dutRxPortId), "testpmd> ")
@@ -249,7 +233,6 @@ class TestDualVlan(TestCase):
                 self.dut.send_expect('tx_vlan reset %s' % dutTxPortId, "testpmd> ")
                 self.dut.send_expect('port start all', "testpmd> ")
                 self.dut.send_expect('start', "testpmd> ")
-                self.verify_link_up()
             self.dut.send_expect('rx_vlan rm %s %s' % (invlan, dutRxPortId), "testpmd> ")
             self.dut.send_expect('rx_vlan rm %s %s' % (outvlan, dutRxPortId), "testpmd> ")
 
@@ -378,7 +361,6 @@ class TestDualVlan(TestCase):
         self.dut.send_expect("tx_vlan set %s %s" % (dutTxPortId, txvlan), "testpmd> ")
         self.dut.send_expect("port start all", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
-        self.verify_link_up()
 
         self.vlan_send_packet()
         out = self.get_tcpdump_package()
@@ -389,7 +371,6 @@ class TestDualVlan(TestCase):
         self.dut.send_expect("tx_vlan reset %s" % dutTxPortId, "testpmd> ")
         self.dut.send_expect("port start all", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
-        self.verify_link_up()
 
         self.vlan_send_packet()
         out = self.get_tcpdump_package()

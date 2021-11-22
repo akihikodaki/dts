@@ -235,6 +235,7 @@ class TestMtuUpdate(TestCase):
         self.exec("port start all")
         self.exec("set fwd mac")
         self.exec("start")
+        self.pmdout.wait_link_status_up(self.dut_ports[0])
         """
         On 1G NICs, when the jubmo frame MTU set > 1500, the software adjust it to MTU+4.
         """

@@ -110,6 +110,7 @@ class TestScatter(TestCase):
 
         self.dut.send_expect("set fwd mac", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ")
+        self.pmdout.wait_link_status_up(self.port)
 
         for offset in [-1, 0, 1, 4, 5]:
             ret = self.scatter_pktgen_send_packet(self.mbsize + offset)

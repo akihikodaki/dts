@@ -134,6 +134,7 @@ class TestLinkFlowctrl(TestCase):
 
         self.dut.send_expect("set fwd csum", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ", 60)
+        self.pmdout.wait_link_status_up(self.dutPorts[0])
 
     def pause_frame_loss_test(self, rx_flow_control='off',
                               tx_flow_control='off',
@@ -171,6 +172,7 @@ class TestLinkFlowctrl(TestCase):
         return port_stats
 
     def send_packets(self, frame):
+        self.pmdout.wait_link_status_up(self.dutPorts[0])
         tester_tx_port = self.tester.get_local_port(self.rx_port)
         tx_interface = self.tester.get_interface(tester_tx_port)
         tester_rx_port = self.tester.get_local_port(self.tx_port)
@@ -530,7 +532,7 @@ class TestLinkFlowctrl(TestCase):
         self.dut.send_expect("port stop 0", "testpmd> ")
         self.dut.send_expect("port start 0", "testpmd> ", 60)
         self.dut.send_expect("start", "testpmd> ", 60)
-
+        self.pmdout.wait_link_status_up(self.dutPorts[0])
         tgenInput = self.get_tgen_input()
         result = self.start_traffic(tgenInput)
         self.logger.info("Packet loss: %.3f" % result)
@@ -555,6 +557,7 @@ class TestLinkFlowctrl(TestCase):
         self.dut.send_expect("port stop 0", "testpmd> ")
         self.dut.send_expect("port start 0", "testpmd> ", 60)
         self.dut.send_expect("start", "testpmd> ", 60)
+        self.pmdout.wait_link_status_up(self.dutPorts[0])
         result = self.start_traffic(tgenInput)
         self.logger.info("Packet loss: %.3f" % result)
         if self.nic == "niantic":

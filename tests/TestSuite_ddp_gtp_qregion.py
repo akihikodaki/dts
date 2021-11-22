@@ -322,6 +322,7 @@ class TestDdpGtpQregion(TestCase):
         self.dut_testpmd.execute_cmd('set fwd rxonly')
         self.dut_testpmd.execute_cmd('set verbose 1')
         self.dut_testpmd.execute_cmd('start')
+        self.dut_testpmd.wait_link_status_up(self.dut_ports[0])
         qnum = self.send_verify_fd(flowtype, keywords, 'word_opt')
         self.verify(qnum == 0, "Receive packet from wrong queue!!!")
         self.raw_packet_generate(flowtype)
@@ -385,6 +386,7 @@ class TestDdpGtpQregion(TestCase):
         self.dut_testpmd.execute_cmd('set fwd rxonly')
         self.dut_testpmd.execute_cmd('set verbose 1')
         self.dut_testpmd.execute_cmd('start')
+        self.dut_testpmd.wait_link_status_up(self.dut_ports[0])
         self.send_and_verify(flowtype, qmin, qmax, keyword)
 
     def test_outer_dst_contrl_gtpcq(self):

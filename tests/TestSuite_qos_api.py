@@ -120,6 +120,7 @@ class TestQosApi(TestCase):
         self.dut.send_expect('port start all', 'testpmd> ')
 
     def scapy_send_packet_verify(self, n):
+        self.host_testpmd.wait_link_status_up(self.dut_ports[0])
         self.tester.scapy_foreground()
         dmac = self.dut.get_mac_address(P0)
         queues_4tc = [0, 32, 64, 96]
@@ -220,7 +221,7 @@ class TestQosApi(TestCase):
         self.perf_test(n)
 
     def perf_test(self, n):
-
+        self.host_testpmd.wait_link_status_up(self.dut_ports[0])
         dmac = self.dut.get_mac_address(self.dut_ports[0])
         pkts = []
         for i in range(n):

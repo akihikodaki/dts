@@ -40,6 +40,7 @@ import time
 
 import framework.utils as utils
 from framework.test_case import TestCase
+from framework.pmd_output import PmdOutput
 
 
 class TestExternalMemory(TestCase):
@@ -49,7 +50,7 @@ class TestExternalMemory(TestCase):
         """
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
-
+        self.pmdout = PmdOutput(self.dut)
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
 
     def set_up(self):
@@ -134,6 +135,7 @@ class TestExternalMemory(TestCase):
 
     def verifier_result(self):
         self.dut.send_expect("start", "testpmd>",10)
+        self.pmdout.wait_link_status_up(self.dut_ports[0])
         self.scapy_send_packet(20)
         out = self.dut.send_expect("stop", "testpmd>", 10)
 
