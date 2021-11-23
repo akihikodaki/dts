@@ -37,11 +37,10 @@ Test loopback virtio-user server mode
 """
 import re
 import time
-
 import framework.utils as utils
 from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
-
+from framework.packet import Packet
 
 class TestLoopbackVirtioUserServerMode(TestCase):
 
@@ -61,6 +60,12 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         self.core_list_host = self.core_list[3:6]
         self.path=self.dut.apps_name['test-pmd']
         self.testpmd_name = self.path.split("/")[-1]
+        self.app_pdump = self.dut.apps_name['pdump']
+        self.dump_pcap = "/root/pdump-rx.pcap"
+        self.device_str = ''
+        self.dut_ports = self.dut.get_ports()
+        self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
+        self.cbdma_dev_infos = []
 
     def set_up(self):
         """
@@ -108,13 +113,17 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         if set_fwd_mac:
             self.virtio_user_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
 
-    def lanuch_vhost_testpmd_with_multi_queue(self, extern_params=""):
+    def lanuch_vhost_testpmd_with_multi_queue(self, extern_params="", set_fwd_mac=True):
         """
         start testpmd with multi qeueue
         """
-        self.lanuch_vhost_testpmd(self.queue_number, self.nb_cores, extern_params=extern_params)
+        eal_params = "--vdev 'eth_vhost0,iface=vhost-net,client=1,queues={}'".format(self.queue_number)
+        param = "--rxq={} --txq={} --nb-cores={} {}".format(self.queue_number, self.queue_number, self.nb_cores, extern_params)
+        self.vhost_pmd.start_testpmd(self.core_list_host, param=param, no_pci=True, ports=[], eal_param=eal_params, prefix='vhost', fixed_prefix=True)
+        if set_fwd_mac:
+            self.vhost_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
 
-    def lanuch_virtio_user_testpmd_with_multi_queue(self, mode, extern_params=""):
+    def lanuch_virtio_user_testpmd_with_multi_queue(self, mode, extern_params="", set_fwd_mac=True):
         """
         start testpmd of vhost user
         """
@@ -126,7 +135,8 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         param = "{} --nb-cores={} --rxq={} --txq={}".format(extern_params, self.nb_cores, self.queue_number, self.queue_number)
         self.virtio_user_pmd.start_testpmd(cores=self.core_list_user, param=param, eal_param=eal_param, \
                 no_pci=True, ports=[], prefix="virtio", fixed_prefix=True)
-        self.virtio_user_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
+        if set_fwd_mac:
+            self.virtio_user_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
 
     def start_to_send_packets(self, session_rx, session_tx):
         """
@@ -135,6 +145,35 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         """
         session_rx.send_command("start", 3)
         session_tx.send_expect("start tx_first 32", "testpmd> ", 30)
+
+    def start_to_send_8k_packets(self, session_rx, session_tx):
+        """
+        start the testpmd of vhost-user and virtio-user
+        start to send 8k packets
+        """
+        session_rx.send_command("start", 3)
+        session_tx.send_expect("set txpkts 2000,2000,2000,2000", "testpmd> ", 30)
+        session_tx.send_expect("start tx_first 32", "testpmd> ", 30)
+
+    def start_to_send_8k_packets_csum(self, session_tx):
+        """
+        start the testpmd of vhost-user, start to send 8k packets
+        """
+        session_tx.send_expect("set fwd csum", "testpmd> ", 30)
+        session_tx.send_expect("set txpkts 2000,2000,2000,2000", "testpmd> ", 30)
+        session_tx.send_expect("set burst 1", "testpmd> ", 30)
+        session_tx.send_expect("start tx_first 1", "testpmd> ", 10)
+        session_tx.send_expect("stop", "testpmd> ", 30)
+
+    def start_to_send_8k_packets_csum_cbdma(self, session_tx):
+        """
+        start the testpmd of vhost-user, start to send 8k packets
+        """
+        session_tx.send_expect("vhost enable tx all", "testpmd> ", 30)
+        session_tx.send_expect("set fwd csum", "testpmd> ", 30)
+        session_tx.send_expect("set txpkts 64,64,64,2000,2000,2000", "testpmd> ", 30)
+        session_tx.send_expect("start tx_first 32", "testpmd> ", 5)
+        session_tx.send_expect("stop", "testpmd> ", 30)
 
     def check_port_throughput_after_port_stop(self):
         """
@@ -182,6 +221,16 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         self.check_port_link_status_after_port_restart()
         self.vhost_pmd.execute_cmd("start tx_first 32", "testpmd> ", 120)
 
+    def port_restart_send_8k_packets(self):
+        self.vhost_pmd.execute_cmd("stop", "testpmd> ", 120)
+        self.vhost_pmd.execute_cmd("port stop 0", "testpmd> ", 120)
+        self.check_port_throughput_after_port_stop()
+        self.vhost_pmd.execute_cmd("clear port stats all", "testpmd> ", 120)
+        self.vhost_pmd.execute_cmd("port start 0", "testpmd> ", 120)
+        self.check_port_link_status_after_port_restart()
+        self.vhost_pmd.execute_cmd("set txpkts 2000,2000,2000,2000", "testpmd> ", 120)
+        self.vhost_pmd.execute_cmd("start tx_first 32", "testpmd> ", 120)
+
     def relanuch_vhost_testpmd_with_multi_queue(self):
         self.vhost_pmd.execute_cmd("quit", "#", 60)
         self.check_link_status(self.virtio_user, "down")
@@ -192,7 +241,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         self.check_link_status(self.vhost, "down")
         self.lanuch_virtio_user_testpmd_with_multi_queue(mode, extern_params)
 
-    def calculate_avg_throughput(self, case_info, cycle):
+    def calculate_avg_throughput(self, case_info, cycle, Pkt_size=True):
         """
         calculate the average throughput
         """
@@ -206,14 +255,19 @@ class TestLoopbackVirtioUserServerMode(TestCase):
             result = lines.group(1)
             results += float(result)
         Mpps = results / (1000000 * 10)
-        self.verify(Mpps > 5, "port can not receive packets")
-
         results_row.append(case_info)
-        results_row.append('64')
+        if Pkt_size:
+            self.verify(Mpps > 5, "port can not receive packets")
+            results_row.append('64')
+        else:
+            self.verify(Mpps > 1, "port can not receive packets")
+            results_row.append('8k')
+
         results_row.append(Mpps)
         results_row.append(self.queue_number)
         results_row.append(cycle)
         self.result_table_add(results_row)
+        self.logger.info(results_row)
 
     def check_packets_of_each_queue(self):
         """
@@ -247,7 +301,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
 
     def test_server_mode_launch_virtio_first(self):
         """
-        basic test for virtio-user server mode, launch virtio-user first
+        Test Case 2: basic test for split ring server mode, launch virtio-user first
         """
         self.queue_number = 1
         self.nb_cores = 1
@@ -263,7 +317,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
 
     def test_server_mode_launch_virtio11_first(self):
         """
-        basic test for virtio-user server mode, launch virtio-user first
+        Test Case 1: basic test for packed ring server mode, launch virtio-user first
         """
         self.queue_number = 1
         self.nb_cores = 1
@@ -279,7 +333,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
 
     def test_server_mode_reconnect_with_virtio11_mergeable_path(self):
         """
-        reconnect test with virtio 1.1 mergeable path and server mode
+        Test Case 8: reconnect test with virtio 1.1 mergeable path and server mode
         """
         self.queue_number = 2
         self.nb_cores = 2
@@ -288,25 +342,25 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         extern_params = '--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip'
         self.lanuch_vhost_testpmd_with_multi_queue()
         self.lanuch_virtio_user_testpmd_with_multi_queue(mode=mode, extern_params=extern_params)
-        self.start_to_send_packets(self.vhost, self.virtio_user)
-        self.calculate_avg_throughput(case_info, "before reconnet")
+        self.start_to_send_8k_packets(self.vhost, self.virtio_user)
+        self.calculate_avg_throughput(case_info, "before reconnet", Pkt_size=False)
 
         # reconnect from vhost
         self.logger.info('now reconnet from vhost')
         self.relanuch_vhost_testpmd_with_multi_queue()
-        self.start_to_send_packets(self.virtio_user, self.vhost)
-        self.calculate_avg_throughput(case_info, "reconnet from vhost")
+        self.start_to_send_8k_packets(self.virtio_user, self.vhost)
+        self.calculate_avg_throughput(case_info, "reconnet from vhost", Pkt_size=False)
 
         # reconnet from virtio
         self.logger.info('now reconnet from virtio_user')
         self.relanuch_virtio_testpmd_with_multi_queue(mode=mode, extern_params=extern_params)
-        self.start_to_send_packets(self.vhost, self.virtio_user)
-        self.calculate_avg_throughput(case_info, "reconnet from virtio user")
+        self.start_to_send_8k_packets(self.vhost, self.virtio_user)
+        self.calculate_avg_throughput(case_info, "reconnet from virtio user", Pkt_size=False)
 
         # port restart
         self.logger.info('now vhost port restart')
-        self.port_restart()
-        self.calculate_avg_throughput(case_info, "after port restart")
+        self.port_restart_send_8k_packets()
+        self.calculate_avg_throughput(case_info, "after port restart", Pkt_size=False)
 
         self.result_table_print()
         self.check_packets_of_each_queue()
@@ -314,7 +368,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
 
     def test_server_mode_reconnect_with_virtio11_non_mergeable_path(self):
         """
-        reconnect test with virtio 1.1 non_mergeable path and server mode
+        Test Case 9: reconnect test with virtio 1.1 non_mergeable path and server mode
         """
         self.queue_number = 2
         self.nb_cores = 2
@@ -349,34 +403,34 @@ class TestLoopbackVirtioUserServerMode(TestCase):
 
     def test_server_mode_reconnect_with_virtio11_inorder_mergeable_path(self):
         """
-        reconnect test with virtio 1.1 inorder mergeable path and server mode
+        Test Case 10: reconnect test with virtio 1.1 inorder mergeable path and server mode
         """
-        self.queue_number = 2
+        self.queue_number = 8
         self.nb_cores = 2
         case_info = 'virtio1.1 inorder mergeable path'
         mode = "packed_vq=1,in_order=1,mrg_rxbuf=1"
         extern_params = '--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip'
         self.lanuch_vhost_testpmd_with_multi_queue()
         self.lanuch_virtio_user_testpmd_with_multi_queue(mode=mode, extern_params=extern_params)
-        self.start_to_send_packets(self.vhost, self.virtio_user)
-        self.calculate_avg_throughput(case_info, "before reconnet")
+        self.start_to_send_8k_packets(self.vhost, self.virtio_user)
+        self.calculate_avg_throughput(case_info, "before reconnet", Pkt_size=False)
 
         # reconnect from vhost
         self.logger.info('now reconnet from vhost')
         self.relanuch_vhost_testpmd_with_multi_queue()
-        self.start_to_send_packets(self.virtio_user, self.vhost)
-        self.calculate_avg_throughput(case_info, "reconnet from vhost")
+        self.start_to_send_8k_packets(self.virtio_user, self.vhost)
+        self.calculate_avg_throughput(case_info, "reconnet from vhost", Pkt_size=False)
 
         # reconnet from virtio
         self.logger.info('now reconnet from virtio_user')
         self.relanuch_virtio_testpmd_with_multi_queue(mode=mode, extern_params=extern_params)
-        self.start_to_send_packets(self.vhost, self.virtio_user)
-        self.calculate_avg_throughput(case_info, "reconnet from virtio user")
+        self.start_to_send_8k_packets(self.vhost, self.virtio_user)
+        self.calculate_avg_throughput(case_info, "reconnet from virtio user", Pkt_size=False)
 
         # port restart
         self.logger.info('now vhost port restart')
-        self.port_restart()
-        self.calculate_avg_throughput(case_info, "after port restart")
+        self.port_restart_send_8k_packets()
+        self.calculate_avg_throughput(case_info, "after port restart", Pkt_size=False)
 
         self.result_table_print()
         self.check_packets_of_each_queue()
@@ -384,11 +438,11 @@ class TestLoopbackVirtioUserServerMode(TestCase):
 
     def test_server_mode_reconnect_with_virtio11_inorder_non_mergeable_path(self):
         """
-        reconnect test with virtio 1.1 inorder non_mergeable path and server mode
+        Test Case 11: reconnect test with virtio 1.1 inorder non_mergeable path and server mode
         """
         self.queue_number = 2
         self.nb_cores = 2
-        case_info = 'virtio1.1 non_mergeable path'
+        case_info = 'virtio1.1 inorder non_mergeable path'
         mode = "packed_vq=1,in_order=1,mrg_rxbuf=0,vectorized=1"
         extern_params = '--rx-offloads=0x10 --enable-hw-vlan-strip --rss-ip'
         self.lanuch_vhost_testpmd_with_multi_queue()
@@ -419,11 +473,11 @@ class TestLoopbackVirtioUserServerMode(TestCase):
 
     def test_server_mode_reconnect_with_virtio11_inorder_vectorized_path(self):
         """
-        reconnect test with virtio 1.1 inorder non_mergeable path and server mode
+        Test Case 12: reconnect test with virtio 1.1 inorder vectorized path and server mode
         """
         self.queue_number = 2
         self.nb_cores = 2
-        case_info = 'virtio1.1 non_mergeable path'
+        case_info = 'virtio1.1 inorder vectorized path'
         mode = "packed_vq=1,in_order=1,mrg_rxbuf=0,vectorized=1"
         extern_params = '--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip'
         self.lanuch_vhost_testpmd_with_multi_queue()
@@ -454,7 +508,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
 
     def test_server_mode_reconnect_with_virtio10_inorder_mergeable_path(self):
         """
-        reconnect test with virtio 1.0 inorder mergeable path and server mode
+        Test Case 4: reconnect test with virtio 1.0 inorder mergeable path and server mode
         """
         self.queue_number = 2
         self.nb_cores = 2
@@ -463,25 +517,25 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         extern_params = '--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip'
         self.lanuch_vhost_testpmd_with_multi_queue()
         self.lanuch_virtio_user_testpmd_with_multi_queue(mode=mode, extern_params=extern_params)
-        self.start_to_send_packets(self.vhost, self.virtio_user)
-        self.calculate_avg_throughput(case_info, "before reconnet")
+        self.start_to_send_8k_packets(self.vhost, self.virtio_user)
+        self.calculate_avg_throughput(case_info, "before reconnet", Pkt_size=False)
 
         # reconnet from vhost
         self.logger.info('now reconnet from vhost')
         self.relanuch_vhost_testpmd_with_multi_queue()
-        self.start_to_send_packets(self.virtio_user, self.vhost)
-        self.calculate_avg_throughput(case_info, "reconnet from vhost")
+        self.start_to_send_8k_packets(self.virtio_user, self.vhost)
+        self.calculate_avg_throughput(case_info, "reconnet from vhost", Pkt_size=False)
 
         # reconnet from virtio
         self.logger.info('now reconnet from virtio_user')
         self.relanuch_virtio_testpmd_with_multi_queue(mode=mode, extern_params=extern_params)
-        self.start_to_send_packets(self.vhost, self.virtio_user)
-        self.calculate_avg_throughput(case_info, "reconnet from virtio_user")
+        self.start_to_send_8k_packets(self.vhost, self.virtio_user)
+        self.calculate_avg_throughput(case_info, "reconnet from virtio_user", Pkt_size=False)
 
         # port restart
         self.logger.info('now vhost port restart')
-        self.port_restart()
-        self.calculate_avg_throughput(case_info, "after port restart")
+        self.port_restart_send_8k_packets()
+        self.calculate_avg_throughput(case_info, "after port restart", Pkt_size=False)
 
         self.result_table_print()
         self.check_packets_of_each_queue()
@@ -489,7 +543,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
 
     def test_server_mode_reconnect_with_virtio10_inorder_non_mergeable_path(self):
         """
-        reconnect test with virtio 1.0 inorder non_mergeable path and server mode
+        Test Case 5: reconnect test with virtio 1.0 inorder non_mergeable path and server mode
         """
         self.queue_number = 2
         self.nb_cores = 2
@@ -524,34 +578,34 @@ class TestLoopbackVirtioUserServerMode(TestCase):
 
     def test_server_mode_reconnect_with_virtio10_mergeable_path(self):
         """
-        reconnect test with virtio 1.0 mergeable path and server mode
+        Test Case 3: reconnect test with virtio 1.0 mergeable path and server mode
         """
-        self.queue_number = 2
+        self.queue_number = 8
         self.nb_cores = 2
         case_info = 'virtio1.0 mergeable path'
         mode = "in_order=0,mrg_rxbuf=1"
         extern_params = '--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip'
         self.lanuch_vhost_testpmd_with_multi_queue()
         self.lanuch_virtio_user_testpmd_with_multi_queue(mode=mode, extern_params=extern_params)
-        self.start_to_send_packets(self.vhost, self.virtio_user)
-        self.calculate_avg_throughput(case_info, "before reconnet")
+        self.start_to_send_8k_packets(self.vhost, self.virtio_user)
+        self.calculate_avg_throughput(case_info, "before reconnet", Pkt_size=False)
 
         # reconnet from vhost
         self.logger.info('now reconnet from vhost')
         self.relanuch_vhost_testpmd_with_multi_queue()
-        self.start_to_send_packets(self.virtio_user, self.vhost)
-        self.calculate_avg_throughput(case_info, "reconnet from vhost")
+        self.start_to_send_8k_packets(self.virtio_user, self.vhost)
+        self.calculate_avg_throughput(case_info, "reconnet from vhost", Pkt_size=False)
 
         # reconnet from virtio
         self.logger.info('now reconnet from virtio_user')
         self.relanuch_virtio_testpmd_with_multi_queue(mode=mode, extern_params=extern_params)
-        self.start_to_send_packets(self.vhost, self.virtio_user)
-        self.calculate_avg_throughput(case_info, "reconnet from virtio_user")
+        self.start_to_send_8k_packets(self.vhost, self.virtio_user)
+        self.calculate_avg_throughput(case_info, "reconnet from virtio_user", Pkt_size=False)
 
         # port restart
         self.logger.info('now vhost port restart')
-        self.port_restart()
-        self.calculate_avg_throughput(case_info, "after port restart")
+        self.port_restart_send_8k_packets()
+        self.calculate_avg_throughput(case_info, "after port restart", Pkt_size=False)
 
         self.result_table_print()
         self.check_packets_of_each_queue()
@@ -559,7 +613,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
 
     def test_server_mode_reconnect_with_virtio10_non_mergeable_path(self):
         """
-        reconnect test with virtio 1.0 non_mergeable path and server mode
+        Test Case 6: reconnect test with virtio 1.0 non_mergeable path and server mode
         """
         self.queue_number = 2
         self.nb_cores = 2
@@ -594,7 +648,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
 
     def test_server_mode_reconnect_with_virtio10_vector_rx_path(self):
         """
-        reconnect test with virtio 1.0 vector_rx path and server mode
+        Test Case 7: reconnect test with virtio 1.0 vector_rx path and server mode
         """
         self.queue_number = 2
         self.nb_cores = 2
