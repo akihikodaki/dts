@@ -638,7 +638,7 @@ class TestL3fwdacl(TestCase):
         cores = self.get_core_list()
         self.verify(cores is not None, "Insufficient cores for speed testing")
 
-        self.eal_para = self.dut.create_eal_parameters(cores=self.get_core_list())
+        self.eal_para = self.dut.create_eal_parameters(cores=self.get_core_list(), other_eal_param='force-max-simd-bitwidth')
         self.core_mask = utils.create_mask(cores)
         print("Core mask: %s" % self.core_mask)
 
