@@ -425,7 +425,7 @@ NIC2(In kernel) -> NIC1(DPDK) -> testpmd(csum fwd) -> Vhost -> Virtio-net
 
     ./dpdk-devbind.py -b igb_uio xx:xx.x
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 29-31 -n 4 \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[txq0@80:04.0;txq1@80:04.1],dmathr=1024' -- -i --txd=1024 --rxd=1024 --txq=2 --rxq=2 --nb-cores=2
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[txq0@80:04.0;txq1@80:04.1]' -- -i --txd=1024 --rxd=1024 --txq=2 --rxq=2 --nb-cores=2
     set fwd csum
     stop
     port stop 0

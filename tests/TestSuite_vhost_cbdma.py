@@ -35,12 +35,10 @@ We introduce a new vdev parameter to enable DMA acceleration for Tx
 operations of queues:
  - dmas: This parameter is used to specify the assigned DMA device of
    a queue.
- - dmathr: If packets length >= dmathr, leverage I/OAT device to perform memory copy;
-   otherwise, leverage librte_vhost to perform memory copy.
 
 Here is an example:
  $ ./testpmd -c f -n 4 \
-   --vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas=[txq0@80:04.0],dmathr=1024'
+   --vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas=[txq0@80:04.0]'
 """
 import json
 import os
@@ -214,12 +212,11 @@ class TestVirTioVhostCbdma(TestCase):
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
         txd_rxd = 1024
-        dmathr = 1024
         eal_tx_rxd = ' --nb-cores=%d --txd=%d --rxd=%d'
         queue = 1
         used_cbdma_num = 1
         self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
-        vhost_vdevs = f"'net_vhost0,iface=/tmp/s0,queues=%d,dmas=[txq0@{self.device_str}],dmathr=%d'"
+        vhost_vdevs = f"'net_vhost0,iface=/tmp/s0,queues=%d,dmas=[txq0@{self.device_str}]'"
         dev_path_mode_mapper = {
             "inorder_mergeable_path": 'mrg_rxbuf=1,in_order=1',
             "mergeable_path": 'mrg_rxbuf=1,in_order=0',
@@ -231,7 +228,7 @@ class TestVirTioVhostCbdma(TestCase):
         allow_pci = [self.dut.ports_info[0]['pci']]
         for index in range(used_cbdma_num):
             allow_pci.append(self.cbdma_dev_infos[index])
-        self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2], dev=vhost_vdevs % (queue, dmathr), ports=allow_pci)
+        self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2], dev=vhost_vdevs % (queue), ports=allow_pci)
         for key, path_mode in dev_path_mode_mapper.items():
             if key == "vector_rx_path":
                 pvp_split_all_path_virtio_params = eal_tx_rxd % (queue, txd_rxd, txd_rxd)
@@ -262,7 +259,6 @@ class TestVirTioVhostCbdma(TestCase):
         used_cbdma_num = 8
         queue = 8
         txd_rxd = 1024
-        dmathr = 1024
         nb_cores = 1
         virtio_path = "/tmp/s0"
         path_mode = 'mrg_rxbuf=1,in_order=1'
@@ -286,14 +282,14 @@ class TestVirTioVhostCbdma(TestCase):
 
         # used 4 cbdma_num and 4 queue to launch vhost
 
-        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]}],dmathr={dmathr}"
+        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]}]"
         self.launch_testpmd_as_vhost_user(eal_params % (queue/2,queue/2), self.cores[0:2], dev=vhost_dev % (int(queue/2),vhost_dmas), ports=allow_pci[:5])
         self.send_and_verify("used_4_cbdma_num", queue_list=range(int(queue/2)))
         self.mode_list.append("used_4_cbdma_num")
         self.vhost_user.send_expect("quit", "#")
 
         #used 8 cbdma_num to launch vhost
-        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]};txq4@{self.used_cbdma[4]};txq5@{self.used_cbdma[5]};txq6@{self.used_cbdma[6]};txq7@{self.used_cbdma[7]}],dmathr={dmathr}"
+        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]};txq4@{self.used_cbdma[4]};txq5@{self.used_cbdma[5]};txq6@{self.used_cbdma[6]};txq7@{self.used_cbdma[7]}]"
         self.launch_testpmd_as_vhost_user(eal_params % (queue, queue), self.cores[0:2],
                                           dev=vhost_dev % (queue,vhost_dmas), ports=allow_pci)
         self.send_and_verify("used_8_cbdma_num", queue_list=range(queue))
@@ -317,12 +313,11 @@ class TestVirTioVhostCbdma(TestCase):
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
         txd_rxd = 1024
-        dmathr = 1024
         eal_tx_rxd = ' --nb-cores=%d --txd=%d --rxd=%d'
         queue = 1
         used_cbdma_num = 1
         self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
-        vhost_vdevs = f"'net_vhost0,iface=/tmp/s0,queues=%d,dmas=[txq0@{self.device_str}],dmathr=%d'"
+        vhost_vdevs = f"'net_vhost0,iface=/tmp/s0,queues=%d,dmas=[txq0@{self.device_str}]'"
         dev_path_mode_mapper = {
             "inorder_mergeable_path": 'mrg_rxbuf=1,in_order=1,packed_vq=1',
             "mergeable_path": 'mrg_rxbuf=1,in_order=0,packed_vq=1',
@@ -334,7 +329,7 @@ class TestVirTioVhostCbdma(TestCase):
         allow_pci = [self.dut.ports_info[0]['pci']]
         for index in range(used_cbdma_num):
             allow_pci.append(self.cbdma_dev_infos[index])
-        self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2], dev=vhost_vdevs % (queue, dmathr), ports=allow_pci)
+        self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2], dev=vhost_vdevs % (queue), ports=allow_pci)
         for key, path_mode in dev_path_mode_mapper.items():
             if key == "vector_rx_path":
                 pvp_split_all_path_virtio_params = eal_tx_rxd % (queue, txd_rxd, txd_rxd)
@@ -365,12 +360,11 @@ class TestVirTioVhostCbdma(TestCase):
         used_cbdma_num = 8
         queue = 8
         txd_rxd = 1024
-        dmathr = 1024
         nb_cores = 1
         virtio_path = "/tmp/s0"
         path_mode = 'mrg_rxbuf=1,in_order=1,packed_vq=1'
         self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
-        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]}],dmathr={dmathr}"
+        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]}]"
         eal_params = " --nb-cores=1 --txd=1024 --rxd=1024 --txq=%d --rxq=%d "
         dynamic_queue_number_cbdma_virtio_params = f"  --tx-offloads=0x0 --enable-hw-vlan-strip {eal_params % (queue, queue)}"
         virtio_dev = f"net_virtio_user0,mac={self.virtio_mac},path={virtio_path},{path_mode},queues={queue},server=1"
@@ -389,7 +383,7 @@ class TestVirTioVhostCbdma(TestCase):
         self.vhost_user.send_expect("quit", "#")
 
         # used 4 cbdma_num and 4 queue to launch vhost
-        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]}],dmathr={dmathr}"
+        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]}]"
         self.launch_testpmd_as_vhost_user(eal_params % (queue/2,queue/2), self.cores[0:2],
                 dev=vhost_dev % (int(queue/2),vhost_dmas), ports=allow_pci[:5])
         self.send_and_verify("used_4_cbdma_num", queue_list=range(int(queue/2)))
@@ -397,7 +391,7 @@ class TestVirTioVhostCbdma(TestCase):
         self.vhost_user.send_expect("quit", "#")
 
         #used 8 cbdma_num to launch vhost
-        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]};txq4@{self.used_cbdma[4]};txq5@{self.used_cbdma[5]};txq6@{self.used_cbdma[6]};txq7@{self.used_cbdma[7]}],dmathr={dmathr}"
+        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]};txq4@{self.used_cbdma[4]};txq5@{self.used_cbdma[5]};txq6@{self.used_cbdma[6]};txq7@{self.used_cbdma[7]}]"
         self.launch_testpmd_as_vhost_user(eal_params % (queue, queue), self.cores[0:2],
                                           dev=vhost_dev % (queue,vhost_dmas), ports=allow_pci)
         self.send_and_verify("used_8_cbdma_num", queue_list=range(queue))
@@ -430,13 +424,13 @@ class TestVirTioVhostCbdma(TestCase):
         for index in range(used_cbdma_num):
             allow_pci.append(self.cbdma_dev_infos[index])
         path_mode = 'mrg_rxbuf=1,in_order=1'
-        vhost_vdevs = f"'net_vhost0,iface=/tmp/s0,queues=%d,client=1,dmas=[txq0@{self.device_str}],%s'"
+        vhost_vdevs = f"'net_vhost0,iface=/tmp/s0,queues=%d,client=1,dmas=[txq0@{self.device_str}]'"
         compare_pvp_split_ring_performance = "--tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=%d --txd=%d --rxd=%d" % (queue, txd_rxd, txd_rxd)
         dev_path_mode_mapper = {
-            "sync_cbdma": ['dmathr=1024', 'dmathr=2000'],
-            "cpu": 'dmathr=0',
+            "sync_cbdma": '',
+            "cpu": '',
         }
-        for key,dma_mode in dev_path_mode_mapper.items():
+        for key in dev_path_mode_mapper.items():
             if key == "cpu":
                 vhost_vdevs = f"'net_vhost0,iface=/tmp/s0,queues=1'"
                 self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2], dev=vhost_vdevs, ports=[allow_pci[0]])
@@ -450,7 +444,7 @@ class TestVirTioVhostCbdma(TestCase):
                 self.virtio_user.send_expect("quit", "# ")
                 self.vhost_user.send_expect("quit", "# ")
             else:
-                self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2],dev=vhost_vdevs % (queue, dma_mode[0]), ports=allow_pci)
+                self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2],dev=vhost_vdevs % (queue), ports=allow_pci)
                 vdevs = f"'net_virtio_user0,mac={self.virtio_mac},path=/tmp/s0,{path_mode},queues=%d,server=1'" % queue
                 self.launch_testpmd_as_virtio_user(compare_pvp_split_ring_performance, self.cores[2:4],dev=vdevs)
                 mode = "sync_copy_64"
@@ -464,7 +458,7 @@ class TestVirTioVhostCbdma(TestCase):
                 self.virtio_user.send_expect('show port stats all', 'testpmd> ', 10)
                 self.vhost_user.send_expect("quit", "# ")
                 time.sleep(3)
-                self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2],dev=vhost_vdevs % (queue, dma_mode[1]), ports=allow_pci)
+                self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2],dev=vhost_vdevs % (queue), ports=allow_pci)
                 mode = "sync_copy_1518"
                 self.mode_list.append(mode)
                 self.send_and_verify(mode,frame_sizes=[1518],pkt_length_mode='fixed')

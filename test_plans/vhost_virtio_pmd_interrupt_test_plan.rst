@@ -198,7 +198,7 @@ Test Case 5: Basic virtio interrupt test with 16 queues and cbdma enabled
 
 1. Bind 16 cbdma channels and one NIC port to igb_uio, then launch testpmd by below command::
 
-    ./testpmd -c 0x1ffff -n 4 --vdev 'eth_vhost0,iface=vhost-net,queues=16,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7],dmathr=1024' -- -i --nb-cores=16 --rxq=16 --txq=16 --rss-ip
+    ./testpmd -c 0x1ffff -n 4 --vdev 'eth_vhost0,iface=vhost-net,queues=16,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7]' -- -i --nb-cores=16 --rxq=16 --txq=16 --rss-ip
 
 2. Launch VM1, set queues=16, vectors>=2xqueues+2, mq=on::
 
@@ -268,7 +268,7 @@ Test Case 7: Packed ring virtio interrupt test with 16 queues and cbdma enabled
 
 1. Bind 16 cbdma channels ports and one NIC port to igb_uio, then launch testpmd by below command::
 
-    ./testpmd -c 0x1ffff -n 4 --vdev 'eth_vhost0,iface=vhost-net,queues=16,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7],dmathr=1024' -- -i --nb-cores=16 --rxq=16 --txq=16 --rss-ip
+    ./testpmd -c 0x1ffff -n 4 --vdev 'eth_vhost0,iface=vhost-net,queues=16,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7]' -- -i --nb-cores=16 --rxq=16 --txq=16 --rss-ip
 
 2. Launch VM1, set queues=16, vectors>=2xqueues+2, mq=on::
 

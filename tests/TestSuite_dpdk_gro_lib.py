@@ -160,7 +160,7 @@ class TestDPDKGROLib(TestCase):
         # mode 5 : tcp traffice light mode with cdbma enable
         if mode == 5:
             self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
-            eal_param = self.dut.create_eal_parameters(cores=self.vhost_list, vdevs=["'net_vhost0,iface=%s/vhost-net,queues=%s,dmas=[%s],dmathr=1024'" % (self.base_dir, queue, self.dmas_info)])
+            eal_param = self.dut.create_eal_parameters(cores=self.vhost_list, vdevs=["'net_vhost0,iface=%s/vhost-net,queues=%s,dmas=[%s]'" % (self.base_dir, queue, self.dmas_info)])
             self.testcmd_start = self.path + eal_param + " -- -i --txd=1024 --rxd=1024 --txq=2 --rxq=2"
             self.vhost_user = self.dut.new_session(suite="user")
             self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)

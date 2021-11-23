@@ -797,7 +797,7 @@ Test Case 12: split virtqueue vm2vm non-mergeable path multi-queues payload chec
 1. Launch vhost by below command::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 \
-    --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@80:04.0;txq1@80:04.1],dmathr=64' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@80:04.2;txq1@80:04.3],dmathr=64' -- \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@80:04.0;txq1@80:04.1]' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@80:04.2;txq1@80:04.3]' -- \
     -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx
     testpmd>vhost enable tx all
 
@@ -834,7 +834,7 @@ Test Case 13: split virtqueue vm2vm mergeable path multi-queues payload check wi
 1. Launch vhost by below command::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 \
-    --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@00:04.0;txq1@00:04.1],dmathr=512' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@00:04.2;txq1@00:04.3],dmathr=512' -- \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@00:04.0;txq1@00:04.1]' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@00:04.2;txq1@00:04.3]' -- \
     -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx
     testpmd>vhost enable tx all
 
@@ -873,7 +873,7 @@ Test Case 14: packed virtqueue vm2vm non-mergeable path multi-queues payload che
 1. Launch vhost by below command::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 \
-    --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@80:04.0;txq1@80:04.1],dmathr=64' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@80:04.2;txq1@80:04.3],dmathr=64' -- \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@80:04.0;txq1@80:04.1]' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@80:04.2;txq1@80:04.3]' -- \
     -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx
     testpmd>vhost enable tx all
 
@@ -910,7 +910,7 @@ Test Case 15: packed virtqueue vm2vm mergeable path multi-queues payload check w
 1. Launch vhost by below command::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 \
-    --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@00:04.0;txq1@00:04.1],dmathr=512' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@00:04.2;txq1@00:04.3],dmathr=512' -- \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@00:04.0;txq1@00:04.1]' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@00:04.2;txq1@00:04.3]' -- \
     -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx
     testpmd>vhost enable tx all
 

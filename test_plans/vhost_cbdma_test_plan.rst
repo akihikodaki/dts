@@ -57,12 +57,10 @@ operations of queues:
 
  - dmas: This parameter is used to specify the assigned DMA device of
    a queue.
- - dmathr: If packets length >= dmathr, leverage I/OAT device to perform memory copy;
-   otherwise, leverage librte_vhost to perform memory copy.
 
 Here is an example:
  $ ./dpdk-testpmd -c f -n 4 \
-   --vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas=[txq0@80:04.0],dmathr=1024'
+   --vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas=[txq0@80:04.0]'
 
 Test Case 1: PVP Split all path with DMA-accelerated vhost enqueue
 ==================================================================
@@ -73,7 +71,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 
 1. Bind one cbdma port and one nic port to igb_uio, then launch vhost by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas=[txq0@80:04.0],dmathr=1024' \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas=[txq0@80:04.0]' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
@@ -152,7 +150,7 @@ Test Case 2: Split ring dynamic queue number test for DMA-accelerated vhost Tx o
 5. Quit vhost port and relaunch vhost with 4 queues w/ cbdma::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 28-29  \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=4,client=1,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3],dmathr=1024' \
+    --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=4,client=1,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3]' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txq=4 --rxq=4
     >set fwd mac
     >start
@@ -164,7 +162,7 @@ Test Case 2: Split ring dynamic queue number test for DMA-accelerated vhost Tx o
 8. Quit vhost port and relaunch vhost with 8 queues w/ cbdma::
 
      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 28-29  \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=8,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7],dmathr=1024' \
+    --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=8,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7]' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txq=8 --rxq=8
     >set fwd mac
     >start
@@ -182,7 +180,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 
 1. Bind one cbdma port and one nic port to igb_uio, then launch vhost by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas=[txq0@80:04.0],dmathr=1024' \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas=[txq0@80:04.0]' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
@@ -270,7 +268,7 @@ Test Case 4: Packed ring dynamic queue number test for DMA-accelerated vhost Tx 
 5. Quit vhost port and relaunch vhost with 4 queues w/ cbdma::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 28-29  \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=4,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3],dmathr=1024' \
+    --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=4,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3]' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txq=4 --rxq=4
     >set fwd mac
     >start
@@ -282,7 +280,7 @@ Test Case 4: Packed ring dynamic queue number test for DMA-accelerated vhost Tx 
 8. Quit vhost port and relaunch vhost with 8 queues w/ cbdma::
 
      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 28-29  \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=8,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7],dmathr=1024' \
+    --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=8,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7]' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txq=8 --rxq=8
     >set fwd mac
     >start
@@ -296,7 +294,7 @@ Test Case 5: Compare PVP split ring performance between CPU copy, CBDMA copy and
 
 1. Bind one cbdma port and one nic port which on same numa to igb_uio, then launch vhost by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=1,client=1,dmas=[txq0@00:01.0],dmathr=1024' \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=1,client=1,dmas=[txq0@00:01.0]' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
@@ -315,7 +313,7 @@ Test Case 5: Compare PVP split ring performance between CPU copy, CBDMA copy and
 
 4.Quit vhost side, relaunch with below cmd::
 
- ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=1,client=1,dmas=[txq0@00:01.0],dmathr=2000' \
+ ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=1,client=1,dmas=[txq0@00:01.0]' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start

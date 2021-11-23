@@ -113,8 +113,8 @@ Test Case 2: VM2VM split ring vhost-user/virtio-net CBDMA enable test with tcp t
 1. Launch the Vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./dpdk-testpmd -l 2-4 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1,dmas=[txq0@00:04.0],dmathr=512' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=1,dmas=[txq0@00:04.1],dmathr=512'  -- -i --nb-cores=2 --txd=1024 --rxd=1024
+    ./dpdk-testpmd -l 2-4 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1,dmas=[txq0@00:04.0]' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1,dmas=[txq0@00:04.1]'  -- -i --nb-cores=2 --txd=1024 --rxd=1024
     testpmd>start
 
 2. Launch VM1 and VM2 on socket 1::
@@ -273,8 +273,8 @@ Test Case 5: VM2VM virtio-net split ring mergeable 8 queues CBDMA enable test wi
 1. Launch the Vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3;txq4@00:04.4;txq5@00:04.5;txq6@00:04.6;txq7@00:04.7],dmathr=512' \
-    --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7],dmathr=512'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3;txq4@00:04.4;txq5@00:04.5;txq6@00:04.6;txq7@00:04.7]' \
+    --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7]'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
     testpmd>start
 
 2. Launch VM1 and VM2 using qemu 5.2.0::
@@ -366,8 +366,8 @@ Test Case 6: VM2VM virtio-net split ring non-mergeable 8 queues CBDMA enable tes
 1. Launch the Vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3;txq4@00:04.4;txq5@00:04.5;txq6@00:04.6;txq7@00:04.7],dmathr=512' \
-    --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7],dmathr=512'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3;txq4@00:04.4;txq5@00:04.5;txq6@00:04.6;txq7@00:04.7]' \
+    --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7]'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
     testpmd>start
 
 2. Launch VM1 and VM2 using qemu 5.2.0::
@@ -514,8 +514,8 @@ Test Case 8: VM2VM packed ring vhost-user/virtio-net CBDMA enable test with tcp 
 1. Launch the Vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./dpdk-testpmd -l 2-4 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1,dmas=[txq0@00:04.0],dmathr=512' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=1,dmas=[txq0@00:04.1],dmathr=512'  -- -i --nb-cores=2 --txd=1024 --rxd=1024
+    ./dpdk-testpmd -l 2-4 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1,dmas=[txq0@00:04.0]' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1,dmas=[txq0@00:04.1]'  -- -i --nb-cores=2 --txd=1024 --rxd=1024
     testpmd>start
 
 2. Launch VM1 and VM2 on socket 1 with qemu 5.2.0::
@@ -674,8 +674,8 @@ Test Case 11: VM2VM virtio-net packed ring mergeable 8 queues CBDMA enable test 
 1. Launch the Vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3;txq4@00:04.4;txq5@00:04.5;txq6@00:04.6;txq7@00:04.7],dmathr=512' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7],dmathr=512'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3;txq4@00:04.4;txq5@00:04.5;txq6@00:04.6;txq7@00:04.7]' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7]'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
     testpmd>start
 
 2. Launch VM1 and VM2 with qemu 5.2.0::
@@ -731,8 +731,8 @@ Test Case 12: VM2VM virtio-net packed ring non-mergeable 8 queues CBDMA enable t
 1. Launch the Vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3;txq4@00:04.4;txq5@00:04.5;txq6@00:04.6;txq7@00:04.7],dmathr=512' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7],dmathr=512'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3;txq4@00:04.4;txq5@00:04.5;txq6@00:04.6;txq7@00:04.7]' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7]'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
     testpmd>start
 
 2. Launch VM1 and VM2::

@@ -402,7 +402,7 @@ Test Case 7: wake up split ring vhost-user cores with event idx interrupt mode a
 1. Bind 16 cbdma ports to igb_uio driver, then launch l3fwd-power example app with client mode::
 
     ./l3fwd-power -l 1-16 -n 4 --log-level=9 \
-    --vdev 'eth_vhost0,iface=/vhost-net0,queues=16,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7],dmathr=1024' \
+    --vdev 'eth_vhost0,iface=/vhost-net0,queues=16,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7]' \
     -- -p 0x1 --parse-ptype 1 \
     --config "(0,0,1),(0,1,2),(0,2,3),(0,3,4),(0,4,5),(0,5,6),(0,6,7),(0,7,8),(0,8,9),(0,9,10),(0,10,11),(0,11,12),(0,12,13),(0,13,14),(0,14,15),(0,15,16)"
 
@@ -422,7 +422,7 @@ Test Case 7: wake up split ring vhost-user cores with event idx interrupt mode a
 3. Relauch l3fwd-power sample for port up::
 
     ./l3fwd-power -l 1-16 -n 4 --log-level=9 \
-    --vdev 'eth_vhost0,iface=/vhost-net0,queues=16,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7],dmathr=1024' \
+    --vdev 'eth_vhost0,iface=/vhost-net0,queues=16,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7]' \
     -- -p 0x1 --parse-ptype 1 \
     --config "(0,0,1),(0,1,2),(0,2,3),(0,3,4),(0,4,5),(0,5,6),(0,6,7),(0,7,8),(0,8,9),(0,9,10),(0,10,11),(0,11,12),(0,12,13),(0,13,14),(0,14,15),(0,15,16)"
 
@@ -518,7 +518,7 @@ Test Case 9: wake up packed ring vhost-user cores with event idx interrupt mode 
 1. Bind 16 cbdma ports to igb_uio driver, then launch l3fwd-power example app with client mode::
 
     ./l3fwd-power -l 1-16 -n 4 --log-level=9 \
-    --vdev 'eth_vhost0,iface=/vhost-net0,queues=16,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7],dmathr=1024' \
+    --vdev 'eth_vhost0,iface=/vhost-net0,queues=16,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7]' \
     -- -p 0x1 --parse-ptype 1 \
     --config "(0,0,1),(0,1,2),(0,2,3),(0,3,4),(0,4,5),(0,5,6),(0,6,7),(0,7,8),(0,8,9),(0,9,10),(0,10,11),(0,11,12),(0,12,13),(0,13,14),(0,14,15),(0,15,16)"
 
@@ -538,7 +538,7 @@ Test Case 9: wake up packed ring vhost-user cores with event idx interrupt mode 
 3. Relauch l3fwd-power sample for port up::
 
     ./l3fwd-power -l 1-16 -n 4 --log-level=9 \
-    --vdev 'eth_vhost0,iface=/vhost-net0,queues=16,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7],dmathr=1024' \
+    --vdev 'eth_vhost0,iface=/vhost-net0,queues=16,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7]' \
     -- -p 0x1 --parse-ptype 1 \
     --config "(0,0,1),(0,1,2),(0,2,3),(0,3,4),(0,4,5),(0,5,6),(0,6,7),(0,7,8),(0,8,9),(0,9,10),(0,10,11),(0,11,12),(0,12,13),(0,13,14),(0,14,15),(0,15,16)"
 

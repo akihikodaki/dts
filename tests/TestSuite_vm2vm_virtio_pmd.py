@@ -646,8 +646,8 @@ class TestVM2VMVirtioPMD(TestCase):
                     cbdma_arg_0_list.append(item)
                 else:
                     cbdma_arg_1_list.append(item)
-            cbdma_arg_0 = ",dmas=[{}],dmathr=512".format(";".join(cbdma_arg_0_list))
-            cbdma_arg_1 = ",dmas=[{}],dmathr=512".format(";".join(cbdma_arg_1_list))
+            cbdma_arg_0 = ",dmas=[{}]".format(";".join(cbdma_arg_0_list))
+            cbdma_arg_1 = ",dmas=[{}]".format(";".join(cbdma_arg_1_list))
         else:
             cbdma_arg_0 = ""
             cbdma_arg_1 = ""

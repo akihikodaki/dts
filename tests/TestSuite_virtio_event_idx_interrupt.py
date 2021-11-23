@@ -122,7 +122,7 @@ class TestVirtioIdxInterrupt(TestCase):
             device_str = self.device_str.split(" ")
             device_str.append(self.pf_pci)
             if mode:
-                vdev = ["'net_vhost,iface=%s/vhost-net,queues=%d,%s=1,dmas=[%s],dmathr=64'" % (self.base_dir, self.queues, mode, dmas)]
+                vdev = ["'net_vhost,iface=%s/vhost-net,queues=%d,%s=1,dmas=[%s]'" % (self.base_dir, self.queues, mode, dmas)]
             else:
                 vdev = ['net_vhost,iface=%s/vhost-net,queues=%d,dmas=[%s]' % (self.base_dir, self.queues, dmas)]
             eal_params = self.dut.create_eal_parameters(cores=self.core_list, prefix='vhost', ports=device_str, vdevs=vdev)
