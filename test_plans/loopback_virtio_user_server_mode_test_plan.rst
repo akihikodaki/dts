@@ -84,35 +84,38 @@ Test Case 2:  Basic test for split ring server mode
 Test Case 3: loopback reconnect test with split ring mergeable path and server mode
 ===================================================================================
 
-1. launch vhost as client mode with 2 queues::
+1. launch vhost as client mode with 8 queues::
 
     rm -rf vhost-net*
     ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
-    --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
+    --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=8' -- -i --nb-cores=2 --rxq=8 --txq=8
     >set fwd mac
     >start
 
-2. Launch virtio-user as server mode with 2 queues::
+2. Launch virtio-user as server mode with 8 queues and check throughput can get expected::
 
     ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=1,in_order=0 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=8,mrg_rxbuf=1,in_order=0 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=8 --txq=8
     >set fwd mac
+    >set txpkts 2000,2000,2000,2000
     >start tx_first 32
+    >show port stats all
 
 3. Quit vhost side testpmd, check the virtio-user side link status::
 
     testpmd> show port info 0
     #it should show "down"
 
-4. Relaunch vhost and send packets::
+4. Relaunch vhost and send chain packets::
 
     ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
-    --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
+    --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=8' -- -i --nb-cores=2 --rxq=8 --txq=8
     >set fwd mac
+    >set txpkts 2000,2000,2000,2000
     >start tx_first 32
 
-5. Check the virtio-user side link status and run below command to get throughput,verify the loopback throughput is not zero::
+5. Check the virtio-user side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
@@ -130,22 +133,24 @@ Test Case 3: loopback reconnect test with split ring mergeable path and server m
 8. Relaunch virtio-user and send packets::
 
     ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=1,in_order=0 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=8,mrg_rxbuf=1,in_order=0 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=8 --txq=8
     >set fwd mac
+    >set txpkts 2000,2000,2000,2000
     >start tx_first 32
 
-9. Check the vhost side link status and run below command to get throughput, verify the loopback throughput is not zero::
+9. Check the vhost side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
     testpmd>show port stats all
 
-10. Port restart at vhost side by below command and re-calculate the average throughput::
+10. Port restart at vhost side by below command and check throughput can get expected::
 
       testpmd>stop
       testpmd>port stop 0
       testpmd>port start 0
+      testpmd>set txpkts 2000,2000,2000,2000
       testpmd>start tx_first 32
       testpmd>show port stats all
 
@@ -164,13 +169,15 @@ Test Case 4: loopback reconnect test with split ring inorder mergeable path and 
     >set fwd mac
     >start
 
-2. Launch virtio-user as server mode with 2 queues::
+2. Launch virtio-user as server mode with 2 queues, check throughput can get expected::
 
     ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=1,in_order=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
+    >set txpkts 2000,2000,2000,2000
     >start tx_first 32
+    >show port stats all
 
 3. Quit vhost side testpmd, check the virtio-user side link status::
 
@@ -182,9 +189,10 @@ Test Case 4: loopback reconnect test with split ring inorder mergeable path and 
     ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
+    >set txpkts 2000,2000,2000,2000
     >start tx_first 32
 
-5. Check the virtio-user side link status and run below command to get throughput,verify the loopback throughput is not zero::
+5. Check the virtio-user side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
@@ -205,19 +213,21 @@ Test Case 4: loopback reconnect test with split ring inorder mergeable path and 
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=1,in_order=1\
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
+    >set txpkts 2000,2000,2000,2000
     >start tx_first 32
 
-9. Check the vhost side link status and run below command to get throughput, verify the loopback throughput is not zero::
+9. Check the vhost side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
     testpmd>show port stats all
 
-10. Port restart at vhost side by below command and re-calculate the average throughput::
+10. Port restart at vhost side by below command and check throughput can get expected::
 
       testpmd>stop
       testpmd>port stop 0
       testpmd>port start 0
+      testpmd>set txpkts 2000,2000,2000,2000
       testpmd>start tx_first 32
       testpmd>show port stats all
 
@@ -236,13 +246,14 @@ Test Case 5: loopback reconnect test with split ring inorder non-mergeable path 
     >set fwd mac
     >start
 
-2. Launch virtio-user as server mode with 2 queues::
+2. Launch virtio-user as server mode with 2 queues check throughput can get expected::
 
     ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=0,in_order=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
+    >show port stats all
 
 3. Quit vhost side testpmd, check the virtio-user side link status::
 
@@ -256,7 +267,7 @@ Test Case 5: loopback reconnect test with split ring inorder non-mergeable path 
     >set fwd mac
     >start tx_first 32
 
-5. Check the virtio-user side link status and run below command to get throughput,verify the loopback throughput is not zero::
+5. Check the virtio-user side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
@@ -279,13 +290,13 @@ Test Case 5: loopback reconnect test with split ring inorder non-mergeable path 
     >set fwd mac
     >start tx_first 32
 
-9. Check the vhost side link status and run below command to get throughput, verify the loopback throughput is not zero::
+9. Check the vhost side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
     testpmd>show port stats all
 
-10. Port restart at vhost side by below command and re-calculate the average throughput::
+10. Port restart at vhost side by below command and check throughput can get expected::
 
       testpmd>stop
       testpmd>port stop 0
@@ -308,13 +319,14 @@ Test Case 6: loopback reconnect test with split ring non-mergeable path and serv
     >set fwd mac
     >start
 
-2. Launch virtio-user as server mode with 2 queues::
+2. Launch virtio-user as server mode with 2 queues and check throughput can get expected::
 
     ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=0,in_order=0,vectorized=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
+    >show port stats all
 
 3. Quit vhost side testpmd, check the virtio-user side link status::
 
@@ -328,7 +340,7 @@ Test Case 6: loopback reconnect test with split ring non-mergeable path and serv
     >set fwd mac
     >start tx_first 32
 
-5. Check the virtio-user side link status and run below command to get throughput,verify the loopback throughput is not zero::
+5. Check the virtio-user side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
@@ -351,13 +363,13 @@ Test Case 6: loopback reconnect test with split ring non-mergeable path and serv
     >set fwd mac
     >start tx_first 32
 
-9. Check the vhost side link status and run below command to get throughput, verify the loopback throughput is not zero::
+9. Check the vhost side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
     testpmd>show port stats all
 
-10. Port restart at vhost side by below command and re-calculate the average throughput::
+10. Port restart at vhost side by below command and check throughput can get expected::
 
       testpmd>stop
       testpmd>port stop 0
@@ -380,13 +392,14 @@ Test Case 7: loopback reconnect test with split ring vector_rx path and server m
     >set fwd mac
     >start
 
-2. Launch virtio-user as server mode with 2 queues::
+2. Launch virtio-user as server mode with 2 queues and check throughput can get expected::
 
     ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=0,in_order=0,vectorized=1 \
     -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
+    >show port stats all
 
 3. Quit vhost side testpmd, check the virtio-user side link status::
 
@@ -400,7 +413,7 @@ Test Case 7: loopback reconnect test with split ring vector_rx path and server m
     >set fwd mac
     >start tx_first 32
 
-5. Check the virtio-user side link status and run below command to get throughput,verify the loopback throughput is not zero::
+5. Check the virtio-user side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
@@ -423,13 +436,13 @@ Test Case 7: loopback reconnect test with split ring vector_rx path and server m
     >set fwd mac
     >start tx_first 32
 
-9. Check the vhost side link status and run below command to get throughput, verify the loopback throughput is not zero::
+9. Check the vhost side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
     testpmd>show port stats all
 
-10. Port restart at vhost side by below command and re-calculate the average throughput::
+10. Port restart at vhost side by below command and check throughput can get expected::
 
       testpmd>stop
       testpmd>port stop 0
@@ -452,13 +465,15 @@ Test Case 8: loopback reconnect test with packed ring mergeable path and server 
     >set fwd mac
     >start
 
-2. Launch virtio-user as server mode with 2 queues::
+2. Launch virtio-user as server mode with 2 queues and check throughput can get expected::
 
     ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
+    >set txpkts 2000,2000,2000,2000
     >start tx_first 32
+    >show port stats all
 
 3. Quit vhost side testpmd, check the virtio-user side link status::
 
@@ -470,9 +485,10 @@ Test Case 8: loopback reconnect test with packed ring mergeable path and server 
     ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
+    >set txpkts 2000,2000,2000,2000
     >start tx_first 32
 
-5. Check the virtio-user side link status and run below command to get throughput,verify the loopback throughput is not zero::
+5. Check the virtio-user side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
@@ -493,19 +509,21 @@ Test Case 8: loopback reconnect test with packed ring mergeable path and server 
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
+    >set txpkts 2000,2000,2000,2000
     >start tx_first 32
 
-9. Check the vhost side link status and run below command to get throughput, verify the loopback throughput is not zero::
+9. Check the vhost side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
     testpmd>show port stats all
 
-10. Port restart at vhost side by below command and re-calculate the average throughput::
+10. Port restart at vhost side by below command and check throughput can get expected::
 
      testpmd>stop
      testpmd>port stop 0
      testpmd>port start 0
+     testpmd>set txpkts 2000,2000,2000,2000
      testpmd>start tx_first 32
      testpmd>show port stats all
 
@@ -524,13 +542,14 @@ Test Case 9: loopback reconnect test with packed ring non-mergeable path and ser
     >set fwd mac
     >start
 
-2. Launch virtio-user as server mode with 2 queues::
+2. Launch virtio-user as server mode with 2 queues and check throughput can get expected::
 
     ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
+    >show port stats all
 
 3. Quit vhost side testpmd, check the virtio-user side link status::
 
@@ -544,7 +563,7 @@ Test Case 9: loopback reconnect test with packed ring non-mergeable path and ser
     >set fwd mac
     >start tx_first 32
 
-5. Check the virtio-user side link status and run below command to get throughput,verify the loopback throughput is not zero::
+5. Check the virtio-user side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
@@ -567,13 +586,13 @@ Test Case 9: loopback reconnect test with packed ring non-mergeable path and ser
     >set fwd mac
     >start tx_first 32
 
-9. Check the vhost side link status and run below command to get throughput, verify the loopback throughput is not zero::
+9. Check the vhost side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
     testpmd>show port stats all
 
-10. Port restart at vhost side by below command and re-calculate the average throughput::
+10. Port restart at vhost side by below command and check throughput can get expected::
 
      testpmd>stop
      testpmd>port stop 0
@@ -588,21 +607,23 @@ Test Case 9: loopback reconnect test with packed ring non-mergeable path and ser
 Test Case 10: loopback reconnect test with packed ring inorder mergeable path and server mode
 =============================================================================================
 
-1. launch vhost as client mode with 2 queues::
+1. launch vhost as client mode with 8 queues::
 
     rm -rf vhost-net*
     ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
-    --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
+    --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=8' -- -i --nb-cores=2 --rxq=8 --txq=8
     >set fwd mac
     >start
 
-2. Launch virtio-user as server mode with 2 queues::
+2. Launch virtio-user as server mode with 8 queues and check throughput can get expected::
 
     ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=1 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=8,packed_vq=1,mrg_rxbuf=1,in_order=1 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=8 --txq=8
     >set fwd mac
+    >set txpkts 2000,2000,2000,2000
     >start tx_first 32
+    >show port stats all
 
 3. Quit vhost side testpmd, check the virtio-user side link status::
 
@@ -612,11 +633,12 @@ Test Case 10: loopback reconnect test with packed ring inorder mergeable path an
 4. Relaunch vhost and send packets::
 
     ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
-    --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
+    --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=8' -- -i --nb-cores=2 --rxq=8 --txq=8
     >set fwd mac
+    >set txpkts 2000,2000,2000,2000
     >start tx_first 32
 
-5. Check the virtio-user side link status and run below command to get throughput,verify the loopback throughput is not zero::
+5. Check the virtio-user side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
@@ -634,22 +656,24 @@ Test Case 10: loopback reconnect test with packed ring inorder mergeable path an
 8. Relaunch virtio-user and send packets::
 
     ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=1 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=8,packed_vq=1,mrg_rxbuf=1,in_order=1 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=8 --txq=8
     >set fwd mac
+    >set txpkts 2000,2000,2000,2000
     >start tx_first 32
 
-9. Check the vhost side link status and run below command to get throughput, verify the loopback throughput is not zero::
+9. Check the vhost side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
     testpmd>show port stats all
 
-10. Port restart at vhost side by below command and re-calculate the average throughput::
+10. Port restart at vhost side by below command and check throughput can get expected::
 
      testpmd>stop
      testpmd>port stop 0
      testpmd>port start 0
+     testpmd>set txpkts 2000,2000,2000,2000
      testpmd>start tx_first 32
      testpmd>show port stats all
 
@@ -668,13 +692,14 @@ Test Case 11: loopback reconnect test with packed ring inorder non-mergeable pat
     >set fwd mac
     >start
 
-2. Launch virtio-user as server mode with 2 queues::
+2. Launch virtio-user as server mode with 2 queues and check throughput can get expected::
 
     ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --rx-offloads=0x10 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
+    >show port stats all
 
 3. Quit vhost side testpmd, check the virtio-user side link status::
 
@@ -688,7 +713,7 @@ Test Case 11: loopback reconnect test with packed ring inorder non-mergeable pat
     >set fwd mac
     >start tx_first 32
 
-5. Check the virtio-user side link status and run below command to get throughput,verify the loopback throughput is not zero::
+5. Check the virtio-user side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
@@ -711,13 +736,13 @@ Test Case 11: loopback reconnect test with packed ring inorder non-mergeable pat
     >set fwd mac
     >start tx_first 32
 
-9. Check the vhost side link status and run below command to get throughput, verify the loopback throughput is not zero::
+9. Check the vhost side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
     testpmd>show port stats all
 
-10. Port restart at vhost side by below command and re-calculate the average throughput::
+10. Port restart at vhost side by below command and check throughput can get expected::
 
      testpmd>stop
      testpmd>port stop 0
@@ -740,13 +765,14 @@ Test Case 12: loopback reconnect test with packed ring vectorized path and serve
     >set fwd mac
     >start
 
-2. Launch virtio-user as server mode with 2 queues::
+2. Launch virtio-user as server mode with 2 queues and check throughput can get expected::
 
     ./testpmd -n 4 -l 5-7 --log-level=pmd.net.virtio.driver,8 --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
+    >show port stats all
 
 3. Quit vhost side testpmd, check the virtio-user side link status::
 
@@ -760,7 +786,7 @@ Test Case 12: loopback reconnect test with packed ring vectorized path and serve
     >set fwd mac
     >start tx_first 32
 
-5. Check the virtio-user side link status and run below command to get throughput,verify the loopback throughput is not zero::
+5. Check the virtio-user side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
@@ -783,13 +809,13 @@ Test Case 12: loopback reconnect test with packed ring vectorized path and serve
     >set fwd mac
     >start tx_first 32
 
-9. Check the vhost side link status and run below command to get throughput, verify the loopback throughput is not zero::
+9. Check the vhost side link status and run below command to get throughput, check throughput can get expected::
 
     testpmd> show port info 0
     #it should show up"
     testpmd>show port stats all
 
-10. Port restart at vhost side by below command and re-calculate the average throughput::
+10. Port restart at vhost side by below command and check throughput can get expected::
 
      testpmd>stop
      testpmd>port stop 0
