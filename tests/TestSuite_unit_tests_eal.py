@@ -306,16 +306,6 @@ class TestUnitTestsEal(TestCase):
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
-    def test_cycles(self):
-        """
-        Run cycles autotest.
-        """
-
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("cycles_autotest", "RTE>>", self.run_cmd_time)
-        self.dut.send_expect("quit", "# ")
-        self.verify("Test OK" in out, "Test failed")
-
     def test_logs(self):
         """
         Run logs autotest.
@@ -343,17 +333,6 @@ class TestUnitTestsEal(TestCase):
 
         self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("debug_autotest", "RTE>>", self.run_cmd_time)
-        self.dut.send_expect("quit", "# ")
-        self.verify("Test OK" in out, "Test failed")
-
-    def test_alarm(self):
-        """
-        Run alarm autotest.
-        """
-
-        self.verify(self.env == "linuxapp", "Alarm only supported in linux env")
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("alarm_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 

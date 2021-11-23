@@ -168,15 +168,6 @@ Byteorder functions
 Check the result of optimized byte swap functions for each size (16-,
 32- and 64-bit).
 
-Cycles Test
-===========
-
-- Loop N times and check that the timer always increments and
-  never decrements during this loop.
-
-- Wait one second using rte_usleep() and check that the increment
-  of cycles is correct with regard to the frequency of the timer.
-
 Logs
 ====
 
@@ -222,21 +213,6 @@ Debug test
 ==========
 
 - Call rte_dump_stack() and rte_dump_registers().
-
-Alarm
-=====
-
-- Check that the callback for the alarm can to be called.
-- Check that it is not possible to set alarm with invalid time value.
-- Check that it is not possible to set alarm without a callback.
-- Check that it is not possible to cancel alarm without a callback pointer.
-- Check that multiple callbacks for the alarm can be called.
-- Check that the number of removed and unremoved alarms are correct.
-- Check that no callback is called if all alarm removed.
-- Check that it is not possible to cancel an alarm within the callback itself.
-- Check that the callback which is the head of all is able to be removed.
-- Check that all alarms for the same callback can be canceled.
-
 
 CPU flags
 =========
