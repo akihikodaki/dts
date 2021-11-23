@@ -413,13 +413,14 @@ class TestUnitTestsEal(TestCase):
         """
         Run acl autotest.
         """
-
-        eal_params = self.dut.create_eal_parameters()
-        self.test_app_cmdline += "--no-pci"
+        eal_params = self.dut.create_eal_parameters(other_eal_param='force-max-simd-bitwidth')
+        app_name = self.dut.apps_name['test']
+        test_app_cmdline = app_name + eal_params
+        test_app_cmdline += "--no-pci"
 
         if self.dut.dpdk_version >= '20.11.0':
-            self.test_app_cmdline += " --force-max-simd-bitwidth=0"
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
+            test_app_cmdline += " --force-max-simd-bitwidth=0"
+        self.dut.send_expect(test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("acl_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
