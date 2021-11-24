@@ -77,7 +77,7 @@ class PmdOutput():
         """
         core_number = len(self.dut.cores)
         if core_number < 2:
-            raise
+            raise ValueError(f'Not enough cores on DUT {self.dut}')
         else:
             self.default_cores = "1S/2C/1T"
 
