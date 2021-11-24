@@ -612,6 +612,17 @@ class TestKni(TestCase):
             self.verify(all([expected_str in out, expected_str in out1]),
                         "ping not supported")
             out = self.dut.send_expect(
+                "ip -family inet6 address show dev %s | awk '/inet6/ { print $2 }'| cut -d'/' -f1" % virtual_interface,
+                "# ", 10)
+            out1 = self.tester.send_expect(
+                "ip -family inet6 address show dev %s | awk '/inet6/ { print $2 }'| cut -d'/' -f1" % tx_interface,
+                "# ", 10)
+            if out.strip()=='':
+                self.dut.send_expect("ip -6 addr add fe80::742e:c5ef:bb9:b4c8/64 dev %s" % virtual_interface, "# ", 3)
+            if out1.strip()=='':
+                self.tester.send_expect("ip -6 addr add fe80::742e:c5ef:bb9:b4c9/64 dev %s" % tx_interface, "# ", 3)
+            time.sleep(3)
+            out = self.dut.send_expect(
                 "ip -family inet6 address show dev %s | awk '/inet6/ { print $2 }'| cut -d'/' -f1" % virtual_interface, "# ", 10)
             ipv6_address = out.split('\r\n')[0]
             self.tester.send_expect("ifconfig %s up" % tx_interface, "# ")
