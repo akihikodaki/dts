@@ -347,7 +347,7 @@ class Tester(Crb):
                     self.send_expect("ifconfig %s up" % itf, "# ")
 
         except Exception as e:
-            self.logger.error("   !!! Restore ITF: " + e.message)
+            self.logger.error(f"   !!! Restore ITF: {e}")
 
         sleep(2)
 
@@ -371,7 +371,7 @@ class Tester(Crb):
                     self.enable_ipv6(itf)
                     self.send_expect("ifconfig %s up" % itf, "# ")
         except Exception as e:
-            self.logger.error("   !!! Restore ITF: " + e.message)
+            self.logger.error(f"   !!! Restore ITF: {e}")
 
         sleep(2)
 
