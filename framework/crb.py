@@ -336,7 +336,7 @@ class Crb(object):
         Look for the NIC's information (PCI Id and card type).
         """
         out = self.send_expect("pciconf -l", "# ", alt_session=True)
-        rexp = r"pci0:([\da-f]{1,3}:[\da-f]{1,2}:\d{1}):\s*class=0x020000.*chip=0x([\da-f]{4})8086"
+        rexp = r"pci0:([\da-f]{1,3}:[\da-f]{1,2}:\d{1}):\s*class=0x020000.*0x([\da-f]{4}).*8086"
         pattern = re.compile(rexp)
         match = pattern.findall(out)
 
