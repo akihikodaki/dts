@@ -179,6 +179,7 @@ class TestFlowClassifySoftnic(TestCase):
         Sent pkts that read from the pcap_file.
         Return the sniff pkts.
         """
+        self.pmdout.wait_link_status_up(self.dut_ports[0])
         tx_port = self.tester.get_local_port(self.dut_ports[from_port%self.port_num])
         rx_port = self.tester.get_local_port(self.dut_ports[to_port%self.port_num])
 
@@ -283,6 +284,7 @@ class TestFlowClassifySoftnic(TestCase):
         """
         Sends continuous packets.
         """
+        self.pmdout.wait_link_status_up(self.dut_ports[0])
         self.tester.scapy_foreground()
         time.sleep(2)
         if src_dst == "src":

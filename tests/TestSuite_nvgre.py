@@ -51,7 +51,6 @@ from scapy.layers.sctp import SCTP, SCTPChunkData
 from scapy.route import *
 from scapy.sendrecv import sniff
 from scapy.utils import rdpcap, socket, struct, wrpcap
-
 import framework.utils as utils
 from framework.packet import IncreaseIP, IncreaseIPv6
 from framework.pmd_output import PmdOutput
@@ -499,6 +498,7 @@ class TestNvgre(TestCase):
         config.outer_mac_dst = self.dut_rx_port_mac
         config.create_pcap()
         self.dut.send_expect("start", "testpmd>", 10)
+        self.pmdout.wait_link_status_up(self.dut_rx_port)
         config.send_pcap()
         # check whether detect nvgre type
         out = self.dut.get_session_output()
@@ -523,6 +523,7 @@ class TestNvgre(TestCase):
         # send nvgre packet
         config.create_pcap()
         self.dut.send_expect("start", "testpmd>", 10)
+        self.pmdout.wait_link_status_up(self.dut_rx_port)
         config.send_pcap()
         out = self.dut.get_session_output()
         print(out)
@@ -595,7 +596,7 @@ class TestNvgre(TestCase):
         self.logger.info("nvgre packet %s" % arg_str)
 
         out = self.dut.send_expect("start", "testpmd>", 10)
-
+        self.pmdout.wait_link_status_up(self.dut_rx_port)
         # create pcap file with supplied arguments
         config = NvgreTestConfig(self, **kwargs)
         config.outer_mac_dst = self.dut_rx_port_mac

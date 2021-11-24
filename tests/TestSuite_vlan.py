@@ -90,6 +90,7 @@ class TestVlan(TestCase):
         """
         Send $num of packets to portid, if vid is -1, it means send a packet which does not include a vlan id.
         """
+        self.pmdout.wait_link_status_up(dutRxPortId)
         # The package stream : testTxPort->dutRxPort->dutTxport->testRxPort
         port = self.tester.get_local_port(dutRxPortId)
         self.txItf = self.tester.get_interface(port)

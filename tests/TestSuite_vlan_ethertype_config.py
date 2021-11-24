@@ -106,7 +106,7 @@ class TestVlanEthertypeConfig(TestCase):
         """
         if vid is -1, it means send pakcage not include vlan id.
         """
-
+        self.pmdout.wait_link_status_up(dutRxPortId)
         self.tpid_ori_file = "/tmp/tpid_ori.pcap"
         self.tpid_new_file = "/tmp/tpid_new.pcap"
         self.tester.send_expect("rm -rf /tmp/tpid_ori.pcap", "# ")
