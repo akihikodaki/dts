@@ -93,11 +93,11 @@ Test case: set rss types on two ports (I40E)
 
     testpmd> show port 0 rss-hash
     RSS functions:
-     ipv4-frag ipv4-other ipv6-frag ipv6-other ip
+     ipv4-frag ipv4-other ipv6-frag ipv6-other
 
     testpmd> show port 1 rss-hash
     RSS functions:
-     ipv4-frag ipv4-other ipv6-frag ipv6-other ip
+     ipv4-frag ipv4-other ipv6-frag ipv6-other
 
    Send the ipv4-other/ipv4-frag/ipv6-other/ipv6-frag packets with different src/dst ip address to two ports.
    All the packets are distributed to all the four queues of two ports.
@@ -111,11 +111,11 @@ Test case: set rss types on two ports (I40E)
 
     testpmd> show port 0 rss-hash
     RSS functions:
-     ipv4-udp udp
+     ipv4-udp
 
     testpmd> show port 1 rss-hash
     RSS functions:
-     ipv4-frag ipv4-other ipv6-frag ipv6-other ip
+     ipv4-frag ipv4-other ipv6-frag ipv6-other
 
 
    Send the ipv4-other/ipv4-frag/ipv6-other/ipv6-frag packets with different src/dst ip address to two ports.
@@ -149,7 +149,7 @@ Test case: set rss types on two ports (I40E)
 
     testpmd> show port 1 rss-hash
     RSS functions:
-     all ipv4-frag ipv4-tcp ipv4-udp ipv4-sctp ipv4-other ipv6-frag ipv6-tcp ipv6-udp ipv6-sctp ipv6-other l2-payload ip udp tcp sctp
+     ipv4-frag ipv4-tcp ipv4-udp ipv4-sctp ipv4-other ipv6-frag ipv6-tcp ipv6-udp ipv6-sctp ipv6-other l2-payload  sctp
 
    Send the ipv4-other/ipv4-frag/ipv4-udp/ipv4-tcp/ipv4-sctp/ipv6-other/ipv6-frag/ipv6-udp/ipv6-tcp/ipv6-sctp packets with different src/dst ip address or different sport/dport to port 1.
    All the packets are distributed to all the four queues of port 1.
@@ -341,7 +341,7 @@ Test case: set rss types and rss queues on two ports (I40E)
 
     testpmd> show port 0 rss-hash
     RSS functions:
-     ipv4-frag ipv4-other ipv6-frag ipv6-other ip
+     ipv4-frag ipv4-other ipv6-frag ipv6-other
 
    Send the ipv4-other packets with different src/dst ip address to port 0.
    All the packets are distributed to all the four queues.
@@ -764,7 +764,7 @@ Test case: disable and enable rss
 
     testpmd> show port 0 rss-hash
     RSS functions:
-     all ipv4 ipv6 ipv6-ex ip
+     ipv4 ipv6 ipv6-ex
 
    Send the ipv4-other/ipv4-udp/ipv4-tcp/ipv4-sctp/ipv4-frag/ipv6-other/ipv6-frag/ipv6-udp/ipv6-tcp/ipv6-sctp packets with different src/dst ip address.
    All the packets are distributed to all the four queues.
@@ -785,7 +785,7 @@ Test case: disable and enable rss
     Flow rule #1 created
     testpmd> show port 0 rss-hash
     RSS functions:
-     all ipv4 ipv4-tcp ipv4-udp ipv6 ipv6-tcp ipv6-udp ipv6-ex ipv6-tcp-ex ipv6-udp-ex ip udp tcp
+     ipv4 ipv4-tcp ipv4-udp ipv6 ipv6-tcp ipv6-udp ipv6-ex ipv6-tcp-ex ipv6-udp-ex
 
    Send the ipv4-other/ipv4-udp/ipv4-tcp/ipv4-sctp/ipv4-frag/ipv6-other/ipv6-frag/ipv6-udp/ipv6-tcp/ipv6-sctp packets with different src/dst ip address.
    All the packets are distributed to all the four queues.
@@ -814,7 +814,7 @@ Test case: enable ipv4-udp rss
     Flow rule #0 created
     testpmd> show port 0 rss-hash
     RSS functions:
-     all ipv4-udp udp
+     ipv4-udp
 
    Send the ipv4-other/ipv4-tcp/ipv4-sctp/ipv4-frag/ipv6-other/ipv6-frag/ipv6-udp/ipv6-tcp/ipv6-sctp packets with different src/dst ip address.
    All the packets are distributed to queue 0.
@@ -889,7 +889,7 @@ Test case: Different packet types
     testpmd> flow create 0 ingress pattern end actions rss types udp ipv4-tcp ipv6-sctp ipv4-other end queues 1 8 15 end / end
     testpmd> show port 0 rss-hash
     RSS functions:
-     all ipv4-tcp ipv4-udp ipv6-udp ipv6-udp-ex udp tcp
+     ipv4-tcp ipv4-udp ipv6-udp ipv6-udp-ex udp
 
 3. Send ipv4-other/ipv4-udp/ipv4-tcp/ipv4-sctp/ipv4-frag/ipv6-other/ipv6-frag/ipv6-udp/ipv6-tcp/ipv6-sctp packets with different src/dst ip address.
    ipv4-udp/ipv4-tcp/ipv6-udp are distributed to queue 1/8/15.
@@ -901,7 +901,7 @@ Test case: Different packet types
     testpmd> flow create 0 ingress pattern end actions rss types ipv6 ipv4 end queues 3 8 end / end
     testpmd> show port 0 rss-hash
     RSS functions:
-     all ipv4 ipv6 ip
+     ipv4 ipv6
 
 5. Send ipv4-other/ipv4-udp/ipv4-tcp/ipv4-sctp/ipv4-frag/ipv6-other/ipv6-frag/ipv6-udp/ipv6-tcp/ipv6-sctp packets with different src/dst ip address.
    all the packets are distributed to queue 1/8/15.
