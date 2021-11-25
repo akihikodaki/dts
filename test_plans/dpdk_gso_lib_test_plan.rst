@@ -96,9 +96,9 @@ Test Case1: DPDK GSO test with tcp traffic
     ip netns exec ns1 ifconfig [enp216s0f0] 1.1.1.8 up
     ip netns exec ns1 ethtool -K [enp216s0f0] gro on
 
-2. Bind nic1 to igb_uio, launch vhost-user with testpmd::
+2. Bind nic1 to vfio-pci, launch vhost-user with testpmd::
 
-    ./dpdk-devbind.py -b igb_uio xx:xx.x       # xx:xx.x is the pci addr of nic1
+    ./dpdk-devbind.py -b vfio-pci xx:xx.x       # xx:xx.x is the pci addr of nic1
     ./testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
@@ -156,9 +156,9 @@ Test Case3: DPDK GSO test with vxlan traffic
     ip netns exec ns1 ip link add vxlan100 type vxlan id 1000 remote 188.0.0.2 local 188.0.0.1 dstport 4789 dev [enp216s0f0]
     ip netns exec ns1 ifconfig vxlan100 1.1.1.1/24 up
 
-2. Bind nic1 to igb_uio, launch vhost-user with testpmd::
+2. Bind nic1 to vfio-pci, launch vhost-user with testpmd::
 
-    ./dpdk-devbind.py -b igb_uio xx:xx.x
+    ./dpdk-devbind.py -b vfio-pci xx:xx.x
     ./testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
@@ -210,9 +210,9 @@ Test Case4: DPDK GSO test with gre traffic
     ip netns exec ns1 ip tunnel add gre100 mode gre remote 188.0.0.2 local 188.0.0.1
     ip netns exec ns1 ifconfig gre100 1.1.1.1/24 up
 
-2. Bind nic1 to igb_uio, launch vhost-user with testpmd::
+2. Bind nic1 to vfio-pci, launch vhost-user with testpmd::
 
-    ./dpdk-devbind.py -b igb_uio xx:xx.x
+    ./dpdk-devbind.py -b vfio-pci xx:xx.x
     ./testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum

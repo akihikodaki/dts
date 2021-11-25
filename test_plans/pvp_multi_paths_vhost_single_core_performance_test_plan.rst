@@ -47,7 +47,7 @@ TG --> NIC --> Virtio --> Vhost --> Virtio --> NIC --> TG
 Test Case 1: vhost single core performance test with virtio 1.1 mergeable path
 ==============================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 3-4 -n 4 --no-pci --file-prefix=vhost \
@@ -68,7 +68,7 @@ Test Case 1: vhost single core performance test with virtio 1.1 mergeable path
 Test Case 2: vhost single core performance test with virtio 1.1 non-mergeable path
 ==================================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 3-4 -n 4 --no-pci --file-prefix=vhost \
@@ -89,7 +89,7 @@ Test Case 2: vhost single core performance test with virtio 1.1 non-mergeable pa
 Test Case 3: vhost single core performance test with inorder mergeable path
 ===========================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 3-4 -n 4 --no-pci --file-prefix=vhost \
@@ -110,7 +110,7 @@ Test Case 3: vhost single core performance test with inorder mergeable path
 Test Case 4: vhost single core performance test with inorder non-mergeable path
 ===============================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 3-4 -n 4 --no-pci --file-prefix=vhost \
@@ -131,7 +131,7 @@ Test Case 4: vhost single core performance test with inorder non-mergeable path
 Test Case 5: vhost single core performance test with mergeable path
 ===================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 3-4 -n 4 --no-pci --file-prefix=vhost \
@@ -152,7 +152,7 @@ Test Case 5: vhost single core performance test with mergeable path
 Test Case 6: vhost single core performance test with non-mergeable path
 =======================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 3-4 -n 4 --no-pci --file-prefix=vhost \
@@ -173,7 +173,7 @@ Test Case 6: vhost single core performance test with non-mergeable path
 Test Case 7: vhost single core performance test with vectorized_rx path
 =======================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 3-4 -n 4 --no-pci --file-prefix=vhost \
@@ -194,7 +194,7 @@ Test Case 7: vhost single core performance test with vectorized_rx path
 Test Case 8: vhost single core performance test with virtio 1.1 inorder mergeable path
 ======================================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 3-4 -n 4 --no-pci --file-prefix=vhost \
@@ -215,7 +215,7 @@ Test Case 8: vhost single core performance test with virtio 1.1 inorder mergeabl
 Test Case 9: vhost single core performance test with virtio 1.1 inorder non-mergeable path
 ==========================================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 3-4 -n 4 --no-pci --file-prefix=vhost \
@@ -236,7 +236,7 @@ Test Case 9: vhost single core performance test with virtio 1.1 inorder non-merg
 Test Case 10: vhost single core performance test with virtio 1.1 vectorized path
 ================================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 3-4 -n 4 --no-pci --file-prefix=vhost \

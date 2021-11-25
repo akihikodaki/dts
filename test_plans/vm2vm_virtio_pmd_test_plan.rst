@@ -46,7 +46,7 @@ Virtio-pmd <-> Vhost-user <-> Testpmd <-> Vhost-user <-> Virtio-pmd
 Test Case 1: VM2VM vhost-user/virtio-pmd with vector_rx path
 ============================================================
 
-1. Bind one physical nic port to igb_uio, then launch the testpmd by below commands::
+1. Bind one physical nic port to vfio-pci, then launch the testpmd by below commands::
 
     rm -rf vhost-net*
     ./dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
@@ -77,13 +77,13 @@ Test Case 1: VM2VM vhost-user/virtio-pmd with vector_rx path
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=true,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :12
 
-3. On VM1, bind vdev with igb_uio driver,then run testpmd, set rxonly for virtio1, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
+3. On VM1, bind vdev with vfio-pci driver,then run testpmd, set rxonly for virtio1, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
 
     ./dpdk-testpmd -c 0x3 -n 4 -a 0000:xx.00,vectorized=1 -- -i --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
-4. On VM2, bind vdev with igb_uio driver,then run testpmd, set txonly for virtio2 and send 64B packets, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
+4. On VM2, bind vdev with vfio-pci driver,then run testpmd, set txonly for virtio2 and send 64B packets, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
 
     ./dpdk-testpmd -c 0x3 -n 4 -a 0000:xx.00,vectorized=1 -- -i --txd=1024 --rxd=1024
     testpmd>set fwd txonly
@@ -101,7 +101,7 @@ Test Case 1: VM2VM vhost-user/virtio-pmd with vector_rx path
 Test Case 2: VM2VM vhost-user/virtio-pmd with normal path
 =========================================================
 
-1. Bind one physical nic port to igb_uio, then launch the testpmd by below commands::
+1. Bind one physical nic port to vfio-pci, then launch the testpmd by below commands::
 
     rm -rf vhost-net*
     ./dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
@@ -132,13 +132,13 @@ Test Case 2: VM2VM vhost-user/virtio-pmd with normal path
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=true,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :12
 
-3. On VM1, bind vdev with igb_uio driver,then run testpmd, set rxonly for virtio1 ::
+3. On VM1, bind vdev with vfio-pci driver,then run testpmd, set rxonly for virtio1 ::
 
     ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
-4. On VM2, bind vdev with igb_uio driver,then run testpmd, set rxonly for virtio2 and send 64B packets ::
+4. On VM2, bind vdev with vfio-pci driver,then run testpmd, set rxonly for virtio2 and send 64B packets ::
 
     ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
     testpmd>set fwd txonly
@@ -156,7 +156,7 @@ Test Case 2: VM2VM vhost-user/virtio-pmd with normal path
 Test Case 3: VM2VM vhost-user/virtio1.0-pmd with vector_rx path
 ===============================================================
 
-1. Bind one physical nic port to igb_uio, then launch the testpmd by below commands::
+1. Bind one physical nic port to vfio-pci, then launch the testpmd by below commands::
 
     rm -rf vhost-net*
     ./dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
@@ -187,13 +187,13 @@ Test Case 3: VM2VM vhost-user/virtio1.0-pmd with vector_rx path
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :12
 
-3. On VM1, bind vdev with igb_uio driver,then run testpmd, set rxonly for virtio1, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
+3. On VM1, bind vdev with vfio-pci driver,then run testpmd, set rxonly for virtio1, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
 
     ./dpdk-testpmd -c 0x3 -n 4 -a 0000:xx.00,vectorized=1 -- -i --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
-4. On VM2, bind vdev with igb_uio driver,then run testpmd, set txonly for virtio2, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
+4. On VM2, bind vdev with vfio-pci driver,then run testpmd, set txonly for virtio2, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
 
     ./dpdk-testpmd -c 0x3 -n 4 -a 0000:xx.00,vectorized=1 -- -i --txd=1024 --rxd=1024
     testpmd>set fwd txonly
@@ -211,7 +211,7 @@ Test Case 3: VM2VM vhost-user/virtio1.0-pmd with vector_rx path
 Test Case 4: VM2VM vhost-user/virtio1.0-pmd with normal path
 ============================================================
 
-1. Bind one physical nic port to igb_uio, then launch the testpmd by below commands::
+1. Bind one physical nic port to vfio-pci, then launch the testpmd by below commands::
 
     rm -rf vhost-net*
     ./dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
@@ -242,13 +242,13 @@ Test Case 4: VM2VM vhost-user/virtio1.0-pmd with normal path
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :12
 
-3. On VM1, bind vdev with igb_uio driver,then run testpmd, set rxonly for virtio1 ::
+3. On VM1, bind vdev with vfio-pci driver,then run testpmd, set rxonly for virtio1 ::
 
     ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
-4. On VM2, bind vdev with igb_uio driver,then run testpmd, set txonly for virtio2 ::
+4. On VM2, bind vdev with vfio-pci driver,then run testpmd, set txonly for virtio2 ::
 
     ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
     testpmd>set fwd txonly
@@ -266,7 +266,7 @@ Test Case 4: VM2VM vhost-user/virtio1.0-pmd with normal path
 Test Case 5: VM2VM vhost-user/virtio-pmd mergeable path with payload valid check
 ================================================================================
 
-1. Bind virtio with igb_uio driver, launch the testpmd by below commands::
+1. Bind virtio with vfio-pci driver, launch the testpmd by below commands::
 
     ./dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -309,7 +309,7 @@ Test Case 5: VM2VM vhost-user/virtio-pmd mergeable path with payload valid check
     -CONFIG_RTE_LIBRTE_PMD_PCAP=n
     +CONFIG_RTE_LIBRTE_PMD_PCAP=y
 
-4. Bind virtio with igb_uio driver,then run testpmd, set rxonly mode for virtio-pmd on VM1::
+4. Bind virtio with vfio-pci driver,then run testpmd, set rxonly mode for virtio-pmd on VM1::
 
     ./dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd rxonly
@@ -319,7 +319,7 @@ Test Case 5: VM2VM vhost-user/virtio-pmd mergeable path with payload valid check
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=test -- --pdump  'port=0,queue=*,rx-dev=/root/pdump-rx.pcap,mbuf-size=8000'
 
-6. On VM2, bind virtio with igb_uio driver,then run testpmd, config tx_packets to 8k length with chain mode::
+6. On VM2, bind virtio with vfio-pci driver,then run testpmd, config tx_packets to 8k length with chain mode::
 
     ./dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd mac
@@ -354,7 +354,7 @@ Test Case 5: VM2VM vhost-user/virtio-pmd mergeable path with payload valid check
 Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid check
 ===================================================================================
 
-1. Bind virtio with igb_uio driver, launch the testpmd by below commands::
+1. Bind virtio with vfio-pci driver, launch the testpmd by below commands::
 
     ./dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -397,7 +397,7 @@ Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid ch
     -CONFIG_RTE_LIBRTE_PMD_PCAP=n
     +CONFIG_RTE_LIBRTE_PMD_PCAP=y
 
-4. Bind virtio with igb_uio driver,then run testpmd, set rxonly mode for virtio-pmd on VM1::
+4. Bind virtio with vfio-pci driver,then run testpmd, set rxonly mode for virtio-pmd on VM1::
 
     ./dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd rxonly
@@ -407,7 +407,7 @@ Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid ch
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=test -- --pdump  'port=0,queue=*,rx-dev=/root/pdump-rx.pcap,mbuf-size=8000'
 
-6. On VM2, bind virtio with igb_uio driver,then run testpmd, config tx_packets to 8k length with chain mode::
+6. On VM2, bind virtio with vfio-pci driver,then run testpmd, config tx_packets to 8k length with chain mode::
 
     ./dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd mac
@@ -442,7 +442,7 @@ Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid ch
 Test Case 7: VM2VM vhost-user/virtio1.1-pmd mergeable path with payload valid check
 ===================================================================================
 
-1. Bind virtio with igb_uio driver, launch the testpmd by below commands::
+1. Bind virtio with vfio-pci driver, launch the testpmd by below commands::
 
     ./dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -485,7 +485,7 @@ Test Case 7: VM2VM vhost-user/virtio1.1-pmd mergeable path with payload valid ch
     -CONFIG_RTE_LIBRTE_PMD_PCAP=n
     +CONFIG_RTE_LIBRTE_PMD_PCAP=y
 
-4. Bind virtio with igb_uio driver,then run testpmd, set rxonly mode for virtio-pmd on VM1::
+4. Bind virtio with vfio-pci driver,then run testpmd, set rxonly mode for virtio-pmd on VM1::
 
     ./dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd rxonly
@@ -495,7 +495,7 @@ Test Case 7: VM2VM vhost-user/virtio1.1-pmd mergeable path with payload valid ch
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=test -- --pdump  'port=0,queue=*,rx-dev=/root/pdump-rx.pcap,mbuf-size=8000'
 
-6. On VM2, bind virtio with igb_uio driver,then run testpmd, config tx_packets to 8k length with chain mode::
+6. On VM2, bind virtio with vfio-pci driver,then run testpmd, config tx_packets to 8k length with chain mode::
 
     ./dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd mac
@@ -530,7 +530,7 @@ Test Case 7: VM2VM vhost-user/virtio1.1-pmd mergeable path with payload valid ch
 Test Case 8: VM2VM vhost-user/virtio1.1-pmd with normal path
 ============================================================
 
-1. Bind one physical nic port to igb_uio, then launch the testpmd by below commands::
+1. Bind one physical nic port to vfio-pci, then launch the testpmd by below commands::
 
     rm -rf vhost-net*
     ./dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
@@ -561,13 +561,13 @@ Test Case 8: VM2VM vhost-user/virtio1.1-pmd with normal path
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
 
-3. On VM1, bind vdev with igb_uio driver,then run testpmd, set rxonly for virtio1 ::
+3. On VM1, bind vdev with vfio-pci driver,then run testpmd, set rxonly for virtio1 ::
 
     ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
-4. On VM2, bind vdev with igb_uio driver,then run testpmd, set txonly for virtio2 ::
+4. On VM2, bind vdev with vfio-pci driver,then run testpmd, set txonly for virtio2 ::
 
     ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
     testpmd>set fwd txonly
@@ -585,7 +585,7 @@ Test Case 8: VM2VM vhost-user/virtio1.1-pmd with normal path
 Test Case 9: VM2VM virtio-pmd split ring mergeable path 8 queues CBDMA enable with server mode stable test
 ==========================================================================================================
 
-1. Bind 16 cbdma channels to igb_uio driver, then launch the testpmd with 2 vhost port and 8 queues by below commands::
+1. Bind 16 cbdma channels to vfio-pci driver, then launch the testpmd with 2 vhost port and 8 queues by below commands::
 
     ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
     --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
@@ -659,7 +659,7 @@ Test Case 9: VM2VM virtio-pmd split ring mergeable path 8 queues CBDMA enable wi
 Test Case 10: VM2VM virtio-pmd split ring mergeable path dynamic queue size CBDMA enable with server mode test
 ==============================================================================================================
 
-1. Bind 16 cbdma channels to igb_uio driver, then launch the testpmd with 2 vhost ports below commands::
+1. Bind 16 cbdma channels to vfio-pci driver, then launch the testpmd with 2 vhost ports below commands::
 
     ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
     --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=4 --txq=4
@@ -730,7 +730,7 @@ Test Case 10: VM2VM virtio-pmd split ring mergeable path dynamic queue size CBDM
 Test Case 11: VM2VM virtio-pmd packed ring mergeable path 8 queues CBDMA enable test
 =====================================================================================
 
-1. Bind 16 cbdma channels to igb_uio driver, then launch the testpmd with 2 vhost port and 8 queues by below commands::
+1. Bind 16 cbdma channels to vfio-pci driver, then launch the testpmd with 2 vhost port and 8 queues by below commands::
 
     rm -rf vhost-net*
     ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \

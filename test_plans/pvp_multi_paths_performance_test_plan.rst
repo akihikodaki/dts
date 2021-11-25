@@ -56,7 +56,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 Test Case 1: pvp test with virtio 1.1 mergeable path
 ====================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-3 \
@@ -80,7 +80,7 @@ Test Case 1: pvp test with virtio 1.1 mergeable path
 Test Case 2: pvp test with virtio 1.1 non-mergeable path
 ========================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-3 \
@@ -104,7 +104,7 @@ Test Case 2: pvp test with virtio 1.1 non-mergeable path
 Test Case 3: pvp test with inorder mergeable path
 =================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-3 \
@@ -128,7 +128,7 @@ Test Case 3: pvp test with inorder mergeable path
 Test Case 4: pvp test with inorder non-mergeable path
 =====================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4 \
@@ -152,7 +152,7 @@ Test Case 4: pvp test with inorder non-mergeable path
 Test Case 5: pvp test with mergeable path
 =========================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4 \
@@ -176,7 +176,7 @@ Test Case 5: pvp test with mergeable path
 Test Case 6: pvp test with non-mergeable path
 =============================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4 \
@@ -200,7 +200,7 @@ Test Case 6: pvp test with non-mergeable path
 Test Case 7: pvp test with vectorized_rx path
 =============================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4 \
@@ -224,7 +224,7 @@ Test Case 7: pvp test with vectorized_rx path
 Test Case 8: pvp test with virtio 1.1 inorder mergeable path
 ============================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-3 \
@@ -248,7 +248,7 @@ Test Case 8: pvp test with virtio 1.1 inorder mergeable path
 Test Case 9: pvp test with virtio 1.1 inorder non-mergeable path
 ================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-3 \
@@ -272,7 +272,7 @@ Test Case 9: pvp test with virtio 1.1 inorder non-mergeable path
 Test Case 10: pvp test with virtio 1.1 vectorized path
 ======================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-3 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \

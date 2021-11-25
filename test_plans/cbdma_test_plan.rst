@@ -93,7 +93,7 @@ NIC RX -> copy packet -> free original -> update mac addresses -> NIC TX
 Test Case1: CBDMA basic test with differnet size packets
 ========================================================
 
-1.Bind one cbdma port and one nic port to igb_uio driver.
+1.Bind one cbdma port and one nic port to vfio-pci driver.
 
 2.Launch dma app::
 
@@ -106,7 +106,7 @@ Test Case1: CBDMA basic test with differnet size packets
 Test Case2: CBDMA test with multi-threads
 =========================================
 
-1.Bind one cbdma port and one nic port to igb_uio driver.
+1.Bind one cbdma port and one nic port to vfio-pci driver.
 
 2.Launch dma app with three cores::
 
@@ -119,7 +119,7 @@ Test Case2: CBDMA test with multi-threads
 Test Case3: CBDMA test with multi nic ports
 ===========================================
 
-1.Bind two cbdma ports and two nic ports to igb_uio driver.
+1.Bind two cbdma ports and two nic ports to vfio-pci driver.
 
 2.Launch dma app with multi-ports::
 
@@ -132,7 +132,7 @@ Test Case3: CBDMA test with multi nic ports
 Test Case4: CBDMA test with multi-queues
 ========================================
 
-1.Bind two cbdma ports and one nic port to igb_uio driver.
+1.Bind two cbdma ports and one nic port to vfio-pci driver.
 
 2.Launch dma app with multi-queues::
 
@@ -148,7 +148,7 @@ Check performance gains status when queue numbers added.
 Test Case5: CBDMA performance cmparison between mac-updating and no-mac-updating
 ================================================================================
 
-1.Bind one cbdma ports and one nic port to igb_uio driver.
+1.Bind one cbdma ports and one nic port to vfio-pci driver.
 
 2.Launch dma app::
 
@@ -173,7 +173,7 @@ Test Case5: CBDMA performance cmparison between mac-updating and no-mac-updating
 Test Case6: CBDMA performance cmparison between HW copies and SW copies using different packet size
 ===================================================================================================
 
-1.Bind four cbdma pors and one nic port to igb_uio driver.
+1.Bind four cbdma pors and one nic port to vfio-pci driver.
 
 2.Launch dma app with three cores::
 
@@ -198,7 +198,7 @@ Test Case6: CBDMA performance cmparison between HW copies and SW copies using di
 Test Case7: CBDMA multi application mode test
 =============================================
 
-1.Bind four cbdma ports to ugb_uio driver.
+1.Bind four cbdma ports to vfio-pci driver.
 
 2.Launch test-pmd app with three cores and proc_type primary:
 

@@ -47,7 +47,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 Test Case 1: PVP multi qemu version test with virtio 0.95 mergeable path
 ========================================================================
 
-1. Bind one port to igb_uio, then launch testpmd by below command::
+1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
     ./testpmd -c 0xe -n 4 \
@@ -72,7 +72,7 @@ Test Case 1: PVP multi qemu version test with virtio 0.95 mergeable path
     -device virtio-net-pci,netdev=netdev1,mac=52:54:00:00:00:01,mrg_rxbuf=on \
     -vnc :10
 
-4. On VM, bind virtio net to igb_uio and run testpmd ::
+4. On VM, bind virtio net to vfio-pci and run testpmd ::
     ./testpmd -c 0x3 -n 3 -- -i \
     --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -85,7 +85,7 @@ Test Case 1: PVP multi qemu version test with virtio 0.95 mergeable path
 Test Case 2: PVP test with virtio 1.0 mergeable path
 ====================================================
 
-1. Bind one port to igb_uio, then launch testpmd by below command::
+1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
     ./testpmd -c 0xe -n 4 \
@@ -110,7 +110,7 @@ Test Case 2: PVP test with virtio 1.0 mergeable path
     -device virtio-net-pci,netdev=netdev1,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on \
     -vnc :10
 
-3. On VM, bind virtio net to igb_uio and run testpmd::
+3. On VM, bind virtio net to vfio-pci and run testpmd::
 
     ./testpmd -c 0x3 -n 3 -- -i \
     --nb-cores=1 --txd=1024 --rxd=1024

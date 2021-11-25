@@ -141,7 +141,7 @@ SW preparation: Change one line of the symmetric_mp sample and rebuild::
     vi ./examples/multi_process/symmetric_mp/main.c
     -.offloads = DEV_RX_OFFLOAD_CHECKSUM,
 
-1. Bind one port to igb_uio, launch testpmd by below command::
+1. Bind one port to vfio-pci, launch testpmd by below command::
 
     ./testpmd -l 1-6 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=2,client=1' --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1'  -- -i --nb-cores=4 --rxq=2 --txq=2 --txd=1024 --rxd=1024
     testpmd>set fwd txonly
@@ -161,10 +161,10 @@ SW preparation: Change one line of the symmetric_mp sample and rebuild::
     -chardev socket,id=char1,path=./vhost-net1,server -netdev type=vhost-user,id=mynet2,chardev=char1,vhostforce,queues=2 \
     -device virtio-net-pci,mac=52:54:00:00:00:03,netdev=mynet2,mrg_rxbuf=on,csum=on,mq=on,vectors=15  -vnc :10 -daemonize
 
-3.  Bind virtio port to igb_uio::
+3.  Bind virtio port to vfio-pci::
 
-    ./usertools/dpdk-devbind.py --bind=igb_uio xx:xx.x
-    ./usertools/dpdk-devbind.py --bind=igb_uio xx:xx.x
+    ./usertools/dpdk-devbind.py --bind=vfio-pci xx:xx.x
+    ./usertools/dpdk-devbind.py --bind=vfio-pci xx:xx.x
 
 4. Launch two process by example::
 
@@ -199,10 +199,10 @@ Test Case 2: Virtio-pmd primary and secondary process hotplug test
     -chardev socket,id=char1,path=./vhost-net1,server -netdev type=vhost-user,id=mynet2,chardev=char1,vhostforce,queues=2 \
     -device virtio-net-pci,mac=52:54:00:00:00:03,netdev=mynet2,mrg_rxbuf=on,csum=on,mq=on,vectors=15  -vnc :10 -daemonize
 
-3.  Bind virtio port to igb_uio::
+3.  Bind virtio port to vfio-pci::
 
-    ./usertools/dpdk-devbind.py --bind=igb_uio xx:xx.x
-    ./usertools/dpdk-devbind.py --bind=igb_uio xx:xx.x
+    ./usertools/dpdk-devbind.py --bind=vfio-pci xx:xx.x
+    ./usertools/dpdk-devbind.py --bind=vfio-pci xx:xx.x
 
 4. Start sample code as primary process::
 

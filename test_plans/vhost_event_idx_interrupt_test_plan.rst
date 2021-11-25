@@ -399,7 +399,7 @@ Test Case 6: wake up packed ring vhost-user cores by multi virtio-net in VMs wit
 Test Case 7: wake up split ring vhost-user cores with event idx interrupt mode and cbdma enabled 16 queues test
 ===============================================================================================================
 
-1. Bind 16 cbdma ports to igb_uio driver, then launch l3fwd-power example app with client mode::
+1. Bind 16 cbdma ports to vfio-pci driver, then launch l3fwd-power example app with client mode::
 
     ./l3fwd-power -l 1-16 -n 4 --log-level=9 \
     --vdev 'eth_vhost0,iface=/vhost-net0,queues=16,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7]' \
@@ -460,7 +460,7 @@ Test Case 7: wake up split ring vhost-user cores with event idx interrupt mode a
 Test Case 8: wake up split ring vhost-user cores by multi virtio-net in VMs with event idx interrupt mode and cbdma enabled test
 ================================================================================================================================
 
-1. Bind two cbdma ports to igb_uio driver, then launch l3fwd-power example app with client mode::
+1. Bind two cbdma ports to vfio-pci driver, then launch l3fwd-power example app with client mode::
 
     ./l3fwd-power -l 1-2 -n 4 --log-level=9 \
     --vdev 'eth_vhost0,iface=/vhost-net0,queues=1,client=1,dmas=[txq0@00:04.0]' \
@@ -515,7 +515,7 @@ Test Case 8: wake up split ring vhost-user cores by multi virtio-net in VMs with
 Test Case 9: wake up packed ring vhost-user cores with event idx interrupt mode and cbdma enabled 16 queues test
 ================================================================================================================
 
-1. Bind 16 cbdma ports to igb_uio driver, then launch l3fwd-power example app with client mode::
+1. Bind 16 cbdma ports to vfio-pci driver, then launch l3fwd-power example app with client mode::
 
     ./l3fwd-power -l 1-16 -n 4 --log-level=9 \
     --vdev 'eth_vhost0,iface=/vhost-net0,queues=16,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7]' \
@@ -576,7 +576,7 @@ Test Case 9: wake up packed ring vhost-user cores with event idx interrupt mode 
 Test Case 10: wake up packed ring vhost-user cores by multi virtio-net in VMs with event idx interrupt mode and cbdma enabled test
 ==================================================================================================================================
 
-1. Bind two cbdma ports to igb_uio driver, then launch l3fwd-power example app with client mode::
+1. Bind two cbdma ports to vfio-pci driver, then launch l3fwd-power example app with client mode::
 
     ./l3fwd-power -l 1-2 -n 4 --log-level=9 \
     --vdev 'eth_vhost0,iface=/vhost-net0,queues=1,client=1,dmas=[txq0@00:04.0]' \

@@ -70,7 +70,7 @@ Test Case 1: packet forward test for container networking
     mkdir /mnt/huge
     mount -t hugetlbfs nodev /mnt/huge
 
-2. Bind one port to igb_uio, launch vhost::
+2. Bind one port to vfio-pci, launch vhost::
 
     ./testpmd -l 1-2 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i
 
@@ -92,7 +92,7 @@ Test Case 2: packet forward with multi-queues for container networking
     mkdir /mnt/huge
     mount -t hugetlbfs nodev /mnt/huge
 
-2. Bind one port to igb_uio, launch vhost::
+2. Bind one port to vfio-pci, launch vhost::
 
     ./testpmd -l 1-3 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2
 

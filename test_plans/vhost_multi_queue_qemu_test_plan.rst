@@ -43,7 +43,7 @@ Test Case: vhost pmd/virtio-pmd PVP 2queues mergeable path performance
 flow: 
 TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 
-1. Bind one port to igb_uio, then launch testpmd by below command: 
+1. Bind one port to vfio-pci, then launch testpmd by below command:
     rm -rf vhost-net*
     ./testpmd -c 0xe -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=2' -- \
@@ -62,7 +62,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
     -netdev tap,id=ipvm1,ifname=tap3,script=/etc/qemu-ifup -device rtl8139,netdev=ipvm1,id=net0,mac=00:00:00:00:10:01 \
     -vnc :2 -daemonize
 
-3. On VM, bind virtio net to igb_uio and run testpmd ::
+3. On VM, bind virtio net to vfio-pci and run testpmd ::
     ./testpmd -c 0x07 -n 3 -- -i \
     --rxq=2 --txq=2 --txqflags=0xf01 --rss-ip --nb-cores=2
     testpmd>set fwd mac
@@ -84,7 +84,7 @@ to RX/TX packets normally.
 flow: 
 TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 
-1. Bind one port to igb_uio, then launch testpmd by below command, 
+1. Bind one port to vfio-pci, then launch testpmd by below command,
    ensure the vhost using 2 queues::
 
     rm -rf vhost-net*
@@ -106,7 +106,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
     -netdev tap,id=ipvm1,ifname=tap3,script=/etc/qemu-ifup -device rtl8139,netdev=ipvm1,id=net0,mac=00:00:00:00:10:01 \
     -vnc :2 -daemonize
 
-3. On VM, bind virtio net to igb_uio and run testpmd,
+3. On VM, bind virtio net to vfio-pci and run testpmd,
    using one queue for testing at first::
  
     ./testpmd -c 0x7 -n 3 -- -i --rxq=1 --txq=1 --tx-offloads=0x0 \
@@ -160,7 +160,7 @@ packets.
 flow: 
 TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 
-1. Bind one port to igb_uio, then launch testpmd by below command, 
+1. Bind one port to vfio-pci, then launch testpmd by below command,
    ensure the vhost using 2 queues::
 
     rm -rf vhost-net*
@@ -182,7 +182,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
     -netdev tap,id=ipvm1,ifname=tap3,script=/etc/qemu-ifup -device rtl8139,netdev=ipvm1,id=net0,mac=00:00:00:00:10:01 \
     -vnc :2 -daemonize
 
-3. On VM, bind virtio net to igb_uio and run testpmd,
+3. On VM, bind virtio net to vfio-pci and run testpmd,
    using one queue for testing at first::
  
     ./testpmd -c 0x7 -n 4 -- -i --rxq=2 --txq=2 \

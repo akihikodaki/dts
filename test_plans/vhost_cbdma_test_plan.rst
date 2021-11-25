@@ -69,7 +69,7 @@ Packet pipeline:
 ================
 TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 
-1. Bind one cbdma port and one nic port to igb_uio, then launch vhost by below command::
+1. Bind one cbdma port and one nic port to vfio-pci, then launch vhost by below command::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas=[txq0@80:04.0]' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
@@ -127,7 +127,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 Test Case 2: Split ring dynamic queue number test for DMA-accelerated vhost Tx operations
 =========================================================================================
 
-1. Bind 8 cbdma channels and one nic port to igb_uio, then launch vhost by below command::
+1. Bind 8 cbdma channels and one nic port to vfio-pci, then launch vhost by below command::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 28-29  \
      --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=8,client=1' \
@@ -178,7 +178,7 @@ Packet pipeline:
 ================
 TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 
-1. Bind one cbdma port and one nic port to igb_uio, then launch vhost by below command::
+1. Bind one cbdma port and one nic port to vfio-pci, then launch vhost by below command::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas=[txq0@80:04.0]' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
@@ -245,7 +245,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 Test Case 4: Packed ring dynamic queue number test for DMA-accelerated vhost Tx operations
 ==========================================================================================
 
-1. Bind 8 cbdma channels and one nic port to igb_uio, then launch vhost by below command::
+1. Bind 8 cbdma channels and one nic port to vfio-pci, then launch vhost by below command::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 28-29  \
      --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=8,client=1' \
@@ -292,7 +292,7 @@ Test Case 4: Packed ring dynamic queue number test for DMA-accelerated vhost Tx 
 Test Case 5: Compare PVP split ring performance between CPU copy, CBDMA copy and Sync copy
 ==========================================================================================
 
-1. Bind one cbdma port and one nic port which on same numa to igb_uio, then launch vhost by below command::
+1. Bind one cbdma port and one nic port which on same numa to vfio-pci, then launch vhost by below command::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=1,client=1,dmas=[txq0@00:01.0]' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024

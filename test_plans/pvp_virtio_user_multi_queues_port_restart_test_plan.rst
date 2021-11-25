@@ -51,7 +51,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 Test Case 1: pvp 2 queues test with packed ring mergeable path
 ===============================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  \
@@ -89,7 +89,7 @@ Test Case 1: pvp 2 queues test with packed ring mergeable path
 Test Case 2: pvp 2 queues test with packed ring non-mergeable path
 ==================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  \
@@ -122,7 +122,7 @@ Test Case 2: pvp 2 queues test with packed ring non-mergeable path
 Test Case 3: pvp 2 queues test with split ring inorder mergeable path
 =====================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  \
@@ -155,7 +155,7 @@ Test Case 3: pvp 2 queues test with split ring inorder mergeable path
 Test Case 4: pvp 2 queues test with split ring inorder non-mergeable path
 ==========================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  \
@@ -188,7 +188,7 @@ Test Case 4: pvp 2 queues test with split ring inorder non-mergeable path
 Test Case 5: pvp 2 queues test with split ring mergeable path
 =============================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  \
@@ -221,7 +221,7 @@ Test Case 5: pvp 2 queues test with split ring mergeable path
 Test Case 6: pvp 2 queues test with split ring non-mergeable path
 =================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  \
@@ -254,7 +254,7 @@ Test Case 6: pvp 2 queues test with split ring non-mergeable path
 Test Case 7: pvp 2 queues test with split ring vector_rx path
 =============================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  \
@@ -287,7 +287,7 @@ Test Case 7: pvp 2 queues test with split ring vector_rx path
 Test Case 8: pvp 2 queues test with packed ring inorder mergeable path
 ======================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  \
@@ -320,7 +320,7 @@ Test Case 8: pvp 2 queues test with packed ring inorder mergeable path
 Test Case 9: pvp 2 queues test with packed ring inorder non-mergeable path
 ===========================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  \
@@ -353,7 +353,7 @@ Test Case 9: pvp 2 queues test with packed ring inorder non-mergeable path
 Test Case 10: pvp 2 queues test with packed ring vectorized path
 ================================================================
 
-1. Bind one port to igb_uio, then launch vhost by below command::
+1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  \

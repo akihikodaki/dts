@@ -127,9 +127,9 @@ Test Case1: DPDK GRO lightmode test with tcp/ipv4 traffic
     ip netns exec ns1 ifconfig [enp216s0f0] 1.1.1.8 up
     ip netns exec ns1 ethtool -K [enp216s0f0] tso on
 
-2. Bind nic1 to igb_uio, launch vhost-user with testpmd and set flush interval to 1::
+2. Bind nic1 to vfio-pci, launch vhost-user with testpmd and set flush interval to 1::
 
-    ./dpdk-devbind.py -b igb_uio xx:xx.x
+    ./dpdk-devbind.py -b vfio-pci xx:xx.x
     ./testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
@@ -179,9 +179,9 @@ Test Case2: DPDK GRO heavymode test with tcp/ipv4 traffic
     ip netns exec ns1 ifconfig [enp216s0f0] 1.1.1.8 up
     ip netns exec ns1 ethtool -K [enp216s0f0] tso on
 
-2. Bind nic1 to igb_uio, launch vhost-user with testpmd and set flush interval to 2::
+2. Bind nic1 to vfio-pci, launch vhost-user with testpmd and set flush interval to 2::
 
-    ./dpdk-devbind.py -b igb_uio xx:xx.x
+    ./dpdk-devbind.py -b vfio-pci xx:xx.x
     ./testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
@@ -231,9 +231,9 @@ Test Case3: DPDK GRO heavymode_flush4 test with tcp/ipv4 traffic
     ip netns exec ns1 ifconfig [enp216s0f0] 1.1.1.8 up
     ip netns exec ns1 ethtool -K [enp216s0f0] tso on
 
-2. Bind nic1 to igb_uio, launch vhost-user with testpmd and set flush interval to 4::
+2. Bind nic1 to vfio-pci, launch vhost-user with testpmd and set flush interval to 4::
 
-    ./dpdk-devbind.py -b igb_uio xx:xx.x
+    ./dpdk-devbind.py -b vfio-pci xx:xx.x
     ./testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
@@ -299,9 +299,9 @@ Vxlan topology
     ip netns exec t2 ip addr add $VXLAN_IP/24 dev $VXLAN_NAME
     ip netns exec t2 ip link set up dev $VXLAN_NAME
 
-2. Bind nic1 to igb_uio, launch vhost-user with testpmd and set flush interval to 4::
+2. Bind nic1 to vfio-pci, launch vhost-user with testpmd and set flush interval to 4::
 
-    ./dpdk-devbind.py -b igb_uio xx:xx.x
+    ./dpdk-devbind.py -b vfio-pci xx:xx.x
     ./testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
@@ -363,9 +363,9 @@ NIC2(In kernel) -> NIC1(DPDK) -> testpmd(csum fwd) -> Vhost -> Virtio-net
     ip netns exec ns1 ifconfig enp26s0f0 1.1.1.8 up
     ip netns exec ns1 ethtool -K enp26s0f0 tso on
 
-2. Bind cbdma port and nic1 to igb_uio, launch vhost-user with testpmd and set flush interval to 1::
+2. Bind cbdma port and nic1 to vfio-pci, launch vhost-user with testpmd and set flush interval to 1::
 
-    ./dpdk-devbind.py -b igb_uio xx:xx.x
+    ./dpdk-devbind.py -b vfio-pci xx:xx.x
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 29-31 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2' -- -i --txd=1024 --rxd=1024 --txq=2 --rxq=2 --nb-cores=2
     set fwd csum
@@ -421,9 +421,9 @@ NIC2(In kernel) -> NIC1(DPDK) -> testpmd(csum fwd) -> Vhost -> Virtio-net
     ip netns exec ns1 ifconfig enp26s0f0 1.1.1.8 up
     ip netns exec ns1 ethtool -K enp26s0f0 tso on
 
-2. Bind cbdma port and nic1 to igb_uio, launch vhost-user with testpmd and set flush interval to 1::
+2. Bind cbdma port and nic1 to vfio-pci, launch vhost-user with testpmd and set flush interval to 1::
 
-    ./dpdk-devbind.py -b igb_uio xx:xx.x
+    ./dpdk-devbind.py -b vfio-pci xx:xx.x
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 29-31 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[txq0@80:04.0;txq1@80:04.1]' -- -i --txd=1024 --rxd=1024 --txq=2 --rxq=2 --nb-cores=2
     set fwd csum

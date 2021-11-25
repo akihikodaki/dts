@@ -44,7 +44,7 @@ Test Case1:  Basic test for virtio-user split ring 2M hugepage
 
 1. Before the test, plese make sure only 2M hugepage are mounted in host.
 
-2. Bind one port to igb_uio, launch vhost::
+2. Bind one port to vfio-pci, launch vhost::
 
     ./testpmd -l 3-4 -n 4 --file-prefix=vhost \
     --vdev 'net_vhost0,iface=/tmp/sock0,queues=1' -- -i
@@ -64,7 +64,7 @@ Test Case1:  Basic test for virtio-user packed ring 2M hugepage
 
 1. Before the test, plese make sure only 2M hugepage are mounted in host.
 
-2. Bind one port to igb_uio, launch vhost::
+2. Bind one port to vfio-pci, launch vhost::
 
     ./testpmd -l 3-4 -n 4 --file-prefix=vhost \
     --vdev 'net_vhost0,iface=/tmp/sock0,queues=1' -- -i

@@ -49,7 +49,7 @@ Test Case 1: default hugepage size w/ and w/o numa
 
     mount -t hugetlbfs hugetlbfs /mnt/huge
 
-2. Bind one nic port to igb_uio driver, launch testpmd::
+2. Bind one nic port to vfio-pci driver, launch testpmd::
 
     ./dpdk-testpmd -c 0x3 -n 4 --huge-dir /mnt/huge --file-prefix=abc -- -i
     testpmd>start
@@ -71,7 +71,7 @@ Test Case 2: mount size exactly match total hugepage size with two mount points
     mount -t hugetlbfs -o size=4G hugetlbfs /mnt/huge1
     mount -t hugetlbfs -o size=4G hugetlbfs /mnt/huge2
 
-2. Bind two nic ports to igb_uio driver, launch testpmd with numactl::
+2. Bind two nic ports to vfio-pci driver, launch testpmd with numactl::
 
     numactl --membind=1 ./dpdk-testpmd -l 31-32 -n 4 --legacy-mem --socket-mem 0,2048 --huge-dir /mnt/huge1 --file-prefix=abc -a 82:00.0 -- -i --socket-num=1 --no-numa
     testpmd>start
@@ -88,7 +88,7 @@ Test Case 3: mount size greater than total hugepage size with single mount point
 
     mount -t hugetlbfs -o size=9G hugetlbfs /mnt/huge
 
-2. Bind one nic port to igb_uio driver, launch testpmd::
+2. Bind one nic port to vfio-pci driver, launch testpmd::
 
     ./dpdk-testpmd -c 0x3 -n 4 --legacy-mem --huge-dir /mnt/huge --file-prefix=abc -- -i
     testpmd>start
@@ -104,7 +104,7 @@ Test Case 4: mount size greater than total hugepage size with multiple mount poi
     mount -t hugetlbfs -o size=4G hugetlbfs /mnt/huge2
     mount -t hugetlbfs -o size=1G hugetlbfs /mnt/huge3
 
-2. Bind one nic port to igb_uio driver, launch testpmd::
+2. Bind one nic port to vfio-pci driver, launch testpmd::
 
     numactl --membind=0 ./dpdk-testpmd -c 0x3 -n 4  --legacy-mem --socket-mem 2048,0 --huge-dir /mnt/huge1 --file-prefix=abc -- -i --socket-num=0 --no-numa
     testpmd>start
@@ -120,7 +120,7 @@ Test Case 4: mount size greater than total hugepage size with multiple mount poi
 Test Case 5: run dpdk app in limited hugepages controlled by cgroup
 ===================================================================
 
-1. Bind one nic port to igb_uio driver, launch testpmd in limited hugepages::
+1. Bind one nic port to vfio-pci driver, launch testpmd in limited hugepages::
 
     cgcreate -g hugetlb:/test-subgroup
     cgset -r hugetlb.1GB.limit_in_bytes=2147483648 test-subgroup

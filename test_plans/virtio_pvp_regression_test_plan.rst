@@ -49,7 +49,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 Test Case 1: pvp test with virtio 0.95 mergeable path
 =====================================================
 
-1. Bind one port to igb_uio, then launch testpmd by below command::
+1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 1-3 -n 4 \
@@ -70,7 +70,7 @@ Test Case 1: pvp test with virtio 0.95 mergeable path
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024,mq=on,vectors=15 \
     -vnc :10
 
-3. On VM, bind virtio net to igb_uio and run testpmd without tx-offloads::
+3. On VM, bind virtio net to vfio-pci and run testpmd without tx-offloads::
 
     ./testpmd -c 0x7 -n 4 -- -i --enable-hw-vlan-strip\
     --nb-cores=2 --rxq=2 --txq=2 --txd=1024 --rxd=1024
@@ -88,7 +88,7 @@ Test Case 1: pvp test with virtio 0.95 mergeable path
 Test Case 2: pvp test with virtio 0.95 non-mergeable path
 =========================================================
 
-1. Bind one port to igb_uio, then launch testpmd by below command::
+1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 1-3 -n 4 \
@@ -109,7 +109,7 @@ Test Case 2: pvp test with virtio 0.95 non-mergeable path
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024,mq=on,vectors=15 \
     -vnc :10
 
-3. On VM, bind virtio net to igb_uio and run testpmd without tx-offloads::
+3. On VM, bind virtio net to vfio-pci and run testpmd without tx-offloads::
 
     ./testpmd -c 0x7 -n 4 -- -i --enable-hw-vlan-strip\
     --nb-cores=2 --rxq=2 --txq=2 --txd=1024 --rxd=1024
@@ -127,7 +127,7 @@ Test Case 2: pvp test with virtio 0.95 non-mergeable path
 Test Case 3: pvp test with virtio 0.95 vrctor_rx path
 =====================================================
 
-1. Bind one port to igb_uio, then launch testpmd by below command::
+1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 1-3 -n 4 \
@@ -148,7 +148,7 @@ Test Case 3: pvp test with virtio 0.95 vrctor_rx path
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024,mq=on,vectors=15 \
     -vnc :10
 
-3. On VM, bind virtio net to igb_uio and run testpmd without tx-offloads, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
+3. On VM, bind virtio net to vfio-pci and run testpmd without tx-offloads, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
 
     ./testpmd -c 0x7 -n 3 -a 0000:xx.00,vectorized -- -i \
     --nb-cores=2 --rxq=2 --txq=2 --txd=1024 --rxd=1024
@@ -166,7 +166,7 @@ Test Case 3: pvp test with virtio 0.95 vrctor_rx path
 Test Case 4: pvp test with virtio 1.0 mergeable path
 ====================================================
 
-1. Bind one port to igb_uio, then launch testpmd by below command::
+1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 1-3 -n 4 \
@@ -187,7 +187,7 @@ Test Case 4: pvp test with virtio 1.0 mergeable path
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024,mq=on,vectors=15 \
     -vnc :10
 
-3. On VM, bind virtio net to igb_uio and run testpmd without tx-offloads::
+3. On VM, bind virtio net to vfio-pci and run testpmd without tx-offloads::
 
     ./testpmd -c 0x7 -n 4 -- -i --enable-hw-vlan-strip\
     --nb-cores=2 --rxq=2 --txq=2 --txd=1024 --rxd=1024
@@ -205,7 +205,7 @@ Test Case 4: pvp test with virtio 1.0 mergeable path
 Test Case 5: pvp test with virtio 1.0 non-mergeable path
 ========================================================
 
-1. Bind one port to igb_uio, then launch testpmd by below command::
+1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 1-3 -n 4 \
@@ -226,7 +226,7 @@ Test Case 5: pvp test with virtio 1.0 non-mergeable path
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024,mq=on,vectors=15 \
     -vnc :10
 
-3. On VM, bind virtio net to igb_uio and run testpmd without tx-offloads::
+3. On VM, bind virtio net to vfio-pci and run testpmd without tx-offloads::
 
     ./testpmd -c 0x7 -n 4 -- -i --enable-hw-vlan-strip\
     --nb-cores=2 --rxq=2 --txq=2 --txd=1024 --rxd=1024
@@ -244,7 +244,7 @@ Test Case 5: pvp test with virtio 1.0 non-mergeable path
 Test Case 6: pvp test with virtio 1.0 vrctor_rx path
 ====================================================
 
-1. Bind one port to igb_uio, then launch testpmd by below command::
+1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 1-3 -n 4 \
@@ -265,7 +265,7 @@ Test Case 6: pvp test with virtio 1.0 vrctor_rx path
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024,mq=on,vectors=15 \
     -vnc :10
 
-3. On VM, bind virtio net to igb_uio and run testpmd without tx-offloads, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
+3. On VM, bind virtio net to vfio-pci and run testpmd without tx-offloads, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
 
     ./testpmd -c 0x7 -n 3 -a 0000:xx.00,vectorized -- -i \
     --nb-cores=2 --rxq=2 --txq=2 --txd=1024 --rxd=1024
@@ -283,7 +283,7 @@ Test Case 6: pvp test with virtio 1.0 vrctor_rx path
 Test Case 7: pvp test with virtio 1.1 mergeable path
 ====================================================
 
-1. Bind one port to igb_uio, then launch testpmd by below command::
+1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 1-3 -n 4 \
@@ -304,7 +304,7 @@ Test Case 7: pvp test with virtio 1.1 mergeable path
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=2 \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024,mq=on,vectors=15,packed=on -vnc :10
 
-3. On VM, bind virtio net to igb_uio and run testpmd without tx-offloads::
+3. On VM, bind virtio net to vfio-pci and run testpmd without tx-offloads::
 
     ./testpmd -c 0x7 -n 4 -- -i --enable-hw-vlan-strip \
     --nb-cores=2 --rxq=2 --txq=2 --txd=1024 --rxd=1024
@@ -322,7 +322,7 @@ Test Case 7: pvp test with virtio 1.1 mergeable path
 Test Case 8: pvp test with virtio 1.1 non-mergeable path
 =========================================================
 
-1. Bind one port to igb_uio, then launch testpmd by below command::
+1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
     ./testpmd -l 1-3 -n 4 \
@@ -343,7 +343,7 @@ Test Case 8: pvp test with virtio 1.1 non-mergeable path
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=2 \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024,mq=on,vectors=15,packed=on -vnc :10
 
-3. On VM, bind virtio net to igb_uio and run testpmd without tx-offloads::
+3. On VM, bind virtio net to vfio-pci and run testpmd without tx-offloads::
 
     ./testpmd -c 0x7 -n 4 -- -i --enable-hw-vlan-strip \
     --nb-cores=2 --rxq=2 --txq=2 --txd=1024 --rxd=1024

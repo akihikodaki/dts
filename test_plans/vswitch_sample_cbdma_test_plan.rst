@@ -62,7 +62,7 @@ Modify the testpmd code as following::
 Test Case1: PVP performance check with CBDMA channel using vhost async driver
 =============================================================================
 
-1. Bind physical port to vfio-pci and CBDMA channel to igb_uio.
+1. Bind physical port to vfio-pci and CBDMA channel to vfio-pci.
 
 2. On host, launch dpdk-vhost by below command::
 
@@ -98,7 +98,7 @@ Test Case1: PVP performance check with CBDMA channel using vhost async driver
 Test Case2: PVP test with two VM and two CBDMA channels using vhost async driver
 =================================================================================
 
-1. Bind one physical ports to vfio-pci and two CBDMA channels to igb_uio.
+1. Bind one physical ports to vfio-pci and two CBDMA channels to vfio-pci.
 
 2. On host, launch dpdk-vhost by below command::
 
@@ -136,7 +136,7 @@ Test Case2: PVP test with two VM and two CBDMA channels using vhost async driver
 Test Case3: VM2VM forwarding test with two CBDMA channels
 =========================================================
 
-1.Bind one physical ports to vfio-pci and two CBDMA channels to igb_uio.
+1.Bind one physical ports to vfio-pci and two CBDMA channels to vfio-pci.
 
 2. On host, launch dpdk-vhost by below command::
 
@@ -183,7 +183,7 @@ Test Case3: VM2VM forwarding test with two CBDMA channels
 Test Case4: VM2VM test with cbdma channels register/unregister stable check
 ============================================================================
 
-1. Bind one physical ports to vfio-pci and two CBDMA channels to igb_uio.
+1. Bind one physical ports to vfio-pci and two CBDMA channels to vfio-pci.
 
 2. On host, launch dpdk-vhost by below command::
 
@@ -263,7 +263,7 @@ Test Case4: VM2VM test with cbdma channels register/unregister stable check
 Test Case5: VM2VM split ring test with iperf and reconnect stable check
 =======================================================================
 
-1. Bind one physical ports to vfio-pci and two CBDMA channels to igb_uio.
+1. Bind one physical ports to vfio-pci and two CBDMA channels to vfio-pci.
 
 2. On host, launch dpdk-vhost by below command::
 
@@ -322,7 +322,7 @@ Test Case5: VM2VM split ring test with iperf and reconnect stable check
 Test Case6: VM2VM packed ring test with iperf and reconnect stable test
 =======================================================================
 
-1. Bind one physical ports to vfio-pci and two CBDMA channels to igb_uio.
+1. Bind one physical ports to vfio-pci and two CBDMA channels to vfio-pci.
 
 2. On host, launch dpdk-vhost by below command::
 

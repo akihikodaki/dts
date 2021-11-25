@@ -44,7 +44,7 @@ Test Case1: Split ring virtio-user interrupt test with vhost-user as backend
 
 flow: TG --> NIC --> Vhost --> Virtio
 
-1. Bind one NIC port to igb_uio, launch testpmd with a virtual vhost device as backend::
+1. Bind one NIC port to vfio-pci, launch testpmd with a virtual vhost device as backend::
 
     ./testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i  --rxq=1 --txq=1
     testpmd>start
@@ -114,7 +114,7 @@ Test Case4: Packed ring virtio-user interrupt test with vhost-user as backend
 
 flow: TG --> NIC --> Vhost --> Virtio
 
-1. Bind one NIC port to igb_uio, launch testpmd with a virtual vhost device as backend::
+1. Bind one NIC port to vfio-pci, launch testpmd with a virtual vhost device as backend::
 
     ./testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i  --rxq=1 --txq=1
     testpmd>start
@@ -184,7 +184,7 @@ Test Case7: LSC event between vhost-user and virtio-user with split ring and cbd
 
 flow: Vhost <--> Virtio
 
-1. Bind one cbdma port to igb_uio driver, then start vhost-user side::
+1. Bind one cbdma port to vfio-pci driver, then start vhost-user side::
 
     ./testpmd -c 0x3000 -n 4 -a 00:04.0 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0@00:04.0]' -- -i
     testpmd>set fwd mac
@@ -211,7 +211,7 @@ Test Case8: Split ring virtio-user interrupt test with vhost-user as backend and
 
 flow: TG --> NIC --> Vhost --> Virtio
 
-1. Bind one cbdma port and one NIC port to igb_uio, launch testpmd with a virtual vhost device as backend::
+1. Bind one cbdma port and one NIC port to vfio-pci, launch testpmd with a virtual vhost device as backend::
 
     ./testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0@00:04.0]' -- -i  --rxq=1 --txq=1
     testpmd>start
@@ -232,7 +232,7 @@ Test Case9: LSC event between vhost-user and virtio-user with packed ring and cb
 
 flow: Vhost <--> Virtio
 
-1. Bind one cbdma port to igb_uio driver, then start vhost-user side::
+1. Bind one cbdma port to vfio-pci driver, then start vhost-user side::
 
     ./testpmd -c 0x3000 -n 4 -a 00:04.0 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0@00:04.0]' -- -i
     testpmd>set fwd mac
@@ -259,7 +259,7 @@ Test Case10: Packed ring virtio-user interrupt test with vhost-user as backend a
 
 flow: TG --> NIC --> Vhost --> Virtio
 
-1. Bind one cbdma port and one NIC port to igb_uio, launch testpmd with a virtual vhost device as backend::
+1. Bind one cbdma port and one NIC port to vfio-pci, launch testpmd with a virtual vhost device as backend::
 
     ./testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0@00:04.0]' -- -i  --rxq=1 --txq=1
     testpmd>start

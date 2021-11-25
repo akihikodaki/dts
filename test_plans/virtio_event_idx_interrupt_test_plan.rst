@@ -49,7 +49,7 @@ TG --> NIC --> Vhost-user --> Virtio-net
 Test Case 1: Compare interrupt times with and without split ring virtio event idx enabled
 =========================================================================================
 
-1. Bind one nic port to igb_uio, then launch the vhost sample by below commands::
+1. Bind one nic port to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
     ./testpmd -c 0xF0000000 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1' -- -i
@@ -82,7 +82,7 @@ Test Case 1: Compare interrupt times with and without split ring virtio event id
 Test Case 2: Split ring virtio-pci driver reload test
 =====================================================
 
-1. Bind one nic port to igb_uio, then launch the vhost sample by below commands::
+1. Bind one nic port to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
     ./testpmd -c 0xF0000000 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
@@ -120,7 +120,7 @@ Test Case 2: Split ring virtio-pci driver reload test
 Test Case 3: Wake up split ring virtio-net cores with event idx interrupt mode 16 queues test
 =============================================================================================
 
-1. Bind one nic port to igb_uio, then launch the vhost sample by below commands::
+1. Bind one nic port to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
     ./testpmd -l 1-17 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=16' -- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
@@ -155,7 +155,7 @@ Test Case 3: Wake up split ring virtio-net cores with event idx interrupt mode 1
 Test Case 4: Compare interrupt times with and without packed ring virtio event idx enabled
 ==========================================================================================
 
-1. Bind one nic port to igb_uio, then launch the vhost sample by below commands::
+1. Bind one nic port to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
     ./testpmd -c 0xF0000000 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1' -- -i
@@ -188,7 +188,7 @@ Test Case 4: Compare interrupt times with and without packed ring virtio event i
 Test Case 5: Packed ring virtio-pci driver reload test
 ======================================================
 
-1. Bind one nic port to igb_uio, then launch the vhost sample by below commands::
+1. Bind one nic port to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
     ./testpmd -c 0xF0000000 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
@@ -226,7 +226,7 @@ Test Case 5: Packed ring virtio-pci driver reload test
 Test Case 6: Wake up packed ring virtio-net cores with event idx interrupt mode 16 queues test
 ==============================================================================================
 
-1. Bind one nic port to igb_uio, then launch the vhost sample by below commands::
+1. Bind one nic port to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
     ./testpmd -l 1-17 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=16' -- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
@@ -261,7 +261,7 @@ Test Case 6: Wake up packed ring virtio-net cores with event idx interrupt mode 
 Test Case 7: Split ring virtio-pci driver reload test with CBDMA enabled
 ========================================================================
 
-1. Bind one nic port and one cbdma channel to igb_uio, then launch the vhost sample by below commands::
+1. Bind one nic port and one cbdma channel to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
     ./testpmd -c 0xF0000000 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1,dmas=[txq0@00:04.0]' -- -i --nb-cores=1 --txd=1024 --rxd=1024
@@ -299,7 +299,7 @@ Test Case 7: Split ring virtio-pci driver reload test with CBDMA enabled
 Test Case 8: Wake up split ring virtio-net cores with event idx interrupt mode and cbdma enabled 16 queues test
 ================================================================================================================
 
-1. Bind one nic port and 16 cbdma channels to igb_uio, then launch the vhost sample by below commands::
+1. Bind one nic port and 16 cbdma channels to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
     ./testpmd -l 1-17 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=16,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7]' -- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
@@ -334,7 +334,7 @@ Test Case 8: Wake up split ring virtio-net cores with event idx interrupt mode a
 Test Case 9: Packed ring virtio-pci driver reload test with CBDMA enabled
 =========================================================================
 
-1. Bind one nic port and one cbdma channel to igb_uio, then launch the vhost sample by below commands::
+1. Bind one nic port and one cbdma channel to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
     ./testpmd -c 0xF0000000 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1,dmas=[txq0@00:04.0]' -- -i --nb-cores=1 --txd=1024 --rxd=1024
@@ -372,7 +372,7 @@ Test Case 9: Packed ring virtio-pci driver reload test with CBDMA enabled
 Test Case 10: Wake up packed ring virtio-net cores with event idx interrupt mode and cbdma enabled 16 queues test
 =================================================================================================================
 
-1. Bind one nic port and 16 cbdma channels to igb_uio, then launch the vhost sample by below commands::
+1. Bind one nic port and 16 cbdma channels to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
     ./testpmd -l 1-17 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=16,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7]' -- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16

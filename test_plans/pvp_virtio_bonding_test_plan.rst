@@ -50,7 +50,7 @@ Test case 1: vhost-user/virtio-pmd pvp bonding test with mode 0
 ===============================================================
 Flow: TG--> NIC --> Vhost --> Virtio3 --> Virtio4 --> Vhost--> NIC--> TG
 
-1. Bind one port to igb_uio,launch vhost by below command::
+1. Bind one port to vfio-pci,launch vhost by below command::
 
     ./testpmd -l 1-6 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1' --vdev 'net_vhost2,iface=vhost-net2,client=1,queues=1' --vdev 'net_vhost3,iface=vhost-net3,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=4 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -79,9 +79,9 @@ Flow: TG--> NIC --> Vhost --> Virtio3 --> Virtio4 --> Vhost--> NIC--> TG
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img -vnc :10
 
-3. On vm, bind four virtio-net devices to igb_uio::
+3. On vm, bind four virtio-net devices to vfio-pci::
 
-    ./dpdk-devbind.py -b igb_uio xx:xx.x xx:xx.x xx:xx.x xx:xx.x
+    ./dpdk-devbind.py -b vfio-pci xx:xx.x xx:xx.x xx:xx.x xx:xx.x
 
 4. Launch testpmd in VM::
 
@@ -112,7 +112,7 @@ Flow: TG--> NIC --> Vhost --> Virtio3 --> Virtio4 --> Vhost--> NIC--> TG
 Test case 2: vhost-user/virtio-pmd pvp bonding test with different mode from 1 to 6
 ===================================================================================
 
-1. Bind one port to igb_uio,launch vhost by below command::
+1. Bind one port to vfio-pci,launch vhost by below command::
 
     ./testpmd -l 1-6 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1' --vdev 'net_vhost2,iface=vhost-net2,client=1,queues=1' --vdev 'net_vhost3,iface=vhost-net3,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=4 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -141,9 +141,9 @@ Test case 2: vhost-user/virtio-pmd pvp bonding test with different mode from 1 t
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img -vnc :10
 
-3. On vm, bind four virtio-net devices to igb_uio::
+3. On vm, bind four virtio-net devices to vfio-pci::
 
-    ./dpdk-devbind.py -b igb_uio xx:xx.x xx:xx.x xx:xx.x xx:xx.x
+    ./dpdk-devbind.py -b vfio-pci xx:xx.x xx:xx.x xx:xx.x xx:xx.x
 
 4. Launch testpmd in VM::
 

@@ -54,7 +54,7 @@ Test Case1: Vhost/virtio-user pvp share lib test with niantic
 
     export LD_LIBRARY_PATH=/root/dpdk/x86_64-native-linuxapp-gcc/drivers:$LD_LIBRARY_PATH
 
-4. Bind niantic port with igb_uio, use option ``-d`` to load the dynamic pmd when launch vhost::
+4. Bind niantic port with vfio-pci, use option ``-d`` to load the dynamic pmd when launch vhost::
 
     ./testpmd  -c 0x03 -n 4 -d librte_net_vhost.so.21.0 -d librte_net_i40e.so.21.0 -d librte_mempool_ring.so.21.0 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i
@@ -75,7 +75,7 @@ Test Case2: Vhost/virtio-user pvp share lib test with fortville
 
 Similar as Test Case1, all steps are similar except step 4:
 
-4. Bind fortville port with igb_uio, use option ``-d`` to load the dynamic pmd when launch vhost::
+4. Bind fortville port with vfio-pci, use option ``-d`` to load the dynamic pmd when launch vhost::
 
     ./testpmd  -c 0x03 -n 4 -d librte_net_vhost.so -d librte_net_i40e.so -d librte_mempool_ring.so \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i

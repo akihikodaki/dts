@@ -52,7 +52,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 Test Case 1: Basic virtio interrupt test with 4 queues
 =======================================================
 
-1. Bind one NIC port to igb_uio, then launch testpmd by below command::
+1. Bind one NIC port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
     ./testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=4' -- -i --nb-cores=4 --rxq=4 --txq=4 --rss-ip
@@ -88,7 +88,7 @@ Test Case 1: Basic virtio interrupt test with 4 queues
 Test Case 2: Basic virtio interrupt test with 16 queues
 =======================================================
 
-1. Bind one NIC port to igb_uio, then launch testpmd by below command::
+1. Bind one NIC port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
     ./testpmd -c 0x1ffff -n 4 --vdev 'eth_vhost0,iface=vhost-net,queues=16' -- -i --nb-cores=16 --rxq=16 --txq=16 --rss-ip
@@ -124,7 +124,7 @@ Test Case 2: Basic virtio interrupt test with 16 queues
 Test Case 3: Basic virtio-1.0 interrupt test with 4 queues
 ==========================================================
 
-1. Bind one NIC port to igb_uio, then launch testpmd by below command::
+1. Bind one NIC port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
     ./testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=4' -- -i --nb-cores=4 --rxq=4 --txq=4 --rss-ip
@@ -160,7 +160,7 @@ Test Case 3: Basic virtio-1.0 interrupt test with 4 queues
 Test Case 4: Packed ring virtio interrupt test with 16 queues
 =============================================================
 
-1. Bind one NIC port to igb_uio, then launch testpmd by below command::
+1. Bind one NIC port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
     ./testpmd -c 0x1ffff -n 4 --vdev 'eth_vhost0,iface=vhost-net,queues=16' -- -i --nb-cores=16 --rxq=16 --txq=16 --rss-ip
@@ -196,7 +196,7 @@ Test Case 4: Packed ring virtio interrupt test with 16 queues
 Test Case 5: Basic virtio interrupt test with 16 queues and cbdma enabled
 =========================================================================
 
-1. Bind 16 cbdma channels and one NIC port to igb_uio, then launch testpmd by below command::
+1. Bind 16 cbdma channels and one NIC port to vfio-pci, then launch testpmd by below command::
 
     ./testpmd -c 0x1ffff -n 4 --vdev 'eth_vhost0,iface=vhost-net,queues=16,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7]' -- -i --nb-cores=16 --rxq=16 --txq=16 --rss-ip
 
@@ -231,7 +231,7 @@ Test Case 5: Basic virtio interrupt test with 16 queues and cbdma enabled
 Test Case 6: Basic virtio-1.0 interrupt test with 4 queues and cbdma enabled
 ============================================================================
 
-1. Bind four cbdma channels and one NIC port to igb_uio, then launch testpmd by below command::
+1. Bind four cbdma channels and one NIC port to vfio-pci, then launch testpmd by below command::
 
     ./testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=4,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3]' -- -i --nb-cores=4 --rxq=4 --txq=4 --rss-ip
 
@@ -266,7 +266,7 @@ Test Case 6: Basic virtio-1.0 interrupt test with 4 queues and cbdma enabled
 Test Case 7: Packed ring virtio interrupt test with 16 queues and cbdma enabled
 ===============================================================================
 
-1. Bind 16 cbdma channels ports and one NIC port to igb_uio, then launch testpmd by below command::
+1. Bind 16 cbdma channels ports and one NIC port to vfio-pci, then launch testpmd by below command::
 
     ./testpmd -c 0x1ffff -n 4 --vdev 'eth_vhost0,iface=vhost-net,queues=16,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7]' -- -i --nb-cores=16 --rxq=16 --txq=16 --rss-ip
 
