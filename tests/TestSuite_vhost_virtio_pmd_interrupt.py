@@ -268,11 +268,8 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         """
         get all cbdma ports
         """
-        # check driver name in execution.cfg
-        self.verify(self.drivername == 'igb_uio',
-                    "CBDMA test case only use igb_uio driver, need config drivername=igb_uio in execution.cfg")
-        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
-        cbdma_dev_infos = re.findall('\s*(0000:\d+:\d+.\d+)', out)
+        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev dma', '# ', 30)
+        cbdma_dev_infos = re.findall('\s*(0000:\S+:\d+.\d+)', out)
         self.verify(len(cbdma_dev_infos) >= cbdma_num, 'There no enough cbdma device to run this suite')
 
         used_cbdma = cbdma_dev_infos[0:cbdma_num]

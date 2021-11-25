@@ -676,11 +676,7 @@ class TestVM2VMVirtioPMD(TestCase):
         """
         get all cbdma ports
         """
-        # check driver name in execution.cfg
-        self.verify(self.drivername == 'igb_uio',
-                    "this case use igb_uio driver, need config drivername=igb_uio in execution.cfg")
-        str_info = 'Misc (rawdev) devices using kernel driver'
-        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
+        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev dma', '# ', 30)
         device_info = out.split('\n')
         for device in device_info:
             pci_info = re.search('\s*(0000:\S*:\d*.\d*)', device)

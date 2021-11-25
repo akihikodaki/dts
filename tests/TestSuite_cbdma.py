@@ -91,12 +91,10 @@ class TestCBDMA(TestCase):
         """
         get all cbdma ports
         """
-        # check driver name in execution.cfg
-        str_info = 'Misc (rawdev) devices using kernel driver'
         out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev dma', '# ', 30)
         device_info = out.split('\n')
         for device in device_info:
-            pci_info = re.search('\s*(0000:\d*:\d*.\d*)', device)
+            pci_info = re.search('\s*(0000:\S*:\d*.\d*)', device)
             if pci_info is not None:
                 dev_info = pci_info.group(1)
                 # the numa id of dma dev, only add the device which
