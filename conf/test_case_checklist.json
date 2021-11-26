@@ -3766,7 +3766,9 @@
              ],
              "NIC": [
                  "niantic",
-                 "foxville"
+                 "foxville",
+		 "columbiaville_100g",
+		 "columbiaville_25g"
              ],
              "Target": [
                  "ALL"
