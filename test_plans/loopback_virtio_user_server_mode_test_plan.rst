@@ -826,3 +826,115 @@ Test Case 12: loopback reconnect test with packed ring vectorized path and serve
 11. Check each RX/TX queue has packets::
 
      testpmd>stop
+
+Test Case 13: loopback packed ring and split ring mergeable path payload check test using server mode and multi-queues
+======================================================================================================================
+
+1. launch vhost::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 32-33 --no-pci --file-prefix=vhost -n 4 --vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1' -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+
+2. Launch virtio-user with packed ring mergeable inorder path::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,packed_vq=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+     testpmd> set fwd csum
+     testpmd> start
+
+3. Attach pdump secondary process to primary process by same file-prefix::
+
+   ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=virtio -- --pdump 'device_id=net_virtio_user0,queue=*,rx-dev=./pdump-virtio-rx.pcap,mbuf-size=8000'
+
+4. Send large pkts from vhost::
+
+    testpmd> set fwd csum
+    testpmd> set txpkts 2000,2000,2000,2000
+    testpmd> set burst 1
+    testpmd> start tx_first 1
+    testpmd> stop
+
+5. Quit pdump, check all the packets length are 8000 Byte in the pcap file, and the payload in receive packets are same.
+
+6. Quit and relaunch vhost and rerun step3-5.
+
+7. Quit and relaunch virtio with packed ring mergeable path as below::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,packed_vq=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+     testpmd> set fwd csum
+     testpmd> start
+
+8. Rerun step3-6.
+
+9. Quit and relaunch virtio with split ring mergeable inorder path as below::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+     testpmd>set fwd csum
+     testpmd>start
+
+10. Rerun step3-6.
+
+11. Quit and relaunch virtio with split ring mergeable path as below::
+
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+      testpmd> set fwd csum
+      testpmd> start
+
+12. Rerun step3-6.
+
+Test Case 14: loopback packed ring and split ring mergeable path cbdma test payload check with server mode and multi-queues
+===========================================================================================================================
+
+1. bind 8 cbdma port to vfio-pci and launch vhost::
+
+   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 32-33 -n 4 --vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]' -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+
+2. Launch virtio-user with packed ring mergeable inorder path::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,packed_vq=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+     testpmd>set fwd csum
+     testpmd>start
+
+3. Attach pdump secondary process to primary process by same file-prefix::
+
+   ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=virtio-user0 -- --pdump 'device_id=net_virtio_user0,queue=*,rx-dev=./pdump-virtio-rx.pcap,mbuf-size=8000'
+
+4. Send large pkts from vhost, check loopback performance can get expected and each queue can receive packets::
+
+    testpmd> vhost enable tx all
+    testpmd> set fwd csum
+    testpmd> set txpkts 64,64,64,2000,2000,2000
+    testpmd> start tx_first 32
+    testpmd> stop
+
+5. Quit pdump, check all the packets length are 6192 Byte in the pcap file, and the payload in receive packets are same.
+
+6. Quit and relaunch vhost and rerun step3-5.
+
+7. Quit and relaunch virtio with packed ring mergeable path as below::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=testpmd0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,packed_vq=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+    testpmd>set fwd csum
+    testpmd>start
+
+8. Rerun step3-6.
+
+9. Quit and relaunch virtio with split ring mergeable inorder path as below::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=testpmd0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+     testpmd>set fwd csum
+     testpmd>start
+
+10. Rerun step3-6.
+
+11. Quit and relaunch virtio with split ring mergeable path as below::
+
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=testpmd0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+      testpmd> set fwd csum
+      testpmd> start
+
+12. Rerun step3-6.
+
+13. Quit and relaunch vhost w/ iova=pa::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-3 --file-prefix=vhost -n 4 --vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' --iova=pa -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+
+14. rerun step3-5.
