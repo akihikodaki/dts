@@ -41,6 +41,7 @@ import framework.utils as utils
 from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 from framework.packet import Packet
+import copy
 
 class TestLoopbackVirtioUserServerMode(TestCase):
 
@@ -55,7 +56,11 @@ class TestLoopbackVirtioUserServerMode(TestCase):
                           == 0])
         self.verify(self.cores_num >= 6,
                     "There has not enought cores to test this case")
-        self.core_list = self.dut.get_core_list(self.core_config)
+        self.dut_ports = self.dut.get_ports()
+        self.unbind_ports = copy.deepcopy(self.dut_ports)
+        self.dut.unbind_interfaces_linux(self.unbind_ports)
+        self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
+        self.core_list = self.dut.get_core_list(self.core_config, socket=self.ports_socket)
         self.core_list_user = self.core_list[0:3]
         self.core_list_host = self.core_list[3:6]
         self.path=self.dut.apps_name['test-pmd']
@@ -63,8 +68,6 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         self.app_pdump = self.dut.apps_name['pdump']
         self.dump_pcap = "/root/pdump-rx.pcap"
         self.device_str = ''
-        self.dut_ports = self.dut.get_ports()
-        self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.cbdma_dev_infos = []
 
     def set_up(self):
@@ -230,6 +233,64 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         self.check_port_link_status_after_port_restart()
         self.vhost_pmd.execute_cmd("set txpkts 2000,2000,2000,2000", "testpmd> ", 120)
         self.vhost_pmd.execute_cmd("start tx_first 32", "testpmd> ", 120)
+
+    def launch_pdump_to_capture_pkt(self, dump_port):
+        """
+        bootup pdump in dut
+        """
+        self.pdump_session = self.dut.new_session(suite="pdump")
+        cmd = self.app_pdump + " " + \
+                "-v --file-prefix=virtio -- " + \
+                "--pdump  'device_id=%s,queue=*,rx-dev=%s,mbuf-size=8000'"
+        self.pdump_session.send_expect(cmd % (dump_port, self.dump_pcap), 'Port')
+
+    def check_packet_payload_valid(self, pkt_len, queue_number):
+        """
+        check the payload is valid
+        """
+        self.pdump_session.send_expect('^c', '# ', 60)
+        time.sleep(3)
+        self.dut.session.copy_file_from(src="%s" % self.dump_pcap, dst="%s" % self.dump_pcap)
+        pkt = Packet()
+        pkts = pkt.read_pcapfile(self.dump_pcap)
+        expect_data = str(pkts[0]['Raw'])
+
+        for i in range(len(pkts)):
+            self.verify(len(pkts[i]) == pkt_len, "virtio-user0 receive packet's length not equal %s Byte" %pkt_len)
+            check_data = str(pkts[i]['Raw'])
+            self.verify(check_data == expect_data, "the payload in receive packets has been changed from %s" %i)
+        self.dut.send_expect("rm -rf %s" % self.dump_pcap, "#")
+
+    def relanuch_vhost_testpmd_send_8k_packets(self, extern_params, cbdma=False, iova='va'):
+
+        self.vhost_pmd.execute_cmd("quit", "#", 60)
+        self.logger.info('now reconnet from vhost')
+        if cbdma:
+            self.lanuch_vhost_testpmd_with_cbdma(extern_params=extern_params, iova=iova)
+        else:
+            self.lanuch_vhost_testpmd_with_multi_queue(extern_params=extern_params, set_fwd_mac=False)
+        self.launch_pdump_to_capture_pkt(self.vuser0_port)
+        if cbdma:
+            self.start_to_send_8k_packets_csum_cbdma(self.vhost)
+        else:
+            self.start_to_send_8k_packets_csum(self.vhost)
+        self.check_packet_payload_valid(self.pkt_len, self.queue_number)
+
+    def relanuch_virtio_testpmd_with_multi_path(self, mode, case_info, extern_params, cbdma=False, iova="va"):
+
+        self.virtio_user_pmd.execute_cmd("quit", "#", 60)
+        self.logger.info(case_info)
+        self.lanuch_virtio_user_testpmd_with_multi_queue(mode=mode, extern_params=extern_params, set_fwd_mac=False)
+        self.virtio_user_pmd.execute_cmd("set fwd csum")
+        self.virtio_user_pmd.execute_cmd("start")
+        self.launch_pdump_to_capture_pkt(self.vuser0_port)
+        if cbdma:
+            self.start_to_send_8k_packets_csum_cbdma(self.vhost)
+        else:
+            self.start_to_send_8k_packets_csum(self.vhost)
+        self.check_packet_payload_valid(self.pkt_len, self.queue_number)
+
+        self.relanuch_vhost_testpmd_send_8k_packets(extern_params, cbdma, iova=iova)
 
     def relanuch_vhost_testpmd_with_multi_queue(self):
         self.vhost_pmd.execute_cmd("quit", "#", 60)
@@ -680,6 +741,134 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         self.check_packets_of_each_queue()
         self.close_all_testpmd()
 
+    def test_server_mode_reconnect_with_packed_and_split_mergeable_path_payload_check(self):
+        """
+        Test Case 13: loopback packed ring and split ring mergeable path payload check test using server mode and multi-queues
+        """
+        self.queue_number = 8
+        self.nb_cores = 1
+        extern_params = '--txd=1024 --rxd=1024'
+        case_info = 'packed ring mergeable inorder path'
+        mode = "mrg_rxbuf=1,in_order=1,packed_vq=1"
+
+        self.lanuch_vhost_testpmd_with_multi_queue(extern_params=extern_params, set_fwd_mac=False)
+        self.logger.info(case_info)
+        self.lanuch_virtio_user_testpmd_with_multi_queue(mode=mode, extern_params=extern_params, set_fwd_mac=False)
+        self.virtio_user_pmd.execute_cmd("set fwd csum")
+        self.virtio_user_pmd.execute_cmd("start")
+        #3. Attach pdump secondary process to primary process by same file-prefix::
+        self.vuser0_port = 'net_virtio_user0'
+        self.launch_pdump_to_capture_pkt(self.vuser0_port)
+        self.start_to_send_8k_packets_csum(self.vhost)
+
+        #5. Check all the packets length is 8000 Byte in the pcap file
+        self.pkt_len = 8000
+        self.check_packet_payload_valid(self.pkt_len, self.queue_number)
+
+        # reconnet from vhost
+        self.relanuch_vhost_testpmd_send_8k_packets(extern_params)
+
+        # reconnet from virtio
+        self.logger.info('now reconnet from virtio_user with other path')
+        case_info = 'packed ring mergeable path'
+        mode = "mrg_rxbuf=1,in_order=0,packed_vq=1"
+        self.relanuch_virtio_testpmd_with_multi_path(mode, case_info, extern_params)
+
+        case_info = 'split ring mergeable inorder path'
+        mode = "mrg_rxbuf=1,in_order=1"
+        self.relanuch_virtio_testpmd_with_multi_path(mode, case_info, extern_params)
+
+        case_info = 'split ring mergeable path'
+        mode = "mrg_rxbuf=1,in_order=0"
+        self.relanuch_virtio_testpmd_with_multi_path(mode, case_info, extern_params)
+
+        self.close_all_testpmd()
+
+    def test_server_mode_reconnect_with_packed_and_split_mergeable_path_cbdma_payload_check(self):
+        """
+        Test Case 14: loopback packed ring and split ring mergeable path cbdma test payload check with server mode and multi-queues
+        """
+        self.cbdma_nic_dev_num = 8
+        self.get_cbdma_ports_info_and_bind_to_dpdk()
+        self.queue_number = 8
+        self.vdev = f"--vdev 'eth_vhost0,iface=vhost-net,queues={self.queue_number},client=1,dmas=[txq0@{self.cbdma_dev_infos[0]};txq1@{self.cbdma_dev_infos[1]};txq2@{self.cbdma_dev_infos[2]};txq3@{self.cbdma_dev_infos[3]};txq4@{self.cbdma_dev_infos[4]};txq5@{self.cbdma_dev_infos[5]};txq6@{self.cbdma_dev_infos[6]};txq7@{self.cbdma_dev_infos[7]}]' "
+
+        self.nb_cores = 1
+        extern_params = '--txd=1024 --rxd=1024'
+        case_info = 'packed ring mergeable inorder path'
+        mode = "mrg_rxbuf=1,in_order=1,packed_vq=1"
+
+        self.lanuch_vhost_testpmd_with_cbdma(extern_params=extern_params)
+        self.logger.info(case_info)
+        self.lanuch_virtio_user_testpmd_with_multi_queue(mode=mode, extern_params=extern_params, set_fwd_mac=False)
+        self.virtio_user_pmd.execute_cmd("set fwd csum")
+        self.virtio_user_pmd.execute_cmd("start")
+        # 3. Attach pdump secondary process to primary process by same file-prefix::
+        self.vuser0_port = 'net_virtio_user0'
+        self.launch_pdump_to_capture_pkt(self.vuser0_port)
+        self.start_to_send_8k_packets_csum_cbdma(self.vhost)
+
+        # 5. Check all the packets length is 6192 Byte in the pcap file
+        self.pkt_len = 6192
+        self.check_packet_payload_valid(self.pkt_len, self.queue_number)
+        #reconnet from vhost
+        self.relanuch_vhost_testpmd_send_8k_packets(extern_params, cbdma=True)
+
+        # reconnet from virtio
+        self.logger.info('now reconnet from virtio_user with other path')
+        case_info = 'packed ring mergeable path'
+        mode = "mrg_rxbuf=1,in_order=0,packed_vq=1"
+        self.relanuch_virtio_testpmd_with_multi_path(mode, case_info, extern_params, cbdma=True)
+
+        case_info = 'split ring mergeable inorder path'
+        mode = "mrg_rxbuf=1,in_order=1"
+        self.relanuch_virtio_testpmd_with_multi_path(mode, case_info, extern_params, cbdma=True)
+
+        case_info = 'split ring mergeable path'
+        mode = "mrg_rxbuf=1,in_order=0"
+        self.relanuch_virtio_testpmd_with_multi_path(mode, case_info, extern_params, cbdma=True)
+
+        self.logger.info('now relaunch vhost iova=pa')
+        self.relanuch_vhost_testpmd_send_8k_packets(extern_params, cbdma=True, iova='pa')
+
+        self.close_all_testpmd()
+
+    def lanuch_vhost_testpmd_with_cbdma(self, extern_params="", iova='va'):
+        """
+        start testpmd with cbdma
+        """
+        eal_params = self.vdev + " --iova={}".format(iova)
+        param = "--rxq={} --txq={} --nb-cores={} {}".format(self.queue_number, self.queue_number, self.nb_cores, extern_params)
+        self.vhost_pmd.start_testpmd(self.core_list_host, param=param, no_pci=False, ports=[], eal_param=eal_params, prefix='vhost', fixed_prefix=True)
+
+    def get_cbdma_ports_info_and_bind_to_dpdk(self):
+        """
+        get all cbdma ports
+        """
+        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev dma', '# ', 30)
+        device_info = out.split('\n')
+        for device in device_info:
+            pci_info = re.search('\s*(0000:\S*:\d*.\d*)', device)
+            if pci_info is not None:
+                dev_info = pci_info.group(1)
+                # the numa id of ioat dev, only add the device which on same socket with nic dev
+                bus = int(dev_info[5:7], base=16)
+                if bus >= 128:
+                    cur_socket = 1
+                else:
+                    cur_socket = 0
+                if self.ports_socket == cur_socket:
+                    self.cbdma_dev_infos.append(pci_info.group(1))
+        self.verify(len(self.cbdma_dev_infos) >= 8, 'There no enough cbdma device to run this suite')
+        self.device_str = ' '.join(self.cbdma_dev_infos[0:self.cbdma_nic_dev_num])
+        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s' % (self.drivername, self.device_str), '# ', 60)
+
+    def bind_cbdma_device_to_kernel(self):
+        if self.device_str is not None:
+            self.dut.send_expect('modprobe ioatdma', '# ')
+            self.dut.send_expect('./usertools/dpdk-devbind.py -u %s' % self.device_str, '# ', 30)
+            self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str, '# ', 60)
+
     def tear_down(self):
         """
         Run after each test case.
@@ -692,3 +881,4 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         """
         Run after each test suite.
         """
+        self.bind_cbdma_device_to_kernel()
