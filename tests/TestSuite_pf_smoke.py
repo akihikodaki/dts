@@ -72,9 +72,6 @@ class TestPfSmoke(TestCase):
         # set default app parameter
         self.pmd_out = PmdOutput(self.dut)
         self.ports = [self.dut.ports_info[self.smoke_dut_ports[0]]['pci']]
-        self.param = '--max-pkt-len={} --tx-offloads=0x8000 --rxq={} --txq={}'.format(JUMBO_FRAME_LENGTH,
-                                                                                      LAUNCH_QUEUE,
-                                                                                      LAUNCH_QUEUE)
         self.test_func = SmokeTest(self)
         self.check_session = self.dut.new_session(suite="pf_smoke_test")
 
@@ -82,14 +79,18 @@ class TestPfSmoke(TestCase):
         """
         Run before each test case.
         """
+        # set tester mtu and testpmd parameter
+        if self._suite_result.test_case == "test_pf_jumbo_frames":
+            self.tester.send_expect("ifconfig {} mtu {}".format(self.smoke_tester_nic, JUMBO_FRAME_MTU), '# ')
+            self.param = '--max-pkt-len={} --tx-offloads=0x8000 --rxq={} --txq={}'.format(JUMBO_FRAME_LENGTH,
+                                                                                          LAUNCH_QUEUE,
+                                                                                          LAUNCH_QUEUE)
+        else:
+            self.param = '--rxq={} --txq={}'.format(LAUNCH_QUEUE, LAUNCH_QUEUE)
         # verify app launch state.
         out = self.check_session.send_expect("ls -l /var/run/dpdk |awk '/^d/ {print $NF}'", '# ', 1)
         if out == '' or 'No such file or directory' in out:
             self.pf_launch_dpdk_app()
-
-        # set tester mtu
-        if self._suite_result.test_case == "test_pf_jumbo_frames":
-            self.tester.send_expect("ifconfig {} mtu {}".format(self.smoke_tester_nic, JUMBO_FRAME_MTU), '# ')
 
     def pf_launch_dpdk_app(self):
         self.pmd_out.start_testpmd(cores=self.cores, ports=self.ports, param=self.param)
@@ -146,6 +147,8 @@ class TestPfSmoke(TestCase):
             self.dut.send_expect("port config all rxq {}".format(LAUNCH_QUEUE), "testpmd> ")
             self.dut.send_expect("port config all txq {}".format(LAUNCH_QUEUE), "testpmd> ")
             self.dut.send_expect("port start all", "testpmd> ")
+        self.dut.send_expect("quit", "# ")
+        self.dut.kill_all()
 
     def tear_down_all(self):
         if self.check_session:

@@ -71,7 +71,7 @@ Prerequisites
 
 8. Launch dpdk on PF::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:86:00.0 --file-prefix=pf -- -i --max-pkt-len=9600 --tx-offloads=0x00008000 --rxq=4 --txq=4
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:86:00.0 --file-prefix=pf -- -i --rxq=4 --txq=4
     testpmd> set fwd mac
     testpmd> set verbose 3
     testpmd> start
@@ -79,13 +79,15 @@ Prerequisites
 
 Test Case 1: test enable and disable jumbo frame
 ====================================================
-1. set fwd mode is mac::
+1. when launch dpdk on PF, add  parameter '--max-pkt-len=9600 --tx-offloads=0x00008000'
+
+2. set fwd mode is mac::
 
     testpmd> set fwd mac
     testpmd> set verbose 3
     testpmd> start
 
-2. Send a packet with size 9601 bytes ::
+3. Send a packet with size 9601 bytes ::
 
     testpmd> show port stats 0
 
@@ -96,7 +98,7 @@ Test Case 1: test enable and disable jumbo frame
 
 Verify that TX-bytes on port 0 and RX-bytes on port 0 are 0.
 
-3. Send a packet with size 9600 bytes ::
+4. Send a packet with size 9600 bytes ::
 
     testpmd> show port stats 0
 
@@ -107,11 +109,11 @@ Verify that TX-bytes on port 0 and RX-bytes on port 0 are 0.
 
 Verify that TX-bytes on port 0 and RX-bytes on port 0 are 9600.
 
-4. Set mtu is 1500 ::
+5. Set mtu is 1500 ::
 
     testpmd> port config mtu 1500
 
-5. Send a packet with size 1518 bytes ::
+6. Send a packet with size 1518 bytes ::
 
     testpmd> show port stats 0
 
