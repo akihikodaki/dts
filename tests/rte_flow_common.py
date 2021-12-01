@@ -804,11 +804,12 @@ class RssProcessing(object):
                 self.logger.error(error_msg)
                 self.error_msgs.append(error_msg)
         else:
-            if hashes != self.hash_records[key]:
-                error_msg = 'hash value {} should be same ' \
-                            'with {} {}'.format(hashes, key, self.hash_records[key])
-                self.logger.error(error_msg)
-                self.error_msgs.append(error_msg)
+            for hash in hashes:
+                if hash not in self.hash_records[key]:
+                    error_msg = 'hash value {} should be same ' \
+                                'with {} {}'.format(hashes, key, self.hash_records[key])
+                    self.logger.error(error_msg)
+                    self.error_msgs.append(error_msg)
         if not rss_distribute:
             error_msg = 'the packet do not distribute by rss'
             self.logger.error(error_msg)
