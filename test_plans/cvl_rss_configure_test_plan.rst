@@ -420,27 +420,7 @@ Test Case: test_RSS_configure_to_udp
     testpmd> port config all rss udp
     testpmd> start
 
-3. check ipv4 packets:
-   send a basic packet, record the hash value::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/("X"*40)], iface="enp27s0f2")
-
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.4",dst="192.168.0.3")/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.5")/("X"*40)], iface="enp27s0f2")
-
-4. check ipv6 packets:
-   send a basic packet, record the hash value::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/("X"*40)], iface="enp27s0f2")
-
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::4",dst="3ffe:2501:200:3::3")/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::5")/("X"*40)], iface="enp27s0f2")
-
-5. check ipv4-udp packets:
+3. check ipv4-udp packets:
    send a basic packet, record the hash value::
 
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
@@ -452,7 +432,7 @@ Test Case: test_RSS_configure_to_udp
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/UDP(sport=1024,dport=1027)/("X"*40)], iface="enp27s0f2")
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/UDP(sport=1026,dport=1025)/("X"*40)], iface="enp27s0f2")
 
-6. check ipv6-udp packets:
+4. check ipv6-udp packets:
    send a basic packet, record the hash value::
 
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
@@ -464,65 +444,35 @@ Test Case: test_RSS_configure_to_udp
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/UDP(sport=1024,dport=1027)/("X"*40)], iface="enp27s0f2")
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/UDP(sport=1026,dport=1025)/("X"*40)], iface="enp27s0f2")
 
+5. check ipv4 packets:
+   send a basic packet, verify no hash value::
+
+        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/("X"*40)], iface="enp27s0f2")
+
+6. check ipv6 packets:
+   send a basic packet, verify no hash value::
+
+        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/("X"*40)], iface="enp27s0f2")
+
 7. check ipv4-tcp packets:
-   send a basic packet, record the hash value::
+   send a basic packet, verify no hash value::
 
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/TCP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.4",dst="192.168.0.3")/TCP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.5")/TCP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send a packet with same input set and changed other parameters.
-   check the received packet have same hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/TCP(sport=1026,dport=1027)/("X"*40)], iface="enp27s0f2")
-
 8. check ipv6-tcp packets:
-   send a basic packet, record the hash value::
+   send a basic packet, verify no hash value::
 
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/TCP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::4",dst="3ffe:2501:200:3::3")/TCP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::5")/TCP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send a packet with same input set and changed other parameters.
-   check the received packet have same hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/TCP(sport=1026,dport=1027)/("X"*40)], iface="enp27s0f2")
-
 9. check ipv4-sctp packets:
-   send a basic packet, record the hash value::
+   send a basic packet, verify no hash value::
 
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.4",dst="192.168.0.3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.5")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send a packet with same input set and changed other parameters.
-   check the received packet have same hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/SCTP(sport=1026,dport=1027)/("X"*40)], iface="enp27s0f2")
-
 10. check ipv6-sctp packets:
-    send a basic packet, record the hash value::
+    send a basic packet, verify no hash value::
 
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::4",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::5")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send a packet with same input set and changed other parameters.
-   check the received packet have same hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1026,dport=1027)/("X"*40)], iface="enp27s0f2")
+         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
 Test Case: test_RSS_configure_to_tcp
 ====================================
@@ -538,57 +488,7 @@ Test Case: test_RSS_configure_to_tcp
     testpmd> port config all rss tcp
     testpmd> start
 
-3. check ipv4 packets:
-   send a basic packet, record the hash value::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/("X"*40)], iface="enp27s0f2")
-
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.4",dst="192.168.0.3")/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.5")/("X"*40)], iface="enp27s0f2")
-
-4. check ipv6 packets:
-   send a basic packet, record the hash value::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/("X"*40)], iface="enp27s0f2")
-
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::4",dst="3ffe:2501:200:3::3")/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::5")/("X"*40)], iface="enp27s0f2")
-
-5. check ipv4-udp packets:
-   send a basic packet, record the hash value::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.4",dst="192.168.0.3")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.5")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send a packet with same input set and changed other parameters.
-   check the received packet have same hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/UDP(sport=1026,dport=1027)/("X"*40)], iface="enp27s0f2")
-
-6. check ipv6-udp packets:
-   send a basic packet, record the hash value::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::4",dst="3ffe:2501:200:3::3")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::5")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send a packet with same input set and changed other parameters.
-   check the received packet have same hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/UDP(sport=1026,dport=1027)/("X"*40)], iface="enp27s0f2")
-
-7. check ipv4-tcp packets:
+3. check ipv4-tcp packets:
    send a basic packet, record the hash value::
 
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/TCP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
@@ -600,7 +500,7 @@ Test Case: test_RSS_configure_to_tcp
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/TCP(sport=1026,dport=1025)/("X"*40)], iface="enp27s0f2")
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/TCP(sport=1024,dport=1027)/("X"*40)], iface="enp27s0f2")
 
-8. check ipv6-tcp packets:
+4. check ipv6-tcp packets:
    send a basic packet, record the hash value::
 
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/TCP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
@@ -612,35 +512,35 @@ Test Case: test_RSS_configure_to_tcp
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/TCP(sport=1026,dport=1025)/("X"*40)], iface="enp27s0f2")
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/TCP(sport=1024,dport=1027)/("X"*40)], iface="enp27s0f2")
 
+5. check ipv4 packets:
+   send a basic packet, verify no hash value::
+
+        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/("X"*40)], iface="enp27s0f2")
+
+6. check ipv6 packets:
+   send a basic packet, verify no hash value::
+
+        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/("X"*40)], iface="enp27s0f2")
+
+7. check ipv4-udp packets:
+   send a basic packet, verify no hash value::
+
+        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
+
+8. check ipv6-udp packets:
+   send a basic packet, verify no hash value::
+
+        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
+
 9. check ipv4-sctp packets:
-   send a basic packet, record the hash value::
+   send a basic packet, verify no hash value::
 
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.4",dst="192.168.0.3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.5")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send a packet with same input set and changed other parameters.
-   check the received packet have same hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/SCTP(sport=1026,dport=1027)/("X"*40)], iface="enp27s0f2")
-
 10. check ipv6-sctp packets:
-    send a basic packet, record the hash value::
+    send a basic packet, verify no hash value::
 
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::4",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::5")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send a packet with same input set and changed other parameters.
-   check the received packet have same hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1026,dport=1027)/("X"*40)], iface="enp27s0f2")
+         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
 Test Case: test_RSS_configure_to_sctp
 =====================================
@@ -656,87 +556,7 @@ Test Case: test_RSS_configure_to_sctp
     testpmd> port config all rss sctp
     testpmd> start
 
-3. check ipv4 packets:
-   send a basic packet, record the hash value::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/("X"*40)], iface="enp27s0f2")
-
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.4",dst="192.168.0.3")/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.5")/("X"*40)], iface="enp27s0f2")
-
-4. check ipv6 packets:
-   send a basic packet, record the hash value::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/("X"*40)], iface="enp27s0f2")
-
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::4",dst="3ffe:2501:200:3::3")/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::5")/("X"*40)], iface="enp27s0f2")
-
-5. check ipv4-udp packets:
-   send a basic packet, record the hash value::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.4",dst="192.168.0.3")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.5")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send a packet with same input set and changed other parameters.
-   check the received packet have same hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/UDP(sport=1026,dport=1027)/("X"*40)], iface="enp27s0f2")
-
-6. check ipv6-udp packets:
-   send a basic packet, record the hash value::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::4",dst="3ffe:2501:200:3::3")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::5")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send a packet with same input set and changed other parameters.
-   check the received packet have same hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/UDP(sport=1026,dport=1027)/("X"*40)], iface="enp27s0f2")
-
-7. check ipv4-tcp packets:
-   send a basic packet, record the hash value::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/TCP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.4",dst="192.168.0.3")/TCP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.5")/TCP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send a packet with same input set and changed other parameters.
-   check the received packet have same hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/TCP(sport=1026,dport=1027)/("X"*40)], iface="enp27s0f2")
-
-8. check ipv6-tcp packets:
-   send a basic packet, record the hash value::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/TCP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send packets with changed input set, check the received packets have different hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::4",dst="3ffe:2501:200:3::3")/TCP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::5")/TCP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
-
-   send a packet with same input set and changed other parameters.
-   check the received packet have same hash value with the basic packet::
-
-        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/TCP(sport=1026,dport=1027)/("X"*40)], iface="enp27s0f2")
-
-9. check ipv4-sctp packets:
+3. check ipv4-sctp packets:
    send a basic packet, record the hash value::
 
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
@@ -745,9 +565,11 @@ Test Case: test_RSS_configure_to_sctp
 
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.4",dst="192.168.0.3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.5")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
+        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.4",dst="192.168.0.3")/SCTP(sport=1024,dport=1026)/("X"*40)], iface="enp27s0f2")
+        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.5")/SCTP(sport=1026,dport=1025)/("X"*40)], iface="enp27s0f2")
 
-10. check ipv6-sctp packets:
-    send a basic packet, record the hash value::
+4. check ipv6-sctp packets:
+   send a basic packet, record the hash value::
 
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
@@ -755,6 +577,38 @@ Test Case: test_RSS_configure_to_sctp
 
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::4",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::5")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
+        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::4",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1026)/("X"*40)], iface="enp27s0f2")
+        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::5")/SCTP(sport=1026,dport=1025)/("X"*40)], iface="enp27s0f2")
+
+5. check ipv4 packets:
+   send a basic packet, verify no hash value::
+
+        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/("X"*40)], iface="enp27s0f2")
+
+6. check ipv6 packets:
+   send a basic packet, verify no hash value::
+
+        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/("X"*40)], iface="enp27s0f2")
+
+7. check ipv4-tcp packets:
+   send a basic packet, verify no hash value::
+
+        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/TCP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
+
+8. check ipv6-tcp packets:
+   send a basic packet, verify no hash value::
+
+        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/TCP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
+
+9. check ipv4-udp packets:
+   send a basic packet, verify no hash value::
+
+        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
+
+10. check ipv6-udp packets:
+    send a basic packet, verify no hash value::
+
+         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/UDP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
 Test Case: test_RSS_configure_to_all
 ====================================
@@ -847,6 +701,8 @@ Test Case: test_RSS_configure_to_all
 
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.4",dst="192.168.0.3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.5")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
+        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/SCTP(sport=1024,dport=1026)/("X"*40)], iface="enp27s0f2")
+        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/SCTP(sport=1026,dport=1025)/("X"*40)], iface="enp27s0f2")
 
 10. check ipv6-sctp packets:
     send a basic packet, record the hash value::
@@ -857,6 +713,8 @@ Test Case: test_RSS_configure_to_all
 
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::4",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::5")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
+        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1026)/("X"*40)], iface="enp27s0f2")
+        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1026,dport=1025)/("X"*40)], iface="enp27s0f2")
 
 Test Case: test_RSS_configure_to_default
 ========================================
@@ -949,6 +807,8 @@ Test Case: test_RSS_configure_to_default
 
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.4",dst="192.168.0.3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.5")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
+        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/SCTP(sport=1024,dport=1026)/("X"*40)], iface="enp27s0f2")
+        sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/SCTP(sport=1026,dport=1025)/("X"*40)], iface="enp27s0f2")
 
 10. check ipv6-sctp packets:
     send a basic packet, record the hash value::
@@ -959,3 +819,5 @@ Test Case: test_RSS_configure_to_default
 
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::4",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::5")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
+        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1026)/("X"*40)], iface="enp27s0f2")
+        sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1026,dport=1025)/("X"*40)], iface="enp27s0f2")
