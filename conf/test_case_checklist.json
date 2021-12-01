@@ -418,7 +418,8 @@
                 "cavium_a034",
                 "cavium_0011",
                 "fortpark_TLV",
-                "fortpark_BASE-T"
+                "fortpark_BASE-T",
+		"foxville"
             ],
             "Target": [
                 "ALL"
