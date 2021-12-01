@@ -29,166 +29,192 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import json
-import os
-import re
 import time
-from collections import OrderedDict
-
-from scapy.contrib.gtp import *
-
-import framework.packet as packet
-import tests.rte_flow_common as rfc
-from framework.packet import IncreaseIP, IncreaseIPv6
-from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
-from framework.utils import BLUE, RED
+from framework.pmd_output import PmdOutput
+from framework import packet
+from .rte_flow_common import RssProcessing
 
-out = os.popen("pip list|grep scapy ")
-version_result =out.read()
-p=re.compile('scapy\s+2\.3\.\d+')
-m=p.search(version_result)
+mac_ipv4_basic_pkt = 'Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2", dst="192.168.0.3")/("X"*480)'
+mac_ipv6_basic_pkt = 'Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::2", dst="2001::3")/("X"*480)'
+mac_ipv4_tcp_basic_pkt = 'Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=1026, dport=1027)/("X"*480)'
+mac_ipv6_tcp_basic_pkt = 'Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::2", dst="2001::3")/TCP(sport=1026, dport=1027)/("X"*480)'
+mac_ipv4_udp_basic_pkt = 'Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=1026, dport=1027)/("X"*480)'
+mac_ipv6_udp_basic_pkt = 'Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::2", dst="2001::3")/UDP(sport=1026, dport=1027)/("X"*480)'
+mac_ipv4_sctp_basic_pkt = 'Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2", dst="192.168.0.3")/SCTP(sport=1026, dport=1027)/("X"*480)'
+mac_ipv6_sctp_basic_pkt = 'Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::2", dst="2001::3")/TCP(sport=1026, dport=1027)/("X"*480)'
 
-tv_mac_ip_ipv4 = {
-    "name":"tv_mac_ip_ipv4",
-    "scapy_str":['Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")/("X"*480)' %(i, i+10) for i in range(0,100)],
-    "check_func_param": {"expect_port":0}
-}
+mac_ipv4_changed_pkt = ['Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2", dst="192.168.0.5")/("X"*480)',
+                        'Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.5", dst="192.168.0.3")/("X"*480)']
 
-tv_mac_ip_ipv6 = {
-    "name":"tv_mac_ip_ipv6",
-    "scapy_str": ['Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::%d", dst="2001::%d")/("X"*480)' %(i, i+10) for i in range(0,100)],
-    "check_func_param": {"expect_port":0}
-}
+mac_ipv6_changed_pkt = ['Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::2", dst="2001::5")/("X"*480)',
+                        'Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::5", dst="2001::3")/("X"*480)']
 
-tv_mac_ipv4_udp_l3_random = {
-    "name":"tv_mac_ipv4_udp_l3_random",
-    "scapy_str":['Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")/UDP()/("X"*480)' %(i,i+10) for i in range(0,100)],
-    "check_func_param": {"expect_port":0}
-}
+mac_ipv4_tcp_changed_l3_pkt = ['Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2", dst="192.168.0.5")/TCP(sport=1026, dport=1027)/("X"*480)',
+                               'Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.5", dst="192.168.0.3")/TCP(sport=1026, dport=1027)/("X"*480)']
 
-tv_mac_ipv4_udp_l4_random = {
-    "name":"tv_mac_ipv4_udp_l4_random",
-    "scapy_str":['Ether(dst="00:00:00:00:01:00")/IP()/UDP(sport=%d, dport=%d)/("X"*480)' %(i+50,i+55) for i in range(0,100)],
-    "check_func_param": {"expect_port":0}
-}
+mac_ipv4_tcp_changed_l4_pkt = ['Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=1025, dport=1027)/("X"*480)',
+                               'Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=1026, dport=1025)/("X"*480)']
 
-tv_mac_ipv6_udp_l3_random = {
-    "name":"tv_mac_ipv6_udp_l3_random",
-    "scapy_str":['Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::%d", dst="2001::%d")/UDP()/("X"*480)' %(i,i+10) for i in range(0,100)],
-    "check_func_param": {"expect_port":0}
-}
+mac_ipv6_tcp_changed_l3_pkt = ['Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::2", dst="2001::5")/TCP(sport=1026, dport=1027)/("X"*480)',
+                               'Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::5", dst="2001::3")/TCP(sport=1026, dport=1027)/("X"*480)']
 
-tv_mac_ipv6_udp_l4_random = {
-    "name":"tv_mac_ipv6_udp_l4_random",
-    "scapy_str":['Ether(dst="00:00:00:00:01:00")/IPv6()/UDP(sport=%d, dport=%d)/("X"*480)' %(i+50,i+55) for i in range(0,100)],
-    "check_func_param": {"expect_port":0}
-}
+mac_ipv6_tcp_changed_l4_pkt = ['Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::2", dst="2001::3")/TCP(sport=1025, dport=1027)/("X"*480)',
+                               'Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::2", dst="2001::3")/TCP(sport=1026, dport=1025)/("X"*480)']
 
-tv_mac_ipv4_tcp_l3_random = {
-    "name":"tv_mac_ipv4_tcp_l3_random",
-    "scapy_str":['Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")/TCP()/("X"*480)' %(i,i+10) for i in range(0,100)],
-    "check_func_param": {"expect_port":0}
-}
+mac_ipv4_udp_changed_l3_pkt = [sv.replace("/TCP", "/UDP") for sv in mac_ipv4_tcp_changed_l3_pkt]
+mac_ipv4_udp_changed_l4_pkt = [sv.replace("/TCP", "/UDP") for sv in mac_ipv4_tcp_changed_l4_pkt]
 
-tv_mac_ipv4_tcp_l4_random = {
-    "name":"tv_mac_ipv4_tcp_l4_random",
-    "scapy_str":['Ether(dst="00:00:00:00:01:00")/IP()/TCP(sport=%d, dport=%d)/("X"*480)' %(i+50,i+55) for i in range(0,100)],
-    "check_func_param": {"expect_port":0}
-}
+mac_ipv6_udp_changed_l3_pkt = [sv.replace("/TCP", "/UDP") for sv in mac_ipv6_tcp_changed_l3_pkt]
+mac_ipv6_udp_changed_l4_pkt = [sv.replace("/TCP", "/UDP") for sv in mac_ipv6_tcp_changed_l4_pkt]
 
-tv_mac_ipv6_tcp_l3_random = {
-    "name":"tv_mac_ipv6_tcp_l3_random",
-    "scapy_str":['Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::%d", dst="2001::%d")/TCP()/("X"*480)' %(i,i+10) for i in range(0,100)],
-    "check_func_param": {"expect_port":0}
-}
+mac_ipv4_sctp_changed_l3_pkt = [sv.replace("/TCP", "/SCTP") for sv in mac_ipv4_tcp_changed_l3_pkt]
+mac_ipv4_sctp_changed_l4_pkt = [sv.replace("/TCP", "/SCTP") for sv in mac_ipv4_tcp_changed_l4_pkt]
 
-tv_mac_ipv6_tcp_l4_random = {
-    "name":"tv_mac_ipv6_tcp_l4_random",
-    "scapy_str":['Ether(dst="00:00:00:00:01:00")/IPv6()/TCP(sport=%d, dport=%d)/("X"*480)' %(i+50,i+55) for i in range(0,100)],
-    "check_func_param": {"expect_port":0}
-}
+mac_ipv6_sctp_changed_l3_pkt = [sv.replace("/TCP", "/SCTP") for sv in mac_ipv6_tcp_changed_l3_pkt]
+mac_ipv6_sctp_changed_l4_pkt = [sv.replace("/TCP", "/SCTP") for sv in mac_ipv6_tcp_changed_l4_pkt]
 
-tv_mac_ipv4_sctp = {
-    "name":"tv_mac_ipv4_sctp",
-    "scapy_str":['Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")/SCTP()/("X"*480)' %(i,i+10) for i in range(0,100)],
-    "check_func_param": {"expect_port":0}
-}
-
-tv_mac_ipv6_sctp = {
-    "name":"tv_mac_ipv6_sctp",
-    "scapy_str":['Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::%d", dst="2001::%d")/SCTP()/("X"*480)' %(i,i+10) for i in range(0,100)],
-    "check_func_param": {"expect_port":0}
-}
-
-tvs_mac_rss_ip = [
-    tv_mac_ip_ipv4,
-    tv_mac_ip_ipv6
+command_line_option_rss_ip = {
+    'sub_casename': 'command_line_option_rss_ip',
+    'port_id': 0,
+    'test': [
+        {'send_packet': mac_ipv4_basic_pkt,
+         'action': {'save_hash': 'ip-ipv4'}},
+        {'send_packet': mac_ipv4_changed_pkt,
+         'action': {'check_hash_different': 'ip-ipv4'}},
+        {'send_packet': mac_ipv6_basic_pkt,
+         'action': {'save_hash': 'ip-ipv6'}},
+        {'send_packet': mac_ipv6_changed_pkt,
+         'action': {'check_hash_different': 'ip-ipv4'}},
+        # ipv4/ipv6 tcp
+        {'send_packet': mac_ipv4_tcp_basic_pkt,
+         'action': {'save_hash': 'ipv4-tcp'}},
+        {'send_packet': mac_ipv4_tcp_changed_l3_pkt,
+         'action': {'check_hash_different': 'ipv4-tcp'}},
+        {'send_packet': mac_ipv4_tcp_changed_l4_pkt,
+         'action': {'check_hash_same': 'ipv4-tcp'}},
+        {'send_packet': mac_ipv6_tcp_basic_pkt,
+         'action': {'save_hash': 'ipv6-tcp'}},
+        {'send_packet': mac_ipv6_tcp_changed_l3_pkt,
+         'action': {'check_hash_different': 'ipv6-tcp'}},
+        {'send_packet': mac_ipv6_tcp_changed_l4_pkt,
+         'action': {'check_hash_same': 'ipv6-tcp'}},
+        # ipv4/ipv6 udp
+        {'send_packet': mac_ipv4_udp_basic_pkt,
+         'action': {'save_hash': 'ipv4-udp'}},
+        {'send_packet': mac_ipv4_udp_changed_l3_pkt,
+         'action': {'check_hash_different': 'ipv4-udp'}},
+        {'send_packet': mac_ipv4_udp_changed_l4_pkt,
+         'action': {'check_hash_same': 'ipv4-udp'}},
+        {'send_packet': mac_ipv6_udp_basic_pkt,
+         'action': {'save_hash': 'ipv6-udp'}},
+        {'send_packet': mac_ipv6_udp_changed_l3_pkt,
+         'action': {'check_hash_different': 'ipv6-udp'}},
+        {'send_packet': mac_ipv6_udp_changed_l4_pkt,
+         'action': {'check_hash_same': 'ipv6-udp'}},
+        # ipv4/ipv6 sctp
+        {'send_packet': mac_ipv4_sctp_basic_pkt,
+         'action': {'save_hash': 'ipv4-sctp'}},
+        {'send_packet': mac_ipv4_sctp_changed_l3_pkt,
+         'action': {'check_hash_different': 'ipv4-sctp'}},
+        {'send_packet': mac_ipv4_sctp_changed_l4_pkt,
+         'action': {'check_hash_same': 'ipv4-sctp'}},
+        {'send_packet': mac_ipv6_sctp_basic_pkt,
+         'action': {'save_hash': 'ipv6-sctp'}},
+        {'send_packet': mac_ipv6_sctp_changed_l3_pkt,
+         'action': {'check_hash_different': 'ipv6-sctp'}},
+        {'send_packet': mac_ipv6_sctp_changed_l4_pkt,
+         'action': {'check_hash_same': 'ipv6-sctp'}}
     ]
+}
 
-tvs_mac_rss_l3 = [
-    tv_mac_ip_ipv4,
-    tv_mac_ip_ipv6,
-    tv_mac_ipv4_udp_l3_random,
-    tv_mac_ipv6_udp_l3_random,
-    tv_mac_ipv4_tcp_l3_random,
-    tv_mac_ipv6_tcp_l3_random,
-    tv_mac_ipv4_sctp,
-    tv_mac_ipv6_sctp
+command_line_option_rss_udp = {
+    'sub_casename': 'command_line_option_rss_udp',
+    'port_id': 0,
+    'test': [
+    # ipv4/ipv6 udp
+    {'send_packet': mac_ipv4_udp_basic_pkt,
+     'action': {'save_hash': 'ipv4-udp'}},
+    {'send_packet': mac_ipv4_udp_changed_l3_pkt,
+     'action': {'check_hash_different': 'ipv4-udp'}},
+    {'send_packet': mac_ipv4_udp_changed_l4_pkt,
+     'action': {'check_hash_different': 'ipv4-udp'}},
+    {'send_packet': mac_ipv6_udp_basic_pkt,
+     'action': {'save_hash': 'ipv6-udp'}},
+    {'send_packet': mac_ipv6_udp_changed_l3_pkt,
+     'action': {'check_hash_different': 'ipv6-udp'}},
+    {'send_packet': mac_ipv6_udp_changed_l4_pkt,
+     'action': {'check_hash_different': 'ipv6-udp'}},
+    # ipv4/ipv6 tcp/sctp
+    {'send_packet': mac_ipv4_basic_pkt,
+     'action': {'check_no_hash': 'ip-ipv4'}},
+    {'send_packet': mac_ipv6_basic_pkt,
+     'action': {'check_no_hash': 'ip-ipv6'}},
+    {'send_packet': mac_ipv4_tcp_basic_pkt,
+     'action': {'check_no_hash': 'ipv4-tcp'}},
+    {'send_packet': mac_ipv6_tcp_basic_pkt,
+     'action': {'check_no_hash': 'ipv6-tcp'}},
+    {'send_packet': mac_ipv4_sctp_basic_pkt,
+     'action': {'check_no_hash': 'ipv4-sctp'}},
+    {'send_packet': mac_ipv6_sctp_basic_pkt,
+     'action': {'check_no_hash': 'ipv6-sctp'}},
     ]
+}
 
-tvs_mac_rss_l4 = [
-    tv_mac_ipv4_udp_l4_random,
-    tv_mac_ipv6_udp_l4_random,
-    tv_mac_ipv4_tcp_l4_random,
-    tv_mac_ipv6_tcp_l4_random
+command_line_option_disable_rss = {
+    'sub_casename': 'command_line_option_disable',
+    'port_id': 0,
+    'test': [
+    # all
+    {'send_packet': mac_ipv4_basic_pkt,
+     'action': {'check_no_hash': 'ip-ipv4'}},
+    {'send_packet': mac_ipv4_basic_pkt,
+     'action': {'check_no_hash': 'ip-ipv6'}},
+    {'send_packet': mac_ipv4_tcp_basic_pkt,
+     'action': {'check_no_hash': 'ipv4-tcp'}},
+    {'send_packet': mac_ipv6_tcp_basic_pkt,
+     'action': {'check_no_hash': 'ipv6-tcp'}},
+    {'send_packet': mac_ipv4_udp_basic_pkt,
+     'action': {'check_no_hash': 'ipv4-udp'}},
+    {'send_packet': mac_ipv6_udp_basic_pkt,
+     'action': {'check_no_hash': 'ipv6-udp'}},
+    {'send_packet': mac_ipv4_sctp_basic_pkt,
+     'action': {'check_no_hash': 'ipv4-sctp'}},
+    {'send_packet': mac_ipv6_sctp_basic_pkt,
+     'action': {'check_no_hash': 'ipv6-sctp'}},
     ]
+}
 
-tvs_mac_rss_udp = [
-    tv_mac_ipv4_udp_l3_random,
-    tv_mac_ipv4_udp_l4_random,
-    tv_mac_ipv6_udp_l3_random,
-    tv_mac_ipv6_udp_l4_random
-    ]
+rss_configure_to_ip = {
+    'sub_casename': 'rss_configure_to_ip',
+    'port_id': 0,
+    'test': command_line_option_rss_ip['test']
+}
 
-tvs_mac_rss_udp_l4 = [
-    tv_mac_ipv4_udp_l4_random,
-    tv_mac_ipv6_udp_l4_random
-    ]
+rss_configure_to_udp = eval(str(command_line_option_rss_udp)
+                            .replace("command_line_option_rss_udp", "rss_configure_to_udp"))
 
-tvs_mac_rss_tcp = [
-    tv_mac_ipv4_tcp_l3_random,
-    tv_mac_ipv4_tcp_l4_random,
-    tv_mac_ipv6_tcp_l3_random,
-    tv_mac_ipv6_tcp_l4_random
-    ]
+rss_configure_to_tcp = eval(str(rss_configure_to_udp).replace("to_udp", "to_tcp")
+                            .replace("/UDP", "/UDP1")
+                            .replace("-udp", "-udp1")
+                            .replace("/TCP", "/UDP")
+                            .replace("-tcp", "-udp")
+                            .replace("/UDP1", "/TCP")
+                            .replace("-udp1", "-tcp"))
 
-tvs_mac_rss_tcp_l4 = [
-    tv_mac_ipv4_tcp_l4_random,
-    tv_mac_ipv6_tcp_l4_random
-    ]
+rss_configure_to_sctp = eval(str(rss_configure_to_udp).replace("to_udp", "to_sctp")
+                             .replace("/UDP", "/UDP1")
+                             .replace("-udp", "-udp1")
+                             .replace("/SCTP", "/UDP")
+                             .replace("-sctp", "-udp")
+                             .replace("/UDP1", "/SCTP")
+                             .replace("-udp1", "-sctp"))
 
-tvs_mac_rss_sctp = [
-    tv_mac_ipv4_sctp,
-    tv_mac_ipv6_sctp
-    ]
+rss_configure_to_all = eval(str(command_line_option_rss_ip).replace("to_udp", "to_all")
+                            .replace("check_hash_same", "check_hash_different"))
 
-tvs_mac_rss_all = [
-    tv_mac_ip_ipv4,
-    tv_mac_ip_ipv6,
-    tv_mac_ipv4_udp_l3_random,
-    tv_mac_ipv4_udp_l4_random,
-    tv_mac_ipv6_udp_l3_random,
-    tv_mac_ipv6_udp_l4_random,
-    tv_mac_ipv4_tcp_l3_random,
-    tv_mac_ipv4_tcp_l4_random,
-    tv_mac_ipv6_tcp_l3_random,
-    tv_mac_ipv6_tcp_l4_random,
-    tv_mac_ipv4_sctp,
-    tv_mac_ipv6_sctp
-    ]
-
-test_results = OrderedDict()
+rss_configure_to_default = eval(str(command_line_option_rss_ip).replace("to_udp", "to_all")
+                                .replace("check_hash_same", "check_hash_different"))
 
 class RSSConfigureTest(TestCase):
 
@@ -198,6 +224,7 @@ class RSSConfigureTest(TestCase):
         Generic filter Prerequistites
         """
         self.dut_ports = self.dut.get_ports(self.nic)
+        self.dut.bind_interfaces_linux(self.drivername)
         # Verify that enough ports are available
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         #self.cores = "1S/8C/1T"
@@ -209,108 +236,66 @@ class RSSConfigureTest(TestCase):
         self.pf_mac = self.dut.get_mac_address(0)
         self.pf_pci = self.dut.ports_info[self.dut_ports[0]]['pci']
         self.verify(self.nic in ["columbiaville_25g","columbiaville_100g"], "%s nic not support ethertype filter" % self.nic)
+        self.rsspro = RssProcessing(self, self.pmdout, [self.__tx_iface], rxq=16)
 
     def set_up(self):
         """
         Run before each test case.
         """
-        self.dut.kill_all()
+        pass
+
+    def launch_testpmd(self, line_option="", rss_type=""):
+        self.pmdout.start_testpmd(ports=[self.pf_pci], param="--rxq=16 --txq=16 " + line_option)
+        self.pmdout.execute_cmd("set fwd rxonly")
+        self.pmdout.execute_cmd("set verbose 1")
+        if rss_type != "":
+            self.pmdout.execute_cmd("port config all rss %s" % rss_type)
+        self.pmdout.execute_cmd("start")
+
+    def test_command_line_option_rss_ip(self):
+        self.launch_testpmd(line_option="--rss-ip")
+        self.rsspro.handle_rss_distribute_cases(command_line_option_rss_ip)
+
+    def test_command_line_option_rss_udp(self):
+        self.launch_testpmd(line_option="--rss-udp")
+        self.rsspro.handle_rss_distribute_cases(command_line_option_rss_udp)
+
+    def test_command_line_option_rss_disable(self):
+        self.launch_testpmd(line_option="--disable-rss")
+        self.rsspro.handle_rss_distribute_cases(command_line_option_disable_rss)
+
+    def test_rss_configure_to_ip(self):
+        self.launch_testpmd(rss_type="ip")
+        self.rsspro.handle_rss_distribute_cases(rss_configure_to_ip)
+
+    def test_rss_configure_to_udp(self):
+        self.launch_testpmd(rss_type="udp")
+        self.rsspro.handle_rss_distribute_cases(rss_configure_to_udp)
+
+    def test_rss_configure_to_tcp(self):
+        self.launch_testpmd(rss_type="tcp")
+        self.rsspro.handle_rss_distribute_cases(rss_configure_to_tcp)
+
+    def test_rss_configure_to_sctp(self):
+        self.launch_testpmd(rss_type="sctp")
+        self.rsspro.handle_rss_distribute_cases(rss_configure_to_sctp)
+
+    def test_rss_configure_to_all(self):
+        self.launch_testpmd(rss_type="all")
+        self.rsspro.handle_rss_distribute_cases(rss_configure_to_all)
+
+    def test_rss_configure_to_default(self):
+        self.launch_testpmd(rss_type="default")
+        self.rsspro.handle_rss_distribute_cases(rss_configure_to_default)
 
     def tear_down(self):
         """
         Run after each test case.
         """
-        self.dut.kill_all()
-    
+        self.pmdout.execute_cmd("quit", "# ")
+
     def tear_down_all(self):
         """
         Run after each test suite.
         """
         self.dut.kill_all()
-
-    def create_testpmd_command(self, line_option):
-        """
-        Create testpmd command for non-pipeline mode
-        """
-        #Prepare testpmd EAL and parameters 
-        all_eal_param = self.dut.create_eal_parameters(ports=[self.pf_pci])
-        print(all_eal_param)   #print eal parameters
-        command = self.dut.apps_name['test-pmd'] + all_eal_param + " -- -i --rxq=10 --txq=10" + line_option
-        return command
-
-    def _rss_validate_pattern(self, test_vectors, command, rss_type, is_rss):
-
-        global test_results
-        out = self.dut.send_expect(command, "testpmd> ", 120)
-        self.logger.debug(out)  #print the log
-        self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
-        self.dut.send_expect("set verbose 1", "testpmd> ", 15)
-        if rss_type != "":
-            self.dut.send_expect("port config all rss %s" % rss_type, "testpmd> ", 15)
-
-        test_results.clear()
-        self.count = 1
-        self.mac_count=100
-        for tv in test_vectors:
-            self.dut.send_expect("start", "testpmd> ", 15)
-            time.sleep(2)
-            tv["check_func_param"]["expect_port"] = self.dut_ports[0]
-            print("expect_port is", self.dut_ports[0])
-
-            #send a packet
-            pkt = packet.Packet()
-            pkt.update_pkt(tv["scapy_str"])
-            pkt.send_pkt(self.tester, tx_port=self.__tx_iface, count=self.count)
-
-            out = self.dut.send_expect("stop", "testpmd> ",60)
-            print(out)
-            check_result = []
-            check_result = rfc.check_packets_of_each_queue(out)
-            self.verify(check_result[0] == is_rss, check_result[1])
-
-        self.dut.send_expect("quit", "#")
-
-    def test_command_line_option_rss_ip(self):
-        command = self.create_testpmd_command(line_option = " --rss-ip")
-        self._rss_validate_pattern(tvs_mac_rss_l3, command, rss_type = "", is_rss = True)
-        self._rss_validate_pattern(tvs_mac_rss_l4, command, rss_type = "", is_rss = False)
-
-    def test_command_line_option_rss_udp(self):
-        command = self.create_testpmd_command(line_option = " --rss-udp")
-        self._rss_validate_pattern(tvs_mac_rss_udp, command, rss_type = "", is_rss = True)
-        self._rss_validate_pattern(tvs_mac_rss_ip, command, rss_type = "", is_rss = False)
-        self._rss_validate_pattern(tvs_mac_rss_tcp, command, rss_type = "", is_rss = False)
-        self._rss_validate_pattern(tvs_mac_rss_sctp, command, rss_type = "", is_rss = False)
-
-    def test_command_line_option_rss_disable(self):
-        command = self.create_testpmd_command(line_option = " --disable-rss")
-        self._rss_validate_pattern(tvs_mac_rss_all, command, rss_type = "", is_rss = False)
-
-    def test_rss_configure_to_ip(self):
-        command = self.create_testpmd_command(line_option = "")
-        self._rss_validate_pattern(tvs_mac_rss_l3, command, rss_type = "", is_rss = True)
-        self._rss_validate_pattern(tvs_mac_rss_l4, command, rss_type = "", is_rss = False)
-
-    def test_rss_configure_to_udp(self):
-        command = self.create_testpmd_command(line_option = "")
-        self._rss_validate_pattern(tvs_mac_rss_udp, command, rss_type = "udp", is_rss = True)
-        self._rss_validate_pattern(tvs_mac_rss_tcp_l4, command, rss_type = "udp", is_rss = False)
-
-    def test_rss_configure_to_tcp(self):
-        command = self.create_testpmd_command(line_option = "")
-        self._rss_validate_pattern(tvs_mac_rss_tcp, command, rss_type = "tcp", is_rss = True)
-        self._rss_validate_pattern(tvs_mac_rss_udp_l4, command, rss_type = "tcp", is_rss = False)
-
-    def test_rss_configure_to_sctp(self):
-        command = self.create_testpmd_command(line_option = "")
-        self._rss_validate_pattern(tvs_mac_rss_sctp, command, rss_type = "sctp", is_rss = True)
-        self._rss_validate_pattern(tvs_mac_rss_udp_l4, command, rss_type = "sctp", is_rss = False)
-        self._rss_validate_pattern(tvs_mac_rss_tcp_l4, command, rss_type = "sctp", is_rss = False)
-
-    def test_rss_configure_to_all(self):
-        command = self.create_testpmd_command(line_option = "")
-        self._rss_validate_pattern(tvs_mac_rss_all, command, rss_type = "all", is_rss = True)
-
-    def test_rss_configure_to_default(self):
-        command = self.create_testpmd_command(line_option = "")
-        self._rss_validate_pattern(tvs_mac_rss_all, command, rss_type = "default", is_rss = True)
