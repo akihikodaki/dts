@@ -83,7 +83,6 @@ The following are the test plans for the DPDK DTS automated test system.
     eeprom_dump_test_plan
     external_memory_test_plan
     external_mempool_handler_test_plan
-    fdir_test_plan
     firmware_version_test_plan
     floating_veb_test_plan
     flow_classify_softnic_test_plan
