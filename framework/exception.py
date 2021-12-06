@@ -128,22 +128,6 @@ class VirtDutConnectException(Exception):
     pass
 
 
-class VirtConfigParamException(Exception):
-
-    """
-    Virtualizatoin param execution exception.
-    """
-    def __init__(self, param):
-        self.param = param
-
-    def __str__(self):
-        return "Faile to execute param [%s]" % (self.param)
-
-
-class VirtDutConnectException(Exception):
-    pass
-
-
 class VirtDutInitException(Exception):
     def __init__(self, vm_dut):
         self.vm_dut = vm_dut
