@@ -1,5 +1,5 @@
 # QEMU Monitor Protocol Python class
-# 
+#
 # Copyright (C) 2009, 2010 Red Hat Inc.
 #
 # Authors:
@@ -110,8 +110,8 @@ class QEMUMonitorProtocol:
         """
         try:
             self.__sock.sendall(str.encode(json.dumps(qmp_cmd)))
-        except socket.error as err:
-            if err[0] == errno.EPIPE:
+        except OSError as err:
+            if err.errno == errno.EPIPE:
                 return
             raise socket.error(err)
         return self.__json_read()
@@ -149,8 +149,8 @@ class QEMUMonitorProtocol:
         self.__sock.setblocking(0)
         try:
             self.__json_read()
-        except socket.error as err:
-            if err[0] == errno.EAGAIN:
+        except OSError as err:
+            if err.errno == errno.EAGAIN:
                 # No data available
                 pass
         self.__sock.setblocking(1)
@@ -169,8 +169,8 @@ class QEMUMonitorProtocol:
         self.__sock.setblocking(0)
         try:
             self.__json_read()
-        except socket.error as err:
-            if err[0] == errno.EAGAIN:
+        except OSError as err:
+            if err.errno == errno.EAGAIN:
                 # No data available
                 pass
         self.__sock.setblocking(1)
