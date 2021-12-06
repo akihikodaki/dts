@@ -75,7 +75,7 @@ class UserConf():
 
     def get_sections(self):
         if self.conf is None:
-            return None
+            return []
 
         return self.conf.sections()
 
@@ -495,10 +495,6 @@ if __name__ == '__main__':
     # example for crbs configuration file
     crbsconf = CrbsConf(CRBCONF)
     print(crbsconf.load_crbs_config())
-
-    # example for ixia configuration file
-    ixiaconf = IxiaConf(IXIACONF)
-    print(ixiaconf.load_ixia_config())
 
     # example for suite configure file
     suiteconf = SuiteConf("suite_sample")
