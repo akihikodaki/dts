@@ -41,6 +41,7 @@ class IxNetworkPacketGenerator(PacketGenerator):
     ixNetwork packet generator
     """
     def __init__(self, tester):
+        super(IxNetworkPacketGenerator, self).__init__(tester)
         self.pktgen_type = PKTGEN_IXIA_NETWORK
         self._conn = None
         # ixNetwork configuration information of dts
@@ -51,7 +52,6 @@ class IxNetworkPacketGenerator(PacketGenerator):
         self._ports = []
         self._rx_ports = []
 
-        super(IxNetworkPacketGenerator, self).__init__(tester)
 
     def get_ports(self):
         ''' used for ixNetwork packet generator '''

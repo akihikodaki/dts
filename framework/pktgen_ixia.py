@@ -1082,7 +1082,7 @@ class Ixia(SSHConnection):
         Tells IXIA to prepare the internal buffers were the frames were captured.
         """
         ixia_port = self.get_ixia_port(port_number)
-        command = 'capture get {0} {1} {2}'.format(ixia_port)
+        command = 'capture get {0}'.format(ixia_port)
         self.send_expect(command, '% ', 30)
 
     def stat_get_rate_stat_all_stats(self, port_number):
@@ -1369,6 +1369,7 @@ class IxiaPacketGenerator(PacketGenerator):
     Ixia packet generator
     """
     def __init__(self, tester):
+        super(IxiaPacketGenerator, self).__init__(tester)
         # ixia management
         self.pktgen_type = PKTGEN_IXIA
         self._conn = None
@@ -1388,7 +1389,6 @@ class IxiaPacketGenerator(PacketGenerator):
         self.ip_keys = ['start', 'end','action', 'step', 'mask',]
         self.vlan_keys = ['start', 'end', 'action', 'step', 'count',]
 
-        super(IxiaPacketGenerator, self).__init__(tester)
         self.tester = tester
 
     def get_ports(self):

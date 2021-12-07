@@ -64,9 +64,16 @@ class PacketGenerator(object):
         self.tester = tester
         self.__streams = []
         self._ports_map = []
+        self.pktgen_type = None
+
+    def _prepare_generator(self):
+        raise NotImplementedError
 
     def prepare_generator(self):
         self._prepare_generator()
+
+    def _get_port_pci(self, port_id):
+        raise NotImplementedError
 
     def _convert_pktgen_port(self, port_id):
         '''
@@ -93,6 +100,9 @@ class PacketGenerator(object):
             port = -1
 
         return port
+
+    def _get_gen_port(self, tester_pci):
+        raise NotImplementedError
 
     def _convert_tester_port(self, port_id):
         '''
@@ -142,6 +152,9 @@ class PacketGenerator(object):
 
     def get_streams(self):
         return self.__streams
+
+    def _clear_streams(self):
+        raise NotImplementedError
 
     def clear_streams(self):
         ''' clear streams '''
@@ -525,7 +538,7 @@ class PacketGenerator(object):
                 break
             pps = (traffic_pps_max - traffic_pps_min)/2 + traffic_pps_min
 
-        self.logger.info("zero loss pps is %f" % last_no_lost_mult)
+        self.logger.info("zero loss pps is %f" % pps)
         # use last result as return data to keep the same with dts/etgen format
         # In fact, multiple link peer have multiple loss rate value,
         # here only pick one

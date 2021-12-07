@@ -35,6 +35,9 @@ import sys
 import time
 from pprint import pformat
 
+from scapy.layers.inet import IP
+from scapy.layers.l2 import Ether
+
 from .pktgen_base import (
     PKTGEN,
     PKTGEN_TREX,
@@ -414,6 +417,7 @@ class TrexPacketGenerator(PacketGenerator):
     https://trex-tgn.cisco.com/trex/doc/trex_manual.html
     """
     def __init__(self, tester):
+        super(TrexPacketGenerator, self).__init__(tester)
         self.pktgen_type = PKTGEN_TREX
         self.trex_app = "t-rex-64"
         self._conn = None
@@ -432,7 +436,6 @@ class TrexPacketGenerator(PacketGenerator):
         self.ip_keys = ['start', 'end','action', 'mask', 'step']
         self.vlan_keys = ['start', 'end', 'action', 'step', 'count']
 
-        super(TrexPacketGenerator, self).__init__(tester)
 
         # check trex binary file
         trex_bin = os.sep.join([self.conf.get('trex_root_path'), self.trex_app])
