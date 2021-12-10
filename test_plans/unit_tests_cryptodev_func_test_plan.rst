@@ -68,10 +68,16 @@ Test Case Setup
 ===============
 
 #. Build DPDK and app/test app
-#. Bind cryptodev devices to igb_uio driver
+    CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc -j 110
+
+#. Bind cryptodev devices to vfio-pci driver when test cryptodev_qat_autotest
+   ./dpdk/usertools/dpdk-devbind.py --status-dev crypto
+   ./dpdk/usertools/dpdk-devbind.py --force --bind=vfio-pci 000:1a:01.0
+
 #. Manually verify the app/test by this command, as example, in your build folder::
 
-     ./app/test -c 1 -n 1
+     ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -c 1 -n 1
      RTE>> cryptodev_qat_autotest
 
 All Unit Test Cases are listed above.

@@ -67,7 +67,7 @@ Get/install FIPS Object Module::
 
   wget https://www.openssl.org/source/openssl-fips-2.0.16.tar.gz
 
-  cd openssl-fips-2.0.16
+  cd openssl-fips-2.0.16; ./config
 
   make
 
@@ -89,7 +89,8 @@ Get/install the OpenSSL library::
 
 Build FIPS validation application(in DPDK examples directory)::
 
-  make -C examples/fips_validation
+  meson configure -Dexamples=fips_validation x86_64-native-linuxapp-gcc
+  ninja -C x86_64-native-linuxapp-gcc
 
 
 Test Case Common Step
@@ -97,7 +98,7 @@ Test Case Common Step
 
 Launch fips validation application command::
 
-  ./fips_validation [EAL options]
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation [EAL options]
    -- --req-file FILE_PATH/FOLDER_PATH
    --rsp-file FILE_PATH/FOLDER_PATH
    [--cryptodev DEVICE_NAME] [--cryptodev-id ID] [--path-is-folder]
@@ -117,7 +118,7 @@ Test Case 01: fips_aesni_mb_aes_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_aesni_mb_pmd_1 -- --req-file /root/FIPS/AES/req --rsp-file /root/FIPS/AES/resp --cryptodev crypto_aesni_mb_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_aesni_mb_pmd_1 -- --req-file /root/FIPS/AES/req --rsp-file /root/FIPS/AES/resp --cryptodev crypto_aesni_mb_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 02: fips_aesni_mb_3des_test
@@ -125,7 +126,7 @@ Test Case 02: fips_aesni_mb_3des_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_aesni_mb_pmd_1 -- --req-file /root/FIPS/TDES/req --rsp-file /root/FIPS/TDES/resp --cryptodev crypto_aesni_mb_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_aesni_mb_pmd_1 -- --req-file /root/FIPS/TDES/req --rsp-file /root/FIPS/TDES/resp --cryptodev crypto_aesni_mb_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 03: fips_aesni_mb_hmac_test
@@ -133,7 +134,7 @@ Test Case 03: fips_aesni_mb_hmac_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_aesni_mb_pmd_1 -- --req-file /root/FIPS/HMAC/req --rsp-file /root/FIPS/HMAC/resp --cryptodev crypto_aesni_mb_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_aesni_mb_pmd_1 -- --req-file /root/FIPS/HMAC/req --rsp-file /root/FIPS/HMAC/resp --cryptodev crypto_aesni_mb_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 04: fips_aesni_mb_ccm_test
@@ -141,7 +142,7 @@ Test Case 04: fips_aesni_mb_ccm_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_aesni_mb_pmd_1 -- --req-file /root/FIPS/CCM/req --rsp-file /root/FIPS/CCM/resp --cryptodev crypto_aesni_mb_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_aesni_mb_pmd_1 -- --req-file /root/FIPS/CCM/req --rsp-file /root/FIPS/CCM/resp --cryptodev crypto_aesni_mb_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 05: fips_aesni_mb_cmac_test
@@ -149,7 +150,7 @@ Test Case 05: fips_aesni_mb_cmac_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_aesni_mb_pmd_1 -- --req-file /root/FIPS/CMAC/req --rsp-file /root/FIPS/CMAC/resp --cryptodev crypto_aesni_mb_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_aesni_mb_pmd_1 -- --req-file /root/FIPS/CMAC/req --rsp-file /root/FIPS/CMAC/resp --cryptodev crypto_aesni_mb_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 06: fips_qat_gcm_test
@@ -157,7 +158,7 @@ Test Case 06: fips_qat_gcm_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 -a 0000:1a:01.0 -- --req-file /root/FIPS/GCM/req --rsp-file /root/FIPS/GCM/resp --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 -a 0000:1a:01.0 -- --req-file /root/FIPS/GCM/req --rsp-file /root/FIPS/GCM/resp --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 07: fips_qat_aes_test
@@ -165,7 +166,7 @@ Test Case 07: fips_qat_aes_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 -a 0000:1a:01.0 -- --req-file /root/FIPS/AES/req --rsp-file /root/FIPS/AES/resp --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 -a 0000:1a:01.0 -- --req-file /root/FIPS/AES/req --rsp-file /root/FIPS/AES/resp --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 08: fips_qat_3des_test
@@ -173,7 +174,7 @@ Test Case 08: fips_qat_3des_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 -a 0000:1a:01.0 -- --req-file /root/FIPS/TDES/req --rsp-file /root/FIPS/TDES/resp --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 -a 0000:1a:01.0 -- --req-file /root/FIPS/TDES/req --rsp-file /root/FIPS/TDES/resp --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 09: fips_qat_hmac_test
@@ -181,7 +182,7 @@ Test Case 09: fips_qat_hmac_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 -a 0000:1a:01.0 -- --req-file /root/FIPS/HMAC/req --rsp-file /root/FIPS/HMAC/resp --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 -a 0000:1a:01.0 -- --req-file /root/FIPS/HMAC/req --rsp-file /root/FIPS/HMAC/resp --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 10: fips_qat_ccm_test
@@ -189,7 +190,7 @@ Test Case 10: fips_qat_ccm_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 -a 0000:1a:01.0 -- --req-file /root/FIPS/CCM/req --rsp-file /root/FIPS/CCM/resp --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 -a 0000:1a:01.0 -- --req-file /root/FIPS/CCM/req --rsp-file /root/FIPS/CCM/resp --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 11: fips_qat_cmac_test
@@ -197,7 +198,7 @@ Test Case 11: fips_qat_cmac_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 -a 0000:1a:01.0 -- --req-file /root/FIPS/CMAC/req --rsp-file /root/FIPS/CMAC/resp --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 -a 0000:1a:01.0 -- --req-file /root/FIPS/CMAC/req --rsp-file /root/FIPS/CMAC/resp --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 12: fips_openssl_gcm_test
@@ -205,7 +206,7 @@ Test Case 12: fips_openssl_gcm_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_openssl_pmd_1 -- --req-file /root/FIPS/GCM/req --rsp-file /root/FIPS/GCM/resp --cryptodev crypto_openssl_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_openssl_pmd_1 -- --req-file /root/FIPS/GCM/req --rsp-file /root/FIPS/GCM/resp --cryptodev crypto_openssl_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 13: fips_openssl_aes_test
@@ -213,7 +214,7 @@ Test Case 13: fips_openssl_aes_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_openssl_pmd_1 -- --req-file /root/FIPS/AES/req --rsp-file /root/FIPS/AES/resp --cryptodev crypto_openssl_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_openssl_pmd_1 -- --req-file /root/FIPS/AES/req --rsp-file /root/FIPS/AES/resp --cryptodev crypto_openssl_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 14: fips_openssl_3des_test
@@ -221,7 +222,7 @@ Test Case 14: fips_openssl_3des_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_openssl_pmd_1 -- --req-file /root/FIPS/TDES/req --rsp-file /root/FIPS/TDES/resp --cryptodev crypto_openssl_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_openssl_pmd_1 -- --req-file /root/FIPS/TDES/req --rsp-file /root/FIPS/TDES/resp --cryptodev crypto_openssl_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 15: fips_openssl_hmac_test
@@ -229,7 +230,7 @@ Test Case 15: fips_openssl_hmac_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_openssl_pmd_1 -- --req-file /root/FIPS/HMAC/req --rsp-file /root/FIPS/HMAC/resp --cryptodev crypto_openssl_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_openssl_pmd_1 -- --req-file /root/FIPS/HMAC/req --rsp-file /root/FIPS/HMAC/resp --cryptodev crypto_openssl_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 16: fips_openssl_ccm_test
@@ -237,7 +238,7 @@ Test Case 16: fips_openssl_ccm_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_openssl_pmd_1 -- --req-file /root/FIPS/CCM/req --rsp-file /root/FIPS/CCM/resp --cryptodev crypto_openssl_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_openssl_pmd_1 -- --req-file /root/FIPS/CCM/req --rsp-file /root/FIPS/CCM/resp --cryptodev crypto_openssl_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 17: fips_aesni_gcm_gcm_test
@@ -245,7 +246,7 @@ Test Case 17: fips_aesni_gcm_gcm_test
 
 Test Command::
 
-  ./fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_aesni_gcm_pmd_1 -- --req-file /root/FIPS/GCM/req --rsp-file /root/FIPS/GCM/resp --cryptodev crypto_aesni_gcm_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6 --vdev crypto_aesni_gcm_pmd_1 -- --req-file /root/FIPS/GCM/req --rsp-file /root/FIPS/GCM/resp --cryptodev crypto_aesni_gcm_pmd_1 --path-is-folder --cryptodev-id 0 --self-test
 
 
 Test Case 18: fips_self-test
@@ -253,7 +254,7 @@ Test Case 18: fips_self-test
 
 Test Command::
 
-  ./fips_validation -a 0000:1a:01.0 --socket-mem 2048,0 --vdev crypto_aesni_mb_pmd_1 -- --req-file /root/FIPS/AES/req --rsp-file ./root/FIPS/AES/resp --cryptodev crypto_aesni_mb_pmd_1 --path-is-folder --self-test
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation -a 0000:1a:01.0 --socket-mem 2048,0 --vdev crypto_aesni_mb_pmd_1 -- --req-file /root/FIPS/AES/req --rsp-file ./root/FIPS/AES/resp --cryptodev crypto_aesni_mb_pmd_1 --path-is-folder --self-test
 
 
 Test Case 19: fips_broken-test
@@ -261,5 +262,5 @@ Test Case 19: fips_broken-test
 
 Test Command::
 
-  ./fips_validation -a 0000:1a:01.0--socket-mem 2048,0 --vdev crypto_aesni_mb_pmd_1 -- --req-file /root/FIPS/AES/req --rsp-file ./root/FIPS/AES/resp --cryptodev crypto_aesni_mb_pmd_1 --path-is-folder --self-test --broken-test-id 15 --broken-test-dir dec
+  ./x86_64-native-linuxapp-gcc/examples/dpdk-fips_validation -a 0000:1a:01.0--socket-mem 2048,0 --vdev crypto_aesni_mb_pmd_1 -- --req-file /root/FIPS/AES/req --rsp-file ./root/FIPS/AES/resp --cryptodev crypto_aesni_mb_pmd_1 --path-is-folder --self-test --broken-test-id 15 --broken-test-dir dec
 

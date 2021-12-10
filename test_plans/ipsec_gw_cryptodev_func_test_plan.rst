@@ -129,7 +129,7 @@ To test CryptoDev API, an example ipsec-secgw is added into DPDK.
 The test commands of ipsec-secgw is below::
 
 
-    ./build/ipsec-secgw [EAL options] --
+    ./build/examples/dpdk-l2fwd-crypto [EAL options] --
         -p PORTMASK -P -u PORTMASK -j FRAMESIZE
         -l -a REPLAY_WINOW_SIZE -e -a
         --config (port,queue,lcore)[,(port,queue,lcore]
@@ -140,8 +140,8 @@ The test commands of ipsec-secgw is below::
 
 compile the applications::
 
-    make -C ./examples/ipsec-secgw
-
+      meson configure -Dexamples=ipsec-secgw x86_64-native-linuxapp-gcc
+      ninja -C x86_64-native-linuxapp-gcc
 
 Configuration File Syntax:
 
@@ -151,6 +151,33 @@ Configuration File Syntax:
     the configuration file will be explained in DPDK code directory
     dpdk/doc/guides/sample_app_ug/ipsec_secgw.rst.
 
+Software
+--------
+
+dpdk: http://dpdk.org/git/dpdk
+multi-buffer library: https://github.com/01org/intel-ipsec-mb
+Intel QuickAssist Technology Driver: https://01.org/packet-processing/intel%C2%AE-quickassist-technology-drivers-and-patches
+
+General set up
+--------------
+1, Compile DPDK::
+
+    CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc -j 110
+
+2, Build App::
+      meson configure -Dexamples=ipsec-secgw x86_64-native-linuxapp-gcc
+      ninja -C x86_64-native-linuxapp-gcc
+
+3, Get the pci device id of QAT and NIC::
+
+   ./dpdk/usertools/dpdk-devbind.py --status-dev crypto
+   ./dpdk/usertools/dpdk-devbind.py --status-dev net
+
+4, Bind QAT VF ports and NICs to dpdk::
+
+   ./dpdk/usertools/dpdk-devbind.py --force --bind=vfio-pci 000:1a:01.0
+   ./dpdk/usertools/dpdk-devbind.py --force --bind=vfio-pci 0000:60:00.0 0000:60:00.2
 
 QAT/AES-NI installation
 =======================
@@ -200,7 +227,7 @@ Cryptodev AES-NI algorithm validation matrix is showed in table below.
 
 example::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0 -a 0000:60:00.2
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0 -a 0000:60:00.2
     --vdev crypto_aesni_mb_pmd_1 --vdev=crypto_aesni_mb_pmd_2 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)"
     -u 0x1 -p 0x3 -f /root/dts/local_conf/ipsec_test.cfg
 
@@ -231,7 +258,7 @@ Cryptodev QAT algorithm validation matrix is showed in table below.
 
 example::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0 -a 0000:60:00.2
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0 -a 0000:60:00.2
     -a 0000:1a:01.0 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)" -u 0x1 -p 0x3
     -f /root/dts/local_conf/ipsec_test.cfg
 
@@ -248,7 +275,7 @@ Cryptodev AES-GCM algorithm validation matrix is showed in table below.
 
 example::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0 -a 0000:60:00.2
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0 -a 0000:60:00.2
     --vdev crypto_aesni_gcm_pmd_1 --vdev=crypto_aesni_gcm_pmd_2 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)"
     -u 0x1 -p 0x3 -f /root/dts/local_conf/ipsec_test.cfg
 
@@ -265,6 +292,6 @@ Cryptodev NULL algorithm validation matrix is showed in table below.
 
 example::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0 -a 0000:60:00.2
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0 -a 0000:60:00.2
     --vdev crypto_null_pmd_1 --vdev=crypto_null_pmd_2 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)"
     -u 0x1 -p 0x3 -f /root/dts/local_conf/ipsec_test.cfg

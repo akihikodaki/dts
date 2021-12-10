@@ -291,6 +291,29 @@ The test commands of l2fwd-crypto is below::
     [--digest size SIZE] [--sessionless] [--cryptodev_mask MASK] /
     [--mac-updating] [--no-mac-updating]
 
+Software
+--------
+
+dpdk: http://dpdk.org/git/dpdk
+multi-buffer library: https://github.com/01org/intel-ipsec-mb
+Intel QuickAssist Technology Driver: https://01.org/packet-processing/intel%C2%AE-quickassist-technology-drivers-and-patches
+
+General set up
+--------------
+1, Compile DPDK::
+
+    CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc -j 110
+
+2, Get the pci device id of QAT and NIC::
+
+   ./dpdk/usertools/dpdk-devbind.py --status-dev crypto
+   ./dpdk/usertools/dpdk-devbind.py --status-dev net
+
+3, Bind QAT VF ports and  NICs  to dpdk::
+
+   ./dpdk/usertools/dpdk-devbind.py --force --bind=vfio-pci 000:1a:01.0
+   ./dpdk/usertools/dpdk-devbind.py --force --bind=vfio-pci 0000:60:00.0 0000:65:00.2
 
 QAT/AES-NI installation
 =======================
@@ -336,8 +359,8 @@ and compare the payload with correct answer pre-stored in scripts::
 
 compile the applications::
 
-    make -C ./examples/l2fwd-crypto
-
+    meson configure -Dexamples=l2fwd-crypto x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc
 
 Sub-case: AES-NI test case
 --------------------------
@@ -378,7 +401,8 @@ Cryptodev AES-NI algorithm validation matrix is showed in table below.
 
 example::
 
-    ./examples/l2fwd-crypto/build/l2fwd-crypto --socket-mem 1024,0 --legacy-mem -l 6,7,8 -n 2
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l2fwd-crypto --socket-mem 1024,0 --legacy-mem -l 6,7,8 -n 2
+    -a 0000:60:00.0 -a 0000:60:00.2
     --vdev crypto_aesni_mb --vdev crypto_aesni_mb -- -p 0x1 --chain CIPHER_ONLY --cdev_type SW
     --cipher_algo aes-cbc --cipher_op ENCRYPT --cipher_key 00:01:02:03:04:05:06:07:08:09:0a:0b:0c:0d:0e:0f
     --cipher_iv 00:01:02:03:04:05:06:07:08:09:0a:0b:0c:0d:0e:0f --no-mac-updating
@@ -438,7 +462,8 @@ Cryptodev QAT algorithm validation matrix is showed in table below.
 
 example::
 
-    ./examples/l2fwd-crypto/build/l2fwd-crypto --socket-mem 1024,0 --legacy-mem -l 6,7,8 -n 2
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l2fwd-crypto --socket-mem 1024,0 --legacy-mem -l 6,7,8 -n 2
+    -a 0000:60:00.0 -a 0000:60:00.2 -a 000:1a:01.0
     -- -p 0x1 --chain CIPHER_ONLY --cdev_type HW --cipher_algo aes-cbc --cipher_op ENCRYPT
     --cipher_key 00:01:02:03:04:05:06:07:08:09:0a:0b:0c:0d:0e:0f
     --cipher_iv 00:01:02:03:04:05:06:07:08:09:0a:0b:0c:0d:0e:0f --no-mac-updating
@@ -482,7 +507,8 @@ Cryptodev OPENSSL algorithm validation matrix is showed in table below.
 
 example::
 
-    ./examples/l2fwd-crypto/build/l2fwd-crypto --socket-mem 1024,0 --legacy-mem -l 6,7,8 -n 2
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l2fwd-crypto --socket-mem 1024,0 --legacy-mem -l 6,7,8 -n 2
+    -a 0000:60:00.0 -a 0000:60:00.2
     --vdev crypto_openssl_pmd --vdev crypto_openssl_pmd -- -p 0x1 --chain CIPHER_ONLY
     --cdev_type SW --cipher_algo aes-cbc --cipher_op ENCRYPT
     --cipher_key 00:01:02:03:04:05:06:07:08:09:0a:0b:0c:0d:0e:0f
@@ -508,7 +534,8 @@ Cipher only, hash-only and chaining functionality is supported for Snow3g.
 
 example::
 
-    ./examples/l2fwd-crypto/build/l2fwd-crypto --socket-mem 1024,0 --legacy-mem -l 6,7,8 -n 2
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l2fwd-crypto --socket-mem 1024,0 --legacy-mem -l 6,7,8 -n 2
+    -a 0000:60:00.0 -a 0000:60:00.2 [-a 000:1a:01.0]
     -- -p 0x1 --chain HASH_ONLY --cdev_type HW --auth_algo snow3g-uia2 --auth_op GENERATE
     --auth_key 00:01:02:03:04:05:06:07:08:09:0a:0b:0c:0d:0e:0f
     --auth_iv 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00 --digest 4 --no-mac-updating
@@ -533,7 +560,8 @@ Cipher only, hash-only and chaining functionality is supported for Kasumi.
 
 example::
 
-    ./examples/l2fwd-crypto/build/l2fwd-crypto --socket-mem 1024,0 --legacy-mem -l 6,7,8 -n 2
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l2fwd-crypto --socket-mem 1024,0 --legacy-mem -l 6,7,8 -n 2
+    -a 0000:60:00.0 -a 0000:60:00.2 [-a 000:1a:01.0]
     --vdev crypto_kasumi_pmd --vdev crypto_kasumi_pmd -- -p 0x1 --chain HASH_ONLY --cdev_type SW
     --auth_algo kasumi-f9 --auth_op GENERATE
     --auth_key 00:01:02:03:04:05:06:07:08:09:0a:0b:0c:0d:0e:0f --digest 4 --no-mac-updating
@@ -558,7 +586,8 @@ Cipher only, hash-only and chaining functionality is supported for ZUC.
 
 example::
 
-    ./examples/l2fwd-crypto/build/l2fwd-crypto --socket-mem 1024,0 --legacy-mem -l 6,7,8 -n 2
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l2fwd-crypto --socket-mem 1024,0 --legacy-mem -l 6,7,8 -n 2
+    -a 0000:60:00.0 -a 0000:60:00.2 [-a 000:1a:01.0]
     --vdev crypto_zuc_pmd --vdev crypto_zuc_pmd -- -p 0x1 --chain HASH_ONLY --cdev_type SW
     --auth_algo zuc-eia3 --auth_op GENERATE --auth_key 00:01:02:03:04:05:06:07:08:09:0a:0b:0c:0d:0e:0f
     --auth_iv 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00 --digest 4 --no-mac-updating
@@ -586,7 +615,8 @@ Cryptodev AESNI-GCM algorithm validation matrix is showed in table below.
 
 example::
 
-    ./examples/l2fwd-crypto/build/l2fwd-crypto --socket-mem 1024,0 --legacy-mem -l 6,7,8 -n 2
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l2fwd-crypto --socket-mem 1024,0 --legacy-mem -l 6,7,8 -n 2
+    -a 0000:60:00.0 -a 0000:60:00.2 [-a 000:1a:01.0]
     --vdev crypto_aesni_gcm_pmd --vdev crypto_aesni_gcm_pmd -- -p 0x1 --chain AEAD --cdev_type SW
     --aead_algo aes-gcm --aead_op ENCRYPT --aead_key 00:01:02:03:04:05:06:07:08:09:0a:0b:0c:0d:0e:0f
     --aead_iv 00:01:02:03:04:05:06:07:08:09:0a:0b --aad 00:01:02:03:04:05:06:07:08:09:0a:0b:0c:0d:0e:0f
@@ -612,6 +642,7 @@ Cipher only, hash-only and chaining functionality is supported for NULL.
 
 example::
 
-    ./examples/l2fwd-crypto/build/l2fwd-crypto --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l2fwd-crypto --socket-mem 2048,0 --legacy-mem -l 9,10,66 -n 6
+    -a 0000:60:00.0 -a 0000:60:00.2 [-a 000:1a:01.0]
     --vdev crypto_null_pmd --vdev crypto_null_pmd  --  -p 0x1 --chain CIPHER_ONLY --cdev_type SW
     --cipher_algo null --cipher_op ENCRYPT --no-mac-updating
