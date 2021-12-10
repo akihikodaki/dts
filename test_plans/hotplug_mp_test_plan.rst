@@ -64,7 +64,7 @@ Test Case: Attach physical device from primary or secondary
 ===========================================================
 Start sample code as primary then secondary::
 
-    ./hotplug_mp --proc-type=auto
+    ./dpdk-hotplug_mp --proc-type=auto
 
 Check primary and secondary processes don't have any device::
 
@@ -92,7 +92,7 @@ Bind one port to igb_uio or vfio
 
 Start sample code as primary then secondary::
 
-    ./hotplug_mp --proc-type=auto
+    ./dpdk-hotplug_mp --proc-type=auto
 
 Check primary and secondary processes have the device::
 
@@ -116,7 +116,7 @@ Test Case: Attach virtual device from primary or secondary
 ==========================================================
 Start sample code as primary then secondary::
 
-    ./hotplug_mp --proc-type=auto
+    ./dpdk-hotplug_mp --proc-type=auto
 
 Check primary and secondary processes don't have any device::
 
@@ -137,7 +137,7 @@ Test Case: Detach virtual device from primary or secondary
 ==========================================================
 Start sample code as primary then secondary::
 
-    ./hotplug_mp --proc-type=auto
+    ./dpdk-hotplug_mp --proc-type=auto
 
 Check primary and secondary processes don't have any device::
 
@@ -165,7 +165,7 @@ Test Case: Repeat to attach/detach physical device from primary or secondary
 ============================================================================
 Start sample code as primary then secondary::
 
-    ./hotplug_mp --proc-type=auto
+    ./dpdk-hotplug_mp --proc-type=auto
 
 Check primary and secondary processes don't have any device::
 
@@ -206,7 +206,7 @@ Test Case: Repeat to attach/detach virtual device from primary or secondary
 ===========================================================================
 Start sample code as primary then secondary::
 
-     ./hotplug_mp --proc-type=auto
+     ./dpdk-hotplug_mp --proc-type=auto
 
 Check primary and secondary processes don't have any device::
 
@@ -242,7 +242,7 @@ Test Case: Repeat to attach/detach vhost-user from primary or secondary
 =======================================================================
 Start sample code as primary then secondary::
 
-     ./hotplug_mp --proc-type=auto
+     ./dpdk-hotplug_mp --proc-type=auto
 
 Check primary and secondary processes don't have any device::
 
@@ -278,7 +278,7 @@ Test Case: Repeat to attach/detach virtio-user from primary or secondary
 ========================================================================
 Start sample code as primary then secondary::
 
-     ./hotplug_mp --proc-type=auto
+     ./dpdk-hotplug_mp --proc-type=auto
 
 Check primary and secondary processes don't have any device::
 

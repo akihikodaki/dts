@@ -56,7 +56,7 @@ on the way, will test it after enabled.
 To run the testpmd application in linuxapp environment with 4 lcores,
 4 channels with other default parameters in interactive mode::
 
-        $ ./testpmd -c 0xf -n 4 -- -i
+        $ ./dpdk-testpmd -c 0xf -n 4 -- -i
 
 Test ENV:
 
@@ -75,7 +75,7 @@ Test Case 1: port detach & attach for physical devices with igb_uio
 
 1. Start testpmd::
 
-      $ ./testpmd -c 0xf -n 4 -- -i
+      $ ./dpdk-testpmd -c 0xf -n 4 -- -i
 
 2. Bind new physical port to igb_uio(assume BDF 0000:02:00.0)::
 
@@ -127,7 +127,7 @@ Test Case 2: port detach and attach for physical devices with vfio
 
 1. Start testpmd::
 
-      $ ./testpmd -c 0xf -n 4 -- -i
+      $ ./dpdk-testpmd -c 0xf -n 4 -- -i
 
 2. Bind new physical port to igb_uio(assume BDF 0000:02:00.0)::
 
@@ -157,7 +157,7 @@ This case should be enabled after uio_pci_generic enabled for DPDK
 
 1. Start testpmd::
 
-      $ ./testpmd -c 0xf -n 4 -- -i
+      $ ./dpdk-testpmd -c 0xf -n 4 -- -i
 
 2. Bind new physical port to igb_uio(assume BDF 0000:02:00.0)::
 
@@ -215,7 +215,7 @@ Bind driver before testpmd started, port will start automatically
 
 2. Start testpmd::
 
-      $ ./testpmd -c 0xf -n 4 -- -i
+      $ ./dpdk-testpmd -c 0xf -n 4 -- -i
 
 3. Check package forwarding when startup::
 
@@ -254,7 +254,7 @@ Test Case 5: port detach & attach for virtual devices
 
 1. Start testpmd::
 
-      $ ./testpmd -c 0xf -n 4 -- -i
+      $ ./dpdk-testpmd -c 0xf -n 4 -- -i
 
 2. Attach virtual device as port 0::
 
@@ -302,7 +302,7 @@ Test Case 6: port detach & attach for virtual devices, with "--vdev"
 
 1. Start testpmd, ""xxxx" is one workable ifname::
 
-      $ ./testpmd -c 0xf -n 4 --vdev "eth_pcap0,iface=xxxx" -- -i
+      $ ./dpdk-testpmd -c 0xf -n 4 --vdev "eth_pcap0,iface=xxxx" -- -i
 
 2. Check package forwarding after port start::
 
@@ -341,7 +341,7 @@ Test Case 7: port detach & attach for vhost-user/virtio-user with "--vdev"
 
 1. Start testpmd with one vhost port::
 
-      $ ./testpmd -c 0xf -n 4 --no-pci --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- -i
+      $ ./dpdk-testpmd -c 0xf -n 4 --no-pci --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- -i
 
 2. Detach port 0 after port closed::
 
@@ -355,7 +355,7 @@ Test Case 7: port detach & attach for vhost-user/virtio-user with "--vdev"
 
 4. Launch virtio-user and attach one virtio-user port::
 
-      ./testpmd -n 4 -l 7-8 --socket-mem 1024,1024 --no-pci --file-prefix=virtio1 -- -i
+      ./dpdk-testpmd -n 4 -l 7-8 --socket-mem 1024,1024 --no-pci --file-prefix=virtio1 -- -i
       testpmd>port attach net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=0
       testpmd>port start 0
 

@@ -198,7 +198,7 @@ steps:
 
 #. boot up flow_classify::
 
-    ./flow_classify -c 4 -n 4 -- --rule_ipv4=<rule config file>
+    ./dpdk-flow_classify -c 4 -n 4 -- --rule_ipv4=<rule config file>
 
 #. send stream by packet generator(e.g. scapy or ixia)::
 
@@ -219,7 +219,7 @@ steps:
 
 #. boot up flow_classify::
 
-    ./flow_classify -c 4 -n 4 -- --rule_ipv4=<rule config file>
+    ./dpdk-flow_classify -c 4 -n 4 -- --rule_ipv4=<rule config file>
 
 #. send stream by packet generator(e.g. scapy or ixia)::
 
@@ -238,7 +238,7 @@ steps:
 
 #. boot up flow_classify::
 
-    ./flow_classify -c 4 -n 4 -- --rule_ipv4=<rule config file>
+    ./dpdk-flow_classify -c 4 -n 4 -- --rule_ipv4=<rule config file>
 
 #. send stream by packet generator(e.g. scapy or ixia)::
 
@@ -259,7 +259,7 @@ steps:
 
 #. boot up flow_classify::
 
-    ./flow_classify -c 4 -n 4 -- --rule_ipv4=<rule config file>
+    ./dpdk-flow_classify -c 4 -n 4 -- --rule_ipv4=<rule config file>
 
 #. send stream by packet generator(e.g. scapy or ixia)::
 
@@ -278,7 +278,7 @@ steps:
 
 #. boot up flow_classify::
 
-    ./flow_classify -c 4 -n 4 -- --rule_ipv4=<rule config file>
+    ./dpdk-flow_classify -c 4 -n 4 -- --rule_ipv4=<rule config file>
 
 #. send stream by packet generator(e.g. scapy or ixia)::
 
@@ -297,7 +297,7 @@ steps:
 
 #. boot up flow_classify::
 
-    ./flow_classify -c 4 -n 4 -- --rule_ipv4=<rule config file>
+    ./dpdk-flow_classify -c 4 -n 4 -- --rule_ipv4=<rule config file>
 
 #. send stream by packet generator(e.g. scapy or ixia)::
 
@@ -316,7 +316,7 @@ steps:
 
 #. boot up flow_classify::
 
-    ./flow_classify -c 4 -n 4 -- --rule_ipv4=<rule config file>
+    ./dpdk-flow_classify -c 4 -n 4 -- --rule_ipv4=<rule config file>
 
 #. send multiple stream by packet generator(e.g. scapy or ixia), include SCTP_1/SCTP_invalid/TCP_invalid/TCP_1/TCP_2/UDP_invalid/UDP_1/UDP_2::
 

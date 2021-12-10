@@ -97,7 +97,7 @@ Test Case 1: test_kernel_2pf_2vf_1vm_iplink_macfilter
    disable promisc mode,set it in mac forward mode::
 
       ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
 
       testpmd> port stop all
       testpmd> port config all crc-strip on
@@ -175,7 +175,7 @@ Test Case 2: test_kernel_2pf_2vf_1vm_mac_add_filter
    VF, disable promisc mode, add a new MAC to VF0 and then start::
 
       ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
 
       testpmd> port stop all
       testpmd> port config all crc-strip on
@@ -228,7 +228,7 @@ Test Case 3: test_dpdk_2pf_2vf_1vm_mac_add_filter
 
 3. Start testpmd::
 
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x6 -n 4 -b 0000:81:02.0 -b 0000:81:0a.0 -- -i
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 -b 0000:81:02.0 -b 0000:81:0a.0 -- -i
 
 4. Detach VFs from the host, bind them to pci-stub driver::
 
@@ -269,7 +269,7 @@ Test Case 3: test_dpdk_2pf_2vf_1vm_mac_add_filter
    VF, disable promisc mode, add a new MAC to VF0 and then start::
 
       ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
 
       testpmd> port stop all
       testpmd> port config all crc-strip on
@@ -323,7 +323,7 @@ Test Case 4: test_dpdk_2pf_2vf_1vm_iplink_macfilter
 
 3. Start testpmd::
 
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x6 -n 4 -b 0000:81:02.0 -b 0000:81:0a.0 -- -i
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 -b 0000:81:02.0 -b 0000:81:0a.0 -- -i
       testpmd>set vf mac addr 0 0 00:11:22:33:44:55
 
 4. Detach VFs from the host, bind them to pci-stub driver::
@@ -365,7 +365,7 @@ Test Case 4: test_dpdk_2pf_2vf_1vm_iplink_macfilter
    disable promisc mode, set it in mac forward mode::
 
       ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
 
       testpmd> port stop all
       testpmd> port config all crc-strip on

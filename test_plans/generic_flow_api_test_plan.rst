@@ -57,7 +57,7 @@ Test case: Fortville ethertype
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -99,7 +99,7 @@ Test case: Fortville fdir for L2 payload
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -133,7 +133,7 @@ Test case: Fortville fdir for flexbytes
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -217,7 +217,7 @@ Test case: Fortville fdir for ipv4
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -322,17 +322,17 @@ Test case: Fortville fdir for ipv6
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1e0000 -n 4 -a 05:02.0 --file-prefix=vf0 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e0000 -n 4 -a 05:02.0 --file-prefix=vf0 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1e00000 -n 4 -a 05:02.1 --file-prefix=vf1 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e00000 -n 4 -a 05:02.1 --file-prefix=vf1 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -401,7 +401,7 @@ Test case: Fortville fdir wrong parameters
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -461,7 +461,7 @@ Test case: Fortville tunnel vxlan
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --tx-offloads=0x8fff --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --tx-offloads=0x8fff --disable-rss
     testpmd> rx_vxlan_port add 4789 0
     testpmd> set fwd rxonly
     testpmd> set verbose 1
@@ -469,7 +469,7 @@ Test case: Fortville tunnel vxlan
     testpmd> start
     the pf's mac address is 00:00:00:00:01:00
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1e0000 -n 4 -a 05:02.0 --file-prefix=vf --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e0000 -n 4 -a 05:02.0 --file-prefix=vf --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> set promisc all off
@@ -564,19 +564,19 @@ Test case: Fortville tunnel nvgre
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --tx-offloads=0x8fff
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --tx-offloads=0x8fff
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> set promisc all off
     testpmd> start
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1e0000 -n 4 -a 05:02.0 --file-prefix=vf0 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e0000 -n 4 -a 05:02.0 --file-prefix=vf0 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> set promisc all off
     testpmd> start
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1e00000 -n 4 -a 05:02.1 --file-prefix=vf1 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e00000 -n 4 -a 05:02.1 --file-prefix=vf1 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> set promisc all off
@@ -666,7 +666,7 @@ Test case: IXGBE SYN
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -708,7 +708,7 @@ Test case: IXGBE n-tuple(supported by x540 and 82599)
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -764,7 +764,7 @@ Test case: IXGBE ethertype
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -808,7 +808,7 @@ Test case: IXGBE fdir for ipv4
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -910,7 +910,7 @@ Test case: IXGBE fdir for signature(ipv4/ipv6)
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=signature
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=signature
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -1063,7 +1063,7 @@ Test case: IXGBE fdir for mac/vlan(support by x540, x552, x550)
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect-mac-vlan
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect-mac-vlan
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -1211,7 +1211,7 @@ Test case: IXGBE fdir for tunnel (vxlan and nvgre)(support by x540, x552, x550)
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect-tunnel
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect-tunnel
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -1255,7 +1255,7 @@ Test case: igb SYN
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=8 --txq=8 --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=8 --txq=8 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -1297,7 +1297,7 @@ Test case: igb n-tuple(82576)
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=8 --txq=8 --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=8 --txq=8 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -1327,7 +1327,7 @@ Test case: igb n-tuple(i350 or 82580)
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=8 --txq=8 --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=8 --txq=8 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -1360,7 +1360,7 @@ Test case: igb ethertype
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=8 --txq=8
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=8 --txq=8
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -1401,7 +1401,7 @@ Test case: igb flexbytes
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=8 --txq=8 --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=8 --txq=8 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -1502,7 +1502,7 @@ Test case: Fortville fdir for l2 mac
         ./usertools/dpdk-devbind.py -b igb_uio 0000:81:00.0
 
     launch testpmd::
-        ./x86_64-native-linuxapp-gcc/app/testpmd -l 0-3 -n 4 -a 0000:81:00.0 -- -i --rxq=4 --txq=4
+        ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 0-3 -n 4 -a 0000:81:00.0 -- -i --rxq=4 --txq=4
 
 1. basic test for ipv4-other
 
@@ -2009,7 +2009,7 @@ Test case: Dual vlan(QinQ)
 
    1. set up testpmd with Fortville NICs::
 
-         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x1 --rxq=16 --txq=16 --tx-offloads=0x8fff
+         ./dpdk-testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x1 --rxq=16 --txq=16 --tx-offloads=0x8fff
 
    2. verbose configuration::
 
@@ -2107,7 +2107,7 @@ Test Case: 10GB Multiple filters
 
    1. set up testpmd with Fortville NICs::
 
-         ./testpmd -l 1,2,3,4,5,6,7,8 -n 4 -- -i --disable-rss --rxq=16 --txq=16
+         ./dpdk-testpmd -l 1,2,3,4,5,6,7,8 -n 4 -- -i --disable-rss --rxq=16 --txq=16
 
    2. verbose configuration::
 
@@ -2184,7 +2184,7 @@ This case is designed for NIC (niantic,I350, 82576 and 82580). Since
 transmit above packets on assigned queue.  Launch the app ``testpmd`` with the
 following arguments::
 
-    testpmd -l 1,2,3,4,5,6,7,8 -n 4 -- -i --disable-rss --rxq=4 --txq=4 --portmask=0x3 --nb-cores=4 --nb-ports=1 --mbcache=200 --mbuf-size=2048 --max-pkt-len=9600
+    dpdk-testpmd -l 1,2,3,4,5,6,7,8 -n 4 -- -i --disable-rss --rxq=4 --txq=4 --portmask=0x3 --nb-cores=4 --nb-ports=1 --mbcache=200 --mbuf-size=2048 --max-pkt-len=9600
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -2226,7 +2226,7 @@ for 128 queues test::
 
 Launch the app ``testpmd`` with the following arguments::
 
-    ./testpmd -l 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53 -n 4 -- -i --disable-rss --rxq=128 --txq=128 --portmask=0x3 --nb-cores=4      --total-num-mbufs=263168
+    ./dpdk-testpmd -l 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53 -n 4 -- -i --disable-rss --rxq=128 --txq=128 --portmask=0x3 --nb-cores=4      --total-num-mbufs=263168
 
     testpmd>set stat_qmap rx 0 0 0
     testpmd>set stat_qmap rx 1 0 0

@@ -105,7 +105,7 @@ Log in VM, bind passthrough port 0 to vfio-pci::
 Start testpmd with "--hot-plug" enable, set rxonly forward mode
 and enable verbose output::
 
-    ./testpmd -c f -n 4 -- -i --hot-plug
+    ./dpdk-testpmd -c f -n 4 -- -i --hot-plug
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -163,7 +163,7 @@ Bind passthrough port 0 to vfio-pci::
 Start testpmd with "--hot-plug" enable, set rxonly forward mode
 and enable verbose output::
 
-    ./testpmd -c f -n 4 -- -i --hot-plug
+    ./dpdk-testpmd -c f -n 4 -- -i --hot-plug
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -232,7 +232,7 @@ Log in VM, bind passthrough port 0 and port 1 to vfio-pci::
 Start testpmd with "--hot-plug" enable, set rxonly forward mode
 and enable verbose output::
 
-    ./testpmd -c f -n 4 -- -i --hot-plug
+    ./dpdk-testpmd -c f -n 4 -- -i --hot-plug
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -293,7 +293,7 @@ Log in VM, bind passthrough port 0 and port 1 to vfio-pci::
 Start testpmd with "--hot-plug" enable, set rxonly forward mode
 and enable verbose output::
 
-    ./testpmd -c f -n 4 -- -i --hot-plug
+    ./dpdk-testpmd -c f -n 4 -- -i --hot-plug
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -315,7 +315,7 @@ Quit testpmd
 
 Check devices are removed, no system hange and core dump::
 
-   ./usertools/dpdk-devbind.py -s
+   ./usertools/dpdik-devbind.py -s
 
 Add devices from qemu interface::
 

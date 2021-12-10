@@ -68,7 +68,7 @@ Prerequisites
 Assuming that ports ``0`` and ``1`` are connected to a traffic generator's port
 ``A`` and ``B``. Launch the ``testpmd`` with the following arguments::
 
-  ./build/app/testpmd -cffffff -n 3 -- -i --burst=1 --txpt=32 \
+  ./build/app/dpdk-testpmd -cffffff -n 3 -- -i --burst=1 --txpt=32 \
   --txht=8 --txwt=0 --txfreet=0 --rxfreet=64 --mbcache=250 --portmask=0x3
 
 The -n command is used to select the number of memory channels. It should match the number of memory channels on that setup.

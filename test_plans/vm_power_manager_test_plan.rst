@@ -123,11 +123,11 @@ Test Case 1: VM Power Management Channel
 
 3. Run power-manager in Host::
 
-        ./build/vm_power_mgr -c 0x3 -n 4
+        x86_64-native-linuxapp-gcc/examples/dpdk-guest_cli -c 0x3 -n 4
 
 4. Startup VM and run guest_vm_power_mgr::
 
-        guest_vm_power_mgr -c 0x1f -n 4 -- -i
+        x86_64-native-linuxapp-gcc/examples/dpdk-guest_cli -c 0x1f -n 4 -- -i
 
 5. Add vm in host and check vm_power_mgr can get frequency normally::
 
@@ -155,7 +155,7 @@ Test Case 1: VM Power Management Channel
 
 7. Run vm_power_mgr in vm::
 
-        guest_cli/build/vm_power_mgr -c 0x1f -n 4
+        x86_64-native-linuxapp-gcc/examples/dpdk-guest_cli -c 0x1f -n 4
 
    Check monitor channel for all cores has been connected.
 
@@ -239,7 +239,7 @@ Test Case 7: VM Power Management Multi VMs
 2. Setup VM power management environment for VM2
 3. Run power-manager in Host::
 
-        ./build/vm_power_mgr -c 0x3 -n 4
+        x86_64-native-linuxapp-gcc/examples/dpdk-guest_cli -c 0x3 -n 4
 
 4. Startup VM1 and VM2
 5. Add VM1 in host and check vm_power_mgr can get frequency normally::

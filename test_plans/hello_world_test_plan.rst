@@ -40,7 +40,7 @@ enabled lcore.
 
 Command Usage::
 
-  ./helloworld -c COREMASK [-m NB] [-r NUM] [-n NUM]
+  ./dpdk-helloworld -c COREMASK [-m NB] [-r NUM] [-n NUM]
 
     EAL option list:
       -c COREMASK: hexadecimal bitmask of cores we are running on
@@ -75,7 +75,7 @@ Test Case: run hello world on single lcores
 
 To run example in single lcore ::
 
-  $ ./helloworld -c 1
+  $ ./dpdk-helloworld -c 1
     hello from core 0
 
 Check the output is exact the lcore 0
@@ -86,7 +86,7 @@ Test Case: run hello world on every lcores
 
 To run the example in all the enabled lcore ::
 
-  $ ./helloworld -cffffff
+  $ ./dpdk-helloworld -cffffff
     hello from core 1
     hello from core 2
     hello from core 3

@@ -96,7 +96,7 @@ Test Case 1: VF_packet_IO_kernel_PF_dpdk_VF
    and then start testpmd, set it in mac forward mode::
 
       ./usertools/dpdk-devbind.py -s --bind=igb_uio 00:06.0 00:07.0
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 \
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 \
                                                -- -i --portmask=0x3 --tx-offloads=0x8fff
 
       testpmd> set fwd mac
@@ -152,7 +152,7 @@ Test Case 2: VF_packet_IO_dpdk_PF_dpdk_VF
    it can be seen that VFs 81:02.0 & 81:0a.0 's drv is pci-stub.
 4. Start testpmd on host::
 
-       ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3e -n 4 -b 0000:81:02.0 -b 0000:81:0a.0 -- -i
+       ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3e -n 4 -b 0000:81:02.0 -b 0000:81:0a.0 -- -i
 
 5. Passthrough VFs 81:02.0 & 81:0a.0 to vm0, and start vm0::
 
@@ -165,7 +165,7 @@ Test Case 2: VF_packet_IO_dpdk_PF_dpdk_VF
    and then start testpmd, set it in mac forward mode::
 
       ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 \
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 \
                                                -- -i
 
       testpmd> set fwd mac
@@ -214,7 +214,7 @@ this case pf in dpdk
    it can be seen that VFs 81:02.0 & 81:02.1 & 81:02.2 's drv is pci-stub.
 4. Start testpmd on host::
 
-       ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x600000000006 -n 4 -b 0000:81:02.0 -b 0000:81:02.1 -b 0000:81:02.2 -- -i
+       ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x600000000006 -n 4 -b 0000:81:02.0 -b 0000:81:02.1 -b 0000:81:02.2 -- -i
 
 5. Passthrough VFs 81:02.0 & 81:02.1 to vm0, and start vm0::
 
@@ -231,12 +231,12 @@ this case pf in dpdk
 7. Login vm0 and vm1, got VFs pci device id in vm0 and vm1, assume they are 00:04.0 & 00:05.0 on vm0,00:04.0 on vm1, bind them to igb_uio driver,for vm0::
 
       ./usertools/dpdk-devbind.py --bind=igb_uio 00:04.0 00:05.0
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 1  -- -i
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 1  -- -i
       testpmd> set fwd mac
       testpmd> start
 8. On vm 1::
 
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 1  -- -i
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 1  -- -i
 
 9. On vm0::
 
@@ -307,7 +307,7 @@ this case pf in kernel
 6. Login vm0 and vm1, got VFs pci device id in vm0 and vm1, assume they are 00:04.0 & 00:05.0 on vm0,00:04.0 on vm1, bind them to igb_uio driver,for vm0::
 
       ./usertools/dpdk-devbind.py --bind=igb_uio 00:04.0 00:05.0
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 1  -- -i
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 1  -- -i
       testpmd> set fwd mac
       testpmd> start
 7. On vm 1::

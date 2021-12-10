@@ -60,7 +60,7 @@ Test Case: Vxlan ipv4 packet detect
 ===================================
 Start testpmd with tunneling packet type to vxlan::
 
-    testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
+    dpdk-testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
 
 Set rxonly packet forwarding mode and enable verbose log::
 
@@ -91,7 +91,7 @@ Test Case: Vxlan ipv6 packet detect
 ===================================
 Start testpmd with tunneling packet type to vxlan::
 
-    testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
+    dpdk-testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
 
 Set rxonly packet forwarding mode and enable verbose log::
 
@@ -122,7 +122,7 @@ Test Case: Vxlan ipv4 checksum offload
 ======================================
 Start testpmd with tunneling packet type to vxlan::
 
-    testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
+    dpdk-testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
 
 Set csum packet forwarding mode and enable verbose log::
 
@@ -218,7 +218,7 @@ Test Case: Vxlan ipv6 checksum offload
 ======================================
 Start testpmd with tunneling packet type::
 
-    testpmd -c ffff -n 4 -- -i --tunnel-type=1 --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
+    dpdk-testpmd -c ffff -n 4 -- -i --tunnel-type=1 --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
 
 Set csum packet forwarding mode and enable verbose log::
 
@@ -288,7 +288,7 @@ Test Case: Tunnel Filter
 Start testpmd with tunneling packet type to vxlan and disable receive side
 scale for hardware limitation::
 
-    testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
+    dpdk-testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
 
 Set rxonly packet forwarding mode and enable verbose log::
 
@@ -327,7 +327,7 @@ Test Case: Tunnel Filter invalid
 Start testpmd with tunneling packet type to vxlan and disable receive side
 scale for hardware limitation::
 
-    testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
+    dpdk-testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
 
 Add Cloud filter with invalid Mac address "00:00:00:00:01" will be failed.
 

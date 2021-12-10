@@ -83,7 +83,9 @@ Patch testpmd for dumping flexible fields from RXD::
 
 Compile DPDK and testpmd::
 
-  make install -j T=x86_64-native-linuxapp-gcc
+  rm -rf x86_64-native-linuxapp-gcc
+  CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
+  ninja -C x86_64-native-linuxapp-gcc
 
 Bind Intel E810 interface to igb_uio driver, (e.g. 0000:18:00.0) ::
 
@@ -94,7 +96,7 @@ Test Case 01: Check single VLAN fields in RXD (802.1Q)
 
 Launch testpmd by::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
   testpmd>set verbose 1
   testpmd>set fwd io
@@ -130,7 +132,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
 Test packet::
 
@@ -148,7 +150,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
 Test packet::
 
@@ -167,7 +169,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
 Test packet::
 
@@ -186,7 +188,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=ipv4 -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=ipv4 -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
 Test packet::
 
@@ -208,7 +210,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=ipv6 -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=ipv6 -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
 Test packet::
 
@@ -230,7 +232,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=ipv6_flow -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=ipv6_flow -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
 Test packet::
 
@@ -250,7 +252,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=tcp -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=tcp -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
 Test packet::
 
@@ -269,7 +271,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=tcp -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
+  ./x86_64-native-linux-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr=tcp -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
 
 Test packet::
 
@@ -288,7 +290,7 @@ Test steps are same to ``Test Case 01``, just change the launch command of testp
 
 Launch testpmd command::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr='[(2):ipv4,(3):ipv6,(4):tcp]' -- -i --rxq=64 --txq=64 --portmask=0x1
+  ./x86_64-native-linux-gcc/app/dpdk-testpmd -l 6-9 -n 4 -a 18:00.0,proto_xtr='[(2):ipv4,(3):ipv6,(4):tcp]' -- -i --rxq=64 --txq=64 --portmask=0x1
 
 Create generic flow on NIC::
 
@@ -337,7 +339,7 @@ Make sure the new ice.pkg is different with the original one. Take 'dmesg' comma
 
 Start the testpmd::
 
-  ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64
+  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64
 
 Check the testpmd started failed. Failed info output::
 

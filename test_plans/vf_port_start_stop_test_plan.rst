@@ -133,7 +133,7 @@ Create Two VF interfaces from two kernel PF interfaces, and then attach them to 
    mac forward mode::
 
        ./tools/dpdk_nic_bind.py --bind=igb_uio 00:06.0 00:07.0
-       ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -- -i
+       ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0f -n 4 -- -i
        testpmd-> set fwd mac
        testpmd-> start
 

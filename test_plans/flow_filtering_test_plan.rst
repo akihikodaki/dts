@@ -39,7 +39,7 @@ of a creating a RTE flow rule. It is intended as a demonstration
 of the basic components RTE flow rules.
 The Flow Filtering results are produced using ''flow'' application::
 
-    ./flow -l 1 -n 1
+    ./dpdk-flow_filtering -l 1 -n 1
 
 There is a flow rule defined in the sample code.
 You can check the detailed information of the flow rule from
@@ -70,7 +70,7 @@ Test Case: match rule
 =====================
 1. Start the application with default settings::
 
-    ./flow -l 1 -n 1
+    ./dpdk-flow_filtering -l 1 -n 1
 
 2. Send packets which matches the defined rule from tester::
 
@@ -88,7 +88,7 @@ Test Case: dismatch rule
 ========================
 1. Start the application with default settings::
 
-    ./flow -l 1 -n 1
+    ./dpdk-flow_filtering -l 1 -n 1
 
 2. Send packet which dismatches the defined rule from tester::
 

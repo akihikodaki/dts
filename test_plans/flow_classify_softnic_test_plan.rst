@@ -72,7 +72,7 @@ Other changes are shown in each case.
 
 Start softnic with following command line::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -s 0x10 -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1f -s 0x10 -n 4 \
     --vdev 'net_softnic0,firmware=./drivers/net/softnic/firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --portmask=0x10
     testpmd> start
@@ -87,7 +87,7 @@ Test Case: ipv4 ACL table
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv4_acl_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=4 --txq=4 --disable-rss --portmask=0x10
 
@@ -186,7 +186,7 @@ Test Case: ipv4-5tuple hash table
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv4_5tuple_hash_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=4 --txq=4 --disable-rss --portmask=0x10
 
@@ -242,7 +242,7 @@ c) Match UDP SPORT::
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv4_addr_hash_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=4 --txq=4 --disable-rss --portmask=0x10
 
@@ -349,7 +349,7 @@ Test Case: ipv6 ACL table
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv6_acl_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=4 --txq=4 --disable-rss --portmask=0x10
 
@@ -408,7 +408,7 @@ b) Match ipv6 dst_addr::
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv6_addr_hash_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=4 --txq=4 --disable-rss --portmask=0x10
 
@@ -491,7 +491,7 @@ Test Case: ipv6-5tuple hash table
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv6_5tuple_hash_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=4 --txq=4 --disable-rss --portmask=0x10
 
@@ -550,7 +550,7 @@ b) Match ipv4 dst_addr::
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv4_addr_hash_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=4 --txq=4 --disable-rss --portmask=0x10
 
@@ -592,7 +592,7 @@ b) Match ipv6 dst_addr::
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv6_5tuple_hash_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=4 --txq=4 --disable-rss --portmask=0x10
 
@@ -642,7 +642,7 @@ c) Table c::
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv4_rss_firmware.cli,cpu_id=1,conn_port=8086'
     -- -i --rxq=4 --txq=4 --disable-rss --portmask=0x10
 
@@ -763,7 +763,7 @@ c) Table c::
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv6_rss_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=4 --txq=4 --disable-rss --portmask=0x10
 
@@ -885,7 +885,7 @@ Test Case: ipv4 ACL table jump action
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv4_acl_jump_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=2 --txq=2 --disable-rss --portmask=0x4
 
@@ -936,7 +936,7 @@ Test Case: ipv4 HASH table jump action
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv4_hash_jump_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=2 --txq=2 --disable-rss --portmask=0x4
 
@@ -989,7 +989,7 @@ Test Case: ipv4 ACL jump to HASH table
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv4_acl_hash_jump_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=2 --txq=2 --disable-rss --portmask=0x4
 
@@ -1044,7 +1044,7 @@ Test Case: ipv4 HASH jump to ACL table
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv4_hash_acl_jump_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=2 --txq=2 --disable-rss --portmask=0x4
 
@@ -1092,7 +1092,7 @@ Test Case: ipv6 ACL table jump action
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv6_acl_jump_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=2 --txq=2 --disable-rss --portmask=0x4
 
@@ -1146,7 +1146,7 @@ Test Case: ipv6 HASH table jump action
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv6_hash_jump_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=2 --txq=2 --disable-rss --portmask=0x4
 
@@ -1203,7 +1203,7 @@ Test Case: ipv6 ACL jump to HASH table
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv6_acl_hash_jump_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=2 --txq=2 --disable-rss --portmask=0x4
 
@@ -1257,7 +1257,7 @@ Test Case: ipv6 HASH jump to ACL table
 
 2. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0, \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0, \
     firmware=./drivers/net/softnic/flow_ipv6_hash_acl_jump_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --rxq=2 --txq=2 --disable-rss --portmask=0x4
 

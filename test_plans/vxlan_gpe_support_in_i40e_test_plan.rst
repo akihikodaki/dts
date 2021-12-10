@@ -53,7 +53,7 @@ Test Case 1: VXLAN-GPE ipv4 packet detect
 =========================================
 1. Start testpmd::
 
-    # testpmd -c 0xf -n 4 -- -i
+    # dpdk-testpmd -c 0xf -n 4 -- -i
 
 2. Add VXLAN-GPE packet type support in test pmd and enable verbose log::
 
