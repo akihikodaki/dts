@@ -47,8 +47,12 @@ stdout.
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff
   RTE>> dump_ring
 
 The final output of the test will be detailed elements of DPDK ring.
@@ -76,8 +80,12 @@ stdout.
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff
   RTE>> dump_mempool
 
 The final output of the test will be detailed elements of DPDK mempool.
@@ -105,8 +113,12 @@ stdout.
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff
   RTE>> dump_physmem
 
 The final output of the test will be detailed elements of DPDK physical memory.
@@ -128,8 +140,12 @@ stdout.
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff
   RTE>> dump_memzone
 
 The final output of the test will be detailed elements of DPDK memzone.
@@ -151,8 +167,12 @@ stdout.
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff
   RTE>> dump_struct_sizes
 
 The final output of the test will be the size of DPDK structure.
@@ -174,8 +194,12 @@ stdout.
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff -a|-b pci_address
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff -a|-b pci_address
   RTE>> dump_devargs
 
 The final output of the test will be the pci address of allow list
@@ -198,8 +222,12 @@ stdout.
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff
   RTE>> dump_malloc_stats
 
 The final output of the test will be the malloc stats of DPDK heap.
@@ -221,8 +249,12 @@ stdout.
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff
   RTE>> dump_malloc_heaps
 
 The final output of the test will be the detailed malloc status of each DPDK heap.
@@ -244,8 +276,12 @@ stdout.
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff
   RTE>> dump_log_types
 
 The final output of the test will be the log level of each DPDK log type.

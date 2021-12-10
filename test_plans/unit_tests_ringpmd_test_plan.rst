@@ -51,8 +51,12 @@ virtual ethernet devices with full rx&tx functions.
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff --vdev='net_ring0'
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff --vdev='net_ring0'
       --vdev='net_ring1'
   RTE>> ring_pmd_autotest
 

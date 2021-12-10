@@ -64,7 +64,7 @@ Set::
 Then make test
 Start test::
 
-    ./test/test/test -c f -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -c f -n 4 -- -i
     RTE>>pmd_perf_autotest
 
 The final output of the test will be matrix of average cycles of IO used per
@@ -83,7 +83,7 @@ Set::
 Then make test
 Start test::
 
-    ./test/test/test -c f -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -c f -n 4 -- -i
     RTE>>pmd_perf_autotest
 
 There is not "Test OK" presented.

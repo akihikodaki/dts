@@ -50,10 +50,12 @@ the application and checks the results. A test report is displayed on
 stdout.
 The steps to run the unit test manually are as follow::
 
-  # cd ~/dpdk
-  # make config T=x86_64-native-linuxapp-gcc
-  # make test
-  # ./build/build/test/test/test -n 1 -c ffff
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff
   RTE>> crc_autotest
 
 The final output of the test will have to be "Test OK".

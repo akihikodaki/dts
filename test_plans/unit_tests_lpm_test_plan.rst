@@ -47,8 +47,12 @@ stdout.
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff
   RTE>> lpm_autotest
 
 
@@ -71,8 +75,12 @@ stdout.
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff
   RTE>> lpm6_autotest
 
 
@@ -86,8 +94,12 @@ Unit Tests: LPM_perf
 This section explains how to run the unit tests for LPM performance.
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff
   RTE>> lpm_perf_autotest
 
 The final output of the test has to be "Test OK"
@@ -100,8 +112,12 @@ Unit Tests: LPM_ipv6_perf
 This section explains how to run the unit tests for LPM IPv6
 performance. The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff
   RTE>> lpm6_perf_autotest
 
 The final output of the test has to be "Test OK"

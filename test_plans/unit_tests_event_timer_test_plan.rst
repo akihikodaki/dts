@@ -11,8 +11,12 @@ test can be launched independently using the command line interface.
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff -a <timerdev-pci-bus-id>,<devargs>
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff -a <timerdev-pci-bus-id>,<devargs>
   RTE>> event_timer_adapter_test
 
 The final output of the test has to be "Test OK"

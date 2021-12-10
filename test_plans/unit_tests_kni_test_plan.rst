@@ -47,14 +47,21 @@ stdout.
 
 Case config::
 
-   For enable KNI features, need to set the "CONFIG_RTE_KNI_KMOD=y" in ./config/common_base and re-build DPDK.
+   For enable KNI features, need to add "-Denable_kmods=True" when build DPDK by meson.
+   CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
+   ninja -C x86_64-native-linuxapp-gcc -j 50
+
+   rte_kni.ko is located at ./x86_64-native-linuxapp-gcc/kernel/linux/kni/
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
+  # mkdir -p x86_64-native-linuxapp-gcc/kmod
+  # cp ./x86_64-native-linuxapp-gcc/kernel/linux/kni/rte_kni.ko x86_64-native-linuxapp-gcc/kmod/
+  # cp ./x86_64-native-linuxapp-gcc/kernel/linux/igb_uio/igb_uio.ko x86_64-native-linuxapp-gcc/kmod/
+  # lsmod | grep rte_kni
   # insmod ./<TARGET>/kmod/igb_uio.ko
-  # insmod ./<TARGET>/kmod/rte_kni.ko
-  # ./app/test/test -n 1 -c ffff
+  # insmod ./<TARGET>/kmod/rte_kni.ko lo_mode=lo_mode_fifo
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test  -n 1 -c ffff
   RTE>> kni_autotest
   RTE>> quit
   # rmmod rte_kni

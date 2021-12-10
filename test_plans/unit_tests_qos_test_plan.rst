@@ -47,8 +47,12 @@ stdout.
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff
   RTE>> red_autotest
 
 The final output of the test has to be "Test OK"
@@ -70,8 +74,12 @@ stdout.
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff
   RTE>> meter_autotest
 
 The final output of the test has to be "Test OK"
@@ -93,8 +101,12 @@ stdout.
 
 The steps to run the unit test manually are as follow::
 
-  # make -C ./app/test/
-  # ./app/test/test -n 1 -c ffff
+  Build dpdk
+  # cd dpdk
+  # CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+  # ninja -C x86_64-native-linuxapp-gcc -j 50
+
+  # ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -n 1 -c ffff
   RTE>> sched_autotest
 
 The final output of the test has to be "Test OK"
