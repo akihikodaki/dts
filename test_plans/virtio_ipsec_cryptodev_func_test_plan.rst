@@ -88,7 +88,7 @@ the bin is in /root/qemu-2.12 folder, which is your specified
 
 The options of ipsec-secgw is below::
 
-    ./build/ipsec-secgw [EAL options] --
+    ./build/examples/dpdk-ipsec-secgw [EAL options] --
                         -p PORTMASK -P -u PORTMASK -j FRAMESIZE
                         -l -a REPLAY_WINOW_SIZE -e -a
                         --config (port,queue,lcore)[,(port,queue,lcore]
@@ -115,15 +115,19 @@ and compare the payload with correct answer pre-stored in scripts:
 
 In Host:
 
-# Enable config item in dpdk:
+# Enable config item by default in dpdk::
 
-      enable CONFIG_RTE_LIBRTE_VHOST in config/common_base
+# Build DPDK and app vhost_crypto::
 
-# Build DPDK and app vhost_crypto
+      CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
+      ninja -C x86_64-native-linuxapp-gcc -j 110
+
+      meson configure -Dexamples=vhost_crypto x86_64-native-linuxapp-gcc
+      ninja -C x86_64-native-linuxapp-gcc
 
 # Run the dpdk vhost sample::
 
-    ./examples/vhost_crypto/build/vhost-crypto \
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-vhost_crypto \
     --socket-mem 2048,0 --legacy-mem \
     -a 1a:01.0 -a 1c:01.0 -a 1e:01.0 \
     --vdev crypto_scheduler_pmd_1,slave=0000:1a:01.0_qat_sym,slave=0000:1c:01.0_qat_sym,slave=0000:1e:01.0_qat_sym,mode=round-robin,ordering=enable \
@@ -168,11 +172,12 @@ In Host:
 
 In VM:
 
-# enable config items, compile dpdk and app:
+# enable config items, compile dpdk and app ipsec-secgw:
 
-    enable CONFIG_RTE_EAL_IGB_UIO in config/common_base
-    enable CONFIG_RTE_LIBRTE_PMD_AESNI_MB in config/common_base
-    compile dpdk and compile test app "ipsec-secgw"
+    CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc -j 10
+    meson configure -Dexamples=ipsec-secgw x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc
 
 # set virtio device::
 
@@ -186,11 +191,11 @@ Test Case: Cryptodev AESNI_MB test
 
 In vm0::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -a 0000:00:06.0 -a 0000:00:07.0 --vdev crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test0.cfg
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ipsec-secgw --socket-mem 1024,0  -a 0000:00:06.0 -a 0000:00:07.0 --vdev crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test0.cfg
 
 In vm1::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -a 0000:00:06.0 -a 0000:00:07.0 --vdev crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test1.cfg
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ipsec-secgw --socket-mem 1024,0  -a 0000:00:06.0 -a 0000:00:07.0 --vdev crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test1.cfg
 
 send packets and verify
 
@@ -199,10 +204,10 @@ Test Case: Cryptodev VIRTIO test
 
 In vm0::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -a 0000:00:06.0 -a 0000:00:07.0 -a 00:04.0 -a 00:05.0 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test0.cfg
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ipsec-secgw --socket-mem 1024,0  -a 0000:00:06.0 -a 0000:00:07.0 -a 00:04.0 -a 00:05.0 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test0.cfg
 
 In vm1::
 
-    ./examples/ipsec-secgw/ibuild/ipsec-secgw --socket-mem 1024,0  -a 0000:00:06.0 -a 0000:00:07.0 -a 00:04.0 -a 00:05.0 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test1.cfg
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ipsec-secgw --socket-mem 1024,0  -a 0000:00:06.0 -a 0000:00:07.0 -a 00:04.0 -a 00:05.0 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test1.cfg
 
 send packets and verify

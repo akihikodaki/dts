@@ -70,15 +70,19 @@ Test Case Setup
 
 In Host:
 
-# Enable config item in dpdk:
-
-      enable CONFIG_RTE_LIBRTE_VHOST in config/common_base
+# Enable config item by default in dpdk:
 
 # Build DPDK and app vhost_crypto
 
+      CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
+      ninja -C x86_64-native-linuxapp-gcc -j 110
+
+      meson configure -Dexamples=vhost_crypto x86_64-native-linuxapp-gcc
+      ninja -C x86_64-native-linuxapp-gcc
+
 # Run the dpdk vhost sample::
 
-      ./examples/vhost_crypto/build/vhost-crypto --file-prefix="vhost_crypto_1"
+      ./x86_64-native-linuxapp-gcc/examples/dpdk-vhost_crypto --file-prefix="vhost_crypto_1"
           [EAL options]
           [Cryptodev PMD]
           -- --cdev-queue-id 0
@@ -116,7 +120,7 @@ In VM:
 
 # Manually verify the app/test by this command, as example, in your build folder::
 
-      ./app/test -c 1 -n 1
+      ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -c 1 -n 1 --log-level 6 -- -l 1,2,3 --vdev crypto_virtio
       RTE>> cryptodev_virtio_autotest
 
 Expected all tests could pass in testing.

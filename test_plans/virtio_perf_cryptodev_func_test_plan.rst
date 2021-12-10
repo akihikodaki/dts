@@ -100,15 +100,19 @@ Test case setup:
 
 In Host:
 
-# Enable config item in dpdk:
+# Enable config item(RTE_LIB_VHOST) by default in dpdk:
 
-      enable CONFIG_RTE_LIBRTE_VHOST in config/common_base
+# Build DPDK and app vhost_crypto::
 
-# Build DPDK and app vhost_crypto
+      CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
+      ninja -C x86_64-native-linuxapp-gcc -j 110
+
+      meson configure -Dexamples=vhost_crypto x86_64-native-linuxapp-gcc
+      ninja -C x86_64-native-linuxapp-gcc
 
 # Run the dpdk vhost sample::
 
-    ./examples/vhost_crypto/build/vhost-crypto --socket-mem 2048,0 --legacy-mem --vdev crypto_aesni_mb_pmd_1 -l 8,9,10 -n 4  -- --config "(9,0,0),(10,0,0)" --socket-file 9,/tmp/vm0_crypto0.sock --socket-file=10,/tmp/vm0_crypto1.sock
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-vhost_crypto --socket-mem 2048,0 --legacy-mem --vdev crypto_aesni_mb_pmd_1 -l 8,9,10 -n 4  -- --config "(9,0,0),(10,0,0)" --socket-file 9,/tmp/vm0_crypto0.sock --socket-file=10,/tmp/vm0_crypto1.sock
 
 # bind vf or pf with driver vfio-pci::
 
@@ -136,8 +140,8 @@ In VM:
 
 # enable config items in dpdk and compile dpdk:
 
-    enable CONFIG_RTE_EAL_IGB_UIO in config/common_base
-    enable CONFIG_RTE_LIBRTE_PMD_AESNI_MB in config/common_base
+    CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc -j 10
 
 # set virtio device::
 
@@ -151,7 +155,7 @@ Test Case: Cryptodev AESNI_MB test
 
 command::
 
-      ./build/app/dpdk-test-crypto-perf -c 0xf --vdev crypto_aesni_mb_pmd  \
+      ./x86_64-native-linuxapp-gcc/app/dpdk-test-crypto-perf -c 0xf --vdev crypto_aesni_mb_pmd  \
       -- --ptest throughput --devtype crypto_aesni_mb --optype cipher-then-auth  \
       --cipher-algo aes-cbc --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 16 \
       --auth-algo sha1-hmac --auth-op generate --auth-key-sz 64 --auth-aad-sz 0 \
@@ -162,7 +166,7 @@ Test Case: Cryptodev VIRTIO test
 
 command::
 
-      ./build/app/dpdk-test-crypto-perf -c 0xf  -a 00:05.0 -- --ptest throughput \
+      ./x86_64-native-linuxapp-gcc/app/dpdk-test-crypto-perf -c 0xf  -a 00:05.0 -- --ptest throughput \
       --devtype crypto_virtio --optype cipher-then-auth  --cipher-algo aes-cbc --cipher-op encrypt \
       --cipher-key-sz 16 --cipher-iv-sz 16 --auth-algo sha1-hmac --auth-op generate --auth-key-sz 64 \
       --auth-aad-sz 0 --auth-digest-sz 20 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
