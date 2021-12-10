@@ -50,25 +50,49 @@ The supported Compression/Decompression algorithm:
     DEFLATE - using Fixed and Dynamic Huffman encoding
 
 For more details, please reference to dpdk online programming guide.
+http://doc.dpdk.org/guides/compressdevs/qat_comp.html
 
 Prerequisites
 ----------------------
 Intel QAT devices should be available in the platform.
-
-enable compressdev unit test:
-
-    Set CONFIG_RTE_COMPRESSDEV_TEST=y in config/common_base.
+The QAT compression PMD is built by default with a standard DPDK build
+It depends on a QAT kernel driver.
 
 A compress performance test app is added into DPDK to test CompressDev.
 
 Calgary corpus is a collection of text and binary data files,commonly used
 for comparing data compression algorithms.
 
+Software
+--------
+
+dpdk: http://dpdk.org/git/dpdk
+Intel QuickAssist Technology Driver: https://01.org/packet-processing/intel%C2%AE-quickassist-technology-drivers-and-patches
+
+General set up
+--------------
+
+1, Compile DPDK::
+
+    CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc -j 110
+
+2, Get the pci device id of QAT::
+
+   ./dpdk/usertools/dpdk-devbind.py --status-dev crypto
+
+3, Bind QAT VF port to dpdk::
+
+   ./dpdk/usertools/dpdk-devbind.py --force --bind=vfio-pci 0000:1a:01.0 0000:1a:01.1
+
+Test case
+=========
+
 Test Case: Compressdev QAT PMD Unit test
 ----------------------------------------------------------------
 Start test application and run qat pmd unit test::
 
-    ./app/test -l1 -n1 -a qat_device_bus_id --log-level=qat:8
+    ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -l1 -n1 -a qat_device_bus_id --log-level=qat:8
     RTE>>compressdev_autotest
 
 Verify all test cases passed in the test.
@@ -77,7 +101,7 @@ Test Case: Compressdev QAT PMD fixed function test
 ----------------------------------------------------------------------
 Run Compressdev qat pmd test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
     -- --driver-name compress_qat --input-file file_name \
     --compress-level level --num-iter number --huffman-enc fixed
 
@@ -89,7 +113,7 @@ Test Case: Compressdev QAT PMD dynamic function test
 -----------------------------------------------------------------------
 Run Compressdev qat pmd test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
     -- --driver-name compress_qat --input-file file_name \
     --compress-level level --num-iter number --huffman-enc dynamic
 
@@ -101,7 +125,7 @@ Test Case: Compressdev QAT PMD big sgl fixed function test
 --------------------------------------------------------------------------
 Run Compressdev qat pmd test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
     -- --driver-name compress_qat --input-file file_name --seg-sz segsize \
     --compress-level level --num-iter number --extended-input-sz size \
     --max-num-sgl-segs seg --huffman-enc fixed
@@ -114,7 +138,7 @@ Test Case: Compressdev QAT PMD big sgl dynamic function test
 --------------------------------------------------------------------------
 Run Compressdev qat pmd test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
     -- --driver-name compress_qat --input-file file_name --seg-sz segsize \
     --compress-level level --num-iter number --extended-input-sz size \
     --max-num-sgl-segs seg --huffman-enc dynamic
@@ -127,7 +151,7 @@ Test Case: Compressdev QAT PMD big seg-sz fixed function test
 --------------------------------------------------------------------------
 Run Compressdev qat pmd test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
     -- --driver-name compress_qat --input-file file_name --seg-sz segsize \
     --compress-level level --num-iter number --extended-input-sz size \
     --max-num-sgl-segs seg --huffman-enc fixed
@@ -140,7 +164,7 @@ Test Case: Compressdev QAT PMD big seg-sz dynamic function test
 ---------------------------------------------------------------------------
 Run Compressdev qat pmd test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
     -- --driver-name compress_qat --input-file file_name --seg-sz segsize \
     --compress-level level --num-iter number --extended-input-sz size \
     --max-num-sgl-segs seg --huffman-enc dynamic
@@ -153,7 +177,7 @@ Test Case: Compressdev QAT PMD external mbufs fixed function test
 -------------------------------------------------------------------------
 Run Compressdev qat pmd test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
     -- --driver-name compress_qat --input-file file_name \
     --compress-level level --num-iter number --external-mbufs \
     --huffman-enc fixed
@@ -166,7 +190,7 @@ Test Case: Compressdev QAT PMD external mbufs dynamic function test
 --------------------------------------------------------------------------
 Run Compressdev qat pmd test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
     -- --driver-name compress_qat --input-file file_name \
     --compress-level level --num-iter number --external-mbufs \
     --huffman-enc dynamic
@@ -179,7 +203,7 @@ Test Case: Compressdev QAT PMD im buffer split op fixed function test
 -------------------------------------------------------------------------
 Run Compressdev qat pmd test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
     -- --driver-name compress_qat --input-file file_name \
     --compress-level level --num-iter number --seg-sz segsize \
     --max-num-sgl-segs seg --extended-input-sz size \
@@ -193,7 +217,7 @@ Test Case: Compressdev QAT PMD im buffer split op dynamic function test
 --------------------------------------------------------------------------
 Run Compressdev qat pmd test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
     -- --driver-name compress_qat --input-file file_name \
     --compress-level level --num-iter number --seg-sz segsize \
     --max-num-sgl-segs seg --extended-input-sz size \
@@ -207,7 +231,7 @@ Test Case: Compressdev QAT PMD fixed performance test
 --------------------------------------------------------------------------
 Run Compressdev qat pmd test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
     -- --driver-name compress_qat --input-file file_name \
     --compress-level level --num-iter number --huffman-enc fixed
 
@@ -219,7 +243,7 @@ Test Case: Compressdev QAT PMD dynamic performance test
 ---------------------------------------------------------------------------
 Run Compressdev qat pmd test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-test-compress-perf  -a qat_device_bus_id -l 4 \
     -- --driver-name compress_qat --input-file file_name \
     --compress-level level --num-iter number --huffman-enc dynamic
 
