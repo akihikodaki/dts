@@ -34,9 +34,30 @@ Base on scapy(python program for packet manipulation)
 """
 import shutil
 
+import os
+import random
+import re
+import socket
+import struct
+import sys
+import time
 from importlib import import_module
 from socket import AF_INET6
-from scapy.all import *
+
+from scapy.contrib.lldp import LLDPDU, LLDPDUManagementAddress
+from scapy.contrib.mpls import MPLS
+from scapy.contrib.nsh import NSH
+from scapy.layers.inet import ICMP, IP, TCP, UDP
+from scapy.layers.inet6 import IPv6, IPv6ExtHdrFragment, IPv6ExtHdrRouting
+from scapy.layers.l2 import ARP, GRE, Dot1Q, Ether
+from scapy.layers.sctp import SCTP
+from scapy.layers.vxlan import VXLAN
+from scapy.packet import Raw
+from scapy.sendrecv import sendp
+from scapy.utils import hexstr, rdpcap, wrpcap
+
+from dep.scapy_modules.Dot1BR import Dot1BR
+
 from .utils import convert_int2ip, convert_ip2int, get_module_path
 
 # load extension layers
@@ -893,10 +914,10 @@ class Packet(object):
             name, config = layer
             if name not in self.pkt_layers:
                 print("[%s] is missing in packet!!!" % name)
-                raise
+                raise Exception(f"{name} is missing in packet!!!")
             if self.config_layer(name, config) is False:
                 print("[%s] failed to configure!!!" % name)
-                raise
+                raise Exception(f"{name} failed to configure!!!")
 
     def strip_layer_element(self, layer, element, p_index=0):
         """
