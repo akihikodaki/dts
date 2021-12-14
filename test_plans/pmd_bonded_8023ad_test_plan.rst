@@ -115,7 +115,7 @@ steps
 
 #. boot up testpmd::
 
-    ./testpmd -c 0xXXXXX -n 4  -- -i --tx-offloads=0xXXXX
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xXXXXX -n 4  -- -i --tx-offloads=0xXXXX
 
 #. run testpmd command of bonding::
 
@@ -157,7 +157,7 @@ steps
 
 #. boot up testpmd::
 
-    ./testpmd -c 0xXXXXX -n 4  -- -i --tx-offloads=0xXXXX
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xXXXXX -n 4  -- -i --tx-offloads=0xXXXX
 
 #. run testpmd command of bonding::
 
@@ -200,7 +200,7 @@ steps
 
 #. boot up testpmd::
 
-    ./testpmd -c 0xXXXXX -n 4  -- -i --tx-offloads=0xXXXX
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xXXXXX -n 4  -- -i --tx-offloads=0xXXXX
 
 #. run testpmd command of bonding::
 
@@ -247,7 +247,7 @@ steps
 
 #. boot up testpmd::
 
-    ./testpmd -c 0xXXXXX -n 4  -- -i --tx-offloads=0xXXXX
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xXXXXX -n 4  -- -i --tx-offloads=0xXXXX
 
 #. run testpmd command of bonding::
 
@@ -302,7 +302,7 @@ steps
 
 #. boot up testpmd::
 
-    ./testpmd -c 0xXXXXX -n 4  -- -i --tx-offloads=0xXXXX
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xXXXXX -n 4  -- -i --tx-offloads=0xXXXX
 
 #. run testpmd command of bonding::
 
@@ -349,7 +349,7 @@ steps
 
 #. boot up testpmd::
 
-    ./testpmd -c 0xXXXXX -n 4  -- -i --tx-offloads=0xXXXX
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xXXXXX -n 4  -- -i --tx-offloads=0xXXXX
 
 #. run testpmd command of bonding::
 
@@ -402,7 +402,7 @@ steps
 
 #. boot up testpmd ::
 
-    ./testpmd -c 0x0f -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0f -n 4 \
     --vdev 'net_bonding0,slave=0000:xx:00.0,slave=0000:xx:00.1,mode=4,agg_mode=<agg_option>'  \
     -- -i --port-topology=chained
 

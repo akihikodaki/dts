@@ -159,7 +159,8 @@ Prerequisites
 
 And re-compile examples/ip_fragmentation::
 
-    make -C examples/ip_fragmentation
+    meson configure -Dexamples=ip_fragmentation x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc
 
 Test Case 1: IP Fragmentation normal ip packet forward
 ======================================================
@@ -209,5 +210,5 @@ The following configurations should be tested:
 
 Command line::
 
-   ./ip_fragmentation -c <LCOREMASK> -n 4 -- [-P] -p PORTMASK
+   ./x86_64-native-linuxapp-gcc/examples/dpdk-ip_fragmentation -c <LCOREMASK> -n 4 -- [-P] -p PORTMASK
       -q <NUM_OF_PORTS_PER_THREAD>

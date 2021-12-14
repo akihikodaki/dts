@@ -106,13 +106,13 @@ Test Case1: NTB test with file-trans fwd mode using igb_uio
 
 2. Launch ntb_fwd sample on Machine1::
 
-    ./examples/ntb/build/ntb_fwd -l 28-32 -n 6 -- -i --buf-size=65407
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ntb -l 28-32 -n 6 -- -i --buf-size=65407
     >set fwd file-trans
     >start
 
 3. Launch ntb_fwd sample on Machine2::
 
-    ./examples/ntb/build/ntb_fwd -l 28-32 -n 6 -- -i --buf-size=65407
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ntb -l 28-32 -n 6 -- -i --buf-size=65407
     >set fwd file-trans
     >start
 
@@ -136,12 +136,12 @@ Test Case2: NTB test with file-trans fwd mode using vfio-pci
 
 2. Launch ntb_fwd sample on Machine1::
 
-    ./examples/ntb/build/ntb_fwd -l 28-32 -n 6 -- -i --buf-size=65407
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ntb -l 28-32 -n 6 -- -i --buf-size=65407
     >set fwd file-trans
 
 3. Launch ntb_fwd sample on Machine2::
 
-    ./examples/ntb/build/ntb_fwd -l 28-32 -n 6 -- -i --buf-size=65407
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ntb -l 28-32 -n 6 -- -i --buf-size=65407
     >set fwd file-trans
 
 4. Send file from Machine1::
@@ -160,14 +160,14 @@ Test Case3: NTB test with rxonly/txonly fwd mode using igb_uio
 
 2. Launch ntb_fwd sample on Machine1::
 
-    ./examples/ntb/build/ntb_fwd -l 28-32 -n 6 -- -i --buf-size=65407
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ntb -l 28-32 -n 6 -- -i --buf-size=65407
     >set fwd rxonly
     >start
     >show port stats
 
 3. Launch ntb_fwd sample on Machine2::
 
-    ./examples/ntb/build/ntb_fwd -l 28-32 -n 6 -- -i --buf-size=65407
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ntb -l 28-32 -n 6 -- -i --buf-size=65407
     >set fwd txonly
     >start
     >show port stats
@@ -188,14 +188,14 @@ Test Case4: NTB test with rxonly/txonly fwd mode using vfio-pci
 
 2. Launch ntb_fwd sample on Machine1::
 
-    ./examples/ntb/build/ntb_fwd -l 28-32 -n 6 -- -i --buf-size=65407
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ntb -l 28-32 -n 6 -- -i --buf-size=65407
     >set fwd rxonly
     >start
     >show port stats
 
 3. Launch ntb_fwd sample on Machine2::
 
-    ./examples/ntb/build/ntb_fwd -l 28-32 -n 6 -- -i --buf-size=65407
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ntb -l 28-32 -n 6 -- -i --buf-size=65407
     >set fwd txonly
     >start
     >show port stats
@@ -214,14 +214,14 @@ Test flow: TG <-> NIC1 <-> NTB1 <-> NTB2 <-> NIC2 <-> TG
 
 2. Launch ntb_fwd sample on Machine1::
 
-    ./examples/ntb/build/ntb_fwd -l 28-32 -n 6 -- -i --fwd-mode=iofwd --burst=32
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ntb -l 28-32 -n 6 -- -i --fwd-mode=iofwd --burst=32
     >set fwd iofwd 
     >start
     >show port stats
 
 3. Launch ntb_fwd sample on Machine2::
 
-    ./examples/ntb/build/ntb_fwd -l 28-32 -n 6 -- -i --fwd-mode=iofwd --burst=32
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ntb -l 28-32 -n 6 -- -i --fwd-mode=iofwd --burst=32
     >set fwd iofwd
     >start
     >show port stats
@@ -244,14 +244,14 @@ Test flow: TG <-> NIC1 <-> NTB1 <-> NTB2 <-> NIC2 <-> TG
 
 2. Launch ntb_fwd sample on Machine1::
 
-    ./examples/ntb/build/ntb_fwd -l 28-32 -n 6 -- -i --fwd-mode=iofwd --burst=32
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ntb -l 28-32 -n 6 -- -i --fwd-mode=iofwd --burst=32
     >set fwd iofwd 
     >start
     >show port stats
 
 3. Launch ntb_fwd sample on Machine2::
 
-    ./examples/ntb/build/ntb_fwd -l 28-32 -n 6 -- -i --fwd-mode=iofwd --burst=32
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-ntb -l 28-32 -n 6 -- -i --fwd-mode=iofwd --burst=32
     >set fwd iofwd
     >start
     >show port stats

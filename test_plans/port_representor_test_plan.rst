@@ -59,13 +59,13 @@ Create two VFs and two VFs representor ports which are used as control plane.
 
 4. start a testpmd with create 2 VFs representor ports as control plane named testpmd-pf::
 
-    ./testpmd --lcores 1,2 -n 4 -a af:00.0,representor=0-1 --socket-mem 1024,1024 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores 1,2 -n 4 -a af:00.0,representor=0-1 --socket-mem 1024,1024 \
             --proc-type auto --file-prefix testpmd-pf -- -i --port-topology=chained
 
 5. start two testpmd as dataplane named testpmd-vf0/testpmd-vf1(case 3 run later)::
 
-    ./testpmd --lcores 3,4 -n 4 -a af:02.0 --socket-mem 1024,1024 --proc-type auto --file-prefix testpmd-vf0 -- -i
-    ./testpmd --lcores 5,6 -n 4 -a af:02.1 --socket-mem 1024,1024 --proc-type auto --file-prefix testpmd-vf1 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores 3,4 -n 4 -a af:02.0 --socket-mem 1024,1024 --proc-type auto --file-prefix testpmd-vf0 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores 5,6 -n 4 -a af:02.1 --socket-mem 1024,1024 --proc-type auto --file-prefix testpmd-vf1 -- -i
 
 Note: Every case needs to restart testpmd.
 

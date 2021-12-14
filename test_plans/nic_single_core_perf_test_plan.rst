@@ -76,7 +76,7 @@ Test Case : Single Core Performance Measurement
 
 2) Start testpmd::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x6 -n 4 -- -i \
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 -- -i \
          --portmask=0xf  --txd=128 --rxd=128
         testpmd> start
         

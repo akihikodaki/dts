@@ -63,7 +63,7 @@ Test Case: NVGRE ipv4 packet detect
 
 Start testpmd with tunneling packet type to NVGRE::
 
-    testpmd -c 0xffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
 
 Set rxonly packet forwarding mode and enable verbose log::
 
@@ -96,7 +96,7 @@ Test Case: NVGRE ipv6 packet detect
 
 Start testpmd with tunneling packet type to NVGRE::
 
-    testpmd -c 0xffff -n 2 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xffff -n 2 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
 
 Set rxonly packet forwarding mode and enable verbose log::
 
@@ -133,7 +133,7 @@ command line and the packet is sent again.
 
 Start testpmd::
 
-    testpmd -c 0xffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
 
 Set rxonly packet forwarding mode and enable verbose log::
 
@@ -181,7 +181,7 @@ result.
 
 Start testpmd::
 
-    testpmd -c 0xffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
 
 Set rxonly packet forwarding mode and enable verbose log::
 
@@ -217,7 +217,7 @@ command line and the packet is sent again.
 
 Start testpmd::
 
-    testpmd -c 0xffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
 
 Set rxonly packet forwarding mode and enable verbose log::
 
@@ -266,7 +266,7 @@ forwarded packet and checks the forwarded packet checksum correct or not.
 
 Start testpmd with tunneling packet type to NVGRE::
 
-    testpmd -c 0xffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --enable-rx-cksum
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --enable-rx-cksum
 
 Set csum packet forwarding mode and enable verbose log::
 
@@ -309,7 +309,7 @@ forwarded packet and checks the forwarded packet checksum correct or not.
 
 Start testpmd with tunneling packet type::
 
-    testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2  --enable-rx-cksum
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2  --enable-rx-cksum
 
 Set csum packet forwarding mode and enable verbose log::
 

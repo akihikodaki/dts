@@ -77,7 +77,7 @@ Testpmd configuration - 16 RX/TX queues per port
 
 #. set up testpmd with fortville NICs::
 
-      ./testpmd -c fffff -n %d -- -i --coremask=0xffffe --rxq=16 --txq=16
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c fffff -n %d -- -i --coremask=0xffffe --rxq=16 --txq=16
 
 #. Reta Configuration.  128 reta entries configuration::
 

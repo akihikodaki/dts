@@ -92,7 +92,7 @@ Test Case: Packet Checking
 
 #. Start testpmd and start forwarding::
 
-    ./testpmd -c 0xf0 -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf0 -n 4 -- -i
     testpmd> start
 
 #. The tester sends packets with different sizes (64, 65, 128, 256, 512, 1024, 1280 and 1518 bytes)
@@ -119,7 +119,7 @@ Test Case: Descriptors Checking
 
 #. Start testpmd with descriptor parameters::
 
-   ./testpmd -c 0xf0 -n 4 -- -i--rxd={rxd} --txd={txd}
+   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf0 -n 4 -- -i--rxd={rxd} --txd={txd}
 
 #. The tester sends packets with different sizes (64, 65, 128, 256, 512, 1024, 1280 and 1518 bytes)
    for different values of rxd and txd (128,,256, 512, 1024, 2048 and 4096)
@@ -164,7 +164,7 @@ Test steps:
 
 #. Start testpmd and start io forwading::
 
-   ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1800000000 -n 4 -- -i--portmask=0x3 -txd=2048 --rxd=2048 --txq=2 --rxq=2
+   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1800000000 -n 4 -- -i--portmask=0x3 -txd=2048 --rxd=2048 --txq=2 --rxq=2
 
 #. The tester send packets which will be forwarded by the DUT, record the perfromance numbers.
 
@@ -229,7 +229,7 @@ settings given in the following:
 #. Start testpmd and start io forwading with the above parameters.
    For example, 1S/1C/2T::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x2000000000000030000000 -n 4 -- -i \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x2000000000000030000000 -n 4 -- -i \
     --portmask=0x3 --txd=512 --rxd=512 --burst=32 --txpt=36 --txht=0 --txwt=0 \
     --txfreet=32 --rxfreet=64 --txrst=32 --mbcache=128 --nb-cores=2 --rxq=2 --txq=2
 

@@ -108,7 +108,7 @@ steps
 
 #. boot up testpmd, stop all ports::
 
-    ./testpmd -c 0x6 -n 4 -- -i --tx-offloads=<0xXXXX>
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 -- -i --tx-offloads=<0xXXXX>
     testpmd> port stop all
 
 #. create first bonded port and add one slave, check bond 2 config status::
@@ -173,7 +173,7 @@ steps
 
 #. boot up testpmd, stop all ports::
 
-    ./testpmd -c 0x6 -n 4 -- -i --tx-offloads=<0xXXXX>
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 -- -i --tx-offloads=<0xXXXX>
     testpmd> port stop all
 
 #. create first bonded port and add one port as slave::
@@ -229,7 +229,7 @@ steps
 
 #. boot up testpmd, stop all ports::
 
-    ./testpmd -c 0x6 -n 4 -- -i --tx-offloads=<0xXXXX>
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 -- -i --tx-offloads=<0xXXXX>
     testpmd> port stop all
 
 #. create first bonded port and add two ports as slaves::
@@ -296,7 +296,7 @@ steps
 
 #. boot up testpmd, stop all ports::
 
-    ./testpmd -c 0x6 -n 4 -- -i --tx-offloads=<0xXXXX>
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 -- -i --tx-offloads=<0xXXXX>
     testpmd> port stop all
 
 #. create first bonded port and add one port as slave::
@@ -352,7 +352,7 @@ steps
 
 #. boot up testpmd, stop all ports::
 
-    ./testpmd -c 0x6 -n 4 -- -i --tx-offloads=<0xXXXX>
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 -- -i --tx-offloads=<0xXXXX>
     testpmd> port stop all
 
 #. create first bonded port and add two ports as slaves, set portA 0a down::

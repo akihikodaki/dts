@@ -75,7 +75,7 @@ Assume port 0 and 1 are connected to the traffic generator, to run the test
 application in linuxapp environment with 4 lcores, 2 ports and 8 RX queues
 per lcore::
 
-    $ ./l2fwd -n 1 -c f -- -q 8 -p 0x3
+    $ ./x86_64-native-linuxapp-gcc/examples/dpdk-l2fwd -n 1 -c f -- -q 8 -p 0x3
 
 Also, if the ports to be tested are different, the port mask should be changed.
 The lcore used to run the test application and the number of queue used for a
@@ -92,7 +92,7 @@ of the packet stream to be sent out from ``port A`` to the mac address of
 from ``port B`` to the mac address of ``port 1``. Other parameters of the packet
 stream could be anything valid. Then run the test application as below::
 
-    $ ./l2fwd -n 1 -c f -- -q 8 -p 0x3
+    $ ./x86_64-native-linuxapp-gcc/examples/dpdk-l2fwd -n 1 -c f -- -q 8 -p 0x3
 
 Trigger the packet generator of bursting packets from ``port A``, then check if
 ``port 0`` could receive them and ``port 1`` could forward them back. Stop it
@@ -127,7 +127,7 @@ Set the packet stream to be sent out from packet generator before testing as bel
 
 Then run the test application as below::
 
-    $ ./l2fwd -n 2 -c f -- -q 1 -p 0x3
+    $ ./x86_64-native-linuxapp-gcc/examples/dpdk-l2fwd -n 2 -c f -- -q 1 -p 0x3
 
 The -n command is used to select the number of memory channels. It should match the number of memory channels on that setup.
 

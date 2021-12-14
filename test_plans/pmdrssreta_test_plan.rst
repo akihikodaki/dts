@@ -92,7 +92,7 @@ Testpmd configuration - 2 RX/TX queues per port
 
 ::
 
-  testpmd -c ffffff -n 3 -b 0000:05:00.1 -- -i --rxd=512 --txd=512 --burst=32 \
+  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c ffffff -n 3 -b 0000:05:00.1 -- -i --rxd=512 --txd=512 --burst=32 \
   --txpt=36 --txht=0 --txwt=0 --txfreet=32 --rxfreet=64 --txrst=32 --mbcache=128 \
   --rxq=2 --txq=2
 
@@ -101,7 +101,7 @@ Testpmd configuration - 9 RX/TX queues per port
 
 ::
 
-  testpmd -c ffffff -n 3 -b 0000:05:00.1 -- -i --rxd=512 --txd=512 --burst=32 \
+  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c ffffff -n 3 -b 0000:05:00.1 -- -i --rxd=512 --txd=512 --burst=32 \
   --txpt=36 --txht=0 --txwt=0 --txfreet=32 --rxfreet=64 --txrst=32 --mbcache=128 \
   --rxq=9 --txq=9
 
@@ -110,7 +110,7 @@ Testpmd configuration - 16 RX/TX queues per port
 
 ::
 
-  testpmd -c ffffff -n 3 -b 0000:05:00.1 -- -i --rxd=512 --txd=512 --burst=32 \
+  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c ffffff -n 3 -b 0000:05:00.1 -- -i --rxd=512 --txd=512 --burst=32 \
   --txpt=36 --txht=0 --txwt=0 --txfreet=32 --rxfreet=64 --txrst=32 --mbcache=128 \
   --rxq=16 --txq=16
 

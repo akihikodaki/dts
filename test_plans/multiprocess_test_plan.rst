@@ -67,11 +67,11 @@ Test Case: Basic operation
 1. To run the application, start one copy of the simple_mp binary in one terminal,
    passing at least two cores in the coremask, as follows::
 
-       ./build/simple_mp -c 3 --proc-type=primary
+       ./x86_64-native-linuxapp-gcc/examples/dpdk-simple_mp -c 3 --proc-type=primary
 
    The process should start successfully and display a command prompt as follows::
 
-       $ ./build/simple_mp -c 3 --proc-type=primary
+       $ ./x86_64-native-linuxapp-gcc/examples/dpdk-simple_mp -c 3 --proc-type=primary
        EAL: coremask set to 3
        EAL: Detected lcore 0 on socket 0
        EAL: Detected lcore 1 on socket 0
@@ -94,7 +94,7 @@ Test Case: Basic operation
 2. To run the secondary process to communicate with the primary process, again run the
    same binary setting at least two cores in the coremask.::
 
-       ./build/simple_mp -c C --proc-type=secondary
+       ./x86_64-native-linuxapp-gcc/examples/dpdk-simple_mp -c C --proc-type=secondary
 
    Once the process type is specified correctly, the process starts up, displaying largely
    similar status messages to the primary instance as it initializes. Once again, you will be
@@ -216,10 +216,10 @@ For example, to run a set of four symmetric_mp instances, running on lcores 1-4,
 performing level-2 forwarding of packets between ports 0 and 1, the following
 commands can be used (assuming run as root)::
 
-   ./build/symmetric_mp -c 2 --proc-type=auto -- -p 3 --num-procs=4 --proc-id=0
-   ./build/symmetric_mp -c 4 --proc-type=auto -- -p 3 --num-procs=4 --proc-id=1
-   ./build/symmetric_mp -c 8 --proc-type=auto -- -p 3 --num-procs=4 --proc-id=2
-   ./build/symmetric_mp -c 10 --proc-type=auto -- -p 3 --num-procs=4 --proc-id=3
+   ./x86_64-native-linuxapp-gcc/examples/dpdk-symmetric_mp -c 2 --proc-type=auto -- -p 3 --num-procs=4 --proc-id=0
+   ./x86_64-native-linuxapp-gcc/examples/dpdk-symmetric_mp -c 4 --proc-type=auto -- -p 3 --num-procs=4 --proc-id=1
+   ./x86_64-native-linuxapp-gcc/examples/dpdk-symmetric_mp -c 8 --proc-type=auto -- -p 3 --num-procs=4 --proc-id=2
+   ./x86_64-native-linuxapp-gcc/examples/dpdk-symmetric_mp -c 10 --proc-type=auto -- -p 3 --num-procs=4 --proc-id=3
 
 To run only 1 or 2 instances, the above parameters to the 1 or 2 instances being
 run should remain the same, except for the ``num-procs`` value, which should be
@@ -283,7 +283,7 @@ The command line below is an example on how to start the server process on
 logical core 2 to handle a maximum of 8 client processes configured to
 run on socket 0 to handle traffic from NIC ports 0 and 1::
 
-    root@host:mp_server# ./build/mp_server -c 2 -- -p 3 -n 8
+    root@host:mp_server# ./x86_64-native-linuxapp-gcc/examples/dpdk-mp_server -c 2 -- -p 3 -n 8
 
 NOTE: If an additional second core is given in the coremask to the server process
 that second core will be used to print statistics. When benchmarking, only a
@@ -297,14 +297,14 @@ Run the Client application:
 
 An example commands to run 8 client processes is as follows::
 
-   root@host:mp_client# ./build/mp_client -c 40 --proc-type=secondary -- -n 0 &
-   root@host:mp_client# ./build/mp_client -c 100 --proc-type=secondary -- -n 1 &
-   root@host:mp_client# ./build/mp_client -c 400 --proc-type=secondary -- -n 2 &
-   root@host:mp_client# ./build/mp_client -c 1000 --proc-type=secondary -- -n 3 &
-   root@host:mp_client# ./build/mp_client -c 4000 --proc-type=secondary -- -n 4 &
-   root@host:mp_client# ./build/mp_client -c 10000 --proc-type=secondary -- -n 5 &
-   root@host:mp_client# ./build/mp_client -c 40000 --proc-type=secondary -- -n 6 &
-   root@host:mp_client# ./build/mp_client -c 100000 --proc-type=secondary -- -n 7 &
+   root@host:mp_client# ./x86_64-native-linuxapp-gcc/examples/dpdk-mp_client -c 40 --proc-type=secondary -- -n 0 &
+   root@host:mp_client# ./x86_64-native-linuxapp-gcc/examples/dpdk-mp_client -c 100 --proc-type=secondary -- -n 1 &
+   root@host:mp_client# ./x86_64-native-linuxapp-gcc/examples/dpdk-mp_client -c 400 --proc-type=secondary -- -n 2 &
+   root@host:mp_client# ./x86_64-native-linuxapp-gcc/examples/dpdk-mp_client -c 1000 --proc-type=secondary -- -n 3 &
+   root@host:mp_client# ./x86_64-native-linuxapp-gcc/examples/dpdk-mp_client -c 4000 --proc-type=secondary -- -n 4 &
+   root@host:mp_client# ./x86_64-native-linuxapp-gcc/examples/dpdk-mp_client -c 10000 --proc-type=secondary -- -n 5 &
+   root@host:mp_client# ./x86_64-native-linuxapp-gcc/examples/dpdk-mp_client -c 40000 --proc-type=secondary -- -n 6 &
+   root@host:mp_client# ./x86_64-native-linuxapp-gcc/examples/dpdk-mp_client -c 100000 --proc-type=secondary -- -n 7 &
 
 Test Case: Performance Measurement
 ----------------------------------

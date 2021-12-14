@@ -122,7 +122,7 @@ Use Setup#1.
 
 Create bonded device, add first slave, verify default bonded device has default mode 0 and default primary slave.Below are the sample commands and output::
 
-    ./app/testpmd -c f -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 -- -i
     .....
     Port 0 Link Up - speed 10000 Mbps - full-duplex
     Port 1 Link Up - speed 10000 Mbps - full-duplex
@@ -183,7 +183,7 @@ Use Setup#1.
 
 Create bonded device, add one slave, verify bonded device MAC address is the slave's MAC::
 
-    ./app/testpmd -c f -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 -- -i
     .....
     Port 0 Link Up - speed 10000 Mbps - full-duplex
     Port 1 Link Up - speed 10000 Mbps - full-duplex
@@ -272,7 +272,7 @@ Use Setup#1.
 
 Create bonded device, add 3 slaves. Set promiscuous mode on bonded eth dev. Verify all slaves of bonded device are changed to promiscuous mode::
 
-    ./app/testpmd -c f -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 -- -i
     .....
     Port 0 Link Up - speed 10000 Mbps - full-duplex
     Port 1 Link Up - speed 10000 Mbps - full-duplex
@@ -331,7 +331,7 @@ Verify that traffic is distributed equally in a round robin manner through ports
 The sum of the packets received on ports A-C should equal the total packets sent from port D.
 The sum of the packets transmitted on ports 1-3 should equal the total packets transmitted from port 5 and received on port 4::
 
-    ./app/testpmd -c f -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 -- -i
     ....
 
     testpmd> create bonded device 0 1
@@ -447,7 +447,7 @@ Bi-directional flow: Use IXIA to generate traffic to non bonded eth dev(port3) a
 
 Try to check that if port0 is link down, port1 can be backup quickly and re-check the performance at port1 and port3's mapped IXIA ports' RX::
 
-    ./app/testpmd -c f -n 4 -- -i --burst=32 --rxfreet=32 --mbcache=250 --txpt=32 --rxht=8 --rxwt=0 --txfreet=32 --txrst=32 --tx-offloads=0x0
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 -- -i --burst=32 --rxfreet=32 --mbcache=250 --txpt=32 --rxht=8 --rxwt=0 --txfreet=32 --txrst=32 --tx-offloads=0x0
     testpmd> create bonded device 1 0
     testpmd> add bonding slave 0 4
     testpmd> add bonding slave 1 4

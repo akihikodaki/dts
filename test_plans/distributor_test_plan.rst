@@ -53,7 +53,7 @@ Test Case: Distributor unit test
 ================================
 Start test application and run distributor unit test::
 
-	   ./x86_64-native-linuxapp-gcc/app/test -c f -n 4
+	   ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -c f -n 4
 	   RTE>>distributor_autotest
 
 Verify burst distributor API unit test passed
@@ -62,7 +62,7 @@ Test Case: Distributor performance unit test
 ============================================
 Start test application and run distributor unit test::
 
-	   ./x86_64-native-linuxapp-gcc/app/test -c f -n 4
+	   ./x86_64-native-linuxapp-gcc/app/test/dpdk-test -c f -n 4
 	   RTE>>distributor_perf_autotest
 
 Compared CPU cycles for normal distributor and burst API
@@ -87,7 +87,7 @@ Test Case: Distributor with multiple input ports
 ================================================
 Start distributor sample with two workers and two ports::
 
-	./examples/distributor/build/distributor_app -c 0x7c -n 4 -- -p 0x3
+	./x86_64-native-linuxapp-gcc/examples/dpdk-distributor -c 0x7c -n 4 -- -p 0x3
 
 Send packets with sequence indicated in udp port id
 

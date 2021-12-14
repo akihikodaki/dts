@@ -80,7 +80,7 @@ Prerequisites
 4. The application options to be used in below test cases are listed as well as the 
 general description.::
 
-    ./build/l3fwd-thread [EAL options] -- \
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-thread [EAL options] -- \
         -p PORTMASK [-P]
         --rx(port,queue,lcore,thread)[,(port,queue,lcore,thread)]
         --tx(lcore,thread)[,(lcore,thread)]
@@ -129,7 +129,7 @@ Test Case: one_lcore_per_pcore performance
 
 1. Launch app with descriptor parameters::
 
-    ./examples/performance-thread/l3fwd-thread/x86_64-native-linuxapp-gcc/l3fwd-thread \
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-thread \
      -c ff -n 4 -- -P -p 3 --max-pkt-len 2500  \
      --rx="(0,0,0,0)(1,0,0,0)" --tx="(1,0)" --no-lthread
 
@@ -142,15 +142,15 @@ Test Case: one_lcore_per_pcore performance
   +-----+---------------------------------------------------------------------------------------------------+
   | #   |                             Command Line                                                          |
   +=====+===================================================================================================+
-  | 1   | ./l3fwd-thread -c ff -n 4 -- -P -p 3 --max-pkt-len 2500 \                                         |
+  | 1   | ./dpdk-l3fwd-thread -c ff -n 4 -- -P -p 3 --max-pkt-len 2500 \                                    |
   |     |                 --rx="(0,0,0,0)(1,0,1,1) --tx="(2,0)(3,1) \                                       |
   |     |                 --no-lthread                                                                      |
   +-----+---------------------------------------------------------------------------------------------------+
-  | 2   | ./l3fwd-thread -c ff -n 4 -- -P -p 3 --max-pkt-len 2500 \                                         |
+  | 2   | ./dpdk-l3fwd-thread -c ff -n 4 -- -P -p 3 --max-pkt-len 2500 \                                    |
   |     |                 --rx="(0,0,0,0)(0,1,1,1)(1,0,2,2)(1,1,3,3)" \                                     |
   |     |                 --tx="(4,0)(5,1)(6,2)(7,3)" --no-lthread                                          |
   +-----+---------------------------------------------------------------------------------------------------+
-  | 3   | ./l3fwd-thread -c ff -n 4 -- -P -p 3 --max-pkt-len 2500 \                                         |
+  | 3   | ./dpdk-l3fwd-thread -c ff -n 4 -- -P -p 3 --max-pkt-len 2500 \                                    |
   |     |                --rx="(0,0,0,0)(0,1,1,1)(0,2,2,2)(0,3,3,3)(1,0,4,4)(1,1,5,5)(1,2,6,6)(1,3,7,7)" \  |
   |     |                --tx="(8,0)(9,1)(10,2)(11,3)(12,4)(13,5)(14,6)(15,7)" \                            |
   |     |                --no-lthread                                                                       |
@@ -177,15 +177,15 @@ Test Case: n_lcore_per_pcore performance
   +-----+---------------------------------------------------------------------------------------------------+
   | #   |                             Command Line                                                          |
   +=====+===================================================================================================+
-  | 1   | ./l3fwd-thread -n 4 --lcores="(0-3)@0,4" -- -P -p 3 --max-pkt-len 2500  \                         |
+  | 1   | ./dpdk-l3fwd-thread -n 4 --lcores="(0-3)@0,4" -- -P -p 3 --max-pkt-len 2500  \                    |
   |     |                 --rx="(0,0,0,0)(1,0,1,1) --tx="(2,0)(3,1) \                                       |
   |     |                 --no-lthread                                                                      |
   +-----+---------------------------------------------------------------------------------------------------+
-  | 2   | ./l3fwd-thread -n 4 --lcores="(0-7)@0,8" -- -P -p 3-P -p 3 --max-pkt-len 2500  \                  |
+  | 2   | ./dpdk-l3fwd-thread -n 4 --lcores="(0-7)@0,8" -- -P -p 3-P -p 3 --max-pkt-len 2500  \             |
   |     |                 --rx="(0,0,0,0)(0,1,1,1)(1,0,2,2)(1,1,3,3)" \                                     |
   |     |                 --tx="(4,0)(5,1)(6,2)(7,3)" --no-lthread                                          |
   +-----+---------------------------------------------------------------------------------------------------+
-  | 3   | ./l3fwd-thread -n 4 --lcores="(0-15)@0,16" -- -P -p 3 --max-pkt-len 2500  \                       |
+  | 3   | ./dpdk-l3fwd-thread -n 4 --lcores="(0-15)@0,16" -- -P -p 3 --max-pkt-len 2500  \                  |
   |     |                --rx="(0,0,0,0)(0,1,1,1)(0,2,2,2)(0,3,3,3)(1,0,4,4)(1,1,5,5)(1,2,6,6)(1,3,7,7)" \  |
   |     |                --tx="(8,0)(9,1)(10,2)(11,3)(12,4)(13,5)(14,6)(15,7)" \                            |
   |     |                --no-lthread                                                                       |
@@ -199,7 +199,7 @@ Test Case: n_lthread_per_pcore performance
 
 1. Launch app with descriptor parameters::
 
-    ./examples/performance-thread/l3fwd-thread/x86_64-native-linuxapp-gcc/l3fwd-thread \
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-thread \
      -c ff -n 4 -- -P -p 3 --max-pkt-len 2500 \
      ----tx="(0,0)" --tx="(0,0)"
 
@@ -212,14 +212,14 @@ Test Case: n_lthread_per_pcore performance
   +-----+---------------------------------------------------------------------------------------------------+
   | #   |                             Command Line                                                          |
   +=====+===================================================================================================+
-  | 1   | ./l3fwd-thread -c ff -n 4 -- -P -p 3 --max-pkt-len 2500  \                                        |
+  | 1   | ./dpdk-l3fwd-thread -c ff -n 4 -- -P -p 3 --max-pkt-len 2500  \                                   |
   |     |                 --rx="(0,0,0,0)(1,0,1,1) --tx="(0,0),(0,1)"                                       |
   +-----+---------------------------------------------------------------------------------------------------+
-  | 2   | ./l3fwd-thread -c ff -n 4 -- -P -p 3 --max-pkt-len 2500  \                                        |
+  | 2   | ./dpdk-l3fwd-thread -c ff -n 4 -- -P -p 3 --max-pkt-len 2500  \                                   |
   |     |                 --rx="(0,0,0,0)(0,1,0,1)(1,0,0,2)(1,1,0,3)" \                                     |
   |     |                 --tx="(0,0)(0,1)(0,2)(0,3)"                                                       |
   +-----+---------------------------------------------------------------------------------------------------+
-  | 3   | ./l3fwd-thread -c ff -n 4 -- -P -p 3 --max-pkt-len 2500  \                                        |
+  | 3   | ./dpdk-l3fwd-thread -c ff -n 4 -- -P -p 3 --max-pkt-len 2500  \                                   |
   |     |                --rx="(0,0,0,0)(0,1,0,1)(0,2,0,2)(0,3,0,3)(1,0,0,4)(1,1,0,5)(1,2,0,6)(1,3,0,7)" \  |
   |     |                --tx="(0,0)(0,1)(0,2)(0,3)(0,4)(0,5)(0,6)(0,7)" \                                  |
   +-----+---------------------------------------------------------------------------------------------------+

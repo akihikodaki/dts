@@ -117,7 +117,7 @@ square brackets represents optional
 
 parameters::
 
-    ./app/dpdk-pdump -- --pdump=
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-pdump -- --pdump=
     '(port = <port_id> |device_id = <pci address>),
     (queue=<queue number>),
     (rx-dev=<iface/path to pcap file> | tx-dev=<iface/path to pcap file>),
@@ -204,7 +204,7 @@ steps:
 
 #. Boot up dpdk's testpmd with chained option::
 
-    ./app/testpmd -c 0x6 -n 4 -- -i --port-topology=chained
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 -- -i --port-topology=chained
     testpmd> set fwd io
     testpmd> start
 
@@ -215,7 +215,7 @@ steps:
 
 #. Boot up dpdk-pdump::
 
-    ./app/dpdk-pdump -- --pdump  '<port option>,queue=*,\
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-pdump -- --pdump  '<port option>,queue=*,\
     tx-dev=/tmp/pdump-tx.pcap,rx-dev=/tmp/pdump-rx.pcap'
 
 #. Set up linux's tcpdump to receiver packet on tester::
@@ -257,7 +257,7 @@ steps:
 
 #. Boot up dpdk's testpmd with chained option::
 
-    ./app/testpmd -c 0x6 -n 4 -- -i --port-topology=chained
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 -- -i --port-topology=chained
     testpmd> set fwd io
     testpmd> start
 
@@ -268,7 +268,7 @@ steps:
 
 #. Boot up dpdk-pdump::
 
-    ./app/dpdk-pdump -- --pdump  'port=0,<queue option>,\
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-pdump -- --pdump  'port=0,<queue option>,\
     tx-dev=/tmp/pdump-tx.pcap,rx-dev=/tmp/pdump-rx.pcap'
 
 #. Set up linux's tcpdump to receiver packet on tester::
@@ -311,7 +311,7 @@ steps:
 
 #. Boot up dpdk's testpmd with chained option::
 
-    ./app/testpmd -c 0x6 -n 4 -- -i --port-topology=chained
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 -- -i --port-topology=chained
     testpmd> set fwd io
     testpmd> start
 
@@ -322,7 +322,7 @@ steps:
 
 #. Boot up dpdk-pdump with pdump options::
 
-    ./app/dpdk-pdump -- --pdump  'port=0,queue=*,<dump object>'
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-pdump -- --pdump  'port=0,queue=*,<dump object>'
 
 #. Set up linux's tcpdump to receiver packet on tester::
 
@@ -366,7 +366,7 @@ steps:
 
 #. Boot up dpdk's testpmd with chained option::
 
-    ./app/testpmd -c 0x6 -n 4 -- -i --port-topology=chained
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 -- -i --port-topology=chained
     testpmd> set fwd io
     testpmd> start
 
@@ -377,7 +377,7 @@ steps:
 
 #. Boot up dpdk-pdump with pdump options::
 
-    ./app/dpdk-pdump -- --pdump  'port=0,queue=*,<dump object>'
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-pdump -- --pdump  'port=0,queue=*,<dump object>'
 
 #. Set up linux's tcpdump to receiver packet on tester::
 
@@ -420,7 +420,7 @@ steps:
 
 #. Boot up dpdk's testpmd with chained option::
 
-    ./app/testpmd -c 0x6 -n 4 -- -i --port-topology=chained
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 -- -i --port-topology=chained
     testpmd> set fwd io
     testpmd> start
 
@@ -431,7 +431,7 @@ steps:
 
 #. Boot up dpdk-pdump with pdump options::
 
-    ./app/dpdk-pdump -- --pdump  'port=0,queue=*,\
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-pdump -- --pdump  'port=0,queue=*,\
     tx-dev=/tmp/pdump-tx.pcap,rx-dev=/tmp/pdump-rx.pcap,ring-size=1024'
 
 #. Set up linux's tcpdump to receiver packet on tester::
@@ -469,7 +469,7 @@ steps:
 
 #. Boot up dpdk's testpmd with chained option::
 
-    ./app/testpmd -c 0x6 -n 4 -- -i --port-topology=chained
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 -- -i --port-topology=chained
     testpmd> set fwd io
     testpmd> start
 
@@ -480,7 +480,7 @@ steps:
 
 #. Boot up dpdk-pdump with pdump options::
 
-    ./app/dpdk-pdump -- --pdump  'port=0,queue=*,\
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-pdump -- --pdump  'port=0,queue=*,\
     tx-dev=/tmp/pdump-tx.pcap,rx-dev=/tmp/pdump-rx.pcap,mbuf-size=2048'
 
 #. Set up linux's tcpdump to receiver packet on tester::
@@ -517,7 +517,7 @@ steps:
 
 #. Boot up dpdk's testpmd with chained option::
 
-    ./app/testpmd -c 0x6 -n 4 -- -i --port-topology=chained
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 -- -i --port-topology=chained
     testpmd> set fwd io
     testpmd> start
 
@@ -528,7 +528,7 @@ steps:
 
 #. Boot up dpdk-pdump with pdump options::
 
-    ./app/dpdk-pdump -- --pdump  'port=0,queue=*,\
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-pdump -- --pdump  'port=0,queue=*,\
     tx-dev=/tmp/pdump-tx.pcap,rx-dev=/tmp/pdump-rx.pcap,total-num-mbufs=8191'
 
 #. Set up linux's tcpdump to receiver packet on tester::

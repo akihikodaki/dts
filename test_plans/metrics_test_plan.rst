@@ -167,7 +167,7 @@ Test Case : test latency stats
 
 #. Start testpmd, set it in io fwd mode::
 
-    ./testpmd -c 0x30 -n 4  -- -i --latencystats=2
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4  -- -i --latencystats=2
     testpmd> set fwd io
     testpmd> start
 
@@ -178,7 +178,7 @@ Test Case : test latency stats
 #. run dpdk-proc to get latency stats data, query data at a average interval and
    get 5 times data::
 
-   ./app/dpdk-procinfo -- --metrics
+   ./x86_64-native-linuxapp-gcc/app/dpdk-procinfo -- --metrics
 
 #. latency stats has no reference standard data, only check non-zero and logic reasonable value.
 
@@ -192,7 +192,7 @@ Test Case : test bit rate
 
 #. Start testpmd, set it in io fwd mode::
 
-    ./testpmd -c 0x30 -n 4  -- -i --bitrate-stats=2
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4  -- -i --bitrate-stats=2
     testpmd> set fwd io
     testpmd> start
 
@@ -203,7 +203,7 @@ Test Case : test bit rate
 #. run dpdk-proc to get latency stats data, query data at a average interval and
    get 5 times data::
 
-   ./app/dpdk-procinfo -- --metrics
+   ./x86_64-native-linuxapp-gcc/app/dpdk-procinfo -- --metrics
 
 #. Compare dpdk statistics data with packet generator statistics data.
 
@@ -217,7 +217,7 @@ Test Case : test bit rate peak value
 
 #. Start testpmd, set it in io fwd mode::
 
-    ./testpmd -c 0x30 -n 4  -- -i --bitrate-stats=2
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4  -- -i --bitrate-stats=2
     testpmd> set fwd io
     testpmd> start
 
@@ -228,7 +228,7 @@ Test Case : test bit rate peak value
 #. run dpdk-proc to get latency stats data, query data at a average interval and
    get 5 times data::
 
-   ./app/dpdk-procinfo -- --metrics
+   ./x86_64-native-linuxapp-gcc/app/dpdk-procinfo -- --metrics
 
 #. decline packet generator rate percent from 100%/80%/60%/20%, loop step 5/6.
 

@@ -56,7 +56,7 @@ Test Case: pf start/stop/reset/close
 
 2. Run testpmd::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i
 
      testpmd> set fwd mac
      testpmd> start
@@ -173,7 +173,7 @@ Test Case: e1000 emulated device start/stop/reset/close
    start testpmd::
 
      ./usertools/dpdk-devbind.py -b igb_uio 0000:00:03.0
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -- -i
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -- -i
 
      testpmd-> set fwd mac
      testpmd-> start

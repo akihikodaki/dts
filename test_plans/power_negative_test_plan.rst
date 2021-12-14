@@ -53,7 +53,7 @@ Step 1. Create powermonitor fold for vm_power_manager sample::
 
 Step 2. Luanch VM power manager sample::
 
-    ./examples/vm_power_manager/build/vm_power_mgr -l 1-3 -n 4 --file-prefix=test1 --no-pci
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-vm_power_manager -l 1-3 -n 4 --file-prefix=test1 --no-pci
 
 Step 3. Prepare policy in JSON format then send it to the fifo channel:
     Prepare different command in JSON format then send it to the fifo channel
@@ -84,7 +84,7 @@ Step 1. Create powermonitor fold for vm_power_manager sample::
 
 Step 2. Luanch VM power manager sample::
 
-    ./examples/vm_power_manager/build/vm_power_mgr -l 1-3 -n 4 --file-prefix=test1 --no-pci
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-vm_power_manager -l 1-3 -n 4 --file-prefix=test1 --no-pci
 
 Step 3. Prepare policy in JSON format then send it to the fifo channel:
 
@@ -118,7 +118,7 @@ Note: For the VM xml file which will be used for creating the VM, it can re-use 
 
 Step 2. Luanch VM power manager sample on the host to monitor the channel from VM::
 
-    ./examples/vm_power_manager/build/vm_power_mgr -l 12-14 -n 4 --no-pci
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-vm_power_manager -l 12-14 -n 4 --no-pci
       >　add_vm [vm name]
       >　add_channels [vm name] all
       >　set_channel_status [vm name] all enabled
@@ -133,7 +133,7 @@ Check point:　No crash should be occur at vm_power_mgr sample
 
 Step 3. In the VM, launch guest_vm_power_mgr to set and send the power manager policy to the host power sample::
 
-    ./examples/vm_power_manager/guest_cli/build/guest_vm_power_mgr -c 0xff -n 4 -m 1024 --no-pci --file-prefix=yaolei \
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-guest_cli -c 0xff -n 4 -m 1024 --no-pci --file-prefix=yaolei \
       -- --vm-name=ubuntu --vcpu-list=0-7
       > set_cpu_freq 128 down
       > set_cpu_freq 1000000000000 down
@@ -149,11 +149,11 @@ Test Case4: TRAFFIC Policy Test based on JSON configure file with large integer 
 Step 1. Generate 1 VF under vfio-pci driver, launch vm_power_mgr sample with PF, for example::
 
     echo 1 > /sys/bus/pci/drivers/vfio-pci/0000\:82\:00.0/max_vfs
-    ./examples/vm_power_manager/build/vm_power_mgr -l 1-4 -n 4 --socket-mem=1024,1024 --file-prefix=test1 -a 82:00.0 -- -p 0x01
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-vm_power_manager -l 1-4 -n 4 --socket-mem=1024,1024 --file-prefix=test1 -a 82:00.0 -- -p 0x01
 
 Step 2. Launch testpmd with VF::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -l 5-6 -n 4 --socket-mem=1024,1024 --file-prefix=test2 -a 0000:82:02.0 -- -i
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 5-6 -n 4 --socket-mem=1024,1024 --file-prefix=test2 -a 0000:82:02.0 -- -i
        > set fwd macswap
        > start
 

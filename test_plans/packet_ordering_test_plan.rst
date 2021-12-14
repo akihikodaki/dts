@@ -52,14 +52,14 @@ Workers-TX is done by using rings. The flow of mbufs is the following:
 
 Command Usage::
 
-  ./packet_ordering [EAL options] -- [-p PORTMASK] [--insight-worker]
+  ./dpdk-packet_ordering [EAL options] -- [-p PORTMASK] [--insight-worker]
 
     -p PORTMASK         : hexadecimal bitmask of ports to configure
     --insight-worker    : print per core stats
 
 For example::
 
-  ./packet_ordering -l 30-35 -- -p 0x1 --insight-worker
+  ./dpdk-packet_ordering -l 30-35 -- -p 0x1 --insight-worker
 
     RX thread stats:
      - Pkts rxd:                            17026944
@@ -151,7 +151,7 @@ Reordered ratio: ratio between out of order packets and total sent packets.
 
 Run the app with below sample command::
 
-    ./examples/packet_ordering/build/packet_ordering -c coremask  -- -p portmask
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-packet_ordering -c coremask  -- -p portmask
 
 Test Case: keep the packet ordering
 ===================================
@@ -162,7 +162,7 @@ app is ordering.
 
 1. Run the sample with below command::
 
-    ./examples/packet_ordering/build/packet_ordering -c coremask  -- -p portmask
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-packet_ordering -c coremask  -- -p portmask
 
 2. Send 1000 packets with the same 5-tuple traffic from Scapy
 
