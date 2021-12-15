@@ -45,6 +45,22 @@ NICS_LIST = []      # global list for save nic objects
 MIN_MTU = 68
 
 
+def nic_has_driver(func):
+    """
+    Check if the NIC has a driver.
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        nic_instance = args[0]
+        nic_instance.current_driver = nic_instance.get_nic_driver()
+        if not nic_instance.current_driver:
+            return ''
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
 class NetDevice(object):
 
     """
@@ -73,6 +89,7 @@ class NetDevice(object):
         self.driver_version = ''
         self.firmware = ''
         self.pkg = None
+        self.current_driver = None
 
     def stop(self):
         pass
@@ -100,19 +117,6 @@ class NetDevice(object):
         It is the method that you can check if the nic is PF.
         """
         return True
-
-    def nic_has_driver(func):
-        """
-        Check if the NIC has a driver.
-        """
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            nic_instance = args[0]
-            nic_instance.current_driver = nic_instance.get_nic_driver()
-            if not nic_instance.current_driver:
-                return ''
-            return func(*args, **kwargs)
-        return wrapper
 
     def get_nic_driver(self):
         """
@@ -273,7 +277,7 @@ class NetDevice(object):
         """
         Get the interface name by the default way on freebsd.
         """
-        pci_str = "%s:%s:%s" % (domain_id, bus_id, devfun_id) 
+        pci_str = "%s:%s:%s" % (domain_id, bus_id, devfun_id)
         out = self.__send_expect("pciconf -l", "# ")
         rexp = r"(\w*)@pci0:%s" % pci_str
         pattern = re.compile(rexp)
@@ -438,7 +442,7 @@ class NetDevice(object):
                 'get_ipv4_addr_freebsd_%s' %
                 generic_driver)
 
-        return get_ipv4_addr_freebsd(intf, bus_id, devfun_id)
+        return get_ipv4_addr_freebsd(intf)
 
     def get_ipv4_addr_freebsd_generic(self, intf):
         """
@@ -505,15 +509,6 @@ class NetDevice(object):
                            intf, "# ")
         self.__send_expect("ifconfig %s down" % intf, "# ")
         self.__send_expect("ifconfig %s up" % intf, "# ")
-
-    @nic_has_driver
-    def get_ipv6_addr(self):
-        """
-        Get ipv6 address of specified pci device.
-        """
-        get_ipv6_addr = getattr(
-            self, 'get_ipv6_addr_%s' % self.__get_os_type())
-        return get_ipv6_addr(self.intf_name, self.current_driver)
 
     @nic_has_driver
     def get_ipv6_addr(self):
