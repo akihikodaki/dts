@@ -122,11 +122,6 @@ class TestVfJumboFrame(TestCase):
             if self.vm_dut is None:
                 raise Exception("Set up VM ENV failed!")
 
-            TESTPMD_MAIN = "app/test-pmd/testpmd.c"
-            if self.kdriver == "ixgbe":
-                self.vm_dut.send_expect("sed -i -e 's/.jumbo_frame    = .*$/.jumbo_frame = 1,/g' %s" % TESTPMD_MAIN, "# ")
-                self.vm_dut.build_install_dpdk(self.target)
-
             self.vm_testpmd = PmdOutput(self.vm_dut)
 
         except Exception as e:
