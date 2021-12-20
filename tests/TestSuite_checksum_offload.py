@@ -69,7 +69,6 @@ l3_proto_classes = [
 l4_proto_classes = [
     UDP,
     TCP,
-    SCTP
 ]
 
 tunnelling_proto_classes = [

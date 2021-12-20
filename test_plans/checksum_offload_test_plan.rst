@@ -297,7 +297,7 @@ Test Case: Hardware Checksum Check L4 TX
 ===========================================
 This test involves testing many different scenarios with a L4 checksum.
 A variety of tunneling protocols, L3 protocols and L4 protocols are combined
-to test as many scenarios as possible. Currently, UDP, TCP and SCTP are used
+to test as many scenarios as possible. Currently, UDP and TCP are used
 as L4 protocols, with IP and IPv6 being used at level 3. The tested tunneling
 protocols are VXLAN and GRE. This test is used to determine whether the
 hardware offloading of checksums works properly.
