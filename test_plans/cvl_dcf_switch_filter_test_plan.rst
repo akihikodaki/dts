@@ -201,7 +201,9 @@ Prerequisites
 
 4. Compile DPDK::
 
-     make -j install T=x86_64-native-linuxapp-gcc
+    CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc
+
 
 5. Get the pci device id of DUT, for example::
 
@@ -231,7 +233,7 @@ Prerequisites
 
 9. Launch dpdk on VF0 and VF1, and VF0 request DCF mode::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -- -i
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -- -i
      testpmd> set portlist 1
      testpmd> set fwd rxonly
      testpmd> set verbose 1
@@ -2392,7 +2394,7 @@ Subcase 1: add existing rules but with different vfs
 
 1. Launch dpdk on VF0, VF1 and VF2, and VF0 request DCF mode::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -a 0000:18:01.2 -- -i
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -a 0000:18:01.2 -- -i
      testpmd> set portlist 1,2
      testpmd> set fwd rxonly
      testpmd> set verbose 1
@@ -2454,7 +2456,7 @@ Subcase 3: add two rules with one rule's input set included in the other
 
 1. Launch dpdk on VF0, VF1 and VF2, and VF0 request DCF mode::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -a 0000:18:01.2 -- -i
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -a 0000:18:01.2 -- -i
      testpmd> set portlist 1,2
      testpmd> set fwd rxonly
      testpmd> set verbose 1
@@ -2617,7 +2619,7 @@ are dropped.
 
 1. Launch dpdk on VF0, VF1 and VF2, and VF0 request DCF mode::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -a 0000:18:01.2 -- -i
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -a 0000:18:01.2 -- -i
      testpmd> set portlist 1,2
      testpmd> set fwd mac
      testpmd> set verbose 1
@@ -2688,7 +2690,7 @@ This case is designed based on 4*25G NIC.
 
 6. launch dpdk on VF0, and request DCF mode::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -- -i
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -- -i
 
 7. set a switch rule to each VF from DCF, totally 63 rules::
 

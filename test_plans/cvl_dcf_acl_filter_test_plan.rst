@@ -63,7 +63,8 @@ Prerequisites
 
 4. Compile DPDK::
 
-    make -j install T=x86_64-native-linuxapp-gcc
+    CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc
 
 5. Get the pci device id of DUT, for example::
 

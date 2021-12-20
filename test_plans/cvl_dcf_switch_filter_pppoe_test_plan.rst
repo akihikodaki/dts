@@ -171,8 +171,8 @@ Prerequisites
 
 4. Compile DPDK::
 
-     make -j install T=x86_64-native-linuxapp-gcc
-
+     CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
+     ninja -C x86_64-native-linuxapp-gcc
 5. Get the pci device id of DUT, for example::
 
      ./usertools/dpdk-devbind.py -s
@@ -201,7 +201,7 @@ Prerequisites
 
 9. Launch dpdk on VF0 and VF1, and VF0 request DCF mode::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -- -i
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -- -i
      testpmd> set portlist 1
      testpmd> set fwd rxonly
      testpmd> set verbose 1

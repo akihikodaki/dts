@@ -81,7 +81,7 @@ Test Case: test_command_line_option_rss_ip
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10 --rss-ip
+    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10 --rss-ip
     testpmd>set fwd rxonly
     testpmd>set verbose 1
     testpmd>start
@@ -201,7 +201,7 @@ Test Case: test_command_line_option_rss_udp
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10 --rss-udp
+    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10 --rss-udp
     testpmd>set fwd rxonly
     testpmd>set verbose 1
     testpmd>start
@@ -265,7 +265,7 @@ Test Case: test_command_line_option_disable-rss
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10 --disable-rss
+    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10 --disable-rss
     testpmd>set fwd rxonly
     testpmd>set verbose 1
     testpmd>start
@@ -287,7 +287,7 @@ Test Case: test_RSS_configure_to_ip
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
+    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
     testpmd>set fwd rxonly
     testpmd>set verbose 1
 
@@ -411,7 +411,7 @@ Test Case: test_RSS_configure_to_udp
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
+    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
     testpmd>set fwd rxonly
     testpmd>set verbose 1
 
@@ -479,7 +479,7 @@ Test Case: test_RSS_configure_to_tcp
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
+    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
     testpmd>set fwd rxonly
     testpmd>set verbose 1
 
@@ -547,7 +547,7 @@ Test Case: test_RSS_configure_to_sctp
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
+    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
     testpmd>set fwd rxonly
     testpmd>set verbose 1
 
@@ -615,7 +615,7 @@ Test Case: test_RSS_configure_to_all
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
+    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
     testpmd>set fwd rxonly
     testpmd>set verbose 1
 
@@ -721,7 +721,7 @@ Test Case: test_RSS_configure_to_default
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
+    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
     testpmd>set fwd rxonly
     testpmd>set verbose 1
 

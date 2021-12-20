@@ -173,7 +173,8 @@ Prerequisites
 
 4. Compile DPDK::
 
-     make -j install T=x86_64-native-linuxapp-gcc
+    CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc
 
 5. Bind pf to dpdk driver::
 
@@ -181,7 +182,7 @@ Prerequisites
 
 6. Launch dpdk with the following arguments in non-pipeline mode::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:18:00.0 --log-level="ice,8" -- -i --txq=16 --rxq=16
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:00.0 --log-level="ice,8" -- -i --txq=16 --rxq=16
      testpmd> port config 0 rss-hash-key ipv4 1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd
      testpmd> set fwd rxonly
      testpmd> set verbose 1
@@ -195,7 +196,7 @@ Prerequisites
 
    Launch dpdk in pipeline mode with the following testpmd command line::
 
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:18:00.0,pipeline-mode-support=1 --log-level="ice,8" -- -i --txq=16 --rxq=16
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:00.0,pipeline-mode-support=1 --log-level="ice,8" -- -i --txq=16 --rxq=16
 
 Test case: VXLAN non-pipeline mode
 ==================================

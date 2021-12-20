@@ -1413,7 +1413,7 @@ Subcase: MAC_IPV4_GTPU_IPV4_UDP/TCP
 -----------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. create rules::
 
@@ -1433,7 +1433,7 @@ Subcase: MAC_IPV4_GTPU_EH_IPV6_UDP/TCP
 --------------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. create rules::
 
@@ -1453,7 +1453,7 @@ Subcase: MAC_IPV6_GTPU_IPV4_UDP/TCP
 -----------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. create rules::
 
@@ -1473,7 +1473,7 @@ Subcase: MAC_IPV6_GTPU_EH_IPV6_UDP/TCP
 --------------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. create rules::
 
@@ -1495,7 +1495,7 @@ symmetric cases
 
 start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 all the test cases run the same test steps as below:
 

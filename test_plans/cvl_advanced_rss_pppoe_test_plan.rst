@@ -125,7 +125,7 @@ Prerequisites
 
 5. Launch the testpmd in DUT for cases with toeplitz hash function::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:18:00.0 -- -i --rxq=16 --txq=16 --disable-rss
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:00.0 -- -i --rxq=16 --txq=16 --disable-rss
      testpmd> port config 0 rss-hash-key ipv4 1b9d58a4b961d9cd1c56ad1621c3ad51632c16a5d16c21c3513d132c135d132c13ad1531c23a51d6ac49879c499d798a7d949c8a
      testpmd> set fwd rxonly
      testpmd> set verbose 1
@@ -133,7 +133,7 @@ Prerequisites
 
    Launch testpmd for cases with symmetric_toeplitz and simple_xor hash function::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:18:00.0 -- -i --rxq=16 --txq=16
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:00.0 -- -i --rxq=16 --txq=16
 
 6. on tester side, copy the layer python file to /root::
 

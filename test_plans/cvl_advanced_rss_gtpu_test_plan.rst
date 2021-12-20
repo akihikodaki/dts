@@ -193,7 +193,7 @@ Prerequisites
 
 4. Launch the testpmd to configuration queue of rx and tx number 64 in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/testpmd  -c 0xff -n 4 -- -i --rxq=64 --txq=64 --disable-rss --port-topology=loop
+    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd  -c 0xff -n 4 -- -i --rxq=64 --txq=64 --disable-rss --port-topology=loop
     testpmd>set fwd rxonly
     testpmd>set verbose 1
 
@@ -1554,7 +1554,7 @@ default pattern supported case
 ==============================
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. send packets with switched l3 address of each packet type in the list:
 
@@ -1747,7 +1747,7 @@ Subcase: MAC_IPV4_GTPU_IPV4_UDP/TCP
 -----------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. create rules::
 
@@ -1767,7 +1767,7 @@ Subcase: MAC_IPV4_GTPU_EH_IPV6_UDP/TCP
 --------------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. create rules::
 
@@ -1787,7 +1787,7 @@ Subcase: MAC_IPV6_GTPU_IPV4_UDP/TCP
 -----------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. create rules::
 
@@ -1807,7 +1807,7 @@ Subcase: MAC_IPV6_GTPU_EH_IPV6_UDP/TCP
 --------------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. create rules::
 
@@ -1829,7 +1829,7 @@ Subcase: IPV4_GTPU_IPV4/IPV4_GTPU_EH_IPV4
 -----------------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. create IPV4_GTPU_IPV4 rule::
 
@@ -1913,7 +1913,7 @@ Subcase: IPV4_GTPU_EH_IPV4 with/without UL/DL
 ---------------------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. create IPV4_GTPU_DL_IPV4 rule::
 
@@ -1968,7 +1968,7 @@ Subcase: IPV4_GTPU_EH_IPV4 without/with UL/DL
 ---------------------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. create IPV4_GTPU_EH_IPV4 rule::
 
@@ -2025,7 +2025,7 @@ Subcase: IPV4_GTPU_EH_IPV4 and IPV4_GTPU_EH_IPV4_UDP/TCP
 --------------------------------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. send packets with different inner UDP/TCP port::
 
@@ -2090,7 +2090,7 @@ Subcase: IPV6_GTPU_EH_IPV6 and IPV6_GTPU_EH_IPV6_UDP/TCP
 --------------------------------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. send packets with different inner UDP/TCP port::
 
@@ -2151,7 +2151,7 @@ Subcase: IPV4_GTPU_EH_IPV6 and IPV4_GTPU_EH_IPV6_UDP/TCP without UL/DL
 ----------------------------------------------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. send packets with different inner UDP/TCP port::
 
@@ -2192,7 +2192,7 @@ Subcase: IPV6_GTPU_IPV4 and IPV6_GTPU_IPV4_UDP/TCP
 --------------------------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. send packets with different inner UDP/TCP port::
 
@@ -2505,7 +2505,7 @@ Subcase: add/delete IPV4_GTPU_UL_IPV4_TCP rules
 -----------------------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. create/delete IPV4_GTPU_UL_IPV4_TCP rule 100 times::
 
@@ -2531,7 +2531,7 @@ Subcase: add/delete IPV4_GTPU_DL_IPV4 rules
 -------------------------------------------
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 2. create/delete IPV4_GTPU_DL_IPV4 rule 100 times::
 
@@ -2557,7 +2557,7 @@ symmetric cases
 
 start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 all the test cases run the same test steps as below:
 
@@ -3014,7 +3014,7 @@ rss function when disable rss
 =============================
 1. start testpmd without disable rss::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --disable-rss --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --disable-rss --port-topology=loop
 
 2. create a IPV4_GTPU_EH_IPV4 rule::
 

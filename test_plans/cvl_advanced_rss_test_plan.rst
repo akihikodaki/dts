@@ -312,11 +312,11 @@ Prerequisites
 
 4. Launch the testpmd to configuration queue of rx and tx number 64 in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/testpmd  -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
+    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd  -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
    or disable rss in command line::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/testpmd  -c 0xff -n 4 -- -i --rxq=64 --txq=64 --disable-rss --port-topology=loop
+    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd  -c 0xff -n 4 -- -i --rxq=64 --txq=64 --disable-rss --port-topology=loop
     testpmd>set fwd rxonly
     testpmd>set verbose 1
     testpmd>rx_vxlan_port add 4789 0

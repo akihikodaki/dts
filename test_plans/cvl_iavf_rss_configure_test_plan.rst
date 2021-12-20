@@ -69,7 +69,7 @@ Prerequisites
 
 5. launch testpmd::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -- -i --rxq=16 --txq=16
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -- -i --rxq=16 --txq=16
     testpmd>set fwd rxonly
     testpmd>set verbose 1
     testpmd> start
