@@ -92,7 +92,7 @@ capture package rx port on tester::
 
 Launch the userland ``testpmd`` application on DUT as follows::
 
-   ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xffffffff -n 2 -- -i --rxd=512 --txd=512
+   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xffffffff -n 2 -- -i --rxd=512 --txd=512
    --burst=32 --rxfreet=64 --mbcache=128 --portmask=0x3 --txpt=36 --txht=0 --txwt=0
    --txfreet=32 --txrst=32 --enable-rx-cksum
      testpmd> set verbose 1
@@ -134,7 +134,7 @@ capture package rx port on tester::
 
 Launch the userland ``testpmd`` application on DUT as follows::
 
-   ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xffffffff -n 2 -- -i --rxd=512 --txd=512
+   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xffffffff -n 2 -- -i --rxd=512 --txd=512
    --burst=32 --rxfreet=64 --mbcache=128 --portmask=0x3 --txpt=36 --txht=0 --txwt=0
    --txfreet=32 --txrst=32 --enable-rx-cksum
      testpmd> set verbose 1
@@ -189,7 +189,7 @@ below.
 
 Then run the test application as below::
 
-   ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xffffffff -n 2 -- -i --rxd=512 --txd=512
+   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xffffffff -n 2 -- -i --rxd=512 --txd=512
    --burst=32 --rxfreet=64 --mbcache=128 --portmask=0x3 --txpt=36 --txht=0 --txwt=0
    --txfreet=32 --txrst=32 --enable-rx-cksum
 

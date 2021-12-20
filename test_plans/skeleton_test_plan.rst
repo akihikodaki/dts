@@ -41,12 +41,22 @@ It is intended as a demonstration of the basic components of a DPDK forwarding
 application. For more detailed implementations see the L2 and L3 forwarding
 sample applications.
 
+Build DPDK and example skeleton
+===============================
+
+    cd dpdk
+    CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc -j 50
+
+    meson configure -Dexamples=skeleton x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc
+
 Running the Application
 =======================
 
 To run the example in a linux environment::
 
-    ./build/basicfwd -c 2 -n 4
+    ./build/examples/dpdk-skeleton -c 2 -n 4
 
 Refer to *DPDK Getting Started Guide* for general information on running
 applications and the Environment Abstraction Layer (EAL) options.
@@ -56,7 +66,7 @@ Test case: skeleton
 
 Running::
 
-     ./examples/skeleton/build/basicfwd -c 2 -n 4
+     ./x86_64-native-linuxapp-gcc/examples/dpdk-skeleton  /build/basicfwd -c 2 -n 4
 
 waked up::
 

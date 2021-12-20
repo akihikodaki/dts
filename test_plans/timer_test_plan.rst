@@ -54,9 +54,18 @@ reloaded automatically every second.
 Timer 1 is single one, being loaded manually by every second/3 ,
 once manually load will switch to next lcore.
 
+Build DPDK and example::
+
+   cd dpdk
+   CC=gcc meson --werror -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+   ninja -C x86_64-native-linuxapp-gcc -j 50
+
+   meson configure -Dexamples=timer x86_64-native-linuxapp-gcc
+   ninja -C x86_64-native-linuxapp-gcc
+
 Usage of application::
 
-  ./timer [EAL options]
+  ./examples/dpdk-timer [EAL options]
 
 Where the EAL options are::
 
@@ -87,7 +96,7 @@ Test Case: timer callbacks running on targeted cores
 
 To run the example in linuxapp environment::
 
-  ./timer -c ffffff
+  ./examples/dpdk-timer -c ffffff
 
 Timer0, every second, on master lcore, reloaded automatically.
 The check output as below by every second on master lcore::

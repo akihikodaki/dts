@@ -61,7 +61,7 @@ Prerequisites
 
 3. Start softnic with following command line::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7 -s 0x4 -n 4 \
     --vdev 'net_softnic0,firmware=./drivers/net/softnic/firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --forward-mode=softnic --portmask=0x2
     testpmd> start
@@ -74,7 +74,7 @@ Test Case 1: softnic performance
 ================================
 1. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7 -s 0x4 -n 4 \
     --vdev 'net_softnic0,firmware=./drivers/net/softnic/firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --forward-mode=softnic --portmask=0x2
     testpmd> start
@@ -94,7 +94,7 @@ Test Case 2: shaping for pipe
 
 2. Start softnic with the default hierarchy Qos::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7 -s 0x4 -n 4 \
     --vdev 'net_softnic0,firmware=./drivers/net/softnic/tm_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --forward-mode=softnic --portmask=0x2
     testpmd> start
@@ -109,7 +109,7 @@ Test Case 3: NAT
 
 (a). Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7 -s 0x4 -n 4 \
     --vdev 'net_softnic0,firmware=./drivers/net/softnic/nat_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --forward-mode=softnic --portmask=0x2
     testpmd> start

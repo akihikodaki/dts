@@ -76,7 +76,7 @@ Launch the ``testpmd`` with the following arguments, set ``--tx-offloads=0x8fff`
 let TX checksum offloads, TSO mode in the “Full Featured” TX path, add
 --max-pkt-len for large packet::
 
-   ./testpmd -c 0x6 -n 4  -- -i --tx-offloads=0x8fff --port-topology=chained
+   ./app/dpdk-testpmd -c 0x6 -n 4  -- -i --tx-offloads=0x8fff --port-topology=chained
    --max-pkt-len=9000
 
 Set the ``csum`` forwarding mode::

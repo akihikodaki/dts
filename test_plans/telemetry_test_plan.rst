@@ -91,7 +91,7 @@ Test case: basic connection for testpmd and telemetry client::
 
 2. Run Testpmd with 2 ports
 
-  $ ./x86_64-native-linuxapp-gcc/app/testpmd -c f -n 4  --telemetry -- -i
+  $ ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c f -n 4  --telemetry -- -i
 
    For the building meson shared and make shared . tested command should be used  when run on ubuntu OS
    make share and meson version::
@@ -111,7 +111,7 @@ Test case:  Stats of 2 ports for testpmd and telemetry with same type nic
 
 2. Run Testpmd with 2 ports
 
-  $ ./x86_64-native-linuxapp-gcc/app/testpmd --telemetry  -- -i
+  $ ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --telemetry  -- -i
 
 3.Run Python terminal:
 
@@ -142,7 +142,7 @@ Test case:  Stats of 2 ports for testpmd and telemetry with different  type nic
 
 2. Run Testpmd with 2 ports
 
-  $ ./x86_64-native-linuxapp-gcc/app/testpmd --telemetry  -- -i
+  $ ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --telemetry  -- -i
 
 3.Run Python terminal:
 
@@ -173,7 +173,7 @@ Test case:  Stats of 4 ports for testpmd and telemetry with same type nic
 
 2. Run Testpmd with 2 ports
 
-  $ ./x86_64-native-linuxapp-gcc/app/testpmd --telemetry  -- -i
+  $ ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --telemetry  -- -i
 
 3.Run Python terminal:
 
@@ -204,7 +204,7 @@ Test case:  Stats of 4 ports for testpmd and telemetry with different  type nic
 
 2. Run Testpmd with 2 ports
 
-  $ ./x86_64-native-linuxapp-gcc/app/testpmd --telemetry  -- -i
+  $ ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --telemetry  -- -i
 
 3.Run Python terminal:
 

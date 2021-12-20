@@ -61,7 +61,7 @@ Assume port A and B are connected to the remote ports, e.g. packet generator.
 To run the testpmd application in linuxapp environment with 4 lcores,
 4 channels with other default parameters in interactive mode::
 
-    $ ./testpmd -c 0xf -n 4 -- -i
+    $ ./app/dpdk-testpmd -c 0xf -n 4 -- -i
 
 Test Case: Stop and Restart
 ---------------------------
