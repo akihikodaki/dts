@@ -1826,23 +1826,6 @@
             "Comments": "This case currently support for x550/x540"
         }
     ],
-    "perf_kernel_pf_dpdk_iavf_perf_host_only": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "this case only support on fortville"
-        }
-    ],
     "fdir_L2_mac_filter_basic_for_ipv4_udp": [
         {
             "OS": [
@@ -2297,5 +2280,77 @@
             "Bug ID": "",
             "Comments": "This case only support ice"
         }
-    ] 
+    ],
+    "lsc_event_between_vhost_user_and_virtio_user_with_packed_ring_and_cbdma_enabled": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "host_driver": [
+                "igb_uio"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only supports the igb_uio driver"
+        }
+    ],
+    "lsc_event_between_vhost_user_and_virtio_user_with_split_ring_and_cbdma_enabled": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "host_driver": [
+                "igb_uio"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only supports the igb_uio driver"
+        }
+    ],
+    "packed_ring_virtio_user_interrupt_test_with_vhost_user_as_backend_and_cbdma_enabled": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "host_driver": [
+                "igb_uio"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only supports the igb_uio driver"
+        }
+    ],
+    "split_ring_virtio_user_interrupt_test_with_vhost_user_as_backend_and_cbdma_enabled": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "host_driver": [
+                "igb_uio"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only supports the igb_uio driver"
+        }
+    ]
 }
