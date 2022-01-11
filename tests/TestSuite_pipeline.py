@@ -65,6 +65,7 @@ PAYLOAD = re.compile(r'\t0x([0-9a-fA-F]+):  ([0-9a-fA-F ]+)')
 
 FILE_DIR = os.path.dirname(os.path.abspath(__file__)).split(os.path.sep)
 DEP_DIR = os.path.sep.join(FILE_DIR[:-1]) + '/dep/'
+DIR_RTE_INSTALL_DIR = '/root/dpdk'
 
 BUFFER_SIZE = 1024
 CLI_SERVER_CONNECT_DELAY = 1
@@ -370,6 +371,9 @@ class TestPipeline(TestCase):
         self.session_secondary.copy_file_to('dep/pipeline.tar.gz', '/tmp/')
         self.dut.send_expect('tar -zxf /tmp/pipeline.tar.gz --directory /tmp', "# ", 20)
 
+        # update environment variable for the performance improvement
+        self.dut.send_expect("export RTE_INSTALL_DIR={}".format(DIR_RTE_INSTALL_DIR), "#")
+
     def set_up(self):
         """
         Run before each test case.
@@ -416,7 +420,7 @@ class TestPipeline(TestCase):
             self.dut.send_expect("^C", "# ", 20)
             self.verify(0, "CLI Response Error")
 
-    def run_dpdk_app(self, cli_file):
+    def run_dpdk_app(self, cli_file, exp_out = "PIPELINE0 enable"):
 
         cmd = "test -f {} && echo \"File exists!\"".format(cli_file)
         self.dut.send_expect(cmd, "File exists!", 1)
@@ -430,7 +434,7 @@ class TestPipeline(TestCase):
             cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
             self.dut.send_expect(cmd, "# ", 20)
             cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
-            self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
+            self.dut.send_expect(cmd, exp_out, 60)
         except Exception:
             self.dut.send_expect("^C", "# ", 20)
             self.verify(0, "ERROR in running DPDK application")
@@ -4518,6 +4522,34 @@ class TestPipeline(TestCase):
         self.send_and_sniff_pkts(0, 1, in_pcap, out_pcap, "udp")
         self.dut.send_expect("^C", "# ", 10)
 
+    def test_ring_port_002(self):
+
+        cli_file = '/tmp/pipeline/ring_port_002/ring_port_002.cli'
+        cmd = "test -f {} && echo \"File exists!\"".format(cli_file)
+        self.dut.send_expect(cmd, "File exists!", 10)
+        try:
+            cmd = "sed -i -e 's/0000:00:04.0/%s/' {}".format(cli_file) % self.dut_p0_pci
+            self.dut.send_expect(cmd, "# ", 10)
+            cmd = "sed -i -e 's/0000:00:05.0/%s/' {}".format(cli_file) % self.dut_p1_pci
+            self.dut.send_expect(cmd, "# ", 10)
+            cmd = "sed -i -e 's/0000:00:06.0/%s/' {}".format(cli_file) % self.dut_p2_pci
+            self.dut.send_expect(cmd, "# ", 10)
+            cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
+            self.dut.send_expect(cmd, "# ", 10)
+
+            ports = [self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci]
+            eal_params = self.dut.create_eal_parameters(cores=list(range(4)), ports=ports)
+            cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, eal_params, cli_file)
+            self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
+        except Exception:
+            self.dut.send_expect("^C", "# ", 20)
+            self.verify(0, "ERROR in running DPDK application")
+
+        in_pcap = 'pipeline/ring_port_002/pcap_files/in_1.txt'
+        out_pcap = 'pipeline/ring_port_002/pcap_files/out_1.txt'
+        self.send_and_sniff_pkts(0, 0, in_pcap, out_pcap, "tcp")
+        self.dut.send_expect("^C", "# ", 10)
+
     def test_u100_001(self):
 
         cli_file = '/tmp/pipeline/u100_001/u100_001.cli'
@@ -4564,6 +4596,55 @@ class TestPipeline(TestCase):
         cli_file = '/tmp/pipeline/u100_002/u100_002.cli'
         self.run_dpdk_app(cli_file)
         base_dir = 'pipeline/u100_002/pcap_files/'
+
+        # TCP Packets
+        in_pcap = ['in_1.txt']
+        in_pcap = [base_dir + s for s in in_pcap]
+        out_pcap = ['out_11.txt', 'out_12.txt', 'out_13.txt', 'out_14.txt']
+        out_pcap = [base_dir + s for s in out_pcap]
+        filters = ["tcp", "vlan 16", "vlan 16", "tcp"]
+        tx_port = [0]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        # UDP Packets
+        in_pcap = ['in_2.txt']
+        in_pcap = [base_dir + s for s in in_pcap]
+        out_pcap = ['out_21.txt', 'out_22.txt', 'out_23.txt', 'out_24.txt']
+        out_pcap = [base_dir + s for s in out_pcap]
+        filters = ["udp port 200", "vlan 16", "vlan 16", "udp port 200"]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        # ICMP Packets
+        in_pcap = ['in_3.txt']
+        in_pcap = [base_dir + s for s in in_pcap]
+        out_pcap = ['out_31.txt', 'out_32.txt', 'out_33.txt', 'out_34.txt']
+        out_pcap = [base_dir + s for s in out_pcap]
+        filters = ["icmp", "vlan 16", "vlan 16", "icmp"]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        # IGMP Packets
+        in_pcap = ['in_4.txt']
+        in_pcap = [base_dir + s for s in in_pcap]
+        out_pcap = ['out_41.txt', 'out_42.txt', 'out_43.txt', 'out_44.txt']
+        out_pcap = [base_dir + s for s in out_pcap]
+        filters = ["igmp", "vlan 16", "vlan 16", "igmp"] * 4
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        # IPv6 Packets
+        in_pcap = ['in_5.txt']
+        in_pcap = [base_dir + s for s in in_pcap]
+        out_pcap = ['out_51.txt', 'out_52.txt', 'out_53.txt', 'out_54.txt']
+        out_pcap = [base_dir + s for s in out_pcap]
+        filters = ["tcp"] * 4
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_u100_003(self):
+
+        cli_file = '/tmp/pipeline/u100_003/u100_003.cli'
+        self.run_dpdk_app(cli_file)
+        base_dir = 'pipeline/u100_003/pcap_files/'
 
         # TCP Packets
         in_pcap = ['in_1.txt']
@@ -4991,6 +5072,76 @@ class TestPipeline(TestCase):
         tx_port = [3]
         rx_port = [3]
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_annotation_001(self):
+
+        cli_file = '/tmp/pipeline/annotation_001/annotation_001.cli'
+        self.run_dpdk_app(cli_file,'thread 1 pipeline PIPELINE0 enable\n')
+
+        in_pcap = ['pipeline/annotation_001/pcap_files/in_1.txt'] * 4
+        out_pcap = ['pipeline/annotation_001/pcap_files/out_1.txt'] * 4
+        filters = ["tcp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_annotation_002(self):
+
+        cli_file = '/tmp/pipeline/annotation_002/annotation_002.cli'
+        self.run_dpdk_app(cli_file,'thread 1 pipeline PIPELINE0 enable\n')
+
+        in_pcap = ['pipeline/annotation_002/pcap_files/in_1.txt'] * 4
+        out_pcap = ['pipeline/annotation_002/pcap_files/out_1.txt'] * 4
+        filters = ["tcp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_annotation_003(self):
+
+        cli_file = '/tmp/pipeline/annotation_003/annotation_003.cli'
+        self.run_dpdk_app(cli_file,'pipeline PIPELINE0 port out 3 link LINK3 txq 0 bsz 1\n')
+
+        sleep(CLI_SERVER_CONNECT_DELAY)
+        s = self.connect_cli_server()
+        CLI_CMD = 'pipeline PIPELINE0 build /tmp/pipeline/annotation_003/annotation_003.spec\n'
+        self.socket_send_cmd(s, CLI_CMD, "Error -22 at line 54: Invalid action name statement.")
+        s.close()
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_annotation_004(self):
+
+        cli_file = '/tmp/pipeline/annotation_004/annotation_004.cli'
+        self.run_dpdk_app(cli_file,'pipeline PIPELINE0 build /tmp/pipeline/annotation_004/'\
+                'annotation_004.spec\n')
+
+        sleep(CLI_SERVER_CONNECT_DELAY)
+        s = self.connect_cli_server()
+        CLI_CMD = 'pipeline PIPELINE0 table annotation_004 add /tmp/pipeline/annotation_004/'\
+                'annotation_004_table.txt\n'
+        self.socket_send_cmd(s, CLI_CMD, "Invalid entry in file /tmp/pipeline/annotation_004/"\
+                "annotation_004_table.txt at line 2\n")
+        s.close()
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_annotation_005(self):
+
+        cli_file = '/tmp/pipeline/annotation_005/annotation_005.cli'
+        self.run_dpdk_app(cli_file,'pipeline PIPELINE0 port out 3 link LINK3 txq 0 bsz 1\n')
+
+        sleep(CLI_SERVER_CONNECT_DELAY)
+        s = self.connect_cli_server()
+        CLI_CMD = 'pipeline PIPELINE0 build /tmp/pipeline/annotation_005/annotation_005.spec\n'
+        self.socket_send_cmd(s, CLI_CMD, "Error -22 at line 62: Table configuration error.")
+        s.close()
+
         self.dut.send_expect("^C", "# ", 20)
 
     def tear_down(self):
