@@ -57,8 +57,6 @@ class TestVmdq(TestCase):
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
 
         self.dut.build_install_dpdk(self.target)
-        # Update the max queue per port for Fortville.
-        self.dut.send_expect("sed -i 's/define MAX_QUEUES 128/define MAX_QUEUES 1024/' ./examples/vmdq/main.c", "#", 5)
         # out = self.dut.send_expect("make -C examples/vmdq", "#", 10)
         out = self.dut.build_dpdk_apps('examples/vmdq')
         self.verify("Error" not in out, "Compilation error")
