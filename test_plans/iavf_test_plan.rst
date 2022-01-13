@@ -245,7 +245,7 @@ Test Case: Check that no jumbo frame support
 
     Launch testpmd for VF ports without enabling jumboframe option
 
-        ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 1  -- -i
+        ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1  -- -i
 
         testpmd>set fwd mac
         testpmd>start
@@ -259,7 +259,7 @@ Test Case: Check that with jumbo frames support
 
     Launch testpmd for VF ports with jumboframe option
 
-        ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 1  -- -i --max-pkt-len=3000 --tx-offloads=0x8000
+        ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1  -- -i --max-pkt-len=3000 --tx-offloads=0x8000
 
         testpmd>set fwd mac
         testpmd>start
@@ -275,7 +275,7 @@ Test Cases: VF rss
 ====================
 Start testpmd on VM::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 1  -- -i --txq=4 --rxq=4
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1  -- -i --txq=4 --rxq=4
 
 Test Case: test redirection table config
 -------------------------------------------
@@ -298,7 +298,7 @@ Test Cases:VF offload
 =======================
 Start testpmd on VM::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 1  -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1  -- -i
 
 Test Case: enable HW checksum offload
 -------------------------------------------
@@ -383,7 +383,8 @@ Test case: rx interrupt
 ::
 
     build l3fwd-power
-        make -C examples/l3fwd-power RTE_SDK=`pwd` T=x86_64-native-linuxapp-gcc
+        meson configure -Dexamples=l3fwd-power x86_64-native-linuxapp-gcc
+        ninja -C x86_64-native-linuxapp-gcc
 
     enable vfio noiommu
         modprobe -r vfio_iommu_type1
@@ -393,7 +394,7 @@ Test case: rx interrupt
         modprobe vfio-pci
 
     start l3fwd power with one queue per port.
-        ./examples/l3fwd-power/build/l3fwd-power -l 6,7 -n 4  -- \
+        ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -l 6,7 -n 4  -- \
         -p 0x3 --config '(0,0,6),(1,0,7)'
 
     Send one packet to VF0 and VF1, check that thread on core6 and core7 waked up::
@@ -425,14 +426,14 @@ create 2 VFs from 1 PF, and start PF::
     echo 2 > /sys/bus/pci/devices/0000\:08\:00.0/max_vfs;
     ./usertools/dpdk-devbind.py --bind=vfio-pci 09:02.0 09:0a.0
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1,2 -n 4 --socket-mem=1024,1024 --file-prefix=pf -a 08:00.0 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1,2 -n 4 --socket-mem=1024,1024 --file-prefix=pf -a 08:00.0 -- -i
 
     testpmd>set vf mac addr 0 0 00:12:34:56:78:01
     testpmd>set vf mac addr 0 1 00:12:34:56:78:02
 
 start testpmd with 2VFs individually::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 3-5 -n 4 --master-lcore=3 --socket-mem=1024,1024 --file-prefix=vf1 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 3-5 -n 4 --master-lcore=3 --socket-mem=1024,1024 --file-prefix=vf1 \
       -a 09:02.0 -- -i --txq=2 --rxq=2 --rxd=512 --txd=512 --nb-cores=2 --rss-ip --eth-peer=0,00:12:34:56:78:02
 
     testpmd>set promisc all off
@@ -441,7 +442,7 @@ start testpmd with 2VFs individually::
 
 ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-8 -n 4 --master-lcore=6 --socket-mem=1024,1024 --file-prefix=vf2 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-8 -n 4 --master-lcore=6 --socket-mem=1024,1024 --file-prefix=vf2 \
        -a 09:0a.0 -- -i --txq=2 --rxq=2 --rxd=512 --txd=512 --nb-cores=2 --rss-ip
 
     testpmd>set promisc all off
@@ -460,7 +461,7 @@ Test Case: vector vf performance
 
 2. start testpmd for PF::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x6 -n 4 --socket-mem=1024,1024 --file-prefix=pf \
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 --socket-mem=1024,1024 --file-prefix=pf \
        -a 08:00.0 -a 08:00.1 -- -i
 
        testpmd>set vf mac addr 0 0 00:12:34:56:78:01
@@ -468,7 +469,7 @@ Test Case: vector vf performance
 
 3. start testpmd for VF::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f8 -n 4 --master-lcore=3 --socket-mem=1024,1024 --file-prefix=vf \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0f8 -n 4 --master-lcore=3 --socket-mem=1024,1024 --file-prefix=vf \
         -a 09:0a.0 -a 09:02.0 -- -i --txq=2 --rxq=2 --rxd=512 --txd=512 --nb-cores=4 --rss-ip
 
      testpmd>set promisc all off
