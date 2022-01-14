@@ -47,7 +47,7 @@ Test Case1: Basic test vhost/virtio-user split ring with 4K-pages
 
     modprobe vfio-pci
     ./usertools/dpdk-devbind.py --bind=vfio-pci xx:xx.x
-    ./testpmd -l 3-4 -n 4 -m 1024 --no-huge --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 3-4 -n 4 -m 1024 --no-huge --file-prefix=vhost \
     --vdev 'net_vhost0,iface=/tmp/vhost-net,queues=1' -- -i --no-numa --socket-num=0
     testpmd>start
 
@@ -58,7 +58,7 @@ Test Case1: Basic test vhost/virtio-user split ring with 4K-pages
 
 3. Launch virtio-user with 4K-pages::
 
-    ./testpmd -l 5-6 -n 4 --no-huge -m 1024 --file-prefix=virtio-user \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 5-6 -n 4 --no-huge -m 1024 --file-prefix=virtio-user \
     --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,queues=1 -- -i
     testpmd>start
 
@@ -73,7 +73,7 @@ Test Case2: Basic test vhost/virtio-user packed ring with 4K-pages
 
     modprobe vfio-pci
     ./usertools/dpdk-devbind.py --bind=vfio-pci xx:xx.x
-    ./testpmd -l 3-4 -n 4 -m 1024 --no-huge --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 3-4 -n 4 -m 1024 --no-huge --file-prefix=vhost \
     --vdev 'net_vhost0,iface=/tmp/vhost-net,queues=1' -- -i --no-numa --socket-num=0
     testpmd>start
 
@@ -84,7 +84,7 @@ Test Case2: Basic test vhost/virtio-user packed ring with 4K-pages
 
 3. Launch virtio-user with 4K-pages::
 
-    ./testpmd -l 5-6 -n 4 --no-huge -m 1024 --file-prefix=virtio-user \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 5-6 -n 4 --no-huge -m 1024 --file-prefix=virtio-user \
     --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,packed_vq=1,queues=1 -- -i
     testpmd>start
 

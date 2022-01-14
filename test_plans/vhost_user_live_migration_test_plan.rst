@@ -76,8 +76,8 @@ On host server side:
 
 2. Bind host port to vfio-pci and start testpmd with vhost port::
 
-    host server# ./tools/dpdk-devbind.py -b vfio-pci 82:00.1
-    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
+    host server# ./usertools/dpdk-devbind.py -b vfio-pci 82:00.1
+    host server# ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
     host server# testpmd>start
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
@@ -99,8 +99,8 @@ On the backup server, run the vhost testpmd on the host and launch VM:
 
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
-    backup server # ./tools/dpdk-devbind.py -b vfio-pci 82:00.0
-    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
+    backup server # ./usertools/dpdk-devbind.py -b vfio-pci 82:00.0
+    backup server # ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
     backup server # testpmd>start
 
 5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
@@ -125,13 +125,14 @@ On the backup server, run the vhost testpmd on the host and launch VM:
 7. Run testpmd in VM::
 
     host VM# cd /root/<dpdk_folder>
-    host VM# make -j 110 install T=x86_64-native-linuxapp-gcc
+    host VM# CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static x86_64-native-linuxapp-gcc
+    host VM# ninja -C x86_64-native-linuxapp-gcc
     host VM# modprobe uio
     host VM# insmod ./x86_64-native-linuxapp-gcc/kmod/vfio-pci.ko
-    host VM# ./tools/dpdk_nic_bind.py --bind=vfio-pci 00:03.0
+    host VM# ./usertools/dpdk-devbind.py --bind=vfio-pci 00:03.0
     host VM# echo 1024 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
     host VM# screen -S vm
-    host VM# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 4 -- -i
+    host VM# ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i
     host VM# testpmd>set fwd rxonly
     host VM# testpmd>set verbose 1
     host VM# testpmd>start
@@ -176,8 +177,8 @@ On host server side:
 
 2. Bind host port to vfio-pci and start testpmd with vhost port,note not start vhost port before launching qemu::
 
-    host server# ./tools/dpdk-devbind.py -b vfio-pci 82:00.1
-    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
+    host server# ./usertools/dpdk-devbind.py -b vfio-pci 82:00.1
+    host server# ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
 
@@ -198,8 +199,8 @@ On the backup server, run the vhost testpmd on the host and launch VM:
 
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
-    backup server # ./tools/dpdk-devbind.py -b vfio-pci 82:00.0
-    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
+    backup server # ./usertools/dpdk-devbind.py -b vfio-pci 82:00.0
+    backup server # ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
 
 5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
 
@@ -223,13 +224,14 @@ On the backup server, run the vhost testpmd on the host and launch VM:
 7. Run testpmd in VM::
 
     host VM# cd /root/<dpdk_folder>
-    host VM# make -j 110 install T=x86_64-native-linuxapp-gcc
+    host VM# CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static x86_64-native-linuxapp-gcc
+    host VM# ninja -C x86_64-native-linuxapp-gcc
     host VM# modprobe uio
     host VM# insmod ./x86_64-native-linuxapp-gcc/kmod/vfio-pci.ko
-    host VM# ./tools/dpdk_nic_bind.py --bind=vfio-pci 00:03.0
+    host VM# ./usertools/dpdk-devbind.py --bind=vfio-pci 00:03.0
     host VM# echo 1024 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
     host VM# screen -S vm
-    host VM# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 4 -- -i
+    host VM# ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i
     host VM# testpmd>set fwd rxonly
     host VM# testpmd>set verbose 1
     host VM# testpmd>start
@@ -276,8 +278,8 @@ On host server side:
 
 2. Bind host port to vfio-pci and start testpmd with vhost port::
 
-    host server# ./tools/dpdk-devbind.py -b vfio-pci 82:00.1
-    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
+    host server# ./usertools/dpdk-devbind.py -b vfio-pci 82:00.1
+    host server# ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
     host server# testpmd>start
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
@@ -299,8 +301,8 @@ On the backup server, run the vhost testpmd on the host and launch VM:
 
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
-    backup server # ./tools/dpdk-devbind.py -b vfio-pci 82:00.0
-    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
+    backup server # ./usertools/dpdk-devbind.py -b vfio-pci 82:00.0
+    backup server # ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
     backup server # testpmd>start
 
 5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
@@ -364,8 +366,8 @@ On host server side:
 
 2. Bind host port to vfio-pci and start testpmd with vhost port::
 
-    host server# ./tools/dpdk-devbind.py -b vfio-pci 82:00.1
-    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' -- -i --nb-cores=4 --rxq=4 --txq=4
+    host server# ./usertools/dpdk-devbind.py -b vfio-pci 82:00.1
+    host server# ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' -- -i --nb-cores=4 --rxq=4 --txq=4
     host server# testpmd>start
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
@@ -387,8 +389,8 @@ On the backup server, run the vhost testpmd on the host and launch VM:
 
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
-    backup server # ./tools/dpdk-devbind.py -b vfio-pci 82:00.0
-    backup server#./x86_64-native-linuxapp-gcc/app/testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' -- -i --nb-cores=4 --rxq=4 --txq=4
+    backup server # ./usertools/dpdk-devbind.py -b vfio-pci 82:00.0
+    backup server#./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' -- -i --nb-cores=4 --rxq=4 --txq=4
     backup server # testpmd>start
 
 5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
@@ -456,8 +458,8 @@ On host server side:
 
 2. Bind host port to vfio-pci and start testpmd with vhost port::
 
-    host server# ./tools/dpdk-devbind.py -b vfio-pci 82:00.1
-    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
+    host server# ./usertools/dpdk-devbind.py -b vfio-pci 82:00.1
+    host server# ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
     host server# testpmd>start
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
@@ -479,8 +481,8 @@ On the backup server, run the vhost testpmd on the host and launch VM:
 
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
-    backup server # ./tools/dpdk-devbind.py -b vfio-pci 82:00.0
-    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
+    backup server # ./usertools/dpdk-devbind.py -b vfio-pci 82:00.0
+    backup server # ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
     backup server # testpmd>start
 
 5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
@@ -505,13 +507,14 @@ On the backup server, run the vhost testpmd on the host and launch VM:
 7. Run testpmd in VM::
 
     host VM# cd /root/<dpdk_folder>
-    host VM# make -j 110 install T=x86_64-native-linuxapp-gcc
+    host VM# CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static x86_64-native-linuxapp-gcc
+    host VM# ninja -C x86_64-native-linuxapp-gcc
     host VM# modprobe uio
     host VM# insmod ./x86_64-native-linuxapp-gcc/kmod/vfio-pci.ko
-    host VM# ./tools/dpdk_nic_bind.py --bind=vfio-pci 00:03.0
+    host VM# ./usertools/dpdk-devbind.py --bind=vfio-pci 00:03.0
     host VM# echo 1024 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
     host VM# screen -S vm
-    host VM# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 4 -- -i
+    host VM# ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i
     host VM# testpmd>set fwd rxonly
     host VM# testpmd>set verbose 1
     host VM# testpmd>start
@@ -556,8 +559,8 @@ On host server side:
 
 2. Bind host port to vfio-pci and start testpmd with vhost port,note not start vhost port before launching qemu::
 
-    host server# ./tools/dpdk-devbind.py -b vfio-pci 82:00.1
-    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
+    host server# ./usertools/dpdk-devbind.py -b vfio-pci 82:00.1
+    host server# ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
 
@@ -578,8 +581,8 @@ On the backup server, run the vhost testpmd on the host and launch VM:
 
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
-    backup server # ./tools/dpdk-devbind.py -b vfio-pci 82:00.0
-    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
+    backup server # ./usertools/dpdk-devbind.py -b vfio-pci 82:00.0
+    backup server # ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
 
 5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
 
@@ -603,13 +606,14 @@ On the backup server, run the vhost testpmd on the host and launch VM:
 7. Run testpmd in VM::
 
     host VM# cd /root/<dpdk_folder>
-    host VM# make -j 110 install T=x86_64-native-linuxapp-gcc
+    host VM# CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static x86_64-native-linuxapp-gcc
+    host VM# ninja -C x86_64-native-linuxapp-gcc
     host VM# modprobe uio
     host VM# insmod ./x86_64-native-linuxapp-gcc/kmod/vfio-pci.ko
-    host VM# ./tools/dpdk_nic_bind.py --bind=vfio-pci 00:03.0
+    host VM# ./usertools/dpdk-devbind.py --bind=vfio-pci 00:03.0
     host VM# echo 1024 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
     host VM# screen -S vm
-    host VM# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 4 -- -i
+    host VM# ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i
     host VM# testpmd>set fwd rxonly
     host VM# testpmd>set verbose 1
     host VM# testpmd>start
@@ -656,8 +660,8 @@ On host server side:
 
 2. Bind host port to vfio-pci and start testpmd with vhost port::
 
-    host server# ./tools/dpdk-devbind.py -b vfio-pci 82:00.1
-    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
+    host server# ./usertools/dpdk-devbind.py -b vfio-pci 82:00.1
+    host server# ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
     host server# testpmd>start
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
@@ -679,8 +683,8 @@ On the backup server, run the vhost testpmd on the host and launch VM:
 
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
-    backup server # ./tools/dpdk-devbind.py -b vfio-pci 82:00.0
-    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
+    backup server # ./usertools/dpdk-devbind.py -b vfio-pci 82:00.0
+    backup server # ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
     backup server # testpmd>start
 
 5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
@@ -744,8 +748,8 @@ On host server side:
 
 2. Bind host port to vfio-pci and start testpmd with vhost port::
 
-    host server# ./tools/dpdk-devbind.py -b vfio-pci 82:00.1
-    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' -- -i --nb-cores=4 --rxq=4 --txq=4
+    host server# ./usertools/dpdk-devbind.py -b vfio-pci 82:00.1
+    host server# ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' -- -i --nb-cores=4 --rxq=4 --txq=4
     host server# testpmd>start
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
@@ -767,8 +771,8 @@ On the backup server, run the vhost testpmd on the host and launch VM:
 
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
-    backup server # ./tools/dpdk-devbind.py -b vfio-pci 82:00.0
-    backup server#./x86_64-native-linuxapp-gcc/app/testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' -- -i --nb-cores=4 --rxq=4 --txq=4
+    backup server # ./usertools/dpdk-devbind.py -b vfio-pci 82:00.0
+    backup server#./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' -- -i --nb-cores=4 --rxq=4 --txq=4
     backup server # testpmd>start
 
 5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::

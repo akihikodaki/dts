@@ -44,14 +44,14 @@ Test Case 1: Basic test for packed ring server mode
 
 1. Launch virtio-user as server mode::
 
-    ./testpmd -l 1-2 -n 4 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/sock0,server=1,queues=1,packed_vq=1 -- -i --rxq=1 --txq=1 --no-numa
     >set fwd mac
     >start
 
 2. Launch vhost as client mode::
 
-    ./testpmd -l 3-4 -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 3-4 -n 4 --no-pci --file-prefix=vhost \
     --vdev 'net_vhost0,iface=/tmp/sock0,client=1,queues=1' -- -i --rxq=1 --txq=1 --nb-cores=1
     >set fwd mac
     >start tx_first 32
@@ -65,14 +65,14 @@ Test Case 2:  Basic test for split ring server mode
 
 1. Launch virtio-user as server mode::
 
-    ./testpmd -l 1-2 -n 4 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/sock0,server=1,queues=1 -- -i --rxq=1 --txq=1 --no-numa
     >set fwd mac
     >start
 
 2. Launch vhost as client mode::
 
-    ./testpmd -l 3-4 -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 3-4 -n 4 --no-pci --file-prefix=vhost \
     --vdev 'net_vhost0,iface=/tmp/sock0,client=1,queues=1' -- -i --rxq=1 --txq=1 --nb-cores=1
     >set fwd mac
     >start tx_first 32
@@ -87,14 +87,14 @@ Test Case 3: loopback reconnect test with split ring mergeable path and server m
 1. launch vhost as client mode with 8 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=8' -- -i --nb-cores=2 --rxq=8 --txq=8
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 8 queues and check throughput can get expected::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=8,mrg_rxbuf=1,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=8 --txq=8
     >set fwd mac
@@ -109,7 +109,7 @@ Test Case 3: loopback reconnect test with split ring mergeable path and server m
 
 4. Relaunch vhost and send chain packets::
 
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=8' -- -i --nb-cores=2 --rxq=8 --txq=8
     >set fwd mac
     >set txpkts 2000,2000,2000,2000
@@ -132,7 +132,7 @@ Test Case 3: loopback reconnect test with split ring mergeable path and server m
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=8,mrg_rxbuf=1,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=8 --txq=8
     >set fwd mac
@@ -164,14 +164,14 @@ Test Case 4: loopback reconnect test with split ring inorder mergeable path and 
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues, check throughput can get expected::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=1,in_order=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -186,7 +186,7 @@ Test Case 4: loopback reconnect test with split ring inorder mergeable path and 
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >set txpkts 2000,2000,2000,2000
@@ -209,7 +209,7 @@ Test Case 4: loopback reconnect test with split ring inorder mergeable path and 
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=1,in_order=1\
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -241,14 +241,14 @@ Test Case 5: loopback reconnect test with split ring inorder non-mergeable path 
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues check throughput can get expected::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=0,in_order=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -262,7 +262,7 @@ Test Case 5: loopback reconnect test with split ring inorder non-mergeable path 
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
@@ -284,7 +284,7 @@ Test Case 5: loopback reconnect test with split ring inorder non-mergeable path 
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=0,in_order=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -314,14 +314,14 @@ Test Case 6: loopback reconnect test with split ring non-mergeable path and serv
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues and check throughput can get expected::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=0,in_order=0,vectorized=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -335,7 +335,7 @@ Test Case 6: loopback reconnect test with split ring non-mergeable path and serv
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
@@ -357,7 +357,7 @@ Test Case 6: loopback reconnect test with split ring non-mergeable path and serv
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=0,in_order=0,vectorized=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -387,14 +387,14 @@ Test Case 7: loopback reconnect test with split ring vector_rx path and server m
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues and check throughput can get expected::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=0,in_order=0,vectorized=1 \
     -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -408,7 +408,7 @@ Test Case 7: loopback reconnect test with split ring vector_rx path and server m
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
@@ -430,7 +430,7 @@ Test Case 7: loopback reconnect test with split ring vector_rx path and server m
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=0,in_order=0,vectorized=1 \
     -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -460,14 +460,14 @@ Test Case 8: loopback reconnect test with packed ring mergeable path and server 
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues and check throughput can get expected::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -482,7 +482,7 @@ Test Case 8: loopback reconnect test with packed ring mergeable path and server 
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >set txpkts 2000,2000,2000,2000
@@ -505,7 +505,7 @@ Test Case 8: loopback reconnect test with packed ring mergeable path and server 
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -537,14 +537,14 @@ Test Case 9: loopback reconnect test with packed ring non-mergeable path and ser
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues and check throughput can get expected::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -558,7 +558,7 @@ Test Case 9: loopback reconnect test with packed ring non-mergeable path and ser
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
@@ -580,7 +580,7 @@ Test Case 9: loopback reconnect test with packed ring non-mergeable path and ser
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -610,14 +610,14 @@ Test Case 10: loopback reconnect test with packed ring inorder mergeable path an
 1. launch vhost as client mode with 8 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=8' -- -i --nb-cores=2 --rxq=8 --txq=8
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 8 queues and check throughput can get expected::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=8,packed_vq=1,mrg_rxbuf=1,in_order=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=8 --txq=8
     >set fwd mac
@@ -632,7 +632,7 @@ Test Case 10: loopback reconnect test with packed ring inorder mergeable path an
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=8' -- -i --nb-cores=2 --rxq=8 --txq=8
     >set fwd mac
     >set txpkts 2000,2000,2000,2000
@@ -655,7 +655,7 @@ Test Case 10: loopback reconnect test with packed ring inorder mergeable path an
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=8,packed_vq=1,mrg_rxbuf=1,in_order=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=8 --txq=8
     >set fwd mac
@@ -687,14 +687,14 @@ Test Case 11: loopback reconnect test with packed ring inorder non-mergeable pat
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues and check throughput can get expected::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --rx-offloads=0x10 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -708,7 +708,7 @@ Test Case 11: loopback reconnect test with packed ring inorder non-mergeable pat
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
@@ -730,7 +730,7 @@ Test Case 11: loopback reconnect test with packed ring inorder non-mergeable pat
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --rx-offloads=0x10 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -760,14 +760,14 @@ Test Case 12: loopback reconnect test with packed ring vectorized path and serve
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --log-level=pmd.net.vhost.driver,8 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --log-level=pmd.net.vhost.driver,8 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues and check throughput can get expected::
 
-    ./testpmd -n 4 -l 5-7 --log-level=pmd.net.virtio.driver,8 --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --log-level=pmd.net.virtio.driver,8 --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -781,7 +781,7 @@ Test Case 12: loopback reconnect test with packed ring vectorized path and serve
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
@@ -803,7 +803,7 @@ Test Case 12: loopback reconnect test with packed ring vectorized path and serve
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -832,11 +832,11 @@ Test Case 13: loopback packed ring and split ring mergeable path payload check t
 
 1. launch vhost::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 32-33 --no-pci --file-prefix=vhost -n 4 --vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1' -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+    ././x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 32-33 --no-pci --file-prefix=vhost -n 4 --vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1' -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
 
 2. Launch virtio-user with packed ring mergeable inorder path::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,packed_vq=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+    ././x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,packed_vq=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
      testpmd> set fwd csum
      testpmd> start
 
@@ -858,7 +858,7 @@ Test Case 13: loopback packed ring and split ring mergeable path payload check t
 
 7. Quit and relaunch virtio with packed ring mergeable path as below::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,packed_vq=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+    ././x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,packed_vq=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
      testpmd> set fwd csum
      testpmd> start
 
@@ -866,7 +866,7 @@ Test Case 13: loopback packed ring and split ring mergeable path payload check t
 
 9. Quit and relaunch virtio with split ring mergeable inorder path as below::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+    ././x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
      testpmd>set fwd csum
      testpmd>start
 
@@ -874,7 +874,7 @@ Test Case 13: loopback packed ring and split ring mergeable path payload check t
 
 11. Quit and relaunch virtio with split ring mergeable path as below::
 
-     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+     ././x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
       testpmd> set fwd csum
       testpmd> start
 
@@ -885,11 +885,11 @@ Test Case 14: loopback packed ring and split ring mergeable path cbdma test payl
 
 1. bind 8 cbdma port to vfio-pci and launch vhost::
 
-   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 32-33 -n 4 --vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]' -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+   ././x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 32-33 -n 4 --vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]' -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
 
 2. Launch virtio-user with packed ring mergeable inorder path::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,packed_vq=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+    ././x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,packed_vq=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
      testpmd>set fwd csum
      testpmd>start
 
@@ -911,7 +911,7 @@ Test Case 14: loopback packed ring and split ring mergeable path cbdma test payl
 
 7. Quit and relaunch virtio with packed ring mergeable path as below::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=testpmd0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,packed_vq=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+    ././x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=testpmd0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,packed_vq=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd csum
     testpmd>start
 
@@ -919,7 +919,7 @@ Test Case 14: loopback packed ring and split ring mergeable path cbdma test payl
 
 9. Quit and relaunch virtio with split ring mergeable inorder path as below::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=testpmd0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+    ././x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=testpmd0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
      testpmd>set fwd csum
      testpmd>start
 
@@ -927,7 +927,7 @@ Test Case 14: loopback packed ring and split ring mergeable path cbdma test payl
 
 11. Quit and relaunch virtio with split ring mergeable path as below::
 
-     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=testpmd0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+     ././x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=testpmd0 --no-pci --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,server=1 -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
       testpmd> set fwd csum
       testpmd> start
 
@@ -935,6 +935,6 @@ Test Case 14: loopback packed ring and split ring mergeable path cbdma test payl
 
 13. Quit and relaunch vhost w/ iova=pa::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-3 --file-prefix=vhost -n 4 --vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' --iova=pa -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+    ././x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-3 --file-prefix=vhost -n 4 --vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' --iova=pa -- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
 
 14. rerun step3-5.

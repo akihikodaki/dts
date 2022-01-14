@@ -46,12 +46,12 @@ Test Case1:  Basic test for virtio-user split ring 2M hugepage
 
 2. Bind one port to vfio-pci, launch vhost::
 
-    ./testpmd -l 3-4 -n 4 --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 3-4 -n 4 --file-prefix=vhost \
     --vdev 'net_vhost0,iface=/tmp/sock0,queues=1' -- -i
 
 3. Launch virtio-user with 2M hugepage::
 
-    ./testpmd -l 5-6 -n 4  --no-pci --single-file-segments --file-prefix=virtio-user \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 5-6 -n 4  --no-pci --single-file-segments --file-prefix=virtio-user \
     --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/sock0,queues=1 -- -i
 
 
@@ -66,12 +66,12 @@ Test Case1:  Basic test for virtio-user packed ring 2M hugepage
 
 2. Bind one port to vfio-pci, launch vhost::
 
-    ./testpmd -l 3-4 -n 4 --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 3-4 -n 4 --file-prefix=vhost \
     --vdev 'net_vhost0,iface=/tmp/sock0,queues=1' -- -i
 
 3. Launch virtio-user with 2M hugepage::
 
-    ./testpmd -l 5-6 -n 4  --no-pci --single-file-segments --file-prefix=virtio-user \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 5-6 -n 4  --no-pci --single-file-segments --file-prefix=virtio-user \
     --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/sock0,packed_vq=1,queues=1 -- -i
 
 

@@ -56,13 +56,13 @@ Test Case1: Vhost/virtio-user pvp share lib test with niantic
 
 4. Bind niantic port with vfio-pci, use option ``-d`` to load the dynamic pmd when launch vhost::
 
-    ./testpmd  -c 0x03 -n 4 -d librte_net_vhost.so.21.0 -d librte_net_i40e.so.21.0 -d librte_mempool_ring.so.21.0 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd  -c 0x03 -n 4 -d librte_net_vhost.so.21.0 -d librte_net_i40e.so.21.0 -d librte_mempool_ring.so.21.0 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i
     testpmd>start
 
 5. Launch virtio-user::
 
-    ./testpmd -c 0x0c -n 4 -d librte_net_virtio.so.21.0 -d librte_mempool_ring.so.21.0 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0c -n 4 -d librte_net_virtio.so.21.0 -d librte_mempool_ring.so.21.0 \
     --no-pci --file-prefix=virtio  --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net -- -i
     testpmd>start
 
@@ -77,6 +77,6 @@ Similar as Test Case1, all steps are similar except step 4:
 
 4. Bind fortville port with vfio-pci, use option ``-d`` to load the dynamic pmd when launch vhost::
 
-    ./testpmd  -c 0x03 -n 4 -d librte_net_vhost.so -d librte_net_i40e.so -d librte_mempool_ring.so \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd  -c 0x03 -n 4 -d librte_net_vhost.so -d librte_net_i40e.so -d librte_mempool_ring.so \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i
     testpmd>start

@@ -59,7 +59,7 @@ Test Case 1: pvp test with virtio 1.1 mergeable path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-3 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -67,7 +67,7 @@ Test Case 1: pvp test with virtio 1.1 mergeable path
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -83,7 +83,7 @@ Test Case 2: pvp test with virtio 1.1 non-mergeable path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-3 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -91,7 +91,7 @@ Test Case 2: pvp test with virtio 1.1 non-mergeable path
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -107,7 +107,7 @@ Test Case 3: pvp test with inorder mergeable path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-3 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -115,7 +115,7 @@ Test Case 3: pvp test with inorder mergeable path
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,mrg_rxbuf=1,in_order=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -131,7 +131,7 @@ Test Case 4: pvp test with inorder non-mergeable path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -139,7 +139,7 @@ Test Case 4: pvp test with inorder non-mergeable path
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=1,mrg_rxbuf=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -155,7 +155,7 @@ Test Case 5: pvp test with mergeable path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -163,7 +163,7 @@ Test Case 5: pvp test with mergeable path
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -179,7 +179,7 @@ Test Case 6: pvp test with non-mergeable path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -187,7 +187,7 @@ Test Case 6: pvp test with non-mergeable path
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=0,vectorized=1 \
     -- -i --rx-offloads=0x10 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -203,7 +203,7 @@ Test Case 7: pvp test with vectorized_rx path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -211,7 +211,7 @@ Test Case 7: pvp test with vectorized_rx path
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=0,vectorized=1 \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -227,7 +227,7 @@ Test Case 8: pvp test with virtio 1.1 inorder mergeable path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-3 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -235,7 +235,7 @@ Test Case 8: pvp test with virtio 1.1 inorder mergeable path
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=1,in_order=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -251,7 +251,7 @@ Test Case 9: pvp test with virtio 1.1 inorder non-mergeable path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-3 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -259,7 +259,7 @@ Test Case 9: pvp test with virtio 1.1 inorder non-mergeable path
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=1 \
     -- -i --rx-offloads=0x10 --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -275,14 +275,14 @@ Test Case 10: pvp test with virtio 1.1 vectorized path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-3 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac

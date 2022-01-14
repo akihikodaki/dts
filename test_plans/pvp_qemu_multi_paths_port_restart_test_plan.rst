@@ -51,7 +51,7 @@ Test Case 1: pvp test with virtio 0.95 mergeable path
 1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -73,7 +73,7 @@ Test Case 1: pvp test with virtio 0.95 mergeable path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd::
 
-    ./testpmd -c 0x3 -n 3 -- -i \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -- -i \
     --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -98,7 +98,7 @@ Test Case 2: pvp test with virtio 0.95 normal path
 1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -119,7 +119,7 @@ Test Case 2: pvp test with virtio 0.95 normal path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd with tx-offloads::
 
-    ./testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x0 --enable-hw-vlan-strip \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x0 --enable-hw-vlan-strip \
     --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -144,7 +144,7 @@ Test Case 3: pvp test with virtio 0.95 vrctor_rx path
 1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -165,7 +165,7 @@ Test Case 3: pvp test with virtio 0.95 vrctor_rx path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd without ant tx-offloads::
 
-    ./testpmd -c 0x3 -n 3 -- -i \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -- -i \
     --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -190,7 +190,7 @@ Test Case 4: pvp test with virtio 1.0 mergeable path
 1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -211,7 +211,7 @@ Test Case 4: pvp test with virtio 1.0 mergeable path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd::
 
-    ./testpmd -c 0x3 -n 3 -- -i \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -- -i \
     --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -236,7 +236,7 @@ Test Case 5: pvp test with virtio 1.0 normal path
 1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -257,7 +257,7 @@ Test Case 5: pvp test with virtio 1.0 normal path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd with tx-offloads::
 
-    ./testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x0 --enable-hw-vlan-strip\
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x0 --enable-hw-vlan-strip\
     --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -282,7 +282,7 @@ Test Case 6: pvp test with virtio 1.0 vrctor_rx path
 1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -303,7 +303,7 @@ Test Case 6: pvp test with virtio 1.0 vrctor_rx path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd without tx-offloads::
 
-    ./testpmd -c 0x3 -n 3 -- -i \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -- -i \
     --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start

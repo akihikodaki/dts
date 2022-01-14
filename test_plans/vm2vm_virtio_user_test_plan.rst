@@ -51,13 +51,13 @@ Test Case 1: packed virtqueue vm2vm mergeable path test
 
 1. Launch vhost by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --no-pci \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
 
 2. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -70,7 +70,7 @@ Test Case 1: packed virtqueue vm2vm mergeable path test
 
 4. Launch virtio-user0 and send 8k length packets::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -93,7 +93,7 @@ Test Case 1: packed virtqueue vm2vm mergeable path test
 
 7. Launch testpmd by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
     testpmd>set fwd rxonly
@@ -105,7 +105,7 @@ Test Case 1: packed virtqueue vm2vm mergeable path test
 
 9. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 --no-pci \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 --no-pci \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
     testpmd>set burst 1
@@ -129,13 +129,13 @@ Test Case 2: packed virtqueue vm2vm inorder mergeable path test
 
 1. Launch testpmd by below command::
 
-    ./testpmd -l 1-2 -n 4 --no-pci \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
 
 2. Launch virtio-user1 by below command::
 
-    ./testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -148,7 +148,7 @@ Test Case 2: packed virtqueue vm2vm inorder mergeable path test
 
 4. Launch virtio-user0 and send 8k length packets::
 
-    ./testpmd -n 4 -l 5-6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -166,7 +166,7 @@ Test Case 2: packed virtqueue vm2vm inorder mergeable path test
 
 6. Launch testpmd by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
     testpmd>set fwd rxonly
@@ -178,7 +178,7 @@ Test Case 2: packed virtqueue vm2vm inorder mergeable path test
 
 8. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -199,13 +199,13 @@ Test Case 3: packed virtqueue vm2vm non-mergeable path test
 
 1. Launch testpmd by below command::
 
-    ./testpmd -l 1-2 -n 4 --no-pci \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
 
 2. Launch virtio-user1 by below command::
 
-    ./testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -216,7 +216,7 @@ Test Case 3: packed virtqueue vm2vm non-mergeable path test
 
 4. Launch virtio-user0 and send 8k length packets::
 
-    ./testpmd -n 4 -l 5-6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -233,7 +233,7 @@ Test Case 3: packed virtqueue vm2vm non-mergeable path test
 
 6. Launch testpmd by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
     testpmd>set fwd rxonly
@@ -245,7 +245,7 @@ Test Case 3: packed virtqueue vm2vm non-mergeable path test
 
 8. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -262,13 +262,13 @@ Test Case 4: packed virtqueue vm2vm inorder non-mergeable path test
 
 1. Launch testpmd by below command::
 
-    ./testpmd -l 1-2 -n 4 --no-pci \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
 
 2. Launch virtio-user1 by below command::
 
-    ./testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
     -- -i --rx-offloads=0x10 --nb-cores=1 --txd=256 --rxd=256
@@ -281,7 +281,7 @@ Test Case 4: packed virtqueue vm2vm inorder non-mergeable path test
 
 4. Launch virtio-user0 and send 8k length packets::
 
-    ./testpmd -n 4 -l 5-6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
     -- -i --rx-offloads=0x10 --nb-cores=1 --txd=256 --rxd=256
@@ -298,7 +298,7 @@ Test Case 4: packed virtqueue vm2vm inorder non-mergeable path test
 
 6. Launch testpmd by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
     testpmd>set fwd rxonly
@@ -310,7 +310,7 @@ Test Case 4: packed virtqueue vm2vm inorder non-mergeable path test
 
 8. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
     -- -i --rx-offloads=0x10 --nb-cores=1 --txd=256 --rxd=256
@@ -327,13 +327,13 @@ Test Case 5: split virtqueue vm2vm mergeable path test
 
 1. Launch vhost by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --no-pci \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
 
 2. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -346,7 +346,7 @@ Test Case 5: split virtqueue vm2vm mergeable path test
 
 4. Launch virtio-user0 and send 8k length packets::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=0,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -369,7 +369,7 @@ Test Case 5: split virtqueue vm2vm mergeable path test
 
 7. Launch testpmd by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
     testpmd>set fwd rxonly
@@ -381,7 +381,7 @@ Test Case 5: split virtqueue vm2vm mergeable path test
 
 9. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -406,13 +406,13 @@ Test Case 6: split virtqueue vm2vm inorder mergeable path test
 
 1. Launch testpmd by below command::
 
-    ./testpmd -l 1-2 -n 4 --no-pci \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
 
 2. Launch virtio-user1 by below command::
 
-    ./testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -425,7 +425,7 @@ Test Case 6: split virtqueue vm2vm inorder mergeable path test
 
 4. Launch virtio-user0 and send 8k length packets::
 
-    ./testpmd -n 4 -l 5-6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=0,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -442,7 +442,7 @@ Test Case 6: split virtqueue vm2vm inorder mergeable path test
 
 6. Launch testpmd by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
     testpmd>set fwd rxonly
@@ -454,7 +454,7 @@ Test Case 6: split virtqueue vm2vm inorder mergeable path test
 
 8. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -475,13 +475,13 @@ Test Case 7: split virtqueue vm2vm non-mergeable path test
 
 1. Launch testpmd by below command::
 
-    ./testpmd -l 1-2 -n 4 --no-pci \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
 
 2. Launch virtio-user1 by below command::
 
-    ./testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256 --enable-hw-vlan-strip
@@ -492,7 +492,7 @@ Test Case 7: split virtqueue vm2vm non-mergeable path test
 
 4. Launch virtio-user0 and send 8k length packets::
 
-    ./testpmd -n 4 -l 5-6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256 --enable-hw-vlan-strip
@@ -509,7 +509,7 @@ Test Case 7: split virtqueue vm2vm non-mergeable path test
 
 6. Launch testpmd by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
     testpmd>set fwd rxonly
@@ -521,7 +521,7 @@ Test Case 7: split virtqueue vm2vm non-mergeable path test
 
 8. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256 --enable-hw-vlan-strip
@@ -538,13 +538,13 @@ Test Case 8: split virtqueue vm2vm inorder non-mergeable path test
 
 1. Launch testpmd by below command::
 
-    ./testpmd -l 1-2 -n 4 --no-pci \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
 
 2. Launch virtio-user1 by below command::
 
-    ./testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -557,7 +557,7 @@ Test Case 8: split virtqueue vm2vm inorder non-mergeable path test
 
 4. Launch virtio-user0 and send 8k length packets::
 
-    ./testpmd -n 4 -l 5-6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -574,7 +574,7 @@ Test Case 8: split virtqueue vm2vm inorder non-mergeable path test
 
 6. Launch testpmd by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
     testpmd>set fwd rxonly
@@ -586,7 +586,7 @@ Test Case 8: split virtqueue vm2vm inorder non-mergeable path test
 
 8. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -603,13 +603,13 @@ Test Case 9: split virtqueue vm2vm vector_rx path test
 
 1. Launch testpmd by below command::
 
-    ./testpmd -l 1-2 -n 4 --no-pci \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
 
 2. Launch virtio-user1 by below command::
 
-    ./testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=0,vectorized=1,queue_size=256 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -620,7 +620,7 @@ Test Case 9: split virtqueue vm2vm vector_rx path test
 
 4. Launch virtio-user0 and send 8k length packets::
 
-    ./testpmd -n 4 -l 5-6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=0,vectorized=1,queue_size=256 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -637,7 +637,7 @@ Test Case 9: split virtqueue vm2vm vector_rx path test
 
 6. Launch testpmd by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
     testpmd>set fwd rxonly
@@ -649,7 +649,7 @@ Test Case 9: split virtqueue vm2vm vector_rx path test
 
 8. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=0,vectorized=1,queue_size=256 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -666,13 +666,13 @@ Test Case 10: packed virtqueue vm2vm vectorized path test
 
 1. Launch testpmd by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --no-pci \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
 
 2. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=256 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -685,7 +685,7 @@ Test Case 10: packed virtqueue vm2vm vectorized path test
 
 4. Launch virtio-user0 and send 8k length packets::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=256 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -702,7 +702,7 @@ Test Case 10: packed virtqueue vm2vm vectorized path test
 
 6. Launch testpmd by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
     testpmd>set fwd rxonly
@@ -714,7 +714,7 @@ Test Case 10: packed virtqueue vm2vm vectorized path test
 
 8. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=256 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
@@ -731,13 +731,13 @@ Test Case 11: packed virtqueue vm2vm vectorized path test with ring size is not 
 
 1. Launch testpmd by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --no-pci \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
 
 2. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255 \
     -- -i --nb-cores=1 --txd=255 --rxd=255
@@ -750,7 +750,7 @@ Test Case 11: packed virtqueue vm2vm vectorized path test with ring size is not 
 
 4. Launch virtio-user0 and send 8k length packets::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255 \
     -- -i --nb-cores=1 --txd=255 --rxd=255
@@ -767,7 +767,7 @@ Test Case 11: packed virtqueue vm2vm vectorized path test with ring size is not 
 
 6. Launch testpmd by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
     testpmd>set fwd rxonly
@@ -779,7 +779,7 @@ Test Case 11: packed virtqueue vm2vm vectorized path test with ring size is not 
 
 8. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255 \
     -- -i --nb-cores=1 --txd=255 --rxd=255

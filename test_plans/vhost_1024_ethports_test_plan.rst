@@ -49,7 +49,7 @@ Test Case1:  Basic test for launch vhost with 1023 ethports
 
 2. Launch vhost with 1023 vdev::
 
-    ./testpmd -c 0x3000 -n 4 --file-prefix=vhost --vdev 'eth_vhost0,iface=vhost-net,queues=1' \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3000 -n 4 --file-prefix=vhost --vdev 'eth_vhost0,iface=vhost-net,queues=1' \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' ... -- -i # only list two vdev, here ommit other 1021 vdevs, from eth_vhost2 to eth_vhost1022
 
 3. Change "CONFIG_RTE_MAX_ETHPORTS" back to 32 in DPDK configure file::

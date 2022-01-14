@@ -54,14 +54,14 @@ Test Case 1: pvp 2 queues test with packed ring mergeable path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-4  \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2 --rxq=2 --txq=2
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-7 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=0,queue_size=255 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2 --txd=255 --rxd=255
@@ -92,14 +92,14 @@ Test Case 2: pvp 2 queues test with packed ring non-mergeable path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-4  \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2 --rxq=2 --txq=2
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-7 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=0,queue_size=255 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2 --txd=255 --rxd=255
@@ -125,14 +125,14 @@ Test Case 3: pvp 2 queues test with split ring inorder mergeable path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-4  \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2 --rxq=2 --txq=2
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-7 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,in_order=1,mrg_rxbuf=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
@@ -158,14 +158,14 @@ Test Case 4: pvp 2 queues test with split ring inorder non-mergeable path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-4  \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2 --rxq=2 --txq=2
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-7 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,in_order=1,mrg_rxbuf=0,vectorized=1 \
     -- -i --rx-offloads=0x10 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
@@ -191,14 +191,14 @@ Test Case 5: pvp 2 queues test with split ring mergeable path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-4  \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2 --rxq=2 --txq=2
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-7 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,in_order=0,mrg_rxbuf=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
@@ -224,14 +224,14 @@ Test Case 6: pvp 2 queues test with split ring non-mergeable path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-4  \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2 --rxq=2 --txq=2
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-7 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,in_order=0,mrg_rxbuf=0,vectorized=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
@@ -257,14 +257,14 @@ Test Case 7: pvp 2 queues test with split ring vector_rx path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-4  \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2 --rxq=2 --txq=2
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-7 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,in_order=0,mrg_rxbuf=0,vectorized=1 \
     -- -i --tx-offloads=0x0 --rss-ip --nb-cores=2 --rxq=2 --txq=2
@@ -290,14 +290,14 @@ Test Case 8: pvp 2 queues test with packed ring inorder mergeable path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-4  \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2 --rxq=2 --txq=2
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-7 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=1,queue_size=255 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2 --txd=255 --rxd=255
@@ -323,14 +323,14 @@ Test Case 9: pvp 2 queues test with packed ring inorder non-mergeable path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-4  \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2 --rxq=2 --txq=2
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-7 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255 \
     -- -i --rx-offloads=0x10 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2 --txd=255 --rxd=255
@@ -356,14 +356,14 @@ Test Case 10: pvp 2 queues test with packed ring vectorized path
 1. Bind one port to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-4  \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2 --rxq=2 --txq=2
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-7 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-7 \
     --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2 --txd=255 --rxd=255

@@ -66,12 +66,12 @@ Test Case1: PVP performance check with CBDMA channel using vhost async driver
 
 2. On host, launch dpdk-vhost by below command::
 
-	./dpdk-vhost -l 31-32 -n 4 -- \
+	./x86_64-native-linuxapp-gcc/examples/dpdk-vhost -l 31-32 -n 4 -- \
 	-p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat --stats 1 --socket-file /tmp/vhost-net --dmas [txd0@0000:00:04.0] --client
 
 3. Launch virtio-user with packed ring::
 
-	./dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 --force-max-simd-bitwidth=512 \
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 --force-max-simd-bitwidth=512 \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,queues=1,mrg_rxbuf=0,in_order=1,vectorized=1,packed_vq=1,server=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
 
 4. Start pkts from virtio-user side to let vswitch know the mac addr::
@@ -83,14 +83,14 @@ Test Case1: PVP performance check with CBDMA channel using vhost async driver
 
 6. Quit and re-launch virtio-user with packed ring size not power of 2::
 
-	./dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 --force-max-simd-bitwidth=512 \
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 --force-max-simd-bitwidth=512 \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,queues=1,mrg_rxbuf=0,in_order=1,vectorized=1,packed_vq=1,server=1,queue_size=1025 -- -i --rxq=1 --txq=1 --txd=1025 --rxd=1025 --nb-cores=1
 
 7. Re-test step 4-5, record performance of different packet length.
 
 8. Quit and re-launch virtio-user with split ring::
 
-	./dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 \
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,queues=1,mrg_rxbuf=0,in_order=1,vectorized=1,server=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
 
 9. Re-test step 4-5, record performance of different packet length.
@@ -102,15 +102,15 @@ Test Case2: PVP test with two VM and two CBDMA channels using vhost async driver
 
 2. On host, launch dpdk-vhost by below command::
 
-	./dpdk-vhost -l 26-28 -n 4 -- \
+	./x86_64-native-linuxapp-gcc/examples/dpdk-vhost -l 26-28 -n 4 -- \
 	-p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat --stats 1 --socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:01.0,txd1@0000:00:01.1] --client
 
 3. launch two virtio-user ports::
 
-	./dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 \
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net0,queues=1,server=1,mrg_rxbuf=1,in_order=0,packed_vq=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
 	
-	./dpdk-testpmd -l 31-32 -n 4 --no-pci --file-prefix=testpmd1 \
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 31-32 -n 4 --no-pci --file-prefix=testpmd1 \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:11,path=/tmp/vhost-net1,queues=1,server=1,mrg_rxbuf=1,in_order=1,vectorized=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
 
 4. Start pkts from two virtio-user side individually to let vswitch know the mac addr::
@@ -140,15 +140,15 @@ Test Case3: VM2VM forwarding test with two CBDMA channels
 
 2. On host, launch dpdk-vhost by below command::
 
-	./dpdk-vhost -l 26-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
+	./x86_64-native-linuxapp-gcc/examples/dpdk-vhost -l 26-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
 	--socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:04.0,txd1@0000:00:04.1]  --client
 
 3. Launch virtio-user::
 
-	./dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 \
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net0,queues=1,server=1,mrg_rxbuf=1,in_order=0,packed_vq=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
 
-	./dpdk-testpmd -l 31-32 -n 4 --no-pci --file-prefix=testpmd1 \
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 31-32 -n 4 --no-pci --file-prefix=testpmd1 \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:11,path=/tmp/vhost-net1,queues=1,server=1,mrg_rxbuf=1,in_order=1,vectorized=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
 
 4. Loop pkts between two virtio-user sides, record performance number with 64b/2000b/8000b/IMIX pkts can get expected::
@@ -187,7 +187,7 @@ Test Case4: VM2VM test with cbdma channels register/unregister stable check
 
 2. On host, launch dpdk-vhost by below command::
 
-    ./dpdk-vhost -l 26-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-vhost -l 26-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
     --socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:04.0,txd1@0000:00:04.1] --client
 
 3. Start VM0 with qemu-5.2.0::
@@ -225,7 +225,7 @@ Test Case4: VM2VM test with cbdma channels register/unregister stable check
 
 6. Start testpmd in VMs seperately::
 
-	./dpdk-testpmd -l 1-2 -n 4 -- -i --rxq=1 --txq=1 --nb-cores=1 --txd=1024 --rxd=1024
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 -- -i --rxq=1 --txq=1 --nb-cores=1 --txd=1024 --rxd=1024
 
 7. Loop pkts between two virtio-user sides, record performance number with 64b/2000b/8000b/IMIX pkts can get expected::
 
@@ -267,7 +267,7 @@ Test Case5: VM2VM split ring test with iperf and reconnect stable check
 
 2. On host, launch dpdk-vhost by below command::
 
-	./dpdk-vhost -l 26-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
+	./x86_64-native-linuxapp-gcc/examples/dpdk-vhost -l 26-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
 	--socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:04.0,txd1@0000:00:04.1] --client
 
 3. Start VM0 with qemu-5.2.0::
@@ -326,7 +326,7 @@ Test Case6: VM2VM packed ring test with iperf and reconnect stable test
 
 2. On host, launch dpdk-vhost by below command::
 
-	./dpdk-vhost -l 26-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
+	./x86_64-native-linuxapp-gcc/examples/dpdk-vhost -l 26-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
 	--socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:04.0,txd1@0000:00:04.1]
 
 3. Start VM0 with qemu-5.2.0::

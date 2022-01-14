@@ -46,12 +46,12 @@ flow: TG --> NIC --> Vhost --> Virtio
 
 1. Bind one NIC port to vfio-pci, launch testpmd with a virtual vhost device as backend::
 
-    ./testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i  --rxq=1 --txq=1
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i  --rxq=1 --txq=1
     testpmd>start
 
 2. Start l3fwd-power with a virtio-user device::
 
-    ./l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
     --vdev=virtio_user0,path=./vhost-net -- -p 1 -P --config="(0,0,14)" --parse-ptype
 
 3. Send packets with packet generator, check the virtio-user related core can be wakeup status.
@@ -67,7 +67,7 @@ flow: Tap --> Vhost-net --> Virtio
 
 1. Start l3fwd-power with a virtio-user device, vhost-net as backend::
 
-    ./l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
     --vdev=virtio_user0,path=/dev/vhost-net -- -p 1 -P --config="(0,0,14)" --parse-ptype
 
 2. Vhost-net will generate one tap device, normally, it's TAP0, config it and generate packets on it using pind cmd::
@@ -89,13 +89,13 @@ flow: Vhost <--> Virtio
 
 1. Start vhost-user side::
 
-    ./testpmd -c 0x3000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i
     testpmd>set fwd mac
     testpmd>start
 
 2. Start virtio-user side::
 
-    ./testpmd -c 0xc000 -n 4 --no-pci --file-prefix=virtio --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net -- -i --tx-offloads=0x00
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc000 -n 4 --no-pci --file-prefix=virtio --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net -- -i --tx-offloads=0x00
     testpmd>set fwd mac
     testpmd>start
 
@@ -116,12 +116,12 @@ flow: TG --> NIC --> Vhost --> Virtio
 
 1. Bind one NIC port to vfio-pci, launch testpmd with a virtual vhost device as backend::
 
-    ./testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i  --rxq=1 --txq=1
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i  --rxq=1 --txq=1
     testpmd>start
 
 2. Start l3fwd-power with a virtio-user device::
 
-    ./l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
     --vdev=virtio_user0,path=./vhost-net,packed_vq=1 -- -p 1 -P --config="(0,0,14)" --parse-ptype
 
 3. Send packets with packet generator, check the virtio-user related core can be wakeup status.
@@ -137,7 +137,7 @@ flow: Tap --> Vhost-net --> Virtio
 
 1. Start l3fwd-power with a virtio-user device, vhost-net as backend::
 
-    ./l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
     --vdev=virtio_user0,path=/dev/vhost-net,packed_vq=1 -- -p 1 -P --config="(0,0,14)" --parse-ptype
 
 2. Vhost-net will generate one tap device, normally, it's TAP0, config it and generate packets on it using pind cmd::
@@ -159,13 +159,13 @@ flow: Vhost <--> Virtio
 
 1. Start vhost-user side::
 
-    ./testpmd -c 0x3000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i
     testpmd>set fwd mac
     testpmd>start
 
 2. Start virtio-user side::
 
-    ./testpmd -c 0xc000 -n 4 --no-pci --file-prefix=virtio --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1 -- -i --tx-offloads=0x00
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc000 -n 4 --no-pci --file-prefix=virtio --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1 -- -i --tx-offloads=0x00
     testpmd>set fwd mac
     testpmd>start
 
@@ -186,13 +186,13 @@ flow: Vhost <--> Virtio
 
 1. Bind one cbdma port to vfio-pci driver, then start vhost-user side::
 
-    ./testpmd -c 0x3000 -n 4 -a 00:04.0 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0@00:04.0]' -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3000 -n 4 -a 00:04.0 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0@00:04.0]' -- -i
     testpmd>set fwd mac
     testpmd>start
 
 2. Start virtio-user side::
 
-    ./testpmd -c 0xc000 -n 4 --no-pci --file-prefix=virtio --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net -- -i --tx-offloads=0x00
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc000 -n 4 --no-pci --file-prefix=virtio --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net -- -i --tx-offloads=0x00
     testpmd>set fwd mac
     testpmd>start
 
@@ -213,12 +213,12 @@ flow: TG --> NIC --> Vhost --> Virtio
 
 1. Bind one cbdma port and one NIC port to vfio-pci, launch testpmd with a virtual vhost device as backend::
 
-    ./testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0@00:04.0]' -- -i  --rxq=1 --txq=1
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0@00:04.0]' -- -i  --rxq=1 --txq=1
     testpmd>start
 
 2. Start l3fwd-power with a virtio-user device::
 
-    ./l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
     --vdev=virtio_user0,path=./vhost-net -- -p 1 -P --config="(0,0,14)" --parse-ptype
 
 3. Send packets with packet generator, check the virtio-user related core can be wakeup status.
@@ -234,13 +234,13 @@ flow: Vhost <--> Virtio
 
 1. Bind one cbdma port to vfio-pci driver, then start vhost-user side::
 
-    ./testpmd -c 0x3000 -n 4 -a 00:04.0 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0@00:04.0]' -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3000 -n 4 -a 00:04.0 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0@00:04.0]' -- -i
     testpmd>set fwd mac
     testpmd>start
 
 2. Start virtio-user side::
 
-    ./testpmd -c 0xc000 -n 4 --no-pci --file-prefix=virtio --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1 -- -i --tx-offloads=0x00
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc000 -n 4 --no-pci --file-prefix=virtio --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1 -- -i --tx-offloads=0x00
     testpmd>set fwd mac
     testpmd>start
 
@@ -261,12 +261,12 @@ flow: TG --> NIC --> Vhost --> Virtio
 
 1. Bind one cbdma port and one NIC port to vfio-pci, launch testpmd with a virtual vhost device as backend::
 
-    ./testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0@00:04.0]' -- -i  --rxq=1 --txq=1
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0@00:04.0]' -- -i  --rxq=1 --txq=1
     testpmd>start
 
 2. Start l3fwd-power with a virtio-user device::
 
-    ./l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
     --vdev=virtio_user0,path=./vhost-net,packed_vq=1 -- -p 1 -P --config="(0,0,14)" --parse-ptype
 
 3. Send packets with packet generator, check the virtio-user related core can be wakeup status.

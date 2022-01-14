@@ -52,7 +52,7 @@ Flow: TG--> NIC --> Vhost --> Virtio3 --> Virtio4 --> Vhost--> NIC--> TG
 
 1. Bind one port to vfio-pci,launch vhost by below command::
 
-    ./testpmd -l 1-6 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1' --vdev 'net_vhost2,iface=vhost-net2,client=1,queues=1' --vdev 'net_vhost3,iface=vhost-net3,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=4 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-6 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1' --vdev 'net_vhost2,iface=vhost-net2,client=1,queues=1' --vdev 'net_vhost3,iface=vhost-net3,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=4 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -81,11 +81,11 @@ Flow: TG--> NIC --> Vhost --> Virtio3 --> Virtio4 --> Vhost--> NIC--> TG
 
 3. On vm, bind four virtio-net devices to vfio-pci::
 
-    ./dpdk-devbind.py -b vfio-pci xx:xx.x xx:xx.x xx:xx.x xx:xx.x
+    ./usertools/dpdk-devbind.py -b vfio-pci xx:xx.x xx:xx.x xx:xx.x xx:xx.x
 
 4. Launch testpmd in VM::
 
-    ./testpmd -l 0-5 -n 4 -- -i --port-topology=chained --nb-cores=5
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 0-5 -n 4 -- -i --port-topology=chained --nb-cores=5
 
 5. Create one bonded device in mode 0 on socket 0::
 
@@ -114,7 +114,7 @@ Test case 2: vhost-user/virtio-pmd pvp bonding test with different mode from 1 t
 
 1. Bind one port to vfio-pci,launch vhost by below command::
 
-    ./testpmd -l 1-6 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1' --vdev 'net_vhost2,iface=vhost-net2,client=1,queues=1' --vdev 'net_vhost3,iface=vhost-net3,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=4 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-6 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1' --vdev 'net_vhost2,iface=vhost-net2,client=1,queues=1' --vdev 'net_vhost3,iface=vhost-net3,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=4 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -143,11 +143,11 @@ Test case 2: vhost-user/virtio-pmd pvp bonding test with different mode from 1 t
 
 3. On vm, bind four virtio-net devices to vfio-pci::
 
-    ./dpdk-devbind.py -b vfio-pci xx:xx.x xx:xx.x xx:xx.x xx:xx.x
+    ./usertools/dpdk-devbind.py -b vfio-pci xx:xx.x xx:xx.x xx:xx.x xx:xx.x
 
 4. Launch testpmd in VM::
 
-    ./testpmd -l 0-5 -n 4 -- -i --port-topology=chained --nb-cores=5
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 0-5 -n 4 -- -i --port-topology=chained --nb-cores=5
 
 5. Create bonding device with mode 1 to mode 6::
 

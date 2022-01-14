@@ -98,8 +98,8 @@ Test Case1: DPDK GSO test with tcp traffic
 
 2. Bind nic1 to vfio-pci, launch vhost-user with testpmd::
 
-    ./dpdk-devbind.py -b vfio-pci xx:xx.x       # xx:xx.x is the pci addr of nic1
-    ./testpmd -l 2-4 -n 4 \
+    ./usertools/dpdk-devbind.py -b vfio-pci xx:xx.x       # xx:xx.x is the pci addr of nic1
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
     testpmd>stop
@@ -158,8 +158,8 @@ Test Case3: DPDK GSO test with vxlan traffic
 
 2. Bind nic1 to vfio-pci, launch vhost-user with testpmd::
 
-    ./dpdk-devbind.py -b vfio-pci xx:xx.x
-    ./testpmd -l 2-4 -n 4 \
+    ./usertools/dpdk-devbind.py -b vfio-pci xx:xx.x
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
     testpmd>stop
@@ -212,8 +212,8 @@ Test Case4: DPDK GSO test with gre traffic
 
 2. Bind nic1 to vfio-pci, launch vhost-user with testpmd::
 
-    ./dpdk-devbind.py -b vfio-pci xx:xx.x
-    ./testpmd -l 2-4 -n 4 \
+    ./usertools/dpdk-devbind.py -b vfio-pci xx:xx.x
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
     testpmd>stop

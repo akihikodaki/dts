@@ -61,7 +61,7 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 
 1. Bind one port to vfio-pci, then launch vhost with client mode by below commands::
 
-    ./testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
     testpmd>set fwd mac
     testpmd>start
 
@@ -81,7 +81,7 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 
 3. On VM, bind virtio net to vfio-pci and run testpmd::
 
-    ./testpmd -c 0x3 -n 4 -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -92,7 +92,7 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 5. On host, quit vhost-user, then re-launch the vhost-user with below command::
 
     testpmd>quit
-    ./testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
     testpmd>set fwd mac
     testpmd>start
 
@@ -106,7 +106,7 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 
 1. Bind one port to vfio-pci, then launch vhost with client mode by below commands::
 
-    ./testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
     testpmd>set fwd mac
     testpmd>start
 
@@ -126,7 +126,7 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 
 3. On VM, bind virtio net to vfio-pci and run testpmd::
 
-    ./testpmd -c 0x3 -n 4 -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -151,7 +151,7 @@ Test Case 4: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect from 
 
 1. Bind one port to vfio-pci, launch the vhost by below command::
 
-    ./testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -183,13 +183,13 @@ Test Case 4: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect from 
 
 3. On VM1, bind virtio1 to vfio-pci and run testpmd::
 
-    ./testpmd -c 0x3 -n 4 -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
 4. On VM2, bind virtio2 to vfio-pci and run testpmd::
 
-    ./testpmd -c 0x3 -n 4 -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -200,7 +200,7 @@ Test Case 4: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect from 
 6. On host, quit vhost-user, then re-launch the vhost-user with below command::
 
     testpmd>quit
-    ./testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -213,7 +213,7 @@ Test Case 5: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect from 
 
 1. Bind one port to vfio-pci, launch the vhost by below command::
 
-    ./testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -245,13 +245,13 @@ Test Case 5: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect from 
 
 3. On VM1, bind virtio1 to vfio-pci and run testpmd::
 
-    ./testpmd -c 0x3 -n 4 -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
 4. On VM2, bind virtio2 to vfio-pci and run testpmd::
 
-    ./testpmd -c 0x3 -n 4 -- -i --port-topology=chained --port-topology=chain --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --port-topology=chained --port-topology=chain --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -280,7 +280,7 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
 
 1. Launch the vhost by below commands, enable the client mode and tso::
 
-    ./testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 3. Launch VM1 and VM2::
@@ -324,7 +324,7 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
 6. Kill the vhost-user, then re-launch the vhost-user::
 
     testpmd>quit
-    ./testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 7. Rerun step5, ensure the vhost-user can reconnect to VM again, and the iperf traffic can be continue.
@@ -335,7 +335,7 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
 
 1. Launch the vhost by below commands, enable the client mode and tso::
 
-    ./testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 3. Launch VM1 and VM2::
@@ -394,7 +394,7 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 
 1. Bind one port to vfio-pci, then launch vhost with client mode by below commands::
 
-    ./testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
     testpmd>set fwd mac
     testpmd>start
 
@@ -414,7 +414,7 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 
 3. On VM, bind virtio net to vfio-pci and run testpmd::
 
-    ./testpmd -c 0x3 -n 4 -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -425,7 +425,7 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 5. On host, quit vhost-user, then re-launch the vhost-user with below command::
 
     testpmd>quit
-    ./testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
     testpmd>set fwd mac
     testpmd>start
 
@@ -439,7 +439,7 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 
 1. Bind one port to vfio-pci, then launch vhost with client mode by below commands::
 
-    ./testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
     testpmd>set fwd mac
     testpmd>start
 
@@ -459,7 +459,7 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 
 3. On VM, bind virtio net to vfio-pci and run testpmd::
 
-    ./testpmd -c 0x3 -n 4 -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -484,7 +484,7 @@ Test Case 13: vhost-user/virtio-pmd pvp packed ring with multi VMs reconnect fro
 
 1. Bind one port to vfio-pci, launch the vhost by below command::
 
-    ./testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -516,13 +516,13 @@ Test Case 13: vhost-user/virtio-pmd pvp packed ring with multi VMs reconnect fro
 
 3. On VM1, bind virtio1 to vfio-pci and run testpmd::
 
-    ./testpmd -c 0x3 -n 4 -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
 4. On VM2, bind virtio2 to vfio-pci and run testpmd::
 
-    ./testpmd -c 0x3 -n 4 -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -533,7 +533,7 @@ Test Case 13: vhost-user/virtio-pmd pvp packed ring with multi VMs reconnect fro
 6. On host, quit vhost-user, then re-launch the vhost-user with below command::
 
     testpmd>quit
-    ./testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -546,7 +546,7 @@ Test Case 14: vhost-user/virtio-pmd pvp packed ring with multi VMs reconnect fro
 
 1. Bind one port to vfio-pci, launch the vhost by below command::
 
-    ./testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -578,13 +578,13 @@ Test Case 14: vhost-user/virtio-pmd pvp packed ring with multi VMs reconnect fro
 
 3. On VM1, bind virtio1 to vfio-pci and run testpmd::
 
-    ./testpmd -c 0x3 -n 4 -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
 4. On VM2, bind virtio2 to vfio-pci and run testpmd::
 
-    ./testpmd -c 0x3 -n 4 -- -i --port-topology=chained --port-topology=chain --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --port-topology=chained --port-topology=chain --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -613,7 +613,7 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
 
 1. Launch the vhost by below commands, enable the client mode and tso::
 
-    ./testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 3. Launch VM1 and VM2::
@@ -657,7 +657,7 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
 6. Kill the vhost-user, then re-launch the vhost-user::
 
     testpmd>quit
-    ./testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 7. Rerun step5, ensure the vhost-user can reconnect to VM again, and the iperf traffic can be continue.
@@ -668,7 +668,7 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
 
 1. Launch the vhost by below commands, enable the client mode and tso::
 
-    ./testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 3. Launch VM1 and VM2::

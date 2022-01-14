@@ -49,7 +49,7 @@ Test Case 1: VM2VM vhost-user/virtio-pmd with vector_rx path
 1. Bind one physical nic port to vfio-pci, then launch the testpmd by below commands::
 
     rm -rf vhost-net*
-    ./dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -79,13 +79,13 @@ Test Case 1: VM2VM vhost-user/virtio-pmd with vector_rx path
 
 3. On VM1, bind vdev with vfio-pci driver,then run testpmd, set rxonly for virtio1, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -a 0000:xx.00,vectorized=1 -- -i --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -a 0000:xx.00,vectorized=1 -- -i --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
 4. On VM2, bind vdev with vfio-pci driver,then run testpmd, set txonly for virtio2 and send 64B packets, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -a 0000:xx.00,vectorized=1 -- -i --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -a 0000:xx.00,vectorized=1 -- -i --txd=1024 --rxd=1024
     testpmd>set fwd txonly
     testpmd>set txpkts 64
     testpmd>start tx_first 32
@@ -104,7 +104,7 @@ Test Case 2: VM2VM vhost-user/virtio-pmd with normal path
 1. Bind one physical nic port to vfio-pci, then launch the testpmd by below commands::
 
     rm -rf vhost-net*
-    ./dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -134,13 +134,13 @@ Test Case 2: VM2VM vhost-user/virtio-pmd with normal path
 
 3. On VM1, bind vdev with vfio-pci driver,then run testpmd, set rxonly for virtio1 ::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
 4. On VM2, bind vdev with vfio-pci driver,then run testpmd, set rxonly for virtio2 and send 64B packets ::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
     testpmd>set fwd txonly
     testpmd>set txpkts 64
     testpmd>start tx_first 32
@@ -159,7 +159,7 @@ Test Case 3: VM2VM vhost-user/virtio1.0-pmd with vector_rx path
 1. Bind one physical nic port to vfio-pci, then launch the testpmd by below commands::
 
     rm -rf vhost-net*
-    ./dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -189,13 +189,13 @@ Test Case 3: VM2VM vhost-user/virtio1.0-pmd with vector_rx path
 
 3. On VM1, bind vdev with vfio-pci driver,then run testpmd, set rxonly for virtio1, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -a 0000:xx.00,vectorized=1 -- -i --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -a 0000:xx.00,vectorized=1 -- -i --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
 4. On VM2, bind vdev with vfio-pci driver,then run testpmd, set txonly for virtio2, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -a 0000:xx.00,vectorized=1 -- -i --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -a 0000:xx.00,vectorized=1 -- -i --txd=1024 --rxd=1024
     testpmd>set fwd txonly
     testpmd>set txpkts 64
     testpmd>start tx_first 32
@@ -214,7 +214,7 @@ Test Case 4: VM2VM vhost-user/virtio1.0-pmd with normal path
 1. Bind one physical nic port to vfio-pci, then launch the testpmd by below commands::
 
     rm -rf vhost-net*
-    ./dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -244,13 +244,13 @@ Test Case 4: VM2VM vhost-user/virtio1.0-pmd with normal path
 
 3. On VM1, bind vdev with vfio-pci driver,then run testpmd, set rxonly for virtio1 ::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
 4. On VM2, bind vdev with vfio-pci driver,then run testpmd, set txonly for virtio2 ::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
     testpmd>set fwd txonly
     testpmd>set txpkts 64
     testpmd>start tx_first 32
@@ -268,7 +268,7 @@ Test Case 5: VM2VM vhost-user/virtio-pmd mergeable path with payload valid check
 
 1. Bind virtio with vfio-pci driver, launch the testpmd by below commands::
 
-    ./dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -311,7 +311,7 @@ Test Case 5: VM2VM vhost-user/virtio-pmd mergeable path with payload valid check
 
 4. Bind virtio with vfio-pci driver,then run testpmd, set rxonly mode for virtio-pmd on VM1::
 
-    ./dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd rxonly
     testpmd>start
 
@@ -321,7 +321,7 @@ Test Case 5: VM2VM vhost-user/virtio-pmd mergeable path with payload valid check
 
 6. On VM2, bind virtio with vfio-pci driver,then run testpmd, config tx_packets to 8k length with chain mode::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd mac
     testpmd>set txpkts 2000,2000,2000,2000
 
@@ -334,7 +334,7 @@ Test Case 5: VM2VM vhost-user/virtio-pmd mergeable path with payload valid check
 
 9. Relaunch testpmd in VM1::
 
-    ./dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
@@ -344,7 +344,7 @@ Test Case 5: VM2VM vhost-user/virtio-pmd mergeable path with payload valid check
 
 11. Relaunch testpmd on VM2, send ten 64B packets from virtio-pmd on VM2::
 
-     ./dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024
      testpmd>set fwd mac
      testpmd>set burst 1
      testpmd>start tx_first 10
@@ -356,7 +356,7 @@ Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid ch
 
 1. Bind virtio with vfio-pci driver, launch the testpmd by below commands::
 
-    ./dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -399,7 +399,7 @@ Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid ch
 
 4. Bind virtio with vfio-pci driver,then run testpmd, set rxonly mode for virtio-pmd on VM1::
 
-    ./dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd rxonly
     testpmd>start
 
@@ -409,7 +409,7 @@ Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid ch
 
 6. On VM2, bind virtio with vfio-pci driver,then run testpmd, config tx_packets to 8k length with chain mode::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd mac
     testpmd>set txpkts 2000,2000,2000,2000
 
@@ -422,7 +422,7 @@ Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid ch
 
 9. Relaunch testpmd in VM1::
 
-    ./dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
@@ -432,7 +432,7 @@ Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid ch
 
 11. Relaunch testpmd On VM2, send ten 64B packets from virtio-pmd on VM2::
 
-     ./dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
      testpmd>set fwd mac
      testpmd>set burst 1
      testpmd>start tx_first 10
@@ -444,7 +444,7 @@ Test Case 7: VM2VM vhost-user/virtio1.1-pmd mergeable path with payload valid ch
 
 1. Bind virtio with vfio-pci driver, launch the testpmd by below commands::
 
-    ./dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -487,7 +487,7 @@ Test Case 7: VM2VM vhost-user/virtio1.1-pmd mergeable path with payload valid ch
 
 4. Bind virtio with vfio-pci driver,then run testpmd, set rxonly mode for virtio-pmd on VM1::
 
-    ./dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd rxonly
     testpmd>start
 
@@ -497,7 +497,7 @@ Test Case 7: VM2VM vhost-user/virtio1.1-pmd mergeable path with payload valid ch
 
 6. On VM2, bind virtio with vfio-pci driver,then run testpmd, config tx_packets to 8k length with chain mode::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd mac
     testpmd>set txpkts 2000,2000,2000,2000
 
@@ -510,7 +510,7 @@ Test Case 7: VM2VM vhost-user/virtio1.1-pmd mergeable path with payload valid ch
 
 9. Relaunch testpmd in VM1::
 
-    ./dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
@@ -520,7 +520,7 @@ Test Case 7: VM2VM vhost-user/virtio1.1-pmd mergeable path with payload valid ch
 
 11. Relaunch testpmd On VM2, send ten 64B packets from virtio-pmd on VM2::
 
-     ./dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
      testpmd>set fwd mac
      testpmd>set burst 1
      testpmd>start tx_first 10
@@ -533,7 +533,7 @@ Test Case 8: VM2VM vhost-user/virtio1.1-pmd with normal path
 1. Bind one physical nic port to vfio-pci, then launch the testpmd by below commands::
 
     rm -rf vhost-net*
-    ./dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -563,13 +563,13 @@ Test Case 8: VM2VM vhost-user/virtio1.1-pmd with normal path
 
 3. On VM1, bind vdev with vfio-pci driver,then run testpmd, set rxonly for virtio1 ::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
 4. On VM2, bind vdev with vfio-pci driver,then run testpmd, set txonly for virtio2 ::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txd=1024 --rxd=1024
     testpmd>set fwd txonly
     testpmd>set txpkts 64
     testpmd>start tx_first 32
@@ -587,7 +587,7 @@ Test Case 9: VM2VM virtio-pmd split ring mergeable path 8 queues CBDMA enable wi
 
 1. Bind 16 cbdma channels to vfio-pci driver, then launch the testpmd with 2 vhost port and 8 queues by below commands::
 
-    ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
     --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
     testpmd>vhost enable tx all
     testpmd>start
@@ -625,13 +625,13 @@ Test Case 9: VM2VM virtio-pmd split ring mergeable path 8 queues CBDMA enable wi
 
 4. Launch testpmd in VM1::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txq=8 --rxq=8 --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txq=8 --rxq=8 --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set mac fwd
     testpmd>start
 
 5. Launch testpmd in VM2, sent imix pkts from VM2::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txq=8 --rxq=8 --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txq=8 --rxq=8 --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set mac fwd
     testpmd>set txpkts 64,256,512,1024,2000,64,256,512,1024,2000
     testpmd>start tx_first 1
@@ -643,7 +643,7 @@ Test Case 9: VM2VM virtio-pmd split ring mergeable path 8 queues CBDMA enable wi
 
 7. Relaunch and start vhost side testpmd with below cmd::
 
-    ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
     --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
     testpmd>start
 
@@ -661,7 +661,7 @@ Test Case 10: VM2VM virtio-pmd split ring mergeable path dynamic queue size CBDM
 
 1. Bind 16 cbdma channels to vfio-pci driver, then launch the testpmd with 2 vhost ports below commands::
 
-    ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
     --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=4 --txq=4
     testpmd>vhost enable tx all
     testpmd>start
@@ -699,13 +699,13 @@ Test Case 10: VM2VM virtio-pmd split ring mergeable path dynamic queue size CBDM
 
 4. Launch testpmd in VM1::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txq=8 --rxq=8 --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txq=8 --rxq=8 --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set mac fwd
     testpmd>start
 
 5. Launch testpmd in VM2 and send imix pkts, check imix packets can looped between two VMs for 1 mins and 4 queues (queue0 to queue3) have packets rx/tx::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txq=8 --rxq=8 --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txq=8 --rxq=8 --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set mac fwd
     testpmd>set txpkts 64,256,512,1024,2000,64,256,512,1024,2000
     testpmd>start tx_first 32
@@ -714,7 +714,7 @@ Test Case 10: VM2VM virtio-pmd split ring mergeable path dynamic queue size CBDM
 
 6. Relaunch and start vhost side testpmd with eight queues::
 
-    ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
     --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
     testpmd>start
 
@@ -733,7 +733,7 @@ Test Case 11: VM2VM virtio-pmd packed ring mergeable path 8 queues CBDMA enable 
 1. Bind 16 cbdma channels to vfio-pci driver, then launch the testpmd with 2 vhost port and 8 queues by below commands::
 
     rm -rf vhost-net*
-    ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
     --vdev 'net_vhost1,iface=vhost-net1,queues=8,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
     testpmd>vhost enable tx all
     testpmd>start
@@ -771,13 +771,13 @@ Test Case 11: VM2VM virtio-pmd packed ring mergeable path 8 queues CBDMA enable 
 
 4. Launch testpmd in VM1::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txq=8 --rxq=8 --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txq=8 --rxq=8 --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set mac fwd
     testpmd>start
 
 5. Launch testpmd in VM2 and send imix pkts, check imix packets can looped between two VMs for 1 mins and 8 queues all have packets rx/tx::
 
-    ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txq=8 --rxq=8 --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txq=8 --rxq=8 --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set mac fwd
     testpmd>set txpkts 64,256,512,1024,20000,64,256,512,1024,20000
     testpmd>start tx_first 32
@@ -803,7 +803,7 @@ Test Case 11: VM2VM virtio-pmd packed ring mergeable path 8 queues CBDMA enable 
     modprobe vfio-pci
     echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode
     ./usertools/dpdk-devbind.py --force --bind=vfio-pci 0000:00:05.0
-    ./dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txq=8 --rxq=8 --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txq=8 --rxq=8 --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set mac fwd
     testpmd>set txpkts 64,256,512,1024,20000,64,256,512,1024,20000
     testpmd>start tx_first 32

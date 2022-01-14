@@ -50,7 +50,7 @@ Test Case 1: PVP multi qemu version test with virtio 0.95 mergeable path
 1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -73,7 +73,7 @@ Test Case 1: PVP multi qemu version test with virtio 0.95 mergeable path
     -vnc :10
 
 4. On VM, bind virtio net to vfio-pci and run testpmd ::
-    ./testpmd -c 0x3 -n 3 -- -i \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -- -i \
     --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -88,7 +88,7 @@ Test Case 2: PVP test with virtio 1.0 mergeable path
 1. Bind one port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -112,7 +112,7 @@ Test Case 2: PVP test with virtio 1.0 mergeable path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd::
 
-    ./testpmd -c 0x3 -n 3 -- -i \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -- -i \
     --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start

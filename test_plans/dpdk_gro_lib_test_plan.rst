@@ -129,8 +129,8 @@ Test Case1: DPDK GRO lightmode test with tcp/ipv4 traffic
 
 2. Bind nic1 to vfio-pci, launch vhost-user with testpmd and set flush interval to 1::
 
-    ./dpdk-devbind.py -b vfio-pci xx:xx.x
-    ./testpmd -l 2-4 -n 4 \
+    ./usertools/dpdk-devbind.py -b vfio-pci xx:xx.x
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
     testpmd>stop
@@ -181,8 +181,8 @@ Test Case2: DPDK GRO heavymode test with tcp/ipv4 traffic
 
 2. Bind nic1 to vfio-pci, launch vhost-user with testpmd and set flush interval to 2::
 
-    ./dpdk-devbind.py -b vfio-pci xx:xx.x
-    ./testpmd -l 2-4 -n 4 \
+    ./usertools/dpdk-devbind.py -b vfio-pci xx:xx.x
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
     testpmd>stop
@@ -233,8 +233,8 @@ Test Case3: DPDK GRO heavymode_flush4 test with tcp/ipv4 traffic
 
 2. Bind nic1 to vfio-pci, launch vhost-user with testpmd and set flush interval to 4::
 
-    ./dpdk-devbind.py -b vfio-pci xx:xx.x
-    ./testpmd -l 2-4 -n 4 \
+    ./usertools/dpdk-devbind.py -b vfio-pci xx:xx.x
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
     testpmd>stop
@@ -301,8 +301,8 @@ Vxlan topology
 
 2. Bind nic1 to vfio-pci, launch vhost-user with testpmd and set flush interval to 4::
 
-    ./dpdk-devbind.py -b vfio-pci xx:xx.x
-    ./testpmd -l 2-4 -n 4 \
+    ./usertools/dpdk-devbind.py -b vfio-pci xx:xx.x
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
     testpmd>stop
@@ -365,8 +365,8 @@ NIC2(In kernel) -> NIC1(DPDK) -> testpmd(csum fwd) -> Vhost -> Virtio-net
 
 2. Bind cbdma port and nic1 to vfio-pci, launch vhost-user with testpmd and set flush interval to 1::
 
-    ./dpdk-devbind.py -b vfio-pci xx:xx.x
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 29-31 -n 4 \
+    ./usertools/dpdk-devbind.py -b vfio-pci xx:xx.x
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29-31 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2' -- -i --txd=1024 --rxd=1024 --txq=2 --rxq=2 --nb-cores=2
     set fwd csum
     stop
@@ -423,8 +423,8 @@ NIC2(In kernel) -> NIC1(DPDK) -> testpmd(csum fwd) -> Vhost -> Virtio-net
 
 2. Bind cbdma port and nic1 to vfio-pci, launch vhost-user with testpmd and set flush interval to 1::
 
-    ./dpdk-devbind.py -b vfio-pci xx:xx.x
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 29-31 -n 4 \
+    ./usertools/dpdk-devbind.py -b vfio-pci xx:xx.x
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29-31 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[txq0@80:04.0;txq1@80:04.1]' -- -i --txd=1024 --rxd=1024 --txq=2 --rxq=2 --nb-cores=2
     set fwd csum
     stop
