@@ -900,7 +900,7 @@ class Crb(object):
         '''
         check_flag = "ethtool --show-priv-flags %s" % intf
         out = self.send_expect(check_flag, "# ", timeout)
-        p = re.compile('%s\s+:\s+(\w+)' % flag)
+        p = re.compile('%s\s*:\s+(\w+)' % flag)
         state = re.search(p, out)
         if state:
             return state.group(1)
