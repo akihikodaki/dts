@@ -249,7 +249,7 @@ L3DST
 -----
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -300,7 +300,7 @@ L3DST
 -----
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types l3-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -314,7 +314,7 @@ L4SRC
 -----
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types l4-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l4-src-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -328,7 +328,7 @@ L4DST
 -----
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types l4-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -342,7 +342,7 @@ L3SRC+L4SRC
 -----------
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types l3-src-only l4-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-src-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -357,7 +357,7 @@ L3SRC+L4DST
 -----------
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types l3-src-only l4-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-dst-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -372,7 +372,7 @@ L3DST+L4SRC
 -----------
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types l3-dst-only l4-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-src-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -387,7 +387,7 @@ L3DST+L4DST
 -----------
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types l3-dst-only l4-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-dst-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -488,7 +488,7 @@ L3SRC
 -----
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types l3-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4-udp l3-src-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -520,7 +520,7 @@ L4SRC
 -----
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types l4-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4-udp l4-src-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -536,7 +536,7 @@ L4DST
 -----
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types l4-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -571,7 +571,7 @@ L3SRC+L4DST
 -----------
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types l3-src-only l4-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-dst-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -609,7 +609,7 @@ L3DST+L4DST
 -----------
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types l3-dst-only l4-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-dst-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -663,7 +663,7 @@ L3SRC
 -----
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / end actions rss types l3-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -677,7 +677,7 @@ L3DST
 -----
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -714,7 +714,7 @@ L3SRC
 -----
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / udp / end actions rss types l3-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / udp / end actions rss types ipv4-udp l3-src-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -728,7 +728,7 @@ L3DST
 -----
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / udp / end actions rss types l3-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -742,7 +742,7 @@ L4SRC
 -----
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / udp / end actions rss types l4-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / udp / end actions rss types ipv4-udp l4-src-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -756,7 +756,7 @@ L4DST
 -----
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / udp / end actions rss types l4-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -770,7 +770,7 @@ L3SRC+L4SRC
 -----------
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / udp / end actions rss types l3-src-only l4-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-src-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -785,7 +785,7 @@ L3SRC+L4DST
 -----------
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / udp / end actions rss types l3-src-only l4-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-dst-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -800,7 +800,7 @@ L3DST+L4SRC
 -----------
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / udp / end actions rss types l3-dst-only l4-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-src-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
@@ -815,7 +815,7 @@ L3DST+L4DST
 -----------
 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / udp / end actions rss types l3-dst-only l4-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 / udp / gtpu / gtp_psc is 1 / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-dst-only end key_len 0 queues end / end
 
 hit pattern and defined input set::
 
