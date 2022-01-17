@@ -125,7 +125,12 @@ class TestVM2VMVirtioNetPerf(TestCase):
             self.dut.send_expect('./usertools/dpdk-devbind.py -u %s' % self.device_str, '# ', 30)
             self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str, '# ', 60)
 
-    def start_vhost_testpmd(self, cbdma=False, no_pci=True, client_mode=False, enable_queues=1, nb_cores=2, rxq_txq=None):
+    @property
+    def check_2m_env(self):
+        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if out == '2048' else False
+
+    def start_vhost_testpmd(self, cbdma=False, no_pci=True, client_mode=False, enable_queues=1, nb_cores=2, rxq_txq=None, exchange_cbdma=False, iova_mode=''):
         """
         launch the testpmd with different parameters
         """
@@ -150,12 +155,20 @@ class TestVM2VMVirtioNetPerf(TestCase):
         else:
             vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,client=1,queues=%d%s' " % (self.base_dir, enable_queues, cbdma_arg_0)
             vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,client=1,queues=%d%s' " % (self.base_dir, enable_queues, cbdma_arg_1)
+        if exchange_cbdma:
+            vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,client=1,queues=%d%s' " % (self.base_dir, enable_queues, cbdma_arg_1)
+            vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,client=1,queues=%d%s' " % (self.base_dir, enable_queues, cbdma_arg_0)
+
         eal_params = self.dut.create_eal_parameters(cores=self.cores_list, prefix='vhost', no_pci=no_pci)
         if rxq_txq is None:
             params = " -- -i --nb-cores=%d --txd=1024 --rxd=1024" % nb_cores
         else:
             params = " -- -i --nb-cores=%d --txd=1024 --rxd=1024 --rxq=%d --txq=%d" % (nb_cores, rxq_txq, rxq_txq)
-        self.command_line = testcmd + eal_params + vdev1 + vdev2 + params
+        if iova_mode:
+            iova_parm = " --iova=" + iova_mode
+        else:
+            iova_parm = ""
+        self.command_line = testcmd + eal_params + vdev1 + vdev2 + iova_parm + params
         self.pmd_vhost.execute_cmd(self.command_line, timeout=30)
         self.pmd_vhost.execute_cmd('vhost enable tx all', timeout=30)
         self.pmd_vhost.execute_cmd('start', timeout=30)
@@ -204,13 +217,13 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.vm_dut[1].send_expect("arp -s %s %s" % (self.virtio_ip1, self.virtio_mac1), "#", 10)
 
     def prepare_test_env(self, cbdma=False, no_pci=True, client_mode=False, enable_queues=1, nb_cores=2,
-                         server_mode=False, opt_queue=None, combined=False, rxq_txq=None, vm_config='vhost_sample'):
+                         server_mode=False, opt_queue=None, combined=False, rxq_txq=None, iova_mode=''):
         """
         start vhost testpmd and qemu, and config the vm env
         """
         self.start_vhost_testpmd(cbdma=cbdma, no_pci=no_pci, client_mode=client_mode, enable_queues=enable_queues,
-                                 nb_cores=nb_cores, rxq_txq=rxq_txq)
-        self.start_vms(server_mode=server_mode, opt_queue=opt_queue, vm_config=vm_config)
+                                 nb_cores=nb_cores, rxq_txq=rxq_txq, iova_mode=iova_mode)
+        self.start_vms(server_mode=server_mode, opt_queue=opt_queue)
         self.config_vm_env(combined=combined, rxq_txq=rxq_txq)
 
     def start_iperf(self, iperf_mode='tso'):
@@ -314,11 +327,11 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.verify(tcp6_info is not None and tcp6_info.group(1) == "on",
                     "tx-tcp6-segmentation in vm not right")
 
-    def check_scp_file_valid_between_vms(self, file_size=1):
+    def check_scp_file_valid_between_vms(self, file_size=1024):
         """
         scp file form VM1 to VM2, check the data is valid
         """
-        # default file_size=1K
+        # default file_size=1024K
         data = ''
         for char in range(file_size * 1024):
             data += random.choice(self.random_string)
@@ -353,7 +366,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.prepare_test_env(cbdma=True, no_pci=False, client_mode=False, enable_queues=1, nb_cores=2,
                               server_mode=False, opt_queue=1, combined=False, rxq_txq=None)
         cbdma_value = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
-        expect_value = self.get_suite_cfg()['expected_throughput'][self.running_case]
+        expect_value = self.get_suite_cfg()['expected_throughput']['test_vm2vm_split_ring_iperf_with_tso']
         self.verify(cbdma_value > expect_value, "CBDMA enable performance: %s is lower than CBDMA disable: %s." %(cbdma_value, expect_value))
 
     def test_vm2vm_split_ring_iperf_with_ufo(self):
@@ -379,54 +392,69 @@ class TestVM2VMVirtioNetPerf(TestCase):
         """
         TestCase5: VM2VM virtio-net split ring mergeable CBDMA enable test with large packet payload valid check
         """
-        # This test case need to use QEMU 3.0 to test
         ipef_result = []
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
 
-        self.logger.info("Launch vhost-testpmd with CBDMA and used 8 queue")
+        self.logger.info("Launch vhost with CBDMA and with 8 queue with VA mode")
         self.vm_args = "disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on"
         self.prepare_test_env(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4,
-                              server_mode=True, opt_queue=8, combined=True, rxq_txq=8, vm_config='vm')
+                              server_mode=True, opt_queue=8, combined=True, rxq_txq=8, iova_mode='va')
         self.check_scp_file_valid_between_vms()
         iperf_data_cbdma_enable_8_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
-        ipef_result.append(['Enable', 'mergeable path', 8, iperf_data_cbdma_enable_8_queue])
+        ipef_result.append(['Enable', 'mergeable path with VA mode', 8, iperf_data_cbdma_enable_8_queue])
 
-        self.logger.info("Re-launch without CBDMA and used 8 queue")
+        self.logger.info("Re-launch and exchange CBDMA and with 8 queue with VA mode")
         self.vhost.send_expect("quit", "# ", 30)
-        self.start_vhost_testpmd(cbdma=False, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4, rxq_txq=8)
+        self.start_vhost_testpmd(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4, rxq_txq=8, exchange_cbdma=True, iova_mode='va')
         self.check_scp_file_valid_between_vms()
-        iperf_data_cbdma_disable_8_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
-        ipef_result.append(['Disable','mergeable path', 8, iperf_data_cbdma_disable_8_queue])
+        iperf_data_cbdma_enable_8_queue_exchange = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
+        ipef_result.append(['Disable','mergeable path exchange CBDMA with VA mode', 8, iperf_data_cbdma_enable_8_queue_exchange])
 
-        self.logger.info("Re-launch without CBDMA and used 1 queue")
+        # This test step need to test on 1G guest hugepage ENV.
+        if not self.check_2m_env:
+            self.logger.info("Re-launch and exchange CBDMA and with 8 queue with PA mode")
+            self.vhost.send_expect("quit", "# ", 30)
+            self.start_vhost_testpmd(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4, rxq_txq=8, exchange_cbdma=True, iova_mode='pa')
+            self.check_scp_file_valid_between_vms()
+            iperf_data_cbdma_enable_8_queue_exchange_pa = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
+            ipef_result.append(['Disable', 'mergeable path exchange CBDMA with PA mode', 8, iperf_data_cbdma_enable_8_queue_exchange_pa])
+
+        self.logger.info("Re-launch without CBDMA and with 4 queue")
         self.vhost.send_expect("quit", "# ", 30)
-        self.start_vhost_testpmd(cbdma=False, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4, rxq_txq=1)
+        self.start_vhost_testpmd(cbdma=False, no_pci=False, client_mode=True, enable_queues=4, nb_cores=4, rxq_txq=4)
+        self.config_vm_env(combined=True, rxq_txq=4)
+        self.check_scp_file_valid_between_vms()
+        iperf_data_cbdma_disable_4_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
+        ipef_result.append(['Disable', 'mergeable path without CBDMA with 4 queue', 4, iperf_data_cbdma_disable_4_queue])
+
+        self.logger.info("Re-launch without CBDMA and with 1 queue")
+        self.vhost.send_expect("quit", "# ", 30)
+        self.start_vhost_testpmd(cbdma=False, no_pci=False, client_mode=True, enable_queues=4, nb_cores=4, rxq_txq=1)
         self.config_vm_env(combined=True, rxq_txq=1)
         self.check_scp_file_valid_between_vms()
         iperf_data_cbdma_disable_1_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
-        ipef_result.append(['Disable', 'mergeable path', 1, iperf_data_cbdma_disable_1_queue])
+        ipef_result.append(['Disable', 'mergeable path without CBDMA with 1 queue', 1, iperf_data_cbdma_disable_1_queue])
 
         self.table_header = ['CBDMA Enable/Disable', 'Mode', 'rxq/txq', 'Gbits/sec']
         self.result_table_create(self.table_header)
         for table_row in ipef_result:
             self.result_table_add(table_row)
         self.result_table_print()
-        self.verify(iperf_data_cbdma_enable_8_queue > iperf_data_cbdma_disable_8_queue, \
+        self.verify(iperf_data_cbdma_enable_8_queue > iperf_data_cbdma_disable_4_queue, \
                     "CMDMA enable: %s is lower than CBDMA disable: %s" % (
-                        iperf_data_cbdma_enable_8_queue, iperf_data_cbdma_disable_8_queue))
+                        iperf_data_cbdma_enable_8_queue, iperf_data_cbdma_disable_4_queue))
 
     def test_vm2vm_split_ring_with_no_mergeable_path_check_large_packet_and_cbdma_enable_8queue(self):
         """
         TestCase6: VM2VM virtio-net split ring non-mergeable CBDMA enable test with large packet payload valid check
         """
-        # This test case need to use QEMU 3.0 to test
         ipef_result = []
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
 
         self.logger.info("Launch vhost-testpmd with CBDMA and used 8 queue")
         self.vm_args = "disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on"
         self.prepare_test_env(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4,
-                              server_mode=True, opt_queue=8, combined=True, rxq_txq=8, vm_config='vm')
+                              server_mode=True, opt_queue=8, combined=True, rxq_txq=8)
         self.check_scp_file_valid_between_vms()
         iperf_data_cbdma_enable_8_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
         ipef_result.append(['Enable', 'no-mergeable path', 8, iperf_data_cbdma_enable_8_queue])
@@ -497,7 +525,6 @@ class TestVM2VMVirtioNetPerf(TestCase):
         """
         Test Case 11: VM2VM virtio-net packed ring mergeable 8 queues CBDMA enable test with large packet payload valid check
         """
-        # This test case need to use QEMU 3.0 to test
         ipef_result = []
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
 
@@ -509,8 +536,6 @@ class TestVM2VMVirtioNetPerf(TestCase):
             self.check_scp_file_valid_between_vms()
             iperf_data_cbdma_enable_8_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
             ipef_result.append(['Enable_%d' % i, 'mergeable path', 8, iperf_data_cbdma_enable_8_queue])
-            if i > 0:
-                self.verify(abs(ipef_result[0][3]-ipef_result[i][3])/ipef_result[0][3] < 0.2 ,"Performance fluctuates too much")
             self.table_header = ['CBDMA Enable/Disable', 'Mode', 'rxq/txq', 'Gbits/sec']
             self.result_table_create(self.table_header)
         for table_row in ipef_result:
@@ -521,7 +546,6 @@ class TestVM2VMVirtioNetPerf(TestCase):
         """
         Test Case 12: VM2VM virtio-net packed ring non-mergeable 8 queues CBDMA enable test with large packet payload valid check
         """
-        # This test case need to use QEMU 3.0 to test
         ipef_result = []
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
 
@@ -533,8 +557,42 @@ class TestVM2VMVirtioNetPerf(TestCase):
             self.check_scp_file_valid_between_vms()
             iperf_data_cbdma_enable_8_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
             ipef_result.append(['Enable', 'mergeable path', 8, iperf_data_cbdma_enable_8_queue])
-            if i > 0:
-                self.verify(abs(ipef_result[0][3]-ipef_result[i][3])/ipef_result[0][3] < 0.2 ,"Performance fluctuates too much")
+            self.table_header = ['CBDMA Enable/Disable', 'Mode', 'rxq/txq', 'Gbits/sec']
+            self.result_table_create(self.table_header)
+        for table_row in ipef_result:
+            self.result_table_add(table_row)
+        self.result_table_print()
+
+    def test_vm2vm_packed_ring_with_tso_and_cbdma_enable_iova_pa(self):
+        """
+        Test Case 13: VM2VM packed ring vhost-user/virtio-net CBDMA enable test with tcp traffic when set iova=pa
+        """
+        # This test case need to test on 1G guest hugepage ENV.
+        self.vm_args = "disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on"
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
+        self.prepare_test_env(cbdma=True, no_pci=False, client_mode=False, enable_queues=1, nb_cores=2,
+                              server_mode=False, opt_queue=1, combined=False, rxq_txq=None, iova_mode='pa')
+        self.check_scp_file_valid_between_vms()
+        cbdma_value = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
+        expect_value = self.get_suite_cfg()['expected_throughput']['test_vm2vm_split_ring_iperf_with_tso']
+        self.verify(cbdma_value > expect_value, "CBDMA enable performance: %s is lower than CBDMA disable: %s." %(cbdma_value, expect_value))
+
+    def test_vm2vm_packed_ring_with_mergeable_path_check_large_packet_and_cbdma_enable_8queue_iova_pa(self):
+        """
+        Test Case 14: VM2VM virtio-net packed ring mergeable 8 queues CBDMA enable and PA mode test with large packet payload valid check
+        """
+        # This test case need to test on 1G guest hugepage ENV.
+        ipef_result = []
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
+
+        self.logger.info("Launch vhost-testpmd with CBDMA and used 8 queue")
+        self.vm_args = "disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on"
+        self.prepare_test_env(cbdma=True, no_pci=False, client_mode=False, enable_queues=8, nb_cores=4,
+                              server_mode=False, opt_queue=8, combined=True, rxq_txq=8, iova_mode='pa')
+        for i in range(0,5):
+            self.check_scp_file_valid_between_vms()
+            iperf_data_cbdma_enable_8_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
+            ipef_result.append(['Enable_%d' % i, 'mergeable path', 8, iperf_data_cbdma_enable_8_queue])
             self.table_header = ['CBDMA Enable/Disable', 'Mode', 'rxq/txq', 'Gbits/sec']
             self.result_table_create(self.table_header)
         for table_row in ipef_result:
