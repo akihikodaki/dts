@@ -38,14 +38,17 @@ Description
 ===========
 
 This test plan test several features in VM2VM topo:
-1. Check Vhost tx offload (TSO and UFO) function by verifing the TSO/cksum in the TCP/IP stack and UFO/cksum
+1. Check Vhost tx offload (TSO and UFO) function by verifying the TSO/cksum in the TCP/IP stack and UFO/cksum
 in the UDP/IP stack with vm2vm split ring and packed ring vhost-user/virtio-net mergeable path.
 2. Check the payload of large packet (larger than 1MB) is valid after forwarding packets with vm2vm split ring
 and packed ring vhost-user/virtio-net mergeable and non-mergeable path.
-3. Multi-queues number dynamic change in vm2vm vhost-user/virtio-net with split ring and packed ring when vhost enqueue operation with multi-CBDMA channels.
+3. Check Vhost tx offload function by verifying the TSO/cksum in the TCP/IP stack with vm2vm split ring and
+packed ring vhost-user/virtio-net mergeable path with CBDMA channel.
+4. Multi-queues number dynamic change in vm2vm vhost-user/virtio-net with split ring and packed ring when vhost enqueue operation with multi-CBDMA channels.
 Note: 
 1.For packed virtqueue virtio-net test, need qemu version > 4.2.0 and VM kernel version > v5.1.
 2.For split virtqueue virtio-net with multi-queues server mode test, need qemu version > LTS 4.2.1, dut to old qemu exist reconnect issue when multi-queues test.
+3.For PA mode, page by page mapping may exceed IOMMU's max capability, better to use 1G guest hugepage.
 
 Test flow
 =========
@@ -58,8 +61,10 @@ Test Case 1: VM2VM split ring vhost-user/virtio-net test with tcp traffic
 1. Launch the Vhost sample on socket 0 by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=2 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 --no-pci --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1' \
+    -- -i --nb-cores=2 --txd=1024 --rxd=1024
     testpmd>start
 
 2. Launch VM1 and VM2 on socket 1::
@@ -75,7 +80,7 @@ Test Case 1: VM2VM split ring vhost-user/virtio-net test with tcp traffic
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :10
 
-   taskset -c 33 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
+    taskset -c 33 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -86,12 +91,12 @@ Test Case 1: VM2VM split ring vhost-user/virtio-net test with tcp traffic
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :12
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ifconfig ens5 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
 
     ifconfig ens5 1.1.1.8
     arp -s 1.1.1.2 52:54:00:00:00:01
@@ -110,14 +115,17 @@ Test Case 1: VM2VM split ring vhost-user/virtio-net test with tcp traffic
 Test Case 2: VM2VM split ring vhost-user/virtio-net CBDMA enable test with tcp traffic
 ======================================================================================
 
-1. Launch the Vhost sample by below commands::
+1. Bind 2 CBDMA channels to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1,dmas=[txq0@00:04.0]' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=1,dmas=[txq0@00:04.1]'  -- -i --nb-cores=2 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1,dmas=[txq0@0000:80:04.0]' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1,dmas=[txq0@0000:80:04.1]' \
+    --iova=va -- -i --nb-cores=2 --txd=1024 --rxd=1024
+    testpmd>vhost enable tx all
     testpmd>start
 
-2. Launch VM1 and VM2 on socket 1::
+2. Launch VM1 and VM2::
 
     taskset -c 32 qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -130,7 +138,7 @@ Test Case 2: VM2VM split ring vhost-user/virtio-net CBDMA enable test with tcp t
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :10
 
-   taskset -c 33 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
+    taskset -c 33 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -141,12 +149,12 @@ Test Case 2: VM2VM split ring vhost-user/virtio-net CBDMA enable test with tcp t
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :12
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ifconfig ens5 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
 
     ifconfig ens5 1.1.1.8
     arp -s 1.1.1.2 52:54:00:00:00:01
@@ -170,8 +178,10 @@ Test Case 3: VM2VM split ring vhost-user/virtio-net test with udp traffic
 1. Launch the Vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --no-pci --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 2. Launch VM1 and VM2::
@@ -198,12 +208,12 @@ Test Case 3: VM2VM split ring vhost-user/virtio-net test with udp traffic
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :12
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.8
     arp -s 1.1.1.2 52:54:00:00:00:01
@@ -225,8 +235,10 @@ Test Case 4: Check split ring virtio-net device capability
 1. Launch the Vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=2 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --no-pci --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1' \
+    -- -i --nb-cores=2 --txd=1024 --rxd=1024
     testpmd>start
 
 2. Launch VM1 and VM2,set TSO and UFO on in qemu command::
@@ -242,7 +254,7 @@ Test Case 4: Check split ring virtio-net device capability
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
 
-   qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
+    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -267,17 +279,20 @@ Test Case 4: Check split ring virtio-net device capability
     tx-tcp-ecn-segmentation: on
     tx-tcp6-segmentation: on
 
-Test Case 5: VM2VM virtio-net split ring mergeable 8 queues CBDMA enable test with large packet payload valid check
-====================================================================================================================
+Test Case 5: VM2VM split ring vhost-user/virtio-net mergeable 8 queues CBDMA enable test with large packet payload valid check
+==============================================================================================================================
 
-1. Launch the Vhost sample by below commands::
+1. Bind 16 CBDMA channels to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3;txq4@00:04.4;txq5@00:04.5;txq6@00:04.6;txq7@00:04.7]' \
-    --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7]'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
+    --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]' \
+    --iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    testpmd>vhost enable tx all
     testpmd>start
 
-2. Launch VM1 and VM2 using qemu 5.2.0::
+2. Launch VM1 and VM2 using qemu::
 
     taskset -c 32 qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 8 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -290,7 +305,7 @@ Test Case 5: VM2VM virtio-net split ring mergeable 8 queues CBDMA enable test wi
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
 
-   taskset -c 40 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 8 -m 4096 \
+    taskset -c 40 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 8 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -301,13 +316,13 @@ Test Case 5: VM2VM virtio-net split ring mergeable 8 queues CBDMA enable test wi
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :12
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ethtool -L ens5 combined 8
     ifconfig ens5 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
 
     ethtool -L ens5 combined 8
     ifconfig ens5 1.1.1.8
@@ -322,55 +337,94 @@ Test Case 5: VM2VM virtio-net split ring mergeable 8 queues CBDMA enable test wi
     Under VM1, run: `iperf -s -i 1`
     Under VM2, run: `iperf -c 1.1.1.2 -i 1 -t 60`
 
-7. Quit vhost ports and relaunch vhost ports w/o CBDMA channels::
+7. Quit and relaunch vhost w/ diff CBDMA channels::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8' \
-    --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
-    testpmd>start
-
-8. Scp 1MB file form VM1 to VM2::
-
-    Under VM1, run: `scp [xxx] root@1.1.1.8:/`   [xxx] is the file name
-
-9. Check the iperf performance and compare with CBDMA enable performance, ensure CMDMA enable performance is higher::
-
-    Under VM1, run: `iperf -s -i 1`
-    Under VM2, run: `iperf -c 1.1.1.2 -i 1 -t 60`
-
-10. Quit vhost ports and relaunch vhost ports with 1 queues::
-
-     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8' \
-     --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=1 --txq=1
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
+     --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]' \
+     --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
+     --iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+     testpmd>vhost enable tx all
      testpmd>start
 
-11. On VM1, set virtio device::
+8. Rerun step 5-6.
+
+9. Quit and relaunch vhost w/ iova=pa::
+
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
+     --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]' \
+     --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
+     --iova=pa -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+     testpmd>vhost enable tx all
+     testpmd>start
+
+10. Rerun step 5-6.
+
+11. Quit and relaunch vhost w/o CBDMA channels::
+
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
+     --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=4' \
+     --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=4' \
+     -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=4 --txq=4
+     testpmd>vhost enable tx all
+     testpmd>start
+
+12. On VM1, set virtio device::
+
+      ethtool -L ens5 combined 4
+
+13. On VM2, set virtio device::
+
+      ethtool -L ens5 combined 4
+
+14. Scp 1MB file form VM1 to VM2::
+
+      Under VM1, run: `scp [xxx] root@1.1.1.8:/`   [xxx] is the file name
+
+15. Check the iperf performance and compare with CBDMA enable performance, ensure CMDMA enable performance is higher::
+
+      Under VM1, run: `iperf -s -i 1`
+      Under VM2, run: `iperf -c 1.1.1.2 -i 1 -t 60`
+
+16. Quit and relaunch vhost with 1 queues::
+
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
+     --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=4' \
+     --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=4' \
+     -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=1 --txq=1
+     testpmd>vhost enable tx all
+     testpmd>start
+
+17. On VM1, set virtio device::
 
       ethtool -L ens5 combined 1
 
-12. On VM2, set virtio device::
+18. On VM2, set virtio device::
 
       ethtool -L ens5 combined 1
 
-13. Scp 1MB file form VM1 to VM2M, check packets can be forwarding success by scp::
+19. Scp 1MB file form VM1 to VM2M, check packets can be forwarding success by scp::
 
-     Under VM1, run: `scp [xxx] root@1.1.1.8:/`   [xxx] is the file name
+      Under VM1, run: `scp [xxx] root@1.1.1.8:/`   [xxx] is the file name
 
-14. Check the iperf performance, ensure queue0 can work from vhost side::
+20. Check the iperf performance, ensure queue0 can work from vhost side::
 
-     Under VM1, run: `iperf -s -i 1`
-     Under VM2, run: `iperf -c 1.1.1.2 -i 1 -t 60`
+      Under VM1, run: `iperf -s -i 1`
+      Under VM2, run: `iperf -c 1.1.1.2 -i 1 -t 60`
 
-Test Case 6: VM2VM virtio-net split ring non-mergeable 8 queues CBDMA enable test with large packet payload valid check
-========================================================================================================================
+Test Case 6: VM2VM split ring vhost-user/virtio-net non-mergeable 8 queues CBDMA enable test with large packet payload valid check
+==================================================================================================================================
 
-1. Launch the Vhost sample by below commands::
+1. Bind 16 CBDMA channels to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3;txq4@00:04.4;txq5@00:04.5;txq6@00:04.6;txq7@00:04.7]' \
-    --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7]'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
+    --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]' \
+    -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    testpmd>vhost enable tx all
     testpmd>start
 
-2. Launch VM1 and VM2 using qemu 5.2.0::
+2. Launch VM1 and VM2 using qemu::
 
     taskset -c 32 qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 8 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -383,7 +437,7 @@ Test Case 6: VM2VM virtio-net split ring non-mergeable 8 queues CBDMA enable tes
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
 
-   taskset -c 40 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 8 -m 4096 \
+    taskset -c 40 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 8 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -394,13 +448,13 @@ Test Case 6: VM2VM virtio-net split ring non-mergeable 8 queues CBDMA enable tes
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :12
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ethtool -L ens5 combined 8
     ifconfig ens5 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
 
     ethtool -L ens5 combined 8
     ifconfig ens5 1.1.1.8
@@ -415,10 +469,13 @@ Test Case 6: VM2VM virtio-net split ring non-mergeable 8 queues CBDMA enable tes
     Under VM1, run: `iperf -s -i 1`
     Under VM2, run: `iperf -c 1.1.1.2 -i 1 -t 60`
 
-7. Quit vhost ports and relaunch vhost ports w/o CBDMA channels::
+7. Quit and relaunch vhost ports w/o CBDMA channels::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8' \
-    --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8' \
+    --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8' \
+    -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    testpmd>vhost enable tx all
     testpmd>start
 
 8. Scp 1MB file form VM1 to VM2::
@@ -430,10 +487,13 @@ Test Case 6: VM2VM virtio-net split ring non-mergeable 8 queues CBDMA enable tes
     Under VM1, run: `iperf -s -i 1`
     Under VM2, run: `iperf -c 1.1.1.2 -i 1 -t 60`
 
-10. Quit vhost ports and relaunch vhost ports with 1 queues::
+10. Quit and relaunch vhost ports with 1 queues::
 
-     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8' \
-     --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=1 --txq=1
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
+     --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8' \
+     --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8' \
+     -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=1 --txq=1
+     testpmd>vhost enable tx all
      testpmd>start
 
 11. On VM1, set virtio device::
@@ -456,14 +516,16 @@ Test Case 6: VM2VM virtio-net split ring non-mergeable 8 queues CBDMA enable tes
 Test Case 7: VM2VM packed ring vhost-user/virtio-net test with tcp traffic
 ==========================================================================
 
-1. Launch the Vhost sample by below commands::,packed=on
+1. Launch the Vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=2 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 --no-pci --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1' \
+    -- -i --nb-cores=2 --txd=1024 --rxd=1024
     testpmd>start
 
-2. Launch VM1 and VM2 with qemu 5.2.0::
+2. Launch VM1 and VM2 with qemu::
 
     qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -476,7 +538,7 @@ Test Case 7: VM2VM packed ring vhost-user/virtio-net test with tcp traffic
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
 
-   qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
+    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -487,12 +549,12 @@ Test Case 7: VM2VM packed ring vhost-user/virtio-net test with tcp traffic
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ifconfig ens5 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
 
     ifconfig ens5 1.1.1.8
     arp -s 1.1.1.2 52:54:00:00:00:01
@@ -511,14 +573,17 @@ Test Case 7: VM2VM packed ring vhost-user/virtio-net test with tcp traffic
 Test Case 8: VM2VM packed ring vhost-user/virtio-net CBDMA enable test with tcp traffic
 =======================================================================================
 
-1. Launch the Vhost sample by below commands::
+1. Bind 2 CBDMA channels to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1,dmas=[txq0@00:04.0]' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=1,dmas=[txq0@00:04.1]'  -- -i --nb-cores=2 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1,dmas=[txq0@0000:00:04.0]' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1,dmas=[txq0@0000:00:04.1]' \
+    --iova=va -- -i --nb-cores=2 --txd=1024 --rxd=1024
+    testpmd>vhost enable tx all
     testpmd>start
 
-2. Launch VM1 and VM2 on socket 1 with qemu 5.2.0::
+2. Launch VM1 and VM2 on socket 1 with qemu::
 
     taskset -c 32 qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -531,7 +596,7 @@ Test Case 8: VM2VM packed ring vhost-user/virtio-net CBDMA enable test with tcp 
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
 
-   taskset -c 33 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
+    taskset -c 33 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -542,12 +607,12 @@ Test Case 8: VM2VM packed ring vhost-user/virtio-net CBDMA enable test with tcp 
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ifconfig ens5 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
 
     ifconfig ens5 1.1.1.8
     arp -s 1.1.1.2 52:54:00:00:00:01
@@ -571,11 +636,13 @@ Test Case 9: VM2VM packed ring vhost-user/virtio-net test with udp traffic
 1. Launch the Vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=2 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --no-pci --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1' \
+    -- -i --nb-cores=2 --txd=1024 --rxd=1024
     testpmd>start
 
-2. Launch VM1 and VM2 with qemu 5.2.0::
+2. Launch VM1 and VM2 with qemu::
 
     qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 40 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -588,7 +655,7 @@ Test Case 9: VM2VM packed ring vhost-user/virtio-net test with udp traffic
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
 
-   qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
+    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -599,12 +666,12 @@ Test Case 9: VM2VM packed ring vhost-user/virtio-net test with udp traffic
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.8
     arp -s 1.1.1.2 52:54:00:00:00:01
@@ -626,11 +693,13 @@ Test Case 10: Check packed ring virtio-net device capability
 1. Launch the Vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=2 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --no-pci --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1' \
+    -- -i --nb-cores=2 --txd=1024 --rxd=1024
     testpmd>start
 
-2. Launch VM1 and VM2 with qemu 5.2.0,set TSO and UFO on in qemu command::
+2. Launch VM1 and VM2 with qemu,set TSO and UFO on in qemu command::
 
     qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -643,7 +712,7 @@ Test Case 10: Check packed ring virtio-net device capability
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
 
-   qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
+    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -671,14 +740,17 @@ Test Case 10: Check packed ring virtio-net device capability
 Test Case 11: VM2VM virtio-net packed ring mergeable 8 queues CBDMA enable test with large packet payload valid check
 =====================================================================================================================
 
-1. Launch the Vhost sample by below commands::
+1. Bind 16 CBDMA channels to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3;txq4@00:04.4;txq5@00:04.5;txq6@00:04.6;txq7@00:04.7]' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7]'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=8,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]' \
+    --iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    testpmd>vhost enable tx all
     testpmd>start
 
-2. Launch VM1 and VM2 with qemu 5.2.0::
+2. Launch VM1 and VM2 with qemu::
 
     taskset -c 32 qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 8 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -691,7 +763,7 @@ Test Case 11: VM2VM virtio-net packed ring mergeable 8 queues CBDMA enable test 
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on -vnc :10
 
-   taskset -c 40 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 8 -m 4096 \
+    taskset -c 40 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 8 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -702,13 +774,13 @@ Test Case 11: VM2VM virtio-net packed ring mergeable 8 queues CBDMA enable test 
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on -vnc :12
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ethtool -L ens5 combined 8
     ifconfig ens5 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
 
     ethtool -L ens5 combined 8
     ifconfig ens5 1.1.1.8
@@ -728,11 +800,14 @@ Test Case 11: VM2VM virtio-net packed ring mergeable 8 queues CBDMA enable test 
 Test Case 12: VM2VM virtio-net packed ring non-mergeable 8 queues CBDMA enable test with large packet payload valid check
 =========================================================================================================================
 
-1. Launch the Vhost sample by below commands::
+1. Bind 16 CBDMA channels to vfio-pci, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3;txq4@00:04.4;txq5@00:04.5;txq6@00:04.6;txq7@00:04.7]' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7]'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=8,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]' \
+    --iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    testpmd>vhost enable tx all
     testpmd>start
 
 2. Launch VM1 and VM2::
@@ -748,7 +823,7 @@ Test Case 12: VM2VM virtio-net packed ring non-mergeable 8 queues CBDMA enable t
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on -vnc :10
 
-   taskset -c 40 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 8 -m 4096 \
+    taskset -c 40 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 8 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -759,13 +834,135 @@ Test Case 12: VM2VM virtio-net packed ring non-mergeable 8 queues CBDMA enable t
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on -vnc :12
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ethtool -L ens5 combined 8
     ifconfig ens5 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
+
+    ethtool -L ens5 combined 8
+    ifconfig ens5 1.1.1.8
+    arp -s 1.1.1.2 52:54:00:00:00:01
+
+5. Scp 1MB file form VM1 to VM2::
+
+    Under VM1, run: `scp [xxx] root@1.1.1.8:/`   [xxx] is the file name
+
+6. Check the iperf performance between two VMs by below commands::
+
+    Under VM1, run: `iperf -s -i 1`
+    Under VM2, run: `iperf -c 1.1.1.2 -i 1 -t 60`
+
+7. Rerun step 5-6 five times.
+
+Test Case 13: VM2VM packed ring vhost-user/virtio-net CBDMA enable test with tcp traffic when set iova=pa
+=========================================================================================================
+
+1. Bind 2 CBDMA channels to vfio-pci, then launch vhost by below command::
+
+    rm -rf vhost-net*
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1,dmas=[txq0@0000:00:04.0]' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1,dmas=[txq0@0000:00:04.1]' \
+    --iova=pa -- -i --nb-cores=2 --txd=1024 --rxd=1024
+    testpmd>vhost enable tx all
+    testpmd>start
+
+2. Launch VM1 and VM2 on socket 1 with qemu::
+
+    taskset -c 32 qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 1 -m 4096 \
+    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04.img  \
+    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
+    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -chardev socket,id=char0,path=./vhost-net0 \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
+
+    taskset -c 33 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
+    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
+    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
+    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
+    -chardev socket,id=char0,path=./vhost-net1 \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
+
+3. On VM1, set virtio device IP and run arp protocol::
+
+    ifconfig ens5 1.1.1.2
+    arp -s 1.1.1.8 52:54:00:00:00:02
+
+4. On VM2, set virtio device IP and run arp protocol::
+
+    ifconfig ens5 1.1.1.8
+    arp -s 1.1.1.2 52:54:00:00:00:01
+
+5. Scp 1MB file form VM1 to VM2::
+
+    Under VM1, run: `scp [xxx] root@1.1.1.8:/`   [xxx] is the file name
+
+6. Check the iperf performance between two VMs by below commands::
+
+    Under VM1, run: `iperf -s -i 1`
+    Under VM2, run: `iperf -c 1.1.1.2 -i 1 -t 60`
+
+7. Check 2VMs can receive and send big packets to each other::
+
+    testpmd>show port xstats all
+    Port 0 should have tx packets above 1522
+    Port 1 should have rx packets above 1522
+
+Test Case 14: VM2VM virtio-net packed ring mergeable 8 queues CBDMA enable and PA mode test with large packet payload valid check
+=================================================================================================================================
+
+1. Bind 16 CBDMA channels to vfio-pci, then launch vhost by below command::
+
+    rm -rf vhost-net*
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.1;txq2@0000:00:04.2;txq3@0000:00:04.3;txq4@0000:00:04.4;txq5@0000:00:04.5;txq6@0000:00:04.6;txq7@0000:00:04.7]' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=8,dmas=[txq0@0000:80:04.0;txq1@0000:80:04.1;txq2@0000:80:04.2;txq3@0000:80:04.3;txq4@0000:80:04.4;txq5@0000:80:04.5;txq6@0000:80:04.6;txq7@0000:80:04.7]' \
+    --iova=pa -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    testpmd>vhost enable tx all
+    testpmd>start
+
+2. Launch VM1 and VM2 with qemu::
+
+    taskset -c 32 qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 8 -m 4096 \
+    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04.img  \
+    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
+    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -chardev socket,id=char0,path=./vhost-net0 \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on -vnc :10
+
+    taskset -c 40 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 8 -m 4096 \
+    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
+    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
+    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
+    -chardev socket,id=char0,path=./vhost-net1 \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on -vnc :12
+
+3. On VM1, set virtio device IP and run arp protocol::
+
+    ethtool -L ens5 combined 8
+    ifconfig ens5 1.1.1.2
+    arp -s 1.1.1.8 52:54:00:00:00:02
+
+4. On VM2, set virtio device IP and run arp protocol::
 
     ethtool -L ens5 combined 8
     ifconfig ens5 1.1.1.8
