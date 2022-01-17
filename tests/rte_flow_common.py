@@ -1297,3 +1297,64 @@ class FdirProcessing(object):
             if not v:
                 failed_cases.append(k)
         self.verify(all(test_results.values()), "{} failed".format(failed_cases))
+
+    def send_pkt_get_out(self, pkts, port_id=0, count=1, interval=0):
+        tx_port = self.tester_ifaces[0] if port_id == 0 else self.tester_ifaces[1]
+        self.logger.info('----------send packet-------------')
+        self.logger.info('{}'.format(pkts))
+        self.pmd_output.execute_cmd("start")
+        self.pmd_output.execute_cmd("clear port stats all")
+        self.pkt.update_pkt(pkts)
+        self.pkt.send_pkt(crb=self.test_case.tester, tx_port=tx_port, count=count, interval=interval)
+
+        out1 = self.pmd_output.get_output(timeout=1)
+        out2 = self.pmd_output.execute_cmd("stop")
+        return out1 + out2
+
+    def check_rx_packets(self, out, check_param, expect_pkt, stats=True):
+        queue = check_param['queue']
+        p = 'Forward\s+statistics\s+for\s+port\s+0.*\n.*?RX-packets:\s(\d+)\s+'
+        if queue == 'null':
+            pkt_num = re.search(p, out).group(1)
+            if stats:
+                self.verify(int(pkt_num) == 0, "receive %s packets, expect receive 0 packets" % pkt_num)
+            else:
+                self.verify(int(pkt_num) == expect_pkt, "receive {} packets, expect receive {} packets".format(pkt_num, expect_pkt))
+        else:
+            check_queue(out, check_param, stats=stats)
+
+    def handle_priority_cases(self, vectors):
+        rule = vectors['rule']
+        packets = vectors['packet']
+        check_param = vectors['check_param']
+        self.validate_rule(rule)
+        rule_list = self.create_rule(rule)
+        self.check_rule(rule_list=rule_list)
+        out = self.send_pkt_get_out(packets['matched'])
+        self.check_rx_packets(out, check_param['check_0'], len(packets['matched']))
+        out = self.send_pkt_get_out(packets['mismatched'])
+        self.check_rx_packets(out, check_param['check_0'], len(packets['mismatched']), stats=False)
+
+        # destroy rule with priority 0
+        self.destroy_rule(rule_id=rule_list[0])
+        self.check_rule(rule_list=rule_list[1:])
+        out = self.send_pkt_get_out(packets['matched'])
+        self.check_rx_packets(out, check_param['check_1'], len(packets['matched']))
+        out = self.send_pkt_get_out(packets['mismatched'])
+        self.check_rx_packets(out, check_param['check_0'], len(packets['mismatched']), stats=False)
+        self.check_rx_packets(out, check_param['check_1'], len(packets['mismatched']), stats=False)
+
+        # destroy rule with priority 1
+        rule_id = self.create_rule(rule[0])
+        self.destroy_rule(rule_id=rule_list[1])
+        self.check_rule(rule_list=rule_id)
+        out = self.send_pkt_get_out(packets['matched'])
+        self.check_rx_packets(out, check_param['check_0'], len(packets['matched']))
+        out = self.send_pkt_get_out(packets['mismatched'])
+        self.check_rx_packets(out, check_param['check_0'], len(packets['mismatched']), stats=False)
+
+        # destroy all rule
+        self.destroy_rule(rule_id=rule_id)
+        out = self.send_pkt_get_out(packets['matched'])
+        self.check_rx_packets(out, check_param['check_0'], len(packets['matched']), stats=False)
+        self.check_rx_packets(out, check_param['check_1'], len(packets['matched']), stats=False)
