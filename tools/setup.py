@@ -20,10 +20,12 @@ DTS_TOOLS = DTS_PATH + '/tools'
 DTS_SUITES = DTS_PATH + '/tests'
 DTS_EXECS = DTS_PATH + '/executions'
 
-DTS_EXEC_CFG = DTS_PATH + '/execution.cfg'
-DTS_CRBS_CFG = DTS_PATH + '/conf/crbs.cfg'
-DTS_PORTS_CFG = DTS_PATH + '/conf/ports.cfg'
-DTS_IXIA_CFG = DTS_PATH + '/conf/ixia.cfg'
+CONFIG_ROOT_PATH = os.environ.get("DTS_CFG_FOLDER") or os.path.join(DTS_PATH, "conf/")
+
+DTS_EXEC_CFG = os.path.join(DTS_PATH, 'execution.cfg')
+DTS_CRBS_CFG = os.path.join(CONFIG_ROOT_PATH, 'crbs.cfg')
+DTS_PORTS_CFG = os.path.join(CONFIG_ROOT_PATH, 'ports.cfg')
+DTS_IXIA_CFG = os.path.join(CONFIG_ROOT_PATH, 'ixia.cfg')
 
 sys.path.append(DTS_FRAMEWORK)
 sys.path.append(DTS_TOOLS)

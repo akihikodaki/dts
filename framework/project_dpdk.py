@@ -46,7 +46,7 @@ from .settings import (
     NICS,
     accepted_nic,
     load_global_setting,
-    save_global_setting,
+    save_global_setting, CONFIG_ROOT_PATH,
 )
 from .ssh_connection import SSHConnection
 from .tester import Tester
@@ -563,7 +563,7 @@ class DPDKdut(Dut):
         folder_info = folder.split('/')
         name = folder_info[-1]
         if name != 'examples' and name not in self.apps_name:
-            raise Exception('Please config %s file path on conf/app_name.cfg' % name)
+            raise Exception(f'Please config {name} file path on {os.path.join(CONFIG_ROOT_PATH, "app_name.cfg")}')
 
         if name == 'examples':
             example = 'all'

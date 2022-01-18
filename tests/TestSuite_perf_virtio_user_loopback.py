@@ -186,7 +186,7 @@ class TestPerfVirtioUserLoopback(TestCase):
 
     def handle_expected(self):
         """
-        Update expected numbers to configurate file: conf/$suite_name.cfg
+        Update expected numbers to configurate file: $DTS_CFG_FOLDER/$suite_name.cfg
         """
         if load_global_setting(UPDATE_EXPECTED) == "yes":
             for frame_size in self.test_parameters.keys():

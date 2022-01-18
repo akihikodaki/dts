@@ -167,11 +167,11 @@ Add the performance test suite and set perf=true::
     parameters=nic_type=cfg:perf=true
     root@tester:dts#
 
-Configure conf/crbs.cfg
+Configure $DTS_CFG_FOLDER/crbs.cfg
 ~~~~~~~~~~~~~~~~~~~~~~~
 Set the pktgen_group=trex or pktgen_group=TREX, this item is case insensitive::
 
-    root@tester:dts# cat conf/crbs.cfg
+    root@tester:dts# cat $DTS_CFG_FOLDER/crbs.cfg
     [192.168.1.1]
     dut_ip=192.168.1.1
     dut_user=root
@@ -185,12 +185,12 @@ Set the pktgen_group=trex or pktgen_group=TREX, this item is case insensitive::
     channels=4
     bypass_core0=True
 
-Configure conf/ports.cfg
+Configure $DTS_CFG_FOLDER/ports.cfg
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 This configuration is just same with PF function test, so if you have completed some functional test,
-you have no need to modify the conf/ports.cfg, just like below::
+you have no need to modify the $DTS_CFG_FOLDER/ports.cfg, just like below::
 
-    root@tester:dts# cat conf/ports.cfg
+    root@tester:dts# cat $DTS_CFG_FOLDER/ports.cfg
     [192.168.1.1]
     ports =
         pci=0000:05:00.0,peer=0000:0b:00.0;
@@ -198,7 +198,7 @@ you have no need to modify the conf/ports.cfg, just like below::
 
 In addition, it could be configured as below::
 
-    root@tester:dts# cat conf/ports.cfg
+    root@tester:dts# cat $DTS_CFG_FOLDER/ports.cfg
     [192.168.1.1]
     ports =
         pci=0000:05:00.0,peer=TREX:0;
@@ -206,13 +206,13 @@ In addition, it could be configured as below::
 
 We recommend to use the first format configuration, as it has no need to do modification when we do functional test.
 
-Configure conf/pktgen.cfg
+Configure $DTS_CFG_FOLDER/pktgen.cfg
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-Fill in the conf/pktgen.cfg with your TREX setting, for the first time, you should set start_trex=yes.
+Fill in the $DTS_CFG_FOLDER/pktgen.cfg with your TREX setting, for the first time, you should set start_trex=yes.
 Set the IP address of the device which you installed TREX into item ‘server=’, it should be the tester IP.
 The configuration should as below::
 
-    root@tester:dts# cat conf/pktgen.cfg
+    root@tester:dts# cat $DTS_CFG_FOLDER/pktgen.cfg
     [TREX]
     trex_root_path=/opt/trex/v2.88
     trex_lib_path=/opt/trex/v2.88/automation/trex_control_plane/interactive

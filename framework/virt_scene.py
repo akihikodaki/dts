@@ -41,7 +41,7 @@ from .utils import create_mask
 
 # scenario module for handling scenario
 # 1. load configurations
-# config saved in conf/scenarios/name.cfg
+# config saved in $DTS_CFG_FOLDER/scenarios/name.cfg
 # load configurations will saved in vm list
 # 2. handle special config
 #   pf_idx=0,vf_num=2,driver=default;

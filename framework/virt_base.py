@@ -144,7 +144,7 @@ class VirtBase(object):
 
     def load_global_config(self):
         """
-        Load global configure in the path DTS_ROOT_PATH/conf.
+        Load global configure in the path CONFIG_ROOT_PATH.
         """
         conf = VirtConf(VIRTCONF)
         conf.load_virt_config(self.virt_type)
@@ -162,7 +162,7 @@ class VirtBase(object):
 
     def load_local_config(self, suite_name):
         """
-        Load local configure in the path DTS_ROOT_PATH/conf.
+        Load local configure in the path CONFIG_ROOT_PATH ('DTS_ROOT_PATH/$DTS_CFG_FOLDER/' by default).
         """
         # load local configuration by suite and vm name
         try:

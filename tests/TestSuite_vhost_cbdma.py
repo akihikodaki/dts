@@ -574,7 +574,7 @@ class TestVirTioVhostCbdma(TestCase):
 
     def handle_expected(self, mode_list):
         """
-        Update expected numbers to configurate file: conf/$suite_name.cfg
+        Update expected numbers to configurate file: $DTS_CFG_FOLDER/$suite_name.cfg
         """
         if load_global_setting(UPDATE_EXPECTED) == "yes":
             for mode in mode_list:

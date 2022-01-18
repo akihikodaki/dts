@@ -28,13 +28,14 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+import os.path
 import re
 import time
 
 import framework.utils as utils
 from framework.config import UserConf
 from framework.exception import VirtDutInitException
+from framework.settings import CONFIG_ROOT_PATH
 from framework.test_case import TestCase
 from framework.virt_common import VM
 
@@ -54,7 +55,7 @@ class TestVhostUserLiveMigration(TestCase):
                         "Insufficient ports for testing")
 
         # get mount info from cfg file
-        conf_info = UserConf('conf/%s.cfg' % self.suite_name)
+        conf_info = UserConf(os.path.join(CONFIG_ROOT_PATH, f'{self.suite_name}.cfg'))
         conf_session = conf_info.conf._sections['mount_info']
         self.mount_path = conf_session['backup_mount_path']
         self.share_path = conf_session['host_share_dir']

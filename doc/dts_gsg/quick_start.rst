@@ -155,7 +155,7 @@ DPDK source code should be packed as "dpdk.tar.gz" and moved into dts/dep:
 Configuring DTS
 ---------------
 
-A few of files should be configured, including execution.cfg, conf/crbs, conf/ports.cfg.
+A few of files should be configured, including execution.cfg, $DTS_CFG_FOLDER/crbs, $DTS_CFG_FOLDER/ports.cfg.
 
 execution.cfg
 ~~~~~~~~~~~~~
@@ -175,7 +175,7 @@ execution.cfg
 * crbs: IP address of the DUT system
 * test_suites: a list of test suites to be executed
 
-conf/crbs.cfg
+$DTS_CFG_FOLDER/crbs.cfg
 ~~~~~~~~~~~~~
 
 .. code-block:: console
@@ -196,7 +196,7 @@ conf/crbs.cfg
 * tester_ip: IP address of tester
 * tester_passwd: Password of Tester linux account, user name should same as dut_user
 
-conf/ports.cfg
+$DTS_CFG_FOLDER/ports.cfg
 ~~~~~~~~~~~~~~
 
 .. code-block:: console
@@ -206,7 +206,7 @@ conf/ports.cfg
        pci=0000:06:00.0,peer=0000:81:00.0;
        pci=0000:06:00.1,peer=0000:81:00.1;
 
-* [192.168.1.1]: same as crbs in execution.cfg and dut_ip in conf/crbs.cfg
+* [192.168.1.1]: same as crbs in execution.cfg and dut_ip in $DTS_CFG_FOLDER/crbs.cfg
 * pci: pci address of DUT port
 * peer: pci address of Tester port which connected to the DUT port whose pci is `pci`.
 

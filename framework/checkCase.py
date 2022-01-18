@@ -1,19 +1,17 @@
 import collections
 import json
+import os
 
-import xlrd
-
-from .settings import HOST_DRIVER_SETTING, get_nic_name, load_global_setting
+from .settings import HOST_DRIVER_SETTING, get_nic_name, load_global_setting, CONFIG_ROOT_PATH
 from .utils import RED
 
-filter_json_file = './conf/test_case_checklist.json'
-support_json_file = './conf/test_case_supportlist.json'
-
+filter_json_file = os.path.join(CONFIG_ROOT_PATH, 'test_case_checklist.json')
+support_json_file = os.path.join(CONFIG_ROOT_PATH, 'test_case_supportlist.json')
 
 class CheckCase(object):
     """
     Class for check test case running criteria. All information will be loaded
-    from conf/test_case_*list.json. Current two files are maintained. One is
+    from DTS_CFG_FOLDER/test_case_*list.json. Current two files are maintained. One is
     for check whether test case should skip, another one is for check whether
     current environment support test case execution.
     """

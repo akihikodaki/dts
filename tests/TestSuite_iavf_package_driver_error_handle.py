@@ -35,6 +35,7 @@ import time
 
 from framework.config import UserConf
 from framework.pmd_output import PmdOutput
+from framework.settings import CONFIG_ROOT_PATH
 from framework.test_case import TestCase
 
 
@@ -47,7 +48,7 @@ class Testiavf_package_and_driver_check(TestCase):
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         self.PF_QUEUE = 16
 
-        conf_file = 'conf/iavf_driver_package.cfg'
+        conf_file = os.path.join(CONFIG_ROOT_PATH, 'iavf_driver_package.cfg')
         conf_peer = UserConf(conf_file)
         conf_session = conf_peer.conf._sections['suite']
         self.driverPath_latest = conf_session['ice_driver_file_location_latest']

@@ -22,7 +22,7 @@ First of all, you must configure execution.cfg as below:
        x86_64-native-linuxapp-gcc
    parameters=nic_type=cfg:func=true
 
-* crbs: IP address of the DUT. The detail information is defined in file conf/crbs.cfg.
+* crbs: IP address of the DUT. The detail information is defined in file $DTS_CFG_FOLDER/crbs.cfg.
 * drivername: the driver devices used by DPDK bound to.
 * build_type: the tool for building DPDK, it can be meson and makefile. DPDK 20.11+ only uses meson and ninja.
 * rx_mode: vector instructions used in tests, it can be novector/sse/avx2/avx512. it is optional, if not set, dpdk uses avx2 by default.
@@ -31,7 +31,7 @@ First of all, you must configure execution.cfg as below:
 * parameters: multiple keywords as following:
 
   * nic_type: it is the type of the NIC to use. The types are defined in the file settings.py.
-    There's a special type named as **cfg**, which mean network information will be loaded from file conf/ports.cfg.
+    There's a special type named as **cfg**, which mean network information will be loaded from file $DTS_CFG_FOLDER/ports.cfg.
     If use NIC type such as niantic, fortville_25g, it requires all DUT are the same types and no any same devices connected to Tester,
     as DTS will test all devices connected to Tester. Therefore, recommend using **cfg**.
   * func=true: run only functional test.
@@ -59,7 +59,7 @@ Here are an example for functional testing:
 Configure CRB information
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Then please add the detail information about your CRB in conf/crbs.conf as following:
+Then please add the detail information about your CRB in $DTS_CFG_FOLDER/crbs.conf as following:
 
 .. code-block:: console
 
@@ -105,7 +105,7 @@ Here are an example for functional testing:
 Configure port information
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If set ``nic_type=cfg`` in execution.cfg, please add port configuration in conf/ports.cfg as following:
+If set ``nic_type=cfg`` in execution.cfg, please add port configuration in $DTS_CFG_FOLDER/ports.cfg as following:
 
 .. code-block:: console
 
@@ -122,7 +122,7 @@ It supports three patterns, the first one is for functional testing, the second 
 
   * if it is func testing, it is pci address
   * if pktgen is ``TRex``, the `X` in ``TREX:X`` is port id in TRex configuration file, e.g. /etc/trex_cfg.yaml.
-  * if pktgen is ``IXIA``, the `X` is card id ,and the `Y` is port id, which configured in ./conf/pktgen.cfg.
+  * if pktgen is ``IXIA``, the `X` is card id ,and the `Y` is port id, which configured in DTS_CFG_FOLDER/pktgen.cfg (./conf/pktgen.cfg by default).
 
 Here are an example for functional testing:
 
@@ -155,7 +155,7 @@ Here are an example for TRex:
 Configure all test suites
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-conf/global_suite.cfg is a global suite configure file which is shared by all suites.
+$DTS_CFG_FOLDER/global_suite.cfg is a global suite configure file which is shared by all suites.
 
 .. code-block:: console
 
@@ -168,8 +168,8 @@ conf/global_suite.cfg is a global suite configure file which is shared by all su
 Configure your own suites
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Not all test suites have it's own configuration file which depended on script. If it has, the configuration file is conf/[suite_name].cfg
-For example, suite metrics has its suite configure file conf/metric.cfg:
+Not all test suites have it's own configuration file which depended on script. If it has, the configuration file is $DTS_CFG_FOLDER/[suite_name].cfg
+For example, suite metrics has its suite configure file $DTS_CFG_FOLDER/metric.cfg:
 
 .. code-block:: console
 
@@ -183,12 +183,12 @@ For example, suite metrics has its suite configure file conf/metric.cfg:
 Configure your pktgen
 ~~~~~~~~~~~~~~~~~~~~~
 
-Pktgen information are configured in conf/pktgen.cfg, pktgen_group must be configured too:
+Pktgen information are configured in $DTS_CFG_FOLDER/pktgen.cfg, pktgen_group must be configured too:
 
 * traffic generator is ``TRex``, set ``pktgen_group=trex`` in crbs.cfg.
 * traffic generator is ``IXIA``, set ``pktgen_group=ixia`` in crbs.cfg.
 
-Then configure conf/pktgen.cfg as following:
+Then configure $DTS_CFG_FOLDER/pktgen.cfg as following:
 
 .. code-block:: console
 

@@ -25,7 +25,7 @@ First of all, you must configure execution.cfg as below:
 Configure CRB information
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Then please add the detail information about your CRB in conf/crbs.conf as following:
+Then please add the detail information about your CRB in $DTS_CFG_FOLDER/crbs.conf as following:
 
 .. code-block:: console
 
@@ -52,7 +52,7 @@ ports topology as below:
    IXIA port 0 <---------> DUT port 0
    IXIA port 1 <---------> DUT port 1
 
-please add port configuration in conf/ports.cfg as following:
+please add port configuration in $DTS_CFG_FOLDER/ports.cfg as following:
 
 .. code-block:: console
 
@@ -64,7 +64,7 @@ please add port configuration in conf/ports.cfg as following:
 Configure pktgen information
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-please configure Pktgen information in conf/pktgen.cfg
+please configure Pktgen information in $DTS_CFG_FOLDER/pktgen.cfg
 
 .. code-block:: console
 
@@ -86,7 +86,7 @@ Configure your own suites
 
 Performance tests generally have configuration files.
 it's name corresponds to the suite.
-Below is the conf/nic_single_core_perf.cfg configuration file.
+Below is the $DTS_CFG_FOLDER/nic_single_core_perf.cfg configuration file.
 You can set the test parameters according to your test needs.
 
 

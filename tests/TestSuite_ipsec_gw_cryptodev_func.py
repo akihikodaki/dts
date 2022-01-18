@@ -30,11 +30,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import binascii
+import os.path
 import time
 
 import framework.packet as packet
 import framework.utils as utils
 import tests.cryptodev_common as cc
+from framework.settings import CONFIG_ROOT_PATH
 from framework.test_case import TestCase
 
 
@@ -87,7 +89,7 @@ class TestIPsecGW(TestCase):
             "u": "0x1"
         }
 
-        conf_file = r'conf/ipsec_ep0.cfg'
+        conf_file = os.path.join(CONFIG_ROOT_PATH, 'ipsec_ep0.cfg')
         self.dut.session.copy_file_to(conf_file, '/tmp')
 
     def set_up(self):

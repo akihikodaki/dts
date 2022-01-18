@@ -28,10 +28,12 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+import os
 
 from framework.config import UserConf
+from framework.settings import CONFIG_ROOT_PATH
 
-conf_file = 'conf/vhost_peer_conf.cfg'
+conf_file = os.path.join(CONFIG_ROOT_PATH, 'vhost_peer_conf.cfg')
 conf_peer = UserConf(conf_file)
 conf_session = conf_peer.conf._sections['peerconf']
 

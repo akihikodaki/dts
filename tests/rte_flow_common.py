@@ -41,7 +41,7 @@ CVL_TXQ_RXQ_NUMBER = 16
 # switch filter common functions
 def get_suite_config(test_case):
     """
-    get the suite config from conf/suite.cfg.
+    get the suite config from $DTS_CFG_FOLDER/suite.cfg.
     """
     suite_config = {}
     if "ice_driver_file_location" in test_case.get_suite_cfg():
