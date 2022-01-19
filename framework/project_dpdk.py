@@ -649,19 +649,6 @@ class DPDKdut(Dut):
         # No blocklist option in FreeBSD
         return blocklist
 
-    def get_def_rte_config(self, config):
-        """
-        Get RTE configuration from config/defconfig_*.
-        """
-        out = self.send_expect("cat config/defconfig_%s | sed '/^#/d' | sed '/^\s*$/d'"
-                                        % self.target, "# ")
-
-        def_rte_config = re.findall(config+'=(\S+)', out)
-        if def_rte_config:
-            return def_rte_config[0]
-        else:
-            return None
-
     def set_driver_specific_configurations(self, drivername):
         """
         Set configurations required for specific drivers before compilation.

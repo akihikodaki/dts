@@ -31,6 +31,7 @@
 
 import os
 import re
+import threading
 import time
 from uuid import uuid4
 
@@ -41,6 +42,7 @@ from .config import AppNameConf, PortConf
 from .crb import Crb
 from .settings import LOG_NAME_SEP, NICS
 from .ssh_connection import SSHConnection
+from .test_result import ResultTable
 from .utils import RED, remove_old_rsa_key
 from .virt_resource import VirtResource
 
@@ -540,6 +542,19 @@ class Dut(Crb):
         except AttributeError:
             self.logger.error("%s is not implemented" % function_name)
 
+    def get_def_rte_config(self, config):
+        """
+        Get RTE configuration from config/defconfig_*.
+        """
+        out = self.send_expect("cat config/defconfig_%s | sed '/^#/d' | sed '/^\s*$/d'"
+                                        % self.target, "# ")
+
+        def_rte_config = re.findall(config+'=(\S+)', out)
+        if def_rte_config:
+            return def_rte_config[0]
+        else:
+            return None
+
     def setup_memory_linux(self, hugepages=-1):
         """
         Setup Linux hugepages.
@@ -628,7 +643,7 @@ class Dut(Crb):
             if pci_bus == port_info['pci']:
                 port = port_info['port']
                 break
-        if port and port.get_ipv4_addr() == crbs['IP'].strip():
+        if port and port.get_ipv4_addr() == self.get_ip_address().strip():
             return True
         else:
             return False
@@ -926,7 +941,8 @@ class Dut(Crb):
             port = port_info['port']
             intf = port.get_interface_name()
             if "No such file" in intf:
-                self.logger.info("DUT: [%s] %s" % (pci_bus, unknow_interface))
+                self.logger.info("DUT: [%s] %s" % (port_info['pci'],
+                                                   unknow_interface))
                 continue
             self.send_expect("ifconfig %s up" % intf, "# ")
             time.sleep(5)
@@ -1168,9 +1184,6 @@ class Dut(Crb):
             return
         for port_id in range(len(self.ports_info)):
             self.destroy_sriov_vfs_by_port(port_id)
-
-    def get_vm_core_list(self):
-        return VMCORELIST[self.crb['VM CoreList']]
 
     def load_portconf(self):
         """
