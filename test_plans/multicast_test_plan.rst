@@ -217,7 +217,8 @@ These flows do not change across the test cases.
 
 And re-compile examples/ipv4_multicast::
 
-    make -C examples/ipv4_multicast
+    meson configure -Dexamples=ipv4_multicast x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc
 
 Test Case: IP4 Multicast Forwarding
 ===================================

@@ -107,7 +107,8 @@ Add print code in IPSEC app::
 
 Re-compile examples/ipsec-secgw::
 
-    make -C examples/ipsec-secgw
+    meson configure -Dexamples=ipsec-secgw x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc
 
 Test Case: Inline cfg parsing
 =============================

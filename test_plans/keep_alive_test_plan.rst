@@ -61,7 +61,8 @@ Set the target (a default target is used if not specified). For example::
 See the DPDK Getting Started Guide for possible RTE_TARGET values.
 Build the application::
 
-   make
+   meson configure -Dexamples=l2fwd-keepalive x86_64-native-linuxapp-gcc
+   ninja -C x86_64-native-linuxapp-gcc
 
 Running the Application
 =======================

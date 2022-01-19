@@ -172,7 +172,8 @@ For example,
 
 Compile DPDK and testpmd::
 
-  make install -j T=x86_64-native-linuxapp-gcc
+  CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
+  ninja -C x86_64-native-linuxapp-gcc
 
 Launch testpmd with 1 default interface and 1 specific interface::
 

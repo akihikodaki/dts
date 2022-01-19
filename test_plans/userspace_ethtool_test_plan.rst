@@ -168,7 +168,8 @@ enable vlan filter flag in main.c of dpdk's ethtool::
 
 re-compile examples/ethtool::
 
-    make -C examples/ethtool
+    meson configure -Dexamples=ethtool x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc
 
 Add vlan 0 to port 0 and vlan 1 to port1, send packet without vlan to port0,1
 Verify port0 and port1 received vlan packets::

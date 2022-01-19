@@ -63,7 +63,8 @@ Modify the DPDK-l3fwd-power source code and recompile the l3fwd-power::
 
     export RTE_TARGET=x86_64-native-linuxapp-gcc
     export RTE_SDK=`/root/DPDK`
-    make -C examples/l3fwd-power
+    meson configure -Dexamples=l3fwd-power x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc
 
 Support igb_uio and vfio driver, if used vfio, kernel need 3.6+ and enable vt-d
 in bios. When used vfio, requested to insmod two drivers vfio and vfio-pci.

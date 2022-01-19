@@ -56,16 +56,15 @@ Test case: example build
 
 compile the applications of examples  successfully::
 
-    make -j 70 -C examples
+    meson configure -Dexamples=all x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc
 
 If the compilation is successful, it will be the same as the shown in the terminal. ::
 
     ...
-    LD load_balancer
-    INSTALL-APP l3fwd-thread
-    INSTALL-MAP l3fwd-thread.map
-    INSTALL-APP ipsec-secgw
-    INSTALL-MAP ipsec-secgw.map
-    INSTALL-MAP load_balancer.map
-    INSTALL-APP load_balancer
-    make: Leaving directory '/root/dpdk/examples'
+    [188/193] Linking target examples/dpdk-efd_node
+    [189/193] Linking target examples/dpdk-vhost_crypto
+    [190/193] Linking target examples/dpdk-pipeline
+    [191/193] Linking target examples/dpdk-efd_server
+    [192/193] Linking target examples/dpdk-vhost
+    [193/193] Linking target examples/dpdk-vmdq
