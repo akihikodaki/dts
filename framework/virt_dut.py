@@ -78,11 +78,9 @@ class VirtDut(DPDKdut):
         self.tester = None
         self.cores = []
         self.architecture = None
-        self.ports_info = None
         self.ports_map = []
         self.virttype = virttype
         self.prefix_subfix = str(os.getpid()) + '_' + time.strftime("%Y%m%d%H%M%S", time.localtime())
-        self.prefix_list = []
         self.apps_name_conf = {}
         self.apps_name = {}
 

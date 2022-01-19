@@ -73,14 +73,12 @@ class Dut(Crb):
         self.tester = None
         self.cores = []
         self.architecture = None
-        self.ports_info = []
         self.conf = PortConf()
         self.ports_map = []
         self.virt_pool = None
         # hypervisor pid list, used for cleanup
         self.virt_pids = []
         self.prefix_subfix = str(os.getpid()) + '_' + time.strftime("%Y%m%d%H%M%S", time.localtime())
-        self.prefix_list = []
         self.hugepage_path = None
         self.apps_name_conf = {}
         self.apps_name = {}

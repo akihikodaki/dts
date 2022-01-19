@@ -51,18 +51,23 @@ class Crb(object):
     CPU/PCI/NIC on the board and setup running environment for DPDK.
     """
 
+    PCI_DEV_CACHE_KEY = None
+    NUMBER_CORES_CACHE_KEY = None
+    CORE_LIST_CACHE_KEY = None
+
     def __init__(self, crb, serializer, name, alt_session=True, dut_id=0):
         self.dut_id = dut_id
         self.crb = crb
         self.read_cache = False
         self.skip_setup = False
         self.serializer = serializer
-        self.ports_info = None
+        self.ports_info = []
         self.sessions = []
         self.stage = 'pre-init'
         self.name = name
         self.trex_prefix = None
         self.default_hugepages_cleared = False
+        self.prefix_list = []
 
         self.logger = getLogger(name)
         self.session = SSHConnection(self.get_ip_address(), name,
@@ -79,6 +84,24 @@ class Crb(object):
             self.alt_session.init_log(self.logger)
         else:
             self.alt_session = None
+
+    def get_ip_address(self):
+        """
+        Get CRB's ip address.
+        """
+        raise NotImplementedError
+
+    def get_password(self):
+        """
+        Get CRB's login password.
+        """
+        raise NotImplementedError
+
+    def get_username(self):
+        """
+        Get CRB's login username.
+        """
+        raise NotImplementedError
 
     def send_expect(self, cmds, expected, timeout=TIMEOUT,
                     alt_session=False, verify=False, trim_whitespace=True):
@@ -137,7 +160,7 @@ class Crb(object):
             else:
                 self.session.close(force=True)
         except Exception as e:
-            self.loggger.error("Session close failed for [%s]" % e)
+            self.logger.error("Session close failed for [%s]" % e)
 
         if alt_session:
             session = SSHConnection(
@@ -388,7 +411,7 @@ class Crb(object):
                                (domain_id, bus_id, devfun_id), "# ", alt_session=True)
         rexp = r"PCI_ID=(.+)"
         pattern = re.compile(rexp)
-        match = re.search(out)
+        match = re.search(pattern, out)
         if not match:
             return None
         return match.group(1)
