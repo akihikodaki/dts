@@ -286,15 +286,6 @@ class DPDKdut(Dut):
         shared_lib_path = load_global_setting(HOST_SHARED_LIB_PATH)
         if use_shared_lib == 'true' and 'Virt' not in str(self):
             self.set_build_options({'RTE_BUILD_SHARED_LIB': 'y'})
-        kernel_driver = ''
-        nic_name = ''
-        if 'Virt' in str(self):
-            if self.host_dut.nic:
-                kernel_driver = self.host_dut.nic.default_driver
-                nic_name = self.host_dut.nic.name
-        elif self.nic:
-            kernel_driver = self.nic.default_driver
-            nic_name = self.nic.name
 
         build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
         build_install_dpdk = getattr(self, 'build_install_dpdk_%s_%s' % (self.get_os_type(), build_type))
@@ -418,7 +409,7 @@ class DPDKdut(Dut):
                                     "--snapshot when run dts")
                 # if ':' in session, this is vm dut, use the dut session
                 if ':' in self.session.name:
-                    session_info = self.host_dut.alt_session
+                    session_info = self.host_session
                 else:
                      session_info = self.alt_session
                 out = session_info.send_expect('ls -F %s' % self.package, '# ')
