@@ -80,7 +80,7 @@ class Tester(Crb):
     def __init__(self, crb, serializer):
         self.NAME = 'tester'
         self.scapy_session = None
-        super(Tester, self).__init__(crb, serializer, self.NAME)
+        super(Tester, self).__init__(crb, serializer, name=self.NAME)
         # check the python version of tester
         check_crb_python_version(self)
 

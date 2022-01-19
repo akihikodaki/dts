@@ -104,7 +104,7 @@ class VirtBase(object):
         """
         Get the virtual type, such as KVM, XEN or LIBVIRT.
         """
-        NotImplemented
+        raise NotImplementedError
 
     def has_virtual_ability(self):
         """
@@ -117,6 +117,30 @@ class VirtBase(object):
         Enable the virtual ability on the DUT.
         """
         NotImplemented
+
+    def get_vm_login(self):
+        """
+        Get VM credentials.
+        """
+        raise NotImplementedError
+
+    def add_vm_login(self):
+        """
+        Add VM credentials.
+        """
+        raise NotImplementedError
+
+    def _attach_vm(self):
+        """
+        Attach VM.
+        """
+        raise NotImplementedError
+
+    def _quick_start_vm(self):
+        """
+        Quick start VM.
+        """
+        raise NotImplementedError
 
     def load_global_config(self):
         """
@@ -230,7 +254,7 @@ class VirtBase(object):
         """
         Get the VM IP.
         """
-        NotImplemented
+        raise NotImplementedError
 
     def get_pci_mappings(self):
         """

@@ -61,6 +61,7 @@ class VirtScene(object):
         self.name = scene_name
         self.host_dut = dut
         self.tester_dut = tester
+        self.vm_dut = None
         self.pre_cmds = []
         self.post_cmds = []
 
@@ -347,7 +348,7 @@ class VirtScene(object):
             elif cmd['type'] == 'host':
                 crb = self.host_dut
             elif cmd['type'] == 'tester':
-                crb = self.tester
+                crb = self.tester_dut
             else:
                 crb = self.host_dut
 
@@ -394,7 +395,7 @@ class VirtScene(object):
             elif cmd['type'] == 'host':
                 crb = self.host_dut
             elif cmd['type'] == 'tester':
-                crb = self.tester
+                crb = self.tester_dut
             else:
                 crb = self.host_dut
 
@@ -456,7 +457,6 @@ class VirtScene(object):
                 topo = self.get_cputopo(scene_params)
                 try:
                     vm_dut = vm.start(load_config=False, set_target=False,
-                                      auto_portmap=self.auto_portmap,
                                       cpu_topo=topo)
                     if vm_dut is None:
                         raise Exception("Set up VM ENV failed!")
@@ -507,15 +507,17 @@ class VirtScene(object):
 
 if __name__ == "__main__":
 
-    class QEMUKvm():
+    class QEMUKvmTmp():
 
         def __init__(self, dut, vm_name, suite_name):
             print(vm_name)
             print(suite_name)
 
         def start(self):
-            print(self.params)
+            print(self.__dict__)
             return True
+
+    QEMUKvm = QEMUKvmTmp
 
     class simple_dev(object):
 

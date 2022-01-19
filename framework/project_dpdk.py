@@ -60,8 +60,9 @@ class DPDKdut(Dut):
     build, memory and kernel module.
     """
 
-    def __init__(self, crb, serializer, dut_id):
-        super(DPDKdut, self).__init__(crb, serializer, dut_id)
+    def __init__(self, crb, serializer, dut_id=0, name=None, alt_session=True):
+        super(DPDKdut, self).__init__(crb, serializer, dut_id, name,
+                                      alt_session)
         self.testpmd = None
 
     def set_target(self, target, bind_dev=True):

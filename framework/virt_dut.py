@@ -61,16 +61,16 @@ class VirtDut(DPDKdut):
     """
 
     def __init__(self, hyper, crb, serializer, virttype, vm_name, suite, cpu_topo, dut_id):
-        self.vm_name = vm_name
-        self.hyper = hyper
-        self.cpu_topo = cpu_topo
-        self.dut_id = dut_id
-        self.migration_vm = False
-
         self.vm_ip = crb['IP']
         self.NAME = 'virtdut' + LOG_NAME_SEP + '%s' % self.vm_ip
         # do not create addition alt_session
-        super(Dut, self).__init__(crb, serializer, self.NAME, alt_session=False, dut_id=self.dut_id)
+        super(VirtDut, self).__init__(crb, serializer, dut_id,
+                                      self.NAME, alt_session=False)
+        self.vm_name = vm_name
+        self.hyper = hyper
+        self.cpu_topo = cpu_topo
+        self.migration_vm = False
+
         # load port config from suite cfg
         self.suite = suite
 

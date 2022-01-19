@@ -64,10 +64,11 @@ class Dut(Crb):
     CORE_LIST_CACHE_KEY = 'dut_core_list'
     PCI_DEV_CACHE_KEY = 'dut_pci_dev_info'
 
-    def __init__(self, crb, serializer, dut_id):
-        self.NAME = 'dut' + LOG_NAME_SEP + '%s' % crb['My IP']
-        super(Dut, self).__init__(crb, serializer, self.NAME, alt_session=True, dut_id=dut_id)
-
+    def __init__(self, crb, serializer, dut_id=0, name=None, alt_session=True):
+        if not name:
+            name = 'dut' + LOG_NAME_SEP + '%s' % crb['My IP']
+            self.NAME = name
+        super(Dut, self).__init__(crb, serializer, dut_id, name, alt_session)
         self.host_init_flag = False
         self.number_of_cores = 0
         self.tester = None

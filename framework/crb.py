@@ -55,7 +55,7 @@ class Crb(object):
     NUMBER_CORES_CACHE_KEY = None
     CORE_LIST_CACHE_KEY = None
 
-    def __init__(self, crb, serializer, name, alt_session=True, dut_id=0):
+    def __init__(self, crb, serializer, dut_id=0, name=None, alt_session=True):
         self.dut_id = dut_id
         self.crb = crb
         self.read_cache = False

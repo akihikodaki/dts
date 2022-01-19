@@ -70,6 +70,9 @@ class VirtResource(object):
         # save allocated cores and related vm
         self.allocated_info = {}
 
+    def __port_isused(self, pci):
+        return pci in self.used_ports
+
     def __port_used(self, pci):
         index = self.ports.index(pci)
         self.used_ports[index] = pci
@@ -243,8 +246,8 @@ class VirtResource(object):
                     print("Port %s has been used!!!" % pci)
                 else:
                     if self.__port_on_socket(pci, socket) is True:
-                        self.__port_used(core)
-                        ports.append(core)
+                        self.__port_used(pci)
+                        ports.append(pci)
 
         if vm not in self.allocated_info:
             self.allocated_info[vm] = {}
