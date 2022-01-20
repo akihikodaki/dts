@@ -91,22 +91,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_ipv4_MAC_IPV6_PPPoL2TPV2_IPV4_PAY
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -114,7 +114,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_ipv4_MAC_IPV6_PPPoL2TPV2_IPV4_PAY
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -133,22 +133,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_ipv4_MAC_IPV6_PPPoL2TPV2_IPV4_FRAG
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200', frag=6)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200', frag=6)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201', frag=6)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201', frag=6)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -156,7 +156,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_ipv4_MAC_IPV6_PPPoL2TPV2_IPV4_FRAG
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -175,22 +175,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_ipv4_MAC_IPV6_PPPoL2TPV2_IPV4_UDP_PAY
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -198,7 +198,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_ipv4_MAC_IPV6_PPPoL2TPV2_IPV4_UDP_PAY
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -217,22 +217,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_ipv4_MAC_IPV6_PPPoL2TPV2_IPV4_TCP
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -240,7 +240,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_ipv4_MAC_IPV6_PPPoL2TPV2_IPV4_TCP
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -259,20 +259,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_ipv4_l3_src_only_MAC_IPV6_PPPoL2TPV2_IPV
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -280,7 +280,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_ipv4_l3_src_only_MAC_IPV6_PPPoL2TPV2_IPV
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -299,20 +299,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_ipv4_l3_dst_only_MAC_IPV6_PPPoL2TPV2_IPV
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -320,7 +320,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_ipv4_l3_dst_only_MAC_IPV6_PPPoL2TPV2_IPV
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -339,22 +339,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_MAC_IPV6_PPPoL2TPV2_IPV4_UDP_PA
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -362,7 +362,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_MAC_IPV6_PPPoL2TPV2_IPV4_UDP_PA
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -381,26 +381,26 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_MAC_IPV6_PPPoL2TPV2_IPV4_UD
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -408,7 +408,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_MAC_IPV6_PPPoL2TPV2_IPV4_UD
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -427,20 +427,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_l3_src_only_MAC_IPV6_PPPoL2
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -448,7 +448,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_l3_src_only_MAC_IPV6_PPPoL2
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -467,20 +467,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_l3_dst_only_MAC_IPV6_PPPoL2
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -488,7 +488,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_l3_dst_only_MAC_IPV6_PPPoL2
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -507,20 +507,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_l4_src_only_MAC_IPV6_PPPoL2
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.201')/UDP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.201')/UDP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -528,7 +528,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_l4_src_only_MAC_IPV6_PPPoL2
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -547,20 +547,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_l4_dst_only_MAC_IPV6_PPPoL2
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.201')/UDP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.201')/UDP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -568,7 +568,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_l4_dst_only_MAC_IPV6_PPPoL2
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -587,22 +587,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_l3_src_only_l4_src_only_MAC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -610,7 +610,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_l3_src_only_l4_src_only_MAC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -629,22 +629,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_l3_src_only_l4_dst_only_MAC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -652,7 +652,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_l3_src_only_l4_dst_only_MAC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -671,22 +671,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_l3_dst_only_l4_src_only_MAC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -694,7 +694,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_l3_dst_only_l4_src_only_MAC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -713,22 +713,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_l3_dst_only_l4_dst_only_MAC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -736,7 +736,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_udp_ipv4_udp_l3_dst_only_l4_dst_only_MAC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -755,22 +755,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_MAC_IPV6_PPPoL2TPV2_IPV4_TCP
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -778,7 +778,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_MAC_IPV6_PPPoL2TPV2_IPV4_TCP
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -797,26 +797,26 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_MAC_IPV6_PPPoL2TPV2_IPV4_TC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -824,7 +824,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_MAC_IPV6_PPPoL2TPV2_IPV4_TC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -843,20 +843,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_l3_src_only_MAC_IPV6_PPPoL2
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -864,7 +864,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_l3_src_only_MAC_IPV6_PPPoL2
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -883,20 +883,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_l3_dst_only_MAC_IPV6_PPPoL2
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -904,7 +904,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_l3_dst_only_MAC_IPV6_PPPoL2
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -923,20 +923,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_l4_src_only_MAC_IPV6_PPPoL2
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.201')/TCP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.201')/TCP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -944,7 +944,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_l4_src_only_MAC_IPV6_PPPoL2
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -963,20 +963,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_l4_dst_only_MAC_IPV6_PPPoL2
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.201')/TCP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.201')/TCP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -984,7 +984,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_l4_dst_only_MAC_IPV6_PPPoL2
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1003,22 +1003,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_l3_src_only_l4_src_only_MAC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1026,7 +1026,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_l3_src_only_l4_src_only_MAC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1045,22 +1045,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_l3_src_only_l4_dst_only_MAC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1068,7 +1068,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_l3_src_only_l4_dst_only_MAC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1087,22 +1087,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_l3_dst_only_l4_src_only_MAC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1110,7 +1110,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_l3_dst_only_l4_src_only_MAC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1129,22 +1129,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_l3_dst_only_l4_dst_only_MAC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1152,7 +1152,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv4_tcp_ipv4_tcp_l3_dst_only_l4_dst_only_MAC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1171,22 +1171,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_ipv6_MAC_IPV6_PPPoL2TPV2_IPV6_FRAG
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1194,7 +1194,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_ipv6_MAC_IPV6_PPPoL2TPV2_IPV6_FRAG
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1213,22 +1213,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_ipv6_MAC_IPV6_PPPoL2TPV2_IPV6_PAY
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1236,7 +1236,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_ipv6_MAC_IPV6_PPPoL2TPV2_IPV6_PAY
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1255,22 +1255,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_ipv6_MAC_IPV6_PPPoL2TPV2_IPV6_UDP_PAY
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1278,7 +1278,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_ipv6_MAC_IPV6_PPPoL2TPV2_IPV6_UDP_PAY
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1297,22 +1297,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_ipv6_MAC_IPV6_PPPoL2TPV2_IPV6_TCP
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1320,7 +1320,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_ipv6_MAC_IPV6_PPPoL2TPV2_IPV6_TCP
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1339,20 +1339,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_ipv6_l3_src_only_MAC_IPV6_PPPoL2TPV2_IPV
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1360,7 +1360,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_ipv6_l3_src_only_MAC_IPV6_PPPoL2TPV2_IPV
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1379,20 +1379,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_ipv6_l3_dst_only_MAC_IPV6_PPPoL2TPV2_IPV
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1400,7 +1400,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_ipv6_l3_dst_only_MAC_IPV6_PPPoL2TPV2_IPV
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1419,22 +1419,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_MAC_IPV6_PPPoL2TPV2_IPV6_UDP_PA
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1442,7 +1442,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_MAC_IPV6_PPPoL2TPV2_IPV6_UDP_PA
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1461,26 +1461,26 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_MAC_IPV6_PPPoL2TPV2_IPV6_UD
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1488,7 +1488,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_MAC_IPV6_PPPoL2TPV2_IPV6_UD
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1507,20 +1507,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_l3_src_only_MAC_IPV6_PPPoL2
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1528,7 +1528,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_l3_src_only_MAC_IPV6_PPPoL2
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1547,20 +1547,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_l3_dst_only_MAC_IPV6_PPPoL2
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1568,7 +1568,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_l3_dst_only_MAC_IPV6_PPPoL2
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1587,20 +1587,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_l4_src_only_MAC_IPV6_PPPoL2
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1608,7 +1608,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_l4_src_only_MAC_IPV6_PPPoL2
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1627,20 +1627,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_l4_dst_only_MAC_IPV6_PPPoL2
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1648,7 +1648,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_l4_dst_only_MAC_IPV6_PPPoL2
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1667,22 +1667,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_l3_src_only_l4_src_only_MAC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1690,7 +1690,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_l3_src_only_l4_src_only_MAC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1709,22 +1709,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_l3_src_only_l4_dst_only_MAC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1732,7 +1732,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_l3_src_only_l4_dst_only_MAC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1751,22 +1751,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_l3_dst_only_l4_src_only_MAC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1774,7 +1774,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_l3_dst_only_l4_src_only_MAC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1793,22 +1793,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_l3_dst_only_l4_dst_only_MAC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1816,7 +1816,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_udp_ipv6_udp_l3_dst_only_l4_dst_only_MAC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1835,22 +1835,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_MAC_IPV6_PPPoL2TPV2_IPV6_TCP
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1858,7 +1858,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_MAC_IPV6_PPPoL2TPV2_IPV6_TCP
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1877,26 +1877,26 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_MAC_IPV6_PPPoL2TPV2_IPV6_TC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1904,7 +1904,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_MAC_IPV6_PPPoL2TPV2_IPV6_TC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1923,20 +1923,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_l3_src_only_MAC_IPV6_PPPoL2
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1944,7 +1944,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_l3_src_only_MAC_IPV6_PPPoL2
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -1963,20 +1963,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_l3_dst_only_MAC_IPV6_PPPoL2
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -1984,7 +1984,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_l3_dst_only_MAC_IPV6_PPPoL2
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2003,20 +2003,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_l4_src_only_MAC_IPV6_PPPoL2
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2024,7 +2024,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_l4_src_only_MAC_IPV6_PPPoL2
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2043,20 +2043,20 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_l4_dst_only_MAC_IPV6_PPPoL2
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2064,7 +2064,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_l4_dst_only_MAC_IPV6_PPPoL2
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2083,22 +2083,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_l3_src_only_l4_src_only_MAC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2106,7 +2106,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_l3_src_only_l4_src_only_MAC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2125,22 +2125,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_l3_src_only_l4_dst_only_MAC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2148,7 +2148,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_l3_src_only_l4_dst_only_MAC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2167,22 +2167,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_l3_dst_only_l4_src_only_MAC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2190,7 +2190,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_l3_dst_only_l4_src_only_MAC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2209,22 +2209,22 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_l3_dst_only_l4_dst_only_MAC
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2232,7 +2232,7 @@ Test case: eth_ipv6_udp_l2tpv2_ppp_ipv6_tcp_ipv6_tcp_l3_dst_only_l4_dst_only_MAC
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2251,22 +2251,22 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv4_ipv4_MAC_IPV4_PPPoL2TPV2_IPV4_PAY
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2274,7 +2274,7 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv4_ipv4_MAC_IPV4_PPPoL2TPV2_IPV4_PAY
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2293,22 +2293,22 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv4_ipv4_MAC_IPV4_PPPoL2TPV2_IPV4_FRAG
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200', frag=6)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200', frag=6)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201', frag=6)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201', frag=6)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2316,7 +2316,7 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv4_ipv4_MAC_IPV4_PPPoL2TPV2_IPV4_FRAG
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2335,22 +2335,22 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv4_ipv4_MAC_IPV4_PPPoL2TPV2_IPV4_UDP_PAY
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2358,7 +2358,7 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv4_ipv4_MAC_IPV4_PPPoL2TPV2_IPV4_UDP_PAY
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2377,22 +2377,22 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv4_ipv4_MAC_IPV4_PPPoL2TPV2_IPV4_TCP
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2400,7 +2400,7 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv4_ipv4_MAC_IPV4_PPPoL2TPV2_IPV4_TCP
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2419,22 +2419,22 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv4_udp_ipv4_MAC_IPV4_PPPoL2TPV2_IPV4_UDP_PA
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2442,7 +2442,7 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv4_udp_ipv4_MAC_IPV4_PPPoL2TPV2_IPV4_UDP_PA
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2461,22 +2461,22 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv4_tcp_ipv4_MAC_IPV4_PPPoL2TPV2_IPV4_TCP
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2484,7 +2484,7 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv4_tcp_ipv4_MAC_IPV4_PPPoL2TPV2_IPV4_TCP
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2503,22 +2503,22 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv6_ipv6_MAC_IPV4_PPPoL2TPV2_IPV6_FRAG
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2526,7 +2526,7 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv6_ipv6_MAC_IPV4_PPPoL2TPV2_IPV6_FRAG
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2545,22 +2545,22 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv6_ipv6_MAC_IPV4_PPPoL2TPV2_IPV6_PAY
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2568,7 +2568,7 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv6_ipv6_MAC_IPV4_PPPoL2TPV2_IPV6_PAY
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2587,22 +2587,22 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv6_ipv6_MAC_IPV4_PPPoL2TPV2_IPV6_UDP_PAY
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2610,7 +2610,7 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv6_ipv6_MAC_IPV4_PPPoL2TPV2_IPV6_UDP_PAY
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2629,22 +2629,22 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv6_ipv6_MAC_IPV4_PPPoL2TPV2_IPV6_TCP
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2652,7 +2652,7 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv6_ipv6_MAC_IPV4_PPPoL2TPV2_IPV6_TCP
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2671,22 +2671,22 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv6_udp_ipv6_MAC_IPV4_PPPoL2TPV2_IPV6_UDP_PA
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2694,7 +2694,7 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv6_udp_ipv6_MAC_IPV4_PPPoL2TPV2_IPV6_UDP_PA
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
@@ -2713,22 +2713,22 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv6_tcp_ipv6_MAC_IPV4_PPPoL2TPV2_IPV6_TCP
 
 3. send a basic hit pattern packet,record the hash value::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet distributed to queue by rss.
 
 4. send hit pattern packets with changed input set in the rule::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)
 
    check the received packets have different hash value with basic packet.
    check all the packets are distributed to queues by rss.
 
 5. send hit pattern packets with changed input set not in the rule::
 
-    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)
 
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
@@ -2736,7 +2736,7 @@ Test case: eth_ipv4_udp_l2tpv2_ppp_ipv6_tcp_ipv6_MAC_IPV4_PPPoL2TPV2_IPV6_TCP
 
 6. send not hit pattern packet::
 
-    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
+    Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)
 
    check the packet rss hash value is 0.
 
