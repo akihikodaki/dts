@@ -45,19 +45,19 @@ vector_case_1 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -71,19 +71,19 @@ vector_case_2 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200', frag=6)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201', frag=6)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200', frag=6)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201', frag=6)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -97,19 +97,19 @@ vector_case_3 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -123,19 +123,19 @@ vector_case_4 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -149,19 +149,19 @@ vector_case_5 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -175,19 +175,19 @@ vector_case_6 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -201,19 +201,19 @@ vector_case_7 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -227,22 +227,22 @@ vector_case_8 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / udp / end actions rss types ipv4-udp end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
-                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)",
-                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)",
-                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)",
+                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -256,19 +256,19 @@ vector_case_9 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / udp / end actions rss types ipv4-udp l3-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -282,19 +282,19 @@ vector_case_10 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -308,19 +308,19 @@ vector_case_11 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / udp / end actions rss types ipv4-udp l4-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.201')/UDP(sport=23, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.201')/UDP(sport=23, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -334,19 +334,19 @@ vector_case_12 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.201')/UDP(sport=25, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.201')/UDP(sport=25, dport=24)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -360,19 +360,19 @@ vector_case_13 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -386,19 +386,19 @@ vector_case_14 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=25, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=25, dport=24)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -412,19 +412,19 @@ vector_case_15 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -438,19 +438,19 @@ vector_case_16 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=99)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=25, dport=24)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -464,19 +464,19 @@ vector_case_17 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / tcp / end actions rss types ipv4 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -490,22 +490,22 @@ vector_case_18 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / tcp / end actions rss types ipv4-tcp end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
-                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)",
-                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)",
-                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)",
+                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -519,19 +519,19 @@ vector_case_19 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / tcp / end actions rss types ipv4-tcp l3-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -545,19 +545,19 @@ vector_case_20 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / tcp / end actions rss types ipv4-tcp l3-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -571,19 +571,19 @@ vector_case_21 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / tcp / end actions rss types ipv4-tcp l4-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.201')/TCP(sport=23, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.201')/TCP(sport=23, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -597,19 +597,19 @@ vector_case_22 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / tcp / end actions rss types ipv4-tcp l4-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.201')/TCP(sport=25, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.201')/TCP(sport=25, dport=24)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -623,19 +623,19 @@ vector_case_23 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / tcp / end actions rss types ipv4-tcp l3-src-only l4-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -649,19 +649,19 @@ vector_case_24 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / tcp / end actions rss types ipv4-tcp l3-src-only l4-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=25, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=25, dport=24)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -675,19 +675,19 @@ vector_case_25 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / tcp / end actions rss types ipv4-tcp l3-dst-only l4-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -701,19 +701,19 @@ vector_case_26 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv4 / tcp / end actions rss types ipv4-tcp l3-dst-only l4-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=99)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=25, dport=24)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -727,19 +727,19 @@ vector_case_27 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / end actions rss types ipv6 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -753,19 +753,19 @@ vector_case_28 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / end actions rss types ipv6 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -779,19 +779,19 @@ vector_case_29 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / end actions rss types ipv6 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -805,19 +805,19 @@ vector_case_30 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / end actions rss types ipv6 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -831,19 +831,19 @@ vector_case_31 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / end actions rss types ipv6 l3-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -857,19 +857,19 @@ vector_case_32 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / end actions rss types ipv6 l3-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -883,19 +883,19 @@ vector_case_33 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / udp / end actions rss types ipv6 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -909,22 +909,22 @@ vector_case_34 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / udp / end actions rss types ipv6-udp end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
-                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)",
-                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)",
-                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)",
+                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -938,19 +938,19 @@ vector_case_35 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / udp / end actions rss types ipv6-udp l3-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -964,19 +964,19 @@ vector_case_36 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / udp / end actions rss types ipv6-udp l3-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -990,19 +990,19 @@ vector_case_37 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / udp / end actions rss types ipv6-udp l4-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1016,19 +1016,19 @@ vector_case_38 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / udp / end actions rss types ipv6-udp l4-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=25, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=25, dport=24)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1042,19 +1042,19 @@ vector_case_39 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / udp / end actions rss types ipv6-udp l3-src-only l4-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1068,19 +1068,19 @@ vector_case_40 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / udp / end actions rss types ipv6-udp l3-src-only l4-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=25, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=25, dport=24)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1094,19 +1094,19 @@ vector_case_41 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / udp / end actions rss types ipv6-udp l3-dst-only l4-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1120,19 +1120,19 @@ vector_case_42 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / udp / end actions rss types ipv6-udp l3-dst-only l4-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=99)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=24)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1146,19 +1146,19 @@ vector_case_43 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / tcp / end actions rss types ipv6 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1172,22 +1172,22 @@ vector_case_44 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / tcp / end actions rss types ipv6-tcp end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
-                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)",
-                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)",
-                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)",
+                               "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1201,19 +1201,19 @@ vector_case_45 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / tcp / end actions rss types ipv6-tcp l3-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1227,19 +1227,19 @@ vector_case_46 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / tcp / end actions rss types ipv6-tcp l3-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1253,19 +1253,19 @@ vector_case_47 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / tcp / end actions rss types ipv6-tcp l4-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1279,19 +1279,19 @@ vector_case_48 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / tcp / end actions rss types ipv6-tcp l4-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=25, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=25, dport=24)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1305,19 +1305,19 @@ vector_case_49 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / tcp / end actions rss types ipv6-tcp l3-src-only l4-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1331,19 +1331,19 @@ vector_case_50 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / tcp / end actions rss types ipv6-tcp l3-src-only l4-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=25, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=25, dport=24)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1357,19 +1357,19 @@ vector_case_51 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / tcp / end actions rss types ipv6-tcp l3-dst-only l4-src-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1383,19 +1383,19 @@ vector_case_52 = [
         "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / ipv6 / tcp / end actions rss types ipv6-tcp l3-dst-only l4-dst-only end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=99)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IPv6(src='2001::3', dst='2001::4')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2925', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=24)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1409,19 +1409,19 @@ vector_case_53 = [
         "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / ppp / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1435,19 +1435,19 @@ vector_case_54 = [
         "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / ppp / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200', frag=6)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201', frag=6)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200', frag=6)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201', frag=6)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200', frag=6)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1461,19 +1461,19 @@ vector_case_55 = [
         "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / ppp / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1487,19 +1487,19 @@ vector_case_56 = [
         "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / ppp / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1513,19 +1513,19 @@ vector_case_57 = [
         "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / ppp / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1539,19 +1539,19 @@ vector_case_58 = [
         "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / ppp / ipv4 / tcp / end actions rss types ipv4 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.101', dst='192.168.1.200')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.201')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/TCP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0021)/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x21')/IP(src='192.168.1.100', dst='192.168.1.200')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1565,19 +1565,19 @@ vector_case_59 = [
         "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / ppp / ipv6 / end actions rss types ipv6 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020', nh=44)/IPv6ExtHdrFragment()/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1591,19 +1591,19 @@ vector_case_60 = [
         "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / ppp / ipv6 / end actions rss types ipv6 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1617,19 +1617,19 @@ vector_case_61 = [
         "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / ppp / ipv6 / end actions rss types ipv6 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1643,19 +1643,19 @@ vector_case_62 = [
         "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / ppp / ipv6 / end actions rss types ipv6 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IPv6(src='2001::1', dst='2001::2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1669,19 +1669,19 @@ vector_case_63 = [
         "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / ppp / ipv6 / udp / end actions rss types ipv6 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/UDP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
@@ -1695,19 +1695,19 @@ vector_case_64 = [
         "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / ppp / ipv6 / tcp / end actions rss types ipv6 end key_len 0 queues end / end",
         "test": [
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "save_hash"
             },
             {
-                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
+                "send_packet": ["Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2923', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=23, dport=24)/Raw('x' * 80)", "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2025')/TCP(sport=23, dport=24)/Raw('x' * 80)"],
                 "action": "check_hash_different"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:66', dst='00:11:22:33:44:55')/IP(src='100.0.1.1', dst='100.0.1.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/TCP(sport=25, dport=99)/Raw('x' * 80)",
                 "action": "check_hash_same"
             },
             {
-                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/PPP(proto=0x0057)/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
+                "send_packet": "Ether(src='00:11:22:33:44:77', dst='00:11:22:33:44:55')/IP(src='100.0.0.1', dst='100.0.0.2')/UDP(dport=1701, sport=1702)/L2TP(session_id=0x7)/HDLC(address=0xff, control=0x03)/Raw(b'\\x00\\x57')/IPv6(src='ABAB:910B:6666:3457:8295:3333:1800:2929', dst='CDCD:910A:2222:5498:8475:1111:3900:2020')/UDP(sport=23, dport=24)/Raw('x' * 80)",
                 "action": "check_no_hash"
             },
         ]
