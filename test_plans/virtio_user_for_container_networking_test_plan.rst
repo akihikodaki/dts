@@ -72,12 +72,12 @@ Test Case 1: packet forward test for container networking
 
 2. Bind one port to vfio-pci, launch vhost::
 
-    ./testpmd -l 1-2 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i
+    ./<build_target>/app/dpdk-testpmd -l 1-2 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i
 
 2. Start a container instance with a virtio-user port::
 
     docker run -i -t --privileged -v /root/dpdk/vhost-net:/tmp/vhost-net -v /mnt/huge:/dev/hugepages \
-    -v /root/dpdk:/root/dpdk dpdk_image ./root/dpdk/x86_64-native-linuxapp-gcc/app/testpmd -l 3-4 -n 4 -m 1024 --no-pci --file-prefix=container \
+    -v /root/dpdk:/root/dpdk dpdk_image ./root/dpdk/x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 3-4 -n 4 -m 1024 --no-pci --file-prefix=container \
     --vdev=virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net -- -i
 
 3. Send packet with packet generator with different packet size,includes [64, 128, 256, 512, 1024, 1518], check virtio could receive and fwd packets correctly in container::
@@ -94,12 +94,12 @@ Test Case 2: packet forward with multi-queues for container networking
 
 2. Bind one port to vfio-pci, launch vhost::
 
-    ./testpmd -l 1-3 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2
+    ./<build_target>/app/dpdk-testpmd -l 1-3 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2
 
 2. Start a container instance with a virtio-user port::
 
     docker run -i -t --privileged -v /root/dpdk/vhost-net:/tmp/vhost-net -v /mnt/huge:/dev/hugepages \
-    -v /root/dpdk:/root/dpdk dpdk_image ./root/dpdk/x86_64-native-linuxapp-gcc/app/testpmd -l 4-6 -n 4 -m 1024 --no-pci --file-prefix=container \
+    -v /root/dpdk:/root/dpdk dpdk_image ./root/dpdk/x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 4-6 -n 4 -m 1024 --no-pci --file-prefix=container \
     --vdev=virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,queues=2 -- -i --rxq=2 --txq=2 --nb-cores=2
 
 3. Send packet with packet generator with different packet size,includes [64, 128, 256, 512, 1024, 1518], check virtio could receive and fwd packets in container with two queues::

@@ -130,14 +130,14 @@ Test case 1: reserve valid vf queue number
 
 1. Start PF testpmd with random queue-num-per-vf in [1, 2, 4, 8 ,16], for example, we use 4 as the reserved vf queue numbers::
 
-     ./testpmd -c f -n 4 -a 18:00.0,queue-num-per-vf=4 \
+     ./<build_target>/app/dpdk-testpmd -c f -n 4 -a 18:00.0,queue-num-per-vf=4 \
      --file-prefix=test1 --socket-mem 1024,1024 -- -i
 
    Note testpmd can be started normally without any wrong or error.
 
 2. Start VF testpmd::
 
-     ./testpmd -c 0xf0 -n 4 -a 03:00.0 \
+     ./<build_target>/app/dpdk-testpmd -c 0xf0 -n 4 -a 03:00.0 \
      --file-prefix=test2 --socket-mem 1024,1024 -- -i
 
 3. VF request a queue number that is equal to reserved queue number, and we can not find VF reset while confiuring it::
@@ -195,7 +195,7 @@ Test case 2: reserve invalid VF queue number
 
 1. Start PF testpmd with random queue-num-per-vf in [0, 3, 5-7 , 9-15, 17], for example, we use 0 as the reserved vf queue numbers::
 
-     ./testpmd -c f -n 4 -a 18:00.0,queue-num-per-vf=0 \
+     ./<build_target>/app/dpdk-testpmd -c f -n 4 -a 18:00.0,queue-num-per-vf=0 \
      --file-prefix=test1 --socket-mem 1024,1024 -- -i
 
 2. Verify testpmd started with logs as below::
@@ -207,12 +207,12 @@ Test case 3: set valid VF queue number in testpmd command-line options
 
 1. Start PF testpmd::
 
-      ./testpmd -c f -n 4 -a 18:00.0 \
+      ./<build_target>/app/dpdk-testpmd -c f -n 4 -a 18:00.0 \
       --file-prefix=test1 --socket-mem 1024,1024 -- -i
 
 2. Start VF testpmd with "--rxq=[rxq] --txq=[txq]", and random valid values from 1 to 16, take 3 for example::
 
-     ./testpmd -c 0xf0 -n 4 -a 18:02.0 --file-prefix=test2 \
+     ./<build_target>/app/dpdk-testpmd -c 0xf0 -n 4 -a 18:02.0 --file-prefix=test2 \
      --socket-mem 1024,1024 -- -i --rxq=3 --txq=3
 
 3. Configure vf forwarding prerequisits and start forwarding::
@@ -254,12 +254,12 @@ Test case 4: set invalid VF queue number in testpmd command-line options
 
 1. Start PF testpmd::
 
-     ./testpmd -c f -n 4 -a 18:00.0 \
+     ./<build_target>/app/dpdk-testpmd -c f -n 4 -a 18:00.0 \
      --file-prefix=test1 --socket-mem 1024,1024 -- -i
 
 2. Start VF testpmd with "--rxq=0 --txq=0" ::
 
-     ./testpmd -c 0xf0 -n 4 -a 18:02.0 --file-prefix=test2 \
+     ./<build_target>/app/dpdk-testpmd -c 0xf0 -n 4 -a 18:02.0 --file-prefix=test2 \
      --socket-mem 1024,1024 -- -i --rxq=0 --txq=0
 
    Verify testpmd exited with error as below::
@@ -268,7 +268,7 @@ Test case 4: set invalid VF queue number in testpmd command-line options
 
 3. Start VF testpmd with "--rxq=17 --txq=17" ::
 
-     ./testpmd -c 0xf0 -n 4 -a 18:02.0 --file-prefix=test2 \
+     ./<build_target>/app/dpdk-testpmd -c 0xf0 -n 4 -a 18:02.0 --file-prefix=test2 \
      --socket-mem 1024,1024 -- -i --rxq=17 --txq=17
 
    Verify testpmd exited with error as below::
@@ -280,12 +280,12 @@ Test case 5: set valid VF queue number with testpmd function command
 
 1. Start PF testpmd::
 
-     ./testpmd -c f -n 4 -a 18:00.0 \
+     ./<build_target>/app/dpdk-testpmd -c f -n 4 -a 18:00.0 \
      --file-prefix=test1 --socket-mem 1024,1024 -- -i
 
 2. Start VF testpmd without setting "rxq" and "txq"::
 
-     ./testpmd -c 0xf0 -n 4 -a 05:02.0 --file-prefix=test2 \
+     ./<build_target>/app/dpdk-testpmd -c 0xf0 -n 4 -a 05:02.0 --file-prefix=test2 \
      --socket-mem 1024,1024 -- -i
 
 3. Configure vf forwarding prerequisits and start forwarding::
@@ -307,12 +307,12 @@ Test case 6: set invalid VF queue number with testpmd function command
 
 1. Start PF testpmd::
 
-     ./testpmd -c f -n 4 -a 18:00.0 \
+     ./<build_target>/app/dpdk-testpmd -c f -n 4 -a 18:00.0 \
      --file-prefix=test1 --socket-mem 1024,1024 -- -i
 
 2. Start VF testpmd without setting "rxq" and "txq"::
 
-     ./testpmd -c 0xf0 -n 4 -a 05:02.0 --file-prefix=test2 \
+     ./<build_target>/app/dpdk-testpmd -c 0xf0 -n 4 -a 05:02.0 --file-prefix=test2 \
      --socket-mem 1024,1024 -- -i
 
 
@@ -344,7 +344,7 @@ Test case 7: Reserve VF queue number when VF bind to kernel driver
 
 2. Reserve VF queue number ::
 
-     ./testpmd -c f -n 4 -a 18:00.0,queue-num-per-vf=2 \
+     ./<build_target>/app/dpdk-testpmd -c f -n 4 -a 18:00.0,queue-num-per-vf=2 \
      --file-prefix=test1 --socket-mem 1024,1024 -- -i
 
 3. Check the VF0 rxq and txq number is 2::

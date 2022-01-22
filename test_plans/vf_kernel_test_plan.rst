@@ -81,7 +81,7 @@ Steps:
 
 1. Enable multi-queues to start DPDK PF::
 
-    ./testpmd -c f -n 4 -- -i --rxq=4 --txq=4
+    ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i --rxq=4 --txq=4
 
 2. Link up kernel VF and expect VF link up
 

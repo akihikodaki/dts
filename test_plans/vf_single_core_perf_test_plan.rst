@@ -86,7 +86,7 @@ Test Case : Vf Single Core Performance Measurement
 
 4. Start testpmd::
 
-    ./dpdk-testpmd -l 28,29 -n 4 -- -i --portmask=0x3  --txd=512 --rxd=512 \
+    ./<build_target>/app/dpdk-testpmd -l 28,29 -n 4 -- -i --portmask=0x3  --txd=512 --rxd=512 \
     --txq=2 --rxq=2 --nb-cores=1
 
     testpmd> set fwd mac

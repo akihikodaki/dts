@@ -46,11 +46,16 @@ prior to transmission to calculate the elapsed time, in CPU cycles.
 Running the Application
 =======================
 
-Set ``CONFIG_RTE_ETHDEV_RXTX_CALLBACKS=y`` in config/common_base.
+Build dpdk and examples=rxtx_callbacks:
+   CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static <build_target>
+   ninja -C <build_target>
+
+   meson configure -Dexamples=rxtx_callbacks <build_target>
+   ninja -C <build_target>
 
 To run the example in a ``linuxapp`` environment::
 
-    ./build/rxtx_callbacks -c 2 -n 4
+    ./<build_target>/examples/dpdk-rxtx_callbacks -c 2 -n 4
 
 Refer to *DPDK Getting Started Guide* for general information on running
 applications and the Environment Abstraction Layer (EAL) options.
@@ -60,7 +65,7 @@ Test Case:rxtx callbacks
 
 Run the example::
 
-     ./examples/rxtx_callbacks/build/rxtx_callbacks -c 2 -n 4
+     ./<build_target>/examples/dpdk-rxtx_callbacks -c 2 -n 4
 
 waked up:::
 

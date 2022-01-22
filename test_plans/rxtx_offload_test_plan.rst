@@ -113,7 +113,7 @@ Test case: Rx offload per-port setting in command-line
 
 1. Enable rx cksum in command-line::
 
-    ./testpmd -c f -n 4 -- -i --rxq=4 --txq=4 --enable-rx-cksum
+    ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i --rxq=4 --txq=4 --enable-rx-cksum
     testpmd> set fwd csum
     testpmd> set verbose 1
     testpmd> show port 0 rx_offload configuration
@@ -173,7 +173,7 @@ Test case: NNT Rx offload per-queue setting
 
 1. Start testpmd::
 
-    ./testpmd -c f -n 4 -- -i --rxq=4 --txq=4
+    ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i --rxq=4 --txq=4
     testpmd> set fwd mac
     testpmd> set verbose 1
     testpmd> show port info all
@@ -287,7 +287,7 @@ Test case: Tx offload per-port setting
 
 1. Start testpmd::
 
-    ./testpmd -c 0x6 -n 4  -- -i --rxq=4 --txq=4 --port-topology=loop
+    ./<build_target>/app/dpdk-testpmd -c 0x6 -n 4  -- -i --rxq=4 --txq=4 --port-topology=loop
     testpmd> set fwd txonly
     testpmd> set verbose 1
     testpmd> show port 0 tx_offload configuration
@@ -346,7 +346,7 @@ Test case: Tx offload per-port setting in command-line
 
 1. Start testpmd with "--tx-offloads"::
 
-    ./testpmd -c 0xf -n 4  -- -i --rxq=4 --txq=4 --port-topology=loop --tx-offloads=0x0001
+    ./<build_target>/app/dpdk-testpmd -c 0xf -n 4  -- -i --rxq=4 --txq=4 --port-topology=loop --tx-offloads=0x0001
     testpmd> show port 0 tx_offload configuration
     Tx Offloading Configuration of port 0 :
       Port : VLAN_INSERT
@@ -446,7 +446,7 @@ Test case: Tx offload checksum
 
 1. Set checksum forward mode::
 
-    ./testpmd -c f -n 4 -- -i --rxq=4 --txq=4
+    ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i --rxq=4 --txq=4
     testpmd> set fwd csum
     testpmd> set verbose 1
     testpmd> show port 0 tx_offload configuration
@@ -519,7 +519,7 @@ Test case: FVL Tx offload per-queue setting
 
 1. Start testpmd and get the tx_offload capability and configuration::
 
-    ./testpmd -c f -n 4 -- -i --rxq=4 --txq=4
+    ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i --rxq=4 --txq=4
     testpmd> show port 0 tx_offload capabilities
     Tx Offloading Capabilities of port 0 :
       Per Queue : MBUF_FAST_FREE
@@ -604,7 +604,7 @@ Test case: Tx offload multi_segs setting
 
 1. Start testpmd with "--tx-offloads=0x00008000" to enable tx_offload multi_segs ::
 
-    ./testpmd -c 0xf -n 4  -- -i --tx-offloads==0x00008000
+    ./<build_target>/app/dpdk-testpmd -c 0xf -n 4  -- -i --tx-offloads==0x00008000
     testpmd> show port 0 tx_offload configuration
     Tx Offloading Configuration of port 0 :
       Port : MULTI_SEGS
@@ -648,7 +648,7 @@ Test case: Tx offload multi_segs setting
 
 4. Start testpmd again without "--tx-offloads", check multi-segs is disabled by default::
 
-    ./testpmd -c 0xf -n 4  -- -i
+    ./<build_target>/app/dpdk-testpmd -c 0xf -n 4  -- -i
     testpmd> show port 0 tx_offload configuration
     No MULTI_SEGS in Tx Offloading Configuration of ports
 

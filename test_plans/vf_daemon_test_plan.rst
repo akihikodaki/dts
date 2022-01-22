@@ -87,7 +87,7 @@ Prerequisites
 
 5. Start testpmd on host and vm0 in chained port topology::
 
-        ./testpmd -c f -n 4 -- -i --port-topology=chained --tx-offloads=0x8fff
+        ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i --port-topology=chained --tx-offloads=0x8fff
 
 
 Test Case 1: Set VLAN insert for VF from PF

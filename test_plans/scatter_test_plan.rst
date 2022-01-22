@@ -101,7 +101,7 @@ Assuming that ports ``0`` and ``1`` of the test target are directly connected
 to a Traffic Generator, launch the ``testpmd`` application with the following
 arguments::
 
-  ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x6 -n 4 -- -i --mbcache=200 \
+  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 -- -i --mbcache=200 \
   --mbuf-size=2048 --portmask=0x1 --max-pkt-len=9000 --port-topology=loop \
   --tx-offloads=DEV_TX_OFFLOAD_MULTI_SEGS
 

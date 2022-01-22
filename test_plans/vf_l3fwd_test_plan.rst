@@ -91,6 +91,13 @@ Setup overview
 
 Set up topology as above based on the NIC used.
 
+Build dpdk and examples=l3fwd:
+   CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static <build_target>
+   ninja -C <build_target>
+
+   meson configure -Dexamples=l3fwd <build_target>
+   ninja -C <build_target>
+
 Test Case 1: Measure performance with kernel PF & dpdk VF
 =========================================================
 
@@ -111,7 +118,7 @@ take XL710 for example::
 
 4, Start dpdk l3fwd with 1:1 matched cores and queues::
 
-  ./examples/l3fwd/build/l3fwd -c 0xf -n 4 -- -p 0x3 --config '(0,0,0),(1,0,1),(0,1,2),(1,1,3)'
+  ./<build_target>/examples/dpdk-l3fwd -c 0xf -n 4 -- -p 0x3 --config '(0,0,0),(1,0,1),(0,1,2),(1,1,3)'
 
 5, Send packet with frame size from 64bytes to 1518bytes with ixia traffic generator,
 make sure your traffic configuration meets LPM rules, and will go to all queues, all ports.
@@ -150,13 +157,13 @@ take XL710 for example::
 
 3, Start testpmd and set vfs mac address::
 
-  ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 4 --socket-mem=1024,1024 --file-prefix=pf -b 0000:18:02.0 -b 0000:18:06.0 -- -i
+  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 --socket-mem=1024,1024 --file-prefix=pf -b 0000:18:02.0 -b 0000:18:06.0 -- -i
   testpmd>set vf mac addr 0 0 00:12:34:56:78:01
   testpmd>set vf mac addr 1 0 00:12:34:56:78:02
 
 4, Start dpdk l3fwd with 1:1 matched cores and queues::
 
-  ./examples/l3fwd/build/l3fwd -c 0x3c -n 4 -a 0000:18:02.0 -a 0000:18:06.0 -- -p 0x3 --config '(0,0,2),(1,0,3),(0,1,4),(1,1,5)'
+  ./<build_target>/examples/dpdk-l3fwd -c 0x3c -n 4 -a 0000:18:02.0 -a 0000:18:06.0 -- -p 0x3 --config '(0,0,2),(1,0,3),(0,1,4),(1,1,5)'
 
 5, Send packet with frame size from 64bytes to 1518bytes with ixia traffic generator,
 make sure your traffic configuration meets LPM rules, and will go to all queues, all ports.

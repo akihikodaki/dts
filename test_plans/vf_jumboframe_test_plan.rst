@@ -85,7 +85,7 @@ Prerequisites
 
 5. Start testpmd, set it in mac forward mode::
 
-      testpmd -c 0x0f-- -i --portmask=0x1 \
+      ./<build_target>/app/dpdk-testpmd -c 0x0f-- -i --portmask=0x1 \
         --tx-offloads=0x8fff --max-pkt-len=9000--port-topology=loop
       testpmd> set fwd mac
       testpmd> start

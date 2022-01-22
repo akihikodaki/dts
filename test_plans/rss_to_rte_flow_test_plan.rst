@@ -84,7 +84,7 @@ Test case: set rss types on two ports (I40E)
 
 1. Start the testpmd::
 
-    ./testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=4 --txq=4 --port-topology=chained
+    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=4 --txq=4 --port-topology=chained
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -210,7 +210,7 @@ Test case: set rss queues on two ports (I40E)
 
 1. Start the testpmd::
 
-    ./testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=16 --txq=16 --port-topology=chained
+    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=16 --txq=16 --port-topology=chained
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -332,7 +332,7 @@ Test case: set rss types and rss queues on two ports (I40E)
 
 1. Start the testpmd::
 
-    ./testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=8 --txq=8 --port-topology=chained
+    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=8 --txq=8 --port-topology=chained
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -399,7 +399,7 @@ Test case: disable rss in command-line (I40E)
 
 1. Start the testpmd::
 
-    ./testpmd -c 0x3 -n 4 -- -i --rxq=8 --txq=8 --disable-rss --port-topology=chained
+    ./<build_target>/app/dpdk-testpmd -c 0x3 -n 4 -- -i --rxq=8 --txq=8 --disable-rss --port-topology=chained
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -468,7 +468,7 @@ Only i40e support key and key_len setting.
 
 1. Start the testpmd::
 
-    ./testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=4 --txq=4 --port-topology=chained
+    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=4 --txq=4 --port-topology=chained
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -586,7 +586,7 @@ Test case: Flow directory rule and RSS rule combination (I40E)
 
 1. Start the testpmd::
 
-    ./testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=16 --txq=16 --pkt-filter-mode=perfect
+    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=16 --txq=16 --pkt-filter-mode=perfect
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -616,7 +616,7 @@ Test case: Set queue-region with rte_flow api (I40E)
  
 1. Start the testpmd::
 
-    ./testpmd -c 1ffff -n 4 -- -i --nb-cores=16 --rxq=16 --txq=16 --port-topology=chained
+    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=16 --rxq=16 --txq=16 --port-topology=chained
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -673,7 +673,7 @@ Test case: Set queue region in rte_flow with invalid parameter (I40E)
 
 1. Start the testpmd::
 
-    ./testpmd -c 1ffff -n 4 -- -i --nb-cores=16 --rxq=16 --txq=16 --port-topology=chained
+    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=16 --rxq=16 --txq=16 --port-topology=chained
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -718,7 +718,7 @@ be implemented with fortville.
 
 1. Start the testpmd::
 
-    ./testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=16 --txq=16 --port-topology=chained
+    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=16 --txq=16 --port-topology=chained
     testpmd> flow create 0 ingress pattern eth / ipv4 / udp / end actions rss types ipv4-udp end queues end / end
     testpmd> set fwd rxonly
     testpmd> set verbose 1
@@ -755,7 +755,7 @@ Test case: disable and enable rss
 
 1. Start the testpmd::
 
-    ./testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=4 --txq=4 --port-topology=chained
+    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=4 --txq=4 --port-topology=chained
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -797,7 +797,7 @@ Test case: enable ipv4-udp rss
 
 1. Start the testpmd::
 
-    ./testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=4 --txq=4 --port-topology=chained
+    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=4 --txq=4 --port-topology=chained
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -826,7 +826,7 @@ Test case: set rss valid/invalid queue rule
 
 1. Start the testpmd::
 
-    ./testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=16 --txq=16 --port-topology=chained
+    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=16 --txq=16 --port-topology=chained
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -879,7 +879,7 @@ Test case: Different packet types
 
 1. Start the testpmd::
 
-    ./testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=16 --txq=16 --port-topology=chained
+    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=16 --txq=16 --port-topology=chained
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -914,7 +914,7 @@ Test case: disable rss in command-line
 
 1. Start the testpmd::
 
-    ./testpmd -c 0x3 -n 4 -- -i --rxq=8 --txq=8 --disable-rss --port-topology=chained
+    ./<build_target>/app/dpdk-testpmd -c 0x3 -n 4 -- -i --rxq=8 --txq=8 --disable-rss --port-topology=chained
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -950,7 +950,7 @@ Test case: Flow directory rule and RSS rule combination
 
 1. Start the testpmd::
 
-    ./testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=16 --txq=16 --pkt-filter-mode=perfect
+    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=16 --txq=16 --pkt-filter-mode=perfect
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start

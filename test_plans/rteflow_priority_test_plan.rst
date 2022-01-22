@@ -71,7 +71,7 @@ Patterns in this case:
 
 #. Start the ``testpmd`` application as follows::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:af:00.0 --log-level="ice,7" -- -i --txq=8 --rxq=8
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:af:00.0 --log-level="ice,7" -- -i --txq=8 --rxq=8
     set fwd rxonly
     set verbose 1
 
@@ -90,7 +90,7 @@ Patterns in this case:
 
 #. Start the ``testpmd`` application as follows::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:af:00.0,pipeline-mode-support=0 --log-level="ice,7" -- -i --txq=8 --rxq=8
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:af:00.0,pipeline-mode-support=0 --log-level="ice,7" -- -i --txq=8 --rxq=8
     set fwd rxonly
     set verbose 1
 
@@ -119,7 +119,7 @@ Patterns in this case:
 
 #. Start the ``testpmd`` application as follows::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:af:00.0,pipeline-mode-support=1 --log-level="ice,7" -- -i --txq=8 --rxq=8
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:af:00.0,pipeline-mode-support=1 --log-level="ice,7" -- -i --txq=8 --rxq=8
     set fwd rxonly
     set verbose 1
     rx_vxlan_port add 4789 0
@@ -184,7 +184,7 @@ Patterns in this case:
 
 #. Start the ``testpmd`` application as follows::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:af:00.0,pipeline-mode-support=1 --log-level="ice,7" -- -i --txq=8 --rxq=8
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:af:00.0,pipeline-mode-support=1 --log-level="ice,7" -- -i --txq=8 --rxq=8
     set fwd rxonly
     set verbose 1
 
@@ -206,7 +206,7 @@ Patterns in this case:
 
 #. Start the ``testpmd`` application as follows::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:af:00.0,pipeline-mode-support=1 --log-level="ice,7" -- -i --txq=8 --rxq=8
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:af:00.0,pipeline-mode-support=1 --log-level="ice,7" -- -i --txq=8 --rxq=8
     set fwd rxonly
     set verbose 1
 
@@ -232,7 +232,7 @@ Patterns in this case:
 
 #. Start the ``testpmd`` application as follows::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:af:00.0,pipeline-mode-support=1 --log-level="ice,7" -- -i --txq=8 --rxq=8
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:af:00.0,pipeline-mode-support=1 --log-level="ice,7" -- -i --txq=8 --rxq=8
     set fwd rxonly
     set verbose 1
 
@@ -257,7 +257,7 @@ Patterns in this case:
 
 #. Start the ``testpmd`` application as follows::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:af:00.0,pipeline-mode-support=1 --log-level="ice,7" -- -i --txq=8 --rxq=8
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:af:00.0,pipeline-mode-support=1 --log-level="ice,7" -- -i --txq=8 --rxq=8
     set fwd rxonly
     set verbose 1
 
@@ -298,7 +298,7 @@ Patterns in this case:
 
 #. Restart the ``testpmd`` application as follows::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -a 0000:af:00.0, pipeline-mode-support=1 --log-level="ice,7" -- -i --txq=8 --rxq=8
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:af:00.0, pipeline-mode-support=1 --log-level="ice,7" -- -i --txq=8 --rxq=8
     set fwd rxonly
     set verbose 1
 

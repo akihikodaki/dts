@@ -127,7 +127,7 @@ Test Case 1: set valid VF queue number in testpmd command-line options
 
 1. Start VF testpmd with "--rxq=[rxq] --txq=[txq]", and random valid values from 1 to 16, take 3 for example::
 
-     ./testpmd -c 0xf0 -n 4 -a 00:04.0 --file-prefix=test2 \
+     ./<build_target>/app/dpdk-testpmd -c 0xf0 -n 4 -a 00:04.0 --file-prefix=test2 \
      --socket-mem 1024,1024 -- -i --rxq=3 --txq=3
 
 2. Configure vf forwarding prerequisits and start forwarding::
@@ -169,7 +169,7 @@ Test case 2: set invalid VF queue number in testpmd command-line options
 
 1. Start VF testpmd with "--rxq=0 --txq=0" ::
 
-     ./testpmd -c 0xf0 -n 4 -a 00:04.0 --file-prefix=test2 \
+     ./<build_target>/app/dpdk-testpmd -c 0xf0 -n 4 -a 00:04.0 --file-prefix=test2 \
      --socket-mem 1024,1024 -- -i --rxq=0 --txq=0
 
    Verify testpmd exited with error as below::
@@ -178,7 +178,7 @@ Test case 2: set invalid VF queue number in testpmd command-line options
 
 2. Start VF testpmd with "--rxq=17 --txq=17" ::
 
-    ./testpmd -c 0xf0 -n 4 -a 00:04.0 --file-prefix=test2 \
+    ./<build_target>/app/dpdk-testpmd -c 0xf0 -n 4 -a 00:04.0 --file-prefix=test2 \
     --socket-mem 1024,1024 -- -i --rxq=17 --txq=17
 
    Verify testpmd exited with error as below::
@@ -190,7 +190,7 @@ Test case 3: set valid VF queue number with testpmd function command
 
 1. Start VF testpmd without setting "rxq" and "txq"::
 
-    ./testpmd -c 0xf0 -n 4 -a 00:04.0 --socket-mem 1024,1024 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 0xf0 -n 4 -a 00:04.0 --socket-mem 1024,1024 -- -i
 
 2. Configure vf forwarding prerequisits and start forwarding::
 
@@ -211,7 +211,7 @@ Test case 4: set invalid VF queue number with testpmd function command
 
 1. Start VF testpmd without setting "rxq" and "txq"::
 
-     ./testpmd -c 0xf0 -n 4 -a 00:04.0 --socket-mem 1024,1024 -- -i
+     ./<build_target>/app/dpdk-testpmd -c 0xf0 -n 4 -a 00:04.0 --socket-mem 1024,1024 -- -i
 
 2. Set rx queue number and tx queue number with 0 ::
 
