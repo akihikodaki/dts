@@ -61,7 +61,7 @@ Add print info to testpmd for case::
 
 Start testpmd, enable rxonly and verbose mode::
 
-        ./testpmd -c f -n 4 -- -i --port-topology=chained
+        ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i --port-topology=chained
 
 Test Case 1: Get ptype mapping
 ==============================

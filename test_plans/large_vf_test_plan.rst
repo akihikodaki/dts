@@ -57,7 +57,7 @@ Prerequisites
 
 6. Start testpmd with "--txq=256 --rxq=256" to setup 256 queues::
 
-    ./dpdk-testpmd -c ff -n 4 -- -i --rxq=256 --txq=256 --total-num-mbufs=500000
+    ./<build_target>/app/dpdk-testpmd -c ff -n 4 -- -i --rxq=256 --txq=256 --total-num-mbufs=500000
 
 Note::
 
@@ -325,10 +325,10 @@ Subcase 6: negative: fail to test exceed 256 queues
 ---------------------------------------------------
 Start testpmd on VF0 with 512 queues::
 
-    ./dpdk-testpmd -c f -n 4 -- -i --txq=512 --rxq=512
+    ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i --txq=512 --rxq=512
 
 or::
-    ./dpdk-testpmd -c f -n 4 -- -i --txq=256 --rxq=256
+    ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i --txq=256 --rxq=256
     testpmd> port stop all
     testpmd> port config all rxq 512
     testpmd> port config all txq 512
@@ -408,11 +408,11 @@ Bind all VFs to vfio-pci, only have 32 ports, reached maximum number of ethernet
 
 Start testpmd with queue exceed 4 queues::
 
-     ./dpdk-testpmd -c f -n 4 -- -i --txq=8 --rxq=8
+     ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i --txq=8 --rxq=8
 
 or::
 
-    ./dpdktestpmd -c f -n 4 -- -i --txq=4 --rxq=4
+    ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i --txq=4 --rxq=4
     testpmd> port stop all
     testpmd> port config all rxq
     testpmd> port config all rxq 8

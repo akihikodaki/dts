@@ -73,11 +73,18 @@ to the device under test::
 
 The test app need add a cmdline, ``--vfio-intr=int_x``.
 
+Build dpdk and examples=link_status_interrupt:
+   CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static <build_target>
+   ninja -C <build_target>
+
+   meson configure -Dexamples=link_status_interrupt <build_target>
+   ninja -C <build_target>
+
 Assume port 0 and 1 are connected to the remote ports, e.g. packet generator.
 To run the test application in linuxapp environment with 4 lcores, 2 ports and
 2 RX queues per lcore::
 
-    $ ./link_status_interrupt -c f -- -q 2 -p 0x3
+    $ ./<build_target>/examples/dpdk-link_status_interrupt -c f -- -q 2 -p 0x3
 
 Also, if the ports need to be tested are different, the port mask should be
 changed. The lcore used to run the test application and the number of queues

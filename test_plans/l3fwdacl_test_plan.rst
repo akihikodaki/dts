@@ -73,6 +73,13 @@ Prerequisites
     insmod  ./x86_64-native-linuxapp-gcc/kmod/igb_uio.ko
     ./usertools/dpdk-devbind.py --bind=igb_uio 04:00.0 04:00.1
 
+Build dpdk and examples=l3fwd-acl:
+   CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static <build_target>
+   ninja -C <build_target>
+
+   meson configure -Dexamples=l3fwd-acl <build_target>
+   ninja -C <build_target>
+
 Test Case: packet match ACL rule
 ================================
 
@@ -85,7 +92,7 @@ Ipv4 packet match source ip address 200.10.0.1 will be dropped::
     Add one default rule in rule file /root/rule_ipv6.db
     R0:0:0:0:0:0:0:0/0 0:0:0:0:0:0:0:0/0 0 : 65535 0 : 65535 0x00/0x00 0
 
-    ./examples/l3fwd-acl/build/l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
+    ./<build_target>/examples/dpdk-l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
     --rule_ipv4="/root/rule_ipv4.db" --rule_ipv6="/root/rule_ipv6.db"
 
     Send one ipv4 packet with source ip address 200.10.0.1 will be dropped.
@@ -100,7 +107,7 @@ Ipv4 packet match destination ip address 100.10.0.1 will be dropped::
     Add one default rule in rule file /root/rule_ipv6.db
     R0:0:0:0:0:0:0:0/0 0:0:0:0:0:0:0:0/0 0 : 65535 0 : 65535 0x00/0x00 0
 
-    ./examples/l3fwd-acl/build/l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
+    ./<build_target>/examples/dpdk-l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
     --rule_ipv4="/root/rule_ipv4.db" --rule_ipv6="/root/rule_ipv6.db"
 
     Send one ipv4 packet with destination ip address 100.10.0.1 will be dropped.
@@ -115,7 +122,7 @@ Ipv4 packet match source port 11 will be dropped::
     Add one default rule in rule file /root/rule_ipv6.db
     R0:0:0:0:0:0:0:0/0 0:0:0:0:0:0:0:0/0 0 : 65535 0 : 65535 0x00/0x00 0
 
-    ./examples/l3fwd-acl/build/l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
+    ./<build_target>/examples/dpdk-l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
     --rule_ipv4="/root/rule_ipv4.db" --rule_ipv6="/root/rule_ipv6.db"
 
     Send one ipv4 packet with source port 11 will be dropped.
@@ -130,7 +137,7 @@ Ipv4 packet match destination port 101 will be dropped::
     Add one default rule in rule file /root/rule_ipv6.db
     R0:0:0:0:0:0:0:0/0 0:0:0:0:0:0:0:0/0 0 : 65535 0 : 65535 0x00/0x00 0
 
-    ./examples/l3fwd-acl/build/l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
+    ./<build_target>/examples/dpdk-l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
     --rule_ipv4="/root/rule_ipv4.db" --rule_ipv6="/root/rule_ipv6.db"
 
     Send one ipv4 packet with destination port 101 will be dropped.
@@ -145,7 +152,7 @@ Ipv4 packet match protocol TCP will be dropped::
     Add one default rule in rule file /root/rule_ipv6.db
     R0:0:0:0:0:0:0:0/0 0:0:0:0:0:0:0:0/0 0 : 65535 0 : 65535 0x00/0x00 0
 
-    ./examples/l3fwd-acl/build/l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
+    ./<build_target>/examples/dpdk-l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
     --rule_ipv4="/root/rule_ipv4.db" --rule_ipv6="/root/rule_ipv6.db"
 
     Send one TCP ipv4 packet will be dropped.
@@ -160,7 +167,7 @@ Ipv4 packet match 5-tuple will be dropped::
     Add one default rule in rule file /root/rule_ipv6.db
     R0:0:0:0:0:0:0:0/0 0:0:0:0:0:0:0:0/0 0 : 65535 0 : 65535 0x00/0x00 0
 
-    ./examples/l3fwd-acl/build/l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
+    ./<build_target>/examples/dpdk-l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
     --rule_ipv4="/root/rule_ipv4.db" --rule_ipv6="/root/rule_ipv6.db"
 
     Send one TCP ipv4 packet with source ip address 200.10.0.1,
@@ -180,7 +187,7 @@ Ipv6 packet match source ipv6 address 2001:0db8:85a3:08d3:1319:8a2e:0370:7344/12
     Add one default rule in rule file /root/rule_ipv4.db
     R0.0.0.0/0 0.0.0.0/0 0 : 65535 0 : 65535 0x00/0x00 0
 
-    ./examples/l3fwd-acl/build/l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
+    ./<build_target>/examples/dpdk-l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
     --rule_ipv4="/root/rule_ipv4.db" --rule_ipv6="/root/rule_ipv6.db"
 
     Send one ipv6 packet with source ip address 2001:0db8:85a3:08d3:1319:8a2e:0370:7344/128 will be dropped.
@@ -195,7 +202,7 @@ Ipv6 packet match destination ipv6 address 2002:0db8:85a3:08d3:1319:8a2e:0370:73
     Add one default rule in rule file /root/rule_ipv4.db
     R0.0.0.0/0 0.0.0.0/0 0 : 65535 0 : 65535 0x00/0x00 0
 
-    ./examples/l3fwd-acl/build/l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
+    ./<build_target>/examples/dpdk-l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
     --rule_ipv4="/root/rule_ipv4.db" --rule_ipv6="/root/rule_ipv6.db"
 
     Send one ipv6 packet with destination ip address 2002:0db8:85a3:08d3:1319:8a2e:0370:7344/128 will be dropped.
@@ -210,7 +217,7 @@ Ipv6 packet match source port 11 will be dropped::
     Add one default rule in rule file /root/rule_ipv4.db
     R0.0.0.0/0 0.0.0.0/0 0 : 65535 0 : 65535 0x00/0x00 0
 
-    ./examples/l3fwd-acl/build/l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
+    ./<build_target>/examples/dpdk-l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
     --rule_ipv4="/root/rule_ipv4.db" --rule_ipv6="/root/rule_ipv6.db"
 
     Send one ipv6 packet with source port 11 will be dropped.
@@ -225,7 +232,7 @@ Ipv6 packet match destination port 101 will be dropped::
     Add one default rule in rule file /root/rule_ipv4.db
     R0.0.0.0/0 0.0.0.0/0 0 : 65535 0 : 65535 0x00/0x00 0
 
-    ./examples/l3fwd-acl/build/l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
+    ./<build_target>/examples/dpdk-l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
     --rule_ipv4="/root/rule_ipv4.db" --rule_ipv6="/root/rule_ipv6.db"
 
     Send one ipv6 packet with destination port 101 will be dropped.
@@ -240,7 +247,7 @@ Ipv6 packet match protocol TCP will be dropped::
     Add one default rule in rule file /root/rule_ipv4.db
     R0.0.0.0/0 0.0.0.0/0 0 : 65535 0 : 65535 0x00/0x00 0
 
-    ./examples/l3fwd-acl/build/l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
+    ./<build_target>/examples/dpdk-l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
     --rule_ipv4="/root/rule_ipv4.db" --rule_ipv6="/root/rule_ipv6.db"
 
     Send one TCP ipv6 packet will be dropped.
@@ -255,7 +262,7 @@ Ipv6 packet match 5-tuple will be dropped::
     Add one default rule in rule file /root/rule_ipv4.db
     R0.0.0.0/0 0.0.0.0/0 0 : 65535 0 : 65535 0x00/0x00 0
 
-    ./examples/l3fwd-acl/build/l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
+    ./<build_target>/examples/dpdk-l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
      --rule_ipv4="/root/rule_ipv4.db" --rule_ipv6="/root/rule_ipv6.db"
 
     Send one TCP ipv6 packet with source ip address 2001:0db8:85a3:08d3:1319:8a2e:0370:7344/128,
@@ -281,7 +288,7 @@ Add two exact rule as below in rule_ipv6.db::
 
 Start l3fwd-acl and send packet::
 
-    ./examples/l3fwd-acl/build/l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
+    ./<build_target>/examples/dpdk-l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
     --rule_ipv4="/root/rule_ipv4.db" --rule_ipv6="/root/rule_ipv6.db"
 
     Send one TCP ipv4 packet with source ip address 200.10.0.1, destination
@@ -312,7 +319,7 @@ Add two LPM rule as below in rule_ipv6.db::
 
 Start l3fwd-acl and send packet::
 
-	./examples/l3fwd-acl/build/l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
+	./<build_target>/examples/dpdk-l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
 	--rule_ipv4="/root/rule_ipv4.db" --rule_ipv6="/root/rule_ipv6.db"
 
 	Send one TCP ipv4 packet with destination ip address 1.1.1.1 will be forward to PORT0.
@@ -333,7 +340,7 @@ Packet match 5-tuple will be dropped::
     @2001:0db8:85a3:08d3:1319:8a2e:0370:7344/128 2002:0db8:85a3:08d3:1319:8a2e:0370:7344/101 11 : 11 101 : 101 0x06/0xff
     R0:0:0:0:0:0:0:0/0 0:0:0:0:0:0:0:0/0 0 : 65535 0 : 65535 0x00/0x00 0
 
-    ./examples/l3fwd-acl/build/l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
+    ./<build_target>/examples/dpdk-l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
     --rule_ipv4="/root/rule_ipv4.db" --rule_ipv6="/root/rule_ipv6.db" --scalar
 
     Send one TCP ipv4 packet with source ip address 200.10.0.1, destination ip address 100.10.0.1,
@@ -363,7 +370,7 @@ Add two ACL rule as below in rule_ipv6.db::
 
 Start l3fwd-acl::
 
-    ./examples/l3fwd-acl/build/l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
+    ./<build_target>/examples/dpdk-l3fwd-acl -c ff -n 3 -- -p 0x3 --config="(0,0,2),(1,0,3)"
     --rule_ipv4="/root/rule_ipv4.db" --rule_ipv6="/root/rule_ipv6.db"
 
     The l3fwdacl will not set up because of ivalid ACL rule.

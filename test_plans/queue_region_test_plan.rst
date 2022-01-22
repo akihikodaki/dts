@@ -79,7 +79,7 @@ Prerequisites
 
 4. start the testpmd::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16
     testpmd> port config all rss all
     testpmd> set fwd rxonly
     testpmd> set verbose 1

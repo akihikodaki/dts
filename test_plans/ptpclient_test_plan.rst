@@ -45,7 +45,11 @@ Assume one port is connected to the tester and "linuxptp.x86_64"
 has been installed on the tester.
 
 Case Config::
-    For support IEEE1588, need to set "CONFIG_RTE_LIBRTE_IEEE1588=y" in ./config/common_base and re-build DPDK.
+
+    Meson: For support IEEE1588, need to execute "sed -i '$a\#define RTE_LIBRTE_IEEE1588 1' config/rte_config.h",
+           and re-build DPDK.
+           $ CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static <build_target>
+           $ ninja -C <build_target>
 
 The sample should be validated on Forville, Niantic and i350 Nics. 
 
@@ -57,7 +61,7 @@ Start ptp server on tester with IEEE 802.3 network transport::
 
 Start ptp client on DUT and wait few seconds::
 
-    ./examples/ptpclient/build/ptpclient -c f -n 3 -- -T 0 -p 0x1
+    ./<build_target>/examples/dpdk-ptpclient -c f -n 3 -- -T 0 -p 0x1
 
 Check that output message contained T1,T2,T3,T4 clock and time difference
 between master and slave time is about 10us in niantic, 20us in Fortville,
@@ -79,7 +83,7 @@ Start ptp server on tester with IEEE 802.3 network transport::
 
 Start ptp client on DUT and wait few seconds::
 
-    ./examples/ptpclient/build/ptpclient -c f -n 3 -- -T 1 -p 0x1
+    ./<build_target>/examples/dpdk-ptpclient -c f -n 3 -- -T 1 -p 0x1
 
 Make sure DUT system time has been changed to same as tester.
 Check that output message contained T1,T2,T3,T4 clock and time difference

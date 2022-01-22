@@ -90,7 +90,7 @@ Test Case: dcb 4 tc queue mapping
 =================================
 1. Start testpmd and set DCB::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 23-27 -n 4 --master-lcore=23 -- -i --nb-cores=4 --rxq=4 --txq=4 --rss-ip
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 23-27 -n 4 --master-lcore=23 -- -i --nb-cores=4 --rxq=4 --txq=4 --rss-ip
     testpmd> port stop all
     testpmd> port config 0 dcb vt off 4 pfc off
     testpmd> port config 1 dcb vt off 4 pfc off
@@ -115,7 +115,7 @@ Test Case: dcb 8 tc queue mapping
 =================================
 1. Start testpmd and set DCB::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 23-31 -n 4 --master-lcore=23 -- -i --nb-cores=8 --rxq=8 --txq=8 --rss-ip
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 23-31 -n 4 --master-lcore=23 -- -i --nb-cores=8 --rxq=8 --txq=8 --rss-ip
     testpmd> port stop all
     testpmd> port config 0 dcb vt off 8 pfc off
     testpmd> port config 1 dcb vt off 8 pfc off
@@ -148,7 +148,7 @@ Test Case: shaping 1 port 4 tc
 ==============================
 1. Start testpmd and set DCB::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 23-27 -n 4 --master-lcore=23 -- -i --nb-cores=4 --rxq=4 --txq=4 --rss-ip
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 23-27 -n 4 --master-lcore=23 -- -i --nb-cores=4 --rxq=4 --txq=4 --rss-ip
     testpmd> port stop all
     testpmd> port config 0 dcb vt off 4 pfc off
     testpmd> port config 1 dcb vt off 4 pfc off
@@ -191,7 +191,7 @@ Test Case:  shaping 1 port 8 tc
 ===============================
 1. Start testpmd and set DCB::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 23-31 -n 4 --master-lcore=23 -- -i --nb-cores=8 --rxq=8 --txq=8 --rss-ip
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 23-31 -n 4 --master-lcore=23 -- -i --nb-cores=8 --rxq=8 --txq=8 --rss-ip
     testpmd> port stop all
     testpmd> port config 0 dcb vt off 8 pfc off
     testpmd> port config 1 dcb vt off 8 pfc off
@@ -246,7 +246,7 @@ Test Case: shaping for port
 ===========================
 1. Start testpmd::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 23-27 -n 4 --master-lcore=23 -- -i --nb-cores=4 --rxq=4 --txq=4 --rss-ip
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 23-27 -n 4 --master-lcore=23 -- -i --nb-cores=4 --rxq=4 --txq=4 --rss-ip
     testpmd> port stop 1
 
 1. Add private shaper 0::
@@ -273,7 +273,7 @@ Test Case: dcb 4 tc queue mapping
 =================================
 1. Start testpmd and set DCB::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 3-7 -n 4 --master-lcore=3 -- -i --nb-cores=4 --rxq=4 --txq=4 --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 3-7 -n 4 --master-lcore=3 -- -i --nb-cores=4 --rxq=4 --txq=4 --disable-rss
     testpmd> vlan set filter off 0
     testpmd> vlan set filter off 1
     testpmd> port stop all
@@ -300,7 +300,7 @@ Test Case: dcb 8 tc queue mapping
 =================================
 1. Start testpmd and set DCB::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 3-11 -n 4 --master-lcore=3 -- -i --nb-cores=8 --rxq=8 --txq=8 --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 3-11 -n 4 --master-lcore=3 -- -i --nb-cores=8 --rxq=8 --txq=8 --disable-rss
     testpmd> vlan set filter off 0
     testpmd> vlan set filter off 1
     testpmd> port stop all
@@ -335,7 +335,7 @@ Test Case: shaping for queue with 4 tc
 ======================================
 1. Start testpmd and set DCB::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 3-7 -n 4 --master-lcore=3 -- -i --nb-cores=4 --rxq=4 --txq=4 --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 3-7 -n 4 --master-lcore=3 -- -i --nb-cores=4 --rxq=4 --txq=4 --disable-rss
     testpmd> vlan set filter off 0
     testpmd> vlan set filter off 1
     testpmd> port stop all
@@ -381,7 +381,7 @@ Test Case: shaping for queue with 8 tc
 ======================================
 1. Start testpmd and set DCB::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 3-11 -n 4 --master-lcore=3 -- -i --nb-cores=8 --rxq=8 --txq=8 --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 3-11 -n 4 --master-lcore=3 -- -i --nb-cores=8 --rxq=8 --txq=8 --disable-rss
     testpmd> vlan set filter off 0
     testpmd> vlan set filter off 1
     testpmd> port stop all

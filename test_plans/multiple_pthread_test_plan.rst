@@ -81,7 +81,7 @@ Test Case 1: Basic operation
 To run the application, start the testpmd with the lcores all running with
 threads and also the unique core assigned, command as follows::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='0@8,(4-5)@9' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='0@8,(4-5)@9' -n 4 -- -i
 
 Using the command to make sure the lcore are init on the correct cpu::
 
@@ -90,11 +90,11 @@ Using the command to make sure the lcore are init on the correct cpu::
 Result as follows::
 
     PID     TID    %CPU   PSR COMMAND
-    31038   31038  22.5   8   ./x86_64-native-linuxapp-gcc/app/testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
-    31038   31039  0.0    8   ./x86_64-native-linuxapp-gcc/app/testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
-    31038   31040  0.0    9   ./x86_64-native-linuxapp-gcc/app/testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
-    31038   31041  0.0    9   ./x86_64-native-linuxapp-gcc/app/testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
-    31038   31042  0.0    8   ./x86_64-native-linuxapp-gcc/app/testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
+    31038   31038  22.5   8   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
+    31038   31039  0.0    8   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
+    31038   31040  0.0    9   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
+    31038   31041  0.0    9   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
+    31038   31042  0.0    8   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
 
 Their TIDs are for these threads as below::
 
@@ -134,11 +134,11 @@ Check forward configuration::
 Send packets continuous::
 
     PID    TID   %CPU   PSR COMMAND
-    31038  31038  0.6   8   ./x86_64-native-linuxapp-gcc/app/testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
-    31038  31039  0.0   8   ./x86_64-native-linuxapp-gcc/app/testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
-    31038  31040  1.5   9   ./x86_64-native-linuxapp-gcc/app/testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
-    31038  31041  1.5   9   ./x86_64-native-linuxapp-gcc/app/testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
-    31038  31042  0.0   8   ./x86_64-native-linuxapp-gcc/app/testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
+    31038  31038  0.6   8   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
+    31038  31039  0.0   8   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
+    31038  31040  1.5   9   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
+    31038  31041  1.5   9   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
+    31038  31042  0.0   8   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores=0@8,(4-5)@9 -n 4 -- -i
 
 You can see TID 31040(Lcore 4), 31041(Lore 5) are running.
 
@@ -150,7 +150,7 @@ Give examples, suppose DUT have 128 cpu core.
 
 Case 1::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='0@8,(4-5)@(8-11)' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='0@8,(4-5)@(8-11)' -n 4 -- -i
 
 It means start 3 EAL thread::
 
@@ -159,7 +159,7 @@ It means start 3 EAL thread::
 
 Case 2::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='1,2@(0-4,6),(3-4,6)@5,(7,8)' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='1,2@(0-4,6),(3-4,6)@5,(7,8)' -n 4 -- -i
 
 It means start 7 EAL thread::
 
@@ -171,7 +171,7 @@ It means start 7 EAL thread::
 
 Case 3::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,CONFIG_RTE_MAX_LCORE-1)@(4,5)' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='(0,CONFIG_RTE_MAX_LCORE-1)@(4,5)' -n 4 -- -i
 
 (default CONFIG_RTE_MAX_LCORE=128).
 It means start 2 EAL thread::
@@ -180,7 +180,7 @@ It means start 2 EAL thread::
 
 Case 4::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,64-66)@(4,5)' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='(0,64-66)@(4,5)' -n 4 -- -i
 
 It means start 4 EAL thread::
 
@@ -188,7 +188,7 @@ It means start 4 EAL thread::
 
 Case 5::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='2-5,6,7-9' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='2-5,6,7-9' -n 4 -- -i
 
 It means start 8 EAL thread::
 
@@ -203,7 +203,7 @@ It means start 8 EAL thread::
 
 Case 6::    
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='2,(3-5)@3' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='2,(3-5)@3' -n 4 -- -i
 
 It means start 4 EAL thread::
 
@@ -212,7 +212,7 @@ It means start 4 EAL thread::
 
 Case 7::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,7-4)@(4,5)' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='(0,7-4)@(4,5)' -n 4 -- -i
 
 It means start 5 EAL thread::
 
@@ -224,19 +224,19 @@ Test Case 3: Negative Test
 --------------------------
 Input invalid commands to make sure the commands can't work::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0-,4-7)@(4,5)' -n 4 -- -i
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(-1,4-7)@(4,5)' -n 4 -- -i
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,4-7-9)@(4,5)' -n 4 -- -i
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,abcd)@(4,5)' -n 4 -- -i
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,4-7)@(1-,5)' -n 4 -- -i
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,4-7)@(-1,5)' -n 4 -- -i
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,4-7)@(4,5-8-9)' -n 4 -- -i
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,4-7)@(abc,5)' -n 4 -- -i
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,4-7)@(4,xyz)' -n 4 -- -i
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,4-7)=(8,9)' -n 4 -- -i
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='2,3 at 4,(0-1,,4))' -n 4 -- -i
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='[0-,4-7]@(4,5)' -n 4 -- -i
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0-,4-7)@[4,5]' -n 4 -- -i
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='3-4 at 3,2 at 5-6' -n 4 -- -i
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='2,,3''2--3' -n 4 -- -i
-    ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='2,,,3''2--3' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='(0-,4-7)@(4,5)' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='(-1,4-7)@(4,5)' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='(0,4-7-9)@(4,5)' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='(0,abcd)@(4,5)' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='(0,4-7)@(1-,5)' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='(0,4-7)@(-1,5)' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='(0,4-7)@(4,5-8-9)' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='(0,4-7)@(abc,5)' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='(0,4-7)@(4,xyz)' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='(0,4-7)=(8,9)' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='2,3 at 4,(0-1,,4))' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='[0-,4-7]@(4,5)' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='(0-,4-7)@[4,5]' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='3-4 at 3,2 at 5-6' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='2,,3''2--3' -n 4 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --lcores='2,,,3''2--3' -n 4 -- -i

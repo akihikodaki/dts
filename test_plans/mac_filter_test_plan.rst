@@ -48,7 +48,7 @@ Prerequisites
 Assuming that at least a port is connected to a traffic generator,
 launch the ``testpmd`` with the following arguments::
 
-  ./x86_64-default-linuxapp-gcc/build/app/test-pmd/testpmd -c 0xc3 -n 3 -- -i \
+  ./<build_target>/app/dpdk-testpmd -c 0xc3 -n 3 -- -i \
   --burst=1 --rxpt=0     --rxht=0 --rxwt=0 --txpt=36 --txht=0 --txwt=0 \
   --txfreet=32 --rxfreet=64 --mbcache=250 --portmask=0x3
 

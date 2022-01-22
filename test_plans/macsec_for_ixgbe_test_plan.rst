@@ -113,7 +113,7 @@ Test Case 1: MACsec packets send and receive
 
   1. Start the testpmd of rx port::
 
-      ./testpmd -c 0xf --socket-mem 1024,0 --file-prefix=rx -a 0000:07:00.1 \
+      ./<build_target>/app/dpdk-testpmd -c 0xf --socket-mem 1024,0 --file-prefix=rx -a 0000:07:00.1 \
       -- -i --port-topology=chained
 
   2. Set MACsec offload on::
@@ -150,7 +150,7 @@ Test Case 1: MACsec packets send and receive
 
   1. Start the testpmd of tx port::
 
-      ./testpmd -c 0xf0 --socket-mem 1024,0 --file-prefix=tx -a 0000:07:00.0 \
+      ./<build_target>/app/dpdk-testpmd -c 0xf0 --socket-mem 1024,0 --file-prefix=tx -a 0000:07:00.0 \
       -- -i --port-topology=chained
 
   2. Set MACsec offload on::
@@ -403,7 +403,7 @@ Test Case 7: performance test of MACsec offload packets
    Port0 connected to IXIA port5, port1 connected to IXIA port6, set port0
    MACsec offload on, set fwd mac::
 
-      ./testpmd -c 0xf --socket-mem 1024,0 -- -i \
+      ./<build_target>/app/dpdk-testpmd -c 0xf --socket-mem 1024,0 -- -i \
       --port-topology=chained
       testpmd> set macsec offload 0 on encrypt on replay-protect on
       testpmd> set fwd mac
@@ -422,7 +422,7 @@ Test Case 7: performance test of MACsec offload packets
    with cable, connect 05:00.0 to IXIA. Bind the three ports to dpdk driver.
    Start two testpmd::
 
-      ./testpmd -c 0xf --socket-mem 1024,0 --file-prefix=rx -a 0000:07:00.1 \
+      ./<build_target>/app/dpdk-testpmd -c 0xf --socket-mem 1024,0 --file-prefix=rx -a 0000:07:00.1 \
       -- -i --port-topology=chained
 
       testpmd> set macsec offload 0 on encrypt on replay-protect on
@@ -432,7 +432,7 @@ Test Case 7: performance test of MACsec offload packets
       testpmd> set macsec sa tx 0 0 0 0 00112200000000000000000000000000
       testpmd> set fwd rxonly
 
-      ./testpmd -c 0xf0 --socket-mem 1024,0 --file-prefix=tx -b 0000:07:00.1 \
+      ./<build_target>/app/dpdk-testpmd -c 0xf0 --socket-mem 1024,0 --file-prefix=tx -b 0000:07:00.1 \
       -- -i --port-topology=chained
 
       testpmd> set macsec offload 1 on encrypt on replay-protect on
