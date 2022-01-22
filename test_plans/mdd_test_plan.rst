@@ -75,7 +75,7 @@ Test Case 1: enable_mdd_dpdk_disable
 
 5. Turn on testpmd and set mac forwarding mode::
 
-    ./testpmd -c 0x0f -n 4 -- -i --portmask=0x3 --tx-offloads=0x1
+    ./<build_target>/app/dpdk-testpmd -c 0x0f -n 4 -- -i --portmask=0x3 --tx-offloads=0x1
 
     testpmd> set fwd mac
     testpmd> start
@@ -143,7 +143,7 @@ Test Case 2: enable_mdd_dpdk_enable
 
 5. Turn on testpmd and set mac forwarding mode::
 
-    ./testpmd -c 0x0f -n 4 -- -i --portmask=0x3 --tx-offloads=0x0
+    ./<build_target>/app/dpdk-testpmd -c 0x0f -n 4 -- -i --portmask=0x3 --tx-offloads=0x0
 
     testpmd> set fwd mac
     testpmd> start
@@ -211,7 +211,7 @@ Test Case 3: disable_mdd_dpdk_disable
 
 5. Turn on testpmd and set mac forwarding mode::
 
-    ./testpmd -c 0xf -n 4 -- -i --portmask=0x3 --tx-offloads=0x1
+    ./<build_target>/app/dpdk-testpmd -c 0xf -n 4 -- -i --portmask=0x3 --tx-offloads=0x1
 
     testpmd> set fwd mac
     testpmd> start
@@ -279,7 +279,7 @@ Test Case 4: disable_mdd_dpdk_enable
 
 5. Turn on testpmd and set mac forwarding mode::
 
-    ./testpmd -c 0xf -n 4 -- -i --portmask=0x3 --tx-offloads=0x0
+    ./<build_target>/app/dpdk-testpmd -c 0xf -n 4 -- -i --portmask=0x3 --tx-offloads=0x0
 
     testpmd> set fwd mac
     testpmd> start

@@ -114,7 +114,7 @@ To test IPsec, an example ipsec-secgw is added into DPDK.
 
 The test commands of ipsec-secgw is below::
 
-    ./build/ipsec-secgw [EAL options] --
+    ./<build_target>/examples/dpdk-ipsec-secgw [EAL options] --
         -p PORTMASK -P -u PORTMASK -j FRAMESIZE
         -l -w REPLAY_WINOW_SIZE -e -a
         --config (port,queue,lcore)[,(port,queue,lcore)]
@@ -126,6 +126,10 @@ The test commands of ipsec-secgw is below::
 compile the applications::
 
     make -C ./examples/ipsec-secgw
+
+    meson:
+    meson configure -Dexamples=ipsec-secgw <build_target>
+    ninja -C <build_target>
 
 Configuration File Syntax:
 
@@ -202,7 +206,7 @@ Cryptodev AES-NI algorithm validation matrix is showed in table below.
 
 AESNI_MB device start cmd::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0
+    ./<build_target>/examples/dpdk-ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0
     --vdev=net_tap0,mac=fixed --vdev crypto_aesni_mb_pmd_1 --vdev=crypto_aesni_mb_pmd_2 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)"
     -u 0x1 -p 0x3 -f /root/dts/local_conf/ipsec_test.cfg
 
@@ -230,7 +234,7 @@ Cryptodev QAT algorithm validation matrix is showed in table below.
 
 QAT device start cmd::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem --vdev=net_tap0,mac=fixed -a 0000:60:00.0
+    ./<build_target>/examples/dpdk-ipsec-secgw --socket-mem 2048,0 --legacy-mem --vdev=net_tap0,mac=fixed -a 0000:60:00.0
     -a 0000:1a:01.0 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)" -u 0x1 -p 0x3
     -f /root/dts/local_conf/ipsec_test.cfg
 
@@ -244,7 +248,7 @@ AES_GCM_PMD algorithm validation matrix is showed in table below.
 
 AESNI_GCM device start cmd::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0 --vdev=net_tap0,mac=fixed
+    ./<build_target>/examples/dpdk-ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0 --vdev=net_tap0,mac=fixed
     --vdev crypto_aesni_gcm_pmd_1 --vdev=crypto_aesni_gcm_pmd_2 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)"
     -u 0x1 -p 0x3 -f /root/dts/local_conf/ipsec_test.cfg
 

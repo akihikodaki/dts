@@ -76,7 +76,7 @@ Test Case: dst (destination MAC) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 .. 
 
@@ -116,7 +116,7 @@ Test Case: src (source MAC) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -157,7 +157,7 @@ Test Case: type (EtherType or TPID) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -201,7 +201,7 @@ Test Case: protocol (protocol type) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -246,7 +246,7 @@ Test Case: icmp_type (ICMP message type) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -291,7 +291,7 @@ We tested type 3, code 3.
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -335,7 +335,7 @@ Test Case: tos (Type of Service) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -377,7 +377,7 @@ Test Case: ttl (time to live) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -418,7 +418,7 @@ Test Case: proto (IPv4 protocol) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -459,7 +459,7 @@ Test Case: src (IPv4 source) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -499,7 +499,7 @@ Test Case: dst (IPv4 destination) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -542,7 +542,7 @@ Test Case: tc (Traffic Class) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -583,7 +583,7 @@ Test Case: flow (Flow Code) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -624,7 +624,7 @@ Test Case: proto (IPv6 protocol/next header protocol) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -665,7 +665,7 @@ Test Case: hop (Hop Limit) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -704,7 +704,7 @@ Test Case: dst (IPv6 destination) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -744,7 +744,7 @@ Test Case: src (IPv6 source) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -788,7 +788,7 @@ Test Case: src (source port) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -826,7 +826,7 @@ Test Case: dst (destination port) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -866,7 +866,7 @@ Test Case: tag (SCTP header tag) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -907,7 +907,7 @@ Test Case: cksum (SCTP header checksum) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -950,7 +950,7 @@ Test Case: src (source port) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -991,7 +991,7 @@ Test Case: dst (destination port) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1032,7 +1032,7 @@ Test Case: flags (TCP flags) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1075,7 +1075,7 @@ Test Case: src (source port) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1115,7 +1115,7 @@ Test Case: dst (destination port) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1161,7 +1161,7 @@ We test them altogether as the tci and we test each field individually.
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1203,7 +1203,7 @@ Test Case: pcp (Priority Code Point) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1242,7 +1242,7 @@ NOTE: The only two possible values for dei are 0 and 1.
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1279,7 +1279,7 @@ Test Case: vid (VLAN identifier) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1320,7 +1320,7 @@ Test Case: tpid (Tag Protocol Identifier) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1364,7 +1364,7 @@ Test Case: vni (VXLAN network identifier) rule
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1423,7 +1423,7 @@ Test Case: passthru test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1465,7 +1465,7 @@ Test Case: flag test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1507,7 +1507,7 @@ Test Case: drop test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1550,7 +1550,7 @@ Test Case: test_shared
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1590,7 +1590,7 @@ Test Case: test_id
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1633,7 +1633,7 @@ Test Case: mac_swap test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1676,7 +1676,7 @@ Test Case: dec_ttl test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1719,7 +1719,7 @@ Test Case: jump test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1763,7 +1763,7 @@ Test Case: mark test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1806,7 +1806,7 @@ Test Case: queue test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1849,7 +1849,7 @@ Test Case: pf test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1892,7 +1892,7 @@ Test Case: test_original
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1932,7 +1932,7 @@ Test Case: test_id
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -1976,7 +1976,7 @@ Test Case: test_original
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2016,7 +2016,7 @@ Test Case: test_index
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2060,7 +2060,7 @@ Test Case: test_original
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2100,7 +2100,7 @@ Test Case: test_id
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2144,7 +2144,7 @@ Test Case: meter test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2187,7 +2187,7 @@ Test Case: security test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2231,7 +2231,7 @@ Test Case: of_set_mpls_ttl test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2274,7 +2274,7 @@ Test Case: of_dec_mpls_ttl test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2318,7 +2318,7 @@ Test Case: of_set_nw_ttl test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2362,7 +2362,7 @@ Test Case: of_dec_nw_ttl test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2405,7 +2405,7 @@ Test Case: of_copy_ttl_out test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2448,7 +2448,7 @@ Test Case: of_copy_ttl_in test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2491,7 +2491,7 @@ Test Case: of_pop_vlan test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2534,7 +2534,7 @@ Test Case: of_push_vlan test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2578,7 +2578,7 @@ Test Case: of_set_vlan_vid test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2621,7 +2621,7 @@ Test Case: of_set_vlan_pcp test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2664,7 +2664,7 @@ Test Case: of_pop_mpls test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2707,7 +2707,7 @@ Test Case: of_push_mpls test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2750,7 +2750,7 @@ Test Case: vxlan_encap
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2793,7 +2793,7 @@ Test Case: vxlan_decap
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2836,7 +2836,7 @@ Test Case: test_data
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2877,7 +2877,7 @@ Test Case: test_preserve
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2919,7 +2919,7 @@ Test Case: test_size
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -2964,7 +2964,7 @@ Test Case: test_data
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3005,7 +3005,7 @@ Test Case: test_size
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3049,7 +3049,7 @@ Test Case: set_ipv4_src test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3093,7 +3093,7 @@ Test Case: set_ipv4_dst test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3136,7 +3136,7 @@ Test Case: set_ipv6_src test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3181,7 +3181,7 @@ Test Case: set_ipv6_dst test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3226,7 +3226,7 @@ Test Case: test_udp
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3266,7 +3266,7 @@ Test Case: test_tcp
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3310,7 +3310,7 @@ Test Case: test_udp
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3350,7 +3350,7 @@ Test Case: test_tcp
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3392,7 +3392,7 @@ Test Case: set_ttl test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3435,7 +3435,7 @@ Test Case: set_mac_src test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3478,7 +3478,7 @@ Test Case: set_mac_dst test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3521,7 +3521,7 @@ Test Case: inc_tcp_seq test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3564,7 +3564,7 @@ Test Case: dec_tcp_seq test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3607,7 +3607,7 @@ Test Case: inc_tcp_ack test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3650,7 +3650,7 @@ Test Case: dec_tcp_ack test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3693,7 +3693,7 @@ Test Case: test_data
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3734,7 +3734,7 @@ Test Case: test_mask
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3776,7 +3776,7 @@ Test Case: test_index
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3820,7 +3820,7 @@ Test Case: test_data
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3861,7 +3861,7 @@ Test Case: test_mask
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3904,7 +3904,7 @@ Test Case: set_ipv4_dscp test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3948,7 +3948,7 @@ Test Case: set_ipv6_dscp test
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -3992,7 +3992,7 @@ Test Case: test_timeout
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -4032,7 +4032,7 @@ Test Case: test_reserved
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 
@@ -4072,7 +4072,7 @@ Test Case: test_context
 
 ::
 
-    build/testpmd -c 3 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 3 -- -i
 
 ..
 

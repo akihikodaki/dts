@@ -37,7 +37,7 @@ QoS Scheduler Tests
 The QoS Scheduler results are produced using ''qos_sched'' application.
 The application has a number of command line options::
 
-    ./qos_sched [EAL options] -- <APP PARAMS>
+    ./<build_target>/examples/dpdk-qos_sched [EAL options] -- <APP PARAMS>
 
 Mandatory application parameters include:
 -pfc “RX PORT, TX PORT, RX LCORE, WT LCORE, TX CORE”: Packet flow configuration.
@@ -92,7 +92,7 @@ Test Case: 1 pipe, 8 TCs
    which creates one RX thread on lcore 5 reading from port 0
    and a worker thread on lcore 7 writing to port 1::
 
-    ./qos_sched -l 1,5,7 -n 4 -- -i --pfc "0,1,5,7" --cfg ../profile.cfg
+    ./<build_target>/examples/dpdk-qos_sched -l 1,5,7 -n 4 -- -i --pfc "0,1,5,7" --cfg ../profile.cfg
 
 2. The traffic manage setting is configured in profile.cfg.
    Set flows with QinQ inner vlan ID=0, which represents pipe 0.
@@ -164,7 +164,7 @@ Test Case: 4 pipe, 4 TCs
    which creates one RX thread on lcore 5 reading from port 0
    and a worker thread on lcore 7 writing to port 1::
 
-    ./qos_sched -l 1,5,7 -n 4 -- -i --pfc "0,1,5,7" --cfg ../profile.cfg
+    ./<build_target>/examples/dpdk-qos_sched -l 1,5,7 -n 4 -- -i --pfc "0,1,5,7" --cfg ../profile.cfg
 
 2. The traffic manage setting is configured in profile.cfg.
    Set three flows with QinQ inner vlan ID=0/1/2/3, which represents pipe 0/1/2/3.
@@ -189,7 +189,7 @@ Test Case: 1 pipe, 12 TCs
    which creates one RX thread on lcore 5 reading from port 0
    and a worker thread on lcore 7 writing to port 1::
 
-    ./qos_sched -l 1,5,7 -n 4 -- -i --pfc "0,1,5,7" --cfg ../profile.cfg
+    ./<build_target>/examples/dpdk-qos_sched -l 1,5,7 -n 4 -- -i --pfc "0,1,5,7" --cfg ../profile.cfg
 
 2. The traffic manage setting is configured in profile.cfg.
    change pipe profile 0, set tb rate and tc rate to 1/40.96 port rate::
@@ -253,7 +253,7 @@ Test Case: 1 pipe, set a TC rate to 0
    which creates one RX thread on lcore 5 reading from port 0
    and a worker thread on lcore 7 writing to port 1::
 
-    ./qos_sched -l 1,5,7 -n 4 -- -i --pfc "0,1,5,7" --cfg ../profile.cfg
+    ./<build_target>/examples/dpdk-qos_sched -l 1,5,7 -n 4 -- -i --pfc "0,1,5,7" --cfg ../profile.cfg
 
 2. The traffic manage setting is configured in profile.cfg.
    change pipe profile 0, set tb rate and tc rate to 1/40.96 port rate::
@@ -304,7 +304,7 @@ Test Case: best effort TC12
    which creates one RX thread on lcore 5 reading from port 0
    and a worker thread on lcore 7 writing to port 1::
 
-    ./qos_sched -l 1,5,7 -n 4 -- -i --pfc "0,1,5,7" --cfg ../profile.cfg
+    ./<build_target>/examples/dpdk-qos_sched -l 1,5,7 -n 4 -- -i --pfc "0,1,5,7" --cfg ../profile.cfg
 
 2. The traffic manage setting is configured in profile.cfg.
    Set flows with QinQ inner vlan ID=0, which represents pipe 0.
@@ -363,7 +363,7 @@ Test Case: 4096 pipes, 12 TCs
    which creates one RX thread on lcore 5 reading from port 0
    and a worker thread on lcore 7 writing to port 1::
 
-    ./qos_sched -l 1,5,7 -n 4 -- -i --pfc "0,1,5,7" --cfg ../profile.cfg
+    ./<build_target>/examples/dpdk-qos_sched -l 1,5,7 -n 4 -- -i --pfc "0,1,5,7" --cfg ../profile.cfg
 
 2. The traffic manage setting is configured in profile.cfg.
    Set flows with QinQ inner vlan ID=random, which represents pipe 0-4095.
@@ -426,7 +426,7 @@ Test Case: 4096 pipes, 12 TCs
 
 3. If TX core defined::
 
-    ./qos_sched -l 1,2,6,7 -n 4 -- -i --pfc "0,1,2,6,7" --cfg ../profile.cfg
+    ./<build_target>/examples/dpdk-qos_sched -l 1,2,6,7 -n 4 -- -i --pfc "0,1,2,6,7" --cfg ../profile.cfg
 
    The received rate can reach linerate, which is 13.89Mpps, no packets are dropped::
 
@@ -473,7 +473,7 @@ Test Case: qos_sched of two ports
 1. This example with two packet flows configuration using different ports
    but sharing the same core for QoS scheduler is given below::
 
-    ./qos_sched -l 1,2,6,7 -n 4 -- --pfc "0,1,2,6,7" --pfc "1,0,2,6,7" --cfg ../profile.cfg
+    ./<build_target>/examples/dpdk-qos_sched -l 1,2,6,7 -n 4 -- --pfc "0,1,2,6,7" --pfc "1,0,2,6,7" --cfg ../profile.cfg
 
 2. The traffic manage setting is configured in profile.cfg.
    Set flows with QinQ inner vlan ID=random, which represents pipe 0-4095.
@@ -623,7 +623,7 @@ so the two supports case can't be verified.*
    which creates one RX thread on lcore 5 reading from port 0
    and a worker thread on lcore 7 writing to port 1::
 
-    ./qos_sched -l 1,2,5,7 -n 4 -- -i --pfc "0,1,2,5,7" --cfg ../profile.cfg
+    ./<build_target>/examples/dpdk-qos_sched -l 1,2,5,7 -n 4 -- -i --pfc "0,1,2,5,7" --cfg ../profile.cfg
 
 3. The generator settings:
    Set IP dst address mode is random, and the mask is "255.255.255.0".
@@ -648,7 +648,7 @@ so the two supports case can't be verified.*
    which creates one RX thread on lcore 5 reading from port 0
    and a worker thread on lcore 7 writing to port 1::
 
-    ./qos_sched -l 1,2,5,7 -n 4 -- -i --pfc "0,1,2,5,7" --cfg ../profile.cfg
+    ./<build_target>/examples/dpdk-qos_sched -l 1,2,5,7 -n 4 -- -i --pfc "0,1,2,5,7" --cfg ../profile.cfg
 
 3. The generator settings:
    Set IP dst address mode is random, and the mask is "255.255.255.0".
@@ -672,7 +672,7 @@ Test Case: Redistribution of unused pipe BW to other pipes within the same subpo
    which creates one RX thread on lcore 5 reading from port 0
    and a worker thread on lcore 7 writing to port 1::
 
-    ./qos_sched -l 1,2,5,7 -n 4 -- -i --pfc "0,1,2,5,7" --cfg ../profile_ov.cfg
+    ./<build_target>/examples/dpdk-qos_sched -l 1,2,5,7 -n 4 -- -i --pfc "0,1,2,5,7" --cfg ../profile_ov.cfg
 
 3. The generator settings:
    Configure 4 flows:

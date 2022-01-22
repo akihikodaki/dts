@@ -80,7 +80,7 @@ Bind the interface to the driver ::
 
 Start testpmd in a loop configuration ::
 
-    # x86_64-native-linux-gcc/app/testpmd  -l 1,2 -n 4 -a xxxx:xx:xx.x \
+    # ./<build_target>/app/dpdk-testpmd  -l 1,2 -n 4 -a xxxx:xx:xx.x \
        -- -i --port-topology=loop
 
 Start packet forwarding ::
@@ -122,7 +122,7 @@ Grant permissions for all users to access the new character device ::
 
 Start testpmd in a loop configuration ::
 
-    $ x86_64-native-linux-gcc/app/testpmd  -l 1,2 -n 4 -a xxxx:xx:xx.x --in-memory \
+    $ ./<build_target>/app/dpdk-testpmd  -l 1,2 -n 4 -a xxxx:xx:xx.x --in-memory \
        -- -i --port-topology=loop
 
 Start packet forwarding ::
@@ -148,11 +148,13 @@ application.
 
 Compile the application ::
 
-    # cd $RTE_SDK/examples/helloworld && make
+    make: # cd $RTE_SDK/examples/helloworld && make
+    meson: meson configure -Dexamples=helloworld <build_target>;ninja -C <build_target>
 
 Run the application ::
 
-    $ $RTE_SDK/examples/helloworld/build/helloworld-shared --in-memory
+    make: $ $RTE_SDK/examples/helloworld/build/helloworld-shared --in-memory
+    meson: $ ./<build_target>/examples/dpdk-helloworld --in-memory
 
 Check for any error states or reported errors.
 

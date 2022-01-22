@@ -65,6 +65,7 @@ Setup library path in environment::
 
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH,<dpdk_2002>
 
+meson: CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=shared <build_target>;ninja -C <build_target>
 
 Common Test Steps
 =================
@@ -75,7 +76,7 @@ application steps are below,
 
 Go into <dpdk_1911> directory, launch application with specific library::
 
-  testpmd -c 0xf -n 4 -d <dpdk_2002> -- -i
+  ./<build_target>/app/dpdk-testpmd -c 0xf -n 4 -d <dpdk_2002> -- -i
 
 Expect the application could launch successfully.
 
@@ -292,7 +293,7 @@ Build shared libraries, (just enable i40e pmd for testing)::
 
 Run testpmd application refer to Common Test steps with ixgbe pmd NIC.::
 
-  testpmd -c 0xf -n 4 -d <dpdk_2002> -a 18:00.0 -- -i
+  ./<build_target>/app/dpdk-testpmd -c 0xf -n 4 -d <dpdk_2002> -a 18:00.0 -- -i
 
 Test txonly::
 

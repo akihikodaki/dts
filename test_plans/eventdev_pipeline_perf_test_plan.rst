@@ -22,6 +22,13 @@ to the device under test ::
    usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
    usertools/dpdk-devbind.py --bind=vfio-pci eventdev_device_bus_id
 
+Build dpdk and examples=eventdev_pipeline:
+   CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static <build_target>
+   ninja -C <build_target>
+
+   meson configure -Dexamples=eventdev_pipeline <build_target>
+   ninja -C <build_target>
+
 Create huge pages
 =================
 mkdir -p /dev/huge
@@ -51,7 +58,7 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device_bus_id -- -w 0xc00000 -n=0 --dump
+   # ./<build_target>/examples/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device_bus_id -- -w 0xc00000 -n=0 --dump
 
     Parameters::
 
@@ -75,7 +82,7 @@ Description: Execute performance test with Parallel_atq type of stage in multi-f
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device_bus_id -- -w 0xc00000 -n=0 -p --dump
+   # ./<build_target>/examples/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device_bus_id -- -w 0xc00000 -n=0 -p --dump
 
     Parameters::
 
@@ -100,7 +107,7 @@ Description: Execute performance test with Ordered_atq type of stage in multi-fl
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device_bus_id -- -w 0xc00000 -n=0 -o --dump
+   # ./<build_target>/examples/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device_bus_id -- -w 0xc00000 -n=0 -o --dump
 
     Parameters::
 
@@ -125,7 +132,7 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- -w 0xc00000 -n=0 --dump
+   # ./<build_target>/examples/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- -w 0xc00000 -n=0 --dump
 
     Parameters::
 
@@ -149,7 +156,7 @@ Description: Execute performance test with Parallel_atq type of stage in multi-f
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- -w 0xc00000 -n=0 -p --dump
+   # ./<build_target>/examples/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- -w 0xc00000 -n=0 -p --dump
 
     Parameters::
 
@@ -174,7 +181,7 @@ Description: Execute performance test with Ordered_atq type of stage in multi-fl
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- -w 0xc00000 -n=0 -o --dump
+   # ./<build_target>/examples/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- -w 0xc00000 -n=0 -o --dump
 
     Parameters::
 
@@ -199,7 +206,7 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- -w 0xc00000 -n=0 --dump
+   # ./<build_target>/examples/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- -w 0xc00000 -n=0 --dump
 
     Parameters::
 
@@ -223,7 +230,7 @@ Description: Execute performance test with Parallel_atq type of stage in multi-f
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- -w 0xc00000 -n=0 -p --dump
+   # ./<build_target>/examples/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- -w 0xc00000 -n=0 -p --dump
 
     Parameters::
 
@@ -248,7 +255,7 @@ Description: Execute performance test with Ordered_atq type of stage in multi-fl
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- -w 0xc00000 -n=0 -o --dump
+   # ./<build_target>/examples/dpdk-eventdev_pipeline -c 0xe00000 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- -w 0xc00000 -n=0 -o --dump
 
     Parameters::
 

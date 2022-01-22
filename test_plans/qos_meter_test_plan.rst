@@ -86,7 +86,7 @@ dut_port_1 : "0000:05:00.1"
    and 2 ports only in the application port mask (first port from the port
    mask is used for RX and the other port in the core mask is used for TX)::
 
-    ./build/qos_meter -c 1 -n 4 -- -p 0x3
+    ./<build_target>/examples/dpdk-qos_meter -c 1 -n 4 -- -p 0x3
 
 Test Case: srTCM blind input color RED
 ======================================

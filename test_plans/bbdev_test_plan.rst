@@ -153,7 +153,7 @@ and operations timeout is set to 120s
 and enqueue/dequeue burst size is set to 8 and to 32.
 Moreover a bbdev (*turbo_sw*) device will be created::
 
-    ./test-bbdev.py -p ../../x86_64-native-linuxapp-icc/app/testbbdev \
+    ./test-bbdev.py -p ../../x86_64-native-linuxapp-icc/app/dpdk-test-bbdev \
     -e="--vdev=baseband_turbo_sw" -t 120 -c validation \
     -v ./test_vectors/turbo_enc_c1_k40_r0_e1196_rm.data -n 64 -b 8 32
 
@@ -243,7 +243,7 @@ Test case 8: Turbo encoding and decoding offload and latency
 
 It runs **offload ** and **latency** test for Turbo encode vector file::
 
-    ./test-bbdev.py -p ../../x86_64-native-linuxapp-icc/app/testbbdev \
+    ./test-bbdev.py -p ../../x86_64-native-linuxapp-icc/app/dpdk-test-bbdev \
     -e="--vdev=baseband_turbo_sw" -t 120 -c offload latency \
     -v ./test_vectors/turbo_enc_c1_k40_r0_e1196_rm.data \
     ./test_vectors/turbo_dec_c1_k40_r0_e17280_sbd_negllr.data -n 64 -l 16 -b 8 32

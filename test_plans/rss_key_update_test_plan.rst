@@ -51,7 +51,7 @@ Test Case: test_set_hash_key_toeplitz
 
 #. Launch the ``testpmd`` application with the following arguments::
 
-    ./testpmd -c ffffff -n 4 -- -i --portmask=0x6 --rxq=16 --txq=16
+    ./<build_target>/app/dpdk-testpmd -c ffffff -n 4 -- -i --portmask=0x6 --rxq=16 --txq=16
 
 #. PMD fwd only receive the packets::
 

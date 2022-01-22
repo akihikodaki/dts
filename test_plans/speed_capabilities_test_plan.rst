@@ -52,7 +52,7 @@ Assuming that ports ``0`` and ``1`` of the test target are directly connected
 to the traffic generator, launch the ``testpmd`` application with the following
 arguments::
 
-  ./build/app/testpmd -- -i --portmask=0x3
+  ./<build_target>/app/dpdk-testpmd -- -i --portmask=0x3
 
 Start packet forwarding in the ``testpmd`` application with the ``start``
 command. Then, for each port on the target make the Traffic Generator

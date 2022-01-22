@@ -49,7 +49,7 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=A --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=A --wlcores=23
 
     Parameters::
 
@@ -76,7 +76,7 @@ Description: Execute performance test with Parallel_atq type of stage in multi-f
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=P --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=P --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -88,7 +88,7 @@ Description: Execute performance test with Ordered_atq type of stage in multi-fl
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=O --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=O --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -100,7 +100,7 @@ Description: Execute performance test with Atomic_queue type of stage in multi-f
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=A --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=A --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -112,7 +112,7 @@ Description: Execute performance test with Parallel_queue type of stage in multi
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=P --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=P --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -124,7 +124,7 @@ Description: Execute performance test with Ordered_queue type of stage in multi-
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=O --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=O --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -136,7 +136,7 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=A --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=A --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -148,7 +148,7 @@ Description: Execute performance test with Parallel_atq type of stage in multi-f
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=P --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=P --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -160,7 +160,7 @@ Description: Execute performance test with Ordered_atq type of stage in multi-fl
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=O --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=O --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -172,7 +172,7 @@ Description: Execute performance test with Atomic_queue type of stage in multi-f
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=A --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=A --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -184,7 +184,7 @@ Description: Execute performance test with Parallel_queue type of stage in multi
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=P --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=P --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -196,7 +196,7 @@ Description: Execute performance test with Ordered_queue type of stage in multi-
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=O --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=O --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -209,7 +209,7 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -w device2_bus_id -a device3_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=A --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -w device2_bus_id -a device3_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=A --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -221,7 +221,7 @@ Description: Execute performance test with Parallel_atq type of stage in multi-f
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=P --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=P --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -233,7 +233,7 @@ Description: Execute performance test with Ordered_atq type of stage in multi-fl
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=O --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=O --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -245,7 +245,7 @@ Description: Execute performance test with Atomic_queue type of stage in multi-f
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=A --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=A --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -257,7 +257,7 @@ Description: Execute performance test with Parallel_queue type of stage in multi
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=P --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=P --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -269,7 +269,7 @@ Description: Execute performance test with Ordered_queue type of stage in multi-
 
 1. Run the sample with below command::
 
-   # ./build/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=O --wlcores=23
+   # ./<build_target>/app/dpdk-test-eventdev -l 22-23 -a eventdev_device_bus_id -a device0_bus_id -a device1_bus_id -a device2_bus_id -a device3_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=O --wlcores=23
 
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
