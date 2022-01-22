@@ -76,6 +76,13 @@ Change pci device id of LINK0 to pci device id of dut_port_0.
 There are two drivers supported now: aesni_gcm and aesni_mb.
 Different drivers support different Algorithms.
 
+Build dpdk and examples=ip_pipeline:
+   CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static <build_target>
+   ninja -C <build_target>
+
+   meson configure -Dexamples=ip_pipeline <build_target>
+   ninja -C <build_target>
+
 Test Case: l2fwd pipeline
 ===========================
 1. Edit examples/ip_pipeline/examples/l2fwd.cli,
@@ -84,7 +91,7 @@ Test Case: l2fwd pipeline
 
 2. Run ip_pipeline app as the following::
 
-    ./build/ip_pipeline -c 0x3 -n 4 -- -s examples/l2fwd.cli
+    ./<build_target>/examples/dpdk-ip_pipeline -c 0x3 -n 4 -- -s examples/l2fwd.cli
 
 3. Send packets at tester side with scapy, verify:
 
@@ -99,7 +106,7 @@ Test Case: flow classification pipeline
 
 2. Run ip_pipeline app as the following::
 
-    ./build/ip_pipeline -c 0x3 -n 4 –- -s examples/flow.cli
+    ./<build_target>/examples/dpdk-ip_pipeline -c 0x3 -n 4 –- -s examples/flow.cli
 
 3. Send following packets with one test port::
 
@@ -121,7 +128,7 @@ Test Case: routing pipeline
 
 2. Run ip_pipeline app as the following::
 
-    ./build/ip_pipeline -c 0x3 -n 4 –- -s examples/route.cli,
+    ./<build_target>/examples/dpdk-ip_pipeline -c 0x3 -n 4 –- -s examples/route.cli,
 
 3. Send following packets with one test port::
 
@@ -143,7 +150,7 @@ Test Case: firewall pipeline
 
 2. Run ip_pipeline app as the following::
 
-    ./build/ip_pipeline -c 0x3 -n 4 –- -s examples/firewall.cli
+    ./<build_target>/examples/dpdk-ip_pipeline -c 0x3 -n 4 –- -s examples/firewall.cli
 
 3. Send following packets with one test port::
 
@@ -164,7 +171,7 @@ Test Case: pipeline with tap
 
 2. Run ip_pipeline app as the following::
 
-    ./build/ip_pipeline -c 0x3 -n 4 –- -s examples/tap.cli,
+    ./<build_target>/examples/dpdk-ip_pipeline -c 0x3 -n 4 –- -s examples/tap.cli,
 
 3. Send packets at tester side with scapy, verify
    packets sent from tester_port_0 can be received at tester_port_1, and vice versa.
@@ -178,7 +185,7 @@ Test Case: traffic management pipeline
 
 3. Run ip_pipeline app as the following::
 
-    ./build/ip_pipeline -c 0x3 -n 4 -a 0000:81:00.0 -- -s examples/traffic_manager.cli
+    ./<build_target>/examples/dpdk-ip_pipeline -c 0x3 -n 4 -a 0000:81:00.0 -- -s examples/traffic_manager.cli
 
 4. Config traffic with dst ipaddr increase from 0.0.0.0 to 15.255.0.0, total 4096 streams,
    also config flow tracked-by dst ipaddr, verify each flow's throughput is about linerate/4096.
@@ -191,7 +198,7 @@ Test Case: RSS pipeline
 
 2. Run ip_pipeline app as the following::
 
-    ./build/ip_pipeline -c 0x1f -n 4 –- -s examples/rss.cli
+    ./<build_target>/examples/dpdk-ip_pipeline -c 0x1f -n 4 –- -s examples/rss.cli
 
 3. Send following packets with one test port::
 
@@ -220,7 +227,7 @@ Test Case: vf l2fwd pipeline(pf bound to dpdk driver)
 
 2. Start testpmd with the four pf ports::
 
-    ./testpmd -c 0xf0 -n 4 -a 05:00.0 -a 05:00.1 -a 05:00.2 -a 05:00.3 --file-prefix=pf --socket-mem 1024,1024 -- -i
+    ./<build_target>/app/dpdk-testpmd -c 0xf0 -n 4 -a 05:00.0 -a 05:00.1 -a 05:00.2 -a 05:00.3 --file-prefix=pf --socket-mem 1024,1024 -- -i
 
    Set vf mac address from pf port::
 
@@ -235,7 +242,7 @@ Test Case: vf l2fwd pipeline(pf bound to dpdk driver)
 
 4. Run ip_pipeline app as the following::
 
-    ./build/ip_pipeline -c 0x3 -n 4 -a 0000:05:02.0 -a 0000:05:06.0 \
+    ./<build_target>/examples/dpdk-ip_pipeline -c 0x3 -n 4 -a 0000:05:02.0 -a 0000:05:06.0 \
     -a 0000:05:0a.0 -a 0000:05:0e.0 --file-prefix=vf --socket-mem 1024,1024 -- -s examples/vf.cli
 
    The exact format of port allowlist: domain:bus:devid:func
@@ -290,7 +297,7 @@ Test Case: vf l2fwd pipeline(pf bound to kernel driver)
 
 4. Run ip_pipeline app as the following::
 
-    ./build/ip_pipeline -c 0x3 -n 4 -- -s examples/vf.cli
+    ./<build_target>/examples/dpdk-ip_pipeline -c 0x3 -n 4 -- -s examples/vf.cli
 
 5. Send packets at tester side with scapy::
 
@@ -331,7 +338,7 @@ Test Case: crypto pipeline - AEAD algorithm in aesni_gcm
 
 4. Run ip_pipeline app as the following::
 
-    ./examples/ip_pipeline/build/ip_pipeline -a 0000:81:00.0 --vdev crypto_aesni_gcm0
+    ./<build_target>/examples/dpdk-ip_pipeline -a 0000:81:00.0 --vdev crypto_aesni_gcm0
     --socket-mem 0,2048 -l 23,24,25 -- -s ./examples/ip_pipeline/examples/flow_crypto.cli
 
 5. Send packets with IXIA port,
@@ -365,7 +372,7 @@ Test Case: crypto pipeline - cipher algorithm in aesni_mb
 
 4. Run ip_pipeline app as the following::
 
-    ./examples/ip_pipeline/build/ip_pipeline -a 0000:81:00.0 --vdev crypto_aesni_mb0 --socket-mem 0,2048 -l 23,24,25 -- -s ./examples/ip_pipeline/examples/flow_crypto.cli
+    ./<build_target>/examples/dpdk-ip_pipeline -a 0000:81:00.0 --vdev crypto_aesni_mb0 --socket-mem 0,2048 -l 23,24,25 -- -s ./examples/ip_pipeline/examples/flow_crypto.cli
 
 5. Send packets with IXIA port,
    Use a tool to caculate the ciphertext from plaintext and key as an expected value.
@@ -395,7 +402,7 @@ Test Case: crypto pipeline - cipher_auth algorithm in aesni_mb
 
 4. Run ip_pipeline app as the following::
 
-    ./examples/ip_pipeline/build/ip_pipeline -a 0000:81:00.0 --vdev crypto_aesni_mb0 --socket-mem 0,2048 -l 23,24,25 -- -s ./examples/ip_pipeline/examples/flow_crypto.cli
+    ./<build_target>/examples/dpdk-ip_pipeline -a 0000:81:00.0 --vdev crypto_aesni_mb0 --socket-mem 0,2048 -l 23,24,25 -- -s ./examples/ip_pipeline/examples/flow_crypto.cli
 
 5. Send packets with IXIA port,
    Use a tool to caculate the ciphertext from plaintext and cipher key with AES-CBC algorithm.

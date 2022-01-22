@@ -66,9 +66,16 @@ to the device under test::
    modprobe vfio-pci
    usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
 
+Build dpdk and examples=cmdline:
+   CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static <build_target>
+   ninja -C <build_target>
+
+   meson configure -Dexamples=cmdline <build_target>
+   ninja -C <build_target>
+
 Launch the ``cmdline`` with 24 logical cores in linuxapp environment::
 
-  $ ./build/app/cmdline -cffffff
+  $ ./build/examples/dpdk-cmdline -cffffff
 
 Test the 3 simple commands in below prompt ::
 

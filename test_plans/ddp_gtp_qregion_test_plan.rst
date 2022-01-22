@@ -86,7 +86,7 @@ Prerequisites
    --pkt-filter-mode=perfect on testpmd to enable flow director. In general, 
    PF's max queue is 64::
 
-    ./testpmd -c f -n 4 -- -i --pkt-filter-mode=perfect 
+    ./<build>/app/dpdk-testpmd -c f -n 4 -- -i --pkt-filter-mode=perfect
     --port-topology=chained --txq=64 --rxq=64
 
 

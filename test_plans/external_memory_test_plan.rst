@@ -46,7 +46,7 @@ Bind the ports to IGB_UIO driver
 
 Start testpmd with --mp-alloc=xmem flag::
 
-   ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -- --mp-alloc=xmem -i
+   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -- --mp-alloc=xmem -i
 
 Start forward in testpmd
 
@@ -60,7 +60,7 @@ Bind the ports to IGB_UIO driver
 
 Start testpmd with --mp-alloc=xmemhuge flag::
 
-   ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -- --mp-alloc=xmemhuge -i
+   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -- --mp-alloc=xmemhuge -i
 
 Start forward in testpmd
 
@@ -73,7 +73,7 @@ Bind the ports to vfio-pci driver
 
 Start testpmd with --mp-alloc=xmem flag::
 
-   ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -- --mp-alloc=xmem -i
+   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -- --mp-alloc=xmem -i
 
 Start forward in testpmd
 
@@ -86,7 +86,7 @@ Bind the ports to vfio-pci driver
 
 Start testpmd with --mp-alloc=xmemhuge flag::
 
-   ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4 -- --mp-alloc=xmemhuge -i
+   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -- --mp-alloc=xmemhuge -i
 
 Start forward in testpmd
 

@@ -74,7 +74,7 @@ bind two ports::
 Test Case: xstat options
 ------------------------
 
-check ``dpdk-procinfo`` tool support ``xstats`` command options.
+check ``dpdk-proc-info`` tool support ``xstats`` command options.
 
 These options should be included::
 
@@ -87,17 +87,17 @@ steps:
 
 #. boot up ``testpmd``::
 
-    ./<target name>/app/testpmd -c 0x3 -n 4  -- -i --port-topology=loop
+    ./<target name>/app/dpdk-testpmd -c 0x3 -n 4  -- -i --port-topology=loop
 
     testpmd> set fwd io
     testpmd> clear port xstats all
     testpmd> start
 
-#. run ``dpdk-procinfo`` tool::
+#. run ``dpdk-proc-info`` tool::
 
-    ./<target name>/app/dpdk-procinfo
+    ./<target name>/app/dpdk-proc-info
 
-#. check ``dpdk-procinfo`` tool output should contain upper options.
+#. check ``dpdk-proc-info`` tool output should contain upper options.
 
 Test Case: xstat statistic integrity
 ------------------------------------
@@ -108,7 +108,7 @@ steps:
 
 #. boot up ``testpmd``::
 
-    ./<target name>/app/testpmd -c 0x3 -n 4  -- -i --port-topology=loop
+    ./<target name>/app/dpdk-testpmd -c 0x3 -n 4  -- -i --port-topology=loop
 
     testpmd> set fwd io
     testpmd> clear port xstats all
@@ -118,11 +118,11 @@ steps:
 
     sendp([Ether()/IP()/UDP()/Raw('\0'*60)], iface=<port 0 name>)
 
-#. run ``dpdk-procinfo`` tool with ``xstats`` option and check if all ports
+#. run ``dpdk-proc-info`` tool with ``xstats`` option and check if all ports
    extended statistics can access by xstat name or xstat id::
 
-    ./<target name>/app/dpdk-procinfo -- -p 3 --xstats-id <N>
-    ./<target name>/app/dpdk-procinfo -- -p 3 --xstats-name <statistic name>
+    ./<target name>/app/dpdk-proc-info -- -p 3 --xstats-id <N>
+    ./<target name>/app/dpdk-proc-info -- -p 3 --xstats-name <statistic name>
 
 Test Case: xstat-reset command
 ------------------------------
@@ -133,7 +133,7 @@ steps:
 
 #. boot up ``testpmd``::
 
-    ./<target name>/app/testpmd -c 0x3 -n 4  -- -i --port-topology=loop
+    ./<target name>/app/dpdk-testpmd -c 0x3 -n 4  -- -i --port-topology=loop
 
     testpmd> set fwd io
     testpmd> clear port xstats all
@@ -143,10 +143,10 @@ steps:
 
     sendp([Ether()/IP()/UDP()/Raw('\0'*60)], iface=<port 0 name>)
 
-#. run ``dpdk-procinfo`` tool with ``xstats-reset`` option and check if all port
+#. run ``dpdk-proc-info`` tool with ``xstats-reset`` option and check if all port
    statistics have been cleared::
 
-    ./<target name>/app/dpdk-procinfo -- -p 3 --xstats-reset
+    ./<target name>/app/dpdk-proc-info -- -p 3 --xstats-reset
 
 Test Case: xstat single statistic
 ---------------------------------
@@ -158,7 +158,7 @@ steps:
 
 #. boot up ``testpmd``::
 
-    ./<target name>/app/testpmd -c 0x3 -n 4  -- -i --port-topology=loop
+    ./<target name>/app/dpdk-testpmd -c 0x3 -n 4  -- -i --port-topology=loop
 
     testpmd> set fwd io
     testpmd> clear port xstats all
@@ -172,14 +172,14 @@ steps:
 
     testpmd> show port xstats all
 
-#. run ``dpdk-procinfo`` tool with ``xstats-id`` option to get the statistic
+#. run ``dpdk-proc-info`` tool with ``xstats-id`` option to get the statistic
    name corresponding with the index id::
 
-    ./<target name>/app/dpdk-procinfo -- -p 3 --xstats-id 0,1,...N
+    ./<target name>/app/dpdk-proc-info -- -p 3 --xstats-id 0,1,...N
 
-#. run ``dpdk-procinfo`` tool with ``xstats-name`` option to get the statistic
+#. run ``dpdk-proc-info`` tool with ``xstats-name`` option to get the statistic
    data corresponding with the statistic name::
 
-    ./<target name>/app/dpdk-procinfo -- -p 3 --xstats-name <statistic name>
+    ./<target name>/app/dpdk-proc-info -- -p 3 --xstats-name <statistic name>
 
 #. compare these proc info tool xstat values with testpmd xstat values.

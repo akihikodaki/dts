@@ -42,13 +42,14 @@ systems and software based memory allocators to be used with DPDK.
 Test Case 1: Multiple producers and multiple consumers
 ======================================================
 
-1. Change default mempool handler operations to "ring_mp_mc"::
+1. Default mempool handler operations is "ring_mp_mc"::
 
-      sed -i 's/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=.*$/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=\"ring_mp_mc\"/' ./config/common_base
+      cat /root/dpdk/config/rte_config.h |grep MEMPOOL_OPS
+      #define RTE_MBUF_DEFAULT_MEMPOOL_OPS "ring_mp_mc"
 
 2. Start test app and verify mempool autotest passed::
 
-      test -n 4 -c f
+      ./<build_target>/app/test/dpdk-test -n 4 -c f
       RTE>> mempool_autotest
 
 3. Start testpmd with two ports and start forwarding::
@@ -65,11 +66,11 @@ Test Case 2: Single producer and Single consumer
 
 1. Change default mempool operation to "ring_sp_sc"::
 
-      sed -i 's/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=.*$/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=\"ring_sp_sc\"/' ./config/common_base
+      sed -i '$a\#define RTE_MBUF_DEFAULT_MEMPOOL_OPS \"ring_sp_sc\"' config/rte_config.h
 
 2. Start test app and verify mempool autotest passed::
 
-      test -n 4 -c f
+      ./<build_target>/app/test/dpdk-test -n 4 -c f
       RTE>> mempool_autotest
 
 3. Start testpmd with two ports and start forwarding::
@@ -86,11 +87,11 @@ Test Case 3: Single producer and Multiple consumers
 
 1. Change default mempool operation to "ring_sp_mc"::
 
-      sed -i 's/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=.*$/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=\"ring_sp_mc\"/' ./config/common_base
+      sed -i '$a\#define RTE_MBUF_DEFAULT_MEMPOOL_OPS \"ring_sp_mc\"' config/rte_config.h
 
 2. Start test app and verify mempool autotest passed::
 
-      test -n 4 -c f
+      ./<build_target>/app/test/dpdk-test -n 4 -c f
       RTE>> mempool_autotest
 
 3. Start testpmd with two ports and start forwarding::
@@ -107,11 +108,11 @@ Test Case 4: Multiple producers and single consumer
 
 1. Change default mempool operation to "ring_mp_sc"::
 
-      sed -i 's/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=.*$/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=\"ring_mp_sc\"/' ./config/common_base
+      sed -i '$a\#define RTE_MBUF_DEFAULT_MEMPOOL_OPS \"ring_mp_sc\"' config/rte_config.h
 
 2. Start test app and verify mempool autotest passed::
 
-      test -n 4 -c f
+      ./<build_target>/app/test/dpdk-test -n 4 -c f
       RTE>> mempool_autotest
 
 3. Start testpmd with two ports and start forwarding::
@@ -128,11 +129,11 @@ Test Case 4: Stack mempool handler
 
 1. Change default mempool operation to "stack"::
 
-      sed -i 's/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=.*$/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=\"stack\"/' ./config/common_base
+      sed -i '$a\#define RTE_MBUF_DEFAULT_MEMPOOL_OPS \"stack\"' config/rte_config.h
 
 2. Start test app and verify mempool autotest passed::
 
-      test -n 4 -c f
+      ./<build_target>/app/test/dpdk-test -n 4 -c f
       RTE>> mempool_autotest
 
 3. Start testpmd with two ports and start forwarding::

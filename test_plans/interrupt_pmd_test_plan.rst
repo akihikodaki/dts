@@ -60,12 +60,19 @@ Iommu pass through feature has been enabled in kernel::
 Support igb_uio and vfio driver, if used vfio, kernel need 3.6+ and enable vt-d
 in bios. When used vfio, requested to insmod two drivers vfio and vfio-pci.
 
+Build dpdk and examples=l3fwd-power:
+   CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static <build_target>
+   ninja -C <build_target>
+
+   meson configure -Dexamples=l3fwd-power <build_target>
+   ninja -C <build_target>
+
 Test Case1: PF interrupt pmd with different queue
 =================================================
 
 Run l3fwd-power with one queue per port::
 
-    l3fwd-power -c 0x7 -n 4 -- -p 0x3 -P --config="(0,0,1),(1,0,2)"
+    ./<build_target>/examples/dpdk-l3fwd-power -c 0x7 -n 4 -- -p 0x3 -P --config="(0,0,1),(1,0,2)"
 
 Send one packet to Port0 and Port1, check that thread on core1 and core2
 waked up::
@@ -85,7 +92,7 @@ keep up awake.
 
 Run l3fwd-power with random number queue per port, if is 4::
 
-    l3fwd-power -c 0x7 -n 4 -- -p 0x3 -P --config="0,0,0),(0,1,1),\
+    ./<build_target>/examples/dpdk-l3fwd-power -c 0x7 -n 4 -- -p 0x3 -P --config="0,0,0),(0,1,1),\
        (0,2,2),(0,3,3),(0,4,4)"
 
 Send packet with increased dest IP to Port0, check that all threads waked up
@@ -95,7 +102,7 @@ keep up awake.
 
 Run l3fwd-power with 15 queues per port::
 
-    l3fwd-power -c 0xffffff -n 4 -- -p 0x3 -P --config="(0,0,0),(0,1,1),\
+    ./<build_target>/examples/dpdk-l3fwd-power -c 0xffffff -n 4 -- -p 0x3 -P --config="(0,0,0),(0,1,1),\
         (0,2,2),(0,3,3),(0,4,4),(0,5,5),(0,6,6),(0,7,7),(1,0,8),\
         (1,1,9),(1,2,10),(1,3,11),(1,4,12),(1,5,13),(1,6,14)"
 
@@ -109,7 +116,7 @@ Test Case2: PF lsc interrupt with vfio
 
 Run l3fwd-power with one queue per port::
 
-    l3fwd-power -c 0x7 -n 4 -- -p 0x3 -P --config="(0,0,1),(1,0,2)"
+    ./<build_target>/examples/dpdk-l3fwd-power -c 0x7 -n 4 -- -p 0x3 -P --config="(0,0,1),(1,0,2)"
 
 Plug out Port0 cable, check that link down interrupt captured and handled by
 pmd driver.

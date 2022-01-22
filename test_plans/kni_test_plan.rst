@@ -117,7 +117,7 @@ system to another)::
     rmmod igb_uio
     insmod ./x86_64-default-linuxapp-gcc/kmod/igb_uio.ko
     insmod ./x86_64-default-linuxapp-gcc/kmod/rte_kni.ko
-    ./examples/kni/build/app/kni -c 0xa0001e -n 4 -- -P -p 0x3 --config="(0,1,2,21),(1,3,4,23)" &
+    ./<build_target>/examples/dpdk-kni -c 0xa0001e -n 4 -- -P -p 0x3 --config="(0,1,2,21),(1,3,4,23)" &
 
 Case config::
 
@@ -133,7 +133,7 @@ to write to NIC, threads 21 and 23 are used by the kernel.
 As the kernel module is installed using ``"kthread_mode=single"`` the core
 affinity is set using ``taskset``::
 
-    ./build/app/kni -c 0xa0001e -n 4 -- -P -p 0xc --config="(2,1,2,21),(3,3,4,23)"
+    ./<build_target>/examples/dpdk-kni -c 0xa0001e -n 4 -- -P -p 0xc --config="(2,1,2,21),(3,3,4,23)"
 
 
 Verify whether the interface has been added::
@@ -379,7 +379,7 @@ Assume that ``port 2 and 3`` are used by this application::
 
     rmmod kni
     insmod ./kmod/rte_kni.ko "lo_mode=lo_mode_ring_skb"
-    ./build/app/kni -c 0xff -n 3 -- -p 0xf -i 0xf -o 0xf0
+    ./<build_target>/examples/dpdk-kni -c 0xff -n 3 -- -p 0xf -i 0xf -o 0xf0
 
 Assume ``port A and B`` on tester connects to NIC ``port 2 and 3``.
 
@@ -407,7 +407,7 @@ successfully::
 
         rmmod rte_kni
         insmod ./kmod/rte_kni.ko <Changing Parameters>
-         ./build/app/kni -c 0xa0001e -n 4 -- -P -p 0xc --config="(2,1,2,21),(3,3,4,23)"
+         ./<build_target>/examples/dpdk-kni -c 0xa0001e -n 4 -- -P -p 0xc --config="(2,1,2,21),(3,3,4,23)"
 
 
 Using ``dmesg`` to check whether kernel module is loaded with the specified
@@ -437,7 +437,7 @@ Compare performance results for loopback mode using:
 
     insmod ./x86_64-default-linuxapp-gcc/kmod/igb_uio.ko
     insmod ./x86_64-default-linuxapp-gcc/kmod/rte_kni.ko <lo_mode and kthread_mode parameters>
-    ./examples/kni/build/app/kni -c <Core mask> -n 4 -- -P -p <Port mask> --config="<Ports/Cores configuration>" &
+    ./<build_target>/examples/dpdk-kni -c <Core mask> -n 4 -- -P -p <Port mask> --config="<Ports/Cores configuration>" &
 
 
 At this point, the throughput is measured and recorded for the different
@@ -474,7 +474,7 @@ Compare performance results for bridge mode using:
 The application is launched and the bridge is setup using the commands below::
 
     insmod ./x86_64-default-linuxapp-gcc/kmod/rte_kni.ko <kthread_mode parameter>
-    ./build/app/kni -c <Core mask> -n 4 -- -P -p <Port mask> --config="<Ports/Cores configuration>" &
+    ./<build_target>/examples/dpdk-kni -c <Core mask> -n 4 -- -P -p <Port mask> --config="<Ports/Cores configuration>" &
 
     ifconfig vEth2_0 up
     ifconfig vEth3_0 up
@@ -560,7 +560,7 @@ The application is launched and the bridge is setup using the commands below::
     echo 1 > /proc/sys/net/ipv4/ip_forward
 
     insmod ./x86_64-default-linuxapp-gcc/kmod/rte_kni.ko <kthread_mode parameter>
-    ./build/app/kni -c <Core mask> -n 4 -- -P -p <Port mask> --config="<Ports/Cores configuration>" &
+    ./<build_target>/examples/dpdk-kni -c <Core mask> -n 4 -- -P -p <Port mask> --config="<Ports/Cores configuration>" &
 
     ifconfig vEth2_0 192.170.2.1
     ifconfig vEth3_0 192.170.3.1

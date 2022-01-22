@@ -56,13 +56,19 @@ to the device under test::
 1x Intel® 82599 (Niantic) NICs (1x 10GbE full duplex optical ports per NIC)
 plugged into the available PCIe Gen2 8-lane slots.
 
+Build dpdk and examples=ip_reassembly:
+   CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static <build_target>
+   ninja -C <build_target>
+
+   meson configure -Dexamples=ip_reassembly <build_target>
+   ninja -C <build_target>
 
 Test Case: Send 1K packets, 4 fragments each and 1K maxflows
 ============================================================
 
 Sample command::
 
-  ./examples/ip_reassembly/build/ip_reassembly -c 0x2 -n 4 -- \
+  ./<build_target>/examples/dpdk-ip_reassembly -c 0x2 -n 4 -- \
       -P -p 0x2 --config "(1,0,1)" --maxflows=1024 --flowttl=10s
 
 Sends 1K packets split in 4 fragments each with a ``maxflows`` of 1K.
@@ -79,7 +85,7 @@ Test Case: Send 2K packets, 4 fragments each and 1K maxflows
 
 Sample command::
 
-  ./examples/ip_reassembly/build/ip_reassembly -c 0x2 -n 4 -- \
+  ./<build_target>/examples/dpdk-ip_reassembly -c 0x2 -n 4 -- \
       -P -p 0x2 --config "(1,0,1)" --maxflows=1024 --flowttl=10s
 
 Sends 2K packets split in 4 fragments each with a ``maxflows`` of 1K.
@@ -96,7 +102,7 @@ Test Case: Send 4K packets, 7 fragments each and 4K maxflows
 
 Sample command::
 
-  ./examples/ip_reassembly/build/ip_reassembly -c 0x2 -n 4 -- \
+  ./<build_target>/examples/dpdk-ip_reassembly -c 0x2 -n 4 -- \
       -P -p 0x2 --config "(1,0,1)" --maxflows=4096 --flowttl=10s
 
 Modifies the sample app source code to enable up to 7 fragments per packet,
@@ -116,7 +122,7 @@ Test Case: Send +1K packets and ttl 3s; wait +ttl; send 1K packets
 
 Sample command::
 
-  ./examples/ip_reassembly/build/ip_reassembly -c 0x2 -n 4 -- \
+  ./<build_target>/examples/dpdk-ip_reassembly -c 0x2 -n 4 -- \
       -P -p 0x2 --config "(1,0,1)" --maxflows=1024 --flowttl=3s
 
 Sends 1100 packets split in 4 fragments each.
@@ -142,7 +148,7 @@ Test Case: Send more packets than maxflows; only maxflows packets are forwarded 
 
 Sample command::
 
-  ./examples/ip_reassembly/build/ip_reassembly -c 0x2 -n 4 -- \
+  ./<build_target>/examples/dpdk-ip_reassembly -c 0x2 -n 4 -- \
       -P -p 0x2 --config "(1,0,1)" --maxflows=1023 --flowttl=5s
 
 Sends 1K packets with ``maxflows`` equal to 1023.
@@ -175,7 +181,7 @@ Test Case: Send more fragments than supported
 
 Sample command::
 
-  ./examples/ip_reassembly/build/ip_reassembly -c 0x2 -n 4 -- \
+  ./<build_target>/examples/dpdk-ip_reassembly -c 0x2 -n 4 -- \
       -P -p 0x2 --config "(1,0,1)" --maxflows=1024 --flowttl=10s
 
 Sends 1 packet split in 5 fragments while the maximum number of supported
@@ -194,7 +200,7 @@ Test Case: Send 3 frames and delay the 4th; no frames are forwarded back
 
 Sample command::
 
-  ./examples/ip_reassembly/build/ip_reassembly -c 0x2 -n 4 -- \
+  ./<build_target>/examples/dpdk-ip_reassembly -c 0x2 -n 4 -- \
       -P -p 0x2 --config "(1,0,1)" --maxflows=1024 --flowttl=3s
 
 Creates 1 packet split in 4 fragments. Sends the first 3 fragments and waits
@@ -213,7 +219,7 @@ Test Case: Send jumbo frames
 
 Sample command::
 
-  ./examples/ip_reassembly/build/ip_reassembly -c 0x2 -n 4 -- \
+  ./<build_target>/examples/dpdk-ip_reassembly -c 0x2 -n 4 -- \
       -P -p 0x2 --config "(1,0,1)" --maxflows=1024 --flowttl=10s --enable-jumbo --max-pkt-len=9500
 
 Sets the NIC MTU to 9000 and sends 1K packets of 8900B split in 4 fragments of
@@ -232,7 +238,7 @@ Test Case: Send jumbo frames without enable them in the app
 
 Sample command::
 
-  ./examples/ip_reassembly/build/ip_reassembly -c 0x2 -n 4 -- \
+  ./<build_target>/examples/dpdk-ip_reassembly -c 0x2 -n 4 -- \
       -P -p 0x2 --config "(1,0,1)" --maxflows=1024 --flowttl=10s
 
 Sends jumbo packets in the same way the previous test case does but without

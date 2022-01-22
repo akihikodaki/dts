@@ -79,7 +79,7 @@ Prerequisites
 2. Start testpmd on host, set chained port topology mode, add txq/rxq to 
    enable multi-queues::
    
-    ./testpmd -c 0xf -n 4  -- -i --port-topology=chained --txq=64 --rxq=64
+    ./<build>/app/dpdk-testpmd -c 0xf -n 4  -- -i --port-topology=chained --txq=64 --rxq=64
 
 
 Test Case: Rx queue setup at runtime

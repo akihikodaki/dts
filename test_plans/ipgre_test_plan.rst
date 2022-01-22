@@ -48,7 +48,7 @@ Test Case 1: GRE ipv4 packet detect
 
 Start testpmd and enable rxonly forwarding mode::
 
-    testpmd -c ffff -n 4 -- -i
+    ./<build_target>/app/dpdk-testpmd -c ffff -n 4 -- -i
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -77,7 +77,7 @@ Test Case 2: GRE ipv6 packet detect
 
 Start testpmd and enable rxonly forwarding mode::
 
-    testpmd -c ffff -n 4 -- -i --enable-hw-vlan
+    ./<build_target>/app/dpdk-testpmd -c ffff -n 4 -- -i --enable-hw-vlan
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -124,7 +124,7 @@ Test Case 4: GRE packet chksum offload
 
 Start testpmd with hardware checksum offload enabled::
 
-    testpmd -c ff -n 3 -- -i --enable-rx-cksum  --port-topology=loop
+    ./<build_target>/app/dpdk-testpmd -c ff -n 3 -- -i --enable-rx-cksum  --port-topology=loop
     testpmd> set verbose 1
     testpmd> set fwd csum
     testpmd> csum set ip hw 0

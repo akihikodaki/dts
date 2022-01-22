@@ -36,6 +36,12 @@ Eventdev Pipeline SW PMD Tests
 
 Prerequisites
 ==============
+Build dpdk and examples=eventdev_pipeline
+   CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static <build_target>
+   ninja -C <build_target>
+
+   meson configure -Dexamples=eventdev_pipeline <build_target>
+   ninja -C <build_target>
 
 Test Case: Keep the packets order with default stage in single-flow and multi-flow
 ====================================================================================
@@ -43,7 +49,7 @@ Description: the packets' order which will pass through a same flow should be gu
 
 1. Run the sample with below command::
 
-    # ./build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s1 -n0 -c32 -W1000 -D
+    # ./<build_target>/examples/dpdk-eventdev_pipeline /build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s1 -n0 -c32 -W1000 -D
 
     Parameters:
     -r2, -t4, -e8: allocate cores to rx, tx and shedular
@@ -62,7 +68,7 @@ Description: the sample only guarantee that keep the packets order with only one
 
 1. Run the sample with below command::
 
-    # ./build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s1 -n0 -c32 -W1000 -o -D
+    # ./<build_target>/examples/dpdk-eventdev_pipeline /build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s1 -n0 -c32 -W1000 -o -D
 
 2. Send traffic from ixia device with same 5 tuple(single-link) and with different 5-tuple(multi-flow)
 
@@ -75,7 +81,7 @@ in single-flow, the load-balanced behavior is not guaranteed;
 
 1. Run the sample with below command::
 
-    # ./build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s1 -n0 -c32 -W1000 -D
+    # ./<build_target>/examples/dpdk-eventdev_pipeline /build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s1 -n0 -c32 -W1000 -D
 
 2. Use traffic generator to send huge number of packets:
 In single-flow situation, traffic generator will send packets with the same 5-tuple
@@ -90,7 +96,7 @@ Description: A good load-balanced behavior should be guaranteed in both single-f
 
 1. Run the sample with below command::
 
-    # ./build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s1 -n0 -c32 -W1000 -o -D
+    # ./<build_target>/examples/dpdk-eventdev_pipeline /build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s1 -n0 -c32 -W1000 -o -D
 
 2. Use traffic generator to send huge number of packets:
 In single-flow situation, traffic generator will send packets with the same 5-tuple
@@ -105,7 +111,7 @@ Description: A good load-balanced behavior should be guaranteed in both single-f
 
 1. Run the sample with below command::
 
-    # ./build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s1 -n0 -c32 -W1000 -p -D
+    # ./<build_target>/examples/dpdk-eventdev_pipeline /build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s1 -n0 -c32 -W1000 -p -D
 
 2. Use traffic generator to send huge number of packets:
 In single-flow situation, traffic generator will send packets with the same 5-tuple
@@ -121,7 +127,7 @@ We use 4 worker and 2 stage as the test background.
 
 1. Run the sample with below command::
 
-    # ./build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s2 -n0 -c32
+    # ./<build_target>/examples/dpdk-eventdev_pipeline /build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s2 -n0 -c32
 
 2. use traffic generator to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -134,7 +140,7 @@ We use 4 worker and 2 stage as the test background.
 
 1. Run the sample with below command::
 
-    # ./build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s2 -n0 -c32 -p
+    # ./<build_target>/examples/dpdk-eventdev_pipeline /build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s2 -n0 -c32 -p
 
 2. use traffic generator to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -147,7 +153,7 @@ We use 4 worker and 2 stage as the test background.
 
 1. Run the sample with below command::
 
-    # ./build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s2 -n0 -c32 -o
+    # ./<build_target>/examples/dpdk-eventdev_pipeline /build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s2 -n0 -c32 -o
 
 2. use traffic generator to send huge number of packets(with same 5-tuple and different 5-tuple)
 
@@ -159,6 +165,6 @@ Description: Execute basic forward test with all type of stage.
 
 1. Run the sample with below command::
 
-    # ./build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s1 -n0 -c32
+    # ./<build_target>/examples/dpdk-eventdev_pipeline /build/eventdev_pipeline --vdev event_sw0 -- -r2 -t4 -e8 -w F0 -s1 -n0 -c32
 
 2. use traffic generator to send some packets and verify the sample could forward them normally

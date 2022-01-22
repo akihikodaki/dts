@@ -72,7 +72,7 @@ Bind VF device to igb_uio or vfio-pci
 
 Start up VF port::
 
-    ./testpmd -c f -n 4 -- -i
+    ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i
 
 Test case: VF basic RX/TX
 =========================
@@ -345,7 +345,7 @@ Ensure tester's port supports sending jumboframe::
 
 Launch testpmd for VF port without enabling jumboframe option::
 
-    ./testpmd -c f -n 4 -- -i
+    ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i
 
     testpmd> set fwd mac
     testpmd> start
@@ -363,7 +363,7 @@ Ensure tester's port supports sending jumboframe::
 
 Launch testpmd for VF port with jumboframe option::
 
-    ./testpmd -c f -n 4 -- -i --max-pkt-len=3000
+    ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i --max-pkt-len=3000
 
     testpmd> set fwd mac
     testpmd> start
@@ -380,7 +380,7 @@ Test case: VF RSS
 
 Start command with multi-queues like below::
 
-   ./testpmd -c f -n 4 -- -i --txq=4 --rxq=4
+   ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i --txq=4 --rxq=4
 
 Show RSS RETA configuration::
 
@@ -424,7 +424,7 @@ Test case: VF RSS hash key
 
 Start command with multi-queues like below::
 
-   ./testpmd -c f -n 4 -- -i --txq=4 --rxq=4
+   ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i --txq=4 --rxq=4
 
 Show port rss hash key::
 
@@ -518,7 +518,7 @@ Change mtu for large packet::
 Launch the ``testpmd`` with the following arguments, add "--max-pkt-len"
 for large packet::
 
-   ./testpmd -c f -n 4 -- -i --port-topology=chained --max-pkt-len=9000
+   ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i --port-topology=chained --max-pkt-len=9000
 
 Set csum forward::
 

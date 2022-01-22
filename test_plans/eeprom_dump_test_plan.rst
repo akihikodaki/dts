@@ -54,7 +54,7 @@ to the device under test::
 Assuming that ports are up and working, then launch the ``testpmd`` application
 with the following arguments::
 
-   ./build/app/testpmd -- -i --portmask=0x3
+   ./<build>/app/dpdk-testpmd -- -i --portmask=0x3
 
 Test Case : EEPROM Dump
 =======================

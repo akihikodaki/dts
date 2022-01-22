@@ -87,7 +87,7 @@ Prerequisites
 2. Start testpmd on host, set chained port topology mode, add txq/rxq to 
    enable multi-queues. In general, PF's max queue is 64::
 
-    ./testpmd -c f -n 4 -- -i --port-topology=chained --txq=64 --rxq=64
+    ./<build>/app/dpdk-testpmd -c f -n 4 -- -i --port-topology=chained --txq=64 --rxq=64
 	 
 3. Set rxonly forwarding and enable output
 

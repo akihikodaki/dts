@@ -102,7 +102,7 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=vf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=vf -- -i
 
 Expected: VF get DCF mode. There are outputs in testpmd launching ::
 
@@ -128,8 +128,8 @@ Set a VF as trust on each PF ::
 Launch dpdk on the VF on each PF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0 18:11.0
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf1 -- -i
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 11-15 -n 4 -a 18:11.0,cap=dcf --file-prefix=dcf2 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf1 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 11-15 -n 4 -a 18:11.0,cap=dcf --file-prefix=dcf2 -- -i
 
 Expected: VF get DCF mode. There are outputs in each testpmd launching ::
 
@@ -152,7 +152,7 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.1
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-10 -n 4 -a 18:01.1,cap=dcf --file-prefix=vf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.1,cap=dcf --file-prefix=vf -- -i
 
 Expected: VF can NOT get DCF mode. testpmd should provide a friendly output ::
 
@@ -180,7 +180,7 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=vf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=vf -- -i
 
 Expected: VF can NOT get DCF mode. testpmd should provide a friendly output ::
 
@@ -208,11 +208,11 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0 18:01.1
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
 
 Launch another testpmd on the VF1, and start mac forward ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 11-14 -n 4 -a 18:01.1 --file-prefix=vf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 11-14 -n 4 -a 18:01.1 --file-prefix=vf -- -i
     set verbose 1
     set fwd mac
     start
@@ -260,11 +260,11 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0 18:01.1
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
 
 Launch another testpmd on the VF1, and start mac forward ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 11-14 -n 4 -a 18:01.1 --file-prefix=vf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 11-14 -n 4 -a 18:01.1 --file-prefix=vf -- -i
     set verbose 1
     set fwd mac
     start
@@ -309,11 +309,11 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0 18:01.1
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
 
 Launch another testpmd on the VF1, and start mac forward ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 11-14 -n 4 -a 18:01.1 --file-prefix=vf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 11-14 -n 4 -a 18:01.1 --file-prefix=vf -- -i
     set verbose 1
     set fwd mac
     start
@@ -360,11 +360,11 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0 18:01.1
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
 
 Launch another testpmd on the DCF ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 11-14 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf2 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 11-14 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf2 -- -i
 
 Expect: the second testpmd can't be launched
 
@@ -385,16 +385,16 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0 18:01.1
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
 
 Launch another testpmd on the VF1 and VF2, and start mac forward ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 11-14 -n 4 -a 18:01.1 --file-prefix=vf1 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 11-14 -n 4 -a 18:01.1 --file-prefix=vf1 -- -i
     set verbose 1
     set fwd mac
     start
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 15-16 -n 4 -a 18:01.2 --file-prefix=vf2 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 15-16 -n 4 -a 18:01.2 --file-prefix=vf2 -- -i
     set verbose 1
     set fwd mac
     start
@@ -453,11 +453,11 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0 18:01.1 18:01.2
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
 
 Launch another testpmd on the VF1, and start mac forward ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 11-14 -n 4 -a 18:01.1 -a 18:01.2 --file-prefix=vf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 11-14 -n 4 -a 18:01.1 -a 18:01.2 --file-prefix=vf -- -i
     set verbose 1
     set fwd mac
     start
@@ -549,7 +549,7 @@ Set ADQ on PF ::
 Try to launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
 
 Expect: testpmd can't be launched. PF should reject DCF mode.
 
@@ -565,7 +565,7 @@ Remove ADQ on PF ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
 
 Expect: testpmd can launch successfully. DCF mode can be grant ::
 
@@ -589,7 +589,7 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
 
 Set ADQ on PF ::
 
@@ -629,7 +629,7 @@ Set a VF as trust ::
 Launch dpdk on the VF0 on PF1, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
 
 Set ADQ on PF2 ::
 
@@ -973,7 +973,7 @@ TC31: add ACL rule by kernel, reject request for DCF functionality
 
 3. launch testpmd on VF0 requesting for DCF funtionality::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc -n 4 -a 18:01.0,cap=dcf --log-level=ice,7 -- -i --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc -n 4 -a 18:01.0,cap=dcf --log-level=ice,7 -- -i --port-topology=loop
 
    report error::
 
@@ -1015,7 +1015,7 @@ TC32: add ACL rule by kernel, accept request for DCF functionality of another PF
 
 3. launch testpmd on VF0 of PF0 requesting for DCF funtionality successfully::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc -n 4 -a 18:01.0,cap=dcf --log-level=ice,7 -- -i --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc -n 4 -a 18:01.0,cap=dcf --log-level=ice,7 -- -i --port-topology=loop
 
    show the port info::
 
@@ -1032,7 +1032,7 @@ TC33: ACL DCF mode is active, add ACL filters by way of host based configuration
 
 2. launch testpmd on VF0 of PF0 requesting for DCF funtionality successfully::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc -n 4 -a 18:01.0,cap=dcf --log-level=ice,7 -- -i --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc -n 4 -a 18:01.0,cap=dcf --log-level=ice,7 -- -i --port-topology=loop
 
    show the port info::
 
@@ -1061,7 +1061,7 @@ TC34: ACL DCF mode is active, add ACL filters by way of host based configuration
 
 2. launch testpmd on VF0 of PF0 requesting for DCF funtionality successfully::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc -n 4 -a 18:01.0,cap=dcf --log-level=ice,7 -- -i --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc -n 4 -a 18:01.0,cap=dcf --log-level=ice,7 -- -i --port-topology=loop
 
    show the port info::
 

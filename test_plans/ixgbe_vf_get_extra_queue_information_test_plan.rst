@@ -89,7 +89,7 @@ Test case 1: DPDK PF, kernel VF, enable DCB mode with TC=4
 
 1. start the testpmd on PF::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=16    
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=16
     testpmd> port stop 0
     testpmd> port config 0 dcb vt on 4 pfc off
     testpmd> port start 0
@@ -135,7 +135,7 @@ Test case 2: DPDK PF, kernel VF, disable DCB mode
 
 1. start the testpmd on PF::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=2 --txq=2 --nb-cores=16
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=2 --txq=2 --nb-cores=16
 
 2. check if VF port is linked. if vf port is down, up the port::
 

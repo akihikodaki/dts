@@ -53,7 +53,7 @@ Test Case: Testpmd with no blocklisted device
 Run testpmd in interactive mode and ensure that at least 2 ports
 are bound and available::
 
-  build/testpmd -c 3 -- -i
+  build/app/dpdk-testpmd -c 3 -- -i
   ....
   EAL: unbind kernel driver /sys/bus/pci/devices/0000:01:00.0/driver/unbind
   EAL: Core 1 is ready (tid=357fc700)
@@ -91,7 +91,7 @@ Test Case: Testpmd with one port blocklisted
 
 Select first available port to be blocklisted and specify it with -b option. For the example above::
 
-  build/testpmd -c 3 -b 0000:01:00.0 -- -i
+  build/app/dpdk-testpmd -c 3 -b 0000:01:00.0 -- -i
 
 Check that corresponding device is skipped for binding, and
 only 3 ports are available now:::
@@ -126,7 +126,7 @@ Test Case: Testpmd with all but one port blocklisted
 Blocklist all devices except the last one.
 For the example above:::
 
-  build/testpmd -c 3 -b 0000:01:00.0  -b 0000:01:00.0 -b 0000:02:00.0 -- -i
+  build/app/dpdk-testpmd -c 3 -b 0000:01:00.0  -b 0000:01:00.0 -b 0000:02:00.0 -- -i
 
 Check that 3 corresponding device is skipped for binding, and
 only 1 ports is available now:::

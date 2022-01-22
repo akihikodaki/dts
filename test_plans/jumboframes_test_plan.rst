@@ -59,7 +59,7 @@ Assuming that ports ``0`` and ``1`` of the test target are directly connected
 to the traffic generator, launch the ``testpmd`` application with the following
 arguments::
 
-  ./build/app/testpmd -c ffffff -n 6 -- -i --portmask=0x3 --max-pkt-len=9600 \
+  ./<build_target>/app/dpdk-testpmd -c ffffff -n 6 -- -i --portmask=0x3 --max-pkt-len=9600 \
   --tx-offloads=0x00008000
 
 The -n command is used to select the number of memory channels. It should match the number of memory channels on that setup.
@@ -179,7 +179,7 @@ Test Case: Normal frames with jumbo frame support
 
 Start testpmd with jumbo frame support enabled ::
 
-  ./testpmd -c ffffff -n 3 -- -i --rxd=1024 --txd=1024 \
+  ./<build_target>/app/dpdk-testpmd -c ffffff -n 3 -- -i --rxd=1024 --txd=1024 \
   --burst=144 --txpt=32 --txht=8 --txwt=8 --txfreet=0 --rxfreet=64 \
   --mbcache=200 --portmask=0x3 --mbuf-size=2048 --max-pkt-len=9600
 

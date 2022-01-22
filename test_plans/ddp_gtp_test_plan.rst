@@ -82,7 +82,7 @@ Prerequisites
    port topology mode, add txq/rxq to enable multi-queues. In general, PF's 
    max queue is 64, VF's max queue is 4::
 
-    ./testpmd -c f -n 4 -- -i --pkt-filter-mode=perfect --port-topology=chained --tx-offloads=0x8fff --txq=64 --rxq=64  
+    ./<build>/app/dpdk-testpmd -c f -n 4 -- -i --pkt-filter-mode=perfect --port-topology=chained --tx-offloads=0x8fff --txq=64 --rxq=64
 
 
 Test Case: Load dynamic device personalization 
