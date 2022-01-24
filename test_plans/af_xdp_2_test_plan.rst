@@ -70,10 +70,11 @@ Prerequisites
     grub-mkconfig -o /boot/grub/grub.cfg
     reboot
 
-5. Explicitly enable AF_XDP pmd by adding below line to config/common_linux, then build DPDK::
+5. Build DPDK::
 
-    CONFIG_RTE_LIBRTE_PMD_AF_XDP=y
-    make -j 110 install T=x86_64-native-linuxapp-gcc
+    cd dpdk
+    CC=gcc meson -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc
 
 6. Involve lib::
 
@@ -85,7 +86,7 @@ Test case 1: single port test with PMD core and IRQ core are pinned to separate 
 1. Start the testpmd::
 
     ethtool -L enp26s0f1 combined 1
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --vdev net_af_xdp0,iface=enp26s0f1,start_queue=0,queue_count=1 --log-level=pmd.net.af_xdp:8  -- -i --nb-cores=1 --rxq=1 --txq=1 --port-topology=loop
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --vdev net_af_xdp0,iface=enp26s0f1,start_queue=0,queue_count=1 --log-level=pmd.net.af_xdp:8  -- -i --nb-cores=1 --rxq=1 --txq=1 --port-topology=loop
 
 2. Assign the kernel core::
 
@@ -101,7 +102,7 @@ Test case 2: two ports test with PMD cores and IRQ cores are pinned to separate 
 
     ethtool -L enp26s0f0 combined 1
     ethtool -L enp26s0f1 combined 1
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-3 --no-pci -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-3 --no-pci -n 4 \
     --vdev net_af_xdp0,iface=enp26s0f0 --vdev net_af_xdp1,iface=enp26s0f1 \
     --log-level=pmd.net.af_xdp:8 -- -i --auto-start --nb-cores=2 --rxq=1 --txq=1 --port-topology=loop
 
@@ -121,7 +122,7 @@ Test case 3: multi-queue test with PMD cores and IRQ cores are pinned to separat
 
 2. Start the testpmd with two queues::
 
-      ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-3 -n 6 --no-pci \
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-3 -n 6 --no-pci \
       --vdev net_af_xdp0,iface=enp26s0f1,start_queue=0,queue_count=2 \
       -- -i --auto-start --nb-cores=2 --rxq=2 --txq=2 --port-topology=loop
 
@@ -138,7 +139,7 @@ Test case 4: two ports test with PMD cores and IRQ cores pinned to same cores
 
     ethtool -L enp26s0f0 combined 1
     ethtool -L enp26s0f1 combined 1
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 29,30-31 --no-pci -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29,30-31 --no-pci -n 4 \
     --vdev net_af_xdp0,iface=enp26s0f0 --vdev net_af_xdp1,iface=enp26s0f1 \
     -- -i --auto-start --nb-cores=2 --rxq=1 --txq=1 --port-topology=loop
 
@@ -158,7 +159,7 @@ Test case 5: multi-queue test with PMD cores and IRQ cores pinned to same cores
 
 2. Start the testpmd with two queues::
 
-      ./testpmd -l 29,30-31 -n 6 --no-pci \
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29,30-31 -n 6 --no-pci \
       --vdev net_af_xdp0,iface=enp26s0f1,start_queue=0,queue_count=2 \
       -- -i --auto-start --nb-cores=2 --rxq=2 --txq=2 --port-topology=loop
 
@@ -177,7 +178,7 @@ Test case 6: one port with two vdev and single queue test
 
 2. Start the testpmd::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-3 --no-pci -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-3 --no-pci -n 4 \
     --vdev net_af_xdp0,iface=enp26s0f1,start_queue=0,queue_count=1 \
     --vdev net_af_xdp1,iface=enp26s0f1,start_queue=1,queue_count=1 \
     -- -i --nb-cores=2 --rxq=1 --txq=1 --port-topology=loop
@@ -204,7 +205,7 @@ Test case 7: one port with two vdev and multi-queues test
 
 2. Start the testpmd::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-9 --no-pci -n 6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-9 --no-pci -n 6 \
     --vdev net_af_xdp0,iface=enp26s0f1,start_queue=0,queue_count=4 \
     --vdev net_af_xdp1,iface=enp26s0f1,start_queue=4,queue_count=4 --log-level=pmd.net.af_xdp:8 \
     -- -i --rss-ip --nb-cores=8 --rxq=4 --txq=4 --port-topology=loop

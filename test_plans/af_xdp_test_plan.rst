@@ -71,12 +71,11 @@ Prerequisites
     make install_lib prefix=/usr
     make install_headers prefix=/usr
 
-5. Explicitly enable AF_XDP pmd by adding below line to
-   config/common_linux::
+5. Build dpdk::
 
-    CONFIG_RTE_LIBRTE_PMD_AF_XDP=y
-
-   Then build DPDK.
+    cd dpdk
+    CC=gcc meson -Denable_kmods=True  -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc
 
 6. Set DUT port only has one queue::
 
@@ -88,7 +87,7 @@ Test case 1: single port
 
 1. Start the testpmd::
 
-    ./testpmd -l 29,30 -n 6 --no-pci --vdev net_af_xdp0,iface=enp216s0f0 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29,30 -n 6 --no-pci --vdev net_af_xdp0,iface=enp216s0f0 \
     -- -i --nb-cores=1 --rxq=1 --txq=1 --port-topology=loop
 
 2. Assign the kernel core::
@@ -103,7 +102,7 @@ Test case 2: two ports
 
 1. Start the testpmd::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 29,30-31 --no-pci -n 6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29,30-31 --no-pci -n 6 \
     --vdev net_af_xdp0,iface=enp216s0f0 --vdev net_af_xdp1,iface=enp216s0f1 \
     -- -i --nb-cores=2 --rxq=1 --txq=1
 
@@ -123,7 +122,7 @@ Test case 3: zero copy
 
 1. Start the testpmd::
 
-    ./testpmd -l 29,30 -n 6 --no-pci \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29,30 -n 6 --no-pci \
     --vdev net_af_xdp0,iface=enp216s0f0,pmd_zero_copy=1 \
     -- -i --nb-cores=1 --rxq=1 --txq=1 --port-topology=loop
 
@@ -141,7 +140,7 @@ Test case 4: multiqueue
 
   1) Start the testpmd with one queue::
 
-      ./testpmd -l 29,30 -n 6 --no-pci \
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29,30 -n 6 --no-pci \
       --vdev net_af_xdp0,iface=enp216s0f0,start_queue=0,queue_count=1 \
       -- -i --nb-cores=1 --rxq=1 --txq=1 --port-topology=loop
 
@@ -160,7 +159,7 @@ Test case 4: multiqueue
 
   2) Start the testpmd with four queues::
 
-      ./testpmd -l 29,30-33 -n 6 --no-pci \
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29,30-33 -n 6 --no-pci \
       --vdev net_af_xdp0,iface=enp216s0f0,start_queue=0,queue_count=4 \
       -- -i --nb-cores=4 --rxq=4 --txq=4 --port-topology=loop
 
@@ -183,7 +182,7 @@ Test case 5: multiqueue and zero copy
 
   2) Start the testpmd with one queue::
 
-      ./testpmd -l 29,30 -n 6 --no-pci \
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29,30 -n 6 --no-pci \
       --vdev net_af_xdp0,iface=enp216s0f0,start_queue=0,queue_count=1,pmd_zero_copy=1 \
       -- -i --nb-cores=1 --rxq=1 --txq=1 --port-topology=loop
 
@@ -203,7 +202,7 @@ Test case 5: multiqueue and zero copy
 
   2) Start the testpmd with four queues::
 
-      ./testpmd -l 29,30-33 -n 6 --no-pci \
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29,30-33 -n 6 --no-pci \
       --vdev net_af_xdp0,iface=enp216s0f0,start_queue=0,queue_count=4,pmd_zero_copy=1 \
       -- -i --nb-cores=4 --rxq=4 --txq=4 --port-topology=loop
 
@@ -226,7 +225,7 @@ Test case 6: need_wakeup
 
 2. Start the testpmd with one queue::
 
-    ./testpmd -l 29,30 -n 6 --no-pci --vdev net_af_xdp0,iface=enp216s0f0 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29,30 -n 6 --no-pci --vdev net_af_xdp0,iface=enp216s0f0 \
     -- -i --nb-cores=1 --rxq=1 --txq=1 --port-topology=loop
 
 3. Assign the same core::
