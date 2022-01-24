@@ -791,6 +791,7 @@ class TrexPacketGenerator(PacketGenerator):
             msg = 'no stream options for trex packet generator'
             raise Exception(msg)
 
+        self._conn.connect()
         self._conn.reset(ports=self._ports)
         config_inst = TrexConfigStream()
         for port_id, config in port_config.items():
