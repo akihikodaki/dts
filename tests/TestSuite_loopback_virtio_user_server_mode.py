@@ -103,7 +103,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
 
     def lanuch_virtio_user_testpmd(self, args, set_fwd_mac=True, expected='testpmd> '):
         """
-        start testpmd of vhost user
+        start testpmd of virtio user
         """
         eal_param = "--vdev 'net_virtio_user0,mac=00:01:02:03:04:05,path=vhost-net,server=1,queues=1,{}'".format(args["version"])
         if self.check_2M_env:
@@ -126,14 +126,16 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         if set_fwd_mac:
             self.vhost_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
 
-    def lanuch_virtio_user_testpmd_with_multi_queue(self, mode, extern_params="", set_fwd_mac=True):
+    def lanuch_virtio_user_testpmd_with_multi_queue(self, mode, extern_params="", set_fwd_mac=True, vectorized_path=False):
         """
-        start testpmd of vhost user
+        start testpmd of virtio user
         """
         eal_param = "--vdev 'net_virtio_user0,mac=00:01:02:03:04:05,path=vhost-net,server=1,queues={},{}'".format(self.queue_number, mode)
         if self.check_2M_env:
             eal_param += " --single-file-segments"
         if 'vectorized_path' in self.running_case:
+            eal_param += " --force-max-simd-bitwidth=512"
+        if vectorized_path:
             eal_param += " --force-max-simd-bitwidth=512"
         param = "{} --nb-cores={} --rxq={} --txq={}".format(extern_params, self.nb_cores, self.queue_number, self.queue_number)
         self.virtio_user_pmd.start_testpmd(cores=self.core_list_user, param=param, eal_param=eal_param, \
@@ -166,16 +168,29 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         session_tx.send_expect("set txpkts 2000,2000,2000,2000", "testpmd> ", 30)
         session_tx.send_expect("set burst 1", "testpmd> ", 30)
         session_tx.send_expect("start tx_first 1", "testpmd> ", 10)
-        session_tx.send_expect("stop", "testpmd> ", 30)
+        session_tx.send_expect("stop", "testpmd> ", 10)
 
-    def start_to_send_8k_packets_csum_cbdma(self, session_tx):
+    def start_to_send_960_packets_csum(self, session_tx, cbdma=False):
+        """
+        start the testpmd of vhost-user, start to send 8k packets
+        """
+        if cbdma:
+            session_tx.send_expect("vhost enable tx all", "testpmd> ", 10)
+        session_tx.send_expect("set fwd csum", "testpmd> ", 10)
+        session_tx.send_expect("set txpkts 64,128,256,512", "testpmd> ", 10)
+        session_tx.send_expect("set burst 1", "testpmd> ", 10)
+        session_tx.send_expect("start tx_first 1", "testpmd> ", 3)
+        session_tx.send_expect("stop", "testpmd> ", 10)
+
+    def start_to_send_6192_packets_csum_cbdma(self, session_tx):
         """
         start the testpmd of vhost-user, start to send 8k packets
         """
         session_tx.send_expect("vhost enable tx all", "testpmd> ", 30)
         session_tx.send_expect("set fwd csum", "testpmd> ", 30)
         session_tx.send_expect("set txpkts 64,64,64,2000,2000,2000", "testpmd> ", 30)
-        session_tx.send_expect("start tx_first 32", "testpmd> ", 5)
+        session_tx.send_expect("set burst 1", "testpmd> ", 30)
+        session_tx.send_expect("start tx_first 1", "testpmd> ", 5)
         session_tx.send_expect("stop", "testpmd> ", 30)
 
     def check_port_throughput_after_port_stop(self):
@@ -244,7 +259,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
                 "--pdump  'device_id=%s,queue=*,rx-dev=%s,mbuf-size=8000'"
         self.pdump_session.send_expect(cmd % (dump_port, self.dump_pcap), 'Port')
 
-    def check_packet_payload_valid(self, pkt_len, queue_number):
+    def check_packet_payload_valid(self, pkt_len):
         """
         check the payload is valid
         """
@@ -261,7 +276,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
             self.verify(check_data == expect_data, "the payload in receive packets has been changed from %s" %i)
         self.dut.send_expect("rm -rf %s" % self.dump_pcap, "#")
 
-    def relanuch_vhost_testpmd_send_8k_packets(self, extern_params, cbdma=False, iova='va'):
+    def relanuch_vhost_testpmd_send_packets(self, extern_params, cbdma=False, iova='va'):
 
         self.vhost_pmd.execute_cmd("quit", "#", 60)
         self.logger.info('now reconnet from vhost')
@@ -271,10 +286,22 @@ class TestLoopbackVirtioUserServerMode(TestCase):
             self.lanuch_vhost_testpmd_with_multi_queue(extern_params=extern_params, set_fwd_mac=False)
         self.launch_pdump_to_capture_pkt(self.vuser0_port)
         if cbdma:
-            self.start_to_send_8k_packets_csum_cbdma(self.vhost)
+            self.start_to_send_6192_packets_csum_cbdma(self.vhost)
         else:
             self.start_to_send_8k_packets_csum(self.vhost)
-        self.check_packet_payload_valid(self.pkt_len, self.queue_number)
+        self.check_packet_payload_valid(self.pkt_len)
+
+    def relanuch_vhost_testpmd_send_960_packets(self, extern_params, cbdma=False, iova='va'):
+
+        self.vhost_pmd.execute_cmd("quit", "#", 60)
+        self.logger.info('now reconnet from vhost')
+        if cbdma:
+            self.lanuch_vhost_testpmd_with_cbdma(extern_params=extern_params, iova=iova)
+        else:
+            self.lanuch_vhost_testpmd_with_multi_queue(extern_params=extern_params, set_fwd_mac=False)
+        self.launch_pdump_to_capture_pkt(self.vuser0_port)
+        self.start_to_send_960_packets_csum(self.vhost,cbdma=cbdma)
+        self.check_packet_payload_valid(pkt_len=960)
 
     def relanuch_virtio_testpmd_with_multi_path(self, mode, case_info, extern_params, cbdma=False, iova="va"):
 
@@ -285,12 +312,26 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         self.virtio_user_pmd.execute_cmd("start")
         self.launch_pdump_to_capture_pkt(self.vuser0_port)
         if cbdma:
-            self.start_to_send_8k_packets_csum_cbdma(self.vhost)
+            self.start_to_send_6192_packets_csum_cbdma(self.vhost)
         else:
             self.start_to_send_8k_packets_csum(self.vhost)
-        self.check_packet_payload_valid(self.pkt_len, self.queue_number)
+        self.check_packet_payload_valid(self.pkt_len)
 
-        self.relanuch_vhost_testpmd_send_8k_packets(extern_params, cbdma, iova=iova)
+        self.relanuch_vhost_testpmd_send_packets(extern_params, cbdma, iova=iova)
+
+    def relanuch_virtio_testpmd_with_non_mergeable_path(self, mode, case_info, extern_params, cbdma=False, iova="va", vectorized_path=False):
+
+        self.virtio_user_pmd.execute_cmd("quit", "#", 60)
+        self.logger.info(case_info)
+        self.lanuch_virtio_user_testpmd_with_multi_queue(mode=mode, extern_params=extern_params, set_fwd_mac=False,vectorized_path=vectorized_path)
+        self.virtio_user_pmd.execute_cmd("set fwd csum")
+        self.virtio_user_pmd.execute_cmd("start")
+        self.launch_pdump_to_capture_pkt(self.vuser0_port)
+
+        self.start_to_send_960_packets_csum(self.vhost,cbdma=cbdma)
+        self.check_packet_payload_valid(pkt_len=960)
+
+        self.relanuch_vhost_testpmd_send_960_packets(extern_params, cbdma, iova=iova)
 
     def relanuch_vhost_testpmd_with_multi_queue(self):
         self.vhost_pmd.execute_cmd("quit", "#", 60)
@@ -741,9 +782,9 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         self.check_packets_of_each_queue()
         self.close_all_testpmd()
 
-    def test_server_mode_reconnect_with_packed_and_split_mergeable_path_payload_check(self):
+    def test_server_mode_reconnect_with_packed_all_path_payload_check(self):
         """
-        Test Case 13: loopback packed ring and split ring mergeable path payload check test using server mode and multi-queues
+        Test Case 13: loopback packed ring all path payload check test using server mode and multi-queues
         """
         self.queue_number = 8
         self.nb_cores = 1
@@ -763,10 +804,10 @@ class TestLoopbackVirtioUserServerMode(TestCase):
 
         #5. Check all the packets length is 8000 Byte in the pcap file
         self.pkt_len = 8000
-        self.check_packet_payload_valid(self.pkt_len, self.queue_number)
+        self.check_packet_payload_valid(self.pkt_len)
 
         # reconnet from vhost
-        self.relanuch_vhost_testpmd_send_8k_packets(extern_params)
+        self.relanuch_vhost_testpmd_send_packets(extern_params)
 
         # reconnet from virtio
         self.logger.info('now reconnet from virtio_user with other path')
@@ -774,19 +815,76 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         mode = "mrg_rxbuf=1,in_order=0,packed_vq=1"
         self.relanuch_virtio_testpmd_with_multi_path(mode, case_info, extern_params)
 
+        case_info = 'packed ring non-mergeable path'
+        mode = "mrg_rxbuf=0,in_order=0,packed_vq=1"
+        self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_params)
+
+        case_info = 'packed ring inorder non-mergeable path'
+        mode = "mrg_rxbuf=0,in_order=1,packed_vq=1"
+        self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_params)
+
+        case_info = 'packed ring vectorized path'
+        mode = "mrg_rxbuf=0,in_order=1,packed_vq=1,vectorized=1"
+        self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_params,vectorized_path=True)
+
+        case_info = 'packed ring vectorized path and ring size is not power of 2'
+        mode = "mrg_rxbuf=0,in_order=1,packed_vq=1,vectorized=1,queue_size=1025"
+        extern_param = '--txd=1025 --rxd=1025'
+        self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_param,vectorized_path=True)
+
+        self.close_all_testpmd()
+
+    def test_server_mode_reconnect_with_split_all_path_payload_check(self):
+        """
+        Test Case 14: loopback split ring all path payload check test using server mode and multi-queues
+        """
+        self.queue_number = 8
+        self.nb_cores = 1
+        extern_params = '--txd=1024 --rxd=1024'
         case_info = 'split ring mergeable inorder path'
         mode = "mrg_rxbuf=1,in_order=1"
-        self.relanuch_virtio_testpmd_with_multi_path(mode, case_info, extern_params)
 
+        self.lanuch_vhost_testpmd_with_multi_queue(extern_params=extern_params, set_fwd_mac=False)
+        self.logger.info(case_info)
+        self.lanuch_virtio_user_testpmd_with_multi_queue(mode=mode, extern_params=extern_params, set_fwd_mac=False)
+        self.virtio_user_pmd.execute_cmd("set fwd csum")
+        self.virtio_user_pmd.execute_cmd("start")
+        #3. Attach pdump secondary process to primary process by same file-prefix::
+        self.vuser0_port = 'net_virtio_user0'
+        self.launch_pdump_to_capture_pkt(self.vuser0_port)
+        self.start_to_send_8k_packets_csum(self.vhost)
+
+        #5. Check all the packets length is 8000 Byte in the pcap file
+        self.pkt_len = 8000
+        self.check_packet_payload_valid(self.pkt_len)
+
+        # reconnet from vhost
+        self.relanuch_vhost_testpmd_send_packets(extern_params)
+
+        # reconnet from virtio
+        self.logger.info('now reconnet from virtio_user with other path')
         case_info = 'split ring mergeable path'
         mode = "mrg_rxbuf=1,in_order=0"
         self.relanuch_virtio_testpmd_with_multi_path(mode, case_info, extern_params)
 
+        case_info = 'split ring non-mergeable path'
+        mode = "mrg_rxbuf=0,in_order=0"
+        extern_param = extern_params + ' --enable-hw-vlan-strip'
+        self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_param)
+
+        case_info = 'split ring inorder non-mergeable path'
+        mode = "mrg_rxbuf=0,in_order=1"
+        self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_params)
+
+        case_info = 'split ring vectorized path'
+        mode = "mrg_rxbuf=0,in_order=0,vectorized=1"
+        self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_params)
+
         self.close_all_testpmd()
 
-    def test_server_mode_reconnect_with_packed_and_split_mergeable_path_cbdma_payload_check(self):
+    def test_server_mode_reconnect_with_packed_all_path_cbdma_payload_check(self):
         """
-        Test Case 14: loopback packed ring and split ring mergeable path cbdma test payload check with server mode and multi-queues
+        Test Case 15: loopback packed ring all path cbdma test payload check with server mode and multi-queues
         """
         self.cbdma_nic_dev_num = 8
         self.get_cbdma_ports_info_and_bind_to_dpdk()
@@ -806,13 +904,13 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         # 3. Attach pdump secondary process to primary process by same file-prefix::
         self.vuser0_port = 'net_virtio_user0'
         self.launch_pdump_to_capture_pkt(self.vuser0_port)
-        self.start_to_send_8k_packets_csum_cbdma(self.vhost)
+        self.start_to_send_6192_packets_csum_cbdma(self.vhost)
 
         # 5. Check all the packets length is 6192 Byte in the pcap file
         self.pkt_len = 6192
-        self.check_packet_payload_valid(self.pkt_len, self.queue_number)
+        self.check_packet_payload_valid(self.pkt_len)
         #reconnet from vhost
-        self.relanuch_vhost_testpmd_send_8k_packets(extern_params, cbdma=True)
+        self.relanuch_vhost_testpmd_send_packets(extern_params, cbdma=True)
 
         # reconnet from virtio
         self.logger.info('now reconnet from virtio_user with other path')
@@ -820,18 +918,134 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         mode = "mrg_rxbuf=1,in_order=0,packed_vq=1"
         self.relanuch_virtio_testpmd_with_multi_path(mode, case_info, extern_params, cbdma=True)
 
+        case_info = 'packed ring non-mergeable path'
+        mode = "mrg_rxbuf=0,in_order=0,packed_vq=1"
+        self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_params, cbdma=True)
+
+        case_info = 'packed ring inorder non-mergeable path'
+        mode = "mrg_rxbuf=0,in_order=1,packed_vq=1"
+        self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_params, cbdma=True)
+
+        case_info = 'packed ring vectorized path'
+        mode = "mrg_rxbuf=0,in_order=1,packed_vq=1,vectorized=1"
+        self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_params, cbdma=True, vectorized_path=True)
+
+        case_info = 'packed ring vectorized path and ring size is not power of 2'
+        mode = "mrg_rxbuf=0,in_order=1,packed_vq=1,vectorized=1,queue_size=1025"
+        extern_param = '--txd=1025 --rxd=1025'
+        self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_param, cbdma=True, vectorized_path=True)
+
+        if not self.check_2M_env:
+            self.relanuch_vhost_testpmd_iova_pa( extern_params=extern_params)
+
+        self.close_all_testpmd()
+
+    def test_server_mode_reconnect_with_split_all_path_cbdma_payload_check(self):
+        """
+        Test Case 16: loopback split ring all path cbdma test payload check with server mode and multi-queues
+        """
+        self.cbdma_nic_dev_num = 8
+        self.get_cbdma_ports_info_and_bind_to_dpdk()
+        self.queue_number = 8
+        self.vdev = f"--vdev 'eth_vhost0,iface=vhost-net,queues={self.queue_number},client=1,dmas=[txq0@{self.cbdma_dev_infos[0]};txq1@{self.cbdma_dev_infos[1]};txq2@{self.cbdma_dev_infos[2]};txq3@{self.cbdma_dev_infos[3]};txq4@{self.cbdma_dev_infos[4]};txq5@{self.cbdma_dev_infos[5]};txq6@{self.cbdma_dev_infos[6]};txq7@{self.cbdma_dev_infos[7]}]' "
+
+        self.nb_cores = 1
+        extern_params = '--txd=1024 --rxd=1024'
         case_info = 'split ring mergeable inorder path'
         mode = "mrg_rxbuf=1,in_order=1"
-        self.relanuch_virtio_testpmd_with_multi_path(mode, case_info, extern_params, cbdma=True)
 
+        self.lanuch_vhost_testpmd_with_cbdma(extern_params=extern_params)
+        self.logger.info(case_info)
+        self.lanuch_virtio_user_testpmd_with_multi_queue(mode=mode, extern_params=extern_params, set_fwd_mac=False)
+        self.virtio_user_pmd.execute_cmd("set fwd csum")
+        self.virtio_user_pmd.execute_cmd("start")
+        # 3. Attach pdump secondary process to primary process by same file-prefix::
+        self.vuser0_port = 'net_virtio_user0'
+        self.launch_pdump_to_capture_pkt(self.vuser0_port)
+        self.start_to_send_6192_packets_csum_cbdma(self.vhost)
+
+        # 5. Check all the packets length is 6192 Byte in the pcap file
+        self.pkt_len = 6192
+        self.check_packet_payload_valid(self.pkt_len)
+        #reconnet from vhost
+        self.relanuch_vhost_testpmd_send_packets(extern_params, cbdma=True)
+
+        # reconnet from virtio
+        self.logger.info('now reconnet from virtio_user with other path')
         case_info = 'split ring mergeable path'
         mode = "mrg_rxbuf=1,in_order=0"
         self.relanuch_virtio_testpmd_with_multi_path(mode, case_info, extern_params, cbdma=True)
 
-        self.logger.info('now relaunch vhost iova=pa')
-        self.relanuch_vhost_testpmd_send_8k_packets(extern_params, cbdma=True, iova='pa')
+        case_info = 'split ring non-mergeable path'
+        mode = "mrg_rxbuf=0,in_order=0"
+        extern_param = extern_params + ' --enable-hw-vlan-strip'
+        self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_param, cbdma=True)
+
+        case_info = 'split ring inorder non-mergeable path'
+        mode = "mrg_rxbuf=0,in_order=1"
+        self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_params, cbdma=True)
+
+        case_info = 'split ring vectorized path'
+        mode = "mrg_rxbuf=0,in_order=0,vectorized=1"
+        self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_params, cbdma=True)
+
+        if not self.check_2M_env :
+            self.relanuch_vhost_testpmd_iova_pa( extern_params=extern_params)
 
         self.close_all_testpmd()
+
+    def relanuch_vhost_testpmd_iova_pa(self,  extern_params=""):
+        self.vhost_pmd.execute_cmd("quit", "#", 60)
+        self.logger.info('now relaunch vhost iova=pa')
+        self.lanuch_vhost_testpmd_with_cbdma(extern_params=extern_params, iova='pa')
+
+        if 'packed' in self.running_case:
+            case_info = 'packed ring mergeable inorder path'
+            mode = "mrg_rxbuf=1,in_order=1,packed_vq=1"
+            self.relanuch_virtio_testpmd_with_multi_path(mode, case_info, extern_params, cbdma=True, iova='pa')
+
+            case_info = 'packed ring mergeable path'
+            mode = "mrg_rxbuf=1,in_order=0,packed_vq=1"
+            self.relanuch_virtio_testpmd_with_multi_path(mode, case_info, extern_params, cbdma=True, iova='pa')
+
+            case_info = 'packed ring non-mergeable path'
+            mode = "mrg_rxbuf=0,in_order=0,packed_vq=1"
+            self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_params, cbdma=True, iova='pa')
+
+            case_info = 'packed ring inorder non-mergeable path'
+            mode = "mrg_rxbuf=0,in_order=1,packed_vq=1"
+            self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_params, cbdma=True, iova='pa')
+
+            case_info = 'packed ring vectorized path'
+            mode = "mrg_rxbuf=0,in_order=1,packed_vq=1,vectorized=1"
+            self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_params, cbdma=True, vectorized_path=True, iova='pa')
+
+            case_info = 'packed ring vectorized path and ring size is not power of 2'
+            mode = "mrg_rxbuf=0,in_order=1,packed_vq=1,vectorized=1,queue_size=1025"
+            extern_param = '--txd=1025 --rxd=1025'
+            self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_param, cbdma=True, vectorized_path=True, iova='pa')
+
+        if 'split' in self.running_case:
+            case_info = 'split ring mergeable inorder path'
+            mode = "mrg_rxbuf=1,in_order=1"
+            self.relanuch_virtio_testpmd_with_multi_path(mode, case_info, extern_params, cbdma=True, iova='pa')
+
+            case_info = 'split ring mergeable path'
+            mode = "mrg_rxbuf=1,in_order=0"
+            self.relanuch_virtio_testpmd_with_multi_path(mode, case_info, extern_params, cbdma=True, iova='pa')
+
+            case_info = 'split ring non-mergeable path'
+            mode = "mrg_rxbuf=0,in_order=0"
+            extern_param = extern_params + ' --enable-hw-vlan-strip'
+            self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_param, cbdma=True, iova='pa')
+
+            case_info = 'split ring inorder non-mergeable path'
+            mode = "mrg_rxbuf=0,in_order=1"
+            self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_params, cbdma=True, iova='pa')
+
+            case_info = 'split ring vectorized path'
+            mode = "mrg_rxbuf=0,in_order=0,vectorized=1"
+            self.relanuch_virtio_testpmd_with_non_mergeable_path(mode, case_info, extern_params, cbdma=True, iova='pa')
 
     def lanuch_vhost_testpmd_with_cbdma(self, extern_params="", iova='va'):
         """
