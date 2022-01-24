@@ -2376,8 +2376,8 @@ Test case: Checksum for different payload length
 8. Send packets of step 2.
    Check the IPV4/UDP/TCP/SCTP packets with different payload length have different hash value.
 
-Test case: Set HW csum, flow rule doesn’t impact RX checksum and TX checksum
-============================================================================
+Test case: Set HW csum, flow rule does not impact RX checksum and TX checksum
+=============================================================================
 1. launch testpmd without "--disable-rss"::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c f -n 6 -- -i --rxq=16 --txq=16
@@ -2394,9 +2394,14 @@ Test case: Set HW csum, flow rule doesn’t impact RX checksum and TX checksum
     set verbose 1
     start
 
-3. Capture the tx packet at tester port::
+3. Capture the tx packet at tester port and check checksum values same as expect pkts::
 
-    tcpdump -i enp216s0f0 -Q in -e -n -v -x
+    take a IPV4 for example:
+    p = Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/("X"*48)
+    p.show2()
+    expect pkts checksum value: chksum= 0x3b0f
+
+    tcpdump -i ens7  'ether src 40:a6:b7:0b:76:28 and ether[12:2] != 0x88cc'  -Q in -w /tmp/tester/sniff_ens7.pcap -c 7
 
 4. Send packets::
 
@@ -2408,7 +2413,10 @@ Test case: Set HW csum, flow rule doesn’t impact RX checksum and TX checksum
     p6=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/UDP(sport=22, chksum=0xe38)/("X"*48)
     p7=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/SCTP(sport=22, chksum=0xf)/("X"*48)
 
-   Check rx checksum good or bad, check if the tx checksum correct.
+    take a IPV4 for example:
+    get sniff_ens7.pcap checksum value: 0x3b0f
+
+   check the tx checksum correct.
 
 5. Create rss rules with chsum as inputset::
 
@@ -2420,7 +2428,7 @@ Test case: Set HW csum, flow rule doesn’t impact RX checksum and TX checksum
     flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types l4-chksum end queues end / end
     flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss types l4-chksum end queues end / end
 
-6. Send the same packets, check the hash value changed, check rx and tx checksum, get the same result.
+6. repeat 3-4 steps, send the same packets, check the hash value changed, check rx and tx checksum, get the same result.
 
 Test case: Combined case with fdir queue group
 ==============================================
@@ -2433,12 +2441,12 @@ Test case: Combined case with fdir queue group
 
 2. Create fdir rules to queue group::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / tcp / end actions rss queues 4 5 end / end
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / udp / end actions rss queues 6 7 end / end
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / sctp / end actions rss queues 8 9 end / end
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 / tcp / end actions rss queues 10 11 end / end
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 / udp / end actions rss queues 12 13 end / end
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 / sctp / end actions rss queues 14 15 end / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / tcp / end actions rss queues 4 5 end / mark / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / udp / end actions rss queues 6 7 end / mark / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / sctp / end actions rss queues 8 9 end / mark / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 / tcp / end actions rss queues 10 11 end / mark / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 / udp / end actions rss queues 12 13 end / mark / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 / sctp / end actions rss queues 14 15 end / mark / end
 
 3. Send packets::
 
@@ -2450,7 +2458,7 @@ Test case: Combined case with fdir queue group
     p6=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/UDP(sport=22, chksum=0xe38)/("X"*48)
     p7=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6(src="ABAB:910A:2222:5498:8475:1111:3900:1010")/SCTP(sport=22, chksum=0xf)/("X"*48)
 
-   Check p2-p7 are distributed to specified queue group,
+   Check p2-p7 are distributed to specified queue group and mark id,
    p1 is distributed by RSS hash value.
 
 4. Create rss rule with inputset checksum::
