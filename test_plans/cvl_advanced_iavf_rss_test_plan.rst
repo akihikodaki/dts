@@ -2783,10 +2783,6 @@ Test case: MAC_IPV4_IPV4_CHKSUM
 
     p3=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:01")/IP(src="192.168.1.1",dst="192.168.1.2",chksum=0x1)/ ("X"*48)
 
-5. not hit pattern::
-
-    p4=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/("X"*48)
-
 Test case: MAC_IPV4_UDP_CHKSUM
 ==============================
 Subcase 1: MAC_IPV4_UDP_L4_CHKSUM
@@ -2807,10 +2803,6 @@ Subcase 1: MAC_IPV4_UDP_L4_CHKSUM
 
     p3=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:01")/IP(src="192.168.1.1", dst="192.168.1.2",chksum=0x3)/UDP(sport=32, dport=33,chksum=0xffff)/("X"*48)
 
-5. not hit pattern::
-
-    p4=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1",dst="192.168.0.2")/SCTP(sport=22, dport=23,chksum=0xffff)/("X"*48)
-
 Subcase 2: MAC_IPV4_UDP_IPV4_CHKSUM
 -----------------------------------
 1. create rss rule::
@@ -2828,10 +2820,6 @@ Subcase 2: MAC_IPV4_UDP_IPV4_CHKSUM
 4. hit pattern/changed not defined input set::
 
     p3=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:01")/IP(src="192.168.1.1", dst="192.168.1.2",chksum=0xffff)/UDP(sport=32, dport=33,chksum=0xffff)/("X"*48)
-
-5. not hit pattern::
-
-    p4=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1",dst="192.168.0.2",chksum=0xffff)/SCTP(sport=22, dport=23)/("X"*48)
 
 Test case: MAC_IPV4_TCP_CHKSUM
 ==============================
@@ -2885,10 +2873,6 @@ Test case: MAC_IPV6_UDP_L4_CHKSUM
 
     p3 = Ether(src="52:00:00:00:00:01", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", src="ABAB:910A:2222:5498:8475:1111:3900:1011")/UDP(sport=32, dport=33, chksum=0x1)/("X"*48)
 
-5. not hit pattern::
-
-    p4 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/TCP(sport=22, dport=23, chksum=0x1)/("X"*49)
-
 Test case: MAC_IPV6_TCP_L4_CHKSUM
 =================================
 1. create rss rule::
@@ -2907,10 +2891,6 @@ Test case: MAC_IPV6_TCP_L4_CHKSUM
 
     p3 = Ether(src="52:00:00:00:00:01", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", src="ABAB:910A:2222:5498:8475:1111:3900:1011")/TCP(sport=32, dport=33, chksum=0x1)/("X"*48)
 
-5. not hit pattern::
-
-    p4 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/SCTP(sport=22, dport=23, chksum=0x1)/("X"*49)
-
 Test case: MAC_IPV6_SCTP_L4_CHKSUM
 ==================================
 1. create rss rule::
@@ -2928,10 +2908,6 @@ Test case: MAC_IPV6_SCTP_L4_CHKSUM
 4. hit pattern/changed not defined input set::
 
     p3 = Ether(src="52:00:00:00:00:01", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", src="ABAB:910A:2222:5498:8475:1111:3900:1011")/SCTP(sport=32, dport=33, chksum=0xffffffff)/("X"*48)
-
-5. not hit pattern::
-
-    p4 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/UDP(sport=22, dport=23, chksum=0x1)/("X"*49)
 
 Test case: Checksum for different payload length
 ================================================
@@ -2983,8 +2959,8 @@ Test case: Checksum for different payload length
 8. Send packets of step 2.
    Check the IPV4/UDP/TCP/SCTP packets with different payload length have different hash value.
 
-Test case: Set HW csum, flow rule doesn’t impact RX checksum and TX checksum
-============================================================================
+Test case: Set HW csum, flow rule does not impact RX checksum and TX checksum
+=============================================================================
 1. launch testpmd without "--disable-rss"::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c f -n 6 -- -i --rxq=16 --txq=16
@@ -3001,21 +2977,29 @@ Test case: Set HW csum, flow rule doesn’t impact RX checksum and TX checksum
     set verbose 1
     start
 
-3. Capture the tx packet at tester port::
+3. Capture the tx packet at tester port and check checksum values same as expect pkts::
 
-    tcpdump -i enp216s0f0 -Q in -e -n -v -x
+    take a IPV4 for example:
+    p = Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/("X"*48)
+    p.show2()
+    expect pkts checksum value: chksum= 0x3b0f
+
+    tcpdump -i ens7  'ether src 40:a6:b7:0b:76:28 and ether[12:2] != 0x88cc'  -Q in -w /tmp/tester/sniff_ens7.pcap -c 7
 
 4. Send packets::
 
     p1=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1", chksum=0xfff3)/("X"*48)
     p2=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/TCP(sport=22, chksum=0xfff3)/("X"*48)
     p3=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/UDP(sport=22, chksum=0x1)/("X"*48)
-    p4=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/SCTP(sport=22, chksum=0x1)/("X"*48)
+    p4=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/SCTP(sport=22, chksum=0x0)/("X"*48)
     p5=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/TCP(sport=22, chksum=0xe38)/("X"*48)
     p6=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/UDP(sport=22, chksum=0xe38)/("X"*48)
-    p7=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/SCTP(sport=22, chksum=0xf)/("X"*48)
+    p7=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/SCTP(sport=22, chksum=0x0)/("X"*48)
 
-   Check rx checksum good or bad, check if the tx checksum correct.
+    take a IPV4 for example:
+    get sniff_ens7.pcap checksum value: 0x3b0f
+
+   check the tx checksum correct.
 
 5. Create rss rules with chsum as inputset::
 
@@ -3040,12 +3024,12 @@ Test case: Combined case with fdir queue group
 
 2. Create fdir rules to queue group::
 
-    flow create 0 ingress pattern eth / ipv4 / tcp / end actions rss queues 4 5 end / end
-    flow create 0 ingress pattern eth / ipv4 / udp / end actions rss queues 6 7 end / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 / sctp / end actions rss queues 8 9 end / end
-    flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss queues 10 11 end / end
-    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss queues 12 13 end / end
-    flow create 0 ingress pattern eth / ipv6 src is ABAB:910A:2222:5498:8475:1111:3900:1010 / sctp / end actions rss queues 14 15 end / end
+    flow create 0 ingress pattern eth / ipv4 / tcp / end actions rss queues 4 5 end / mark / end
+    flow create 0 ingress pattern eth / ipv4 / udp / end actions rss queues 6 7 end / mark / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 / sctp / end actions rss queues 8 9 end mark / / end
+    flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss queues 10 11 end / mark / end
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss queues 12 13 end / mark / end
+    flow create 0 ingress pattern eth / ipv6 src is ABAB:910A:2222:5498:8475:1111:3900:1010 / sctp / end actions rss queues 14 15 end / mark / end
 
 3. Send packets::
 
