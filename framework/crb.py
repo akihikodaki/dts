@@ -930,3 +930,33 @@ class Crb(object):
         else:
             self.logger.info("NIC %s may be not find %s" % (intf, flag))
             return False
+
+    def is_interface_up(self, intf, timeout=15):
+        """
+        check and wait port link status up until timeout
+        """
+        for i in range(timeout):
+            link_status = self.get_interface_link_status(intf)
+            if link_status == 'Up':
+                return True
+            time.sleep(1)
+        self.logger.error(f"check and wait {intf} link up timeout")
+        return False
+
+    def is_interface_down(self, intf, timeout=15):
+        """
+        check and wait port link status down until timeout
+        """
+        for i in range(timeout):
+            link_status = self.get_interface_link_status(intf)
+            if link_status == 'Down':
+                return True
+            time.sleep(1)
+        self.logger.error(f"check and wait {intf} link down timeout")
+        return False
+
+    def get_interface_link_status(self, intf):
+        out = self.send_expect(f"ethtool {intf}", "#")
+        link_status_matcher = r'Link detected: (\w+)'
+        link_status = re.search(link_status_matcher, out).groups()[0]
+        return 'Up' if link_status == 'yes' else 'Down'
