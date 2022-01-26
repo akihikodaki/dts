@@ -54,7 +54,7 @@ class TestHotplugMp(TestCase):
         self.intf0 = self.dut.ports_info[0]['intf']
         self.pci0 = self.dut.ports_info[0]['pci']
         out = self.dut.build_dpdk_apps("./examples/multi_process/hotplug_mp")
-        self.app_path=self.dut.apps_name['hotplug_mp']
+        self.app_path = self.dut.apps_name['hotplug_mp']
         self.verify('Error' not in out, "Compilation failed")
         # Start one new session to run primary process
         self.session_pri = self.dut.new_session()
@@ -221,9 +221,7 @@ class TestHotplugMp(TestCase):
         """
         if not iface:
             self.dut.send_expect("ifconfig %s up" % self.intf0, "#")
-            time.sleep(5)
-            out = self.dut.send_expect("ethtool %s" % self.intf0, "#")
-            self.verify("Link detected: yes" in out, "Wrong link status")
+            self.verify(self.dut.is_interface_up(intf=self.intf0), "Wrong link status")
 
         self.multi_process_setup()
         for i in range(test_loop):
@@ -359,7 +357,7 @@ class TestHotplugMp(TestCase):
         """
         vdev = "net_virtio_user0"
         self.path = "/home/vhost-net"
-        pmd_path=self.dut.apps_name['test-pmd']
+        pmd_path = self.dut.apps_name['test-pmd']
         self.session_vhost.send_expect("rm -rf %s" % self.path, "#")
         eal_param = self.dut.create_eal_parameters(no_pci=True, prefix='vhost',vdevs=["eth_vhost0,iface=%s" % self.path])
         param = ' -- -i'
