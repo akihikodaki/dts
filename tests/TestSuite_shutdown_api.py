@@ -105,6 +105,9 @@ class TestShutdownApi(TestCase):
         if ports is None:
             ports = self.ports
         if len(ports) == 1:
+            # check tester's link status before send pkg
+            tester_intf = self.tester.get_interface(self.tester.get_local_port(ports[0]))
+            self.verify(self.tester.is_interface_up(intf=tester_intf), "Wrong link status, should be up")
             self.send_packet(ports[0], ports[0], pktSize, received, vlan, promisc, allmulti, vlan_strip)
             return
 
@@ -177,16 +180,14 @@ class TestShutdownApi(TestCase):
 
     def check_ports(self, status=True):
         """
-        Check link status of the ports.
+        Check link status of the ports from tester side.
         """
         for port in self.ports:
-            out = self.tester.send_expect(
-                "ethtool %s" % self.tester.get_interface(self.tester.get_local_port(port)), "# ")
+            tester_intf = self.tester.get_interface(self.tester.get_local_port(port))
             if status:
-                self.verify("Link detected: yes" in out, "Wrong link status")
+                self.verify(self.tester.is_interface_up(intf=tester_intf), "Wrong link status, should be up")
             else:
-                self.verify("Link detected: no" in out, "Wrong link status")
-
+                self.verify(self.tester.is_interface_down(intf=tester_intf), "Wrong link status, should be down")
 
     def check_linkspeed_config(self, configs):
         ret_val = False
@@ -206,15 +207,7 @@ class TestShutdownApi(TestCase):
 
     def check_vf_link_status(self):
         self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
-        time.sleep(2)
-        for i in range(15):
-            out = self.vm0_testpmd.execute_cmd('show port info 0')
-            print(out)
-            if 'Link status: down' in out:
-                time.sleep(2)
-            else :
-                break
-        self.verify("Link status: up" in out, "VF link down!!!")
+        self.vm0_testpmd.wait_link_status_up('all')
 
     def setup_vm_env(self, driver='default'):
         """
@@ -266,7 +259,6 @@ class TestShutdownApi(TestCase):
 
         self.vm_env_done = True
 
-
     def destroy_vm_env(self):
         if getattr(self, 'self.vm0_testpmd', None):
             self.vm0_testpmd.quit()
@@ -289,11 +281,7 @@ class TestShutdownApi(TestCase):
 
         if not self.vm_env_done:
             return
-
         self.vm_env_done = False
-
-
-
 
     def test_stop_restart(self):
         """
@@ -308,14 +296,11 @@ class TestShutdownApi(TestCase):
         self.dut.send_expect("stop", "testpmd> ")
         self.check_forwarding(received=False)
         self.dut.send_expect("port stop all", "testpmd> ", 100)
-        time.sleep(5)
         if self.nic in ["columbiaville_25g", "columbiaville_100g"]:
             self.check_ports(status=True)
         else:
             self.check_ports(status=False)
         self.dut.send_expect("port start all", "testpmd> ", 100)
-        time.sleep(5)
-        self.check_ports(status=True)
         self.dut.send_expect("start", "testpmd> ")
         self.check_forwarding()
 
@@ -477,7 +462,8 @@ class TestShutdownApi(TestCase):
                             config[0], config[1].lower()), "testpmd> ")
             self.dut.send_expect("set fwd mac", "testpmd>")
             self.dut.send_expect("port start all", "testpmd> ", 100)
-            time.sleep(8)  # sleep few seconds for link stable
+            # wait NIC link status stable within 15s
+            self.pmdout.wait_link_status_up('all')
 
             for port in self.ports:
                 out = self.dut.send_expect("show port info %s" % port, "testpmd>")
@@ -501,6 +487,7 @@ class TestShutdownApi(TestCase):
             self.dut.send_expect("start", "testpmd> ")
             self.check_forwarding()
             self.dut.send_expect("stop", "testpmd> ")
+
     def test_change_linkspeed_vf(self):
         """
         Change Link Speed VF .
@@ -560,7 +547,6 @@ class TestShutdownApi(TestCase):
                         "Wrong VF speed reported by the self.tester.")
             self.verify(config[1].lower() == linktype[0].lower(),
                         "Wrong VF link type reported by the self.tester.")
-
 
     def test_enable_disablejumbo(self):
         """
@@ -752,14 +738,12 @@ class TestShutdownApi(TestCase):
         # link down test
         for i in range(ports_num):
             self.dut.send_expect("set link-down port %d" % i, "testpmd>")
-        # leep few seconds for NIC link status update
-        time.sleep(5)
+        # check NIC link status update within 15s
         self.check_ports(status=False)
 
         # link up test
         for j in range(ports_num):
             self.dut.send_expect("set link-up port %d" % j, "testpmd>")
-        time.sleep(5)
         self.check_ports(status=True)
         self.check_forwarding()
 
@@ -815,8 +799,6 @@ class TestShutdownApi(TestCase):
         # start ports, to avodi failing further tests if ports are stoped
         self.dut.send_expect("port start all", "testpmd> ", 100)
         self.dut.send_expect("quit", "# ")
-             
-
 
     def tear_down_all(self):
         """
