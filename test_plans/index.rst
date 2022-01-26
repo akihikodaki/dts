@@ -218,7 +218,6 @@ The following are the test plans for the DPDK DTS automated test system.
     mdd_test_plan
     malicious_driver_event_indication_test_plan
 
-    virtio_1.0_test_plan
     vhost_event_idx_interrupt_test_plan
     vhost_virtio_pmd_interrupt_test_plan
     vhost_virtio_user_interrupt_test_plan
