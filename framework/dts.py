@@ -35,6 +35,7 @@ import copy  # copy module for duplicate variable
 import imp
 import inspect  # load attribute
 import json  # json format
+import logging
 import os  # operation system module
 import re  # regular expressions module
 import signal  # signal module for debug mode
@@ -77,7 +78,7 @@ stats_report = None
 log_handler = None
 
 
-def dts_parse_param(config, section):
+def dts_parse_param(config, section, log_handler):
     """
     Parse execution file parameters.
     """
@@ -94,11 +95,16 @@ def dts_parse_param(config, section):
 
     parameters = config.get(section, 'parameters').split(':')
     drivername = config.get(section, 'drivername').split('=')[-1]
-    # get the build method, default is makefile
+    # get the build method, default is meson
     try:
         buildtype = config.get(section, 'build_type').split('=')[-1]
     except:
         buildtype = 'meson'
+
+    if buildtype == 'makefile':
+        log_handler.warning("Makefile builds have been deprecated and will be removed in the next release.")
+        log_handler.warning("Please switch to using meson builds.")
+
     buildtype = buildtype.lower()
     settings.save_global_setting(settings.HOST_BUILD_TYPE_SETTING, buildtype)
 
@@ -588,7 +594,7 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     # for all Execution sections
     for section in config.sections():
         crbInsts = list()
-        dts_parse_param(config, section)
+        dts_parse_param(config, section, log_handler)
 
         # verify if the delimiter is good if the lists are vertical
         duts, targets, test_suites = dts_parse_config(config, section)
