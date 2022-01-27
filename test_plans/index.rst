@@ -286,7 +286,6 @@ The following are the test plans for the DPDK DTS automated test system.
     packet_capture_test_plan
     packet_ordering_test_plan
     bbdev_test_plan
-    performance_thread_test_plan
 
     fips_cryptodev_test_plan
     flow_filtering_test_plan
