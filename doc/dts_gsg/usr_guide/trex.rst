@@ -168,7 +168,7 @@ Add the performance test suite and set perf=true::
     root@tester:dts#
 
 Configure $DTS_CFG_FOLDER/crbs.cfg
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Set the pktgen_group=trex or pktgen_group=TREX, this item is case insensitive::
 
     root@tester:dts# cat $DTS_CFG_FOLDER/crbs.cfg
@@ -186,7 +186,7 @@ Set the pktgen_group=trex or pktgen_group=TREX, this item is case insensitive::
     bypass_core0=True
 
 Configure $DTS_CFG_FOLDER/ports.cfg
-~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 This configuration is just same with PF function test, so if you have completed some functional test,
 you have no need to modify the $DTS_CFG_FOLDER/ports.cfg, just like below::
 
@@ -207,7 +207,7 @@ In addition, it could be configured as below::
 We recommend to use the first format configuration, as it has no need to do modification when we do functional test.
 
 Configure $DTS_CFG_FOLDER/pktgen.cfg
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Fill in the $DTS_CFG_FOLDER/pktgen.cfg with your TREX setting, for the first time, you should set start_trex=yes.
 Set the IP address of the device which you installed TREX into item ‘server=’, it should be the tester IP.
 The configuration should as below::

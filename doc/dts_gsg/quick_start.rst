@@ -176,7 +176,7 @@ execution.cfg
 * test_suites: a list of test suites to be executed
 
 $DTS_CFG_FOLDER/crbs.cfg
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: console
 
@@ -197,7 +197,7 @@ $DTS_CFG_FOLDER/crbs.cfg
 * tester_passwd: Password of Tester linux account, user name should same as dut_user
 
 $DTS_CFG_FOLDER/ports.cfg
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: console
 
