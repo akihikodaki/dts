@@ -37,8 +37,6 @@ import itertools
 from functools import reduce
 from typing import Any, Dict, FrozenSet, Hashable, Iterable, Set, Tuple, Union
 
-import framework.flow.flow_action_items as flow_action_items
-import framework.flow.flow_pattern_items as flow_pattern_items
 
 from .enums import FlowActionType, FlowItemType
 from .exceptions import InvalidFlowItemException
@@ -90,15 +88,17 @@ class FlowItem(object):
         if type(self) != type(other):
             raise InvalidFlowItemException(self, other)
         elif other.type in self.valid_next_items:
-            # This import is in here so there is no circular import
+            # These imports are in here so there is no circular import
             from .flow import Flow
-            if isinstance(self, flow_pattern_items.PatternFlowItem):
+            from framework.flow.flow_pattern_items import PatternFlowItem
+            from framework.flow.flow_action_items import ActionFlowItem
+            if isinstance(self, PatternFlowItem):
                 return Flow(pattern_items=[self, other])
-            elif isinstance(self, flow_action_items.ActionFlowItem):
+            elif isinstance(self, ActionFlowItem):
                 return Flow(action_items=[self, other])
             else:
                 raise TypeError(
-                    f"{type(self):s} is not one of {flow_pattern_items.PatternFlowItem:s}, {flow_action_items.ActionFlowItem:s}.")
+                    f"{type(self):s} is not one of {PatternFlowItem:s}, {ActionFlowItem:s}.")
         else:
             raise InvalidFlowItemException(self, other)
 
