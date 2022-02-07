@@ -136,54 +136,57 @@ class FlowItemArp_eth_ipv4(PatternFlowItem):
     - Default ``mask`` matches SHA, SPA, THA and TPA.
     """
     possible_properties = {
-        'hdr':
-            ('arp_eth_ipv4 hdr is 1',
-             frozenset({"Ether() / ARP(hwtype=1) / Raw('\\x00' * 64)"}),
-
-             frozenset({"Ether() / ARP(hwtype=2) / Raw('\\x00' * 64)",
-                        "Ether() / ARP(hwtype=3) / Raw('\\x00' * 64)",
-                        "Ether() / ARP(hwtype=6) / Raw('\\x00' * 64)",
-                        "Ether() / ARP(hwtype-15) / Raw('\\x00' * 64)"
-                        })),
-        'pro':
-            ('arp_eth_ipv4 pro is 0x0800',
-             frozenset({"Ether() / ARP(ptype=0x0800) / Raw('\\x00' * 64)"}),
-
-             frozenset({"Ether() / ARP(ptype=0x0800) / Raw('\\x00' * 64)",
-                        "Ether() / ARP(ptype=0x0842) / Raw('\\x00' * 64)",
-                        "Ether() / ARP(ptype=0x6004) / Raw('\\x00' * 64)",
-                        "Ether() / ARP(ptype=0x809b) / Raw('\\x00' * 64)"
-                        })),
-
-        'hln':
-            ('arp_eth_ipv4 hln is 6',
-             frozenset({"Ether() / ARP(hwlen=6) / Raw('\\x00' * 64)"}),
-
-             frozenset({"Ether() / ARP(hwlen=12) / Raw('\\x00' * 64)",
-                        "Ether() / ARP(hwlen=2) / Raw('\\x00' * 64)",
-                        "Ether() / ARP(hwlen=8) / Raw('\\x00' * 64)",
-                        "Ether() / ARP(hwlen=4) / Raw('\\x00' * 64)"
-                        })),
-
-        'pln':
-            ('arp_eth_ipv4 pln is 4',
-             frozenset({"Ether() / ARP(plen=4) / Raw('\\x00' * 64)"}),
-
-             frozenset({"Ether() / ARP(plen=6) / Raw('\\x00' * 64)",
-                        "Ether() / ARP(plen=2) / Raw('\\x00' * 64)",
-                        "Ether() / ARP(plen=8) / Raw('\\x00' * 64)",
-                        "Ether() / ARP(plen=12) / Raw('\\x00' * 64)"
-                        })),
-
-        'op':
-            ('arp_eth_ipv4 op is 1',
-             frozenset({"Ether() / ARP(op=1) / Raw('\\x00' * 64)"}),
-
-             frozenset({"Ether() / ARP(op=2) / Raw('\\x00' * 64)",
-                        "Ether() / ARP(op=3) / Raw('\\x00' * 64)",
-                        "Ether() / ARP(op=4) / Raw('\\x00' * 64)",
-                        "Ether() / ARP(op=5) / Raw('\\x00' * 64)"
-                        })),
+        # THE FOLLOWING PROPERTIES ARE UNSUPPORTED BY TESTPMD AT THE TIME OF WRITING.
+        # THEY CAN BE ENABLED ONCE TESTPMD SUPPORTS THEM
+        # 'hdr':
+        #     ('arp_eth_ipv4 hdr is 1',
+        #      frozenset({"Ether() / ARP(hwtype=1) / Raw('\\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() / ARP(hwtype=2) / Raw('\\x00' * 64)",
+        #                 "Ether() / ARP(hwtype=3) / Raw('\\x00' * 64)",
+        #                 "Ether() / ARP(hwtype=6) / Raw('\\x00' * 64)",
+        #                 "Ether() / ARP(hwtype-15) / Raw('\\x00' * 64)"
+        #                 })),
+        # 'pro':
+        #     ('arp_eth_ipv4 pro is 0x0800',
+        #      frozenset({"Ether() / ARP(ptype=0x0800) / Raw('\\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() / ARP(ptype=0x0800) / Raw('\\x00' * 64)",
+        #                 "Ether() / ARP(ptype=0x0842) / Raw('\\x00' * 64)",
+        #                 "Ether() / ARP(ptype=0x6004) / Raw('\\x00' * 64)",
+        #                 "Ether() / ARP(ptype=0x809b) / Raw('\\x00' * 64)"
+        #                 })),
+        #
+        # 'hln':
+        #     ('arp_eth_ipv4 hln is 6',
+        #      frozenset({"Ether() / ARP(hwlen=6) / Raw('\\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() / ARP(hwlen=12) / Raw('\\x00' * 64)",
+        #                 "Ether() / ARP(hwlen=2) / Raw('\\x00' * 64)",
+        #                 "Ether() / ARP(hwlen=8) / Raw('\\x00' * 64)",
+        #                 "Ether() / ARP(hwlen=4) / Raw('\\x00' * 64)"
+        #                 })),
+        #
+        # 'pln':
+        #     ('arp_eth_ipv4 pln is 4',
+        #      frozenset({"Ether() / ARP(plen=4) / Raw('\\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() / ARP(plen=6) / Raw('\\x00' * 64)",
+        #                 "Ether() / ARP(plen=2) / Raw('\\x00' * 64)",
+        #                 "Ether() / ARP(plen=8) / Raw('\\x00' * 64)",
+        #                 "Ether() / ARP(plen=12) / Raw('\\x00' * 64)"
+        #                 })),
+        #
+        # 'op':
+        #     ('arp_eth_ipv4 op is 1',
+        #      frozenset({"Ether() / ARP(op=1) / Raw('\\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() / ARP(op=2) / Raw('\\x00' * 64)",
+        #                 "Ether() / ARP(op=3) / Raw('\\x00' * 64)",
+        #                 "Ether() / ARP(op=4) / Raw('\\x00' * 64)",
+        #                 "Ether() / ARP(op=5) / Raw('\\x00' * 64)"
+        #                 })),
+        # END UNSUPPORTED PROPERTIES
 
         'sha':
             ('arp_eth_ipv4 sha is 90:61:ae:fd:41:43',
@@ -282,11 +285,12 @@ class FlowItemGre(PatternFlowItem):
     """
     possible_properties = {
         'c_rsvd0_ver':
-           ('gre c_rsvd0_ver is 0',
-            frozenset({"Ether() / GRE(chksum_present=0, version=0) / Raw('\\x00' * 64)"}),
+            ('gre c_rsvd0_ver is 0',
+             frozenset({"Ether() / GRE(chksum_present=0, version=0) / Raw('\\x00' * 64)"}),
 
-           frozenset({"Ether() / GRE(chksum_present=1, version=0)) / Raw('\\x00' * 64)", #this is the only other option
-                      })),
+             frozenset({"Ether() / GRE(chksum_present=1, version=0)) / Raw('\\x00' * 64)",
+                        # this is the only other option
+                        })),
         'protocol':
             ('gre protocol is 0x0800',
              frozenset({"Ether() / GRE(proto=0x0800) / Raw('\\x00' * 64)"}),
@@ -315,7 +319,18 @@ class FlowItemIcmp(PatternFlowItem):
     - Default ``mask`` matches ICMP type and code only.
     """
     possible_properties = {
-
+        # THE FOLLOWING PROPERTIES ARE UNSUPPORTED BY TESTPMD AT THE TIME OF WRITING.
+        # THEY CAN BE ENABLED ONCE TESTPMD SUPPORTS THEM
+        # 'icmp_cksum':
+        #     ('icmp cksum is 0x0800',
+        #      frozenset({"Ether() / ICMP() / UDP() / Raw('\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+        #                 "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+        #                 "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+        #                 "Ether() / ICMP() / UDP() / Raw('\x00' * 64)"
+        #                 })),
+        # END UNSUPPORTED PROPERTIES
         'icmp_type':
             ('icmp type is 3',
              frozenset({"Ether() / ICMP(type=3) / Raw('\\x00' * 64)"}),
@@ -335,32 +350,23 @@ class FlowItemIcmp(PatternFlowItem):
                         "Ether() / ICMP(type=11, code=1) / Raw('\\x00' * 64)",
                         "Ether() / ICMP(type=12, code=2) / Raw('\\x00' * 64)"
                         })),
-        'icmp_cksum':
-           ('icmp cksum is 0x0800',
-            frozenset({"Ether() / ICMP() / UDP() / Raw('\x00' * 64)"}),
-
-            frozenset({"Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)"
-                       })),
         'icmp_ident':
-           ('icmp ident is 0x0800',
-            frozenset({"Ether() / ICMP() / UDP() / Raw('\x00' * 64)"}),
+            ('icmp ident is 0x0800',
+             frozenset({"Ether() / ICMP() / UDP() / Raw('\x00' * 64)"}),
 
-            frozenset({"Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)"
-                       })),
-        'icmp_seq_nb':
-           ('icmp seq_nb is 0x0800',
-            frozenset({"Ether() / ICMP(proto=0x0800) / UDP() / Raw('\x00' * 64)"}),
+             frozenset({"Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+                        "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+                        "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+                        "Ether() / ICMP() / UDP() / Raw('\x00' * 64)"
+                        })),
+        'icmp_seq':
+            ('icmp seq is 0x0800',
+             frozenset({"Ether() / ICMP(proto=0x0800) / UDP() / Raw('\x00' * 64)"}),
 
-            frozenset({"Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
-                       "Ether() / ICMP() / UDP() / Raw('\x00' * 64)"
+             frozenset({"Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+                        "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+                        "Ether() / ICMP() / UDP() / Raw('\x00' * 64)",
+                        "Ether() / ICMP() / UDP() / Raw('\x00' * 64)"
                         })),
     }
 
@@ -375,9 +381,19 @@ class FlowItemIcmp6(PatternFlowItem):
     - ``checksum``: ICMPv6 checksum.
     - Default ``mask`` matches ``type`` and ``code``.
     """
-    # ICMP6 NOT SUPPORTED BY TESTPMD.
-    # DO NOT UNCOMMENT THE FOLLOWING TEST CASES UNTIL IT IS SUPPORTED.
     possible_properties = {
+        # THE FOLLOWING PROPERTIES ARE UNSUPPORTED BY TESTPMD AT THE TIME OF WRITING.
+        # THEY CAN BE ENABLED ONCE TESTPMD SUPPORTS THEM
+        # 'checksum':
+        #     ('icmp6 cksum is 0x1234',
+        #      frozenset({"Ether() / ICMPv6DestUnreach(cksum=0x1234) / Raw('\\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() / ICMPv6DestUnreach(cksum=0x4321) / Raw('\\x00' * 64)",
+        #                 "Ether() / ICMPv6DestUnreach(cksum=0xffff) / Raw('\\x00' * 64)",
+        #                 "Ether() / ICMPv6DestUnreach(cksum=0x1233) / Raw('\\x00' * 64)",
+        #                 "Ether() / ICMPv6DestUnreach(cksum=0x1010) / Raw('\\x00' * 64)"
+        #                 })),
+        # END UNSUPPORTED PROPERTIES
         'type':
             ('icmp6 type is 1',  # Destination Unreachable
              frozenset({"Ether() / ICMPv6DestUnreach(type=1) / Raw('\\x00' * 64)"}),
@@ -395,16 +411,6 @@ class FlowItemIcmp6(PatternFlowItem):
                         "Ether() / ICMPv6DestUnreach(code=2) / Raw('\\x00' * 64)",
                         "Ether() / ICMPv6DestUnreach(code=3) / Raw('\\x00' * 64)",
                         "Ether() / ICMPv6DestUnreach(code=4) / Raw('\\x00' * 64)"
-                        })),
-
-        'checksum':
-            ('icmp6 cksum is 0x1234',
-             frozenset({"Ether() / ICMPv6DestUnreach(cksum=0x1234) / Raw('\\x00' * 64)"}),
-
-             frozenset({"Ether() / ICMPv6DestUnreach(cksum=0x4321) / Raw('\\x00' * 64)",
-                        "Ether() / ICMPv6DestUnreach(cksum=0xffff) / Raw('\\x00' * 64)",
-                        "Ether() / ICMPv6DestUnreach(cksum=0x1233) / Raw('\\x00' * 64)",
-                        "Ether() / ICMPv6DestUnreach(cksum=0x1010) / Raw('\\x00' * 64)"
                         })),
     }
 
@@ -496,25 +502,25 @@ class FlowItemIpv6(PatternFlowItem):
 
     possible_properties = {
         # THE FOLLOWING PROPERTIES ARE UNSUPPORTED BY TESTPMD AT THE TIME OF WRITING.
-        # They are still tested to future proof this test suite.
-        'vtc_flow':
-            ('ipv6 vtc_flow is 0x0',
-             frozenset({"Ether() / IPv6(tc=0, fl=0, version=0) / Raw('\\x00' * 64)"}),
+        # THEY CAN BE ENABLED ONCE TESTPMD SUPPORTS THEM
+        # 'vtc_flow':
+        #     ('ipv6 vtc_flow is 0x0',
+        #      frozenset({"Ether() / IPv6(tc=0, fl=0, version=0) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IPv6(tc=1, fl=0, version=0) / Raw('\\x00' * 64)",
-                        "Ether() / IPv6(tc=0, fl=0xABCD, version=0) / Raw('\\x00' * 64)",
-                        "Ether() / IPv6(tc=0, fl=0, version=1) / Raw('\\x00' * 64)",
-                        "Ether() / IPv6(tc=6, fl=0x9999, version=1) / Raw('\\x00' * 64)"
-                        })),
-        'payload_len':
-            ('ipv6 payload_len is 64',
-             frozenset({"Ether() / IPv6(plen=64) / Raw('\\x00' * 64)"}),
+        #      frozenset({"Ether() / IPv6(tc=1, fl=0, version=0) / Raw('\\x00' * 64)",
+        #                 "Ether() / IPv6(tc=0, fl=0xABCD, version=0) / Raw('\\x00' * 64)",
+        #                 "Ether() / IPv6(tc=0, fl=0, version=1) / Raw('\\x00' * 64)",
+        #                 "Ether() / IPv6(tc=6, fl=0x9999, version=1) / Raw('\\x00' * 64)"
+        #                 })),
+        # 'payload_len':
+        #     ('ipv6 payload_len is 64',
+        #      frozenset({"Ether() / IPv6(plen=64) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IPv6(plen=32) / Raw('\\x00' * 64)",
-                        "Ether() / IPv6(plen=128) / Raw('\\x00' * 64)",
-                        "Ether() / IPv6(plen=5000) / Raw('\\x00' * 64)",
-                        "Ether() / IPv6(plen=4) / Raw('\\x00' * 64)"
-                        })),
+        #      frozenset({"Ether() / IPv6(plen=32) / Raw('\\x00' * 64)",
+        #                 "Ether() / IPv6(plen=128) / Raw('\\x00' * 64)",
+        #                 "Ether() / IPv6(plen=5000) / Raw('\\x00' * 64)",
+        #                 "Ether() / IPv6(plen=4) / Raw('\\x00' * 64)"
+        #                 })),
         # END UNSUPPORTED PROPERTIES
         'tc':
             ('ipv6 tc is 0',
@@ -655,34 +661,34 @@ class FlowItemTcp(PatternFlowItem):
     """
     possible_properties = {
         # THE FOLLOWING PROPERTIES ARE UNSUPPORTED BY TESTPMD AT THE TIME OF WRITING.
-        # They are still tested to future proof this test suite.
-        'data_off':
-            ('tcp data_off is 0',
-             frozenset({"Ether() / IP() / TCP(dataofs=0) / Raw('\\x00' * 64)"}),
+        # THEY CAN BE ENABLED ONCE TESTPMD SUPPORTS THEM
+        # 'data_off':
+        #     ('tcp data_off is 0',
+        #      frozenset({"Ether() / IP() / TCP(dataofs=0) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() /  IP() / TCP(dataofs=1) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(dataofs=2) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(dataofs=3) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(dataofs=4) / Raw('\\x00' * 64)"
-                        })),
-        'rx_win':
-            ('tcp rx_win is 64',
-             frozenset({"Ether() /  IP() / TCP(window=64)/ Raw('\\x00' * 64)"}),
+        #      frozenset({"Ether() /  IP() / TCP(dataofs=1) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / TCP(dataofs=2) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / TCP(dataofs=3) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / TCP(dataofs=4) / Raw('\\x00' * 64)"
+        #                 })),
+        # 'rx_win':
+        #     ('tcp rx_win is 64',
+        #      frozenset({"Ether() /  IP() / TCP(window=64)/ Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() /  IP() / TCP(window=16)/ Raw('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(window=128) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(window=32) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(window=255) / Raw('\\x00' * 64)"
-                        })),
-        'cksum':
-            ('tcp cksum is 0x1234',
-             frozenset({"Ether() /  IP() / TCP(chksum=0x1234) / Raw('\\x00' * 64)"}),
+        #      frozenset({"Ether() /  IP() / TCP(window=16)/ Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / TCP(window=128) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / TCP(window=32) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / TCP(window=255) / Raw('\\x00' * 64)"
+        #                 })),
+        # 'cksum':
+        #     ('tcp cksum is 0x1234',
+        #      frozenset({"Ether() /  IP() / TCP(chksum=0x1234) / Raw('\\x00' * 64)"}),
 
-             frozenset({"Ether() / IP() / TCP(chksum=0x4321) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(chksum=0xffff) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(chksum=0x9999) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() / TCP(chksum=0x1233)  / Raw('\\x00' * 64)"
-                        })),
+        #      frozenset({"Ether() / IP() / TCP(chksum=0x4321) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / TCP(chksum=0xffff) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / TCP(chksum=0x9999) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / TCP(chksum=0x1233)  / Raw('\\x00' * 64)"
+        #                 })),
         # END UNSUPPORTED PROPERTIES
         'src':
             ('tcp src is 3838',
@@ -727,25 +733,25 @@ class FlowItemUdp(PatternFlowItem):
 
     possible_properties = {
         # THE FOLLOWING PROPERTIES ARE UNSUPPORTED BY TESTPMD AT THE TIME OF WRITING.
-        # They are still tested to future proof this test suite.
-        'dgram_len':
-            ('udp dgram_len is 64',
-             frozenset({"Ether() / IP() / UDP(len=64) / Raw('\\x00' * 64)"}),
-
-             frozenset({"Ether() /  IP() / UDP(len=128) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() / UDP(len=32) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() / UDP(len=16) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() / UDP(len=255) / Raw('\\x00' * 64)"
-                        })),
-        'dgram_cksum':
-            ('udp dgram_cksum is 0x1234',
-             frozenset({"Ether() /  IP() / UDP(chksum=0x1234) / Raw('\\x00' * 64)"}),
-
-             frozenset({"Ether() / IP() / UDP(chksum=0x4321) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() / UDP(chksum=0xffff) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() / UDP(chksum=0x9999) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() / UDP(chksum=0x1233)  / Raw('\\x00' * 64)"
-                        })),
+        # THEY MAY BE RE-ENABLED ONCE TESTPMD SUPPORTS THEIR USE
+        # 'dgram_len':
+        #     ('udp dgram_len is 64',
+        #      frozenset({"Ether() / IP() / UDP(len=64) / Raw('\\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() /  IP() / UDP(len=128) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / UDP(len=32) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / UDP(len=16) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / UDP(len=255) / Raw('\\x00' * 64)"
+        #                 })),
+        # 'dgram_cksum':
+        #     ('udp dgram_cksum is 0x1234',
+        #      frozenset({"Ether() /  IP() / UDP(chksum=0x1234) / Raw('\\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() / IP() / UDP(chksum=0x4321) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / UDP(chksum=0xffff) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / UDP(chksum=0x9999) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / UDP(chksum=0x1233)  / Raw('\\x00' * 64)"
+        #                 })),
         # END UNSUPPORTED PROPERTIES
 
         'src':
@@ -795,6 +801,18 @@ class FlowItemVlan(PatternFlowItem):
     tpid in testpmd = type in scapy
     """
     possible_properties = {
+        # THE FOLLOWING PROPERTIES ARE UNSUPPORTED BY TESTPMD AT THE TIME OF WRITING.
+        # THEY MAY BE RE-ENABLED ONCE TESTPMD SUPPORTS THEIR USE
+        # 'tpid':
+        #     ('vlan tpid is 0x8100',  # standard value
+        #      frozenset({"Ether() / Dot1Q(type=0x8100) / Raw('\\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() /  Dot1Q(type=0x0800) / Raw('\\x00' * 64)",
+        #                 "Ether() /  Dot1Q(type=0x0842) / Raw('\\x00' * 64)",
+        #                 "Ether() /  Dot1Q(type=0x809b) / Raw('\\x00' * 64)",
+        #                 "Ether() /  Dot1Q(type=0x86dd) / Raw('\\x00' * 64)"
+        #                 })),
+        # END UNSUPPORTED PROPERTIES
 
         'tci':
             ('vlan tci is 0xaaaa',
@@ -831,16 +849,6 @@ class FlowItemVlan(PatternFlowItem):
                         "Ether() /  Dot1Q(vlan=0x1f5) / Raw('\\x00' * 64)",
                         "Ether() /  Dot1Q(vlan=0x999) / Raw('\\x00' * 64)"
                         })),
-
-        'tpid':
-            ('vlan tpid is 0x8100',  # standard value
-             frozenset({"Ether() / Dot1Q(type=0x8100) / Raw('\\x00' * 64)"}),
-
-             frozenset({"Ether() /  Dot1Q(type=0x0800) / Raw('\\x00' * 64)",
-                        "Ether() /  Dot1Q(type=0x0842) / Raw('\\x00' * 64)",
-                        "Ether() /  Dot1Q(type=0x809b) / Raw('\\x00' * 64)",
-                        "Ether() /  Dot1Q(type=0x86dd) / Raw('\\x00' * 64)"
-                        })),
     }
 
 
@@ -859,47 +867,47 @@ class FlowItemVxlan(PatternFlowItem):
     """
 
 
-possible_properties = {
-    # THE FOLLOWING PROPERTIES ARE UNSUPPORTED BY TESTPMD AT THE TIME OF WRITING.
-    # They are still tested to future proof this test suite.
-    'rsvd0':
-        ('vxlan rsvd0 is 0x000000',
-         frozenset({"Ether() / IP() / VXLAN(reserved0=0) / Raw('\\x00' * 64)"}),
+    possible_properties = {
+        # THE FOLLOWING PROPERTIES ARE UNSUPPORTED BY TESTPMD AT THE TIME OF WRITING.
+        # THEY CAN BE ENABLED ONCE TESTPMD SUPPORTS THEM
+        # 'rsvd0':
+        #     ('vxlan rsvd0 is 0x000000',
+        #      frozenset({"Ether() / IP() / VXLAN(reserved0=0) / Raw('\\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() /  IP() / VXLAN(reserved0=1) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() /  VXLAN(reserved0=2) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() /  VXLAN(reserved0=3) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP()  / VXLAN(reserved0=4) / Raw('\\x00' * 64)"
+        #                 })),
+        # 'rsvd1':
+        #     ('vxlan rsvd1 is 0x00',
+        #      frozenset({"Ether() /  IP() /  VXLAN(reserved0=0) / Raw('\\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() / IP() /  VXLAN(reserved0=1) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() /  VXLAN(reserved0=2) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / VXLAN(reserved0=3) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() /  VXLAN(reserved0=4) / Raw('\\x00' * 64)"
+        #                 })),
+        # 'flags':
+        #     ('vxlan flags is 0x08',
+        #      frozenset({"Ether() /  IP() /  VXLAN(flags=0x08) / Raw('\\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() / IP() /  VXLAN(flags=0x80) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() /  VXLAN(flags=0x00) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / VXLAN(flags=0x99) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() /  VXLAN(flags=0x01) / Raw('\\x00' * 64)"
+        #                 })),
+        # END UNSUPPORTED PROPERTIES
+        'vni':  # a 3-byte value
+            ('vxlan vni is 0x112233',
+             frozenset({"Ether() / IP() / VXLAN(vni=0x112233) / Raw('\\x00' * 64)"}),
 
-         frozenset({"Ether() /  IP() / VXLAN(reserved0=1) / Raw('\\x00' * 64)",
-                    "Ether() /  IP() /  VXLAN(reserved0=2) / Raw('\\x00' * 64)",
-                    "Ether() /  IP() /  VXLAN(reserved0=3) / Raw('\\x00' * 64)",
-                    "Ether() /  IP()  / VXLAN(reserved0=4) / Raw('\\x00' * 64)"
-                    })),
-    'rsvd1':
-        ('vxlan rsvd1 is 0x00',
-         frozenset({"Ether() /  IP() /  VXLAN(reserved0=0) / Raw('\\x00' * 64)"}),
-
-         frozenset({"Ether() / IP() /  VXLAN(reserved0=1) / Raw('\\x00' * 64)",
-                    "Ether() /  IP() /  VXLAN(reserved0=2) / Raw('\\x00' * 64)",
-                    "Ether() /  IP() / VXLAN(reserved0=3) / Raw('\\x00' * 64)",
-                    "Ether() /  IP() /  VXLAN(reserved0=4) / Raw('\\x00' * 64)"
-                    })),
-    'flags':
-        ('vxlan flags is 0x08',
-         frozenset({"Ether() /  IP() /  VXLAN(flags=0x08) / Raw('\\x00' * 64)"}),
-
-         frozenset({"Ether() / IP() /  VXLAN(flags=0x80) / Raw('\\x00' * 64)",
-                    "Ether() /  IP() /  VXLAN(flags=0x00) / Raw('\\x00' * 64)",
-                    "Ether() /  IP() / VXLAN(flags=0x99) / Raw('\\x00' * 64)",
-                    "Ether() /  IP() /  VXLAN(flags=0x01) / Raw('\\x00' * 64)"
-                    })),
-    # END UNSUPPORTED PROPERTIES
-    'vni':  # a 3-byte value
-        ('vxlan vni is 0x112233',
-         frozenset({"Ether() / IP() / VXLAN(vni=0x112233) / Raw('\\x00' * 64)"}),
-
-         frozenset({"Ether() / IP() / VXLAN(vni=0x112234) / Raw('\\x00' * 64)",
-                    "Ether() / IP() / VXLAN(vni=0x123456) / Raw('\\x00' * 64)",
-                    "Ether() / IP() / VXLAN(vni=0xaabbcc) / Raw('\\x00' * 64)",
-                    "Ether() / IP() / VXLAN(vni=0x999999) / Raw('\\x00' * 64)"
-                    })),
-}
+             frozenset({"Ether() / IP() / VXLAN(vni=0x112234) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / VXLAN(vni=0x123456) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / VXLAN(vni=0xaabbcc) / Raw('\\x00' * 64)",
+                        "Ether() / IP() / VXLAN(vni=0x999999) / Raw('\\x00' * 64)"
+                        })),
+    }
 
 
 class FlowItemVxlan_gpe(PatternFlowItem):
@@ -917,37 +925,46 @@ class FlowItemVxlan_gpe(PatternFlowItem):
     NOT CURRENTLY SUPPORTED BY TESTPMD.
     """
 
-    # THE FOLLOWING PROPERTIES ARE UNSUPPORTED BY TESTPMD AT THE TIME OF WRITING.
-    # They are still tested to future proof this test suite.
     possible_properties = {
-
-        'rsvd0':
-            ('vxlan rsvd0 is 0x000000',
-             frozenset({"Ether() / IP() / VXLAN(reserved0=0) / Raw('\\x00' * 64)"}),
-
-             frozenset({"Ether() /  IP() / VXLAN(reserved0=1) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() /  VXLAN(reserved0=2) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() /  VXLAN(reserved0=3) / Raw('\\x00' * 64)",
-                        "Ether() /  IP()  / VXLAN(reserved0=4) / Raw('\\x00' * 64)"
-                        })),
-        'rsvd1':
-            ('vxlan rsvd1 is 0x00',
-             frozenset({"Ether() /  IP() /  VXLAN(reserved0=0) / Raw('\\x00' * 64)"}),
-
-             frozenset({"Ether() / IP() /  VXLAN(reserved0=1) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() /  VXLAN(reserved0=2) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() / VXLAN(reserved0=3) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() /  VXLAN(reserved0=4) / Raw('\\x00' * 64)"
-                        })),
-        'flags':
-            ('vxlan flags is 0x08',
-             frozenset({"Ether() /  IP() /  VXLAN(flags=0x08) / Raw('\\x00' * 64)"}),
-
-             frozenset({"Ether() / IP() /  VXLAN(flags=0x80) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() /  VXLAN(flags=0x00) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() / VXLAN(flags=0x99) / Raw('\\x00' * 64)",
-                        "Ether() /  IP() /  VXLAN(flags=0x01) / Raw('\\x00' * 64)"
-                        })),
+        # THE FOLLOWING PROPERTIES ARE UNSUPPORTED BY TESTPMD AT THE TIME OF WRITING.
+        # THEY CAN BE ENABLED ONCE TESTPMD SUPPORTS THEM
+        # 'rsvd0':
+        #     ('vxlan rsvd0 is 0x000000',
+        #      frozenset({"Ether() / IP() / VXLAN(reserved0=0) / Raw('\\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() /  IP() / VXLAN(reserved0=1) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() /  VXLAN(reserved0=2) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() /  VXLAN(reserved0=3) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP()  / VXLAN(reserved0=4) / Raw('\\x00' * 64)"
+        #                 })),
+        # 'rsvd1':
+        #     ('vxlan rsvd1 is 0x00',
+        #      frozenset({"Ether() /  IP() /  VXLAN(reserved0=0) / Raw('\\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() / IP() /  VXLAN(reserved0=1) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() /  VXLAN(reserved0=2) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / VXLAN(reserved0=3) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() /  VXLAN(reserved0=4) / Raw('\\x00' * 64)"
+        #                 })),
+        # 'flags':
+        #     ('vxlan flags is 0x08',
+        #      frozenset({"Ether() /  IP() /  VXLAN(flags=0x08) / Raw('\\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() / IP() /  VXLAN(flags=0x80) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() /  VXLAN(flags=0x00) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() / VXLAN(flags=0x99) / Raw('\\x00' * 64)",
+        #                 "Ether() /  IP() /  VXLAN(flags=0x01) / Raw('\\x00' * 64)"
+        #                 })),
+        # 'protocol':
+        #     ('vxlan protocol is 0x01',
+        #      frozenset({"Ether() / IP() / VXLAN(NextProtocol=0x01) / Raw('\\x00' * 64)"}),
+        #
+        #      frozenset({"Ether() / IP() / VXLAN(NextProtocol=0x01) / Raw('\\x00' * 64)",
+        #                 "Ether() / IP() / VXLAN(NextProtocol=0x11) / Raw('\\x00' * 64)",
+        #                 "Ether() / IP() / VXLAN(NextProtocol=0x22) / Raw('\\x00' * 64)",
+        #                 "Ether() / IP() / VXLAN(NextProtocol=0x33) / Raw('\\x00' * 64)"
+        #                 })),
+        # END UNSUPPORTED PROPERTIES
 
         'vni':  # a 3-byte value
             ('vxlan vni is 0x112233',
@@ -957,15 +974,6 @@ class FlowItemVxlan_gpe(PatternFlowItem):
                         "Ether() / IP() / VXLAN(vni=0x123456) / Raw('\\x00' * 64)",
                         "Ether() / IP() / VXLAN(vni=0xaabbcc) / Raw('\\x00' * 64)",
                         "Ether() / IP() / VXLAN(vni=0x999999) / Raw('\\x00' * 64)"
-                        })),
-        'protocol':
-            ('vxlan protocol is 0x01',
-             frozenset({"Ether() / IP() / VXLAN(NextProtocol=0x01) / Raw('\\x00' * 64)"}),
-
-             frozenset({"Ether() / IP() / VXLAN(NextProtocol=0x01) / Raw('\\x00' * 64)",
-                        "Ether() / IP() / VXLAN(NextProtocol=0x11) / Raw('\\x00' * 64)",
-                        "Ether() / IP() / VXLAN(NextProtocol=0x22) / Raw('\\x00' * 64)",
-                        "Ether() / IP() / VXLAN(NextProtocol=0x33) / Raw('\\x00' * 64)"
                         })),
     }
 
