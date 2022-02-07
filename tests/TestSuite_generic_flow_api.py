@@ -1849,7 +1849,7 @@ class TestGeneric_flow_api(TestCase):
                 "error")
             self.dut.send_expect(
                 "flow create 0 ingress pattern eth type is 0x0807 / raw relative is 1 pattern is abcdefghijklmnopq / end actions queue index 1 / end",
-                "Exceeds maxmial payload limit")
+                "Exceeds maximal payload limit")
             # l2-payload equal the max length of raw match is 16bytes
             self.dut.send_expect(
                 "flow validate 0 ingress pattern eth type is 0x0807 / raw relative is 1 pattern is abcdefghijklmnop / end actions queue index 1 / end",
