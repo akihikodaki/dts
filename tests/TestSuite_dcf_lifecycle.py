@@ -257,6 +257,7 @@ class TestDcfLifeCycle(TestCase):
             'pf1_vf1': f"-a {pf1_vf1}",
             'pf2_vf0_dcf': f"-a {pf2_vf0},cap=dcf",
             'pf1_vf0': f"-a {pf1_vf0}",
+            'pf1_vf0_dcf_vf1': f"-a {pf1_vf0},cap=dcf -a {pf1_vf1}",
         }
         return allowlist
 
@@ -463,6 +464,30 @@ class TestDcfLifeCycle(TestCase):
         status_change_func = getattr(self, func_name)
         status_change_func(**kwargs)
         self.check_vf_pmd2_stats(traffic, verbose_parser, is_traffic_valid=flag)
+    
+    def check_vf_traffic(self, func_name, topo=None, flag=False,**kwargs):
+        dut_port_id, vf_id = topo if topo else [0, 1]
+        pkt = self.config_stream(dut_port_id, vf_id)
+        traffic = partial(self.send_packet_by_scapy, pkt, dut_port_id, vf_id)
+        verbose_parser = partial(self.parse_pmd2_verbose_pkt_count, dut_port_id, vf_id)
+        self.vf_pmd2_clear_port_stats()
+        self.check_vf_pmd2_stats(traffic, verbose_parser)
+        status_change_func = getattr(self, func_name)
+        status_change_func(**kwargs)
+
+    def check_vf_dcf_traffic(self, func_name, topo=None, flag=False,**kwargs):
+        self.send_pkt_to_vf1()
+        self.d_con(['show port stats all', "testpmd> ", 15])
+        status_change_func = getattr(self, func_name)
+        status_change_func(**kwargs)
+
+    def send_pkt_to_vf1(self):
+        tester_port_id = self.tester.get_local_port(0)
+        tester_itf = self.tester.get_interface(tester_port_id)
+        p = Packet()
+        p.append_pkt('Ether(src="00:11:22:33:44:55", dst="C6:44:32:0A:EC:E1")/IP(src="192.168.0.2", dst="192.168.0.3")/("X"*64)')
+        p.send_pkt(self.tester, tx_port=tester_itf)
+        time.sleep(1)
 
     def run_test_pre(self, pmd_opitons):
         pri_pmd_option = pmd_opitons[0]
@@ -1519,3 +1544,369 @@ class TestDcfLifeCycle(TestCase):
         self.create_acl_rule_by_kernel_cmd(port_id=1)
         self.d_con(['quit', "# ", 15])
         self.delete_acl_rule_by_kernel_cmd(port_id=1)
+
+    def vf_dcf_testpmd_reset_port(self):
+        if not self.is_vf_dcf_pmd_on:
+            return
+        cmds = [
+            'stop',
+            'port stop all',
+            'port reset all',
+            'port start all',
+            'start',
+            'flow list 0',
+        ]
+        [self.d_con([cmd, "testpmd> ", 15]) for cmd in cmds]
+
+    def vf_dcf_reset_device(self):
+        pf1_vf0 = self.vf_ports_info[0].get('vfs_pci')[0]
+        cmd = f"echo 1 > /sys/bus/pci/devices/{pf1_vf0}/reset"
+        self.d_a_con(cmd)
+        self.vf_dcf_testpmd_reset_port()
+
+    def vf_dcf_reset_port_detach(self):
+        if not self.is_vf_dcf_pmd_on:
+            return
+        pf1_vf0 = self.vf_ports_info[0].get('vfs_pci')[0]
+        cmd = f"echo 1 > /sys/bus/pci/devices/{pf1_vf0}/reset"
+        self.d_a_con(cmd)
+        cmds = [
+            'stop',
+            'port stop 0',
+            'port detach 0',
+            f"port attach {pf1_vf0},cap=dcf",
+            'port reset 0',
+            'port start 0',
+            'start',
+            'flow list 0',
+        ]
+        [self.d_con([cmd, "testpmd> ", 15]) for cmd in cmds]
+
+    def vf_dcf_reset_mtu(self, dut_port_id=0, vf_id=0):
+        intf = self.dut.ports_info[dut_port_id]['port'].intf_name
+        cmd = f"ifconfig {intf} mtu 3000"
+        self.d_a_con(cmd)
+        self.vf_dcf_testpmd_reset_port()
+
+    def vf_dcf_set_mac_addr(self, dut_port_id=0, vf_id=0):
+        intf = self.dut.ports_info[dut_port_id]['port'].intf_name
+        cmd = f"ip link set {intf} vf 0 mac 00:01:02:03:04:05"
+        self.d_a_con(cmd)
+        self.vf_dcf_testpmd_reset_port()
+   
+    def verify_two_testpmd_dcf_reset_port(self):
+        '''
+         Lauch two testpmd, kill DCF process, and DCF reset port.
+        '''
+        except_content = None
+        try:
+            self.vf_set_trust()
+            pmd_opts = [['pf1_vf0_dcf', 'dcf'], ['pf1_vf1', 'vf']]
+            self.run_test_pre(pmd_opts)
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_traffic('kill_vf_dcf_process', flag=True,**{'file_prefix':pmd_opts[0][1]})
+            self.run_test_pre(pmd_opts)
+            self.check_vf_traffic('vf_dcf_testpmd_reset_port')
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_traffic('close_vf_dcf_testpmd')
+        except Exception as e:
+            self.logger.error(traceback.format_exc())
+            except_content = e
+        finally:
+            self.run_test_post()
+        # re-raise verify exception result
+        if except_content:
+            raise VerifyFailure(except_content)
+
+    def verify_two_testpmd_dcf_reset_device(self):
+        '''
+         Lauch two testpmd, and DCF reset device.
+        '''
+        except_content = None
+        try:
+            self.vf_set_trust()
+            pmd_opts = [['pf1_vf0_dcf', 'dcf'], ['pf1_vf1', 'vf']]
+            self.run_test_pre(pmd_opts)
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_traffic('vf_dcf_reset_device')
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_traffic('close_vf_dcf_testpmd')
+        except Exception as e:
+            self.logger.error(traceback.format_exc())
+            except_content = e
+        finally:
+            self.run_test_post()
+        # re-raise verify exception result
+        if except_content:
+            raise VerifyFailure(except_content)
+    
+    def verify_two_testpmd_dcf_reset_port_detach(self):
+        '''
+         Lauch two testpmd, and DCF reset port detach.
+        '''
+        except_content = None
+        try:
+            self.vf_set_trust()
+            pmd_opts = [['pf1_vf0_dcf', 'dcf'], ['pf1_vf1', 'vf']]
+            self.run_test_pre(pmd_opts)
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_traffic('vf_dcf_reset_port_detach')
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_traffic('close_vf_dcf_testpmd')
+        except Exception as e:
+            self.logger.error(traceback.format_exc())
+            except_content = e
+        finally:
+            self.run_test_post()
+        # re-raise verify exception result
+        if except_content:
+            raise VerifyFailure(except_content)
+
+    def verify_two_testpmd_dcf_reset_mtu(self):
+        '''
+         Lauch two testpmd, and DCF reset mtu.
+        '''
+        except_content = None
+        try:
+            self.vf_set_trust()
+            pmd_opts = [['pf1_vf0_dcf', 'dcf'], ['pf1_vf1', 'vf']]
+            self.run_test_pre(pmd_opts)
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_traffic('vf_dcf_reset_mtu')
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_traffic('close_vf_dcf_testpmd')
+        except Exception as e:
+            self.logger.error(traceback.format_exc())
+            except_content = e
+        finally:
+            self.run_test_post()
+        # re-raise verify exception result
+        if except_content:
+            raise VerifyFailure(except_content)
+    
+    def verify_two_testpmd_dcf_reset_mac(self):
+        '''
+         Lauch two testpmd, and DCF reset mac.
+        '''
+        except_content = None
+        try:
+            self.vf_set_trust()
+            pmd_opts = [['pf1_vf0_dcf', 'dcf'], ['pf1_vf1', 'vf']]
+            self.run_test_pre(pmd_opts)
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_traffic('vf_dcf_set_mac_addr')
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_traffic('close_vf_dcf_testpmd')
+        except Exception as e:
+            self.logger.error(traceback.format_exc())
+            except_content = e
+        finally:
+            self.run_test_post()
+        # re-raise verify exception result
+        if except_content:
+            raise VerifyFailure(except_content)
+
+    def verify_one_testpmd_dcf_reset_port(self):
+        '''
+         Lauch one testpmd, kill DCF process, and DCF reset port.
+        '''
+        except_content = None
+        try:
+            self.vf_set_trust()
+            pmd_opts = [['pf1_vf0_dcf_vf1', 'dcf']]
+            self.run_test_pre(pmd_opts)
+            cmds = ['set fwd mac', 'set verbose 1', 'start']
+            [self.d_con([cmd, "testpmd> ", 15]) for cmd in cmds]
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_dcf_traffic('kill_vf_dcf_process', flag=True,**{'file_prefix':'dcf'})
+            self.run_test_pre(pmd_opts)
+            cmds = ['set fwd mac', 'set verbose 1', 'start']
+            [self.d_con([cmd, "testpmd> ", 15]) for cmd in cmds]
+            self.check_vf_dcf_traffic('vf_dcf_testpmd_reset_port')
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_dcf_traffic('close_vf_dcf_testpmd')
+        except Exception as e:
+            self.logger.error(traceback.format_exc())
+            except_content = e
+        finally:
+            self.run_test_post()
+        # re-raise verify exception result
+        if except_content:
+            raise VerifyFailure(except_content)
+
+    def verify_one_testpmd_dcf_reset_device(self):
+        '''
+         Lauch one testpmd, and DCF reset device.
+        '''
+        except_content = None
+        try:
+            self.vf_set_trust()
+            pmd_opts = [['pf1_vf0_dcf_vf1', 'dcf']]
+            self.run_test_pre(pmd_opts)
+            cmds = ['set fwd mac', 'set verbose 1', 'start']
+            [self.d_con([cmd, "testpmd> ", 15]) for cmd in cmds]
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_dcf_traffic('vf_dcf_reset_device')
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_dcf_traffic('close_vf_dcf_testpmd')
+        except Exception as e:
+            self.logger.error(traceback.format_exc())
+            except_content = e
+        finally:
+            self.run_test_post()
+        # re-raise verify exception result
+        if except_content:
+            raise VerifyFailure(except_content)
+
+    def verify_one_testpmd_dcf_reset_port_detach(self):
+        '''
+         Lauch one testpmd, and DCF reset port detach.
+        '''
+        except_content = None
+        try:
+            self.vf_set_trust()
+            pmd_opts = [['pf1_vf0_dcf_vf1', 'dcf']]
+            self.run_test_pre(pmd_opts)
+            cmds = ['set fwd mac', 'set verbose 1', 'start']
+            [self.d_con([cmd, "testpmd> ", 15]) for cmd in cmds]
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_dcf_traffic('vf_dcf_reset_port_detach')
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_dcf_traffic('close_vf_dcf_testpmd')
+        except Exception as e:
+            self.logger.error(traceback.format_exc())
+            except_content = e
+        finally:
+            self.run_test_post()
+        # re-raise verify exception result
+        if except_content:
+            raise VerifyFailure(except_content)
+   
+    def verify_one_testpmd_dcf_reset_mtu(self):
+        '''
+         Lauch one testpmd, and DCF reset mtu.
+        '''
+        except_content = None
+        try:
+            self.vf_set_trust()
+            pmd_opts = [['pf1_vf0_dcf_vf1', 'dcf']]
+            self.run_test_pre(pmd_opts)
+            cmds = ['set fwd mac', 'set verbose 1', 'start']
+            [self.d_con([cmd, "testpmd> ", 15]) for cmd in cmds]
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_dcf_traffic('vf_dcf_reset_mtu')
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_dcf_traffic('close_vf_dcf_testpmd')
+        except Exception as e:
+            self.logger.error(traceback.format_exc())
+            except_content = e
+        finally:
+            self.run_test_post()
+        # re-raise verify exception result
+        if except_content:
+            raise VerifyFailure(except_content)
+
+    def verify_one_testpmd_dcf_reset_mac(self):
+        '''
+         Lauch one testpmd, and DCF reset mac.
+        '''
+        except_content = None
+        try:
+            self.vf_set_trust()
+            pmd_opts = [['pf1_vf0_dcf_vf1', 'dcf']]
+            self.run_test_pre(pmd_opts)
+            cmds = ['set fwd mac', 'set verbose 1', 'start']
+            [self.d_con([cmd, "testpmd> ", 15]) for cmd in cmds]
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_dcf_traffic('vf_dcf_set_mac_addr')
+            self.vf_dcf_testpmd_set_flow_rule()
+            self.check_vf_dcf_traffic('close_vf_dcf_testpmd')
+        except Exception as e:
+            self.logger.error(traceback.format_exc())
+            except_content = e
+        finally:
+            self.run_test_post()
+        # re-raise verify exception result
+        if except_content:
+            raise VerifyFailure(except_content)
+   
+    def test_two_testpmd_dcf_reset_port(self):
+        '''
+         Lauch two testpmd, DCF reset port, and DCF shall clean up all the rules.
+        '''
+        msg = "begin : Kill DCF process, and DCF reset port"
+        self.logger.info(msg)
+        self.verify_two_testpmd_dcf_reset_port()
+
+    def test_two_testpmd_dcf_reset_device(self):
+        '''
+         Lauch two testpmd, DCF reset device, and DCF shall clean up all the rules.
+        '''
+        msg = "begin :DCF reset device"
+        self.logger.info(msg)
+        self.verify_two_testpmd_dcf_reset_device()
+
+    def test_two_testpmd_dcf_reset_port_detach(self):
+        '''
+         Lauch two testpmd, DCF reset port detach, and DCF shall clean up all the rules.
+        '''
+        msg = "begin : DCF reset port detach"
+        self.logger.info(msg)
+        self.verify_two_testpmd_dcf_reset_port_detach()
+
+    def test_two_testpmd_dcf_reset_mtu(self):
+        '''
+         Lauch two testpmd, DCF reset mtu, and DCF shall clean up all the rules.
+        '''
+        msg = "begin : DCF reset mtu"
+        self.logger.info(msg)
+        self.verify_two_testpmd_dcf_reset_mtu()
+
+    def test_two_testpmd_dcf_reset_mac(self):
+        '''
+         Lauch two testpmd, DCF reset mac, and DCF shall clean up all the rules.
+        '''
+        msg = "begin : DCF reset mac"
+        self.logger.info(msg)
+        self.verify_two_testpmd_dcf_reset_mac()
+
+    def test_one_testpmd_dcf_reset_port(self):
+        '''
+         Lauch one testpmd, kill DCF process, and DCF reset port, DCF shall clean up all the rules.
+        '''
+        msg = "begin : Kill DCF process, and DCF reset port"
+        self.logger.info(msg)
+        self.verify_one_testpmd_dcf_reset_port()
+
+    def test_one_testpmd_dcf_reset_device(self):
+        '''
+         Lauch one testpmd, DCF reset device, and DCF shall clean up all the rules.
+        '''
+        msg = "begin : DCF reset device"
+        self.logger.info(msg)
+        self.verify_one_testpmd_dcf_reset_device()
+
+    def test_one_testpmd_dcf_reset_port_detach(self):
+        '''
+         Lauch one testpmd, DCF reset port detach, and DCF shall clean up all the rules.
+        '''
+        msg = "begin : DCF reset port detach"
+        self.logger.info(msg)
+        self.verify_one_testpmd_dcf_reset_port_detach()
+   
+    def test_one_testpmd_dcf_reset_mtu(self):
+        '''
+         Lauch one testpmd, DCF reset mtu, and DCF shall clean up all the rules.
+        '''
+        msg = "begin : DCF reset mtu"
+        self.logger.info(msg)
+        self.verify_one_testpmd_dcf_reset_mtu()
+
+    def test_one_testpmd_dcf_reset_mac(self):
+        '''
+         Lauch one testpmd, DCF reset mac, and DCF shall clean up all the rules.
+        '''
+        msg = "begin : DCF reset mac"
+        self.logger.info(msg)
+        self.verify_one_testpmd_dcf_reset_mac()
+
