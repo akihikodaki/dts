@@ -215,6 +215,77 @@ mac_qinq_pppoe_ipv6_dest_mac = {
 
 mac_qinq_pppoe_ipv6 = [mac_qinq_pppoe_ipv6_src_ip, mac_qinq_pppoe_ipv6_dst_ip, mac_qinq_pppoe_ipv6_dest_mac]
 
+#Non-pipeline mode
+tv_mac_qinq_ipv4 = {
+    'name': 'tv_mac_qinq_ipv4',
+    'rule': 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end',
+    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/("X"*80)'],
+               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.2")/("X"*80)']},
+    'check_param': {'port_id': 1}
+}
+
+tv_mac_qinq_ipv6 = {
+    'name': 'tv_mac_qinq_ipv6',
+    'rule': 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions vf id 1 / end',
+    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*80)'],
+               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/("X"*80)']},
+    'check_param': {'port_id': 1}
+}
+
+tv_mac_qinq_ipv4_udp = {
+    'name': 'tv_mac_qinq_ipv4_udp',
+    'rule': 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / udp src is 50 dst is 23 / end actions vf id 1 / end',
+    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=50,dport=23)/("X"*80)'],
+               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=50,dport=23)/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=50,dport=23)/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP()/UDP(sport=50,dport=23)/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=50,dport=22)/("X"*80)']},
+    'check_param': {'port_id': 1}
+}
+
+tv_mac_qinq_ipv4_tcp = {
+    'name': 'tv_mac_qinq_ipv4_tcp',
+    'rule': 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / tcp src is 50 dst is 23 / end actions vf id 1 / end',
+    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=50,dport=23)/("X"*80)'],
+               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=50,dport=23)/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=50,dport=23)/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP()/TCP(sport=50,dport=23)/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=50,dport=22)/("X"*80)']},
+    'check_param': {'port_id': 1}
+}
+
+tvs_mac_l4_qinq_dcf_non_pipeline_mode = [tv_mac_qinq_ipv4, tv_mac_qinq_ipv6, tv_mac_qinq_ipv4_udp, tv_mac_qinq_ipv4_tcp]
+
+#Pipeline mode
+tv_mac_qinq_ipv6_udp = {
+    'name': 'tv_mac_qinq_ipv6_udp',
+    'rule': 'flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 50 dst is 23 / end actions vf id 1 / end',
+    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=23)/("X"*80)'],
+               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=23)/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=23)/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=23)/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=50,dport=22)/("X"*80)']},
+    'check_param': {'port_id': 1}
+}
+
+tv_mac_qinq_ipv6_tcp = {
+    'name': 'tv_mac_qinq_ipv6_tcp',
+    'rule': 'flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 50 dst is 23 / end actions vf id 1 / end',
+    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=23)/("X"*80)'],
+               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=23)/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=23)/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=23)/("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/TCP(sport=50,dport=22)/("X"*80)']},
+    'check_param': {'port_id': 1}
+}
+
+tvs_mac_l4_qinq_dcf_pipeline_mode = [tv_mac_qinq_ipv6_udp, tv_mac_qinq_ipv6_tcp]
 
 class TestCvlQinq(TestCase):
 
@@ -508,6 +579,22 @@ class TestCvlQinq(TestCase):
         self.setup_pf_vfs_env()
         self.launch_testpmd()
         self._rte_flow_validate_pattern(mac_qinq_pppoe_ipv6)
+
+    def test_mac_l4_qinq_dcf_non_pipeline_mode(self):
+        """
+        DCF switch for MAC_L4_QINQ
+        """
+        self.setup_pf_vfs_env()
+        self.launch_testpmd()
+        self._rte_flow_validate_pattern(tvs_mac_l4_qinq_dcf_non_pipeline_mode)
+
+    def test_mac_l4_qinq_dcf_pipeline_mode(self):
+        """
+        DCF switch for MAC_L4_QINQ_IPV6
+        """
+        self.setup_pf_vfs_env()
+        self.launch_testpmd()
+        self._rte_flow_validate_pattern(tvs_mac_l4_qinq_dcf_pipeline_mode)
 
     def reset_vf(self):
         self.pmd_output.execute_cmd("port stop 2")
