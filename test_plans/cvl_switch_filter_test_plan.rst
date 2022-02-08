@@ -4761,3 +4761,391 @@ Test case: unsupported patterns in os default package
      testpmd> flow list 0
 
    check the rule not exists in the list.
+
+Test steps for supported pattern
+================================
+1. validate rules.
+2. create rules and list rules.
+3. send matched packets, check the action is correct::
+    queue index: to correct queue 
+    rss queues: to correct queue group 
+    drop: not receive pkt
+4. send mismatched packets, check the action is not correct::
+    queue index: not to correct queue 
+    rss queues: not to correctt queue group 
+    drop: receive pkt
+5. destroy rule, list rules, check no rules.
+6. send matched packets, check the action is not correct.
+
+Test case: IPv4/IPv6 + TCP/UDP pipeline mode
+============================================
+MAC_IPV4_UDP + L4 MASK
+----------------------
+matched packets::
+  
+  sendp((Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=2048,dport=1)/Raw("x"*80)),iface="ens260f0",count=1)
+  sendp([Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=2303,dport=3841)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=2047,dport=2)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=2058,dport=3586)/Raw("x"*80)],iface="ens260f0",count=1)
+
+queue index
+...........
+flow create 0 priority 0 ingress pattern eth / ipv4 / udp src is 2152 src mask 0xff00 dst is 1281 dst mask 0x00ff / end actions queue index 2 / end
+
+MAC_IPV4_TCP + L4 MASK
+----------------------
+matched packets::
+
+  sendp([Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/TCP(sport=2313,dport=23)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/TCP(sport=2553,dport=23)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/TCP(sport=2344,dport=23)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/TCP(sport=2601,dport=23)/Raw("x"*80)],iface="ens260f0",count=1)
+
+rss queues
+.......... 
+flow create 0 priority 0 ingress pattern eth / ipv4 / tcp src is 2345 src mask 0x0f0f / end actions rss queues 4 5 end / end
+
+MAC_IPV6_UDP + L4 MASK 
+----------------------
+matched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=10,dport=3328)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=20,dport=3343)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=50,dport=3077)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=50,dport=3349)/Raw("x"*80)],iface="ens260f0",count=1)
+
+queue index
+...........
+flow create 0 priority 0 ingress pattern eth / ipv6 / udp dst is 3333 dst mask 0x0ff0 / end actions queue index 5 / end
+
+MAC_IPV6_TCP + L4 MASK 
+----------------------
+matched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=10,dport=3328)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=20,dport=3343)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=50,dport=3077)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=50,dport=3349)/Raw("x"*80)],iface="ens260f0",count=1)
+   
+drop
+....
+flow create 0 priority 0 ingress pattern eth / ipv6 / tcp dst is 3333 dst mask 0x0ff0 / end actions drop / end
+
+Test case: VXLAN pipeline mode
+==============================
+MAC_IPV4_UDP_VXLAN_ETH_IPV4_UDP + L4 MASK
+-----------------------------------------
+matched packets::
+
+  sendp([Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:CA:C1:B8:F6")/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=32,dport=22)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:CA:C1:B8:F6")/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=16,dport=22)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:CA:C1:B8:F6")/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=33,dport=22)/Raw("x"*80)],iface="ens260f0",count=1)
+
+queue index
+...........
+flow create 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:CA:C1:B8:F6 / ipv4 / udp src is 32 src mask 0x0f / end actions queue index 2 / end
+ 
+MAC_IPV4_UDP_VXLAN_ETH_IPV4_TCP + L4 MASK
+-----------------------------------------
+matched packets::
+
+  sendp([Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:CA:C1:B8:F6")/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=32,dport=22)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:CA:C1:B8:F6")/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=16,dport=22)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:CA:C1:B8:F6")/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=33,dport=22)/Raw("x"*80)],iface="ens260f0",count=1)
+
+queue index
+...........
+flow create 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:CA:C1:B8:F6 / ipv4 / tcp src is 32 src mask 0x0f / end actions queue index 3 / end
+
+Test case: NVGRE non-pipeline mode
+==================================  
+MAC_IPV4_NVGRE_ETH_IPV4_UDP + L4 MASK
+-------------------------------------
+matched packets::
+
+  sendp([Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=1536)/Raw("x"*80)], iface="ens260f0", count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=1281)/Raw("x"*80)], iface="ens260f0", count=1)
+
+queue index
+...........
+flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 1280 src mask 0x00ff / end actions queue index 7 / end
+
+MAC_IPV4_NVGRE_ETH_IPV4_TCP + L4 MASK
+-------------------------------------
+matched packets::
+
+  sendp([Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=50,dport=1536)/Raw("x"*80)], iface="ens260f0", count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=50,dport=1281)/Raw("x"*80)], iface="ens260f0", count=1)
+
+queue index
+...........
+flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp dst is 1280 dst mask 0x00ff  / end actions queue index 4 / end
+
+Test case: GTPU pipeline mode
+=============================
+MAC_IPV4_GTPU_IPV4_UDP + L4 MASK
+--------------------------------
+matched packets::
+
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/UDP(sport=1280)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/UDP(sport=1535)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/UDP(sport=1536)/Raw("x"*80)],iface="ens260f0",count=1)
+
+rss queues
+..........
+flow create 0 priority 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp src is 1280 src mask 0xf00 / end actions rss queues 4 5 end / end
+         
+MAC_IPV4_GTPU_IPV4_TCP + L4 MASK
+--------------------------------
+matched packets::
+
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/TCP(sport=1280)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/TCP(sport=1535)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/TCP(sport=1536)/Raw("x"*80)],iface="ens260f0",count=1)
+
+queue index
+...........
+flow create 0 priority 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp src is 1280 src mask 0xf00 / end actions queue index 3 / end
+
+MAC_IPV4_GTPU_EH_IPV4_UDP + L4 MASK
+-----------------------------------
+matched packets::
+
+  sendp([Ether()/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.1.1")/UDP(dport=224)/("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.1.1")/UDP(dport=239)/("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.1.1")/UDP(dport=241)/("x"*80)],iface="ens260f0",count=1)
+
+queue index
+...........
+flow create 0 priority 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / udp dst is 230 dst mask 0x0f0 / end actions queue index 7 / end
+
+MAC_IPV4_GTPU_EH_IPV4_TCP + L4 MASK
+-----------------------------------
+matched packets::
+
+  sendp([Ether()/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.1.1")/TCP(dport=224)/("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.1.1")/TCP(dport=239)/("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.1.1")/UDP(dport=241)/("x"*80)],iface="ens260f0",count=1)
+
+drop
+....
+flow create 0 priority 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / tcp dst is 230 dst mask 0x0f0 / end actions drop / end
+
+MAC_IPV4_GTPU_IPV6_UDP + L4 MASK
+--------------------------------
+matched packets::
+
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=1280)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=1535)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=1536)/Raw("x"*80)],iface="ens260f0",count=1)
+
+rss queues
+..........
+flow create 0 priority 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 1280 src mask 0xf00 / end actions rss queues 4 5 end / end  
+
+MAC_IPV4_GTPU_IPV6_TCP + L4 MASK
+--------------------------------
+matched packets::
+
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=1280)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=1535)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=1536)/Raw("x"*80)],iface="ens260f0",count=1)
+
+queue index
+...........
+flow create 0 priority 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 1280 src mask 0xf00 / end actions queue index 7 / end  
+ 
+MAC_IPV4_GTPU_EH_IPV6_UDP + L4 MASK
+-----------------------------------
+matched packets::
+
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=224)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=239)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+ 
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=245)/Raw("x"*80)],iface="ens260f0",count=1)
+
+queue index
+...........
+flow create 0 priority 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 230 src mask 0x0f0 / end actions queue index 5 / end  
+
+MAC_IPV4_GTPU_EH_IPV6_TCP + L4 MASK
+-----------------------------------
+matched packets::
+
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=224)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=239)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=245)/Raw("x"*80)],iface="ens260f0",count=1)
+
+drop
+....
+flow create 0 priority 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp dst is 230 dst mask 0x0f0 / end actions drop / end 
+
+Test case: GTPU non-pipeline mode
+=================================
+MAC_IPV6_GTPU_IPV4_UDP + L4 MASK
+--------------------------------
+matched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=1280)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=1535)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=1536)/Raw("x"*80)],iface="ens260f0",count=1)
+
+queue index
+...........
+flow create 0 ingress pattern eth / ipv6 / udp / gtpu / ipv4 / udp src is 1280 src mask 0xf00 / end actions queue index 8 / end  
+
+MAC_IPV6_GTPU_IPV4_TCP + L4 MASK
+--------------------------------
+matched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(dport=1280)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(dport=1535)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=1536)/Raw("x"*80)],iface="ens260f0",count=1)
+
+drop
+....
+flow create 0 ingress pattern eth / ipv6 / udp / gtpu / ipv4 / tcp dst is 1280 dst mask 0xf00 / end actions drop / end  
+
+MAC_IPV6_GTPU_EH_IPV4_UDP + L4 MASK
+-----------------------------------
+matched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=224)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=239)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=245)/Raw("x"*80)],iface="ens260f0",count=1)
+
+queue index
+...........
+flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc / ipv4 / udp src is 230 src mask 0x0f0 / end actions queue index 5 / end  
+
+MAC_IPV6_GTPU_EH_IPV4_TCP + L4 MASK
+-----------------------------------
+matched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(dport=224)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(dport=239)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(dport=245)/Raw("x"*80)],iface="ens260f0",count=1)
+
+drop
+....
+flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc / ipv4 / tcp dst is 230 dst mask 0x0f0 / end actions drop / end  
+
+MAC_IPV6_GTPU_IPV6_UDP + L4 MASK
+--------------------------------
+matched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=1280)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=1535)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=1536)/Raw("x"*80)],iface="ens260f0",count=1)
+
+queue index
+...........
+flow create 0 ingress pattern eth / ipv6 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 1280 src mask 0xf00 / end actions queue index 3 / end 
+
+MAC_IPV6_GTPU_IPV6_TCP + L4 MASK
+--------------------------------
+matched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=224)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=239)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(dport=245)/Raw("x"*80)],iface="ens260f0",count=1)
+
+rss queues
+..........
+flow create 0 ingress pattern eth / ipv6 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp dst is 230 dst mask 0x0f0 / end actions rss queues 2 3 end / end  
+
+MAC_IPV6_GTPU_EH_IPV6_UDP + L4 MASK
+-----------------------------------
+matched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=32)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=16)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=33)/Raw("x"*80)],iface="ens260f0",count=1)
+
+drop
+....
+flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp dst is 32 dst mask 0x0f / end actions drop / end  
+
+MAC_IPV6_GTPU_EH_IPV6_TCP + L4 MASK
+-----------------------------------
+matched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=32)/Raw("x"*80)],iface="ens260f0",count=1)
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=16)/Raw("x"*80)],iface="ens260f0",count=1)
+
+mismatched packets::
+
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTPPDUSessionContainer()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=33)/Raw("x"*80)],iface="ens260f0",count=1)
+
+queue index
+...........
+flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 32 src mask 0x0f / end actions queue index 7 / end 
+
