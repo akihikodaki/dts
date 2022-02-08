@@ -1534,3 +1534,521 @@ Test case 14: AVF CRC strip and Vlan strip co-exists
      196.222.232.221 > 127.0.0.1:  ip-proto-0 480
      10:29:19.995424 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
      196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+
+====================================
+CVL DCF QINQ Switch Filter Test Plan
+====================================
+
+Description
+===========
+CVL support l4 for QinQ switch filter in DCF driver is by dst MAC + outer VLAN id + inner VLAN id + dst IP + dst port, and port can support as eth / vlan / vlan / IP / tcp|udp.
+* Enable QINQ switch filter for IPv4/IPv6, IPv4 + TCP/UDP in non-pipeline mode. 
+* Enable QINQ switch filter for IPv6 + TCP/UDP in pipeline mode. 
+
+Prerequisites
+=============
+
+Hardware
+--------
+Supportted NICs: columbiaville_25g/columbiaville_100g
+
+Software
+--------
+dpdk: http://dpdk.org/git/dpdk
+scapy: http://www.secdev.org/projects/scapy/
+
+General Set Up
+--------------
+1. Compile DPDK::
+
+    # CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
+    # ninja -C x86_64-native-linuxapp-gcc -j 110
+
+2. Get the pci device id and interface of DUT and tester. 
+   For example, 0000:3b:00.0 and 0000:af:00.0 is pci device id,
+   ens785f0 and ens260f0 is interface::
+
+    <dpdk dir># ./usertools/dpdk-devbind.py -s
+
+    0000:3b:00.0 'Ethernet Controller E810-C for SFP 1593' if=ens785f0 drv=ice unused=vfio-pci
+    0000:af:00.0 'Ethernet Controller XXV710 for 25GbE SFP28 158b' if=ens260f0 drv=i40e unused=vfio-pci
+
+4. Generate 2 VFs on PF0::
+
+    # echo 2 > /sys/bus/pci/devices/0000:3b:00.0/sriov_numvfs
+
+5. Get VF pci device id and interface of DUT.
+
+    # ./usertools/dpdk-devbind.py -s
+
+     0000:3b:01.0 'Ethernet Adaptive Virtual Function 1889' if=ens785f0v0 drv=iavf unused=vfio-pci
+     0000:3b:01.1 'Ethernet Adaptive Virtual Function 1889' if=ens785f0v1 drv=iavf unused=vfio-pci
+
+6. Set VF0 as trust::
+
+    # ip link set ens785f0 vf 0 trust on
+
+7. Bind the DUT port to dpdk::
+
+    <dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci <DUT port pci device id>
+
+Test case
+=========
+
+Common Steps
+------------
+1. Launch the userland ``testpmd`` application on DUT as follows::
+
+    <dpdk build dir>/app/dpdk-testpmd <EAL options> -a <DUT port pci device id> -- -i 
+
+..note:: 
+
+    For <EAL options>, you can use "-c 0x6 -n 4", you can also refer to testpmd doc for other setings.
+    For <DUT port pci device id>, you can use "0000:3b:01.0,cap=dcf -a 0000:3b:01.1" for this test plan.
+
+2. Set verbose::
+    
+     testpmd> set verbose 1
+    
+3. Set fwd engine and start::
+
+     testpmd> set fwd rxonly
+     testpmd> start
+
+4. Show port info::
+
+     testpmd> show port info all
+
+   Check the VF0 driver is net_ice_dcf.
+
+All the packets in this test plan use below settings:
+dst mac: 00:11:22:33:44:55
+dst mac change inputset: 00:11:22:33:44:33
+ipv4 src: 192.168.1.1
+ipv4 dst: 192.168.1.2
+ipv4 src change inputset: 192.168.1.3
+ipv4 dst change inputset: 192.168.1.4
+ipv6 dst: CDCD:910A:2222:5498:8475:1111:3900:2020 
+ipv6 dst change inputset: CDCD:910A:2222:5498:8475:1111:3900:2023
+outer vlan tci: 2
+outer vlan tci change inputset: 1
+inner vlan tci: 1
+inner vlan tci change inputset: 2
+sport: 50
+sport change inputset: 52
+dport: 23
+dport change inputset: 22
+
+#Non-pipeline mode
+
+Test Case 1: MAC_QINQ_IPV4
+--------------------------
+The test case enable QINQ switch filter for IPv4 in non-pipeline mode, and port can support as dst MAC + outer VLAN id + inner VLAN id + IPv4.
+
+Test Steps
+~~~~~~~~~~
+1. Validate a rule::
+   
+     testpmd> flow validate 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+2. Create a rule and list rules::
+
+     testpmd> flow create 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     
+   Get the message::
+
+     Flow rule #0 created
+   
+   Check the flow list::
+
+     testpmd> flow list 0
+   
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH VLAN VLAN IPV4 => VF
+
+3. Send matched packet in scapy on tester, check the port 1 of DUT received this packet.
+
+Tester::
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*80)],iface="<tester interface>")
+
+DUT::
+
+    testpmd> port 1/queue 0: received 1 packets
+  src=A4:BF:01:4D:6F:32 - dst=00:11:22:33:44:55 - type=0x8100 - length=122 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+4. Send mismatched packet in scapy on tester, check the port 1 of DUT could not receive this packet.
+
+Tester::
+
+    >>> sendp([Ether(dst="<dst mac change inputset>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*80)],iface="<tester interface>")
+    
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci change inputset>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*80)],iface="<tester interface>")
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci change inputset>,type=0x0800)/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*80)],iface="<tester interface>")
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IP(src="<ipv4 src change inputset>",dst="<ipv4 dst>")/("X"*80)],iface="<tester interface>")
+
+5. Destroy a rule and list rules::
+
+     testpmd> flow destroy 0 rule 0
+  
+   Get the message::
+
+     Flow rule #0 destroyed
+
+   Check the flow list::
+
+     testpmd> flow list 0
+
+   Check the rule not exists in the list.
+   Send matched packets in step 3, check the packets are not to port 1.
+
+Test Case 2: MAC_QINQ_IPV6
+--------------------------
+The test case enable QINQ switch filter for IPv6 in non-pipeline mode, and port can support as dst MAC + outer VLAN id + inner VLAN id + IPv6.
+
+Test Steps
+~~~~~~~~~~
+1. Validate a rule::
+   
+     testpmd> flow validate 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+2. Create a rule and list rules::
+
+     testpmd> flow create 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+   
+   Check the flow list::
+
+     testpmd> flow list 0
+
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH VLAN VLAN IPV6 => VF
+
+3. Send matched packet in scapy on tester, check the port 1 of DUT received this packet.
+
+Tester::
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst>")/("X"*80)],iface="<tester interface>")
+
+DUT::
+
+    testpmd> port 1/queue 0: received 1 packets
+  src=00:00:00:00:00:00 - dst=00:11:22:33:44:55 - type=0x8100 - length=142 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV6_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV6  - l2_len=18 - inner_l2_len=4 - inner_l3_len=40 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+4. Send mismatched packet in scapy on tester, check the port 1 of DUT could not receive this packet.
+
+Tester::
+
+    >>> sendp([Ether(dst="<dst mac change inputset>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst>")/("X"*80)],iface="<tester interface>")
+   
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci change inputset>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst>")/("X"*80)],iface="<tester interface>")
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci change inputset>,type=0x0800)/IPv6(dst="<ipv6 dst>")/("X"*80)],iface="<tester interface>")
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst change inputset>")/("X"*80)],iface="<tester interface>")
+
+5. Destroy a rule and list rules::
+
+     testpmd> flow destroy 0 rule 0
+  
+   Get the message::
+
+     Flow rule #0 destroyed
+
+   Check the flow list::
+
+     testpmd> flow list 0
+
+   Check the rule not exists in the list.
+   Send matched packets in step 3, check the packets are not to port 1.
+
+Test Case 3: MAC_QINQ_IPV4_UDP
+------------------------------
+The test case enable QINQ switch filter for IPv4 + UDP in non-pipeline mode, and port can support as dst MAC + outer VLAN id + inner VLAN id + IPv4 + UDP.
+
+Test steps
+~~~~~~~~~~
+1. Validate a rule::
+   
+     testpmd> flow validate 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 / udp src is <sport> dst is <dport> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+2. Create a rule and list rules::
+
+     testpmd> flow create 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 / udp src is <sport> dst is <dport> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+   
+   Check the flow list::
+
+     testpmd> flow list 0
+
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH VLAN VLAN IPV4 UDP => VF
+
+3. Send matched packet in scapy on tester, check the port 1 of DUT received this packet.
+
+Tester::
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IP()/UDP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+
+DUT::
+
+    testpmd> port 1/queue 0: received 1 packets
+  src=00:00:00:00:00:00 - dst=00:11:22:33:44:55 - type=0x8100 - length=130 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_UDP  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4 INNER_L4_UDP  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - inner_l4_len=8 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+4. Send mismatched packet in scapy on tester, check the port 1 of DUT could not receive this packet.
+
+Tester::
+
+    >>> sendp([Ether(dst="<dst mac change inputset>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IP()/UDP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+    
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci change inputset>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IP()/UDP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci change inputset>,type=0x0800)/IP()/UDP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IP()/UDP(sport=<sport>,dport=<dport change inputset>)/("X"*80)],iface="<tester interface>")
+
+5. Destroy a rule and list rules::
+
+     testpmd> flow destroy 0 rule 0
+  
+   Get the message::
+
+     Flow rule #0 destroyed
+
+   Check the flow list::
+
+     testpmd> flow list 0
+
+   Check the rule not exists in the list.
+   Send matched packets in step 3, check the packets are not to port 1.
+
+Test Case 4: MAC_QINQ_IPV4_TCP
+------------------------------
+The test case enable QINQ switch filter for IPv4 + TCP in non-pipeline mode, and port can support as dst MAC + outer VLAN id + inner VLAN id + IPv4 + TCP.
+
+Test Steps
+~~~~~~~~~~
+1. Validate a rule::
+   
+     testpmd> flow validate 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 / tcp src is <sport> dst is <dport> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+2. Create a rule and list rules::
+
+     testpmd> flow create 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 / tcp src is <sport> dst is <dport> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+   
+   Check the flow list::
+
+     testpmd> flow list 0
+
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH VLAN VLAN IPV4 TCP => VF
+
+3. Send matched packet in scapy on tester, check the port 1 of DUT received this packet.
+
+Tester::
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IP()/TCP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+
+DUT::
+
+    testpmd> port 1/queue 0: received 1 packets
+  src=00:00:00:00:00:00 - dst=00:11:22:33:44:55 - type=0x8100 - length=142 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_TCP  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4 INNER_L4_TCP  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - inner_l4_len=20 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+4. Send mismatched packet in scapy on tester, check the port 1 of DUT could not receive this packet.
+
+Tester::
+
+    >>> sendp([Ether(dst="<dst mac change inputset>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IP()/TCP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci change inputset>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IP()/TCP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci change inputset>,type=0x0800)/IP()/TCP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IP()/TCP(sport=<sport>,dport=<dport change inputset>)/("X"*80)],iface="<tester interface>")
+
+5. Destroy a rule and list rules::
+
+     testpmd> flow destroy 0 rule 0
+  
+   Get the message::
+
+     Flow rule #0 destroyed
+
+   Check the flow list::
+
+     testpmd> flow list 0
+
+   Check the rule not exists in the list.
+   Send matched packets in step 3, check the packets are not to port 1.
+
+#Pipeline mode
+
+Test Case 5: MAC_QINQ_IPV6_UDP
+------------------------------
+The test case enable QINQ switch filter for IPv6 + UDP in pipeline mode, and port can support as dst MAC + outer VLAN id + inner VLAN id + IPv6 + UDP.
+
+Test Steps
+~~~~~~~~~~
+1. Validate a rule::
+   
+     testpmd> flow validate 0 priority 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / udp src is <sport> dst is <dport> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+2. Create a rule and list rules::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / udp src is <sport> dst is <dport> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+   
+   Check the flow list::
+
+     testpmd> flow list 0
+
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH VLAN VLAN IPV6 UDP => VF
+
+3. Send matched packet in scapy on tester, check the port 1 of DUT received this packet.
+
+Tester::
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst>")/UDP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+
+DUT::
+
+    testpmd> port 1/queue 0: received 1 packets
+  src=00:00:00:00:00:00 - dst=00:11:22:33:44:55 - type=0x8100 - length=150 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV6_EXT_UNKNOWN L4_UDP  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV6 INNER_L4_UDP  - l2_len=18 - inner_l2_len=4 - inner_l3_len=40 - inner_l4_len=8 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+4. Send mismatched packet in scapy on tester, check the port 1 of DUT could not receive this packet.
+
+Tester::
+
+    >>> sendp([Ether(dst="<dst mac change inputset>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst>")/UDP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+    
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci change inputset>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst>")/UDP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci change inputset>,type=0x0800)/IPv6(dst="<ipv6 dst>")/UDP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst change inputset>")/UDP(sport=<sport>,dport=<dport change inputset>)/("X"*80)],iface="<tester interface>")
+
+5. Destroy a rule and list rules::
+
+     testpmd> flow destroy 0 rule 0
+  
+   Get the message::
+
+     Flow rule #0 destroyed
+
+   Check the flow list::
+
+     testpmd> flow list 0
+
+   Check the rule not exists in the list.
+   Send matched packets in step 3, check the packets are not to port 1.
+
+Test case 6: MAC_QINQ_IPV6_TCP
+------------------------------
+The test case enable QINQ switch filter for IPv6 + TCP in pipeline mode, and port can support as dst MAC + outer VLAN id + inner VLAN id + IPv6 + TCP.
+
+Test steps
+~~~~~~~~~~
+1. Validate a rule::
+   
+     testpmd> flow validate 0 priority 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / tcp src is <sport> dst is <dport> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+2. Create a rule and list rules::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / tcp src is <sport> dst is <dport> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+   
+   Check the flow list::
+
+     testpmd> flow list 0
+
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH VLAN VLAN IPV6 TCP => VF
+   
+3. Send matched packet in scapy on tester, check the port 1 of DUT received this packet.
+
+Tester::
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst>")/TCP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+
+DUT::
+
+    testpmd> port 1/queue 0: received 1 packets
+  src=00:00:00:00:00:00 - dst=00:11:22:33:44:55 - type=0x8100 - length=162 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV6_EXT_UNKNOWN L4_TCP  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV6 INNER_L4_TCP  - l2_len=18 - inner_l2_len=4 - inner_l3_len=40 - inner_l4_len=20 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+4. Send mismatched packet in scapy on tester, check the port 1 of DUT could not receive this packet.
+
+Tester::
+
+    >>> sendp([Ether(dst="<dst mac change inputset>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst>")/TCP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+    
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci change inputset>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst>")/TCP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci change inputset>,type=0x0800)/IPv6(dst="<ipv6 dst>")/TCP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst change inputset>")/TCP(sport=<sport>,dport=<dport change inputset>)/("X"*80)],iface="<tester interface>")
+
+5. Destroy a rule and list rules::
+
+     testpmd> flow destroy 0 rule 0
+  
+   Get the message::
+
+     Flow rule #0 destroyed
+
+   Check the flow list::
+
+     testpmd> flow list 0
+
+   Check the rule not exists in the list.
+   Send matched packets in step 3, check the packets are not to port 1.
+
+
