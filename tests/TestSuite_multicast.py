@@ -40,17 +40,6 @@ import time
 import framework.utils as utils
 from framework.test_case import TestCase
 
-routeTbl = [
-    ["224.0.0.101", "P1"], ["224.0.0.102", "P2"],
-    ["224.0.0.103", "P1,P2"], ["224.0.0.104", "P3"],
-    ["224.0.0.105", "P1,P3"], ["224.0.0.106", "P2,P3"],
-    ["224.0.0.107", "P1,P2,P3"], ["224.0.0.108", "P4"],
-    ["224.0.0.109", "P1,P4"], ["224.0.0.110", "P2,P4"],
-    ["224.0.0.111", "P1,P2,P4"], ["224.0.0.112", "P3,P4"],
-    ["224.0.0.113", "P1,P3,P4"], ["224.0.0.114", "P2,P3,P4"],
-    ["224.0.0.115", "P1,P2,P3,P4"]
-]
-
 trafficFlow = {
     "F1": ["TG0", "TG0", "10.100.0.1", "224.0.0.101"],
     "F2": ["TG0", "TG1", "10.100.0.2", "224.0.0.104"],
@@ -99,18 +88,6 @@ class TestMulticast(TestCase):
         TGs = [P1, P3]
         TG0 = self.tester.get_local_port(TGs[0])
         TG1 = self.tester.get_local_port(TGs[1])
-
-        # Prepare multicast route table, replace P(x) port pattern
-        repStr = "static struct mcast_group_params mcast_group_table[] = {\\\n"
-        for [ip, ports] in routeTbl:
-            mask = 0
-            for _ in ports.split(','):
-                mask = mask | (1 << eval(_))
-            entry = '{' + 'RTE_IPV4(' + ip.replace('.', ',') + '),' + str(mask) + '}'
-            repStr = repStr + ' ' * 4 + entry + ",\\\n"
-        repStr = repStr + "};"
-
-        self.dut.send_expect(r"sed -i '/mcast_group_table\[\].*{/,/^\}\;/c\\%s' examples/ipv4_multicast/main.c" % repStr, "# ")
 
         # make application
         out = self.dut.build_dpdk_apps('examples/ipv4_multicast')
