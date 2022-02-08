@@ -1071,3 +1071,790 @@ TC34: ACL DCF mode is active, add ACL filters by way of host based configuration
 
     # ethtool -N enp24s0f1 flow-type tcp4 src-ip 192.168.10.0 m 0.255.255.255 dst-port 8000 m 0x00ff action -1
     Added rule with ID 15871
+
+===============================
+CVL DCF enable device reset API
+===============================
+
+Description
+===========
+DCF PMD need to support rte_eth_dev_reset.The reason is that when a DCF instance be killed, all the flow rules still exist in hardware. when DCF gets to reconnect, 
+It has already lost the flow context, and if the application wants to create new rules, they may fail because FW reports that the rules already exist.The current 
+workaround assumes that the user can turn off / turn on VF trust mode, so kernel PF will reset DCF by removing all old rules.The rte_eth_dev_reset API provides 
+a more elegant way for the application to reset DCF through the command "port reset all" when reconnecting.
+
+Prerequisites
+=============
+
+Hardware
+--------
+Supportted NICs: columbiaville_25g/columbiaville_100g
+
+Software
+--------
+dpdk: http://dpdk.org/git/dpdk
+scapy: http://www.secdev.org/projects/scapy/
+
+General Set Up
+--------------
+1. Compile DPDK::
+
+    # CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib --default-library=static <dpdk build dir>
+    # ninja -C <dpdk build dir> -j 110
+
+2. Get the pci device id and interface of DUT and tester. 
+   For example, 0000:3b:00.0 and 0000:af:00.0 is pci device id,
+   ens785f0 and ens260f0 is interface::
+
+    <dpdk dir># ./usertools/dpdk-devbind.py -s
+
+    0000:3b:00.0 'Ethernet Controller E810-C for SFP 1593' if=ens785f0 drv=ice unused=vfio-pci
+    0000:af:00.0 'Ethernet Controller XXV710 for 25GbE SFP28 158b' if=ens260f0 drv=i40e unused=vfio-pci
+
+3. Generate 4 VFs on PF0::
+
+    # echo 4 > /sys/bus/pci/devices/0000:3b:00.0/sriov_numvfs
+
+4. Get VF pci device id and interface of DUT.
+
+    # ./usertools/dpdk-devbind.py -s
+
+     0000:3b:01.0 'Ethernet Adaptive Virtual Function 1889' if=ens785f0v0 drv=iavf unused=vfio-pci
+     0000:3b:01.1 'Ethernet Adaptive Virtual Function 1889' if=ens785f0v1 drv=iavf unused=vfio-pci
+
+5. Set VF0 as trust::
+
+    # ip link set ens785f0 vf 0 trust on
+
+6. Bind the DUT port to dpdk::
+
+    <dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci <DUT port pci device id>
+    
+Test case
+=========
+
+Common Steps
+------------
+The common steps launch two testpmds and kill DCF process, then relaunch two testpmds.
+
+1. Launch the userland ``testpmd`` application on DUT as follows::
+
+    <dpdk build dir>/app/dpdk-testpmd <EAL options> -a <DUT port pci device id> -- -i 
+
+..note:: 
+
+    For <EAL options>, you can use "-c 0x6 -n 4", you can also refer to testpmd doc for other setings.
+    For <DUT port pci device id>, you can use "0000:3b:01.0,cap=dcf --file-prefix=dcf" for this test plan.
+  
+2. Launch another ``testpmd`` application on the VF1 of DUT as follows::
+
+    <dpdk build dir>/app/dpdk-testpmd <EAL options> -a <DUT port pci device id> -- -i 
+
+..note:: 
+
+    For <EAL options>, you can use "-c 0x18 -n 4", you can also refer to testpmd doc for other setings.
+    For this test plan, you can use "0000:3b:01.1 --file-prefix=vf" for this test plan. 
+
+3. Set verbose in VF testpmd::
+    
+     testpmd> set verbose 1
+    
+4. Set fwd engine and start in VF testpmd::
+
+     testpmd> set fwd mac
+     testpmd> start
+
+5. Validate a switch rule to VF1 in DCF testpmd::
+
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+6. Create a switch rule to VF1 in DCF testpmd and list rules::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+
+   Check the flow list::
+
+     testpmd> flow list 0
+   
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH IPV4 => VF
+
+7. Send a matched packet in scapy to VF1, check the VF1 of DUT can receive the packet.
+
+Tester::
+
+    >>> sendp([Ether(src="<src mac>",dst="<dst mac>")/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*64)], iface="<tester interface>")
+
+the VF1 of DUT::
+
+     testpmd> port 0/queue 0: received 1 packets
+  src=00:11:22:33:44:55 - dst=C6:44:32:0A:EC:E1 - type=0x0800 - length=98 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+All the packets in this test plan use below settings:
+dst src: 00:11:22:33:44:55
+dst mac: C6:44:32:0A:EC:E1
+ipv4 src: 192.168.0.2
+ipv4 dst: 192.168.0.3
+
+Test Case 1: two_testpmd_dcf_reset_port
+---------------------------------------
+The test case resets DCF by killing DCF and resetting the port, and DCF should clean up all old rules.
+
+Test Steps
+~~~~~~~~~~
+1. Check the process ID and kill DCF process::
+
+    # ps -ef |grep testpmd 
+    # kill -9 #####
+
+2. Relaunch the userland ``testpmd`` application on DUT as follows::
+
+    <dpdk build dir>/app/dpdk-testpmd <EAL options> -a <DUT port pci device id> -- -i 
+
+..note:: 
+
+    For <EAL options>, you can use "-c 0x6 -n 4", you can also refer to testpmd doc for other setings.
+    For <DUT port pci device id>, you can use "0000:3b:01.0,cap=dcf --file-prefix=dcf" for this test plan.
+
+3. Send a matched packet in scapy to VF1, DCF flow rule is still valid and check the VF1 of DUT can receive the packet.
+
+Tester::
+
+    >>> sendp([Ether(src="<src mac>",dst="<dst mac>")/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*64)], iface="<tester interface>")
+
+the VF1 of DUT::
+
+     testpmd> port 0/queue 0: received 1 packets
+  src=00:11:22:33:44:55 - dst=C6:44:32:0A:EC:E1 - type=0x0800 - length=98 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+4. Reset port in DCF testpmd::
+
+    testpmd> stop
+    testpmd> port stop all
+    testpmd> port reset all
+    testpmd> port start all
+    testpmd> start
+    testpmd> flow list 0
+
+5. Validate a switch rule to VF1 in DCF testpmd::
+
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+6. Create a switch rule to VF1 in DCF testpmd and list rules::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+
+   Check the flow list::
+
+     testpmd> flow list 0
+   
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH IPV4 => VF
+
+7. Send a matched packet in scapy to VF1, and check the VF1 of DUT can receive the packet.
+
+Tester::
+
+    >>> sendp([Ether(src="<src mac>",dst="<dst mac>")/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*64)], iface="<tester interface>")
+
+the VF1 of DUT::
+
+     testpmd> port 0/queue 0: received 1 packets
+  src=00:11:22:33:44:55 - dst=C6:44:32:0A:EC:E1 - type=0x0800 - length=98 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+Test Case 2: two_testpmd_dcf_reset_device
+-----------------------------------------
+The test case resets DCF by resetting the device, and DCF should clean up all old rules.
+
+Test Steps
+~~~~~~~~~~
+1. Reset DCF device::
+
+    # echo 1 > /sys/bus/pci/devices/0000:3b:01.0/reset
+
+2. Reset port in DCF testpmd::
+   
+    testpmd> stop
+    testpmd> port stop all
+    testpmd> port reset all
+    testpmd> port start all
+    testpmd> start
+    testpmd> flow list 0
+
+3. Validate a switch rule to VF1 in DCF testpmd::
+
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+4. Create a switch rule to VF1 in DCF testpmd and list rules::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+
+   Check the flow list::
+
+     testpmd> flow list 0
+   
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH IPV4 => VF
+
+5. Send a matched packet in scapy to VF1, and check the VF1 of DUT can receive the packet.
+
+Tester::
+
+    >>> sendp([Ether(src="<src mac>",dst="<dst mac>")/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*64)], iface="<tester interface>")
+
+the VF1 of DUT::
+
+     testpmd> port 0/queue 0: received 1 packets
+  src=00:11:22:33:44:55 - dst=C6:44:32:0A:EC:E1 - type=0x0800 - length=98 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+Test Case 3: two_testpmd_dcf_reset_port_detach
+----------------------------------------------
+The test case resets DCF by detaching the port, and DCF should clean up all old rules.
+
+Test Steps
+~~~~~~~~~~
+1. Reset DCF device::
+
+    # echo 1 > /sys/bus/pci/devices/0000:3b:01.0/reset
+
+2. Detach and reset port in DCF testpmd::
+    
+    testpmd> stop 
+    testpmd> port stop 0
+    testpmd> port detach 0
+    testpmd> port attach 3b:01.0,cap=dcf
+    testpmd> port reset 0
+    testpmd> port start 0
+    testpmd> start
+    testpmd> flow list 0
+
+3. Validate a switch rule to VF1 in DCF testpmd::
+
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+4. Create a switch rule to VF1 in DCF testpmd and list rules::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+
+   Check the flow list::
+
+     testpmd> flow list 0
+   
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH IPV4 => VF
+
+5. Send a matched packet in scapy to VF1, and check the VF1 of DUT can receive the packet.
+
+Tester::
+
+    >>> sendp([Ether(src="<src mac>",dst="<dst mac>")/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*64)], iface="<tester interface>")
+
+the VF1 of DUT::
+
+     testpmd> port 0/queue 0: received 1 packets
+  src=00:11:22:33:44:55 - dst=C6:44:32:0A:EC:E1 - type=0x0800 - length=98 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN    
+
+Test Case 4: two_testpmd_dcf_reset_mtu
+--------------------------------------
+The test case resets DCF by resetting the mtu, and DCF should clean up all old rules.
+
+Test Steps
+~~~~~~~~~~
+1. Modify the value of mtu::
+
+    # ifconfig ens785f0 mtu 3000
+
+2. Reset port in DCF testpmd::
+   
+    testpmd> stop
+    testpmd> port stop all
+    testpmd> port reset all
+    testpmd> port start all
+    testpmd> start
+    testpmd> flow list 0
+   
+3. Validate a switch rule to VF1 in DCF testpmd::
+
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+4. Create a switch rule to VF1 in DCF testpmd and list rules::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+
+   Check the flow list::
+
+     testpmd> flow list 0
+   
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH IPV4 => VF
+
+5. Send a matched packet in scapy to VF1, and check the VF1 of DUT can receive the packet.
+
+Tester::
+
+    >>> sendp([Ether(src="<src mac>",dst="<dst mac>")/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*64)], iface="<tester interface>")
+
+the VF1 of DUT::
+
+     testpmd> port 0/queue 0: received 1 packets
+  src=00:11:22:33:44:55 - dst=C6:44:32:0A:EC:E1 - type=0x0800 - length=98 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+  
+Test Case 5: two_testpmd_dcf_reset_mac
+--------------------------------------
+The test case resets DCF by resetting mac addr, and DCF should clean up all old rules.
+
+Test Steps
+~~~~~~~~~~
+1. Reset VF0 by set mac addr::
+
+    # ip link set ens785f0 vf 0 mac 00:01:02:03:04:05
+
+2. Reset port in DCF testpmd::
+   
+    testpmd> stop
+    testpmd> port stop all
+    testpmd> port reset all
+    testpmd> port start all
+    testpmd> start
+    testpmd> flow list 0
+
+3. Validate a switch rule to VF1 in DCF testpmd::
+
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+4. Create a switch rule to VF1 in DCF testpmd and list rules::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+
+   Check the flow list::
+
+     testpmd> flow list 0
+   
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH IPV4 => VF
+
+5. Send a matched packet in scapy to VF1, and check the VF1 of DUT can receive the packet.
+
+Tester::
+
+    >>> sendp([Ether(src="<src mac>",dst="<dst mac>")/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*64)], iface="<tester interface>")
+
+the VF1 of DUT::
+
+     testpmd> port 0/queue 0: received 1 packets
+  src=00:11:22:33:44:55 - dst=C6:44:32:0A:EC:E1 - type=0x0800 - length=98 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+Common Steps
+------------
+The common steps launch one testpmd and kill DCF process, then relaunch one testpmd.
+
+1. Launch the userland ``testpmd`` application on DUT as follows::
+
+    <dpdk build dir>/app/dpdk-testpmd <EAL options> -a <DUT port pci device id> -- -i 
+
+..note:: 
+
+    For <EAL options>, you can use "-c 0x6 -n 4", you can also refer to testpmd doc for other setings.
+    For <DUT port pci device id>, you can use"-a 3b:01.0,cap=dcf -a 3b:01.1 --file-prefix=dcf" for this test plan.
+
+2. Set verbose::
+    
+     testpmd> set verbose 1
+    
+3. Set fwd engine and start::
+
+     testpmd> set fwd mac
+     testpmd> start
+
+4. Validate a switch rule to VF1::
+
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+5. Create a switch rule to VF1 and list rules::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+
+   Check the flow list::
+
+     testpmd> flow list 0
+   
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH IPV4 => VF
+
+6. Send a matched packet in scapy to VF1, check DUT can receive the packet.
+
+Tester::
+
+    >>> sendp([Ether(src="<src mac>",dst="<dst mac>")/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*64)], iface="<tester interface>")
+
+DUT::
+
+    testpmd> port 1/queue 0: received 1 packets
+  src=00:11:22:33:44:55 - dst=C6:44:32:0A:EC:E1 - type=0x0800 - length=98 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+Test Case 6: one_testpmd_dcf_reset_port
+---------------------------------------
+The test case resets DCF by killing DCF and resetting the port, and DCF should clean up all old rules.
+
+Test Steps
+~~~~~~~~~~
+1. Check the process ID and kill DCF process::
+
+    # ps -ef |grep testpmd 
+    # kill -9 #####
+
+2. Relaunch the userland ``testpmd`` application on DUT as follows::
+
+    <dpdk build dir>/app/dpdk-testpmd <EAL options> -a <DUT port pci device id> -- -i 
+
+..note:: 
+
+    For <EAL options>, you can use "-c 0x6 -n 4", you can also refer to testpmd doc for other setings.
+    For <DUT port pci device id>, you can use"-a 3b:01.0,cap=dcf -a 3b:01.1 --file-prefix=dcf" for this test plan.
+
+3. Set verbose::
+    
+     testpmd> set verbose 1
+    
+4. Set fwd engine and start::
+
+     testpmd> set fwd mac
+     testpmd> start
+     testpmd> flow list 0
+
+5. Send a matched packet in scapy to VF1, DCF flow rule is cleared and check DUT can't receive the packet.
+
+Tester::
+
+    >>> sendp([Ether(src="<src mac>",dst="<dst mac>")/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*64)], iface="<tester interface>")
+
+DUT::
+
+    testpmd> 
+
+6. Reset port in testpmd::
+   
+    testpmd> stop
+    testpmd> port stop all
+    testpmd> port reset all
+    testpmd> port start all
+    testpmd> start
+
+7. Validate a switch rule to VF1::
+
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+8. Create a switch rule to VF1 and list rules::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+
+   Check the flow list::
+
+     testpmd> flow list 0
+   
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH IPV4 => VF
+
+9. Send a matched packet in scapy to VF1, and check DUT can receive the packet.
+
+Tester::
+
+    >>> sendp([Ether(src="<src mac>",dst="<dst mac>")/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*64)], iface="<tester interface>")
+
+DUT::
+
+    testpmd> port 1/queue 0: received 1 packets
+  src=00:11:22:33:44:55 - dst=C6:44:32:0A:EC:E1 - type=0x0800 - length=98 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN    
+
+Test Case 7: one_testpmd_dcf_reset_device
+-----------------------------------------
+The test case resets DCF by resetting the device, and DCF should clean up all old rules.
+
+Test Steps
+~~~~~~~~~~
+1. Reset DCF device::
+
+    # echo 1 > /sys/bus/pci/devices/0000:3b:01.0/reset
+
+2. Reset port in testpmd::
+   
+    testpmd> stop
+    testpmd> port stop all
+    testpmd> port reset all
+    testpmd> port start all
+    testpmd> start
+    testpmd> flow list 0
+
+3. Validate a switch rule to VF1::
+
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+4. Create a switch rule to VF1 and list rules::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+
+   Check the flow list::
+
+     testpmd> flow list 0
+   
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH IPV4 => VF
+
+5. Send a matched packet in scapy to VF1, and check DUT can receive the packet.
+
+Tester::
+
+    >>> sendp([Ether(src="<src mac>",dst="<dst mac>")/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*64)], iface="<tester interface>")
+
+DUT::
+
+    testpmd> port 1/queue 0: received 1 packets
+  src=00:11:22:33:44:55 - dst=C6:44:32:0A:EC:E1 - type=0x0800 - length=98 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+Test Case 8: one_testpmd_dcf_reset_port_detach
+----------------------------------------------
+The test case resets DCF by detaching the port, and DCF should clean up all old rules.
+
+Test Steps
+~~~~~~~~~~
+1. Reset DCF device::
+
+    # echo 1 > /sys/bus/pci/devices/0000:3b:01.0/reset
+
+2. Detach and reset port in DCF testpmd::
+    
+    testpmd> stop 
+    testpmd> port stop 0
+    testpmd> port detach 0
+    testpmd> port attach 3b:01.0,cap=dcf
+    testpmd> port reset 0
+    testpmd> port start 0
+    testpmd> start
+    testpmd> flow list 0
+
+3. Validate a switch rule to VF1::
+
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+4. Create a switch rule to VF1 and list rules::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+
+   Check the flow list::
+
+     testpmd> flow list 0
+   
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH IPV4 => VF
+
+5. Send a matched packet in scapy to VF1, and check DUT can receive the packet.
+
+Tester::
+
+    >>> sendp([Ether(src="<src mac>",dst="<dst mac>")/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*64)], iface="<tester interface>")
+
+DUT::
+
+    testpmd> port 1/queue 0: received 1 packets
+  src=00:11:22:33:44:55 - dst=C6:44:32:0A:EC:E1 - type=0x0800 - length=98 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN    
+
+Test Case 9: one_testpmd_dcf_reset_mtu
+--------------------------------------
+The test case resets DCF by resetting the mtu, and DCF should clean up all old rules.
+
+Test Steps
+~~~~~~~~~~
+1. Modify the value of mtu::
+
+    # ifconfig ens785f0 mtu 3000
+
+2. Reset port in DCF testpmd::
+   
+    testpmd> stop
+    testpmd> port stop all
+    testpmd> port reset all
+    testpmd> port start all
+    testpmd> start
+    testpmd> flow list 0    
+
+3. Validate a switch rule to VF1::
+
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+4. Create a switch rule to VF1 and list rules::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+
+   Check the flow list::
+
+     testpmd> flow list 0
+   
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH IPV4 => VF
+
+5. Send a matched packet in scapy to VF1, and check DUT can receive the packet.
+
+Tester::
+
+    >>> sendp([Ether(src="<src mac>",dst="<dst mac>")/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*64)], iface="<tester interface>")
+
+DUT::
+
+    testpmd> port 1/queue 0: received 1 packets
+  src=00:11:22:33:44:55 - dst=C6:44:32:0A:EC:E1 - type=0x0800 - length=98 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN   
+
+Test Case 10: one_testpmd_dcf_reset_mac
+---------------------------------------
+The test case resets DCF by resetting mac addr, and DCF should clean up all old rules.
+
+Test Steps
+~~~~~~~~~~
+1. Reset VF0 by set mac addr::
+
+    # ip link set ens785f0 vf 0 mac 00:01:02:03:04:05
+
+2. Reset port in DCF testpmd::
+   
+    testpmd> stop
+    testpmd> port stop all
+    testpmd> port reset all
+    testpmd> port start all
+    testpmd> start
+    testpmd> flow list 0
+
+3. Validate a switch rule to VF1::
+
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule validated
+
+4. Create a switch rule to VF1 and list rules::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+
+   Get the message::
+
+     Flow rule #0 created
+
+   Check the flow list::
+
+     testpmd> flow list 0
+   
+   ID      Group   Prio    Attr    Rule
+   0       0       0       i--     ETH IPV4 => VF
+
+5. Send a matched packet in scapy to VF1, and check DUT can receive the packet.
+
+Tester::
+
+    >>> sendp([Ether(src="<src mac>",dst="<dst mac>")/IP(src="<ipv4 src>",dst="<ipv4 dst>")/("X"*64)], iface="<tester interface>")
+
+DUT::
+
+    testpmd> port 1/queue 0: received 1 packets
+  src=00:11:22:33:44:55 - dst=C6:44:32:0A:EC:E1 - type=0x0800 - length=98 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+
