@@ -41,3 +41,4 @@ User Guide
     trex
     ixia
     igb_uio
+    asan_test
