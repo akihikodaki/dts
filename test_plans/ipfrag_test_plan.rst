@@ -133,31 +133,7 @@ Prerequisites
      - The set of logical cores to execute the packet forwarding task
      - Mapping of the NIC RX queues to logical cores handling them.
 
-6. Set lpm table for IPv4 & IPv6 packet::
-
-    sed -i '/l3fwd_ipv4_route_array\[\].*{/,/^\}\;/c\\static struct l3fwd_ipv4_route l3fwd_ipv4_route_array[] = {\
-    {RTE_IPV4(100,10,0,0), 16, 1},\
-    {RTE_IPV4(100,20,0,0), 16, 1},\
-    {RTE_IPV4(100,30,0,0), 16, 0},\
-    {RTE_IPV4(100,40,0,0), 16, 0},\
-    {RTE_IPV4(100,50,0,0), 16, 1},\
-    {RTE_IPV4(100,60,0,0), 16, 1},\
-    {RTE_IPV4(100,70,0,0), 16, 0},\
-    {RTE_IPV4(100,80,0,0), 16, 0},\
-    };' examples/ip_fragmentation/main.c
-
-    sed -i '/l3fwd_ipv6_route_array\[\].*{/,/^\}\;/c\\static struct l3fwd_ipv6_route l3fwd_ipv6_route_array[] = {\
-    {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, 48, 1},\
-    {{2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, 48, 1},\
-    {{3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, 48, 0},\
-    {{4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, 48, 0},\
-    {{5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, 48, 1},\
-    {{6,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, 48, 1},\
-    {{7,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, 48, 0},\
-    {{8,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, 48, 0},\
-    };' examples/ip_fragmentation/main.c
-
-And re-compile examples/ip_fragmentation::
+6. Compile examples/ip_fragmentation::
 
     meson configure -Dexamples=ip_fragmentation x86_64-native-linuxapp-gcc
     ninja -C x86_64-native-linuxapp-gcc
