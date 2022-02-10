@@ -2624,17 +2624,15 @@ class TestGeneric_flow_api(TestCase):
         self.tester.send_expect("ifconfig %s mtu %s" % (txItf, 1500), "# ")
         self.tester.send_expect("ifconfig %s mtu %s" % (rxItf, 1500), "# ")
 
-    def test_128_queues(self):
+    def test_64_queues(self):
 
         set_filter_flag = 1
         packet_flag = 1
         if self.kdriver == "ixgbe":
-            self.dut.send_expect("sed -i -e 's/#define IXGBE_NONE_MODE_TX_NB_QUEUES 64$/#define IXGBE_NONE_MODE_TX_NB_QUEUES 128/' drivers/net/ixgbe/ixgbe_ethdev.h", "# ",30)
-            self.dut.build_install_dpdk(self.target)
             global valports
-            total_mbufs = self.request_mbufs(128) * len(valports)
+            total_mbufs = self.request_mbufs(64) * len(valports)
             self.pmdout.start_testpmd(
-                "all", "--disable-rss --rxq=128 --txq=128 --portmask=%s --nb-cores=4 --total-num-mbufs=%d" % (portMask, total_mbufs))
+                "all", "--disable-rss --rxq=64 --txq=64 --portmask=%s --nb-cores=4 --total-num-mbufs=%d" % (portMask, total_mbufs))
             self.dut.send_expect(
                 "set stat_qmap rx %s 0 0" % valports[0], "testpmd> ")
             self.dut.send_expect(
@@ -2647,7 +2645,7 @@ class TestGeneric_flow_api(TestCase):
                 "vlan set filter off %s" % valports[0], "testpmd> ")
             self.dut.send_expect(
                 "vlan set filter off %s" % valports[1], "testpmd> ")
-            queue = ['64', '127', '128']
+            queue = ['16', '32', '64']
             for i in [0, 1, 2]:
                 if i == 2:
                     out = self.dut.send_expect(
@@ -2686,8 +2684,6 @@ class TestGeneric_flow_api(TestCase):
                     packet_flag = 0
                     break
             self.dut.send_expect("quit", "#", timeout=30)
-            self.dut.send_expect("sed -i -e 's/#define IXGBE_NONE_MODE_TX_NB_QUEUES 128$/#define IXGBE_NONE_MODE_TX_NB_QUEUES 64/' drivers/net/ixgbe/ixgbe_ethdev.h", "# ",30)
-            self.dut.build_install_dpdk(self.target)
             self.verify(set_filter_flag == 1, "set filters error")
             self.verify(packet_flag == 1, "packet pass assert error")
         else:
