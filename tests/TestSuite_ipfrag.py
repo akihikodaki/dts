@@ -45,17 +45,6 @@ from framework.pktgen import PacketGeneratorHelper
 from framework.settings import HEADER_SIZE
 from framework.test_case import TestCase
 
-lpm_table_ipv4 = [
-    "{RTE_IPV4(100,10,0,0), 16, P1}",
-    "{RTE_IPV4(100,20,0,0), 16, P1}",
-    "{RTE_IPV4(100,30,0,0), 16, P0}",
-    "{RTE_IPV4(100,40,0,0), 16, P0}",
-    "{RTE_IPV4(100,50,0,0), 16, P1}",
-    "{RTE_IPV4(100,60,0,0), 16, P1}",
-    "{RTE_IPV4(100,70,0,0), 16, P0}",
-    "{RTE_IPV4(100,80,0,0), 16, P0}",
-]
-
 lpm_table_ipv6 = [
     "{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, 48, P1}",
     "{{2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, 48, P1}",
@@ -100,24 +89,6 @@ class TestIpfrag(TestCase):
         P0 = self.ports[0]
         P1 = self.ports[1]
 
-        pat = re.compile("P([0123])")
-
-        # Prepare long prefix match table, replace P(x) port pattern
-        lpmStr_ipv4 = "static struct l3fwd_ipv4_route " \
-                      "l3fwd_ipv4_route_array[] = {\\\n"
-        rtLpmTbl = list(lpm_table_ipv4)
-        for idx in range(len(rtLpmTbl)):
-            rtLpmTbl[idx] = pat.sub(self.portRepl, rtLpmTbl[idx])
-            lpmStr_ipv4 = lpmStr_ipv4 + ' ' * 4 + rtLpmTbl[idx] + ",\\\n"
-        lpmStr_ipv4 = lpmStr_ipv4 + "};"
-        lpmStr_ipv6 = "static struct l3fwd_ipv6_route l3fwd_ipv6_route_array[] = {\\\n"
-        rtLpmTbl = list(lpm_table_ipv6)
-        for idx in range(len(rtLpmTbl)):
-            rtLpmTbl[idx] = pat.sub(self.portRepl, rtLpmTbl[idx])
-            lpmStr_ipv6 = lpmStr_ipv6 + ' ' * 4 + rtLpmTbl[idx] + ",\\\n"
-        lpmStr_ipv6 = lpmStr_ipv6 + "};"
-        self.dut.send_expect(r"sed -i '/l3fwd_ipv4_route_array\[\].*{/,/^\}\;/c\\%s' examples/ip_fragmentation/main.c" % lpmStr_ipv4, "# ")
-        self.dut.send_expect(r"sed -i '/l3fwd_ipv6_route_array\[\].*{/,/^\}\;/c\\%s' examples/ip_fragmentation/main.c" % lpmStr_ipv6, "# ")
         # make application
         out = self.dut.build_dpdk_apps("examples/ip_fragmentation")
         self.verify("Error" not in out, "compilation error 1")
@@ -172,7 +143,7 @@ class TestIpfrag(TestCase):
                 pkt_size = pkt_sizes[pkt_sizes.index(size) + times]
                 pkt = Packet(pkt_type='UDP', pkt_len=pkt_size)
                 pkt.config_layer('ether', {'dst': '%s' % self.dmac})
-                pkt.config_layer('ipv4', {'dst': '100.10.0.1', 'src': '1.2.3.4', 'flags': val})
+                pkt.config_layer('ipv4', {'dst': '100.20.0.1', 'src': '1.2.3.4', 'flags': val})
                 pkt.send_pkt(self.tester, tx_port=self.txItf)
 
             # verify normal packet just by number, verify fragment packet by all elements
@@ -221,7 +192,7 @@ class TestIpfrag(TestCase):
                 pkt_size = pkt_sizes[pkt_sizes.index(size) + times]
                 pkt = Packet(pkt_type='IPv6_UDP', pkt_len=pkt_size)
                 pkt.config_layer('ether', {'dst': '%s' % self.dmac})
-                pkt.config_layer('ipv6', {'dst': '101:101:101:101:101:101:101:101', 'src': 'ee80:ee80:ee80:ee80:ee80:ee80:ee80:ee80'})
+                pkt.config_layer('ipv6', {'dst': '201:101:101:101:101:101:101:101', 'src': 'ee80:ee80:ee80:ee80:ee80:ee80:ee80:ee80'})
                 pkt.send_pkt(self.tester, tx_port=self.txItf)
 
             # verify normal packet just by number, verify fragment packet by all elements
