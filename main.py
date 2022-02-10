@@ -158,6 +158,10 @@ parser.add_argument('--update-expected',
                     action='store_true',
                     help='update expected values based on test results')
 
+parser.add_argument('--asan',
+                    action='store_true',
+                    help='add function to support ASan test')
+
 args = parser.parse_args()
 
 
@@ -175,4 +179,4 @@ dts.run_all(args.config_file, args.snapshot, args.git,
             args.project, args.suite_dir, args.test_cases,
             args.dir, args.output, args.verbose,args.virttype,
             args.debug, args.debugcase, args.re_run, args.commands,
-            args.subtitle, args.update_expected)
+            args.subtitle, args.update_expected, args.asan)

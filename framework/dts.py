@@ -67,7 +67,7 @@ from .utils import (
     create_parallel_locks,
     get_subclasses,
 )
-
+from framework.asan_test import ASanTestProcess
 imp.reload(sys)
 
 requested_tests = None
@@ -510,7 +510,7 @@ def dts_run_suite(duts, tester, test_suites, target, subtitle):
 def run_all(config_file, pkgName, git, patch, skip_setup,
             read_cache, project, suite_dir, test_cases,
             base_dir, output_dir, verbose, virttype, debug,
-            debugcase, re_run, commands, subtitle, update_expected):
+            debugcase, re_run, commands, subtitle, update_expected, asan):
     """
     Main process of DTS, it will run all test suites in the config file.
     """
@@ -523,7 +523,7 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     global log_handler
     global check_case_inst
 
-    # check the python version of the server that run dts 
+    # check the python version of the server that run dts
     check_dts_python_version()
 
     # save global variable
@@ -535,6 +535,9 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     # prepare the output folder
     if output_dir == '':
         output_dir = settings.FOLDERS['Output']
+
+    # prepare ASan test
+    ASanTestProcess.test_prepare(asan, output_dir)
 
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
@@ -567,7 +570,7 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     # Read config file
     dts_cfg_folder = settings.load_global_setting(settings.DTS_CFG_FOLDER)
     if dts_cfg_folder != '':
-        config_file = dts_cfg_folder + os.sep +  config_file
+        config_file = dts_cfg_folder + os.sep + config_file
 
     config = configparser.SafeConfigParser()
     load_cfg = config.read(config_file)
@@ -640,6 +643,9 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
         dts_crbs_exit(duts, tester)
 
     save_all_results()
+
+    # process ASan test report
+    ASanTestProcess.test_process()
 
 
 def show_speedup_options_messages(read_cache, skip_setup):
