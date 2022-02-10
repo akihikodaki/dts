@@ -38,3 +38,4 @@ Getting Started Guide
 
     quick_start
     usr_guide/index
+    rel_notes/index
