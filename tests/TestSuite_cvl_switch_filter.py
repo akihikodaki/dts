@@ -45,6 +45,380 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase, skip_unsupported_pkg
 from framework.utils import BLUE, GREEN, RED
 
+#l4 qinq switch filter
+#qinq non-pipeline mode
+mac_qinq_ipv4_non_pipeline_mode_scapy_str = {
+    "matched": [
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/("X"*80)'],
+    "mismatched": [
+        'Ether(dst="00:11:22:33:44:66",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.2")/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.4")/("X"*80)'
+    ]
+}
+
+tv_mac_qinq_ipv4_queue_index = {
+    "name": "tv_mac_qinq_ipv4_queue_index",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions queue index 2 / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv4_non_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":2}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv4_non_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":2}},
+                  "expect_results":{"expect_pkts":5}}
+}
+
+tv_mac_qinq_ipv4_rss_queues = {
+    "name": "tv_mac_qinq_ipv4_rss_queues",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions rss queues 2 3 end / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv4_non_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_queue_region,
+                             "param":{"expect_port":0, "expect_queues":[2, 3]}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv4_non_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
+                                "param":{"expect_port":0, "expect_queues":[2, 3]}},
+                  "expect_results":{"expect_pkts":5}}
+}
+
+tv_mac_qinq_ipv4_drop = {
+    "name": "tv_mac_qinq_ipv4_drop",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions drop / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv4_non_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_drop,
+                             "param":{"expect_port":0, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv4_non_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
+                                "param":{"expect_port":0, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":5}}
+}
+
+tvs_mac_qinq_ipv4 = [tv_mac_qinq_ipv4_queue_index, tv_mac_qinq_ipv4_rss_queues, tv_mac_qinq_ipv4_drop]
+
+mac_qinq_ipv6_non_pipeline_mode_scapy_str = {
+    "matched": [
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*80)'],
+    "mismatched": [
+        'Ether(dst="00:11:22:33:44:66",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/("X"*80)'
+    ]
+}
+
+tv_mac_qinq_ipv6_queue_index = {
+    "name": "tv_mac_qinq_ipv6_queue_index",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 2 / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv6_non_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":2}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv6_non_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":2}},
+                  "expect_results":{"expect_pkts":4}}
+}
+
+tv_mac_qinq_ipv6_rss_queues = {
+    "name": "tv_mac_qinq_ipv6_rss_queues",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss queues 2 3 end / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv6_non_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_queue_region,
+                             "param":{"expect_port":0, "expect_queues":[2, 3]}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv6_non_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
+                                "param":{"expect_port":0, "expect_queues":[2, 3]}},
+                  "expect_results":{"expect_pkts":4}}
+}
+
+tv_mac_qinq_ipv6_drop = {
+    "name": "tv_mac_qinq_ipv6_drop",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions drop / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv6_non_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_drop,
+                             "param":{"expect_port":0, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv6_non_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
+                                "param":{"expect_port":0, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":4}}
+}
+
+tvs_mac_qinq_ipv6 = [tv_mac_qinq_ipv6_queue_index, tv_mac_qinq_ipv6_rss_queues, tv_mac_qinq_ipv6_drop]
+
+mac_qinq_ipv4_udp_non_pipeline_mode_scapy_str = {
+    "matched": [
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=50,dport=23)/("X"*80)'],
+    "mismatched": [
+        'Ether(dst="00:11:22:33:44:66",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=50,dport=23)/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=50,dport=23)/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP()/UDP(sport=50,dport=23)/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=51,dport=23)/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=50,dport=22)/("X"*80)'
+    ]
+}
+
+tv_mac_qinq_ipv4_udp_queue_index = {
+    "name": "tv_mac_qinq_ipv4_udp_queue_index",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / udp src is 50 dst is 23 / end actions queue index 2 / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv4_udp_non_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":2}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv4_udp_non_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":2}},
+                  "expect_results":{"expect_pkts":5}}
+}
+
+tv_mac_qinq_ipv4_udp_rss_queues = {
+    "name": "tv_mac_qinq_ipv4_udp_rss_queues",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / udp src is 50 dst is 23 / end actions rss queues 2 3 end / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv4_udp_non_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_queue_region,
+                             "param":{"expect_port":0, "expect_queues":[2, 3]}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv4_udp_non_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
+                                "param":{"expect_port":0, "expect_queues":[2, 3]}},
+                  "expect_results":{"expect_pkts":5}}
+}
+
+tv_mac_qinq_ipv4_udp_drop = {
+    "name": "tv_mac_qinq_ipv4_udp_drop",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / udp src is 50 dst is 23 / end actions drop / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv4_udp_non_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_drop,
+                             "param":{"expect_port":0, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv4_udp_non_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
+                                "param":{"expect_port":0, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":5}}
+}
+
+tvs_mac_qinq_ipv4_udp = [tv_mac_qinq_ipv4_udp_queue_index, tv_mac_qinq_ipv4_udp_rss_queues, tv_mac_qinq_ipv4_udp_drop]
+
+mac_qinq_ipv4_tcp_non_pipeline_mode_scapy_str = {
+    "matched": [
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=50,dport=23)/("X"*80)'],
+    "mismatched": [
+        'Ether(dst="00:11:22:33:44:66",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=50,dport=23)/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=50,dport=23)/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP()/TCP(sport=50,dport=23)/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=51,dport=23)/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=50,dport=22)/("X"*80)'
+    ]
+}
+
+tv_mac_qinq_ipv4_tcp_queue_index = {
+    "name": "tv_mac_qinq_ipv4_tcp_queue_index",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / tcp src is 50 dst is 23 / end actions queue index 2 / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv4_tcp_non_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":2}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv4_tcp_non_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":2}},
+                  "expect_results":{"expect_pkts":5}}
+}
+
+tv_mac_qinq_ipv4_tcp_rss_queues = {
+    "name": "tv_mac_qinq_ipv4_tcp_rss_queues",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / tcp src is 50 dst is 23 / end actions rss queues 2 3 end / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv4_tcp_non_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_queue_region,
+                             "param":{"expect_port":0, "expect_queues":[2, 3]}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv4_tcp_non_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
+                                "param":{"expect_port":0, "expect_queues":[2, 3]}},
+                  "expect_results":{"expect_pkts":5}}
+}
+
+tv_mac_qinq_ipv4_tcp_drop = {
+    "name": "tv_mac_qinq_ipv4_tcp_drop",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / tcp src is 50 dst is 23 / end actions drop / end",
+    "configuration":{
+        "is_non_pipeline":True,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv4_tcp_non_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_drop,
+                             "param":{"expect_port":0, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv4_tcp_non_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
+                                "param":{"expect_port":0, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":5}}
+}
+
+tvs_mac_qinq_ipv4_tcp = [tv_mac_qinq_ipv4_tcp_queue_index, tv_mac_qinq_ipv4_tcp_rss_queues, tv_mac_qinq_ipv4_tcp_drop]
+
+#qinq pipeline mode
+mac_qinq_ipv6_udp_pipeline_mode_scapy_str = {
+    "matched": [
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=23)/("X"*80)'],
+    "mismatched": [
+        'Ether(dst="00:11:22:33:44:66",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=23)/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=23)/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=23)/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=50,dport=23)/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=22)/("X"*80)'
+    ]
+}
+
+tv_mac_qinq_ipv6_udp_queue_index = {
+    "name": "tv_mac_qinq_ipv6_udp_queue_index",
+    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 50 dst is 23 / end actions queue index 2 / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv6_udp_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":2}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv6_udp_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":2}},
+                  "expect_results":{"expect_pkts":5}}
+}
+
+tv_mac_qinq_ipv6_udp_rss_queues = {
+    "name": "tv_mac_qinq_ipv6_udp_rss_queues",
+    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 50 dst is 23 / end actions rss queues 4 5 end / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv6_udp_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_queue_region,
+                             "param":{"expect_port":0, "expect_queues":[4, 5]}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv6_udp_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
+                                "param":{"expect_port":0, "expect_queues":[4, 5]}},
+                  "expect_results":{"expect_pkts":5}}
+}
+
+tv_mac_qinq_ipv6_udp_drop = {
+    "name": "tv_mac_qinq_ipv6_udp_drop",
+    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 50 dst is 23 / end actions drop / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv6_udp_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_drop,
+                             "param":{"expect_port":0, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv6_udp_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
+                                "param":{"expect_port":0, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":5}}
+}
+
+tvs_mac_qinq_ipv6_udp = [tv_mac_qinq_ipv6_udp_queue_index, tv_mac_qinq_ipv6_udp_rss_queues, tv_mac_qinq_ipv6_udp_drop]
+
+mac_qinq_ipv6_tcp_pipeline_mode_scapy_str = {
+    "matched": [
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=23)/("X"*80)'],
+    "mismatched": [
+        'Ether(dst="00:11:22:33:44:66",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=23)/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=23)/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=23)/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/TCP(sport=50,dport=23)/("X"*80)',
+        'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=22)/("X"*80)'
+    ]
+}
+
+tv_mac_qinq_ipv6_tcp_queue_index = {
+    "name": "tv_mac_qinq_ipv6_tcp_queue_index",
+    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 50 dst is 23 / end actions queue index 2 / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv6_tcp_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_in_queue,
+                             "param":{"expect_port":0, "expect_queues":2}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv6_tcp_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
+                                "param":{"expect_port":0, "expect_queues":2}},
+                  "expect_results":{"expect_pkts":5}}
+}
+
+tv_mac_qinq_ipv6_tcp_rss_queues = {
+    "name": "tv_mac_qinq_ipv6_tcp_rss_queues",
+    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 50 dst is 23 / end actions rss queues 4 5 end / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv6_tcp_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_queue_region,
+                             "param":{"expect_port":0, "expect_queues":[4, 5]}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv6_tcp_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
+                                "param":{"expect_port":0, "expect_queues":[4, 5]}},
+                  "expect_results":{"expect_pkts":5}}
+}
+
+tv_mac_qinq_ipv6_tcp_drop = {
+    "name": "tv_mac_qinq_ipv6_tcp_drop",
+    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 50 dst is 23 / end actions drop / end",
+    "configuration":{
+        "is_non_pipeline":False,
+        "is_need_rss_rule":False},
+    "matched":{"scapy_str":mac_qinq_ipv6_tcp_pipeline_mode_scapy_str["matched"],
+               "check_func":{"func":rfc.check_output_log_drop,
+                             "param":{"expect_port":0, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":mac_qinq_ipv6_tcp_pipeline_mode_scapy_str["mismatched"],
+                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
+                                "param":{"expect_port":0, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":5}}
+}
+
+tvs_mac_qinq_ipv6_tcp = [tv_mac_qinq_ipv6_tcp_queue_index, tv_mac_qinq_ipv6_tcp_rss_queues, tv_mac_qinq_ipv6_tcp_drop]
+
 #l4 mask
 #ipv4/ipv6 + udp/tcp pipeline mode
 mac_ipv4_udp_l4_mask_scapy_str = {
@@ -3355,6 +3729,25 @@ class CVLSwitchFilterTest(TestCase):
             overall_result = self.save_results(pattern_name, "matched packets after destroying", result_flag, log_msg, overall_result)
         self.display_results()
         self.verify(overall_result == True, "Some subcase failed.")
+     
+    #l4 qinq switch filter
+    def test_mac_qinq_ipv4_non_pipeline_mode(self):
+        self._rte_flow_validate_pattern(tvs_mac_qinq_ipv4)
+
+    def test_mac_qinq_ipv6_non_pipeline_mode(self):
+        self._rte_flow_validate_pattern(tvs_mac_qinq_ipv6)
+
+    def test_mac_qinq_ipv4_udp_non_pipeline_mode(self):
+        self._rte_flow_validate_pattern(tvs_mac_qinq_ipv4_udp)
+
+    def test_mac_qinq_ipv4_tcp_non_pipeline_mode(self):
+        self._rte_flow_validate_pattern(tvs_mac_qinq_ipv4_tcp)
+
+    def test_mac_qinq_ipv6_udp_pipeline_mode(self):
+        self._rte_flow_validate_pattern(tvs_mac_qinq_ipv6_udp)
+
+    def test_mac_qinq_ipv6_tcp_pipeline_mode(self):
+        self._rte_flow_validate_pattern(tvs_mac_qinq_ipv6_tcp)
 
      #l4 mask
     def test_mac_non_tunnle_l4_mask_pipeline_mode(self):
