@@ -159,41 +159,6 @@ send packet by scapy on Tester::
    check tx/rx packets
    EthApp>  portstats 0
 
-Test Case: Vlan test
-====================
-
-enable vlan filter flag in main.c of dpdk's ethtool::
-
-    sed -i -e '/cfg_port.txmode.mq_mode = ETH_MQ_TX_NONE;$/a\\cfg_port.rxmode.offloads|=DEV_RX_OFFLOAD_VLAN_FILTER;' examples/ethtool/ethtool-app/main.c
-
-re-compile examples/ethtool::
-
-    meson configure -Dexamples=ethtool x86_64-native-linuxapp-gcc
-    ninja -C x86_64-native-linuxapp-gcc
-
-Add vlan 0 to port 0 and vlan 1 to port1, send packet without vlan to port0,1
-Verify port0 and port1 received vlan packets::
-
-    EthApp> vlan 0 add 0
-    VLAN vid 0 added
-
-    EthApp> vlan 1 add 1
-    VLAN vid 1 added
-
-Send packet with vlan0,1 to port0&1. Verify port0 and port1 received vlan
-packets
-
-Send packet with vlan1,0 to port0&1. Verify port0 and port1 can not receive
-vlan packets
-
-Remove vlan 0,1 from port0&1, send packet with vlan0,1 to port0,1. Verify
-port0 and port1 can not receive vlan packet::
-
-    EthApp> vlan 0 del 0
-    VLAN vid 0 removed
-    EthApp> vlan 1 del 1
-    VLAN vid 1 removed
-
 Test Case: Mac address test
 ===========================
 Use "macaddr" command to dump port mac address and then check that dumped
