@@ -443,63 +443,6 @@ class TestUserspaceEthtool(TestCase):
             self.verify(rx_pkts == ori_rx_pkts + 4, "Failed to forward after ring parameter changed")
             self.dut.send_expect("quit", "# ")
 
-    def test_ethtool_vlan(self):
-        """
-        Test ethtool app vlan add and delete
-        """
-        main_file = "examples/ethtool/ethtool-app/main.c"
-        # enable vlan filter
-        self.dut.send_expect("sed -i -e '/cfg_port.txmode.mq_mode = ETH_MQ_TX_NONE;$/a\\cfg_port.rxmode.offloads|=DEV_RX_OFFLOAD_VLAN_FILTER;' %s" % main_file, "# ")
-
-        # build sample app
-        self.build_ethtool()
-
-        self.dut.send_expect(self.cmd, "EthApp>", 60)
-        for index in range(len(self.ports)):
-            port = self.ports[index]
-            dst_mac =  self.dut.get_mac_address(port)
-            # generate random vlan
-            vlan = random.randrange(0, 4095)
-            # add vlan on port, record original statistic
-            self.dut.send_expect("vlan %d add %d" % (index, vlan), "EthApp>")
-            ori_rx_pkts, ori_tx_pkts = self.strip_portstats(port)
-
-            # send correct vlan packet to port
-            pkt = Packet(pkt_type='VLAN_UDP')
-            pkt.config_layer('ether', {'dst': dst_mac})
-            pkt.config_layer('vlan', {'vlan': vlan})
-            tester_port = self.tester.get_local_port(port)
-            intf = self.tester.get_interface(tester_port)
-            self.verify(self.ethapp_check_link_status(index, 'Up') == True,
-                    'Fail to Open port{}'.format(index))
-
-            pkt.send_pkt(self.tester, tx_port=intf, count=4)
-            rx_pkts, tx_pkts = self.strip_portstats(port)
-            self.verify(rx_pkts == ori_rx_pkts + 4, "Failed to Rx vlan packet")
-            self.verify(tx_pkts == ori_tx_pkts + 4, "Failed to Tx vlan packet")
-
-            # send incorrect vlan packet to port
-            wrong_vlan = (vlan + 1) % 4096
-            pkt.config_layer('vlan', {'vlan': wrong_vlan})
-            pkt.send_pkt(self.tester, tx_port=intf, count=4)
-            time.sleep(2)
-            rx_pkts_wrong, tx_pkts_wrong = self.strip_portstats(port)
-            self.verify(tx_pkts_wrong == rx_pkts, "Failed to filter Rx vlan packet")
-
-            # remove vlan
-            self.dut.send_expect("vlan %d del %d" % (index, vlan), "EthApp>")
-            # send same packet and make sure not received
-            pkt.config_layer('vlan', {'vlan': vlan})
-            pkt.send_pkt(self.tester, tx_port=intf, count=4)
-            time.sleep(2)
-            rx_pkts_del, tx_pkts_del = self.strip_portstats(port)
-            self.verify(tx_pkts_del == rx_pkts, "Failed to remove Rx vlan filter")
-
-        self.dut.send_expect("quit", "# ")
-        self.dut.send_expect("sed -i -e '/cfg_port.rxmode.offloads|=DEV_RX_OFFLOAD_VLAN_FILTER;$/d' %s" % main_file, "# ")
-        # build sample app
-        self.build_ethtool()
-
     def test_mac_address(self):
         """
         Test ethtool app mac function
