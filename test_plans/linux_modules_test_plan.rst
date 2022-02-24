@@ -148,12 +148,10 @@ application.
 
 Compile the application ::
 
-    make: # cd $RTE_SDK/examples/helloworld && make
     meson: meson configure -Dexamples=helloworld <build_target>;ninja -C <build_target>
 
 Run the application ::
 
-    make: $ $RTE_SDK/examples/helloworld/build/helloworld-shared --in-memory
     meson: $ ./<build_target>/examples/dpdk-helloworld --in-memory
 
 Check for any error states or reported errors.

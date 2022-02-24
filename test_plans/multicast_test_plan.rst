@@ -240,7 +240,7 @@ Here is a table which shows the requirements for which TG flows should arrive fr
 Assuming that ports ``0`` and ``2`` are connected to a traffic generator,
 launch the ``ipv4_multicast`` with the following arguments::
 
-  ./examples/ipv4_multicast/build/ipv4_multicast -c 0x2 -n 1 -- -p 0x5 -q 2
+  ./<build_target>/examples/dpdk-ipv4_multicast -c 0x2 -n 1 -- -p 0x5 -q 2
 
 If the app run successfully, it will be the same as the shown in the terminal. ::
 
@@ -302,24 +302,24 @@ used during test execution.
 
 |
 
-+-----+-------------------------------------------------------+
-| #   | Command Line                                          |
-+-----+-------------------------------------------------------+
-|1    |./ipv4_multicast -c 0x40 -n 3 -- -p PORTMASK -q 2      |
-+-----+-------------------------------------------------------+
-|2    |./ipv4_multicast -c 0x400040 -n 3 -- -p PORTMASK -q 1  |
-+-----+-------------------------------------------------------+
-|3    |./ipv4_multicast -c 0x30 -n 3 -- -p PORTMASK -q 1      |
-+-----+-------------------------------------------------------+
-|4    |./ipv4_multicast -c 0x40 -n 3 -- -p PORTMASK -q 2      |
-+-----+-------------------------------------------------------+
-|5    |./ipv4_multicast -c 0x400040 -n 3 -- -p PORTMASK -q 1  |
-+-----+-------------------------------------------------------+
-|6    |./ipv4_multicast -c 0x30 -n 3 -- -p PORTMASK -q 1      |
-+-----+-------------------------------------------------------+
-|7    |./ipv4_multicast -c 0x40 -n 3 -- -p PORTMASK -q 2      |
-+-----+-------------------------------------------------------+
-|8    |./ipv4_multicast -c 0x400040 -n 3 -- -p PORTMASK -q 1  |
-+-----+-------------------------------------------------------+
-|9    |./ipv4_multicast -c 0x30 -n 3 -- -p PORTMASK -q 1      |
-+-----+-------------------------------------------------------+
++-----+------------------------------------------------------------------------------------+
+| #   | Command Line                                                                       |
++-----+------------------------------------------------------------------------------------+
+|1    |./<build_target>/examples/dpdk-ipv4_multicast -c 0x40 -n 3 -- -p PORTMASK -q 2      |
++-----+------------------------------------------------------------------------------------+
+|2    |./<build_target>/examples/dpdk-ipv4_multicast -c 0x400040 -n 3 -- -p PORTMASK -q 1  |
++-----+------------------------------------------------------------------------------------+
+|3    |./<build_target>/examples/dpdk-ipv4_multicast -c 0x30 -n 3 -- -p PORTMASK -q 1      |
++-----+------------------------------------------------------------------------------------+
+|4    |./<build_target>/examples/dpdk-ipv4_multicast -c 0x40 -n 3 -- -p PORTMASK -q 2      |
++-----+------------------------------------------------------------------------------------+
+|5    |./<build_target>/examples/dpdk-ipv4_multicast -c 0x400040 -n 3 -- -p PORTMASK -q 1  |
++-----+------------------------------------------------------------------------------------+
+|6    |./<build_target>/examples/dpdk-ipv4_multicast -c 0x30 -n 3 -- -p PORTMASK -q 1      |
++-----+------------------------------------------------------------------------------------+
+|7    |./<build_target>/examples/dpdk-ipv4_multicast -c 0x40 -n 3 -- -p PORTMASK -q 2      |
++-----+------------------------------------------------------------------------------------+
+|8    |./<build_target>/examples/dpdk-ipv4_multicast -c 0x400040 -n 3 -- -p PORTMASK -q 1  |
++-----+------------------------------------------------------------------------------------+
+|9    |./<build_target>/examples/dpdk-ipv4_multicast -c 0x30 -n 3 -- -p PORTMASK -q 1      |
++-----+------------------------------------------------------------------------------------+

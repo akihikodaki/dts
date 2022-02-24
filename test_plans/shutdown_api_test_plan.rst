@@ -179,7 +179,7 @@ This case support all the nic with driver i40e and ixgbe.
    bind a VF to DPDK::
     ./usertools/dpdk-devbind.py -b igb_uio 1b:02.0
 3. launch testpmd with cmd::
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 0-3 -n 4 --file-prefix=minjq -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 0-3 -n 4 --file-prefix=minjq -- -i
 4. Run ``port stop all`` to stop all ports.
 5. Run ``port config all speed SPEED duplex HALF/FULL`` to select the new config for the link.
 6. Run ``port start all`` to restart all ports.

@@ -35,11 +35,11 @@ metrics
 =======
 
 The Metrics implements a mechanism by which *producers* can publish numeric
-information for later querying by *consumers*. Here dpdk-procinfo process is the
+information for later querying by *consumers*. Here dpdk-proc-info process is the
 *consumers*. ``latency stats`` and ``bit rate`` are the two implements based
 on metrics lib.
 
-The dpdk-procinfo process use new command line option "--metrics" to display
+The dpdk-proc-info process use new command line option "--metrics" to display
 metrics statistics.
 
 Functionality:
@@ -178,7 +178,7 @@ Test Case : test latency stats
 #. run dpdk-proc to get latency stats data, query data at a average interval and
    get 5 times data::
 
-   ./x86_64-native-linuxapp-gcc/app/dpdk-procinfo -- --metrics
+   ./x86_64-native-linuxapp-gcc/app/dpdk-proc-info -- --metrics
 
 #. latency stats has no reference standard data, only check non-zero and logic reasonable value.
 
@@ -203,7 +203,7 @@ Test Case : test bit rate
 #. run dpdk-proc to get latency stats data, query data at a average interval and
    get 5 times data::
 
-   ./x86_64-native-linuxapp-gcc/app/dpdk-procinfo -- --metrics
+   ./x86_64-native-linuxapp-gcc/app/dpdk-proc-info -- --metrics
 
 #. Compare dpdk statistics data with packet generator statistics data.
 
@@ -228,7 +228,7 @@ Test Case : test bit rate peak value
 #. run dpdk-proc to get latency stats data, query data at a average interval and
    get 5 times data::
 
-   ./x86_64-native-linuxapp-gcc/app/dpdk-procinfo -- --metrics
+   ./x86_64-native-linuxapp-gcc/app/dpdk-proc-info -- --metrics
 
 #. decline packet generator rate percent from 100%/80%/60%/20%, loop step 5/6.
 
