@@ -224,55 +224,6 @@ class TestVmPowerManager(TestCase):
             print((utils.GREEN("After frequency min, freq is %d\n" % min_freq)))
         self.vm_dut.send_expect("quit", "# ")
 
-    def test_vm_power_multivms(self):
-        """
-        Check power management channel connected in multiple VMs
-        """
-        vm_name = "vm1"
-        cpus = self.dut.get_core_list('1S/4C/1T', socket=1)
-        self.verify(len(cpus) == 4, "Can't allocate cores from numa 1")
-
-        vm2 = LibvirtKvm(self.dut, vm_name, self.suite_name)
-        channels = [
-            {'path': '/tmp/powermonitor/%s.0' %
-                vm_name, 'name': 'virtio.serial.port.poweragent.0'},
-            {'path': '/tmp/powermonitor/%s.1' %
-                vm_name, 'name': 'virtio.serial.port.poweragent.1'},
-            {'path': '/tmp/powermonitor/%s.2' %
-                vm_name, 'name': 'virtio.serial.port.poweragent.2'},
-            {'path': '/tmp/powermonitor/%s.3' %
-                vm_name, 'name': 'virtio.serial.port.poweragent.3'}
-        ]
-        for channel in channels:
-            vm2.add_vm_virtio_serial_channel(**channel)
-
-        # start vm2 with socket 1 cpus
-        cpupin = ''
-        for cpu in cpus:
-            cpupin += '%s ' % cpu
-        vm2_cpus = {'number': '4', 'cpupin': cpupin[:-1]}
-        vm2.set_vm_cpu(**vm2_cpus)
-        vm2_dut = vm2.start()
-
-        self.dut.send_expect("add_vm %s" % vm_name, "vmpower>")
-        self.dut.send_expect("add_channels %s all" % vm_name, "vmpower>")
-        vm_info = self.dut.send_expect("show_vm %s" % vm_name, "vmpower>")
-
-        # check host core has correct mapped
-        cpu_idx = 0
-        for cpu in cpus:
-            cpu_map = '[%d]: Physical CPU %s' % (cpu_idx, cpu)
-            self.verify(cpu_map in vm_info, "Failed to map host cpu %s" % cpu)
-            cpu_idx += 1
-
-        out = vm2_dut.build_dpdk_apps("examples/vm_power_manager/guest_cli")
-        self.verify("Error" not in out, "Compilation error")
-        self.verify("No such" not in out, "Compilation error")
-
-        out = vm2_dut.send_expect(self.guest_cmd, "vmpower\(guest\)>", 120)
-        vm2_dut.send_expect("quit", "# ")
-        vm2.stop()
-
     def get_freq_in_transmission(self):
         self.cur_freq = self.get_cpu_frequency(self.vcpu_map[1])
         print((utils.GREEN("Current cpu frequency %d" % self.cur_freq)))
