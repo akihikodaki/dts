@@ -129,10 +129,11 @@ class TestInterruptPmd(TestCase):
         Send a packet to port
         """
         for i in range(len(self.dut_ports[:portnum])):
+            txport = self.tester.get_local_port(self.dut_ports[i])
+            mac = self.dut.get_mac_address(self.dut_ports[i])
+            txItf = self.tester.get_interface(txport)
+            self.verify(self.tester.is_interface_up(intf=txItf), "Tester's %s should be up".format(txItf))
             for j in range(num):
-                txport = self.tester.get_local_port(self.dut_ports[i])
-                mac = self.dut.get_mac_address(self.dut_ports[i])
-                txItf = self.tester.get_interface(txport)
                 self.tester.scapy_append(
                     'sendp([Ether()/IP(dst="198.0.0.%d")/UDP()/Raw(\'X\'*18)], iface="%s")' % (j, txItf))
         self.tester.scapy_execute()
