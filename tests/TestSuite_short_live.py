@@ -106,7 +106,8 @@ class TestShortLiveApp(TestCase):
         # rx and tx packet are list
         if (txPort == rxPort):
             count = 2
-
+        # ensure tester's link up
+        self.verify(self.tester.is_interface_up(intf=rxitf), "Wrong link status, should be up")
         filter_list = [{'layer': 'ether', 'config': {'type': 'not IPv6'}}, {'layer': 'userdefined', 'config': {'pcap-filter': 'not udp'}}]
         inst = self.tester.tcpdump_sniff_packets(rxitf, count=count,filters=filter_list)
 
@@ -135,6 +136,8 @@ class TestShortLiveApp(TestCase):
                 time.sleep(1)
                 delay = delay + 1
             else:
+                # need wait for 1s to restart example after kill example abnormally.
+                time.sleep(1)
                 break
         self.verify(delay < delay_max, "Failed to kill the process within %s seconds" % delay_max)
 
@@ -144,7 +147,6 @@ class TestShortLiveApp(TestCase):
         """
         #dpdk start
         self.dut.send_expect("./%s %s -- -i --portmask=0x3" % (self.app_testpmd, self.eal_para()), "testpmd>", 120)
-        time.sleep(5)
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
