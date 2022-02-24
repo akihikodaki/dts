@@ -253,6 +253,7 @@ class TestFlowClassify(TestCase):
         tx_iface = config.get('tx_intf')
         cmd = "ifconfig {0} up".format(tx_iface)
         self.tester.send_expect(cmd, '# ', 30)
+        self.verify(self.tester.is_interface_up(intf=tx_iface), "Wrong link status, should be up")
         pkts = config.get('stream')
         # stream config
         stream_configs = config.get('stream configs')

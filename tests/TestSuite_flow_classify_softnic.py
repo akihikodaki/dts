@@ -179,12 +179,15 @@ class TestFlowClassifySoftnic(TestCase):
         Sent pkts that read from the pcap_file.
         Return the sniff pkts.
         """
-        self.pmdout.wait_link_status_up(self.dut_ports[0])
+        self.pmdout.wait_link_status_up('all')
         tx_port = self.tester.get_local_port(self.dut_ports[from_port%self.port_num])
         rx_port = self.tester.get_local_port(self.dut_ports[to_port%self.port_num])
 
         tx_interface = self.tester.get_interface(tx_port)
         rx_interface = self.tester.get_interface(rx_port)
+        # check tester's link status before send packet
+        for iface in [tx_interface, rx_interface]:
+            self.verify(self.tester.is_interface_up(intf=iface), "Wrong link status, should be up")
 
         self.tcpdump_start_sniff(rx_interface, filters)
 
@@ -284,9 +287,9 @@ class TestFlowClassifySoftnic(TestCase):
         """
         Sends continuous packets.
         """
-        self.pmdout.wait_link_status_up(self.dut_ports[0])
+        self.pmdout.wait_link_status_up('all')
+        self.verify(self.tester.is_interface_up(intf=itf), "Wrong link status, should be up")
         self.tester.scapy_foreground()
-        time.sleep(2)
         if src_dst == "src":
             if ptype == "ipv4":
                 var = src_addr.split(".")
