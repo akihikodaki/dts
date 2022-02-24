@@ -54,7 +54,7 @@ Prerequisites
 
 2. Start testpmd on host to configure VF ports' mac::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-5 -n 4  -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4  -- -i
 
     testpmd>set vf mac addr 0 0 00:12:34:56:78:01
     testpmd>set vf mac addr 1 0 00:12:34:56:78:02
@@ -79,7 +79,7 @@ Test case: VF basic RX/TX
 ---------------------------
 1. Start testpmd on VM::
 
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 1  -- -i
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1  -- -i
 
 2. Check and verify packets which received and forwarded
 
@@ -89,7 +89,7 @@ Test Cases: VF mac filter
 
 Start testpmd on VM::
 
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 1  -- -i
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1  -- -i
 
 Test Case: unicast test
 ------------------------
@@ -141,7 +141,7 @@ Test Cases: VF VLAN feature vlan filter only work with promisc mode off
 
 Start testpmd on VM::
 
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 1  -- -i
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1  -- -i
 
 Test Case: vlan filter
 ---------------------------

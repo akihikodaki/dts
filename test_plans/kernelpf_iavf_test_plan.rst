@@ -653,7 +653,7 @@ Bind VFs to vfio-pci::
 
 Start l3fwd power with one queue per port::
 
-    ./examples/l3fwd-power/build/l3fwd-power -l 6,7 -n 4 -- \
+    ./<build_target>/examples/dpdk-l3fwd-power -l 6,7 -n 4 -- \
     -p 0x3 --config '(0,0,6),(1,0,7)'
 
 Send one packet to VF0 and VF1, check that thread on core6 and core7 waked up::

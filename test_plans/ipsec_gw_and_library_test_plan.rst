@@ -125,8 +125,6 @@ The test commands of ipsec-secgw is below::
 
 compile the applications::
 
-    make -C ./examples/ipsec-secgw
-
     meson:
     meson configure -Dexamples=ipsec-secgw <build_target>
     ninja -C <build_target>

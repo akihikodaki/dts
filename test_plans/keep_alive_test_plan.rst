@@ -49,15 +49,6 @@ Compiling the Application
 =========================
 
 To compile the application:
-
-Go to the sample application directory::
-
-   export RTE_SDK=/path/to/rte_sdk cd ${RTE_SDK}/examples/keep_alive
-
-Set the target (a default target is used if not specified). For example::
-
-   export RTE_TARGET=x86_64-native-linuxapp-gcc
-
 See the DPDK Getting Started Guide for possible RTE_TARGET values.
 Build the application::
 
@@ -69,7 +60,7 @@ Running the Application
 
 The application has a number of command line options::
 
-   ./build/l2fwd-keepalive [EAL options] -- -p PORTMASK [-q NQ] [-K PERIOD] [-T PERIOD]
+   ./<build_target>/examples/dpdk-l2fwd-keepalive [EAL options] -- -p PORTMASK [-q NQ] [-K PERIOD] [-T PERIOD]
 
 where,
 
@@ -80,6 +71,6 @@ where,
 
 To run the application in linuxapp environment with 4 lcores, 16 ports 8 RX queues per lcore and a ping interval of 10ms, issue the command::
 
-    ./build/l2fwd-keepalive -c f -n 4 -- -q 8 -p ffff -K 10
+    ./<build_target>/examples/dpdk-l2fwd-keepalive -c f -n 4 -- -q 8 -p ffff -K 10
 
 Refer to the DPDK Getting Started Guide for general information on running applications and the Environment Abstraction Layer (EAL) options.
