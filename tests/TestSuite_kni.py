@@ -687,7 +687,8 @@ class TestKni(TestCase):
             tx_interface = self.tester.get_interface(tx_port)
 
             self.dut.send_expect("ifconfig %s up" % virtual_interface, "# ")
-            time.sleep(5)
+            # ensure virtual_interface link up
+            self.verify(self.dut.is_interface_up(intf=virtual_interface), "Wrong link status, should be up")
             # Start tcpdump with filters for src and dst MAC address, this avoids
             # unwanted broadcast, ICPM6... packets
             out = self.dut.send_expect(
@@ -733,7 +734,8 @@ class TestKni(TestCase):
 
             out = self.dut.send_expect(
                 "ifconfig %s up" % virtual_interface, "# ")
-            time.sleep(5)
+            # ensure virtual_interface up
+            self.verify(self.dut.is_interface_up(intf=virtual_interface), "virtual_interface should be up")
             out = self.dut.send_expect("ifconfig %s" % virtual_interface, "# ")
             m = re.search(rx_match, out)
             previous_rx_packets = int(m.group(1))
@@ -751,6 +753,8 @@ class TestKni(TestCase):
 
             pkt = packet.Packet()
             pkt.update_pkt(scapy_str)
+            # ensure tester's interface up
+            self.verify(self.tester.is_interface_up(intf=tx_interface), "Tester's interface should be up")
             pkt.send_pkt(self.tester, tx_port=tx_interface, count=200)
 
             out = self.dut.send_expect("ifconfig %s" % virtual_interface, "# ")
@@ -909,7 +913,6 @@ class TestKni(TestCase):
                 self.verify("ERROR" not in out, "Device not found")
 
             self.dut.send_expect("ifconfig br_kni up", "# ")
-            time.sleep(3)
 
             tx_port = self.tester.get_local_port(self.config['ports'][0])
             rx_port = self.tester.get_local_port(self.config['ports'][1])
@@ -919,7 +922,7 @@ class TestKni(TestCase):
 
             if step['flows'] == 2:
                 tgenInput.append((rx_port, tx_port, pcap))
-            time.sleep(1)
+            self.verify(self.dut.is_interface_up(intf="br_kni"), "br_kni should be up")
 
             # clear streams before add new streams
             self.tester.pktgen.clear_streams()
