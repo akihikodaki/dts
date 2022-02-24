@@ -1599,13 +1599,13 @@ Test Case 24: packed virtqueue vm2vm vectorized-tx path multi-queues test indire
 
 1. Launch vhost by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --no-pci \
+    ./<build_target>/app/dpdk-testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
 
 2. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 --no-pci --file-prefix=virtio1 --force-max-simd-bitwidth=512 \
+    ./<build_target>/app/dpdk-testpmd -n 4 -l 7-8 --no-pci --file-prefix=virtio1 --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=1,vectorized=1,queue_size=256 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
     testpmd>set fwd rxonly

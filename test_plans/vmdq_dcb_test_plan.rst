@@ -64,7 +64,6 @@ Prerequisites
   to the pools numbers(inclusive) and the VLAN user priority field increments from
   0 to 7 (inclusive) for each VLAN ID.
 - Build vmdq_dcb example,
-    make: make -C examples/vmdq_dcb RTE_SDK=`pwd` T=x86_64-native-linuxapp-gcc
     meson: ./<build_target>/examples/dpdk-vmdq_dcb -c 0xff -n 4 -- -p 0x3 --nb-pools 32 --nb-tcs 4 --enable-rss
 
 Test Case 1: Verify VMDQ & DCB with 32 Pools and 4 TCs
@@ -72,7 +71,6 @@ Test Case 1: Verify VMDQ & DCB with 32 Pools and 4 TCs
 
 1. Run the application as the following::
 
-    make: ./examples/vmdq_dcb/build/vmdq_dcb_app -c 0xff -n 4 -- -p 0x3 --nb-pools 32 --nb-tcs 4 --enable-rss
     meson: ./<build_target>/examples/dpdk-vmdq_dcb -c 0xff -n 4 -- -p 0x3 --nb-pools 32 --nb-tcs 4 --enable-rss
 
 2. Start traffic transmission using approx 10% of line rate.
@@ -98,7 +96,6 @@ Test Case 2: Verify VMDQ & DCB with 16 Pools and 8 TCs
 
 2. Repeat Test Case 1, with `--nb-pools 16` and `--nb-tcs 8` of the sample application::
 
-    make: ./examples/vmdq_dcb/build/vmdq_dcb_app -c 0xff -n 4 -- -p 0x3 --nb-pools 16 --nb-tcs 8 --enable-rss
     meson: ./<build_target>/examples/dpdk-vmdq_dcb -c 0xff -n 4 -- -p 0x3 --nb-pools 16 --nb-tcs 8 --enable-rss
 
 Expected result:
@@ -111,7 +108,6 @@ Expected result:
 
 4. Repeat Test Case 1, with `--nb-pools 16` and `--nb-tcs 8` of the sample application::
 
-    make: ./examples/vmdq_dcb/build/vmdq_dcb_app -c 0xff -n 4 -- -p 0x3 --nb-pools 16 --nb-tcs 8 --enable-rss
     meson: ./<build_target>/examples/dpdk-vmdq_dcb -c 0xff -n 4 -- -p 0x3 --nb-pools 16 --nb-tcs 8 --enable-rss
 
 Expected result:

@@ -90,7 +90,7 @@ Test Case 1: vf reset -- create two vfs on one pf
 
 5. Run testpmd::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -- -i \
+     ./<build_target>/app/dpdk-testpmd -c 0x0f -n 4 -- -i \
      --portmask=0x3
      testpmd> set fwd mac
      testpmd> start
@@ -159,11 +159,11 @@ Test Case 2: vf reset -- create two vfs on one pf, run testpmd separately
 
 2. Start testpmd on two vf ports::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4  \
+     ./<build_target>/app/dpdk-testpmd -c 0xf -n 4  \
      --socket-mem 1024,1024 -a 81:02.0 --file-prefix=test1  \
      -- -i --eth-peer=0,00:11:22:33:44:12  \
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf0 -n 4  \
+     ./<build_target>/app/dpdk-testpmd -c 0xf0 -n 4  \
      --socket-mem 1024,1024 -a 81:02.1 --file-prefix=test2  \
      -- -i
 
@@ -207,7 +207,7 @@ Test Case 3: vf reset -- create one vf on each pf
 
 3. Start one testpmd on two vf ports::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -- -i \
+     ./<build_target>/app/dpdk-testpmd -c 0x0f -n 4 -- -i \
      --portmask=0x3
 
 4. Start forwarding::
@@ -234,7 +234,7 @@ Test Case 4: vlan rx restore -- vf reset all ports
 
 1. Execute the step1-step3 of test case 1, then start the testpmd::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -- -i \
+     ./<build_target>/app/dpdk-testpmd -c 0x0f -n 4 -- -i \
      --portmask=0x3
      testpmd> set fwd mac
 
@@ -289,7 +289,7 @@ test Case 5: vlan rx restore -- vf reset one port
 
 1. Execute the step1-step3 of test case 1, then start the testpmd::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -- -i  \
+     ./<build_target>/app/dpdk-testpmd -c 0x0f -n 4 -- -i  \
      --portmask=0x3
      testpmd> set fwd mac
 
@@ -429,7 +429,7 @@ Test Case 7: vlan tx restore
 
 2. Run testpmd::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -- -i \
+     ./<build_target>/app/dpdk-testpmd -c 0x0f -n 4 -- -i \
      --portmask=0x3
 
 3. Add tx vlan offload on VF1 port, take care the first param is port,
@@ -473,7 +473,7 @@ test Case 8: MAC address restore
 
 3. Start testpmd on two vf ports::
 
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4  \
+     ./<build_target>/app/dpdk-testpmd -c 0x0f -n 4  \
      -- -i --portmask=0x3
 
 4. Add MAC address to the vf0 ports::
@@ -544,7 +544,7 @@ test Case 9: vf reset (two vfs passed through to one VM)
    bind them to igb_uio driver,and then start testpmd::
 
      ./usertools/dpdk-devbind.py -b igb_uio 00:05.0 00:05.1
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 \
+     ./<build_target>/app/dpdk-testpmd -c 0x0f -n 4 \
      -a 00:05.0 -a 00:05.1 -- -i --portmask=0x3
 
 5. Add MAC address to the vf0 ports, set it in mac forward mode::
@@ -618,14 +618,14 @@ test Case 10: vf reset (two vfs passed through to two VM)
    bind the port to igb_uio, then start testpmd on vf0 port::
 
      ./tools/dpdk_nic_bind.py --bind=igb_uio 00:05.0
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4  \
+     ./<build_target>/app/dpdk-testpmd -c 0xf -n 4  \
      -- -i --eth-peer=0,vf1port_macaddr  \
 
    login vm1, got VF1 pci device id in vm1, assume it's 00:06.0,
    bind the port to igb_uio, then start testpmd on vf1 port::
 
      ./tools/dpdk_nic_bind.py --bind=igb_uio 00:06.0
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf0 -n 4  \
+     ./<build_target>/app/dpdk-testpmd -c 0xf0 -n 4  \
      -- -i
 
 5. Add vlan on vf0 in vm0, and set fwd mode::

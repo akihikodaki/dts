@@ -46,7 +46,7 @@ Test Case: Test the MTU in virtio-net
 =====================================
 1. Launch the testpmd by below commands on host, and config mtu::
 
-    ./testpmd -c 0xc -n 4 \
+    ./<build_target>/app/dpdk-testpmd -c 0xc -n 4 \
     --vdev 'net_vhost0,iface=vhost-net,queues=1' \
     -- -i --txd=512 --rxd=128 --nb-cores=1 --port-topology=chained
     testpmd> set fwd mac
@@ -70,7 +70,7 @@ Test Case: Test the MTU in virtio-net
 4. Bind the virtio driver to igb_uio, launch testpmd in VM, and verify 
    the mtu in port info is 9000::
  
-    ./testpmd -c 0x03 -n 3 \
+    ./<build_target>/app/dpdk-testpmd -c 0x03 -n 3 \
     -- -i --txd=512 --rxd=128 --tx-offloads=0x0 --enable-hw-vlan-strip
     testpmd> set fwd mac
     testpmd> start
