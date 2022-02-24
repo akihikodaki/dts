@@ -222,12 +222,12 @@ Test case: Fortville fdir for ipv4
     testpmd> set verbose 1
     testpmd> start
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1e0000 -n 4 -a 05:02.0 --file-prefix=vf0 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e0000 -n 4 -a 05:02.0 --file-prefix=vf0 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1e00000 -n 4 -a 05:02.1 --file-prefix=vf1 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e00000 -n 4 -a 05:02.1 --file-prefix=vf1 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -2009,7 +2009,7 @@ Test case: Dual vlan(QinQ)
 
    1. set up testpmd with Fortville NICs::
 
-         ./dpdk-testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x1 --rxq=16 --txq=16 --tx-offloads=0x8fff
+         ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x1 --rxq=16 --txq=16 --tx-offloads=0x8fff
 
    2. verbose configuration::
 
@@ -2107,7 +2107,7 @@ Test Case: 10GB Multiple filters
 
    1. set up testpmd with Fortville NICs::
 
-         ./dpdk-testpmd -l 1,2,3,4,5,6,7,8 -n 4 -- -i --disable-rss --rxq=16 --txq=16
+         ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1,2,3,4,5,6,7,8 -n 4 -- -i --disable-rss --rxq=16 --txq=16
 
    2. verbose configuration::
 
@@ -2220,7 +2220,7 @@ This case is designed for NIC(niantic). Default use 64 queues for test
 
 Launch the app ``testpmd`` with the following arguments::
 
-    ./dpdk-testpmd -l 1,2,3,4,5 -n 4 -- -i --disable-rss --rxq=64 --txq=64 --portmask=0x3 --nb-cores=4 --total-num-mbufs=263168
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1,2,3,4,5 -n 4 -- -i --disable-rss --rxq=64 --txq=64 --portmask=0x3 --nb-cores=4 --total-num-mbufs=263168
 
     testpmd>set stat_qmap rx 0 0 0
     testpmd>set stat_qmap rx 1 0 0

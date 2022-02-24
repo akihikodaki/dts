@@ -47,13 +47,7 @@ Compiling Steps
 ===============
 
 Compile shared library/application from DPDK xx.11 release.
-Change the option in config/common_base configuration file::
-
-  CONFIG_RTE_BUILD_SHARED_LIB=y
-
-And then, compile the DPDK::
-
-  make install -j T=x86_64-native-linuxapp-gcc
+CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=shared <build_target>;ninja -C <build_target>
 
 Keep this DPDK folder as <dpdk_xx11>, e.g. <dpdk_1911>.
 
@@ -65,7 +59,6 @@ Setup library path in environment::
 
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH,<dpdk_2002>
 
-meson: CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=shared <build_target>;ninja -C <build_target>
 
 Common Test Steps
 =================

@@ -67,7 +67,7 @@ Test case 1: Download the package successfully
 
 2. Start the testpmd::
 
-    ./testpmd -c 0x3fe -n 6 -- -i --nb-cores=8 --rxq=8 --txq=8 \
+    ./<build_target>/app/dpdk-testpmd -c 0x3fe -n 6 -- -i --nb-cores=8 --rxq=8 --txq=8 \
     --port-topology=chained
 
    The testpmd can be started normally without any fail information.
@@ -103,7 +103,7 @@ Test case 2: Driver enters Safe Mode successfully
 
 2. Start testpmd::
 
-    ./testpmd -c 0x3fe -n 6 \
+    ./<build_target>/app/dpdk-testpmd -c 0x3fe -n 6 \
     -a PORT0_PCI,safe-mode-support=1 -a PORT1_PCI,safe-mode-support=1 \
     -- -i --nb-cores=8 --rxq=8 --txq=8 --port-topology=chained
 
@@ -144,7 +144,7 @@ Test case 3: Driver enters Safe Mode failed
 
 2. Start testpmd::
 
-    ./testpmd -c 0x3fe -n 6 -- -i --nb-cores=8 --rxq=8 --txq=8 \
+    ./<build_target>/app/dpdk-testpmd -c 0x3fe -n 6 -- -i --nb-cores=8 --rxq=8 --txq=8 \
     --port-topology=chained
 
    There will be an error reported::
@@ -177,7 +177,7 @@ Compile DPDK and testpmd::
 
 Launch testpmd with 1 default interface and 1 specific interface::
 
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -a 18:00.0 -a b1:00.0 --log-level=8 -- -i
+  ./<build_target>/app/dpdk-testpmd -l 6-9 -n 4 -a 18:00.0 -a b1:00.0 --log-level=8 -- -i
 
 In this case, b1:00.0 interface is specific interface.
 

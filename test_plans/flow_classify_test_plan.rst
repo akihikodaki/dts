@@ -168,14 +168,15 @@ Compilation:
 ------------
 steps::
 
-    cd $DPDK_PATH
-    export RTE_TARGET=$DPDK_PATH
-    export RTE_SDK=`pwd`
-    make -C examples/flow_classify
+    CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static <build_target>
+    ninja -C <build_target>
+
+    meson configure -Dexamples=flow_classify <build_target>
+    ninja -C <build_target>
 
 Flow classify bin file under::
 
-    $DPDK_PATH/examples/flow_classify/build/flow_classify
+    <build_target>/examples/dpdk-flow_classify
 
 rule config file(default)::
 
