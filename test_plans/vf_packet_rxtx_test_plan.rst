@@ -311,7 +311,7 @@ this case pf in kernel
       testpmd> set fwd mac
       testpmd> start
 7. On vm 1::
-      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 1  -- -i
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 1  -- -i
 
 8. On vm0::
 

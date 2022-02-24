@@ -91,14 +91,20 @@ The secondary symmetric_mp instances must also have these parameters specified,
 and the first two must be the same as those passed to the primary instance, or errors
 result.
 
-For example, to run a set of four symmetric_mp instances, running on lcores 1-4, all
+For example,
+to build symmetric_mp::
+
+    meson configure -Dexamples=multi_process/symmetric_mp <build_target>
+    ninja -C <build_target>
+
+to run a set of four symmetric_mp instances, running on lcores 1-4, all
 performing level-2 forwarding of packets between ports 0 and 1, the following
 commands can be used (assuming run as root)::
 
-   ./build/symmetric_mp -c 2 --proc-type=auto -- -p 3 --num-procs=4 --proc-id=0
-   ./build/symmetric_mp -c 4 --proc-type=auto -- -p 3 --num-procs=4 --proc-id=1
-   ./build/symmetric_mp -c 8 --proc-type=auto -- -p 3 --num-procs=4 --proc-id=2
-   ./build/symmetric_mp -c 10 --proc-type=auto -- -p 3 --num-procs=4 --proc-id=3
+   ./<build_target>/examples/dpdk-symmetric_mp -c 2 --proc-type=auto -- -p 3 --num-procs=4 --proc-id=0
+   ./<build_target>/examples/dpdk-symmetric_mp -c 4 --proc-type=auto -- -p 3 --num-procs=4 --proc-id=1
+   ./<build_target>/examples/dpdk-symmetric_mp -c 8 --proc-type=auto -- -p 3 --num-procs=4 --proc-id=2
+   ./<build_target>/examples/dpdk-symmetric_mp -c 10 --proc-type=auto -- -p 3 --num-procs=4 --proc-id=3
 
 To run only 1 or 2 instances, the above parameters to the 1 or 2 instances being
 run should remain the same, except for the ``num-procs`` value, which should be
@@ -168,8 +174,8 @@ SW preparation: Change one line of the symmetric_mp sample and rebuild::
 
 4. Launch two process by example::
 
-    ./examples/multi_process/symmetric_mp/build/symmetric_mp -l 1 -n 4 --proc-type=auto -- -p 3 --num-procs=2 --proc-id=0
-    ./examples/multi_process/symmetric_mp/build/symmetric_mp -l 2 -n 4 --proc-type=secondary -- -p 3 --num-procs=2 --proc-id=1
+    ./<build_target>/examples/dpdk-symmetric_mp -l 1 -n 4 --proc-type=auto -- -p 3 --num-procs=2 --proc-id=0
+    ./<build_target>/examples/dpdk-symmetric_mp -l 2 -n 4 --proc-type=secondary -- -p 3 --num-procs=2 --proc-id=1
 
 5. Quit all process, check the packets number in rx/tx statistic like below for both primary process and secondary process::
 
@@ -206,7 +212,7 @@ Test Case 2: Virtio-pmd primary and secondary process hotplug test
 
 4. Start sample code as primary process::
 
-    ./examples/multi_process/hotplug_mp/build/hotplug_mp --proc-type=auto -- -p 3 --num-procs=2 --proc-id=0
+    ./<build_target>/examples/dpdk-symmetric_mp --proc-type=auto -- -p 3 --num-procs=2 --proc-id=0
     example> list
     list all etherdev
     0       0000:00:05.0
@@ -214,7 +220,7 @@ Test Case 2: Virtio-pmd primary and secondary process hotplug test
 
 5. Start sample code as secondary process::
 
-    ./examples/multi_process/hotplug_mp/build/hotplug_mp --proc-type=secondary -- -p 3 --num-procs=2 --proc-id=1
+    ./<build_target>/examples/dpdk-symmetric_mp --proc-type=secondary -- -p 3 --num-procs=2 --proc-id=1
     example> list
     list all etherdev
     0       0000:00:05.0

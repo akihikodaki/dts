@@ -58,9 +58,13 @@ Prerequisites
 1. Enable the telemetry API by modifying the following config option before building DPDK::
 
 	Python >= 2.5
-	Jansson library for JSON serialization
-	CONFIG_RTE_LIBRTE_TELEMETRY=y  and libjansson should be available
-	make install RTE_SDK=`pwd` T=x86_64-native-linuxapp-gcc
+	Jansson library for JSON serialization, libjansson should be available
+	RTE_LIB_TELEMETRY is 1 by default in <build_target>/rte_build_config.h:
+	  #define RTE_LIB_TELEMETRY 1
+
+    Build DPDK:
+    CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static <build_target>
+    ninja -C <build_target>
 
 2. Configiure PF
 
@@ -68,7 +72,7 @@ Prerequisites
 	insmod x86_64-native-linuxapp-gcc/kmod/igb_uio.ko;
 
 3.   Launch testpmd as the primary application with the ``telemetry``
-	./app/testpmd --telemetry
+	./<build_target>/app/dpdk-testpmd --telemetry
 
 4.   Launch the ``telemetry`` python script with a client filepath :
 
@@ -95,7 +99,7 @@ Test case: basic connection for testpmd and telemetry client::
 
    For the building meson shared and make shared . tested command should be used  when run on ubuntu OS
    make share and meson version::
-   $ ./app/testpmd  -c f -n 4 -d librte_mempool_ring.so -d librte_telemetry.so --telemetry --socket-mem=1024,1024 -- -i
+   $ ./<build_target>/app/dpdk-testpmd  -c f -n 4 -d librte_mempool_ring.so -d librte_telemetry.so --telemetry --socket-mem=1024,1024 -- -i
 
  3.Run Python terminal:
 	python dpdk-telemetry-client.py
