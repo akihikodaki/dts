@@ -95,18 +95,6 @@ def dts_parse_param(config, section, log_handler):
 
     parameters = config.get(section, 'parameters').split(':')
     drivername = config.get(section, 'drivername').split('=')[-1]
-    # get the build method, default is meson
-    try:
-        buildtype = config.get(section, 'build_type').split('=')[-1]
-    except:
-        buildtype = 'meson'
-
-    if buildtype == 'makefile':
-        log_handler.warning("Makefile builds have been deprecated and will be removed in the next release.")
-        log_handler.warning("Please switch to using meson builds.")
-
-    buildtype = buildtype.lower()
-    settings.save_global_setting(settings.HOST_BUILD_TYPE_SETTING, buildtype)
 
     driver = drivername.split(':')
     if len(driver) == 2:

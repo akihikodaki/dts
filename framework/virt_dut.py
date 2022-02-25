@@ -40,7 +40,6 @@ from .config import AppNameConf, PortConf
 from .dut import Dut
 from .project_dpdk import DPDKdut
 from .settings import (
-    HOST_BUILD_TYPE_SETTING,
     LOG_NAME_SEP,
     NICS,
     get_netdev,
@@ -231,11 +230,7 @@ class VirtDut(DPDKdut):
         name_cfg = AppNameConf()
         self.apps_name_conf = name_cfg.load_app_name_conf()
 
-        # get apps name of current build type
-        build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
-        if build_type not in self.apps_name_conf:
-            raise Exception('please config the apps name in app_name.cfg of build type:%s' % build_type)
-        self.apps_name = self.apps_name_conf[build_type]
+        self.apps_name = self.apps_name_conf['meson']
         # use the dut target directory instead of 'target' string in app name
         for app in self.apps_name:
             cur_app_path = self.apps_name[app].replace('target', self.target)

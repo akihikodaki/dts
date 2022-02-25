@@ -38,7 +38,6 @@ from .logger import getLogger
 from .settings import (
     DPDK_RXMODE_SETTING,
     DRIVERS,
-    HOST_BUILD_TYPE_SETTING,
     HOST_DRIVER_MODE_SETTING,
     HOST_DRIVER_SETTING,
     HOST_SHARED_LIB_PATH,
@@ -72,10 +71,6 @@ class DPDKdut(Dut):
         Set hugepage on DUT and install modules required by DPDK.
         Configure default ixgbe PMD function.
         """
-        # get apps name of current build type
-        self.build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
-        if self.build_type not in self.apps_name_conf:
-            raise Exception('please config the apps name in app_name.cfg of build type:%s' % self.build_type)
         self.target = target
 
         self.set_toolchain(target)
@@ -89,7 +84,7 @@ class DPDKdut(Dut):
 
         self.set_driver_specific_configurations(drivername)
 
-        self.apps_name = self.apps_name_conf[self.build_type]
+        self.apps_name = self.apps_name_conf['meson']
         # use the dut target directory instead of 'target' string in app name
         for app in self.apps_name:
             cur_app_path = self.apps_name[app].replace('target', self.target)
@@ -198,60 +193,23 @@ class DPDKdut(Dut):
         """
         Set default RX/TX PMD function,
         the rx mode scalar/full/novector are supported dynamically since DPDK 20.11,
-        The DPDK version should be <=20.08 when compiling DPDK by makefile to use these rx modes,
         Rx mode avx512 is only supported in DPDK 20.11 and later version.
         """
 
         mode = load_global_setting(DPDK_RXMODE_SETTING)
-        build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
-        if build_type == 'makefile':
-            if mode == 'scalar':
-                self.set_build_options({'RTE_LIBRTE_I40E_INC_VECTOR': 'n',
-                                        'RTE_LIBRTE_I40E_RX_ALLOW_BULK_ALLOC': 'y'})
-            elif mode == 'full':
-                self.set_build_options({'RTE_LIBRTE_I40E_INC_VECTOR': 'n',
-                                        'RTE_LIBRTE_I40E_RX_ALLOW_BULK_ALLOC': 'n'})
-            elif mode == 'novector':
-                self.set_build_options({'RTE_IXGBE_INC_VECTOR': 'n',
-                                        'RTE_LIBRTE_I40E_INC_VECTOR': 'n'})
-            elif mode == 'avx512':
-                self.logger.warning(RED('*********AVX512 is not supported by makefile!!!********'))
-        else:
-            if mode == 'avx512':
-                out = self.send_expect('lscpu | grep avx512', '#')
-                if 'avx512f' not in out or 'no-avx512f' in out:
-                    self.logger.warning(RED('*********The DUT CPU do not support AVX512 test!!!********'))
-                    self.logger.warning(RED('*********Now set the rx_mode to default!!!**********'))
-                    save_global_setting(DPDK_RXMODE_SETTING, 'default')
+        if mode == 'avx512':
+            out = self.send_expect('lscpu | grep avx512', '#')
+            if 'avx512f' not in out or 'no-avx512f' in out:
+                self.logger.warning(RED('*********The DUT CPU do not support AVX512 test!!!********'))
+                self.logger.warning(RED('*********Now set the rx_mode to default!!!**********'))
+                save_global_setting(DPDK_RXMODE_SETTING, 'default')
 
     def set_package(self, pkg_name="", patch_list=[]):
         self.package = pkg_name
         self.patches = patch_list
 
     def set_build_options(self, config_parms, config_file=''):
-        build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
-        set_build_options = getattr(self, 'set_build_options_%s' % (build_type))
-        set_build_options(config_parms, config_file)
-
-    def set_build_options_makefile(self, config_parms, config_file=''):
-        """
-        Set dpdk build options of makefile
-        """
-        if len(config_parms) == 0:
-            return;
-        if config_file == '':
-            config_file = 'config/common_base'
-
-        for key in config_parms.keys():
-            value = config_parms[key]
-            if isinstance(value, int):
-                self.send_expect("sed -i -e 's/CONFIG_%s=.*$/CONFIG_%s=%d/' %s" % (key, key, value, config_file), "# ")
-            else:
-                if value == '':
-                    value = 'y'
-                elif len(value) > 1:
-                    value = '\\"%s\\"' % value
-            self.send_expect("sed -i -e 's/CONFIG_%s=.*$/CONFIG_%s=%s/' %s" % (key, key, value, config_file), "# ")
+        self.set_build_options_meson(config_parms, config_file)
 
     def set_build_options_meson(self, config_parms, config_file=''):
         """
@@ -284,13 +242,12 @@ class DPDKdut(Dut):
         Build DPDK source code with specified target.
         """
         use_shared_lib = load_global_setting(HOST_SHARED_LIB_SETTING)
-        shared_lib_path = load_global_setting(HOST_SHARED_LIB_PATH)
         if use_shared_lib == 'true' and 'Virt' not in str(self):
             self.set_build_options({'RTE_BUILD_SHARED_LIB': 'y'})
-
-        build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
-        build_install_dpdk = getattr(self, 'build_install_dpdk_%s_%s' % (self.get_os_type(), build_type))
-        build_install_dpdk(target, extra_options)
+        if self.get_os_type() == 'linux':
+            self.build_install_dpdk_linux_meson(target, extra_options)
+        elif self.get_os_type() == 'freebsd':
+            self.build_install_dpdk_freebsd_meson(target, extra_options)
 
     def build_install_dpdk_linux_meson(self, target, extra_options):
         """
@@ -339,32 +296,6 @@ class DPDKdut(Dut):
             for mod in kmod:
                 self.send_expect("cp %s %s/kmod/" % (mod, target), "# ")
 
-    def build_install_dpdk_linux_makefile(self, target, extra_options):
-        """
-        Build DPDK source code on linux with specified target.
-        """
-        build_time = 600
-        if "icc" in target:
-            build_time = 900
-        # clean all
-        self.send_expect("rm -rf " + target, "#")
-        self.send_expect("rm -rf %s" % r'./app/test/test_resource_c.res.o' , "#")
-        self.send_expect("rm -rf %s" % r'./app/test/test_resource_tar.res.o' , "#")
-        self.send_expect("rm -rf %s" % r'./app/test/test_pci_sysfs.res.o' , "#")
-
-        self.set_build_options({'RTE_EAL_IGB_UIO': 'y'})
-
-        # compile
-        out = self.send_expect("make -j %d install T=%s %s MAKE_PAUSE=n" %
-            (self.number_of_cores, target, extra_options), "# ", build_time)
-        if("Error" in out or "No rule to make" in out):
-            self.logger.error("ERROR - try without '-j'")
-            # if Error try to execute make without -j option
-            out = self.send_expect("make install T=%s %s MAKE_PAUSE=n" % (target, extra_options), "# ", build_time*4)
-
-        assert ("Error" not in out), "Compilation error..."
-        assert ("No rule to make" not in out), "No rule to make error..."
-
     def build_install_dpdk_freebsd_meson(self, target, extra_options):
         # meson build same as linux
         self.build_install_dpdk_linux_meson(target, extra_options)
@@ -374,29 +305,6 @@ class DPDKdut(Dut):
         self.send_expect("mkdir -p %s/kmod" % target, "# ")
         if not isinstance(out, int) and len(out) > 0:
             self.send_expect("cp %s %s/kmod/" % (out, target), "# ")
-
-    def build_install_dpdk_freebsd_makefile(self, target, extra_options):
-        """
-        Build DPDK source code on Freebsd with specified target.
-        """
-        # clean all
-        self.send_expect("rm -rf " + target, "#")
-        self.send_expect("rm -rf %s" % r'./app/test/test_resource_c.res.o' , "#")
-        self.send_expect("rm -rf %s" % r'./app/test/test_resource_tar.res.o' , "#")
-        self.send_expect("rm -rf %s" % r'./app/test/test_pci_sysfs.res.o' , "#")
-        build_time = 180
-        # compile
-        out = self.send_expect("make -j %d install T=%s MAKE_PAUSE=n" % (self.number_of_cores,
-                                                                     target),
-                               "#", build_time)
-        if("Error" in out or "No rule to make" in out):
-            self.logger.error("ERROR - try without '-j'")
-            # if Error try to execute make without -j option
-            out = self.send_expect("make install T=%s MAKE_PAUSE=n" % target,
-                                   "#", build_time)
-
-        assert ("Error" not in out), "Compilation error..."
-        assert ("No rule to make" not in out), "No rule to make error..."
 
     def prepare_package(self):
         if not self.skip_setup:
@@ -528,9 +436,10 @@ class DPDKdut(Dut):
         """
         Build dpdk sample applications.
         """
-        build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
-        build_dpdk_apps = getattr(self, 'build_dpdk_apps_%s_%s' % (self.get_os_type(), build_type))
-        return build_dpdk_apps(folder, extra_options)
+        if self.get_os_type() == 'linux':
+            return self.build_dpdk_apps_linux_meson(folder, extra_options)
+        elif self.get_os_type() == 'freebsd':
+            return self.build_dpdk_apps_freebsd_meson(folder, extra_options)
 
     def build_dpdk_apps_linux_meson(self, folder, extra_options):
         """
@@ -581,36 +490,9 @@ class DPDKdut(Dut):
 
         return out
 
-    def build_dpdk_apps_linux_makefile(self, folder, extra_options):
-        """
-        Build dpdk sample applications on linux.
-        """
-        # icc compile need more time
-        if 'icc' in self.target:
-            timeout = 300
-        else:
-            timeout = 90
-        self.send_expect("rm -rf %s" % r'./app/test/test_resource_c.res.o' , "#")
-        self.send_expect("rm -rf %s" % r'./app/test/test_resource_tar.res.o' , "#")
-        self.send_expect("rm -rf %s" % r'./app/test/test_pci_sysfs.res.o' , "#")
-        return self.send_expect("make -j %d -C %s %s" % (self.number_of_cores,
-                                                         folder, extra_options),
-                                "# ", timeout)
-
     def build_dpdk_apps_freebsd_meson(self, folder, extra_options):
         # meson build same as linux
         return self.build_dpdk_apps_linux_meson(folder, extra_options)
-
-    def build_dpdk_apps_freebsd_makefile(self, folder, extra_options):
-        """
-        Build dpdk sample applications on Freebsd.
-        """
-        self.send_expect("rm -rf %s" % r'./app/test/test_resource_c.res.o' , "#")
-        self.send_expect("rm -rf %s" % r'./app/test/test_resource_tar.res.o' , "#")
-        self.send_expect("rm -rf %s" % r'./app/test/test_pci_sysfs.res.o' , "#")
-        return self.send_expect("make -j %d -C %s %s" % (self.number_of_cores,
-                                                                  folder, extra_options),
-                                "# ", 180)
 
     def get_blocklist_string(self, target, nic):
         """
@@ -647,12 +529,7 @@ class DPDKdut(Dut):
         """
         # Enable Mellanox drivers
         if drivername == "mlx5_core" or drivername == "mlx4_core":
-            self.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_MLX5_PMD=n/"
-                             + "CONFIG_RTE_LIBRTE_MLX5_PMD=y/' config/common_base", "# ", 30)
-            self.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_MLX4_PMD=n/"
-                             + "CONFIG_RTE_LIBRTE_MLX5_PMD=y/' config/common_base", "# ", 30)
-            self.set_build_options({'RTE_LIBRTE_MLX5_PMD': 'y',
-                                   'RTE_LIBRTE_MLX5_PMD': 'y'})
+            self.set_build_options({'RTE_LIBRTE_MLX5_PMD': 'y'})
 
 class DPDKtester(Tester):
 
