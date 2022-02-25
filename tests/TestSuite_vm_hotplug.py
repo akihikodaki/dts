@@ -237,28 +237,16 @@ class TestVmHotplug(TestCase):
             result.append(cap_num[0])
         return result
 
-    def check_link_status(self, vm_info):
-        loop = 1
-        while (loop <= 3):
-            out = vm_info.execute_cmd("show port info all", "testpmd> ", 120)
-            port_status = re.findall("Link\s*status:\s*([a-z]*)", out)
-            if ("down" not in port_status):
-                break
-            time.sleep(3)
-            loop += 1
-        self.verify("down" not in port_status, "port can not up after start")
-
     def verify_rxtx_only(self):
         # rxonly
         self.vm_testpmd.execute_cmd('set fwd rxonly')
         self.vm_testpmd.execute_cmd('set verbose 1')
         self.vm_testpmd.execute_cmd('port start all')
         self.vm_testpmd.execute_cmd('start')
-        self.check_link_status(self.vm_testpmd)
+        self.vm_testpmd.wait_link_status_up('all')
 
         self.send_packet()
-        out = self.vm0_dut.get_session_output()
-        time.sleep(1)
+        out = self.vm0_dut.get_session_output(timeout=20)
         self.verify(self.vf0_mac in out, 'vf0 receive packet fail')
         if self.device == 2:
             self.verify(self.vf1_mac in out, 'vf1 receive packet fail')
@@ -271,7 +259,7 @@ class TestVmHotplug(TestCase):
             iface_list.append(self.tester_intf1)
         self.start_tcpdump(iface_list)
         self.vm_testpmd.execute_cmd('start')
-        time.sleep(1)
+        self.vm_testpmd.wait_link_status_up('all')
         self.vm_testpmd.execute_cmd('stop')
         out = self.get_tcpdump_package(iface_list)
         for pkt_num in out:
@@ -303,6 +291,9 @@ class TestVmHotplug(TestCase):
         time.sleep(1)
 
     def send_packet(self):
+        # check tester's link status before send packet
+        for iface in [self.tester_intf0, self.tester_intf1]:
+            self.verify(self.tester.is_interface_up(intf=iface), "Wrong link status, should be up")
         self.vf0_mac = self.vm_testpmd.get_port_mac(0)
         pkts = []
         pkt1 = r'sendp([Ether(dst="%s")/IP()/UDP()/Raw(load="P"*26)], iface="%s")' % (self.vf0_mac, self.tester_intf)
