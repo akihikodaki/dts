@@ -233,28 +233,3 @@ Test Case 6: VM Scale CPU Frequency to Max
 4. Check other CPUs' frequency is not affected by change above
 5. check if the other VM works fine (if they use different CPUs)
 
-Test Case 7: VM Power Management Multi VMs
-==========================================
-1. Setup VM power management environment for VM1
-2. Setup VM power management environment for VM2
-3. Run power-manager in Host::
-
-        x86_64-native-linuxapp-gcc/examples/dpdk-guest_cli -c 0x3 -n 4
-
-4. Startup VM1 and VM2
-5. Add VM1 in host and check vm_power_mgr can get frequency normally::
-
-        vmpower> add_vm <vm1_name>
-        vmpower> add_channels <vm1_name> all
-        vmpower> show_cpu_freq <core_num>
-
-6. Add VM2 in host and check vm_power_mgr can get frequency normally::
-
-        vmpower> add_vm <vm2_name>
-        vmpower> add_channels <vm2_name> all
-        vmpower> show_cpu_freq <core_num>
-
-7. Run Case3-6 and check VM1 and VM2 cpu frequency can by modified by guest_cli
-8. Poweroff VM2 and remove VM2 from host vm_power_mgr::
-
-        vmpower> rm_vm <vm2_name>
