@@ -41,7 +41,6 @@ from framework.test_case import TestCase
 class TestCompressdevZlibPmd(TestCase):
 
     def set_up_all(self):
-        self.prepare_dpdk()
         cc.default_eals.update({"a":"0000:00:00.0", "vdev": "compress_zlib"})
         cc.default_opts.update({"driver-name": "compress_zlib"})
         self._perf_result = dict()
@@ -52,13 +51,6 @@ class TestCompressdevZlibPmd(TestCase):
     def set_up(self):
         cc.default_eals = copy.deepcopy(self.eals)
         cc.default_opts = copy.deepcopy(self.opts)
-
-    def prepare_dpdk(self):
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_COMPRESSDEV_TEST=n$/CONFIG_RTE_COMPRESSDEV_TEST=y/' config/common_base", "# ")
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_LIBRTE_PMD_ZLIB=n$/CONFIG_RTE_LIBRTE_PMD_ZLIB=y/' config/common_base", "# ")
-        self.dut.build_install_dpdk(self.dut.target)
 
     def test_zlib_pmd_unit_test(self):
         cc.run_unit(self)
@@ -88,14 +80,6 @@ class TestCompressdevZlibPmd(TestCase):
 
     def tear_down_all(self):
         self.dut.kill_all()
-
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_COMPRESSDEV_TEST=y$/CONFIG_RTE_COMPRESSDEV_TEST=n/' config/common_base", "# ")
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_LIBRTE_PMD_ZLIB=y$/CONFIG_RTE_LIBRTE_PMD_ZLIB=n/' config/common_base", "# ")
-        self.dut.build_install_dpdk(self.dut.target)
-
-        if not self._perf_result:
-            return
-        with open(self.logger.log_path + "/" + self.suite_name + ".json", "a") as fv:
-            json.dump(self._perf_result, fv, indent=4)
+        if self._perf_result:
+            with open(self.logger.log_path + "/" + self.suite_name + ".json", "a") as fv:
+                json.dump(self._perf_result, fv, indent=4)

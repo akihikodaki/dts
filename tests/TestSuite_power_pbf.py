@@ -40,9 +40,6 @@ from collections import Counter
 from pprint import pformat
 
 from framework.exception import VerifyFailure
-
-# import framework.dts as dts libs
-from framework.settings import HOST_BUILD_TYPE_SETTING, load_global_setting
 from framework.test_case import TestCase
 from framework.utils import create_mask
 
@@ -148,13 +145,8 @@ class TestPowerPbf(TestCase):
     def init_test_binary_file(self):
         self.create_powermonitor_folder()
         # open debug SW
-        SW = "CONFIG_RTE_LIBRTE_POWER_DEBUG"
-        if 'meson' == load_global_setting(HOST_BUILD_TYPE_SETTING):
-            self.dut.set_build_options({SW[7:]: 'y'})
-        else:
-            cmd = "sed -i -e 's/{0}=n$/{0}=y/' {1}/config/common_base".format(
-                SW, self.target_dir)
-            self.d_a_con(cmd)
+        SW = "RTE_LIBRTE_POWER_DEBUG"
+        self.dut.set_build_options({SW: 'y'})
         self.dut.build_install_dpdk(self.target)
         # set up vm power management binary process setting
         self.vm_power_mgr = self.prepare_binary('vm_power_manager')

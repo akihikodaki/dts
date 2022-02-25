@@ -55,8 +55,6 @@ class TestIeee1588(TestCase):
         self.verify(len(dutPorts) > 0, "No ports found for " + self.nic)
 
         # Change the config file to support IEEE1588 and recompile the package.
-        self.dut.send_expect(
-            "sed -i -e 's/IEEE1588=n$/IEEE1588=y/' config/common_base", "# ", 30)
         self.dut.set_build_options({'RTE_LIBRTE_IEEE1588': 'y'})
         self.dut.skip_setup = False
         self.dut.build_install_dpdk(self.target)
@@ -173,7 +171,5 @@ class TestIeee1588(TestCase):
         self.dut.send_expect("quit", "# ", 30)
 
         # Restore the config file and recompile the package.
-        self.dut.send_expect(
-            "sed -i -e 's/IEEE1588=y$/IEEE1588=n/' config/common_base", "# ", 30)
         self.dut.set_build_options({'RTE_LIBRTE_IEEE1588': 'n'})
         self.dut.build_install_dpdk(self.target)

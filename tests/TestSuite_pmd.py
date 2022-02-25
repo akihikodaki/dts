@@ -74,10 +74,6 @@ class TestPmd(TestCase):
 
         self.blocklist = ""
 
-        # Update config file and rebuild to get best perf on FVL
-        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/' ./config/common_base", "#", 20)
-        self.dut.build_install_dpdk(self.target)
-
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports()
         if self.dut.get_os_type() == 'linux':

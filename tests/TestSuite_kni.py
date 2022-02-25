@@ -260,10 +260,6 @@ class TestKni(TestCase):
         self.verify('no brctl' not in out,
                     "The linux tool brctl is needed to run this test suite")
 
-        self.dut.send_expect("sed -i -e 's/KNI_KMOD_ETHTOOL=n$/KNI_KMOD_ETHTOOL=y/' config/common_base", "# ", 30)
-        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_KNI_KMOD=n$/CONFIG_RTE_KNI_KMOD=y/' config/common_base", "# ", 30)
-        self.dut.build_install_dpdk(self.target)
-
         out = self.dut.build_dpdk_apps("./examples/kni")
         self.app_kni_path = self.dut.apps_name['kni']
         self.verify('Error' not in out, "Compilation failed")
@@ -1239,9 +1235,5 @@ class TestKni(TestCase):
         """
         Run after each test suite.
         """
-
-        self.dut.send_expect("sed -i -e 's/KNI_KMOD_ETHTOOL=y$/KNI_KMOD_ETHTOOL=n/' config/common_base", "# ", 30)
-        self.dut.build_install_dpdk(self.target)
-
         self.dut.kill_all()
         self.dut.send_expect("rmmod rte_kni", "# ", 10)

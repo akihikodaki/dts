@@ -804,8 +804,6 @@ class TestPacketCapture(TestCase):
         self.verify_supported_nic()
         self.test_port0_id = 0
         self.test_port1_id = 1
-        # compile dpdk app with SW CONFIG_RTE_LIBRTE_PMD_PCAP open
-        self.dut_skip_compile = self.dut.skip_setup
         # used for save log
         self.pdump_log = os.sep.join(["/tmp", 'pdumpLog'])
         if not self.is_existed_on_crb(self.pdump_log):
@@ -815,14 +813,6 @@ class TestPacketCapture(TestCase):
            not self.is_existed_on_crb(self.pdump_log, crb='tester'):
             cmd = "mkdir -p {0}".format(self.pdump_log)
             self.tester.alt_session.send_expect(cmd, "# ")
-        self.pcap_SW = "CONFIG_RTE_LIBRTE_PMD_PCAP"
-        self.SW_file = os.path.join(self.target_dir, 'config/common_base')
-        if not (self.dut_skip_compile and self.check_pcap_lib()):
-            cmd = "sed -i -e 's/{0}=n$/{0}=y/' {1}".format(
-                self.pcap_SW, self.SW_file)
-            self.dut.alt_session.send_expect(cmd, "# ", 30)
-            self.dut.skip_setup = False
-            self.dut.build_install_dpdk(self.target)
         # secondary process (dpdk-pdump)
         self.dut_dpdk_pdump_dir = self.dut.apps_name['pdump']
         self.tool_name = self.dut_dpdk_pdump_dir.split('/')[-1]
@@ -877,15 +867,4 @@ class TestPacketCapture(TestCase):
             self.reset_ASLR()
             self.session_ex.close()
             self.session_ex = None
-        # Restore the config file and recompile the package.
-        if self.check_pcap_lib():
-            self.dut.alt_session.send_expect(
-                ("sed -i -e 's/{0}=y$/{0}=n/' "
-                 "{1}").format(self.pcap_SW, self.SW_file),
-                "# ", 120)
-            # temporary disable skip_setup
-            skip_setup = self.dut.skip_setup
-            self.dut.skip_setup = True
-            self.dut.build_install_dpdk(self.target)
-            self.dut.skip_setup = skip_setup
         self.dut.kill_all()

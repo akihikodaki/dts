@@ -93,8 +93,6 @@ class TestVmdqDcb(TestCase):
         """
         Rebuild dpdk
         """
-        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_QUEUE_NUM_PER_VM=.*$/CONFIG_RTE_LIBRTE_I40E_"
-                             "QUEUE_NUM_PER_VM=%s/' ./config/common_base" % nb_queue_per_vm, "#", 20)
         self.dut.set_build_options({'RTE_LIBRTE_I40E_QUEUE_NUM_PER_VM': nb_queue_per_vm})
         self.dut.build_install_dpdk(self.target)
 

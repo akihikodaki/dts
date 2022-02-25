@@ -99,7 +99,7 @@ class TestIPsecGW(TestCase):
         self.dut.kill_all()
 
     def tear_down_all(self):
-        cc.clear_dpdk_config(self)
+        pass
 
     def test_qat_aes_128_cbc_ipv4_tunnel(self):
         self._execute_ipsec_gw_test()

@@ -51,7 +51,7 @@ class UnitTestsCryptodev(TestCase):
         self.dut.kill_all()
 
     def tear_down_all(self):
-        cc.clear_dpdk_config(self)
+        pass
 
     def _get_crypto_device(self, num):
         device = {}

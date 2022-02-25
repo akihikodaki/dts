@@ -65,7 +65,7 @@ class FipCryptodev(TestCase):
         self.dut.kill_all()
 
     def tear_down_all(self):
-        cc.clear_dpdk_config(self)
+        pass
 
     # Private functions
     def _get_fips_opt_str(self):

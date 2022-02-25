@@ -438,7 +438,7 @@ class TestL2fwdCrypto(TestCase):
         self.dut.kill_all()
 
     def tear_down_all(self):
-        cc.clear_dpdk_config(self)
+        pass
 
     def __test_vector_to_cmd(self, test_vector, core_mask="", port_mask=""):
         cores = ','.join(self.core_list)

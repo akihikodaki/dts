@@ -65,18 +65,10 @@ class TestVhost1024Ethports(TestCase):
         self.vhost_user = self.dut.new_session(suite='vhost-user')
 
     def build_user_dpdk(self):
-        if self.dut.build_type == "meson":
-            self.dut.build_install_dpdk(self.target, extra_options="-Dmax_ethports=1024")
-        else:
-            self.dut.send_expect("sed -i 's/CONFIG_RTE_MAX_ETHPORTS=32$/CONFIG_RTE_MAX_ETHPORTS=1024/' config/common_base", '#', 30)
-            self.dut.build_install_dpdk(self.target)
+        self.dut.build_install_dpdk(self.target, extra_options="-Dmax_ethports=1024")
 
     def restore_dpdk(self):
-        if self.dut.build_type == "meson":
-            self.dut.build_install_dpdk(self.target, extra_options="-Dmax_ethports=32")
-        else:
-            self.dut.send_expect("sed -i 's/CONFIG_RTE_MAX_ETHPORTS=1024$/CONFIG_RTE_MAX_ETHPORTS=32/' config/common_base", '#', 30)
-            self.dut.build_install_dpdk(self.target)
+        self.dut.build_install_dpdk(self.target, extra_options="-Dmax_ethports=32")
 
     @property
     def check_2M_env(self):

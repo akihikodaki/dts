@@ -202,5 +202,3 @@ class VirtioCryptodevUnitTest(TestCase):
         self.dut.send_expect("killall -s INT %s" % self.app_name, "#")
         self.dut_execut_cmd("killall -s INT qemu-system-x86_64")
         self.dut_execut_cmd("rm -r /tmp/*")
-
-        cc.clear_dpdk_config(self)

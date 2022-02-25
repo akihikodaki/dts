@@ -86,13 +86,9 @@ class PerfTestsCryptodev(TestCase):
             self.dut.session.copy_file_to(file, self.dut_file_dir)
 
     def tear_down_all(self):
-        cc.clear_dpdk_config(self)
-
-        if not self._perf_result:
-            return
-
-        with open(self.logger.log_path + "/" + "perf_cryptodev_result.json", "a") as fv:
-            json.dump(self._perf_result, fv, indent=4)
+        if self._perf_result:
+            with open(self.logger.log_path + "/" + "perf_cryptodev_result.json", "a") as fv:
+                json.dump(self._perf_result, fv, indent=4)
 
     def set_up(self):
         pass

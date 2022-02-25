@@ -41,7 +41,6 @@ from framework.test_case import TestCase
 class TestCompressdevIsalPmd(TestCase):
 
     def set_up_all(self):
-        self.prepare_dpdk()
         cc.default_eals.update({'a': "0000:00:00.0", "vdev": "compress_isal"})
         cc.default_opts.update({"driver-name": "compress_isal"})
         self._perf_result = dict()
@@ -51,13 +50,6 @@ class TestCompressdevIsalPmd(TestCase):
     def set_up(self):
         cc.default_eals = copy.deepcopy(self.eals)
         cc.default_opts = copy.deepcopy(self.opts)
-
-    def prepare_dpdk(self):
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_COMPRESSDEV_TEST=n$/CONFIG_RTE_COMPRESSDEV_TEST=y/' config/common_base", "# ")
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_LIBRTE_PMD_ISAL=n$/CONFIG_RTE_LIBRTE_PMD_ISAL=y/' config/common_base", "# ")
-        self.dut.build_install_dpdk(self.dut.target)
 
     def test_isal_pmd_unit_test(self):
         cc.run_unit(self)
@@ -87,14 +79,7 @@ class TestCompressdevIsalPmd(TestCase):
 
     def tear_down_all(self):
         self.dut.kill_all()
+        if self._perf_result:
+            with open(self.logger.log_path + "/" + self.suite_name + ".json", "a") as f:
+                json.dump(self._perf_result, f, indent=4)
 
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_COMPRESSDEV_TEST=y$/CONFIG_RTE_COMPRESSDEV_TEST=n/' config/common_base", "# ")
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_LIBRTE_PMD_ISAL=y$/CONFIG_RTE_LIBRTE_PMD_ISAL=n/' config/common_base", "# ")
-        self.dut.build_install_dpdk(self.dut.target)
-
-        if not self._perf_result:
-            return
-        with open(self.logger.log_path + "/" + self.suite_name + ".json", "a") as f:
-            json.dump(self._perf_result, f, indent=4)

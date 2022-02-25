@@ -41,7 +41,6 @@ from framework.test_case import TestCase
 class TestCompressdevQatPmd(TestCase):
 
     def set_up_all(self):
-        self.prepare_dpdk()
         cc.bind_qat_device(self, self.drivername)
         cc.default_eals.update({"vdev": None})
         cc.default_opts.update({"driver-name": "compress_qat"})
@@ -53,11 +52,6 @@ class TestCompressdevQatPmd(TestCase):
     def set_up(self):
         cc.default_eals = copy.deepcopy(self.eals)
         cc.default_opts = copy.deepcopy(self.opts)
-
-    def prepare_dpdk(self):
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_COMPRESSDEV_TEST=n$/CONFIG_RTE_COMPRESSDEV_TEST=y/' config/common_base", "# ")
-        self.dut.build_install_dpdk(self.dut.target)
 
     def get_perf_default_device(self, dev_num=3):
         perf_device_list = []
@@ -153,14 +147,6 @@ class TestCompressdevQatPmd(TestCase):
 
     def tear_down_all(self):
         self.dut.kill_all()
-
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_COMPRESSDEV_TEST=y$/CONFIG_RTE_COMPRESSDEV_TEST=n/' config/common_base", "# ")
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_LIBRTE_PMD_QAT_SYM=y$/CONFIG_RTE_LIBRTE_PMD_QAT_SYM=n/' config/common_base", "# ")
-        self.dut.build_install_dpdk(self.dut.target)
-
-        if not self._perf_result:
-            return
-        with open(self.logger.log_path + "/" + self.suite_name + ".json", "a") as fv:
-            json.dump(self._perf_result, fv, indent=4)
+        if self._perf_result:
+            with open(self.logger.log_path + "/" + self.suite_name + ".json", "a") as fv:
+                json.dump(self._perf_result, fv, indent=4)
