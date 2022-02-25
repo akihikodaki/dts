@@ -24,7 +24,7 @@ First of all, you must configure execution.cfg as below:
 
 * crbs: IP address of the DUT. The detail information is defined in file $DTS_CFG_FOLDER/crbs.cfg.
 * drivername: the driver devices used by DPDK bound to.
-* build_type: the tool for building DPDK, it can be meson and makefile. DPDK 20.11+ only uses meson and ninja.
+* build_type: the tool for building DPDK, it can be meson.
 * rx_mode: vector instructions used in tests, it can be novector/sse/avx2/avx512. it is optional, if not set, dpdk uses avx2 by default.
 * test_suites: test suites and cases that to be executed. use ``:`` to separate suite and it's cases and use ``\`` to separate different cases.
 * targets: DPDK targets to be tested.
