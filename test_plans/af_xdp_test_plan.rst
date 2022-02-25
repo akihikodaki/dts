@@ -117,23 +117,7 @@ Test case 2: two ports
 4. Send packets by packet generator port0 and port1 with different packet size,
    from 64 bytes to 1518 bytes, check the throughput at port0 and port1.
 
-Test case 3: zero copy
-======================
-
-1. Start the testpmd::
-
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29,30 -n 6 --no-pci \
-    --vdev net_af_xdp0,iface=enp216s0f0,pmd_zero_copy=1 \
-    -- -i --nb-cores=1 --rxq=1 --txq=1 --port-topology=loop
-
-2. Assign the kernel core::
-
-    ./set_irq_affinity 34 enp216s0f0
-
-3. Send packets by packet generator with different packet size,
-   from 64 bytes to 1518 bytes, check the throughput.
-
-Test case 4: multiqueue
+Test case 3: multiqueue
 =======================
 
 1. One queue.
@@ -171,52 +155,7 @@ Test case 4: multiqueue
       with different packet size from 64 bytes to 1518 bytes, check the throughput.
       The packets were distributed to the four queues.
 
-Test case 5: multiqueue and zero copy
-=====================================
-
-1. One queue and zero copy.
-
-  1) Set hardware queue::
-
-      ethtool -L enp216s0f0 combined 1
-
-  2) Start the testpmd with one queue::
-
-      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29,30 -n 6 --no-pci \
-      --vdev net_af_xdp0,iface=enp216s0f0,start_queue=0,queue_count=1,pmd_zero_copy=1 \
-      -- -i --nb-cores=1 --rxq=1 --txq=1 --port-topology=loop
-
-  3) Assign the kernel core::
-
-      ./set_irq_affinity 34 enp216s0f0
-
-  4) Send packets with different dst IP address by packet generator
-     with different packet size from 64 bytes to 1518 bytes, check the throughput.
-     Expect the performance is better than non-zero-copy.
-
-2. Four queues and zero copy.
-
-  1) Set hardware queue::
-
-      ethtool -L enp216s0f0 combined 4
-
-  2) Start the testpmd with four queues::
-
-      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29,30-33 -n 6 --no-pci \
-      --vdev net_af_xdp0,iface=enp216s0f0,start_queue=0,queue_count=4,pmd_zero_copy=1 \
-      -- -i --nb-cores=4 --rxq=4 --txq=4 --port-topology=loop
-
-  3) Assign the kernel core::
-
-      ./set_irq_affinity 34-37 enp216s0f0
-
-  4) Send packets with different dst IP address by packet generator
-     with different packet size from 64 bytes to 1518 bytes, check the throughput.
-     The packets were distributed to the four queues.
-     Expect the performance of four queues is better than one queue.
-     Expect the performance is better than non-zero-copy.
-
-Test case 6: need_wakeup
+Test case 4: need_wakeup
 ========================
 
 1. Set hardware queue::
@@ -236,7 +175,7 @@ Test case 6: need_wakeup
    to 1518 bytes, check the throughput.
    Expect the performance is better than no need_wakeup.
 
-Test case 7: xdpsock sample performance
+Test case 5: xdpsock sample performance
 =======================================
 
 1. One queue.
