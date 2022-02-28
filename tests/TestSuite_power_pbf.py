@@ -144,10 +144,8 @@ class TestPowerPbf(TestCase):
 
     def init_test_binary_file(self):
         self.create_powermonitor_folder()
-        # open debug SW
-        SW = "RTE_LIBRTE_POWER_DEBUG"
-        self.dut.set_build_options({SW: 'y'})
-        self.dut.build_install_dpdk(self.target)
+        # open debug SW when build dpdk
+        self.dut.build_install_dpdk(self.target, extra_param='-Dc_args=-DRTE_LIBRTE_POWER_DEBUG')
         # set up vm power management binary process setting
         self.vm_power_mgr = self.prepare_binary('vm_power_manager')
         # set up distributor binary process setting

@@ -65,12 +65,13 @@ class TestNicSingleCorePerf(TestCase):
         err_msg = "Rx desc only has 16B and 32B size, %d is not valid" % self.rx_desc_size
         self.verify(self.rx_desc_size == 16 or self.rx_desc_size == 32, err_msg)
         if self.rx_desc_size == 16:
-            # Update DPDK config file and rebuild to get best perf on fortville
+            extra_options = ''
+            # rebuild to get best perf on fortville
             if self.nic in ["fortville_25g", "fortville_spirit"]:
-                self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': 'y'})
+                extra_options = '-Dc_args=-DRTE_LIBRTE_I40E_16BYTE_RX_DESC'
             elif self.nic in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
-                self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': 'y'})
-            self.dut.build_install_dpdk(self.target)
+                extra_options = '-Dc_args=-DRTE_LIBRTE_ICE_16BYTE_RX_DESC'
+            self.dut.build_install_dpdk(self.target, extra_options=extra_options)
 
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports()
@@ -426,9 +427,5 @@ class TestNicSingleCorePerf(TestCase):
         """
         # resume setting
         if self.rx_desc_size == 16:
-            if self.nic in ["fortville_25g", "fortville_spirit"]:
-                self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': 'n'})
-            elif self.nic in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
-                self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': 'n'})
             self.dut.build_install_dpdk(self.target)
         self.dut.kill_all()

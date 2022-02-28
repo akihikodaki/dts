@@ -243,7 +243,7 @@ class DPDKdut(Dut):
         """
         use_shared_lib = load_global_setting(HOST_SHARED_LIB_SETTING)
         if use_shared_lib == 'true' and 'Virt' not in str(self):
-            self.set_build_options({'RTE_BUILD_SHARED_LIB': 'y'})
+            extra_options += ' -Dc_args=-DRTE_BUILD_SHARED_LIB'
         if self.get_os_type() == 'linux':
             self.build_install_dpdk_linux_meson(target, extra_options)
         elif self.get_os_type() == 'freebsd':

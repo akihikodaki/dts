@@ -53,10 +53,9 @@ class TestPtpClient(TestCase):
         dutPorts = self.dut.get_ports()
         self.verify(len(dutPorts) > 0, "No ports found for " + self.nic)
 
-        # Change the config file to support IEEE1588 and recompile the package.
-        self.dut.set_build_options({'RTE_LIBRTE_IEEE1588': 'y'})
+        # recompile the package with extra options of support IEEE1588.
         self.dut.skip_setup = False
-        self.dut.build_install_dpdk(self.target)
+        self.dut.build_install_dpdk(self.target, extra_options='-Dc_args=-DRTE_LIBRTE_IEEE1588')
 
         # build sample app
         out = self.dut.build_dpdk_apps("examples/ptpclient")
@@ -179,6 +178,5 @@ class TestPtpClient(TestCase):
         out = self.dut.send_expect("hwclock", "# ")
         rtc_time = re.findall(r"(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})", out)[0]
         self.dut.send_command('date -s "%s"' % rtc_time, "# ")
-        # Restore the config file and recompile the package.
-        self.dut.set_build_options({'RTE_LIBRTE_IEEE1588': 'n'})
+        # recompile the package without extra options of support IEEE1588.
         self.dut.build_install_dpdk(self.target)

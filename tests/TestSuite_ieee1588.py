@@ -54,10 +54,9 @@ class TestIeee1588(TestCase):
         dutPorts = self.dut.get_ports()
         self.verify(len(dutPorts) > 0, "No ports found for " + self.nic)
 
-        # Change the config file to support IEEE1588 and recompile the package.
-        self.dut.set_build_options({'RTE_LIBRTE_IEEE1588': 'y'})
+        # recompile the package with extra options of support IEEE1588.
         self.dut.skip_setup = False
-        self.dut.build_install_dpdk(self.target)
+        self.dut.build_install_dpdk(self.target, extra_options='-Dc_args=-DRTE_LIBRTE_IEEE1588')
 
         self.pmdout = PmdOutput(self.dut)
         # For IEEE1588, the full-feature tx path needs to be enabled.
