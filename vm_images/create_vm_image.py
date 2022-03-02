@@ -153,7 +153,7 @@ def run_subprocess(
         "docker",
         "run",
         # The container needs to access QEMU/KVM
-        # "--privileged",
+        "--privileged",
         "-d",
         "--platform",
     ]
@@ -262,14 +262,13 @@ def get_virt_customize_command(
     os_family_tags: Set[OsFamily], output_path: str, root_password: str
 ) -> str:
     commands = [
-        f"virt-customize -a {output_path} --root-password password:{root_password} --update",
+        f"virt-customize -a {output_path} --root-password password:{root_password} --update"
     ]
 
     commands = commands + get_enable_additional_repos_commands(os_family_tags)
 
     packages = get_packages_for_os_family(os_family_tags)
     packagelist = ",".join(packages)
-    commands += (f"--run-command dhclient",)
     commands += (f"--install {packagelist}",)
     commands += (f"--run-command {get_install_meson_command(os_family_tags)}",)
     commands += (f"--run-command {get_setup_hugepages_command(os_family_tags)}",)
@@ -324,6 +323,7 @@ def get_packages_for_os_family(os_family_tags: Set[OsFamily]) -> List[str]:
             "python3-setuptools",
             "python3-wheel",
             "iperf",
+            "chrony",
         ]
     elif OsFamily.RHEL in os_family_tags:
         return [
@@ -354,7 +354,9 @@ def get_packages_for_os_family(os_family_tags: Set[OsFamily]) -> List[str]:
 
 def get_install_meson_command(os_family_tags: Set[OsFamily]) -> str:
     if OsFamily.DEBIAN in os_family_tags or OsFamily.RHEL in os_family_tags:
-        return '"python3 -m pip install meson"'
+        # the "--trusted-host" flags are included because the date on the system will be Jan 1, 1970 due to the way
+        # guestfs-tools starts the vm. This breaks pip's ssl, so making these hosts trusted fixes that.
+        return '"python3 -m pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org meson"'
     else:
         error(f"Unknown command to install meson for {os_family_tags}")
 
@@ -425,6 +427,8 @@ def get_image_info(base_image_path: str) -> (OsFamily, Arch):
         "-a",
         base_image_path,
     ]
+
+    print(" ".join(command))
 
     proc = subprocess.run(command, capture_output=True)
     if proc.returncode != 0:
