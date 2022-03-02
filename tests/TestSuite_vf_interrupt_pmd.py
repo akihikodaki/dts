@@ -44,7 +44,6 @@ from framework.packet import Packet
 from framework.test_case import TestCase
 from framework.virt_common import VM
 
-
 class TestVfInterruptPmd(TestCase):
     supported_vf_driver = ['pci-stub', 'vfio-pci']
 
@@ -88,11 +87,8 @@ class TestVfInterruptPmd(TestCase):
 
     def prepare_l3fwd_power(self, use_dut):
         """
-        Change the DPDK source code and recompile
+        Compile dpdk-l3fwd-power
         """
-        use_dut.send_expect(
-                "sed -i -e '/DEV_RX_OFFLOAD_CHECKSUM,/d' \
-                ./examples/l3fwd-power/main.c", "#", 10)
         out = use_dut.build_dpdk_apps("./examples/l3fwd-power")
         self.path = use_dut.apps_name['l3fwd-power']
         self.verify("Error" not in out, "compilation error")
@@ -105,6 +101,7 @@ class TestVfInterruptPmd(TestCase):
         pkt.config_layer('ether', {'dst': mac, 'src': self.tester_mac})
         pkt.send_pkt(self.tester, tx_port=testinterface)
         self.out2 = use_dut.get_session_output(timeout=2)
+
 
     def send_packet_loop(self, mac, testinterface, use_dut, ip_addr):
         """
@@ -131,7 +128,7 @@ class TestVfInterruptPmd(TestCase):
         cmd_vhost_net = self.path + "-n %d -c %s" % (use_dut.get_memory_channels(), self.core_mask_user) + " -- -P -p 1 --config='(0,0,%s)'" % self.core_user
         try:
             self.logger.info("Launch l3fwd_sample sample:")
-            self.out = use_dut.send_expect(cmd_vhost_net, "L3FWD_POWER", 60)
+            self.out = use_dut.send_expect(cmd_vhost_net, "Checking link statusdone", 60)
             if "Error" in self.out:
                 raise Exception("Launch l3fwd-power sample failed")
             else:
@@ -151,7 +148,7 @@ class TestVfInterruptPmd(TestCase):
         cmd_vhost_net = self.path + "-l 0-%d -n 4 -- -P -p 0x1" % queue + " --config='%s'" % config_info
         try:
             self.logger.info("Launch l3fwd_sample sample:")
-            self.out = use_dut.send_expect(cmd_vhost_net, "L3FWD_POWER", 60)
+            self.out = use_dut.send_expect(cmd_vhost_net, "Checking link statusdone", 60)
             self.logger.info(self.out)
             if "Error" in self.out:
                 raise Exception("Launch l3fwd-power sample failed")
@@ -174,8 +171,7 @@ class TestVfInterruptPmd(TestCase):
 
         self.host_intf0 = self.dut.ports_info[self.used_dut_port_0]['intf']
         # set vf mac
-        self.dut.send_expect("ip link set %s vf 0 mac %s" %
-                             (self.host_intf0, self.vf0_mac), "# ")
+        self.dut.send_expect("ip link set %s vf 0 mac %s" %(self.host_intf0, self.vf0_mac), "# ")
 
         for port in self.sriov_vfs_port_0:
             port.bind_driver(self.vf_driver)
@@ -238,7 +234,7 @@ class TestVfInterruptPmd(TestCase):
         core_mask_user = utils.create_mask(core_list)
 
         cmd = self.path + "-c %s -n %d -- -P  -p 0x01 --config='(0,0,%s)'" % (core_mask_user, self.vm0_dut.get_memory_channels(), core_user)
-        self.vm0_dut.send_expect(cmd, "L3FWD_POWER", 60)
+        self.vm0_dut.send_expect(cmd, "Checking link statusdone", 60)
         self.send_packet(self.vf0_mac, self.rx_intf_0, self.vm0_dut)
         self.destroy_vm_env()
         self.verify(
@@ -261,8 +257,7 @@ class TestVfInterruptPmd(TestCase):
         for port in self.sriov_vfs_port_0:
             port.bind_driver('vfio-pci')
         # set vf mac
-        self.dut.send_expect("ip link set %s vf 0 mac %s" %
-                                 (self.host_intf, self.vf_mac), "# ")
+        self.dut.send_expect("ip link set %s vf 0 mac %s" %(self.host_intf, self.vf_mac), "# ")
         self.begin_l3fwd_power(self.dut)
         self.send_packet(self.vf_mac, self.rx_intf_0, self.dut)
         self.verify(
@@ -297,6 +292,8 @@ class TestVfInterruptPmd(TestCase):
         """
         self.prepare_l3fwd_power(self.dut)
 
+        self.dut.setup_modules_linux(self.target, 'igb_uio', '')
+
         self.dut.ports_info[0]['port'].bind_driver(driver='igb_uio')
 
         self.begin_l3fwd_power(self.dut)
@@ -325,8 +322,7 @@ class TestVfInterruptPmd(TestCase):
         for port in self.sriov_vfs_port_0:
             port.bind_driver('vfio-pci')
         # set vf mac
-        self.dut.send_expect("ip link set %s vf 0 mac %s" % (self.host_intf, self.vf_mac),
-                             "# ")
+        self.dut.send_expect("ip link set %s vf 0 mac %s" % (self.host_intf, self.vf_mac), "# ")
         self.begin_l3fwd_power_multi_queues(self.dut)
         stroutput = ""
         for ip in range(2,10):
@@ -346,14 +342,12 @@ class TestVfInterruptPmd(TestCase):
         """
         self.verify(self.nic in ['fortville_eagle', 'fortville_spirit', 'fortville_25g', 'fortville_spirit_single','fortpark_TLV', 'fortpark_BASE-T', 'carlsville'], '%s nic port not support vf multi-queues interrupt' % str(self.nic))
         self.setup_vm_env()
-        self.vm0_dut.send_expect("ip link set %s vf 0 mac %s" %
-                                 (self.host_intf0, self.vf0_mac), "# ")
+        self.vm0_dut.send_expect("ip link set %s vf 0 mac %s" %(self.host_intf0, self.vf0_mac), "# ")
         self.queues = 4
         self.prepare_l3fwd_power(self.vm0_dut)
         self.VF0_bind_vfio_pci()
         cores = "1S/4C/1T"
         core_list = self.vm0_dut.get_core_list(cores)
-        core_user = core_list[0]
         core_mask_user = utils.create_mask(core_list)
         config_info =""
         for queue in range(self.queues):
@@ -361,18 +355,7 @@ class TestVfInterruptPmd(TestCase):
                 config_info += ','
             config_info += '(0,%d,%d)' % (queue, queue)
         cmd = self.path + "-c %s -n 4 -- -P -p 0x1" % core_mask_user + " --config='%s'" % config_info
-        self.vm0_dut.send_expect(cmd, "L3FWD_POWER", 60)
-        time.sleep(1)
-        try:
-            self.logger.info("Launch l3fwd_sample sample:")
-            self.out = self.vm0_dut.send_expect(cmd, "L3FWD_POWER", 60)
-            if "Error" in self.out:
-                raise Exception("Launch l3fwd-power sample failed")
-            else:
-                self.logger.info("Launch l3fwd-power sample finished")
-        except Exception as e:
-            self.logger.error("ERROR: Failed to launch l3fwd-power sample: %s"
-                              % str(e))
+        self.vm0_dut.send_expect(cmd, "Checking link statusdone", 60)
         stroutput = ""
         for ip in range(2, 10):
             self.send_packet_loop(self.vf0_mac, self.rx_intf_0, self.vm0_dut, ip)
