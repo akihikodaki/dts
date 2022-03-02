@@ -2352,5 +2352,23 @@
             "Bug ID": "",
             "Comments": "This case only supports the igb_uio driver"
         }
+    ],
+    "nic_interrupt_PF_igb_uio": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "host_driver": [
+                "igb_uio"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only supports the igb_uio driver"
+        }
     ]
 }
