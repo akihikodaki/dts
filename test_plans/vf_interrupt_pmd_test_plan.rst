@@ -59,10 +59,6 @@ Iommu pass through feature has been enabled in kernel::
 
 Modify the DPDK-l3fwd-power source code and recompile the l3fwd-power::
 
-    sed -i -e '/DEV_RX_OFFLOAD_CHECKSUM,/d' ./examples/l3fwd-power/main.c
-
-    export RTE_TARGET=x86_64-native-linuxapp-gcc
-    export RTE_SDK=`/root/DPDK`
     meson configure -Dexamples=l3fwd-power x86_64-native-linuxapp-gcc
     ninja -C x86_64-native-linuxapp-gcc
 
@@ -76,11 +72,11 @@ Test Case1: Check Interrupt for PF with vfio driver on ixgbe and i40e
 
     modprobe vfio-pci;
 
-    usertools/dpdk-devbind.py --bind=vfio-pci 0000:04:00.0
+    ./usertools/dpdk-devbind.py --bind=vfio-pci 0000:04:00.0
 
 2. start l3fwd-power with PF::
 
-    examples/l3fwd-power/build/l3fwd-power -l 1-3 -n 4 -- -P -p 0x01  --config '(0,0,2)'
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -l 1-3 -n 4 -- -P -p 0x01  --config '(0,0,2)'
 
 3. Send packet with packet generator to the pf NIC, check that thread core2 waked up::
 
@@ -100,11 +96,11 @@ Test Case2: Check Interrupt for PF with igb_uio driver on ixgbe and i40e
     modprobe uio;
     insmod x86_64-native-linuxapp-gcc/kmod/igb_uio.ko;
 
-    usertools/dpdk-devbind.py --bind=igb_uio 0000:04:00.0
+    ./usertools/dpdk-devbind.py --bind=igb_uio 0000:04:00.0
 
 2. start l3fwd-power with PF::
 
-    examples/l3fwd-power/build/l3fwd-power -l 1-3 -n 4 -- -P -p 0x01  --config '(0,0,2)'
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -l 1-3 -n 4 -- -P -p 0x01  --config '(0,0,2)'
 
 3. Send packet with packet generator to the pf NIC, check that thread core2 waked up::
 
@@ -124,13 +120,13 @@ Test Case3: Check Interrupt for VF with vfio driver on ixgbe and i40e
     echo 1 > /sys/bus/pci/devices/0000\:04\:00.0/sriov_numvfs
 
     modprobe vfio-pci
-    usertools/dpdk-devbind.py --bind=vfio-pci 0000:04:10.0(vf_pci)
+    ./usertools/dpdk-devbind.py --bind=vfio-pci 0000:04:10.0(vf_pci)
 
   Notice:  If your PF is kernel driver, make sure PF link is up when your start testpmd on VF.
 
 2. Start l3fwd-power with VF::
 
-    examples/l3fwd-power/build/l3fwd-power -l 1-3 -n 4 -- -P -p 0x01  --config '(0,0,2)'
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -l 1-3 -n 4 -- -P -p 0x01  --config '(0,0,2)'
 
 3. Send packet with packet generator to the pf NIC, check that thread core2 waked up::
 
@@ -150,7 +146,7 @@ Test Case4: VF interrupt pmd in VM with vfio-pci
     echo 1 > /sys/bus/pci/devices/0000\:04\:00.0/sriov_numvfs
 
     modprobe vfio-pci
-    usertools/dpdk-devbind.py --bind=vfio-pci 0000:04:10.0(vf_pci)
+    ./usertools/dpdk-devbind.py --bind=vfio-pci 0000:04:10.0(vf_pci)
 
 2. passthrough VF 0 to VM0 and start VM0::
 
@@ -177,11 +173,11 @@ Test Case4: VF interrupt pmd in VM with vfio-pci
     modprobe vfio enable_unsafe_noiommu_mode=1
     modprobe vfio-pci
 
-    usertools/dpdk-devbind.py -b vfio-pci 0000:00:04.0
+    ./usertools/dpdk-devbind.py -b vfio-pci 0000:00:04.0
 
 5. start l3fwd-power in VM::
 
-    examples/l3fwd-power/build/l3fwd-power -l 1-3 -n 4 -- -P -p 0x01  --config '(0,0,2)'
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -l 1-3 -n 4 -- -P -p 0x01  --config '(0,0,2)'
 
 6. Send packet with packet generator to the VM, check that thread core2 waked up::
 
@@ -200,13 +196,13 @@ Test Case5: vf multi-queue interrupt with vfio-pci on i40e
 
     echo 1 > /sys/bus/pci/devices/0000\:04\:00.0/sriov_numvfs
     modprobe vfio-pci
-    usertools/dpdk-devbind.py --bind=vfio-pci 0000:04:10.0(vf_pci)
+    ./usertools/dpdk-devbind.py --bind=vfio-pci 0000:04:10.0(vf_pci)
 
   Notice:  If your PF is kernel driver, make sure PF link is up when your start testpmd on VF.
 
 2. Start l3fwd-power with VF::
 
-    examples/l3fwd-power/build/l3fwd-power -c 3f -n 4 -m 2048 -- -P -p 0x1 --config="(0,0,1),(0,1,2),(0,2,3),(0,3,4)"
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -c 3f -n 4 -m 2048 -- -P -p 0x1 --config="(0,0,1),(0,1,2),(0,2,3),(0,3,4)"
 
 3. Send UDP packets with random ip and dest mac = vf mac addr::
 
@@ -227,7 +223,7 @@ Test Case6: VF multi-queue interrupt in VM with vfio-pci on i40e
 
     echo 1 > /sys/bus/pci/devices/0000\:88:00.1/sriov_numvfs
     modprobe vfio-pci
-    usertools/dpdk-devbind.py --bind=vfio-pci 0000:88:0a.0(vf_pci)
+    ./usertools/dpdk-devbind.py --bind=vfio-pci 0000:88:0a.0(vf_pci)
 
   Notice:  If your PF is kernel driver, make sure PF link is up when your start testpmd on VF.
 
@@ -249,7 +245,7 @@ Test Case6: VF multi-queue interrupt in VM with vfio-pci on i40e
     modprobe -r vfio
     modprobe vfio enable_unsafe_noiommu_mode=1
     modprobe vfio-pci
-    usertools/dpdk-devbind.py -b vfio-pci 0000:00:04.0
+    ./usertools/dpdk-devbind.py -b vfio-pci 0000:00:04.0
 
 4.Start l3fwd-power in VM::
 
