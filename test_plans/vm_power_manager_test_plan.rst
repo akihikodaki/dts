@@ -121,15 +121,15 @@ Test Case 1: VM Power Management Channel
         <address type='virtio-serial' controller='0' bus='0' port='4'/>
         </channel>
 
-3. Run power-manager in Host::
+3. Run dpdk-guest_cli in Host::
 
-        x86_64-native-linuxapp-gcc/examples/dpdk-guest_cli -c 0x3 -n 4
+        ./<build_target>/examples/dpdk-guest_cli -c 0x3 -n 4
 
-4. Startup VM and run guest_vm_power_mgr::
+4. Startup VM and run dpdk-guest_cli::
 
-        x86_64-native-linuxapp-gcc/examples/dpdk-guest_cli -c 0x1f -n 4 -- -i
+        ./<build_target>/examples/dpdk-guest_cli -c 0x1f -n 4 -- -i
 
-5. Add vm in host and check vm_power_mgr can get frequency normally::
+5. Add vm in host and check dpdk-vm_power_manager can get frequency normally::
 
         vmpower> add_vm <vm_name>
         vmpower> add_channels <vm_name> all
@@ -153,9 +153,9 @@ Test Case 1: VM Power Management Channel
           [3]: Physical CPU Mask 0x10
           [4]: Physical CPU Mask 0x20
 
-7. Run vm_power_mgr in vm::
+7. Run dpdk-guest_cli in vm::
 
-        x86_64-native-linuxapp-gcc/examples/dpdk-guest_cli -c 0x1f -n 4
+        ./<build_target>/examples/dpdk-guest_cli -c 0x1f -n 4
 
    Check monitor channel for all cores has been connected.
 

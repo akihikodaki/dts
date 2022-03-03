@@ -63,7 +63,7 @@ Test Case 1 : Check all 3 type of power related info reported by Telemetry Syste
 =================================================================================
 1. Launch l3fwd-power sample with telemetry enabled, bind one NIC to DPDK driver, launch l3fwd-power::
 
-    ./l3fwd-power -l 1-2 -n 4 --telemetry -- -p 0x1 -P --config="(0,0,2)" --telemetry
+    ./<build_target>/examples/dpdk-l3fwd-power -l 1-2 -n 4 --telemetry -- -p 0x1 -P --config="(0,0,2)" --telemetry
 
 2. Get the telemetry info using dpdk-telemetry-client.py script, then choose mode 3 ``Send for global Metrics``::
 

@@ -59,7 +59,7 @@ Step 1. Create powermonitor fold for::
 
 Step 2. Compile DPDK with Power Lib debug info on, then Luanch VM power manager sample::
 
-    ./examples/vm_power_manager/build/vm_power_mgr -l 1-46 -n 4 --file-prefix=power --no-pci
+    ./<build_target>/examples/dpdk-vm_power_manager -l 1-46 -n 4 --file-prefix=power --no-pci
 
     Check two different base_max frequency will be shown in log, for example on Intel 6230N Processor:
     The log will be like as following
@@ -87,7 +87,7 @@ Step 1. Create powermonitor fold for::
 
 Step 2. Compile DPDK with Power Lib debug info on, then aunch VM power manager sample::
 
-    ./examples/vm_power_manager/build/vm_power_mgr -l 1-46 -n 4 --file-prefix=power --no-pci
+    ./<build_target>/examples/dpdk-vm_power_manager -l 1-46 -n 4 --file-prefix=power --no-pci
 
 Step 3. Prepare different command in JSON format::
 
@@ -102,7 +102,7 @@ Step 3. Prepare different command in JSON format::
 Step 4: Send different command to power sample, then check the frequency::
 
     Command Steps: ENABLE_TURBO-> SCALE_MAX-> SCALE_DOWN-> SCALE_MIN
-    Send action JSON file to vm_power_mgr's fifo channel, each core will have it's own channel:
+    Send action JSON file to dpdk-vm_power_manager's fifo channel, each core will have it's own channel:
     cat command.json >/tmp/powermonitor/fifo{core_number}
 
     Check the CPU frequency is changed accordingly in previous list by following method:
@@ -129,7 +129,7 @@ Step 1. Create powermonitor fold for::
 
 Step 2. Compile DPDK with Power Lib debug info on, then launch VM power manager sample::
 
- ./examples/vm_power_manager/build/vm_power_mgr -l 1-46 -n 4 --file-prefix=power --no-pci
+ ./<build_target>/examples/dpdk-vm_power_manager -l 1-46 -n 4 --file-prefix=power --no-pci
 
 Step 3. Prepare Several command in JSON format then send it to the fifo channel for the high priority core::
 

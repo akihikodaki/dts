@@ -124,7 +124,7 @@ Test Case1 : Basic Training mode test based on one NIC with l3fwd-power
 =======================================================================
 Step 1. Bind One NIC to DPDK driver, launch l3fwd-power with empty-poll enabled
 
-    ./l3fwd-power -l 1-2 -n 4 -- -p 0x1 -P --config="(0,0,2)" --empty-poll="1,0,0" -l 10 -m 6 -h 1
+    ./<build_target>/examples/dpdk-l3fwd-power -l 1-2 -n 4 -- -p 0x1 -P --config="(0,0,2)" --empty-poll="1,0,0" -l 10 -m 6 -h 1
 
 Step 2. Check the log also when changing the inject packet rate as following:
 
@@ -139,6 +139,6 @@ Test Case2: No-Training mode test based on one NIC with l3fwd-power
 ===================================================================
 Step 1. Bind One NIC to DPDK driver, launch l3fwd-power with empty-poll enabled
 
-   ./l3fwd-power -l 1-2 -n 4  -- -p 0x1 -P --config="(0,0,2)" --empty-poll="0,350000,500000" -l 10 -m 6 -h 1
+   ./<build_target>/examples/dpdk-l3fwd-power -l 1-2 -n 4  -- -p 0x1 -P --config="(0,0,2)" --empty-poll="0,350000,500000" -l 10 -m 6 -h 1
 
 Step 2. Check no training steps are executed in sample's launch log.

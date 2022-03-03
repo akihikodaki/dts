@@ -53,7 +53,7 @@ no_turbo_max = [rdmsr -p 1 0x0CE -f 15:8 -d]00000
 Note:
 For Intel Processor, If "Hyper Threading" enabled in BIOS, need change frequency on both HT core
 at the same time to let the frequency take effect.
-From DPDK 19.08, vm_power_manager will set fifo channel for each core.
+From DPDK 19.08, dpdk-vm_power_manager will set fifo channel for each core.
 Before DPDK 19.08, all core will share 1 fifo channel
 
 Test Case1 : Test Pstate lib basic action based on directly power command
@@ -64,7 +64,7 @@ Step 1. Create powermonitor fold for::
 
 Step 2. Luanch VM power manager sample::
 
-    ./examples/vm_power_manager/build/vm_power_mgr -l 1-4 -n 4 --file-prefix=power --no-pci
+    ./<build_target>/examples/dpdk-vm_power_manager -l 1-4 -n 4 --file-prefix=power --no-pci
 
 Step 3. Prepare different command in JSON format then send it to the fifo channel::
 

@@ -168,11 +168,13 @@ Set up testing environment
 
 #. Compile and run power-manager in host, core number should >= 3, add vm in host.
 
-    export RTE_SDK=`pwd`
-    export RTE_TARGET=x86_64-native-linuxapp-gcc
-    make -C examples/vm_power_manager
+    CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static <build_target>
+    ninja -C <build_target>
 
-   ./examples/vm_power_manager/build/vm_power_mgr -c 0xffff -n 4
+    meson configure -Dexamples=vm_power_manager <build_target>
+    ninja -C <build_target>
+
+   ./<build_target>/examples/dpdk-vm_power_manager -c 0xffff -n 4
 
     vmpower> add_vm <vm_name>
     vmpower> add_channels <vm_name> all
@@ -181,20 +183,22 @@ Set up testing environment
 #. Run testpmd on vm0 when do traffic policy testing, other test cases ignore
    this step.
 
-    ./testpmd -c 0x3 -n 1 -v -m 1024 --file-prefix=vmpower1 -- -i --port-topology=loop
+    ./<build_target>/app/dpdk-testpmd -c 0x3 -n 1 -v -m 1024 --file-prefix=vmpower1 -- -i --port-topology=loop
 
     testpmd> set fwd mac
     testpmd> set promisc all on
     testpmd> port start all
     testpmd> start
 
-#. Compile and run guest_vm_power_mgr on VM.
+#. Compile and run dpdk-guest_cli on VM.
 
-    export RTE_SDK=`pwd`
-    export RTE_TARGET=x86_64-native-linuxapp-gcc
-    make -C examples/vm_power_manager/guest_cli
+    CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static <build_target>
+    ninja -C <build_target>
 
-   ./examples/vm_power_manager/guest_cli/build/guest_vm_power_mgr \
+    meson configure -Dexamples=vm_power_manager/guest_cli <build_target>
+    ninja -C <build_target>
+
+   ./<build_target>/examples/dpdk-guest_cli \
    -c 0xff -n 4 --file-prefix=vmpower2 -- -i --vm-name=<vm name> \
    --policy=<policy name> --vcpu-list=<vcpus list> --busy-hours=<time stage>
 
@@ -227,7 +231,7 @@ check these content.
 #. when dut clock is set to a desired busy hours, put core to max freq.
 #. when dut clock is set to a desired quiet hours, put core to min freq.
 
-This case test multiple guest_vm_power_mgr options, they are composited
+This case test multiple dpdk-guest_cli options, they are composited
 by these content as below::
 
     #. --policy
@@ -252,7 +256,7 @@ steps:
 
 #. set up testing environment refer to ``Set up testing environment`` steps.
 
-#. trigger policy on vm DUT from guest_vm_power_mgr console::
+#. trigger policy on vm DUT from dpdk-guest_cli console::
 
     vmpower(guest)> send_policy now
 
@@ -269,7 +273,7 @@ vcpus frequency will run at med frequency.
 #. use packet generator to send a stream with a pps rate less than 1800000,
 vcpu frequency will run at min frequency.
 
-This case test multiple guest_vm_power_mgr options, they are composited
+This case test multiple dpdk-guest_cli options, they are composited
 by these content as below::
 
     #. --policy
@@ -288,7 +292,7 @@ steps:
 
 #. set up testing environment refer to ``Set up testing environment`` steps.
 
-#. trigger policy on vm DUT from guest_vm_power_mgr console::
+#. trigger policy on vm DUT from dpdk-guest_cli console::
 
     vmpower(guest)> send_policy now
 
@@ -306,7 +310,7 @@ steps:
 
 #. set up testing environment refer to ``Set up testing environment`` steps.
 
-#. set cpu turbo disable on vm DUT from guest_vm_power_mgr console::
+#. set cpu turbo disable on vm DUT from dpdk-guest_cli console::
 
     vmpower(guest)> set_cpu_freq <core_num> disable_turbo
 
@@ -324,7 +328,7 @@ steps:
 
 #. set up testing environment refer to ``Set up testing environment`` steps.
 
-#. set cpu turbo enable on vm DUT from guest_vm_power_mgr console::
+#. set cpu turbo enable on vm DUT from dpdk-guest_cli console::
 
     vmpower(guest)> set_cpu_freq <vm_core_num> enable_turbo
 

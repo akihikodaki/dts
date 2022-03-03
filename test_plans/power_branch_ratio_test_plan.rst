@@ -58,17 +58,17 @@ no_turbo_max=$(rdmsr -p 2 0x0CE -f 15:8 -d)00000
 
 Test Case 1 : Set Branch-Ratio Test Rate by User ====================================================================================
 1. Launch VM power manager sample on the host to run branch monitor.
-./x86_64-native-linuxapp-gcc/examples/dpdk-vm_power_manager  -v -c 0xe -n 1 -m 1024 --no-pci  -- --core-branch-ratio=1-3:0.3
+./<build_target>/examples/dpdk-vm_power_manager -v -c 0xe -n 1 -m 1024 --no-pci  -- --core-branch-ratio=1-3:0.3
 
 2. Launch testpmd with fwd io mode::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd  -v -c 0x6 -n 1 -m 1024 --file-prefix=vmpower2 -- -i
+    ./<build_target>/app/dpdk-testpmd -v -c 0x6 -n 1 -m 1024 --file-prefix=vmpower2 -- -i
     > start
 
 3. Inject packet with packet generator to the NIC, with line rate,
 check the branch ratio and the related CPU frequency, in this case, the
 core 2 will be used by testpmd as worker core, branch ratio will be shown as
-following in vm_power_mgr's log output::
+following in dpdk-vm_power_manager's log output::
 
     1: 0.0048 {250065} {20001}
     0: 0.0307 {35782} {20000}

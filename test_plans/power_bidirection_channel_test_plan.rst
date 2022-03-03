@@ -59,7 +59,7 @@ Step 1. Launch VM using libvirt::
 
 Step 2. Launch VM power manager example on the host to monitor the channel from VM::
 
-    ./examples/vm_power_manager/build/vm_power_mgr -c 0xfffe -n 4 --no-pci
+    ./<build_target>/examples/dpdk-vm_power_manager -c 0xfffe -n 4 --no-pci
     vmpower> add_vm [vm name]
     vmpower> add_channels [vm name] all
     vmpower> set_channel_status [vm name] all enabled
@@ -71,9 +71,9 @@ Step 2. Launch VM power manager example on the host to monitor the channel from 
     vmpower> set_channel_status ubuntu all enabled
     vmpower> show_vm ubuntu
 
-Step 3. In the VM, launch guest_vm_power_mgr to set and send the power manager policy to the host power example::
+Step 3. In the VM, launch dpdk-guest_cli to set and send the power manager policy to the host power example::
 
-   ./examples/vm_power_manager/guest_cli/build/guest_vm_power_mgr -c 0xfe -n 4 -m 1024 --no-pci --file-prefix=vm_power -- --vm-name=ubuntu --vcpu-list=0-7
+   ./<build_target>/examples/dpdk-guest_cli -c 0xfe -n 4 -m 1024 --no-pci --file-prefix=vm_power -- --vm-name=ubuntu --vcpu-list=0-7
 
     Send command to the core 7 on host APP:
     vmpower(guest)> set_cpu_freq 7 down
@@ -100,14 +100,14 @@ Step 1. Launch VM using libvirt::
 
 Step 2. Launch VM power manager example on the host to monitor the channel from VM::
 
-    ./examples/vm_power_manager/build/vm_power_mgr -c 0xfffe -n 4 --no-pci
+    ./<build_target>/examples/dpdk-vm_power_manager  -c 0xfffe -n 4 --no-pci
     vmpower> add_vm [vm name]
     vmpower> add_channels [vm name] all
     vmpower> set_channel_status [vm name] all enabled
     vmpower> show_vm [vm name]
     vmpower> set_query <vm_name> <enable|disable>
 
-Step 3. Enable the query permission for target VM from host vm_power_mgr example::
+Step 3. Enable the query permission for target VM from host dpdk-vm_power_manager example::
 
     Command format: set_query <vm_name> <enable|disable>
     if vm name is ubuntu,command as following:
@@ -115,7 +115,7 @@ Step 3. Enable the query permission for target VM from host vm_power_mgr example
 
 Step 4. Query the CPU frequency for all CPU cores from VM side::
 
-   ./examples/vm_power_manager/guest_cli/build/guest_vm_power_mgr -c 0xfe -n 4 -m 1024 --no-pci --file-prefix=vm_power -- --vm-name=ubuntu --vcpu-list=0-7
+   ./<build_target>/examples/dpdk-guest_cli  -c 0xfe -n 4 -m 1024 --no-pci --file-prefix=vm_power -- --vm-name=ubuntu --vcpu-list=0-7
     vmpower> query_cpu_freq <core_num> | all
 
     Check vcpu 0~7 frequency info will be returned, for example:
@@ -130,7 +130,7 @@ Step 4. Query the CPU frequency for all CPU cores from VM side::
 
 Step 5. Disable query permission from VM, check the host CPU frequency won't be returned::
 
-    at host side, disable query permission by vm_power_mgr example:
+    at host side, disable query permission by dpdk-vm_power_manager example:
     vmpower> set_query ubuntu disable
 
     at VM side, query CPU frequency again, this action should not be executed successfully, log as following:
@@ -164,7 +164,7 @@ Step 5: Query CPU capability for core out of scope, check no CPU info will be re
 
 Step 6: Disable query permission from VM, check the host CPU capability won't be returned::
 
-    at host side, disable query permission by vm_power_mgr example:
+    at host side, disable query permission by dpdk-vm_power_manager example:
     vmpower> set_query ubuntu disable
     
     at VM side, query CPU capability again, this action should not be executed successfully, log as following:
