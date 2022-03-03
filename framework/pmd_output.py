@@ -141,8 +141,7 @@ class PmdOutput():
             and 'ports' not in config and 'b_ports' not in config and ' --no-pci ' not in eal_param \
             and ( 'no_pci' not in config or ('no_pci' in config and config['no_pci'] != True)):
             config['ports'] = [self.dut.ports_info[i]['pci'] for i in range(len(self.dut.ports_info))]
-        part_eal_param = self.dut.create_eal_parameters(fixed_prefix=fixed_prefix, socket=socket, **config)
-        all_eal_param = part_eal_param + ' ' + eal_param
+        all_eal_param = self.dut.create_eal_parameters(fixed_prefix=fixed_prefix, socket=socket, **config)
 
         app_name = self.dut.apps_name['test-pmd']
         command = app_name + " %s -- -i %s" % (all_eal_param, param)

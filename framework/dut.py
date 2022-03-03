@@ -33,6 +33,7 @@ import os
 import re
 import threading
 import time
+from typing import Dict, List, Optional, Union
 from uuid import uuid4
 
 import framework.settings as settings
@@ -40,6 +41,7 @@ from nics.net_device import GetNicObj
 
 from .config import AppNameConf, PortConf
 from .crb import Crb
+from .exception import ParameterInvalidException
 from .settings import LOG_NAME_SEP, NICS
 from .ssh_connection import SSHConnection
 from .test_result import ResultTable
@@ -116,137 +118,82 @@ class Dut(Crb):
         self.cores = core_list
         self.number_of_cores = len(self.cores)
 
-    def create_eal_parameters(self, fixed_prefix=False, socket=-1, **config):
+    def create_eal_parameters(
+            self,
+            fixed_prefix: bool = False,
+            socket: Optional[int] = None,
+            cores: Union[str, List[int], List[str]] = "default",
+            ports: Union[List[str], List[int]] = None,
+            port_options: Dict[Union[str, int], str] = None,
+            prefix: str = "",
+            no_pci: bool = False,
+            b_ports: Union[List[str], List[int]] = None,
+            vdevs: List[str] = None,
+            other_eal_param: str = "",
+    ) -> str:
         """
-        generate eal parameters character string
-        :param config:
-        :return: eal_str eg:'-c 0xf -a 0000:88:00.0 -a 0000:88:00.1 --file-prefix=dpdk_1112_20190809143420',
-        if dpdk version < 20.11-rc4, eal_str eg: '-c 0xf -w 0000:88:00.0 --file-prefix=dpdk_1112_20190809143420',
+        generate eal parameters character string;
+        :param fixed_prefix: use fixed file-prefix or not, when it is true,
+                             the file-prefix will not be added a timestamp
+        :param socket: the physical CPU socket index, -1 means no care cpu socket;
+        :param cores: set the core info, eg:
+                        cores=[0,1,2,3],
+                        cores=['0', '1', '2', '3'],
+                        cores='default',
+                        cores='1S/4C/1T',
+                        cores='all';
+        :param ports: set PCI allow list, eg:
+                        ports=['0000:1a:00.0', '0000:1a:00.1'],
+                        ports=[0, 1];
+        :param port_options: set options of port, eg:
+                        port_options={'0000:1a:00.0': "proto_xtr=vlan"},
+                        port_options={0: "cap=dcf"};
+        :param prefix: set file prefix string, eg:
+                        prefix='vf';
+        :param no_pci: switch of disable PCI bus eg:
+                        no_pci=True;
+        :param b_ports: skip probing a PCI device to prevent EAL from using it, eg:
+                        b_ports=['0000:1a:00.0'],
+                        b_ports=[0];
+        :param vdevs: virtual device list, eg:
+                        vdevs=['net_ring0', 'net_ring1'];
+        :param other_eal_param: user defined DPDK eal parameters, eg:
+                        other_eal_param='--single-file-segments';
+        :return: eal param string, eg:
+                '-c 0xf -a 0000:88:00.0 --file-prefix=dpdk_1112_20190809143420';
+        if DPDK version < 20.11-rc4, eal_str eg:
+                '-c 0xf -w 0000:88:00.0 --file-prefix=dpdk_1112_20190809143420';
         """
-        default_cores = '1S/2C/1T'
-        blank = ' '
-        os_type = self.get_os_type()
-        if config:
-            # deal with cores
-            if 'cores' in config:
-                if type(config['cores']) == list:
-                    core_list = config['cores']
-                elif isinstance(config['cores'], str):
-                    if config['cores'] == '' or config['cores'].lower() == 'default':
-                        core_list = self.get_core_list(default_cores)
-                    else:
-                        core_list = self.get_core_list(config['cores'], socket=socket)
-            else:
-                core_list = self.get_core_list(default_cores)
+        if ports is None:
+            ports = []
 
-            # deal with ports
-            w_pci_list = []
-            if 'ports' in config and len(config['ports']) != 0:
-                allow_option = '-a' if self.dpdk_version > '20.11.0-rc3' or self.dpdk_version == '20.11.0' else '-w'
-                for port in config['ports']:
-                    if type(port) == int:
-                        if 'port_options' in config and port in list(config['port_options'].keys()):
-                            port_option = config['port_options'][port]
-                            w_pci_list.append('%s %s,%s' % (allow_option, self.ports_info[port]['pci'], port_option))
-                        else:
-                            w_pci_list.append('%s %s' % (allow_option, self.ports_info[port]['pci']))
-                    else:
-                        if 'port_options' in config and port in list(config['port_options'].keys()):
-                            port_option = config['port_options'][port]
-                            w_pci_list.append('%s %s,%s' % (allow_option, port, port_option))
-                        else:
-                            w_pci_list.append('%s %s' % (allow_option, port))
-            w_pci_str = ' '.join(w_pci_list)
+        if port_options is None:
+            port_options = {}
 
-            # deal with block ports
-            b_pci_list = []
-            if 'b_ports' in config and len(config['b_ports']) != 0:
-                for port in config['b_ports']:
-                    if type(port) == int:
-                        b_pci_list.append('-b %s' % self.ports_info[port]['pci'])
-                    else:
-                        b_pci_list = ['-b %s' % pci for pci in config['b_ports']]
-            b_ports_str = ' '.join(b_pci_list)
+        if b_ports is None:
+            b_ports = []
 
-            # deal with no-pci
-            if 'no_pci' in config:
-                if config['no_pci'] == True:
-                    no_pci = '--no-pci'
-                else:
-                    no_pci = ''
-            else:
-                no_pci = ''
+        if vdevs is None:
+            vdevs = []
 
-            # deal with file prefix
-            if 'prefix' in config and config['prefix'] != '':
-                if fixed_prefix == True:
-                    file_prefix = config['prefix']
-                else:
-                    file_prefix = config['prefix'] + '_' + self.prefix_subfix
-            else:
-                file_prefix = 'dpdk' + '_' + self.prefix_subfix
-            if file_prefix not in self.prefix_list:
-                self.prefix_list.append(file_prefix)
+        if socket is None:
+            socket = -1
 
-            # deal with vdev
-            if 'vdevs' in config and len(config['vdevs']) != 0:
-                vdev = '--vdev ' + ' --vdev '.join(config['vdevs'])
-            else:
-                vdev = ''
+        config = {
+            "cores": cores,
+            "ports": ports,
+            "port_options": port_options,
+            "prefix": prefix,
+            "no_pci": no_pci,
+            "b_ports": b_ports,
+            "vdevs": vdevs,
+            "other_eal_param": other_eal_param,
+        }
 
-            if os_type == 'freebsd':
-                eal_str = '-l ' + ','.join(map(str, core_list)) \
-                          + blank + '-n %d' % self.get_memory_channels() \
-                          + blank + w_pci_str \
-                          + blank + b_ports_str \
-                          + blank + no_pci \
-                          + blank + vdev
-                self.prefix_list = []
-            else:
-                eal_str = '-l ' + ','.join(map(str, core_list)) \
-                          + blank + '-n %d' % self.get_memory_channels() \
-                          + blank + w_pci_str \
-                          + blank + b_ports_str \
-                          + blank + '--file-prefix=' + file_prefix \
-                          + blank + no_pci \
-                          + blank + vdev
-        else:
-            allow_option = '-a' if self.dpdk_version > '20.11.0-rc3' or self.dpdk_version == '20.11.0' else '-w'
-            # get pci from ports_info
-            pci_list = []
-            if len(self.ports_info) != 0:
-                for port_info in self.ports_info:
-                    pci_list.append('%s %s' % (allow_option, port_info['pci']))
-            self.logger.info(pci_list)
-            pci_str = ' '.join(pci_list)
-            # default cores '1S/2C/1T'
-            core_list = self.get_core_list(default_cores)
-            file_prefix = 'dpdk' + '_' + self.prefix_subfix
-            self.prefix_list.append(file_prefix)
-            if os_type == 'freebsd':
-                eal_str = '-l ' + ','.join(map(str, core_list)) \
-                          + blank + '-n %d' % self.get_memory_channels() \
-                          + blank + pci_str
-                self.prefix_list = []
-            else:
-                eal_str = '-l ' + ','.join(map(str, core_list)) \
-                          + blank + '-n %d' % self.get_memory_channels() \
-                          + blank + pci_str \
-                          + blank + '--file-prefix=' + file_prefix
-        use_shared_lib = settings.load_global_setting(settings.HOST_SHARED_LIB_SETTING)
-        shared_lib_path = settings.load_global_setting(settings.HOST_SHARED_LIB_PATH)
-        if use_shared_lib == 'true' and shared_lib_path and 'Virt' not in str(self):
-            eal_str = eal_str + ' -d {} '.format(shared_lib_path)
-        rx_mode = settings.load_global_setting(settings.DPDK_RXMODE_SETTING)
-        if 'other_eal_param' not in config or 'force-max-simd-bitwidth' not in config['other_eal_param']:
-            if rx_mode == 'novector':
-                eal_str = eal_str + ' --force-max-simd-bitwidth=64 '
-            elif rx_mode == 'sse':
-                eal_str = eal_str + ' --force-max-simd-bitwidth=128 '
-            elif rx_mode == 'avx2':
-                eal_str = eal_str + ' --force-max-simd-bitwidth=256 '
-            elif rx_mode == 'avx512':
-                eal_str = eal_str + ' --force-max-simd-bitwidth=512 '
+        eal_parameter_creator = _EalParameter(
+            dut=self, fixed_prefix=fixed_prefix, socket=socket, **config
+        )
+        eal_str = eal_parameter_creator.make_eal_param()
 
         return eal_str
 
@@ -1069,7 +1016,7 @@ class Dut(Crb):
         self.ports_info = []
 
         skipped = RED('Skipped: Unknown/not selected')
-        
+
         for (pci_bus, pci_id) in self.pci_devices_info:
 
             if not settings.accepted_nic(pci_id):
@@ -1357,3 +1304,288 @@ class Dut(Crb):
         self.enable_tester_ipv6()
         self.close()
         self.logger.logger_exit()
+
+
+class _EalParameter(object):
+    def __init__(
+            self,
+            dut: Dut,
+            fixed_prefix: bool,
+            socket: int,
+            cores: Union[str, List[int], List[str]],
+            ports: Union[List[str], List[int]],
+            port_options: Dict[Union[str, int], str],
+            prefix: str,
+            no_pci: bool,
+            b_ports: Union[List[str], List[int]],
+            vdevs: List[str],
+            other_eal_param: str,
+    ):
+        """
+        generate eal parameters character string;
+        :param dut: dut device;
+        :param fixed_prefix: use fixed file-prefix or not, when it is true,
+                             the file-prefix will not be added a timestamp
+        :param socket: the physical CPU socket index, -1 means no care cpu socket;
+        :param cores: set the core info, eg:
+                        cores=[0,1,2,3],
+                        cores=['0','1','2','3'],
+                        cores='default',
+                        cores='1S/4C/1T',
+                        cores='all';
+        param ports: set PCI allow list, eg:
+                        ports=['0000:1a:00.0', '0000:1a:00.1'],
+                        ports=[0, 1];
+        param port_options: set options of port, eg:
+                        port_options={'0000:1a:00.0': "proto_xtr=vlan"},
+                        port_options={0: "cap=dcf"};
+        param prefix: set file prefix string, eg:
+                        prefix='vf';
+        param no_pci: switch of disable PCI bus eg:
+                        no_pci=True;
+        param b_ports: skip probing a PCI device to prevent EAL from using it, eg:
+                        b_ports=['0000:1a:00.0'],
+                        b_ports=[0];
+        param vdevs: virtual device list, eg:
+                        vdevs=['net_ring0', 'net_ring1'];
+        param other_eal_param: user defined DPDK eal parameters, eg:
+                        other_eal_param='--single-file-segments';
+        """
+        self.os_type = dut.get_os_type()
+        self.fixed_prefix = fixed_prefix
+        self.socket = socket
+        self.dut = dut
+        self.cores = self._validate_cores(cores)
+        self.ports = self._validate_ports(ports)
+        self.port_options: Dict = self._validate_port_options(port_options)
+        self.prefix = prefix
+        self.no_pci = no_pci
+        self.b_ports = self._validate_ports(b_ports)
+        self.vdevs = vdevs
+        self.other_eal_param = other_eal_param
+
+    @staticmethod
+    def _validate_cores(cores: Union[str, List[int], List[str]]):
+        core_string_match = r"default|all|\d+S/\d+C/\d+T|$"
+        if isinstance(cores, list) and (
+                all(map(lambda _core: type(_core) == int, cores))
+                or all(map(lambda _core: type(_core) == str, cores))
+        ):
+            return cores
+        elif type(cores) == str and re.match(core_string_match, cores, re.I):
+            return cores
+        else:
+            raise ParameterInvalidException("cores", cores)
+
+    @staticmethod
+    def _validate_ports(ports: Union[List[str], List[int]]):
+        if not isinstance(ports, list):
+            raise ParameterInvalidException("ports", ports)
+        if not (
+                all(map(lambda _port: type(_port) == int, ports))
+                or all(map(lambda _port: type(_port) == str, ports))
+                and all(
+            map(
+                lambda _port: re.match(r"^([\d\w]+:){2}[\d\w]+\.[\d\w]+$", _port),
+                ports,
+            )
+        )
+        ):
+            raise ParameterInvalidException("ports", ports)
+        return ports
+
+    @staticmethod
+    def _validate_port_options(port_options: Dict[Union[str, int], str]):
+        if not isinstance(port_options, Dict):
+            raise ParameterInvalidException("port_options", port_options)
+        port_list = port_options.keys()
+        _EalParameter._validate_ports(list(port_list))
+        return port_options
+
+    @staticmethod
+    def _validate_vdev(vdev: List[str]):
+        if not isinstance(vdev, list):
+            raise ParameterInvalidException("vdev", vdev)
+
+    def _make_cores_param(self) -> str:
+        is_use_default_cores = (
+                self.cores == ""
+                or isinstance(self.cores, str)
+                and self.cores.lower() == "default"
+        )
+        if is_use_default_cores:
+            default_cores = "1S/2C/1T"
+            core_list = self.dut.get_core_list(default_cores)
+        else:
+            core_list = self._get_cores()
+
+        def _get_consecutive_cores_range(_cores: List[int]):
+            _formated_core_list = []
+            _tmp_cores_list = list(sorted(map(int, _cores)))
+            _segment = _tmp_cores_list[:1]
+            for _core_num in _tmp_cores_list[1:]:
+                if _core_num - _segment[-1] == 1:
+                    _segment.append(_core_num)
+                else:
+                    _formated_core_list.append(
+                        f"{_segment[0]}-{_segment[-1]}"
+                        if len(_segment) > 1
+                        else f"{_segment[0]}"
+                    )
+                    _index = _tmp_cores_list.index(_core_num)
+                    _formated_core_list.extend(
+                        _get_consecutive_cores_range(_tmp_cores_list[_index:])
+                    )
+                    _segment.clear()
+                    break
+            if len(_segment) > 0:
+                _formated_core_list.append(
+                    f"{_segment[0]}-{_segment[-1]}"
+                    if len(_segment) > 1
+                    else f"{_segment[0]}"
+                )
+            return _formated_core_list
+
+        return f'-l {", ".join(_get_consecutive_cores_range(core_list))}'
+
+    def _make_memory_channels(self) -> str:
+        param_template = "-n {}"
+        return param_template.format(self.dut.get_memory_channels())
+
+    def _make_ports_param(self) -> str:
+        no_port_config = (
+                len(self.ports) == 0 and len(self.b_ports) == 0 and not self.no_pci
+        )
+        port_config_not_in_eal_param = not (
+                "-a" in self.other_eal_param
+                or "-b" in self.other_eal_param
+                or "--no-pci" in self.other_eal_param
+        )
+        if no_port_config and port_config_not_in_eal_param:
+            return self._make_default_ports_param()
+        else:
+            return self._get_ports_and_wraped_port_with_port_options()
+
+    def _make_default_ports_param(self) -> str:
+        pci_list = []
+        allow_option = self._make_allow_option()
+        if len(self.dut.ports_info) != 0:
+            for port_info in self.dut.ports_info:
+                pci_list.append("%s %s" % (allow_option, port_info["pci"]))
+        self.dut.logger.info(pci_list)
+        return " ".join(pci_list)
+
+    def _make_b_ports_param(self) -> str:
+        b_pci_list = []
+        if len(self.b_ports) != 0:
+            for port in self.b_ports:
+                if type(port) == int:
+                    b_pci_list.append("-b %s" % self.dut.ports_info[port]["pci"])
+                else:
+                    b_pci_list = ["-b %s" % pci for pci in self.b_ports]
+        return " ".join(b_pci_list)
+
+    def _make_no_pci_param(self) -> str:
+        if self.no_pci is True:
+            return "--no-pci"
+        else:
+            return ""
+
+    def _make_prefix_param(self) -> str:
+        if self.prefix == "":
+            fixed_file_prefix = "dpdk" + "_" + self.dut.prefix_subfix
+        else:
+            fixed_file_prefix = self.prefix
+            if not self.fixed_prefix:
+                fixed_file_prefix = fixed_file_prefix + "_" + self.dut.prefix_subfix
+        fixed_file_prefix = self._do_os_handle_with_prefix_param(fixed_file_prefix)
+        fixed_file_prefix = "--file-prefix=" + fixed_file_prefix
+        return fixed_file_prefix
+
+    def _make_vdevs_param(self) -> str:
+        if len(self.vdevs) == 0:
+            return ""
+        else:
+            _vdevs = ["--vdev " + vdev for vdev in self.vdevs]
+            return " ".join(_vdevs)
+
+    def _make_share_library_path_param(self) -> str:
+        use_shared_lib = settings.load_global_setting(settings.HOST_SHARED_LIB_SETTING)
+        shared_lib_path = settings.load_global_setting(settings.HOST_SHARED_LIB_PATH)
+        if use_shared_lib == "true" and shared_lib_path and "Virt" not in str(self.dut):
+            return " -d {} ".format(shared_lib_path)
+        return ""
+
+    def _make_default_force_max_simd_bitwidth_param(self) -> str:
+        rx_mode = settings.load_global_setting(settings.DPDK_RXMODE_SETTING)
+        param_template = " --force-max-simd-bitwidth=%s "
+        bitwith_dict = {
+            "novector": "64",
+            "sse": "128",
+            "avx2": "256",
+            "avx512": "512",
+            "nolimit": "0",
+        }
+        if rx_mode in bitwith_dict and "force-max-simd-bitwidth" not in self.other_eal_param:
+            return param_template % bitwith_dict.get(rx_mode)
+        else:
+            return ""
+
+    def _get_cores(self) -> List[int]:
+        if type(self.cores) == list:
+            return self.cores
+        elif isinstance(self.cores, str):
+            return self.dut.get_core_list(self.cores, socket=self.socket)
+
+    def _get_ports_and_wraped_port_with_port_options(self) -> str:
+        w_pci_list = []
+        for port in self.ports:
+            w_pci_list.append(self._add_port_options_to(port))
+        return " ".join(w_pci_list)
+
+    def _add_port_options_to(self, port: Union[str, int]) -> str:
+        allow_option = self._make_allow_option()
+        port_mac_addr = self.dut.ports_info[port]["pci"] if type(port) == int else port
+        port_param = f"{allow_option} {port_mac_addr}"
+        port_option = self._get_port_options_from_config(port)
+        if port_option:
+            port_param = f"{port_param},{port_option}"
+        return port_param
+
+    def _get_port_options_from_config(self, port: Union[str, int]) -> str:
+        if port in list(self.port_options.keys()):
+            return self.port_options[port]
+        else:
+            return ""
+
+    def _make_allow_option(self) -> str:
+        is_new_dpdk_version = (
+                self.dut.dpdk_version > "20.11.0-rc3" or self.dut.dpdk_version == "20.11.0"
+        )
+        return "-a" if is_new_dpdk_version else "-w"
+
+    def _do_os_handle_with_prefix_param(self, file_prefix: str) -> str:
+        if self.dut.get_os_type() == "freebsd":
+            self.dut.prefix_list = []
+            file_prefix = ""
+        else:
+            self.dut.prefix_list.append(file_prefix)
+        return file_prefix
+
+    def make_eal_param(self) -> str:
+        _eal_str = " ".join(
+            [
+                self._make_cores_param(),
+                self._make_memory_channels(),
+                self._make_ports_param(),
+                self._make_b_ports_param(),
+                self._make_prefix_param(),
+                self._make_no_pci_param(),
+                self._make_vdevs_param(),
+                self._make_share_library_path_param(),
+                self._make_default_force_max_simd_bitwidth_param(),
+                # append user defined eal parameters
+                self.other_eal_param,
+            ]
+        )
+        return _eal_str
