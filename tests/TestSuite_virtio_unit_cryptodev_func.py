@@ -56,9 +56,6 @@ class VirtioCryptodevUnitTest(TestCase):
         self.cores = self.dut.get_core_list("1S/3C/1T")
         self.mem_channel = self.dut.get_memory_channels()
 
-        if not cc.is_build_skip(self):
-            self.dut.skip_setup = False
-            cc.build_dpdk_with_cryptodev(self)
         cc.bind_qat_device(self, self.drivername)
         self.dut.build_dpdk_apps("./examples/vhost_crypto")
 

@@ -76,9 +76,6 @@ class PerfTestsCryptodev(TestCase):
             self.dut.send_expect('echo 0 > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (page_size), '# ', 5)
             self.dut.send_expect('echo 16 > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (page_size), '# ', 5)
 
-        if not cc.is_build_skip(self):
-            cc.build_dpdk_with_cryptodev(self)
-
         cc.bind_qat_device(self, "vfio-pci")
         src_files = ['dep/test_aes_cbc.data', 'dep/test_aes_gcm.data']
         self.dut_file_dir = '/tmp'

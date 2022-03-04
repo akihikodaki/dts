@@ -35,81 +35,6 @@ from nics.net_device import GetNicObj
 conf = SuiteConf('cryptodev_sample')
 
 
-def build_dpdk_with_cryptodev(test_case):
-    # Rebuild the dpdk with cryptodev pmds
-    snow3g_lib_path = "/root/libsso_snow3g/snow3g/"
-    if "snow3g_lib_path" in conf.suite_cfg:
-        snow3g_lib_path = conf.suite_cfg["snow3g_lib_path"]
-
-    zuc_lib_path = "/root/libsso_zuc.1.0.1.1-8/zuc"
-    if "zuc_lib_path" in conf.suite_cfg:
-        zuc_lib_path = conf.suite_cfg["zuc_lib_path"]
-
-    kasumi_lib_path = "/root/LibSSO_0_3_1/isg_cid-wireless_libs/ciphers/kasumi/"
-    if "kasumi_lib_path" in conf.suite_cfg:
-        kasumi_lib_path = conf.suite_cfg["kasumi_lib_path"]
-
-    fip_cflags_path = "'-I/opt/openssl-fips-2.0.16/include/'"
-    if "fip_cflags_path" in conf.suite_cfg:
-        fip_cflags_path = conf.suite_cfg["fip_cflags_path"]
-
-    fip_ldflags_path = "'-L/opt/openssl-fips-2.0.16/'"
-    if "fip_ldflags_path" in conf.suite_cfg:
-        fip_cflags_path = conf.suite_cfg["fip_ldflags_path"]
-
-    fip_library_path = "/opt/openssl-fips-2.0.16/"
-    if "fip_library_path" in conf.suite_cfg:
-        fip_cflags_path = conf.suite_cfg["fip_library_path"]
-
-    test_case.dut.send_expect(
-        "export LIBSSO_SNOW3G_PATH={}".format(snow3g_lib_path), "#")
-    test_case.dut.send_expect(
-        "export LIBSSO_ZUC_PATH={}".format(zuc_lib_path), "#")
-    test_case.dut.send_expect(
-        "export LIBSSO_KASUMI_PATH={}".format(kasumi_lib_path), "#")
-    test_case.dut.send_expect(
-        "export EXTRA_CFLAGS={}".format(fip_cflags_path), "#")
-    test_case.dut.send_expect(
-        "export EXTRA_LDFLAGS={}".format(fip_ldflags_path), "#")
-    test_case.dut.send_expect(
-        "export LD_LIBRARY_PATH={}".format(fip_library_path), "#")
-
-    test_case.dut.send_expect(
-        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=n$/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=y/' config/common_base", "# ")
-    test_case.dut.set_build_options({'RTE_LIBRTE_PMD_AESNI_MB': 'y'})
-
-    test_case.dut.send_expect(
-        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_QAT_SYM=n$/CONFIG_RTE_LIBRTE_PMD_QAT_SYM=y/' config/common_base", "# ")
-    test_case.dut.set_build_options({'RTE_LIBRTE_PMD_QAT_SYM': 'y'})
-
-    test_case.dut.send_expect(
-        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_QAT_ASYM=n$/CONFIG_RTE_LIBRTE_PMD_QAT_ASYM=y/' config/common_base", "# ")
-    test_case.dut.set_build_options({'RTE_LIBRTE_PMD_QAT_ASYM': 'y'})
-
-    test_case.dut.send_expect(
-        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AESNI_GCM=n$/CONFIG_RTE_LIBRTE_PMD_AESNI_GCM=y/' config/common_base", "# ")
-    test_case.dut.set_build_options({'RTE_LIBRTE_PMD_AESNI_GCM': 'y'})
-
-    test_case.dut.send_expect(
-        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_OPENSSL=n$/CONFIG_RTE_LIBRTE_PMD_OPENSSL=y/' config/common_base", "# ")
-    test_case.dut.set_build_options({'RTE_LIBRTE_PMD_OPENSSL': 'y'})
-
-    test_case.dut.send_expect(
-        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_SNOW3G=n$/CONFIG_RTE_LIBRTE_PMD_SNOW3G=y/' config/common_base", "# ")
-    test_case.dut.set_build_options({'RTE_LIBRTE_PMD_SNOW3G': 'y'})
-
-    test_case.dut.send_expect(
-        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_KASUMI=n$/CONFIG_RTE_LIBRTE_PMD_KASUMI=y/' config/common_base", "# ")
-    test_case.dut.set_build_options({'RTE_LIBRTE_PMD_KASUMI': 'y'})
-
-    test_case.dut.send_expect(
-        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_ZUC=n$/CONFIG_RTE_LIBRTE_PMD_ZUC=y/' config/common_base", "# ")
-    test_case.dut.set_build_options({'RTE_LIBRTE_PMD_ZUC': 'y'})
-
-    test_case.dut.skip_setup = False
-    test_case.dut.build_install_dpdk(test_case.dut.target)
-
-
 def bind_qat_device(test_case, driver = "igb_uio"):
     if driver == 'vfio-pci':
         test_case.dut.send_expect('modprobe vfio', '#', 10)
@@ -166,25 +91,6 @@ def get_qat_devices(test_case, cpm_num=None, num=1):
                 test_case.logger.warning("not enough vf in cpm: {}".format(cpm))
             n += 1
     return dev_list
-
-
-def clear_dpdk_config(test_case):
-    test_case.dut.send_expect(
-        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=y$/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=n/' config/common_base", "# ")
-    test_case.dut.send_expect(
-        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_QAT_SYM=y$/CONFIG_RTE_LIBRTE_PMD_QAT_SYM=n/' config/common_base", "# ")
-    test_case.dut.send_expect(
-        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_QAT_ASYM=y$/CONFIG_RTE_LIBRTE_PMD_QAT_ASYM=n/' config/common_base", "# ")
-    test_case.dut.send_expect(
-        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AESNI_GCM=y$/CONFIG_RTE_LIBRTE_PMD_AESNI_GCM=n/' config/common_base", "# ")
-    test_case.dut.send_expect(
-        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_OPENSSL=y$/CONFIG_RTE_LIBRTE_PMD_OPENSSL=n/' config/common_base", "# ")
-    test_case.dut.send_expect(
-        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_SNOW3G=y$/CONFIG_RTE_LIBRTE_PMD_SNOW3G=n/' config/common_base", "# ")
-    test_case.dut.send_expect(
-        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_KASUMI=y$/CONFIG_RTE_LIBRTE_PMD_KASUMI=n/' config/common_base", "# ")
-    test_case.dut.send_expect(
-        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_ZUC=y$/CONFIG_RTE_LIBRTE_PMD_ZUC=n/' config/common_base", "# ")
 
 
 default_eal_opts = {

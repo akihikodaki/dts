@@ -40,8 +40,6 @@ from framework.test_case import TestCase
 class FipCryptodev(TestCase):
 
     def set_up_all(self):
-        if not cc.is_build_skip(self):
-            cc.build_dpdk_with_cryptodev(self)
         out = self.dut.build_dpdk_apps("./examples/fips_validation")
         self.verify("Error"not in out,"Compilation error")
         self.verify("No such"not in out,"Compilation error")

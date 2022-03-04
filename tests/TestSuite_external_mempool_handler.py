@@ -59,13 +59,8 @@ class TestExternalMempool(TestCase):
         """
         pass
 
-    def change_mempool_ops(self, ops=''):
-        self.dut.send_expect("sed -i 's/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=.*$/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=\"%s\"/' ./config/common_base" % ops, "# ")
-        self.dut.set_build_options({'RTE_MBUF_DEFAULT_MEMPOOL_OPS': ops})
-        self.dut.build_install_dpdk(self.target)
-
-    def verify_unit_func(self):
-        self.dut.send_expect("./%s -n 4 -c f" % self.app_test_path, "R.*T.*E.*>.*>", 60)
+    def verify_unit_func(self, ops=''):
+        self.dut.send_expect("./%s -n 4 -c f --mbuf-pool-ops-name %s" % (self.app_test_path, ops), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("mempool_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Mempool autotest failed")
@@ -102,39 +97,35 @@ class TestExternalMempool(TestCase):
         """
         Verify default mempool ops
         """
-        self.verify_unit_func()
+        self.verify_unit_func(ops='ring_mp_mc')
         self.verify_app_func()
 
     def test_mempool_handler_sp_sc(self):
         """
         Verify mempool single produce single customer ops
         """
-        self.change_mempool_ops(ops='ring_sp_sc')
-        self.verify_unit_func()
+        self.verify_unit_func(ops='ring_sp_sc')
         self.verify_app_func()
 
     def test_mempool_handler_sp_mc(self):
         """
         Verify mempool single produce multiple customer ops
         """
-        self.change_mempool_ops(ops='ring_sp_mc')
-        self.verify_unit_func()
+        self.verify_unit_func(ops='ring_sp_mc')
         self.verify_app_func()
 
     def test_mempool_handler_mp_sc(self):
         """
         Verify mempool multiple produce single customer ops
         """
-        self.change_mempool_ops(ops='ring_mp_sc')
-        self.verify_unit_func()
+        self.verify_unit_func(ops='ring_mp_sc')
         self.verify_app_func()
 
     def test_mempool_handler_stack(self):
         """
         Verify external mempool handler stack ops
         """
-        self.change_mempool_ops(ops='stack')
-        self.verify_unit_func()
+        self.verify_unit_func(ops='stack')
         self.verify_app_func()
 
     def tear_down(self):
@@ -148,4 +139,4 @@ class TestExternalMempool(TestCase):
         """
         Run after each test suite.
         """
-        self.change_mempool_ops(ops='ring_mp_mc')
+        pass
