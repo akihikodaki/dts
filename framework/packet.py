@@ -56,7 +56,6 @@ from scapy.packet import Raw
 from scapy.sendrecv import sendp
 from scapy.utils import hexstr, rdpcap, wrpcap
 
-from dep.scapy_modules.Dot1BR import Dot1BR
 
 from .utils import convert_int2ip, convert_ip2int, get_module_path
 
@@ -69,13 +68,8 @@ TMP_PATH = DTS_PATH[:-1] + '/output/tmp/pcap/' if exec_file.endswith('.pyc') els
 if not os.path.exists(TMP_PATH):
     os.system('mkdir -p %s' % TMP_PATH)
 
-# copy dep/Dot1BR to scapy
-_contrib_module_path = get_module_path('scapy.contrib')
-shutil.copy(DTS_PATH + '/dep/scapy_modules/Dot1BR.py', _contrib_module_path)
-
 scapy_modules_required = {'scapy.contrib.gtp': ['GTP_U_Header', 'GTPPDUSessionContainer'],
                           'scapy.contrib.lldp': ['LLDPDU', 'LLDPDUManagementAddress'],
-                          'scapy.contrib.Dot1BR': ['Dot1BR'],
                           'scapy.contrib.pfcp': ['PFCP'],
                           'scapy.contrib.nsh': ['NSH'],
                           'scapy.contrib.igmp': ['IGMP'],
@@ -101,7 +95,7 @@ def get_scapy_module_impcmd():
 PACKETGEN = "scapy"
 
 LayersTypes = {
-    "L2": ['ether', 'vlan', 'etag', '1588', 'arp', 'lldp', 'mpls', 'nsh'],
+    "L2": ['ether', 'vlan', '1588', 'arp', 'lldp', 'mpls', 'nsh'],
     # ipv4_ext_unknown, ipv6_ext_unknown
     "L3": ['ipv4', 'ipv4ihl', 'ipv6', 'ipv4_ext', 'ipv6_ext', 'ipv6_ext2', 'ipv6_frag'],
     "L4": ['tcp', 'udp', 'frag', 'sctp', 'icmp', 'nofrag'],
@@ -142,7 +136,6 @@ class scapy(object):
     SCAPY_LAYERS = {
         'ether': Ether(dst="ff:ff:ff:ff:ff:ff"),
         'vlan': Dot1Q(),
-        'etag': Dot1BR(),
         '1588': Ether(type=0x88f7),
         'arp': ARP(),
         'ipv4': IP(),
@@ -232,24 +225,6 @@ class scapy(object):
 
         if element == 'vlan':
             value = int(str(self.pkts[p_index][Dot1Q].vlan))
-        return value
-
-    def etag(self, pkt_layer, ECIDbase=0, prio=0, type=None):
-        if pkt_layer.name != "802.1BR":
-            return
-        pkt_layer.ECIDbase = int(ECIDbase)
-        pkt_layer.prio = prio
-        if type is not None:
-            pkt_layer.type = type
-
-    def strip_etag(self, element, p_index=0):
-        value = None
-
-        if self.pkts[p_index].haslayer('Dot1BR') == 0:
-            return None
-
-        if element == 'ECIDbase':
-            value = int(str(self.pkts[p_index][Dot1BR].ECIDbase))
         return value
 
     def strip_layer2(self, element, p_index=0):
@@ -416,7 +391,6 @@ class Packet(object):
         'TCP': {'layers': ['ether', 'ipv4', 'tcp', 'raw'], 'cfgload': True},
         'UDP': {'layers': ['ether', 'ipv4', 'udp', 'raw'], 'cfgload': True},
         'VLAN_UDP': {'layers': ['ether', 'vlan', 'ipv4', 'udp', 'raw'], 'cfgload': True},
-        'ETAG_UDP': {'layers': ['ether', 'etag', 'ipv4', 'udp', 'raw'], 'cfgload': True},
         'SCTP': {'layers': ['ether', 'ipv4', 'sctp', 'raw'], 'cfgload': True},
         'IPv6_TCP': {'layers': ['ether', 'ipv6', 'tcp', 'raw'], 'cfgload': True},
         'IPv6_UDP': {'layers': ['ether', 'ipv6', 'udp', 'raw'], 'cfgload': True},
@@ -812,7 +786,6 @@ class Packet(object):
         name2type = {
             'MAC': 'ether',
             'VLAN': 'vlan',
-            'ETAG': 'etag',
             'IP': 'ipv4',
             'IPv4-TUNNEL': 'inner_ipv4',
             'IPihl': 'ipv4ihl',
@@ -935,9 +908,6 @@ class Packet(object):
 
     def strip_element_vlan(self, element, p_index=0):
         return self.pktgen.strip_vlan(element, p_index)
-
-    def strip_element_etag(self, element, p_index=0):
-        return self.pktgen.strip_etag(element, p_index)
 
     def strip_element_layer4(self, element, p_index=0):
         return self.pktgen.strip_layer4(element, p_index)

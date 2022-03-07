@@ -113,10 +113,6 @@ class Tester(Crb):
         scapy_module_path = session.session.send_expect("os.path.dirname(sys.modules['scapy'].__file__)", '>>>')
         contrib_module_path = scapy_module_path.replace("'", "") + '/contrib'
 
-        # copy scapy module to tester
-        scapy_dep_module_path = lib_path + 'Dot1BR.py'
-        session.copy_file_to(src=scapy_dep_module_path, dst=contrib_module_path)
-
         # import scapy moudle to scapy APP
         out = session.session.send_expect(get_scapy_module_impcmd(), '>>> ')
         if 'ImportError' in out:

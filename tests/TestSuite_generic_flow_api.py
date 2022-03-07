@@ -407,7 +407,7 @@ class TestGeneric_flow_api(TestCase):
             cmd_fmt = "flow %(create)s 0 ingress pattern %(flow)s / end actions %(action)s end"
         # Record the elements of the rule, ready for the configuration
         # of packets inconsistent to the rule.
-        extrapacket = {'vlan': '', 'etag': '', 'ipv4': '', 'ipv6': '', 'sip': '', 'dip': '', 'proto': '', 'tos': '',
+        extrapacket = {'vlan': '', 'for ': '', 'ipv4': '', 'ipv6': '', 'sip': '', 'dip': '', 'proto': '', 'tos': '',
                        'ttl': '', 'tcp': '', 'udp': '', 'sctp': '', 'sport': '', 'dport': '', 'vni': '', 'tni': '',
                        'ineth': '', 'invlan': ''}
         # Define the packet string, which is consistent to the flow rule.
@@ -420,12 +420,6 @@ class TestGeneric_flow_api(TestCase):
         if 'fuzzy' in flows:
             thresh = self.generate_random_int(1, 15)
             flow_str = "fuzzy thresh is %d " % thresh
-        # L2 tunnel
-        elif 'etag' in flows:
-            ecid = self.generate_random_int(4096, 8191)
-            flow_str = "e_tag grp_ecid_b is %s " % hex(ecid)
-            pkt += "/Dot1BR(GRP=0x1, ECIDbase=%s)" % hex(ecid - 4096)
-            extrapacket['etag'] = hex(ecid - 4096)
         else:
             flow_str = "eth "
         # Configure the flow and packet and extrapacket string
