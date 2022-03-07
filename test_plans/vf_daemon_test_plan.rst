@@ -301,23 +301,29 @@ Test Case 9: Show/Clear stats for VF from PF
 
 Test Case 10: enhancement to identify VF MTU change
 ===================================================
-1. Set VF0 in mac forwarding mode and start testpmd
+1. Set DPDK PF mtu size is 9000.
 
-2. Default mtu size is 1500, send one packet with length bigger than default
+      testpmd> port stop all
+      testpmd> port config mtu 0 9000
+      testpmd> port start all
+
+2. Set VF0 in mac forwarding mode and start testpmd
+
+3. Default mtu size is 1500, send one packet with length bigger than default
    mtu size, such as 2000 from tester, check VF0 can receive but can't transmit
    packet
 
-3. Set VF0 mtu size as 3000, but need to stop then restart port to active mtu::
+4. Set VF0 mtu size as 3000, but need to stop then restart port to active mtu::
 
       testpmd> port stop all
       testpmd> port config mtu 0 3000
       testpmd> port start all
       testpmd> start
 
-4. Send one packet with length 2000 from tester, check VF0 can receive and
+5. Send one packet with length 2000 from tester, check VF0 can receive and
    transmit packet
 
-5. Send one packet with length bigger than configured mtu size, such as 5000
+6. Send one packet with length bigger than configured mtu size, such as 5000
    from tester, check VF0 can receive but can't transmit packet
 
 
