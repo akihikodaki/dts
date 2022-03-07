@@ -50,7 +50,6 @@ class TestVfDaemon(TestCase):
     supported_vf_driver = ['pci-stub', 'vfio-pci']
 
     def set_up_all(self):
-
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         self.vm0 = None
@@ -126,17 +125,19 @@ class TestVfDaemon(TestCase):
         self.vm0_testpmd = PmdOutput(self.vm0_dut)
 
         vf1_prop = {'opt_host': self.sriov_vfs_port[1].pci}
-        self.vm1 = QEMUKvm(self.dut, 'vm1', 'vf_daemon')
-        self.vm1.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
-        try:
-            self.vm1_dut = self.vm1.start()
-            if self.vm1_dut is None:
-                raise Exception("Set up VM1 ENV failed!")
-        except Exception as e:
-            self.destroy_vm_env()
-            raise Exception(e)
-        self.vm1_dut_ports = self.vm1_dut.get_ports('any')
-        self.vm1_testpmd = PmdOutput(self.vm1_dut)
+
+        if self.running_case != 'test_vf_mtu':
+            self.vm1 = QEMUKvm(self.dut, 'vm1', 'vf_daemon')
+            self.vm1.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
+            try:
+                self.vm1_dut = self.vm1.start()
+                if self.vm1_dut is None:
+                    raise Exception("Set up VM1 ENV failed!")
+            except Exception as e:
+                self.destroy_vm_env()
+                raise Exception(e)
+            self.vm1_dut_ports = self.vm1_dut.get_ports('any')
+            self.vm1_testpmd = PmdOutput(self.vm1_dut)
         
         self.env_done = True
         self.dut_testpmd.quit()
@@ -372,6 +373,12 @@ class TestVfDaemon(TestCase):
         self.tester.send_expect("ifconfig %s mtu 9000" % self.tester_intf, "#")
         self.check_vf_link_status()
         time.sleep(10)
+        self.dut_testpmd.execute_cmd("port stop all")
+        self.dut_testpmd.execute_cmd("port config mtu 0 9000")
+        self.dut_testpmd.execute_cmd("port start all")
+        out = self.dut_testpmd.execute_cmd("show port info 0")
+        self.verify("MTU: 9000" in out, "DPDK PF SET MTU FAILED!")
+
         self.vf0_mac = self.vm0_testpmd.get_port_mac(0)
 
         self.vm0_testpmd.execute_cmd('set fwd mac')
@@ -753,11 +760,13 @@ class TestVfDaemon(TestCase):
 
     def tear_down(self):
         self.vm0_testpmd.quit()
-        self.vm1_testpmd.quit()
+        if self.running_case != 'test_vf_mtu':
+            self.vm1_testpmd.quit()
         self.dut_testpmd.quit()
         time.sleep(3)
         self.vm0_dut.kill_all()
-        self.vm1_dut.kill_all()
+        if self.running_case != 'test_vf_mtu':
+            self.vm1_dut.kill_all()
 
 
     def tear_down_all(self):
