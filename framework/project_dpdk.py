@@ -253,7 +253,7 @@ class DPDKdut(Dut):
         """
         Build DPDK source code on linux use meson
         """
-        build_time = 1200
+        build_time = 1800
         target_info = target.split('-')
         arch = target_info[0]
         machine = target_info[1]
@@ -365,7 +365,7 @@ class DPDKdut(Dut):
             # unpack dpdk
             out = self.send_expect("tar zxfm %s%s -C %s" %
                                    (dst_dir, self.package.split('/')[-1], p_dir),
-                                   "# ", 30, verify=True)
+                                   "# ", 60, verify=True)
             if out == -1:
                 raise ValueError("Extract dpdk package to %s failure,"
                                  "please check params -d"
