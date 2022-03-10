@@ -77,7 +77,6 @@ class TestVdevPrimarySecondary(TestCase):
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
 
-
     def setup_vm_env(self):
         """
         Create testing environment
@@ -103,7 +102,6 @@ class TestVdevPrimarySecondary(TestCase):
 
         return True
 
-
     def launch_testpmd(self):
         """
         launch testpmd
@@ -118,7 +116,6 @@ class TestVdevPrimarySecondary(TestCase):
         self.dut.send_expect("set fwd txonly", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
 
-
     def launch_examples(self):
         example_cmd_auto = self.app_symmetric_mp_path + " -l 0 -n %d --proc-type=auto -- -p 3 --num-procs=%d --proc-id=0"
         example_cmd_secondary = self.app_symmetric_mp_path + " -l 1 -n %d --proc-type=secondary -- -p 3 --num-procs=%d --proc-id=1"
@@ -128,26 +125,13 @@ class TestVdevPrimarySecondary(TestCase):
         time.sleep(3)
         self.vhost_secondary.send_expect(final_cmd_secondary, "Lcore", 120)
 
-
     def prepare_symmetric_mp(self):
-        self.vm_dut.send_expect("cp ./examples/multi_process/symmetric_mp/main.c .", "#")
-        self.vm_dut.send_expect(
-                "sed -i '/.offloads = DEV_RX_OFFLOAD_CHECKSUM,/d' ./examples/multi_process/symmetric_mp/main.c", "#")
-        self.vm_dut.send_expect(
-                "sed -i 's/ETH_MQ_RX_RSS,/ETH_MQ_RX_NONE,/g' ./examples/multi_process/symmetric_mp/main.c", "#")
-        out = self.vm_dut.build_dpdk_apps('./examples/multi_process/symmetric_mp')
-        self.verify("Error" not in out, "compilation symmetric_mp error")
-
-
-    def restore_symmetric_mp_env(self):
-        self.vm_dut.send_expect("\cp ./main.c ./examples/multi_process/symmetric_mp/", "#", 15)
         out = self.vm_dut.build_dpdk_apps('./examples/multi_process/symmetric_mp')
         self.verify("Error" not in out, "compilation symmetric_mp error")
 
     def close_session(self):
         self.vm_dut.close_session(self.vhost_first)
         self.vm_dut.close_session(self.vhost_secondary)
-
 
     def test_Virtio_primary_and_secondary_process(self):
         # start testpmd
@@ -175,7 +159,6 @@ class TestVdevPrimarySecondary(TestCase):
         """
         Run after each test case.
         """
-        self.restore_symmetric_mp_env()
         self.close_session()
         self.vm_dut.kill_all()
         self.dut.kill_all()
@@ -183,8 +166,6 @@ class TestVdevPrimarySecondary(TestCase):
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         time.sleep(2)
-
-
 
     def tear_down_all(self):
         """
