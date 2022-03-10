@@ -73,7 +73,15 @@ class TestVmPowerManager(TestCase):
             {'path': '/tmp/powermonitor/%s.2' %
                 self.vm_name, 'name': 'virtio.serial.port.poweragent.2'},
             {'path': '/tmp/powermonitor/%s.3' %
-                self.vm_name, 'name': 'virtio.serial.port.poweragent.3'}
+                self.vm_name, 'name': 'virtio.serial.port.poweragent.3'},
+            {'path': '/tmp/powermonitor/%s.4' %
+                self.vm_name, 'name': 'virtio.serial.port.poweragent.4'},
+            {'path': '/tmp/powermonitor/%s.5' %
+                self.vm_name, 'name': 'virtio.serial.port.poweragent.5'},
+            {'path': '/tmp/powermonitor/%s.6' %
+                self.vm_name, 'name': 'virtio.serial.port.poweragent.6'},
+            {'path': '/tmp/powermonitor/%s.7' %
+                self.vm_name, 'name': 'virtio.serial.port.poweragent.7'}
         ]
         for channel in channels:
             self.vm.add_vm_virtio_serial_channel(**channel)
@@ -92,9 +100,9 @@ class TestVmPowerManager(TestCase):
         self.verify("No such" not in out, "Compilation error")
 
         self.path = self.vm_dut.apps_name['guest_cli']
-        self.guest_cmd = self.path + "-c 0xf -n 4 -- --vm-name=%s --vcpu-list=0,1,2,3" % self.vm_name
+        self.guest_cmd = self.path + "-c 0xff -n 8 -- --vm-name=%s --vcpu-list=0,1,2,3,4,5,6,7" % self.vm_name
         self.vm_power_dir = self.vm_dut.apps_name['vm_power_manager']
-        mgr_cmd = self.vm_power_dir + "-c 0x1ff -n 4"
+        mgr_cmd = self.vm_power_dir + "-c 0xfff -n 8"
         out = self.dut.send_expect(mgr_cmd, "vmpower>", 120)
         self.dut.send_expect("add_vm %s" % self.vm_name, "vmpower>")
         self.dut.send_expect("add_channels %s all" % self.vm_name, "vmpower>")
