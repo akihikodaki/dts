@@ -175,19 +175,6 @@ class TestMtuUpdate(TestCase):
         """
         self.dut.kill_all()
 
-    def tear_down(self):
-        """
-        Run after each test case.
-        """
-        self.dut.kill_all()
-
-    def tear_down_all(self):
-        """
-        When the case of this test suite finished, the environment should
-        clear up.
-        """
-        self.dut.kill_all()
-
     def admin_tester_port(self, local_port, status):
         """
         Do some operations to the network interface port, such as "up" or "down".
@@ -211,11 +198,6 @@ class TestMtuUpdate(TestCase):
         """
         self.admin_tester_port(self.tester.get_local_port(self.tx_port), f"mtu {mtu:d}")
         self.admin_tester_port(self.tester.get_local_port(self.rx_port), f"mtu {mtu:d}")
-    #
-    #
-    #
-    # Test cases.
-    #
 
     def helper_test_mut_checks(self, packet_size):
         """
