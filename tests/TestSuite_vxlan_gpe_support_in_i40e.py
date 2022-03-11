@@ -122,11 +122,6 @@ class VxlanGpeTestConfig(object):
         """
         Send vxlan pcap file by iface
         """
-        # load vxlan module to scapy
-        cwd = os.getcwd()
-        dir_vxlan_module = cwd + r'/' + FOLDERS['Depends'] + r'/' + FOLDERS['scapy_modules']
-        self.test_case.tester.scapy_append("sys.path.append('%s')" % dir_vxlan_module)
-        self.test_case.tester.scapy_append("from scapy.layers.vxlan import VXLAN")
         self.test_case.tester.scapy_append(
             'pcap = rdpcap("%s")' % self.pcap_file)
         self.test_case.tester.scapy_append(

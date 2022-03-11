@@ -106,18 +106,6 @@ class Tester(Crb):
         session = self.create_session(session_name)
         self.scapy_sessions_li.append(session)
         session.send_expect('scapy', '>>> ')
-        file_dir = os.path.dirname(__file__).split(os.path.sep)
-        lib_path = os.path.sep.join(file_dir[:-1]) + '/dep/scapy_modules/'
-
-        # get contrib module path on tester
-        scapy_module_path = session.session.send_expect("os.path.dirname(sys.modules['scapy'].__file__)", '>>>')
-        contrib_module_path = scapy_module_path.replace("'", "") + '/contrib'
-
-        # import scapy moudle to scapy APP
-        out = session.session.send_expect(get_scapy_module_impcmd(), '>>> ')
-        if 'ImportError' in out:
-            session.logger.warning(f'entering import error: {out}')
-
         return session
 
     def check_scapy_version(self):
