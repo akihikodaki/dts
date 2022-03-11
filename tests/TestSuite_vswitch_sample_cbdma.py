@@ -54,7 +54,6 @@ class TestVswitchSampleCBDMA(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.set_max_queues(512)
         self.build_vhost_app()
         self.tester_tx_port_num = 1
         self.dut_ports = self.dut.get_ports()
@@ -111,11 +110,6 @@ class TestVswitchSampleCBDMA(TestCase):
         self.vm_dut = []
         self.vm = []
 
-    def set_max_queues(self, max_queues=512):
-        self.logger.info("Configure MAX_QUEUES to {}".format(max_queues))
-        self.dut.send_expect("sed -i -e 's/#define MAX_QUEUES .*$/#define MAX_QUEUES {}/' "
-                             "./examples/vhost/main.c".format(max_queues), "#", 20)
-
     def build_vhost_app(self):
         out = self.dut.build_dpdk_apps('./examples/vhost')
         self.verify('Error' not in out, 'compilation vhost error')
@@ -141,15 +135,15 @@ class TestVswitchSampleCBDMA(TestCase):
             allow_option += ' -a {}'.format(item)
         if with_cbdma:
             if client_mode:
-                params = (" -c {} -n {} {} -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat --stats 1 "
-                          + socket_file_param + "--dmas [{}] --client").format(self.vhost_core_mask, self.mem_channels,
+                params = (" -c {} -n {} {} -- -p 0x1 --mergeable 1 --vm2vm 1 --stats 1 "
+                          + socket_file_param + "--dmas [{}] --client --total-num-mbufs 600000").format(self.vhost_core_mask, self.mem_channels,
                                                                                allow_option, self.dmas_info)
             else:
-                params = (" -c {} -n {} {} -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat --stats 1 "
-                          + socket_file_param + "--dmas [{}]").format(self.vhost_core_mask, self.mem_channels,
+                params = (" -c {} -n {} {} -- -p 0x1 --mergeable 1 --vm2vm 1 --stats 1 "
+                          + socket_file_param + "--dmas [{}] --total-num-mbufs 600000").format(self.vhost_core_mask, self.mem_channels,
                                                                       allow_option, self.dmas_info)
         else:
-            params = (" -c {} -n {} {} -- -p 0x1 --mergeable 1 --vm2vm 1 --stats 1 " + socket_file_param).format(
+            params = (" -c {} -n {} {} -- -p 0x1 --mergeable 1 --vm2vm 1 --stats 1 " + socket_file_param + "--total-num-mbufs 600000").format(
                 self.vhost_core_mask, self.mem_channels, allow_option)
         self.command_line = self.app_path + params
         self.vhost_user.send_command(self.command_line)
@@ -589,15 +583,9 @@ class TestVswitchSampleCBDMA(TestCase):
             self.result_table_add(table_row)
         self.result_table_print()
         for key in before_relunch_result.keys():
-            if key == 64:
-                self.verify(before_relunch_result[key] > 1, "The perf test result is lower than 1 Mpps")
-            else:
-                self.verify(before_relunch_result[key] > 0.1, "The perf test result is lower than 0.1 Mpps")
+            self.verify(before_relunch_result[key] > 0.1, "The perf test result is lower than 0.1 Mpps")
         for key in after_relunch_result.keys():
-            if key == 64:
-                self.verify(after_relunch_result[key] > 1, "The perf test result is lower than 1 Mpps")
-            else:
-                self.verify(after_relunch_result[key] > 0.1, "The perf test result is lower than 0.1 Mpps")
+            self.verify(after_relunch_result[key] > 0.1, "The perf test result is lower than 0.1 Mpps")
 
     def vm2vm_check_with_two_vhost_device(self):
         rx_throughput = {}
@@ -828,5 +816,4 @@ class TestVswitchSampleCBDMA(TestCase):
         """
         Run after each test suite.
         """
-        self.set_max_queues(128)
         self.close_all_session()
