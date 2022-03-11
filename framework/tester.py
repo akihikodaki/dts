@@ -85,7 +85,7 @@ class Tester(Crb):
         check_crb_python_version(self)
 
         self.bgProcIsRunning = False
-        self.duts = None
+        self.duts = []
         self.inBg = 0
         self.scapyCmds = []
         self.bgCmds = []
