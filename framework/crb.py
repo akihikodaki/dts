@@ -699,7 +699,7 @@ class Crb(object):
             if self.crb['bypass core0'] and core == '0' and socket == '0':
                 self.logger.info("Core0 bypassed")
                 continue
-            if self.crb.get('dut arch') == "arm64":
+            if self.crb.get('dut arch') == "arm64" or self.crb.get('dut arch') == "ppc64" :
                 self.cores.append(
                         {'thread': thread, 'socket': node, 'core': coremap[core]})
             else:
