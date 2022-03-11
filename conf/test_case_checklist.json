@@ -1,5 +1,5 @@
 {
-    "128_queues": [
+    "64_queues": [
         {
             "OS": [
                 "ALL"
