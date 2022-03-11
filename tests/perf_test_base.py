@@ -146,6 +146,7 @@ class PerfTestBase(object):
         self.__bin_type = bin_type or BIN_TYPE.L3FWD
         self.__compile_rx_desc = None
         self.__compile_avx = None
+        self.__rxtx_queue_size = None
         self.__mode = mode or SUITE_TYPE.PF
         self.__suite = None
         self.__valports = valports
@@ -663,33 +664,15 @@ class PerfTestBase(object):
         self.dut.set_build_options(compile_flags)
         self.dut.build_install_dpdk(self.target)
 
-    def __preset_l3fwd_compilation(self):
-        # init l3fwd binary file
-        if self.nic not in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
-            self.logger.info(
-                "Configure RX/TX descriptor to 2048, re-build ./examples/l3fwd")
-            self.d_con((
-                "sed -i -e 's/"
-                "define RTE_TEST_RX_DESC_DEFAULT.*$/"
-                "define RTE_TEST_RX_DESC_DEFAULT 2048/' "
-                "./examples/l3fwd/l3fwd.h"))
-            self.d_con((
-                "sed -i -e 's/"
-                "define RTE_TEST_TX_DESC_DEFAULT.*$/"
-                "define RTE_TEST_TX_DESC_DEFAULT 2048/' "
-                "./examples/l3fwd/l3fwd.h"))
+    def __preset_compilation(self):
+        # Update compile config file and rebuild to get best perf on different nics
+        self.__preset_dpdk_compilation()
         if self.__mode is SUITE_TYPE.VF:
             # init testpmd
             if self.__pf_driver is not NIC_DRV.PCI_STUB:
                 self.__init_host_testpmd()
         self.__l3fwd_em = self.__l3fwd_init(MATCH_MODE.EM)
         self.__l3fwd_lpm = self.__l3fwd_init(MATCH_MODE.LPM)
-
-    def __preset_compilation(self):
-        # Update compile config file and rebuild to get best perf on different nics
-        self.__preset_dpdk_compilation()
-        if self.__bin_type is BIN_TYPE.L3FWD:
-            self.__preset_l3fwd_compilation()
 
     def __init_host_testpmd(self):
         '''
@@ -847,6 +830,8 @@ class PerfTestBase(object):
             "niantic",
             "columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2",
         ]
+        if self.__rxtx_queue_size:
+            command_line += " --rx-queue-size {rxtx} --tx-queue-size {rxtx}". format(rxtx= self.__rxtx_queue_size)
         if self.nic in suppored_nics or self.__mode is SUITE_TYPE.VF:
             command_line += " --parse-ptype"
         if frame_size > 1518:
@@ -1376,6 +1361,7 @@ class PerfTestBase(object):
         if self.__bin_type is BIN_TYPE.L3FWD:
             self.__bin_ps_wait_up = test_content.get('l3fwd_wait_up', 0)
             self.__bin_ps_restart = test_content.get('l3fwd_restart', True)
+            self.__rxtx_queue_size = test_content.get('rxtx_queue_size', None)
         else:
             self.__bin_ps_wait_up = test_content.get('bin_ps_wait_up', 0)
             self.__bin_ps_restart = test_content.get('bin_ps_restart', True)
