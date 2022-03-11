@@ -48,7 +48,6 @@ from framework.test_case import TestCase
 
 ETHER_HEADER_LEN = 18
 IP_HEADER_LEN = 20
-ETHER_STANDARD_MTU = 1518
 RANDOM_IP_POOL = ['192.168.10.222/0']
 prefix_list = ['rx_good_packets', 'tx_good_packets', 'rx_good_bytes', 'tx_good_bytes']
 
@@ -62,21 +61,6 @@ class TestStatsChecks(TestCase):
     # of TestCase. This was done because the current test system doesn't support
     # inheritance.
     #
-    def tear_down(self):
-        """
-        Run after each test case.
-        """
-        self.dut.kill_all()
-
-    def tear_down_all(self):
-        """
-        When the case of this test suite finished, the environment should
-        clear up.
-        """
-        self.tester.send_expect(f"ifconfig {self.tester.get_interface(self.tester.get_local_port(self.rx_port))} " +
-                                f"mtu {ETHER_STANDARD_MTU}", "# ")
-        super().tear_down_all()
-
     def exec(self, command: str) -> str:
         """
         An abstraction to remove repeated code throughout the subclasses of this class
@@ -274,12 +258,6 @@ class TestStatsChecks(TestCase):
         clear up.
         """
         self.dut.kill_all()
-
-    #
-    #
-    #
-    # Test cases.
-    #
 
     def test_stats_checks(self):
         self.pmdout.start_testpmd("Default")
