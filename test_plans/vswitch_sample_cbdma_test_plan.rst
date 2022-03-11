@@ -45,19 +45,6 @@ from 21.05,packed ring also can support cbdma copy with vhost enqueue direction.
 Prerequisites
 =============
 
-Modify the testpmd code as following::
-
-	--- a/examples/vhost/main.c
-	+++ b/examples/vhost/main.c
-	@@ -29,7 +29,7 @@
-	 #include "main.h"
-
-	 #ifndef MAX_QUEUES
-	-#define MAX_QUEUES 128
-	+#define MAX_QUEUES 512
-	 #endif
-
-	 /* the maximum number of external ports supported */
 
 Test Case1: PVP performance check with CBDMA channel using vhost async driver
 =============================================================================
@@ -67,7 +54,7 @@ Test Case1: PVP performance check with CBDMA channel using vhost async driver
 2. On host, launch dpdk-vhost by below command::
 
 	./x86_64-native-linuxapp-gcc/examples/dpdk-vhost -l 31-32 -n 4 -- \
-	-p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat --stats 1 --socket-file /tmp/vhost-net --dmas [txd0@0000:00:04.0] --client
+	-p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat --stats 1 --socket-file /tmp/vhost-net --dmas [txd0@0000:00:04.0] --client --total-num-mbufs 600000
 
 3. Launch virtio-user with packed ring::
 
@@ -103,7 +90,7 @@ Test Case2: PVP test with two VM and two CBDMA channels using vhost async driver
 2. On host, launch dpdk-vhost by below command::
 
 	./x86_64-native-linuxapp-gcc/examples/dpdk-vhost -l 26-28 -n 4 -- \
-	-p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat --stats 1 --socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:01.0,txd1@0000:00:01.1] --client
+	-p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat --stats 1 --socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:01.0,txd1@0000:00:01.1] --client--total-num-mbufs 600000
 
 3. launch two virtio-user ports::
 
@@ -141,7 +128,7 @@ Test Case3: VM2VM forwarding test with two CBDMA channels
 2. On host, launch dpdk-vhost by below command::
 
 	./x86_64-native-linuxapp-gcc/examples/dpdk-vhost -l 26-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
-	--socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:04.0,txd1@0000:00:04.1]  --client
+	--socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:04.0,txd1@0000:00:04.1]  --client --total-num-mbufs 600000
 
 3. Launch virtio-user::
 
@@ -188,7 +175,7 @@ Test Case4: VM2VM test with cbdma channels register/unregister stable check
 2. On host, launch dpdk-vhost by below command::
 
     ./x86_64-native-linuxapp-gcc/examples/dpdk-vhost -l 26-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
-    --socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:04.0,txd1@0000:00:04.1] --client
+    --socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:04.0,txd1@0000:00:04.1] --client --total-num-mbufs 600000
 
 3. Start VM0 with qemu-5.2.0::
 
@@ -268,7 +255,7 @@ Test Case5: VM2VM split ring test with iperf and reconnect stable check
 2. On host, launch dpdk-vhost by below command::
 
 	./x86_64-native-linuxapp-gcc/examples/dpdk-vhost -l 26-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
-	--socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:04.0,txd1@0000:00:04.1] --client
+	--socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:04.0,txd1@0000:00:04.1] --client --total-num-mbufs 600000
 
 3. Start VM0 with qemu-5.2.0::
 
@@ -327,7 +314,7 @@ Test Case6: VM2VM packed ring test with iperf and reconnect stable test
 2. On host, launch dpdk-vhost by below command::
 
 	./x86_64-native-linuxapp-gcc/examples/dpdk-vhost -l 26-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
-	--socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:04.0,txd1@0000:00:04.1]
+	--socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@0000:00:04.0,txd1@0000:00:04.1] --total-num-mbufs 600000
 
 3. Start VM0 with qemu-5.2.0::
 
