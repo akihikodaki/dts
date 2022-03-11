@@ -67,7 +67,7 @@ class IxNetworkPacketGenerator(PacketGenerator):
 
     def _connect(self, conf):
         # initialize ixNetwork class
-        from ixia_network import IxNetwork
+        from framework.ixia_network import IxNetwork
         self._conn = IxNetwork(self.pktgen_type, conf, self.logger)
         for p in self._conn.get_ports():
             self._ports.append(p)
