@@ -68,6 +68,7 @@ class IxnetTrafficGenerator(object):
         # initialize ixNetwork
         self.new_blank_config()
         self.tg_vports = self.assign_ports(self.tg_ports)
+        self.OUTPUT_DIR = None
 
     def get_session_id(self, api_server):
         url = '{server}/api/v1/sessions'.format(server=api_server)
