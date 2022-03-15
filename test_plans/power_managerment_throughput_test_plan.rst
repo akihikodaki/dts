@@ -63,7 +63,7 @@ Test Case1: Check the CPU frequency can change according differernt packet speed
 
 3. Bind one nic port to igb_uio, launch l3fwd-power sample, one core used for one port::
 
-    ./l3fwd-power -c 0xc000000 -n 4 -- -P -p 0x01  --config '(0,0,27)'
+    ./<build_target>/examples/dpdk-l3fwd-power -c 0xc000000 -n 4 -- -P -p 0x01  --config '(0,0,27)'
 
 4. Send packets by packet generator with high speed, check the used cpu frequency is almost 100%::
 

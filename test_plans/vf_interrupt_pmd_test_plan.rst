@@ -158,13 +158,10 @@ Test Case4: VF interrupt pmd in VM with vfio-pci
     -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 -vnc :11 \
     -drive file=/home/image/ubuntu16-0.img,format=qcow2,if=virtio,index=0,media=disk
 
-3. Modify the DPDK-l3fwd-power source code and recompile the l3fwd-power::
+3. Compile the l3fwd-power::
 
-    sed -i -e '/DEV_RX_OFFLOAD_CHECKSUM,/d' ./examples/l3fwd-power/main.c
-
-    export RTE_TARGET=x86_64-native-linuxapp-gcc
-    export RTE_SDK=`/root/DPDK`
-    make -C examples/l3fwd-power
+    meson configure -Dexamples=l3fwd-power x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc
 
 4. Bind VF 0 to the vfio-pci driver::
 
