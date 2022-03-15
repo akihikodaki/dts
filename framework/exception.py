@@ -77,12 +77,7 @@ class SSHSessionDeadException(Exception):
 
 
 class ParameterInvalidException(Exception):
-    def __init__(self, param_name: str, param_value: Any):
-        self.param_name = param_name
-        self.param_value = param_value
-
-    def __str__(self) -> str:
-        return f'Invalid parameter of {self.param_name} about value of {self.param_value}, Please reference API doc.'
+    pass
 
 
 class StartVMFailedException(Exception):

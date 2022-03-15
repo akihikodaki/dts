@@ -1364,6 +1364,10 @@ class _EalParameter(object):
         self.vdevs = vdevs
         self.other_eal_param = other_eal_param
 
+    _param_validate_exception_info_template = (
+        'Invalid parameter of %s about value of %s, Please reference API doc.'
+    )
+
     @staticmethod
     def _validate_cores(cores: Union[str, List[int], List[str]]):
         core_string_match = r"default|all|\d+S/\d+C/\d+T|$"
@@ -1386,18 +1390,22 @@ class _EalParameter(object):
                 or all(map(lambda _port: type(_port) == str, ports))
                 and all(
             map(
-                lambda _port: re.match(r"^([\d\w]+:){2}[\d\w]+\.[\d\w]+$", _port),
+                lambda _port: re.match(r"^([\d\w]+:){1,2}[\d\w]+\.[\d\w]+$", _port),
                 ports,
             )
         )
         ):
-            raise ParameterInvalidException("ports", ports)
+            raise ParameterInvalidException(
+                _EalParameter._param_validate_exception_info_template % ('ports', ports)
+            )
         return ports
 
     @staticmethod
     def _validate_port_options(port_options: Dict[Union[str, int], str]):
         if not isinstance(port_options, Dict):
-            raise ParameterInvalidException("port_options", port_options)
+            raise ParameterInvalidException(
+                _EalParameter._param_validate_exception_info_template % ('port_options', port_options)
+            )
         port_list = port_options.keys()
         _EalParameter._validate_ports(list(port_list))
         return port_options
@@ -1405,7 +1413,9 @@ class _EalParameter(object):
     @staticmethod
     def _validate_vdev(vdev: List[str]):
         if not isinstance(vdev, list):
-            raise ParameterInvalidException("vdev", vdev)
+            raise ParameterInvalidException(
+                _EalParameter._param_validate_exception_info_template % ('vdev', vdev)
+            )
 
     def _make_cores_param(self) -> str:
         is_use_default_cores = (
@@ -1446,7 +1456,7 @@ class _EalParameter(object):
                 )
             return _formated_core_list
 
-        return f'-l {", ".join(_get_consecutive_cores_range(core_list))}'
+        return f'-l {",".join(_get_consecutive_cores_range(core_list))}'
 
     def _make_memory_channels(self) -> str:
         param_template = "-n {}"
@@ -1499,7 +1509,6 @@ class _EalParameter(object):
             if not self.fixed_prefix:
                 fixed_file_prefix = fixed_file_prefix + "_" + self.dut.prefix_subfix
         fixed_file_prefix = self._do_os_handle_with_prefix_param(fixed_file_prefix)
-        fixed_file_prefix = "--file-prefix=" + fixed_file_prefix
         return fixed_file_prefix
 
     def _make_vdevs_param(self) -> str:
@@ -1570,6 +1579,7 @@ class _EalParameter(object):
             file_prefix = ""
         else:
             self.dut.prefix_list.append(file_prefix)
+            file_prefix = "--file-prefix=" + file_prefix
         return file_prefix
 
     def make_eal_param(self) -> str:
