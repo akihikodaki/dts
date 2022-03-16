@@ -37,7 +37,7 @@ from .settings import PROTOCOL_PACKET_SIZE, TIMEOUT, get_nic_driver
 from .utils import create_mask
 
 
-class PmdOutput():
+class PmdOutput:
 
     """
     Module for get all statics value by port in testpmd
@@ -77,7 +77,7 @@ class PmdOutput():
         """
         core_number = len(self.dut.cores)
         if core_number < 2:
-            raise ValueError(f'Not enough cores on DUT {self.dut}')
+            raise ValueError(f"Not enough cores on DUT {self.dut}")
         else:
             self.default_cores = "1S/2C/1T"
 
@@ -104,7 +104,16 @@ class PmdOutput():
     def get_pmd_cmd(self):
         return self.command
 
-    def start_testpmd(self, cores='default', param='', eal_param='', socket=0, fixed_prefix=False, expected='testpmd> ', **config):
+    def start_testpmd(
+        self,
+        cores="default",
+        param="",
+        eal_param="",
+        socket=0,
+        fixed_prefix=False,
+        expected="testpmd> ",
+        **config,
+    ):
         """
         start testpmd with input parameters.
         :param cores: eg:
@@ -125,46 +134,61 @@ class PmdOutput():
                 add virtual device: vdevs=['net_vhost0,iface=vhost-net,queues=1']
         :return: output of launching testpmd
         """
-        eal_param = ' ' + eal_param + ' '
-        eal_param = eal_param.replace(' -w ', ' -a ')
-        re_file_prefix = '--file-prefix[\s*=]\S+\s'
+        eal_param = " " + eal_param + " "
+        eal_param = eal_param.replace(" -w ", " -a ")
+        re_file_prefix = "--file-prefix[\s*=]\S+\s"
         file_prefix_str = re.findall(re_file_prefix, eal_param)
         if file_prefix_str:
-            tmp = re.split('(=|\s+)', file_prefix_str[-1].strip())
+            tmp = re.split("(=|\s+)", file_prefix_str[-1].strip())
             file_prefix = tmp[-1].strip()
-            config['prefix'] = file_prefix
-        eal_param = re.sub(re_file_prefix, '', eal_param)
-        config['other_eal_param'] = eal_param
+            config["prefix"] = file_prefix
+        eal_param = re.sub(re_file_prefix, "", eal_param)
+        config["other_eal_param"] = eal_param
 
-        config['cores'] = cores
-        if ' -w ' not in eal_param and ' -a ' not in eal_param and ' -b ' not in eal_param \
-            and 'ports' not in config and 'b_ports' not in config and ' --no-pci ' not in eal_param \
-            and ( 'no_pci' not in config or ('no_pci' in config and config['no_pci'] != True)):
-            config['ports'] = [self.dut.ports_info[i]['pci'] for i in range(len(self.dut.ports_info))]
-        all_eal_param = self.dut.create_eal_parameters(fixed_prefix=fixed_prefix, socket=socket, **config)
+        config["cores"] = cores
+        if (
+            " -w " not in eal_param
+            and " -a " not in eal_param
+            and " -b " not in eal_param
+            and "ports" not in config
+            and "b_ports" not in config
+            and " --no-pci " not in eal_param
+            and (
+                "no_pci" not in config
+                or ("no_pci" in config and config["no_pci"] != True)
+            )
+        ):
+            config["ports"] = [
+                self.dut.ports_info[i]["pci"] for i in range(len(self.dut.ports_info))
+            ]
+        all_eal_param = self.dut.create_eal_parameters(
+            fixed_prefix=fixed_prefix, socket=socket, **config
+        )
 
-        app_name = self.dut.apps_name['test-pmd']
+        app_name = self.dut.apps_name["test-pmd"]
         command = app_name + " %s -- -i %s" % (all_eal_param, param)
-        command = command.replace('  ', ' ')
+        command = command.replace("  ", " ")
         if self.session != self.dut:
             self.session.send_expect("cd %s" % self.dut.base_dir, "# ")
-        timeout = config.get('timeout',120)
+        timeout = config.get("timeout", 120)
         out = self.session.send_expect(command, expected, timeout)
         self.command = command
         # wait 10s to ensure links getting up before test start.
         sleep(10)
         return out
 
-    def execute_cmd(self, pmd_cmd, expected='testpmd> ', timeout=TIMEOUT,
-                    alt_session=False):
-        if 'dut' in str(self.session):
-            return self.session.send_expect('%s' % pmd_cmd, expected, timeout=timeout,
-                                    alt_session=alt_session)
+    def execute_cmd(
+        self, pmd_cmd, expected="testpmd> ", timeout=TIMEOUT, alt_session=False
+    ):
+        if "dut" in str(self.session):
+            return self.session.send_expect(
+                "%s" % pmd_cmd, expected, timeout=timeout, alt_session=alt_session
+            )
         else:
-            return self.session.send_expect('%s' % pmd_cmd, expected, timeout=timeout)
+            return self.session.send_expect("%s" % pmd_cmd, expected, timeout=timeout)
 
     def get_output(self, timeout=1):
-        if 'dut' in str(self.session):
+        if "dut" in str(self.session):
             return self.session.get_session_output(timeout=timeout)
         else:
             return self.session.get_session_before(timeout=timeout)
@@ -176,8 +200,8 @@ class PmdOutput():
         pattern = r"(?<=%s)%s" % (key_str, regx_str)
         s = re.compile(pattern)
         res = s.search(string)
-        if type(res).__name__ == 'NoneType':
-            return ' '
+        if type(res).__name__ == "NoneType":
+            return " "
         else:
             return res.group(0)
 
@@ -188,8 +212,8 @@ class PmdOutput():
         pattern = r"(?<=%s)%s" % (key_str, regx_str)
         s = re.compile(pattern)
         res = s.findall(string)
-        if type(res).__name__ == 'NoneType':
-            return ' '
+        if type(res).__name__ == "NoneType":
+            return " "
         else:
             return res
 
@@ -205,7 +229,9 @@ class PmdOutput():
         """
         Get the specified port MAC.
         """
-        return self.get_detail_from_port_info("MAC address: ", "([0-9A-F]{2}:){5}[0-9A-F]{2}", port_id)
+        return self.get_detail_from_port_info(
+            "MAC address: ", "([0-9A-F]{2}:){5}[0-9A-F]{2}", port_id
+        )
 
     def get_firmware_version(self, port_id):
         """
@@ -223,7 +249,9 @@ class PmdOutput():
         """
         Get the socket id which the specified port memory is allocated on.
         """
-        return self.get_detail_from_port_info("memory allocation on the socket: ", "\d+", port_id)
+        return self.get_detail_from_port_info(
+            "memory allocation on the socket: ", "\d+", port_id
+        )
 
     def get_port_link_status(self, port_id):
         """
@@ -255,7 +283,7 @@ class PmdOutput():
         """
         return self.get_detail_from_port_info("Allmulticast mode: ", "\S+", port_id)
 
-    def check_tx_bytes(self, tx_bytes, exp_bytes = 0):
+    def check_tx_bytes(self, tx_bytes, exp_bytes=0):
         """
         fortville nic will send lldp packet when nic setup with testpmd.
         so should used (tx_bytes - exp_bytes) % PROTOCOL_PACKET_SIZE['lldp']
@@ -263,8 +291,8 @@ class PmdOutput():
         """
         # error_flag is true means tx_bytes different with expect bytes
         error_flag = 1
-        for size in  PROTOCOL_PACKET_SIZE['lldp']:
-            error_flag = error_flag and  (tx_bytes - exp_bytes) % size
+        for size in PROTOCOL_PACKET_SIZE["lldp"]:
+            error_flag = error_flag and (tx_bytes - exp_bytes) % size
 
         return not error_flag
 
@@ -277,12 +305,11 @@ class PmdOutput():
             'qinq':'off'
         """
         vlan_info = {}
-        vlan_info['strip'] = self.get_detail_from_port_info(
-            "strip ", '\S+', port_id)
-        vlan_info['filter'] = self.get_detail_from_port_info(
-            'filter', '\S+', port_id)
-        vlan_info['qinq'] = self.get_detail_from_port_info(
-            'qinq\(extend\) ', '\S+', port_id)
+        vlan_info["strip"] = self.get_detail_from_port_info("strip ", "\S+", port_id)
+        vlan_info["filter"] = self.get_detail_from_port_info("filter", "\S+", port_id)
+        vlan_info["qinq"] = self.get_detail_from_port_info(
+            "qinq\(extend\) ", "\S+", port_id
+        )
         return vlan_info
 
     def quit(self):
@@ -294,17 +321,21 @@ class PmdOutput():
         if not, loop wait
         """
         for i in range(timeout):
-            out = self.session.send_expect("show port info %s" % str(port_id), "testpmd> ")
+            out = self.session.send_expect(
+                "show port info %s" % str(port_id), "testpmd> "
+            )
             status = self.get_all_value_from_string("Link status: ", "\S+", out)
-            if 'down' not in status:
+            if "down" not in status:
                 break
             sleep(1)
-        return 'down' not in status
+        return "down" not in status
 
-    def get_max_rule_number(self,obj,out):
-        res = re.search(r"fd_fltr_guar\s+=\s+(\d+).*fd_fltr_best_effort\s+=\s+(\d+)\.",out)
-        obj.verify(res,"'fd_fltr_guar' and 'fd_fltr_best_effort not found'")
-        fltr_guar,fltr_best = res.group(1),res.group(2)
+    def get_max_rule_number(self, obj, out):
+        res = re.search(
+            r"fd_fltr_guar\s+=\s+(\d+).*fd_fltr_best_effort\s+=\s+(\d+)\.", out
+        )
+        obj.verify(res, "'fd_fltr_guar' and 'fd_fltr_best_effort not found'")
+        fltr_guar, fltr_best = res.group(1), res.group(2)
         max_rule = int(fltr_guar) + int(fltr_best)
-        obj.logger.info(f'this Card max rule number is :{max_rule}')
+        obj.logger.info(f"this Card max rule number is :{max_rule}")
         return max_rule

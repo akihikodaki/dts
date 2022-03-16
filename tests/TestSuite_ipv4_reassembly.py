@@ -72,8 +72,8 @@ class IpReassemblyTestConfig(object):
         self.packets_config()
 
     def cpu_config(self):
-        self.eal_para = self.test_case.dut.create_eal_parameters(cores='1S/1C/1T')
-        self.core_list = self.test_case.dut.get_core_list('1S/1C/1T')
+        self.eal_para = self.test_case.dut.create_eal_parameters(cores="1S/1C/1T")
+        self.core_list = self.test_case.dut.get_core_list("1S/1C/1T")
         self.core_mask = utils.create_mask(self.core_list)
         self.memory_channels = self.test_case.dut.get_memory_channels()
 
@@ -83,27 +83,27 @@ class IpReassemblyTestConfig(object):
         tester_port = self.test_case.tester.get_local_port(dut_port)
         self.tester_iface = self.test_case.tester.get_interface(tester_port)
         self.dut_port_mask = utils.create_mask([dut_port])
-        self.queue_config = '({},{},{})'.format(
-            dut_port, '0', self.core_list[0])
+        self.queue_config = "({},{},{})".format(dut_port, "0", self.core_list[0])
 
     def example_app_config(self):
         self.maxflows = 1024
-        self.flowttl = '10s'
-        self.extra_args = ''
+        self.flowttl = "10s"
+        self.extra_args = ""
 
     def packets_config(self):
-        self.pcap_file = 'file.pcap'
+        self.pcap_file = "file.pcap"
         self.number_of_frames = 1024
         self.frags_per_frame = 4
-        self.src_ip = '2.1.1.0'
-        self.dst_ip = '1.1.1.111'
+        self.src_ip = "2.1.1.0"
+        self.dst_ip = "1.1.1.111"
         self.payload_size = 140
         self.fragment_size = 40
-        self.mac_src = 'DE:AD:BE:EF:02:01'
-        self.mac_dst = 'DE:AD:BE:EF:01:02'
+        self.mac_src = "DE:AD:BE:EF:02:01"
+        self.mac_dst = "DE:AD:BE:EF:01:02"
         self.tcp_src_port = 1234
         self.tcp_dst_port = 4321
         self.identification = 1
+
 
 #
 #
@@ -123,7 +123,9 @@ class TestIpReassembly(TestCase):
         """
         Changes the maximum number of frames by modifying the example app code.
         """
-        self.dut.set_build_options({'RTE_LIBRTE_IP_FRAG_MAX_FRAG': int(num_of_fragments)})
+        self.dut.set_build_options(
+            {"RTE_LIBRTE_IP_FRAG_MAX_FRAG": int(num_of_fragments)}
+        )
         self.dut.send_expect("export RTE_TARGET=" + self.target, "#")
         self.dut.send_expect("export RTE_SDK=`pwd`", "#")
         self.dut.send_expect("rm -rf %s" % self.target, "# ", 5)
@@ -134,27 +136,28 @@ class TestIpReassembly(TestCase):
         Set the interface MTU value.
         """
 
-        command = 'ip link set mtu {mtu} dev {iface}'
-        self.tester.send_expect(command.format(**locals()), '#')
+        command = "ip link set mtu {mtu} dev {iface}"
+        self.tester.send_expect(command.format(**locals()), "#")
 
     def compile_example_app(self):
         """
         Builds the example app and checks for errors.
         """
 
-        self.dut.send_expect('rm -rf examples/ip_reassembly/build', '#')
-        out = self.dut.build_dpdk_apps('examples/ip_reassembly')
+        self.dut.send_expect("rm -rf examples/ip_reassembly/build", "#")
+        out = self.dut.build_dpdk_apps("examples/ip_reassembly")
 
     def execute_example_app(self):
         """
         Execute the example app and checks for errors.
         """
 
-        command = ('./%s {eal_para} ' % self.app_ip_reassembly_path +
-                   '--  -p {dut_port_mask} ' +
-                   '--maxflows={maxflows} --flowttl={flowttl} {extra_args}')
-        self.dut.send_expect(
-            command.format(**self.test_config.__dict__), 'Link [Uu]p')
+        command = (
+            "./%s {eal_para} " % self.app_ip_reassembly_path
+            + "--  -p {dut_port_mask} "
+            + "--maxflows={maxflows} --flowttl={flowttl} {extra_args}"
+        )
+        self.dut.send_expect(command.format(**self.test_config.__dict__), "Link [Uu]p")
 
     def tcp_ipv4_fragments(self, src_ip, identifier):
         """
@@ -178,9 +181,9 @@ class TestIpReassembly(TestCase):
         10.1.1.254 -> 10.1.1.255 -> 10.1.2.0 -> 10.1.2.1
         """
 
-        ip2int = lambda ipstr: struct.unpack('!I', socket.inet_aton(ipstr))[0]
+        ip2int = lambda ipstr: struct.unpack("!I", socket.inet_aton(ipstr))[0]
         x = ip2int(addr)
-        int2ip = lambda n: socket.inet_ntoa(struct.pack('!I', n))
+        int2ip = lambda n: socket.inet_ntoa(struct.pack("!I", n))
         return int2ip(x + 1)
 
     def create_fragments(self):
@@ -236,10 +239,10 @@ class TestIpReassembly(TestCase):
         the DUT
         """
 
+        self.tester.scapy_append('pcap = rdpcap("%s")' % self.test_config.pcap_file)
         self.tester.scapy_append(
-            'pcap = rdpcap("%s")' % self.test_config.pcap_file)
-        self.tester.scapy_append(
-            'sendp(pcap, iface="%s", verbose=False)' % self.test_config.tester_iface)
+            'sendp(pcap, iface="%s", verbose=False)' % self.test_config.tester_iface
+        )
         self.tester.scapy_execute()
         time.sleep(5)
 
@@ -258,8 +261,7 @@ class TestIpReassembly(TestCase):
 
     @property
     def wait_interval_for_tcpdump(self):
-        interval = 5 if self.nic in ["x722_37d2"] \
-                   else 0
+        interval = 5 if self.nic in ["x722_37d2"] else 0
         return interval
 
     def tcpdump_start_sniffing(self):
@@ -270,10 +272,12 @@ class TestIpReassembly(TestCase):
         post-analysis.
         """
 
-        command = ('tcpdump -w tcpdump.pcap -i %s 2>tcpdump.out &' %
-                   self.test_config.tester_iface)
-        self.tester.send_expect('rm -f tcpdump.pcap', '#')
-        self.tester.send_expect(command, '#')
+        command = (
+            "tcpdump -w tcpdump.pcap -i %s 2>tcpdump.out &"
+            % self.test_config.tester_iface
+        )
+        self.tester.send_expect("rm -f tcpdump.pcap", "#")
+        self.tester.send_expect(command, "#")
         time.sleep(self.wait_interval_for_tcpdump)
 
     def tcpdump_stop_sniff(self):
@@ -281,9 +285,9 @@ class TestIpReassembly(TestCase):
         Stops the tcpdump process running in the background.
         """
         time.sleep(self.wait_interval_for_tcpdump)
-        self.tester.send_expect('killall tcpdump', '#')
+        self.tester.send_expect("killall tcpdump", "#")
         # For the [pid]+ Done tcpdump... message after killing the process
-        self.tester.send_expect('cat tcpdump.out', '#')
+        self.tester.send_expect("cat tcpdump.out", "#")
         time.sleep(3)
 
     def tcpdump_command(self, command):
@@ -291,7 +295,7 @@ class TestIpReassembly(TestCase):
         Sends a tcpdump related command and returns an integer from the output
         """
 
-        result = self.tester.send_expect(command, '#')
+        result = self.tester.send_expect(command, "#")
         return int(result.strip().split()[0])
 
     def number_of_received_packets(self, tcp_port):
@@ -301,8 +305,10 @@ class TestIpReassembly(TestCase):
         will add a known MAC address for the test to look for.
         """
 
-        command = ('tcpdump -nn -e -v -r tcpdump.pcap tcp dst port {tcp_port} 2>/dev/null | ' +
-                   'grep -c 02:00:00:00:00')  # MAC address used by the example app
+        command = (
+            "tcpdump -nn -e -v -r tcpdump.pcap tcp dst port {tcp_port} 2>/dev/null | "
+            + "grep -c 02:00:00:00:00"
+        )  # MAC address used by the example app
         return self.tcpdump_command(command.format(**locals()))
 
     def number_of_sent_packets(self, mac_src):
@@ -311,8 +317,9 @@ class TestIpReassembly(TestCase):
         sent to the DUT searching for a given MAC address.
         """
 
-        command = ('tcpdump -nn -e -v -r tcpdump.pcap 2>/dev/null | ' +
-                   'grep -c -i {mac_src}')
+        command = (
+            "tcpdump -nn -e -v -r tcpdump.pcap 2>/dev/null | " + "grep -c -i {mac_src}"
+        )
         return self.tcpdump_command(command.format(**locals()))
 
     def number_of_tcp_valid_checksum(self, tcp_port):
@@ -321,8 +328,10 @@ class TestIpReassembly(TestCase):
         a valid TCP checksum or how many packets were correctly assembled.
         """
 
-        command = ('tcpdump -nn -e -v -r tcpdump.pcap tcp dst port {tcp_port} 2>/dev/null | ' +
-                   'grep -c -E "cksum.*correct"')
+        command = (
+            "tcpdump -nn -e -v -r tcpdump.pcap tcp dst port {tcp_port} 2>/dev/null | "
+            + 'grep -c -E "cksum.*correct"'
+        )
         return self.tcpdump_command(command.format(**locals()))
 
     def send_n_siff_packets(self):
@@ -340,10 +349,8 @@ class TestIpReassembly(TestCase):
         """
 
         sent_packets = self.number_of_sent_packets(self.test_config.mac_src)
-        self.logger.info('sent packets: %d - expected: %d' %
-                         (sent_packets, expected))
-        self.verify(sent_packets == expected,
-                    'Not all fragments have been sent')
+        self.logger.info("sent packets: %d - expected: %d" % (sent_packets, expected))
+        self.verify(sent_packets == expected, "Not all fragments have been sent")
 
     def verify_received_packets(self, expected):
         """
@@ -351,11 +358,12 @@ class TestIpReassembly(TestCase):
         """
 
         received_packets = self.number_of_received_packets(
-            self.test_config.tcp_dst_port)
-        self.logger.info('received packets: %d - expected: %d' %
-                         (received_packets, expected))
-        self.verify(received_packets == expected,
-                    'Not all frames have been forwarded')
+            self.test_config.tcp_dst_port
+        )
+        self.logger.info(
+            "received packets: %d - expected: %d" % (received_packets, expected)
+        )
+        self.verify(received_packets == expected, "Not all frames have been forwarded")
 
     def verify_tcp_valid_checksum(self, expected):
         """
@@ -363,11 +371,14 @@ class TestIpReassembly(TestCase):
         """
 
         tcp_valid_checksum = self.number_of_tcp_valid_checksum(
-            self.test_config.tcp_dst_port)
-        self.logger.info('tcp valid: %d - expected: %d' %
-                         (tcp_valid_checksum, expected))
-        self.verify(tcp_valid_checksum == expected,
-                    'Not all TCP packets have valid checksum')
+            self.test_config.tcp_dst_port
+        )
+        self.logger.info(
+            "tcp valid: %d - expected: %d" % (tcp_valid_checksum, expected)
+        )
+        self.verify(
+            tcp_valid_checksum == expected, "Not all TCP packets have valid checksum"
+        )
 
     def verify_all_with_maxflows(self):
         """
@@ -376,8 +387,9 @@ class TestIpReassembly(TestCase):
         only maxflows packets are expected to be received and valid.
         """
 
-        self.verify_sent_packets(self.test_config.number_of_frames *
-                                 self.test_config.frags_per_frame)
+        self.verify_sent_packets(
+            self.test_config.number_of_frames * self.test_config.frags_per_frame
+        )
         self.verify_received_packets(self.test_config.maxflows)
         self.verify_tcp_valid_checksum(self.test_config.maxflows)
 
@@ -388,8 +400,9 @@ class TestIpReassembly(TestCase):
         the same number of frames that were sent.
         """
 
-        self.verify_sent_packets(self.test_config.number_of_frames *
-                                 self.test_config.frags_per_frame)
+        self.verify_sent_packets(
+            self.test_config.number_of_frames * self.test_config.frags_per_frame
+        )
         self.verify_received_packets(self.test_config.number_of_frames)
         self.verify_tcp_valid_checksum(self.test_config.number_of_frames)
 
@@ -401,9 +414,9 @@ class TestIpReassembly(TestCase):
         Builds the sample app and set the shell prompt to a known and value.
         """
 
-        self.tester.send_expect('export PS1="# "', '#')
+        self.tester.send_expect('export PS1="# "', "#")
         self.compile_example_app()
-        self.app_ip_reassembly_path = self.dut.apps_name['ip_reassembly']
+        self.app_ip_reassembly_path = self.dut.apps_name["ip_reassembly"]
         dut_ports = self.dut.get_ports(self.nic)
         dut_port = dut_ports[0]
         self.destination_mac = self.dut.get_mac_address(dut_port)
@@ -439,12 +452,14 @@ class TestIpReassembly(TestCase):
         Sends 4K frames split into 7 fragments each.
         """
 
-        self.test_config = IpReassemblyTestConfig(self,
-                                                  number_of_frames=4096,
-                                                  frags_per_frame=7,
-                                                  payload_size=230,
-                                                  maxflows=4096,
-                                                  flowttl='40s')
+        self.test_config = IpReassemblyTestConfig(
+            self,
+            number_of_frames=4096,
+            frags_per_frame=7,
+            payload_size=230,
+            maxflows=4096,
+            flowttl="40s",
+        )
 
         try:
             self.set_max_num_of_fragments(7)
@@ -452,13 +467,13 @@ class TestIpReassembly(TestCase):
             self.execute_example_app()
             self.send_n_siff_packets()
             self.verify_all()
-            self.dut.send_expect('^C', '# ')
+            self.dut.send_expect("^C", "# ")
             time.sleep(5)
             self.set_max_num_of_fragments(4)
             time.sleep(5)
 
         except Exception as e:
-            self.dut.send_expect('^C', '# ')
+            self.dut.send_expect("^C", "# ")
             time.sleep(2)
             self.set_max_num_of_fragments()
             self.compile_example_app()
@@ -471,9 +486,9 @@ class TestIpReassembly(TestCase):
         sends 1K frames. 1K frames must be forwarded back.
         """
 
-        self.test_config = IpReassemblyTestConfig(self,
-                                                  number_of_frames=1100,
-                                                  flowttl='3s')
+        self.test_config = IpReassemblyTestConfig(
+            self, number_of_frames=1100, flowttl="3s"
+        )
 
         self.execute_example_app()
 
@@ -493,9 +508,7 @@ class TestIpReassembly(TestCase):
         timeout sends 1K frames expecting all of them to be forwarded back.
         """
 
-        self.test_config = IpReassemblyTestConfig(self,
-                                                  maxflows=1023,
-                                                  flowttl='5s')
+        self.test_config = IpReassemblyTestConfig(self, maxflows=1023, flowttl="5s")
 
         self.execute_example_app()
 
@@ -518,16 +531,16 @@ class TestIpReassembly(TestCase):
         fragments is set to 4 by default, the packet can't be forwarded back.
         """
 
-        self.test_config = IpReassemblyTestConfig(self,
-                                                  number_of_frames=1,
-                                                  frags_per_frame=5,
-                                                  payload_size=180)
+        self.test_config = IpReassemblyTestConfig(
+            self, number_of_frames=1, frags_per_frame=5, payload_size=180
+        )
         self.execute_example_app()
 
         self.send_n_siff_packets()
 
-        self.verify_sent_packets(self.test_config.number_of_frames *
-                                 self.test_config.frags_per_frame)
+        self.verify_sent_packets(
+            self.test_config.number_of_frames * self.test_config.frags_per_frame
+        )
         self.verify_received_packets(0)
         self.verify_tcp_valid_checksum(0)
 
@@ -538,9 +551,9 @@ class TestIpReassembly(TestCase):
         be forwarded back.
         """
 
-        self.test_config = IpReassemblyTestConfig(self,
-                                                  number_of_frames=1,
-                                                  flowttl='3s')
+        self.test_config = IpReassemblyTestConfig(
+            self, number_of_frames=1, flowttl="3s"
+        )
         self.compile_example_app()
         self.execute_example_app()
         self.tcpdump_start_sniffing()
@@ -560,8 +573,9 @@ class TestIpReassembly(TestCase):
 
         self.tcpdump_stop_sniff()
 
-        self.verify_sent_packets(self.test_config.number_of_frames *
-                                 self.test_config.frags_per_frame)
+        self.verify_sent_packets(
+            self.test_config.number_of_frames * self.test_config.frags_per_frame
+        )
         self.verify_received_packets(0)
         self.verify_tcp_valid_checksum(0)
 
@@ -571,9 +585,9 @@ class TestIpReassembly(TestCase):
         Expects all the frames to be forwarded back.
         """
         mtu = 9000
-        self.test_config = IpReassemblyTestConfig(self,
-                                                  payload_size=mtu - 100,
-                                                  fragment_size=2500)
+        self.test_config = IpReassemblyTestConfig(
+            self, payload_size=mtu - 100, fragment_size=2500
+        )
         try:
             self.set_tester_iface_mtu(self.test_config.tester_iface, mtu)
             self.compile_example_app()
@@ -591,9 +605,9 @@ class TestIpReassembly(TestCase):
         """
 
         mtu = 9000
-        self.test_config = IpReassemblyTestConfig(self,
-                                                  payload_size=mtu - 100,
-                                                  fragment_size=2500)
+        self.test_config = IpReassemblyTestConfig(
+            self, payload_size=mtu - 100, fragment_size=2500
+        )
         try:
             self.set_tester_iface_mtu(self.test_config.tester_iface, mtu)
             self.set_max_num_of_fragments(4)
@@ -601,8 +615,9 @@ class TestIpReassembly(TestCase):
             self.execute_example_app()
             self.send_n_siff_packets()
 
-            self.verify_sent_packets(self.test_config.number_of_frames *
-                                     self.test_config.frags_per_frame)
+            self.verify_sent_packets(
+                self.test_config.number_of_frames * self.test_config.frags_per_frame
+            )
             self.verify_all()
         except Exception as e:
             self.set_tester_iface_mtu(self.test_config.tester_iface)
@@ -613,7 +628,7 @@ class TestIpReassembly(TestCase):
         Run after each test case.
         """
 
-        self.dut.send_expect('^C', '# ')
+        self.dut.send_expect("^C", "# ")
 
     def tear_down_all(self):
         """

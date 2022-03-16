@@ -39,7 +39,6 @@ from framework.test_case import TestCase
 
 
 class TestCmdline(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -48,14 +47,17 @@ class TestCmdline(TestCase):
             cmdline build pass
             At least one core in DUT
         """
-        out = self.dut.build_dpdk_apps('examples/cmdline')
+        out = self.dut.build_dpdk_apps("examples/cmdline")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 
         # Run cmdline app
-        self.app_cmdline_path = self.dut.apps_name['cmdline']
+        self.app_cmdline_path = self.dut.apps_name["cmdline"]
         self.eal_para = self.dut.create_eal_parameters(cores="1S/1C/1T")
-        self.dut.send_expect(r'./%s %s' % (self.app_cmdline_path, self.eal_para), "> ", 10)
+        self.dut.send_expect(
+            r"./%s %s" % (self.app_cmdline_path, self.eal_para), "> ", 10
+        )
+
     def set_up(self):
         """
         Run before each test case.

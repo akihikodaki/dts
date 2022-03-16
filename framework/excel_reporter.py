@@ -71,30 +71,31 @@ class ExcelReporter(object):
 
     def __init(self):
         self.workbook = xlwt.Workbook()
-        self.sheet = self.workbook.add_sheet(
-            "Test Results", cell_overwrite_ok=True)
+        self.sheet = self.workbook.add_sheet("Test Results", cell_overwrite_ok=True)
 
     def __add_header(self):
-        self.sheet.write(0, 0, 'DUT', self.header_style)
-        self.sheet.write(0, 1, 'DPDK version', self.header_style)
-        self.sheet.write(0, 2, 'Target', self.header_style)
-        self.sheet.write(0, 3, 'NIC', self.header_style)
-        self.sheet.write(0, 4, 'Test suite', self.header_style)
-        self.sheet.write(0, 5, 'Test case', self.header_style)
-        self.sheet.write(0, 6, 'Results', self.header_style)
+        self.sheet.write(0, 0, "DUT", self.header_style)
+        self.sheet.write(0, 1, "DPDK version", self.header_style)
+        self.sheet.write(0, 2, "Target", self.header_style)
+        self.sheet.write(0, 3, "NIC", self.header_style)
+        self.sheet.write(0, 4, "Test suite", self.header_style)
+        self.sheet.write(0, 5, "Test case", self.header_style)
+        self.sheet.write(0, 6, "Results", self.header_style)
 
-        self.sheet.write(0, 8, 'Pass', self.header_style)
-        self.sheet.write(0, 9, 'Fail', self.header_style)
-        self.sheet.write(0, 10, 'Blocked', self.header_style)
-        self.sheet.write(0, 11, 'N/A', self.header_style)
-        self.sheet.write(0, 12, 'Not Run', self.header_style)
-        self.sheet.write(0, 13, 'Total', self.header_style)
+        self.sheet.write(0, 8, "Pass", self.header_style)
+        self.sheet.write(0, 9, "Fail", self.header_style)
+        self.sheet.write(0, 10, "Blocked", self.header_style)
+        self.sheet.write(0, 11, "N/A", self.header_style)
+        self.sheet.write(0, 12, "Not Run", self.header_style)
+        self.sheet.write(0, 13, "Total", self.header_style)
 
         self.sheet.write(1, 8, Formula('COUNTIF(G2:G2000,"PASSED")'))
-        self.sheet.write(1, 9, Formula('COUNTIF(G2:G2000,"FAILED*") + COUNTIF(G2:G2000,"IXA*")'))
+        self.sheet.write(
+            1, 9, Formula('COUNTIF(G2:G2000,"FAILED*") + COUNTIF(G2:G2000,"IXA*")')
+        )
         self.sheet.write(1, 10, Formula('COUNTIF(G2:G2000,"BLOCKED*")'))
         self.sheet.write(1, 11, Formula('COUNTIF(G2:G2000,"N/A*")'))
-        self.sheet.write(1, 13, Formula('I2+J2+K2+L2+M2'))
+        self.sheet.write(1, 13, Formula("I2+J2+K2+L2+M2"))
 
         self.sheet.col(0).width = 4000
         self.sheet.col(1).width = 4500
@@ -114,16 +115,16 @@ class ExcelReporter(object):
     def __styles(self):
         header_pattern = xlwt.Pattern()
         header_pattern.pattern = xlwt.Pattern.SOLID_PATTERN
-        header_pattern.pattern_fore_colour = xlwt.Style.colour_map['ocean_blue']
+        header_pattern.pattern_fore_colour = xlwt.Style.colour_map["ocean_blue"]
 
         passed_font = xlwt.Font()
-        passed_font.colour_index = xlwt.Style.colour_map['black']
+        passed_font.colour_index = xlwt.Style.colour_map["black"]
         self.passed_style = xlwt.XFStyle()
         self.passed_style.font = passed_font
 
         failed_font = xlwt.Font()
         failed_font.bold = True
-        failed_font.colour_index = xlwt.Style.colour_map['red']
+        failed_font.colour_index = xlwt.Style.colour_map["red"]
         self.failed_style = xlwt.XFStyle()
         self.failed_style.font = failed_font
 
@@ -131,7 +132,7 @@ class ExcelReporter(object):
         header_font.bold = True
         header_font.height = 260
         header_font.italic = True
-        header_font.colour_index = xlwt.Style.colour_map['white']
+        header_font.colour_index = xlwt.Style.colour_map["white"]
 
         title_font = xlwt.Font()
         title_font.bold = True
@@ -144,7 +145,7 @@ class ExcelReporter(object):
 
         self.title_style = xlwt.XFStyle()
         self.title_style.font = title_font
- 
+
     def __get_case_result(self, dut, target, suite, case):
         case_list = self.result.all_test_cases(dut, target, suite)
         if case_list.count(case) > 1:
@@ -152,8 +153,8 @@ class ExcelReporter(object):
             for case_name in case_list:
                 if case == case_name:
                     test_result = self.result.result_for(dut, target, suite, case)
-                    if 'PASSED' in test_result:
-                        return ['PASSED', '']
+                    if "PASSED" in test_result:
+                        return ["PASSED", ""]
                     else:
                         tmp_result.append(test_result)
             return tmp_result[-1]
@@ -163,13 +164,19 @@ class ExcelReporter(object):
     def __write_result(self, dut, target, suite, case, test_result):
         if test_result is not None and len(test_result) > 0:
             result = test_result[0]
-            if test_result[1] != '':
+            if test_result[1] != "":
                 result = "{0} '{1}'".format(result, test_result[1])
-            if test_result[0] == 'PASSED':
+            if test_result[0] == "PASSED":
                 self.sheet.write(self.row, self.col + 1, result)
             else:
                 self.sheet.write(
-                    self.row, self.col + 1, result if len(result) < 5000 else result[:2000] + '\r\n...\r\n...\r\n...\r\n' + result[-2000:], self.failed_style)
+                    self.row,
+                    self.col + 1,
+                    result
+                    if len(result) < 5000
+                    else result[:2000] + "\r\n...\r\n...\r\n...\r\n" + result[-2000:],
+                    self.failed_style,
+                )
 
     def __write_cases(self, dut, target, suite):
         for case in set(self.result.all_test_cases(dut, target, suite)):
@@ -200,11 +207,11 @@ class ExcelReporter(object):
         self.col += 1
         self.sheet.col(self.col).width = 32 * 256  # 32 characters
         self.sheet.write(self.row, self.col, nic, self.title_style)
-        self.sheet.write(self.row+1, self.col, 'driver: ' + driver)
-        self.sheet.write(self.row+2, self.col, 'kdriver: ' + kdriver)
-        self.sheet.write(self.row+3, self.col, 'firmware: ' + firmware)
+        self.sheet.write(self.row + 1, self.col, "driver: " + driver)
+        self.sheet.write(self.row + 2, self.col, "kdriver: " + kdriver)
+        self.sheet.write(self.row + 3, self.col, "firmware: " + firmware)
         if pkg is not None:
-            self.sheet.write(self.row+4, self.col, 'pkg: ' + pkg)
+            self.sheet.write(self.row + 4, self.col, "pkg: " + pkg)
             self.row = self.row + 1
         self.row = self.row + 3
         self.__write_suites(dut, target)
@@ -212,7 +219,14 @@ class ExcelReporter(object):
 
     def __write_failed_target(self, dut, target):
         msg = "TARGET ERROR '%s'" % self.result.target_failed_msg(dut, target)
-        self.sheet.write(self.row, self.col + 4, msg if len(msg) < 5000 else msg[:2000] + '\r\n...\r\n...\r\n...\r\n' + msg[-2000:], self.failed_style)
+        self.sheet.write(
+            self.row,
+            self.col + 4,
+            msg
+            if len(msg) < 5000
+            else msg[:2000] + "\r\n...\r\n...\r\n...\r\n" + msg[-2000:],
+            self.failed_style,
+        )
         self.row += 1
 
     def __write_targets(self, dut):
@@ -228,7 +242,14 @@ class ExcelReporter(object):
 
     def __write_failed_dut(self, dut):
         msg = "PREREQ FAILED '%s'" % self.result.dut_failed_msg(dut)
-        self.sheet.write(self.row, self.col + 5, msg if len(msg) < 5000 else msg[:2000] + '\r\n...\r\n...\r\n...\r\n' + msg[-2000:], self.failed_style)
+        self.sheet.write(
+            self.row,
+            self.col + 5,
+            msg
+            if len(msg) < 5000
+            else msg[:2000] + "\r\n...\r\n...\r\n...\r\n" + msg[-2000:],
+            self.failed_style,
+        )
         self.row += 1
 
     def __parse_result(self):
@@ -238,7 +259,12 @@ class ExcelReporter(object):
                 self.__write_failed_dut(dut)
             else:
                 self.col = self.col + 1
-                self.sheet.write(self.row, self.col, self.result.current_dpdk_version(dut), self.title_style)
+                self.sheet.write(
+                    self.row,
+                    self.col,
+                    self.result.current_dpdk_version(dut),
+                    self.title_style,
+                )
                 self.__write_targets(dut)
             self.row += 1
 

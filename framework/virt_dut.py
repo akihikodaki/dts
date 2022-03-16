@@ -39,12 +39,7 @@ from nics.net_device import GetNicObj, RemoveNicObj
 from .config import AppNameConf, PortConf
 from .dut import Dut
 from .project_dpdk import DPDKdut
-from .settings import (
-    LOG_NAME_SEP,
-    NICS,
-    get_netdev,
-    load_global_setting,
-)
+from .settings import LOG_NAME_SEP, NICS, get_netdev, load_global_setting
 from .utils import RED, parallel_lock
 
 
@@ -59,12 +54,15 @@ class VirtDut(DPDKdut):
     or CRBBareMetal.
     """
 
-    def __init__(self, hyper, crb, serializer, virttype, vm_name, suite, cpu_topo, dut_id):
-        self.vm_ip = crb['IP']
-        self.NAME = 'virtdut' + LOG_NAME_SEP + '%s' % self.vm_ip
+    def __init__(
+        self, hyper, crb, serializer, virttype, vm_name, suite, cpu_topo, dut_id
+    ):
+        self.vm_ip = crb["IP"]
+        self.NAME = "virtdut" + LOG_NAME_SEP + "%s" % self.vm_ip
         # do not create addition alt_session
-        super(VirtDut, self).__init__(crb, serializer, dut_id,
-                                      self.NAME, alt_session=False)
+        super(VirtDut, self).__init__(
+            crb, serializer, dut_id, self.NAME, alt_session=False
+        )
         self.vm_name = vm_name
         self.hyper = hyper
         self.cpu_topo = cpu_topo
@@ -79,13 +77,15 @@ class VirtDut(DPDKdut):
         self.architecture = None
         self.ports_map = []
         self.virttype = virttype
-        self.prefix_subfix = str(os.getpid()) + '_' + time.strftime("%Y%m%d%H%M%S", time.localtime())
+        self.prefix_subfix = (
+            str(os.getpid()) + "_" + time.strftime("%Y%m%d%H%M%S", time.localtime())
+        )
         self.apps_name_conf = {}
         self.apps_name = {}
 
     def init_log(self):
         if hasattr(self.host_dut, "test_classname"):
-            self.logger.config_suite(self.host_dut.test_classname, 'virtdut')
+            self.logger.config_suite(self.host_dut.test_classname, "virtdut")
 
     def close(self, force=False):
         if self.session:
@@ -135,8 +135,8 @@ class VirtDut(DPDKdut):
                 print(RED("Can not found [%d ]port info" % index))
                 continue
 
-            if 'peer' in list(self.ports_cfg[key].keys()):
-                tester_pci = self.ports_cfg[key]['peer']
+            if "peer" in list(self.ports_cfg[key].keys()):
+                tester_pci = self.ports_cfg[key]["peer"]
                 # find tester_pci index
                 pci_idx = self.tester.get_local_index(tester_pci)
                 self.ports_map[index] = pci_idx
@@ -176,18 +176,18 @@ class VirtDut(DPDKdut):
             self.prepare_package()
 
         out = self.send_expect("cd %s" % self.base_dir, "# ")
-        assert 'No such file or directory' not in out, "Can't switch to dpdk folder!!!"
+        assert "No such file or directory" not in out, "Can't switch to dpdk folder!!!"
         out = self.send_expect("cat VERSION", "# ")
-        if 'No such file or directory' in out:
+        if "No such file or directory" in out:
             self.logger.error("Can't get DPDK version due to VERSION not exist!!!")
         else:
             self.dpdk_version = out
 
         self.send_expect("alias ls='ls --color=none'", "#")
 
-        if self.get_os_type() == 'freebsd':
-            self.send_expect('alias make=gmake', '# ')
-            self.send_expect('alias sed=gsed', '# ')
+        if self.get_os_type() == "freebsd":
+            self.send_expect("alias make=gmake", "# ")
+            self.send_expect("alias sed=gsed", "# ")
 
         self.init_core_list()
         self.pci_devices_information()
@@ -202,7 +202,7 @@ class VirtDut(DPDKdut):
         # if current vm is migration vm, skip restore dut ports
         # because there maybe have some app have run
         if not self.migration_vm:
-            if self.virttype != 'XEN':
+            if self.virttype != "XEN":
                 self.restore_interfaces()
             else:
                 self.restore_interfaces_domu()
@@ -230,18 +230,19 @@ class VirtDut(DPDKdut):
         name_cfg = AppNameConf()
         self.apps_name_conf = name_cfg.load_app_name_conf()
 
-        self.apps_name = self.apps_name_conf['meson']
+        self.apps_name = self.apps_name_conf["meson"]
         # use the dut target directory instead of 'target' string in app name
         for app in self.apps_name:
-            cur_app_path = self.apps_name[app].replace('target', self.target)
-            self.apps_name[app] = cur_app_path + ' '
+            cur_app_path = self.apps_name[app].replace("target", self.target)
+            self.apps_name[app] = cur_app_path + " "
 
     def init_core_list(self):
         self.cores = []
-        cpuinfo = self.send_expect("grep --color=never \"processor\""
-                                   " /proc/cpuinfo", "#")
-        cpuinfo = cpuinfo.split('\r\n')
-        if self.cpu_topo != '':
+        cpuinfo = self.send_expect(
+            'grep --color=never "processor"' " /proc/cpuinfo", "#"
+        )
+        cpuinfo = cpuinfo.split("\r\n")
+        if self.cpu_topo != "":
             topo_reg = r"(\d)S/(\d)C/(\d)T"
             m = re.match(topo_reg, self.cpu_topo)
             if m:
@@ -266,9 +267,9 @@ class VirtDut(DPDKdut):
                             socket = core / cores
 
                         # tricky here, socket must be string
-                        self.cores.append({'thread': core,
-                                           'socket': str(socket),
-                                           'core': phy_core})
+                        self.cores.append(
+                            {"thread": core, "socket": str(socket), "core": phy_core}
+                        )
                     self.number_of_cores = len(self.cores)
                     return
 
@@ -279,8 +280,7 @@ class VirtDut(DPDKdut):
                 thread = m.group(1)
                 socket = 0
                 core = thread
-            self.cores.append(
-                {'thread': thread, 'socket': socket, 'core': core})
+            self.cores.append({"thread": thread, "socket": socket, "core": core})
 
         self.number_of_cores = len(self.cores)
 
@@ -289,11 +289,11 @@ class VirtDut(DPDKdut):
         Restore Linux interfaces.
         """
         for port in self.ports_info:
-            pci_bus = port['pci']
-            pci_id = port['type']
+            pci_bus = port["pci"]
+            pci_id = port["type"]
             driver = settings.get_nic_driver(pci_id)
             if driver is not None:
-                addr_array = pci_bus.split(':')
+                addr_array = pci_bus.split(":")
                 domain_id = addr_array[0]
                 bus_id = addr_array[1]
                 devfun_id = addr_array[2]
@@ -304,7 +304,8 @@ class VirtDut(DPDKdut):
                 print(self.send_expect("ip link ls %s" % itf, "# "))
             else:
                 self.logger.info(
-                    "NOT FOUND DRIVER FOR PORT (%s|%s)!!!" % (pci_bus, pci_id))
+                    "NOT FOUND DRIVER FOR PORT (%s|%s)!!!" % (pci_bus, pci_id)
+                )
 
     def pci_devices_information(self):
         self.pci_devices_information_uncached()
@@ -337,7 +338,8 @@ class VirtDut(DPDKdut):
         Scan ports and collect port's pci id, mac address, ipv6 address.
         """
         scan_ports_uncached = getattr(
-            self, 'scan_ports_uncached_%s' % self.get_os_type())
+            self, "scan_ports_uncached_%s" % self.get_os_type()
+        )
         return scan_ports_uncached()
 
     def update_ports(self):
@@ -345,22 +347,24 @@ class VirtDut(DPDKdut):
         Update ports information, according to host pci
         """
         for port in self.ports_info:
-            vmpci = port['pci']
+            vmpci = port["pci"]
             for pci_map in self.hyper.pci_maps:
                 # search pci mapping structure
-                if vmpci == pci_map['guestpci']:
-                    hostpci = pci_map['hostpci']
+                if vmpci == pci_map["guestpci"]:
+                    hostpci = pci_map["hostpci"]
                     # search host port info structure
                     for hostport in self.host_dut.ports_info:
                         # update port numa
-                        if hostpci == hostport['pci']:
-                            port['numa'] = hostport['numa']
-                            port['port'].socket = hostport['numa']
+                        if hostpci == hostport["pci"]:
+                            port["numa"] = hostport["numa"]
+                            port["port"].socket = hostport["numa"]
                             break
-                        if 'sriov_vfs_pci' in hostport and \
-                            hostpci in hostport['sriov_vfs_pci']:
-                            port['numa'] = hostport['numa']
-                            port['port'].socket = hostport['numa']
+                        if (
+                            "sriov_vfs_pci" in hostport
+                            and hostpci in hostport["sriov_vfs_pci"]
+                        ):
+                            port["numa"] = hostport["numa"]
+                            port["port"].socket = hostport["numa"]
                     break
 
     def map_available_ports(self):
@@ -384,12 +388,12 @@ class VirtDut(DPDKdut):
         hits = [False] * len(self.tester.ports_info)
 
         for vmPort in range(nrPorts):
-            vmpci = self.ports_info[vmPort]['pci']
+            vmpci = self.ports_info[vmPort]["pci"]
             peer = self.get_peer_pci(vmPort)
             # if peer pci configured
             if peer is not None:
                 for remotePort in range(len(self.tester.ports_info)):
-                    if self.tester.ports_info[remotePort]['pci'] == peer:
+                    if self.tester.ports_info[remotePort]["pci"] == peer:
                         hits[remotePort] = True
                         self.ports_map[vmPort] = remotePort
                         break
@@ -399,25 +403,25 @@ class VirtDut(DPDKdut):
                     continue  # skip ping6 map
 
             # strip pci address on host for pass-through device
-            hostpci = 'N/A'
+            hostpci = "N/A"
             for pci_map in self.hyper.pci_maps:
-                if vmpci == pci_map['guestpci']:
-                    hostpci = pci_map['hostpci']
+                if vmpci == pci_map["guestpci"]:
+                    hostpci = pci_map["hostpci"]
                     break
 
             # auto ping port map
             for remotePort in range(len(self.tester.ports_info)):
                 # for two vfs connected to same tester port
                 # need skip ping from devices on same pf device
-                remotepci = self.tester.ports_info[remotePort]['pci']
-                port_type = self.tester.ports_info[remotePort]['type']
+                remotepci = self.tester.ports_info[remotePort]["pci"]
+                port_type = self.tester.ports_info[remotePort]["type"]
                 # IXIA port should not check whether has vfs
-                if port_type.lower() not in ('ixia', 'trex'):
-                    remoteport = self.tester.ports_info[remotePort]['port']
+                if port_type.lower() not in ("ixia", "trex"):
+                    remoteport = self.tester.ports_info[remotePort]["port"]
                     vfs = []
                     # vm_dut and tester in same dut
-                    host_ip = self.crb['IP'].split(':')[0]
-                    if self.crb['tester IP'] == host_ip:
+                    host_ip = self.crb["IP"].split(":")[0]
+                    if self.crb["tester IP"] == host_ip:
                         vfs = remoteport.get_sriov_vfs_pci()
                         # if hostpci is vf of tester port
                         if hostpci == remotepci or hostpci in vfs:
@@ -429,11 +433,13 @@ class VirtDut(DPDKdut):
                     continue
 
                 out = self.tester.send_ping6(
-                    remotePort, ipv6, self.get_mac_address(vmPort))
+                    remotePort, ipv6, self.get_mac_address(vmPort)
+                )
 
-                if out and '64 bytes from' in out:
+                if out and "64 bytes from" in out:
                     self.logger.info(
-                        "PORT MAP: [dut %d: tester %d]" % (vmPort, remotePort))
+                        "PORT MAP: [dut %d: tester %d]" % (vmPort, remotePort)
+                    )
                     self.ports_map[vmPort] = remotePort
                     hits[remotePort] = True
                     continue
@@ -442,16 +448,16 @@ class VirtDut(DPDKdut):
         """
         Kill all dpdk applications on VM
         """
-        control = getattr(self.hyper, 'control_session', None)
+        control = getattr(self.hyper, "control_session", None)
         if callable(control):
             out = control("lsof -Fp /var/run/.rte_config")
             pids = []
-            pid_reg = r'p(\d+)'
+            pid_reg = r"p(\d+)"
             if len(out):
-                lines = out.split('\r\n')
+                lines = out.split("\r\n")
                 for line in lines:
                     m = re.match(pid_reg, line)
                     if m:
                         pids.append(m.group(1))
             for pid in pids:
-                control('kill -9 %s' % pid)
+                control("kill -9 %s" % pid)

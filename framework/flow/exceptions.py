@@ -30,8 +30,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-class CompositionException(Exception):
 
+class CompositionException(Exception):
     def __init__(self):
         self.message = "There was an unexpected error in composition"
 

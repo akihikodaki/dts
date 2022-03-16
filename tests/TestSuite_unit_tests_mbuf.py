@@ -58,7 +58,7 @@ class TestUnitTestsMbuf(TestCase):
         Run at the start of each test suite.
         """
         self.cores = self.dut.get_core_list("all")
-        
+
     def set_up(self):
         """
         Run before each test case.
@@ -71,8 +71,8 @@ class TestUnitTestsMbuf(TestCase):
         """
 
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        app_name = self.dut.apps_name['test']
-        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", 60)        
+        app_name = self.dut.apps_name["test"]
+        self.dut.send_expect(app_name + eal_params, "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("mbuf_autotest", "RTE>>", 180)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")

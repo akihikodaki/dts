@@ -40,7 +40,7 @@ from framework.crb import Crb
 from framework.settings import HEADER_SIZE, TIMEOUT
 from framework.utils import RED
 
-NICS_LIST = []      # global list for save nic objects
+NICS_LIST = []  # global list for save nic objects
 
 MIN_MTU = 68
 
@@ -55,7 +55,7 @@ def nic_has_driver(func):
         nic_instance = args[0]
         nic_instance.current_driver = nic_instance.get_nic_driver()
         if not nic_instance.current_driver:
-            return ''
+            return ""
         return func(*args, **kwargs)
 
     return wrapper
@@ -74,20 +74,20 @@ class NetDevice(object):
         self.domain_id = domain_id
         self.bus_id = bus_id
         self.devfun_id = devfun_id
-        self.pci = domain_id + ':' + bus_id + ':' + devfun_id
+        self.pci = domain_id + ":" + bus_id + ":" + devfun_id
         self.pci_id = get_pci_id(crb, domain_id, bus_id, devfun_id)
         self.default_driver = settings.get_nic_driver(self.pci_id)
         self.name = settings.get_nic_name(self.pci_id)
 
         if self.nic_is_pf():
-            self.default_vf_driver = ''
+            self.default_vf_driver = ""
 
-        self.intf_name = 'N/A'
+        self.intf_name = "N/A"
         self.intf2_name = None
         self.get_interface_name()
         self.socket = self.get_nic_socket()
-        self.driver_version = ''
-        self.firmware = ''
+        self.driver_version = ""
+        self.firmware = ""
         self.pkg = None
         self.current_driver = None
 
@@ -104,7 +104,9 @@ class NetDevice(object):
         """
         Wrap the crb`s session as private session for sending expect.
         """
-        return self.crb.send_expect(cmds, expected, timeout=timeout, alt_session=alt_session)
+        return self.crb.send_expect(
+            cmds, expected, timeout=timeout, alt_session=alt_session
+        )
 
     def __get_os_type(self):
         """
@@ -128,22 +130,24 @@ class NetDevice(object):
         """
         Get the NIC pkg.
         """
-        self.pkg = {'type': '', 'version': ''}
-        out = self.__send_expect('dmesg | grep "DDP package" | tail -1', '# ')
-        if 'could not load' in out:
+        self.pkg = {"type": "", "version": ""}
+        out = self.__send_expect('dmesg | grep "DDP package" | tail -1', "# ")
+        if "could not load" in out:
             print(RED(out))
-            print(RED('Warning: The loaded DDP package version may not as you expected'))
+            print(
+                RED("Warning: The loaded DDP package version may not as you expected")
+            )
             try:
-                pkg_info = out.split('. ')[1].lower()
-                self.pkg['type'] = re.findall(".*package '(.*)'", pkg_info)[0].strip()
-                self.pkg['version'] = re.findall("version(.*)", pkg_info)[0].strip()
+                pkg_info = out.split(". ")[1].lower()
+                self.pkg["type"] = re.findall(".*package '(.*)'", pkg_info)[0].strip()
+                self.pkg["version"] = re.findall("version(.*)", pkg_info)[0].strip()
             except:
-                print(RED('Warning: get pkg info failed'))
+                print(RED("Warning: get pkg info failed"))
         else:
-            pkg_info = out.split(': ')[-1].lower().split('package version')
+            pkg_info = out.split(": ")[-1].lower().split("package version")
             if len(pkg_info) > 1:
-                self.pkg['type'] = pkg_info[0].strip()
-                self.pkg['version'] = pkg_info[1].strip()
+                self.pkg["type"] = pkg_info[0].strip()
+                self.pkg["version"] = pkg_info[1].strip()
         return self.pkg
 
     @nic_has_driver
@@ -152,21 +156,23 @@ class NetDevice(object):
         Get NIC driver and firmware version.
         """
         get_driver_firmware = getattr(
-            self, 'get_driver_firmware_%s' %
-                  self.__get_os_type())
+            self, "get_driver_firmware_%s" % self.__get_os_type()
+        )
         get_driver_firmware()
 
     def get_driver_firmware_linux(self):
         """
         Get NIC driver and firmware version.
         """
-        rexp = 'version:\s.+'
+        rexp = "version:\s.+"
         pattern = re.compile(rexp)
-        out = self.__send_expect('ethtool -i {} | grep version'.format(self.intf_name), '# ')
+        out = self.__send_expect(
+            "ethtool -i {} | grep version".format(self.intf_name), "# "
+        )
         driver_firmware = pattern.findall(out)
         if len(driver_firmware) > 1:
-            self.driver_version = driver_firmware[0].split(': ')[-1].strip()
-            self.firmware = driver_firmware[1].split(': ')[-1].strip()
+            self.driver_version = driver_firmware[0].split(": ")[-1].strip()
+            self.firmware = driver_firmware[1].split(": ")[-1].strip()
 
         return self.driver_version, self.firmware
 
@@ -180,16 +186,17 @@ class NetDevice(object):
         """
         Get socket id of specified pci device.
         """
-        get_nic_socket = getattr(
-            self, 'get_nic_socket_%s' %
-            self.__get_os_type())
+        get_nic_socket = getattr(self, "get_nic_socket_%s" % self.__get_os_type())
         return get_nic_socket(self.domain_id, self.bus_id, self.devfun_id)
 
     def get_nic_socket_linux(self, domain_id, bus_id, devfun_id):
-        command = ('cat /sys/bus/pci/devices/%s\:%s\:%s/numa_node' %
-                   (domain_id, bus_id, devfun_id))
+        command = "cat /sys/bus/pci/devices/%s\:%s\:%s/numa_node" % (
+            domain_id,
+            bus_id,
+            devfun_id,
+        )
         try:
-            out = self.__send_expect(command, '# ')
+            out = self.__send_expect(command, "# ")
             socket = int(out)
         except:
             socket = -1
@@ -205,16 +212,18 @@ class NetDevice(object):
         Cal this function will update intf_name everytime
         """
         get_interface_name = getattr(
-            self, 'get_interface_name_%s' %
-            self.__get_os_type())
-        out = get_interface_name(self.domain_id, self.bus_id, self.devfun_id, self.current_driver)
+            self, "get_interface_name_%s" % self.__get_os_type()
+        )
+        out = get_interface_name(
+            self.domain_id, self.bus_id, self.devfun_id, self.current_driver
+        )
         if "No such file or directory" in out:
-            self.intf_name = 'N/A'
+            self.intf_name = "N/A"
         else:
             self.intf_name = out
 
         # not a complete fix for CX3.
-        if len(out.split()) > 1 and self.default_driver == 'mlx4_core':
+        if len(out.split()) > 1 and self.default_driver == "mlx4_core":
             self.intf_name = out.split()[0]
             self.intf2_name = out.split()[1]
 
@@ -230,16 +239,16 @@ class NetDevice(object):
         """
         Get interface name of specified pci device on linux.
         """
-        driver_alias = driver.replace('-', '_')
+        driver_alias = driver.replace("-", "_")
         try:
             get_interface_name_linux = getattr(
-                self,
-                'get_interface_name_linux_%s' %
-                driver_alias)
+                self, "get_interface_name_linux_%s" % driver_alias
+            )
         except Exception as e:
-            generic_driver = 'generic'
-            get_interface_name_linux = getattr(self,
-                                               'get_interface_name_linux_%s' % generic_driver)
+            generic_driver = "generic"
+            get_interface_name_linux = getattr(
+                self, "get_interface_name_linux_%s" % generic_driver
+            )
 
         return get_interface_name_linux(domain_id, bus_id, devfun_id)
 
@@ -247,29 +256,37 @@ class NetDevice(object):
         """
         Get virtio device interface name by the default way on linux.
         """
-        command = 'ls --color=never /sys/bus/pci/devices/%s\:%s\:%s/virtio*/net' % (
-            domain_id, bus_id, devfun_id)
-        return self.__send_expect(command, '# ')
+        command = "ls --color=never /sys/bus/pci/devices/%s\:%s\:%s/virtio*/net" % (
+            domain_id,
+            bus_id,
+            devfun_id,
+        )
+        return self.__send_expect(command, "# ")
 
     def get_interface_name_linux_generic(self, domain_id, bus_id, devfun_id):
         """
         Get the interface name by the default way on linux.
         """
-        command = 'ls --color=never /sys/bus/pci/devices/%s\:%s\:%s/net' % (
-            domain_id, bus_id, devfun_id)
-        return self.__send_expect(command, '# ')
+        command = "ls --color=never /sys/bus/pci/devices/%s\:%s\:%s/net" % (
+            domain_id,
+            bus_id,
+            devfun_id,
+        )
+        return self.__send_expect(command, "# ")
 
     def get_interface_name_freebsd(self, domain_id, bus_id, devfun_id, driver):
         """
         Get interface name of specified pci device on Freebsd.
         """
         try:
-            get_interface_name_freebsd = getattr(self,
-                                                 'get_interface_name_freebsd_%s' % driver)
+            get_interface_name_freebsd = getattr(
+                self, "get_interface_name_freebsd_%s" % driver
+            )
         except Exception as e:
-            generic_driver = 'generic'
-            get_interface_name_freebsd = getattr(self,
-                                                 'get_interface_name_freebsd_%s' % generic_driver)
+            generic_driver = "generic"
+            get_interface_name_freebsd = getattr(
+                self, "get_interface_name_freebsd_%s" % generic_driver
+            )
 
         return get_interface_name_freebsd(domain_id, bus_id, devfun_id)
 
@@ -291,7 +308,7 @@ class NetDevice(object):
         """
         Set mac address of specified vf device.
         """
-        set_vf_mac_addr = getattr(self, 'set_vf_mac_addr_%s' % self.__get_os_type())
+        set_vf_mac_addr = getattr(self, "set_vf_mac_addr_%s" % self.__get_os_type())
         out = set_vf_mac_addr(self.intf_name, vf_idx, mac)
 
     def set_vf_mac_addr_linux(self, intf, vf_idx, mac):
@@ -309,10 +326,16 @@ class NetDevice(object):
         """
         Get mac address of specified pci device.
         """
-        get_mac_addr = getattr(self, 'get_mac_addr_%s' % self.__get_os_type())
-        out = get_mac_addr(self.intf_name, self.domain_id, self.bus_id, self.devfun_id, self.current_driver)
+        get_mac_addr = getattr(self, "get_mac_addr_%s" % self.__get_os_type())
+        out = get_mac_addr(
+            self.intf_name,
+            self.domain_id,
+            self.bus_id,
+            self.devfun_id,
+            self.current_driver,
+        )
         if "No such file or directory" in out:
-            return 'N/A'
+            return "N/A"
         else:
             return out
 
@@ -321,10 +344,16 @@ class NetDevice(object):
         """
         Get mac address of 2nd port of specified pci device.
         """
-        get_mac_addr = getattr(self, 'get_mac_addr_%s' % self.__get_os_type())
-        out = get_mac_addr(self.get_interface2_name(), self.domain_id, self.bus_id, self.devfun_id, self.current_driver)
+        get_mac_addr = getattr(self, "get_mac_addr_%s" % self.__get_os_type())
+        out = get_mac_addr(
+            self.get_interface2_name(),
+            self.domain_id,
+            self.bus_id,
+            self.devfun_id,
+            self.current_driver,
+        )
         if "No such file or directory" in out:
-            return 'N/A'
+            return "N/A"
         else:
             return out
 
@@ -332,18 +361,12 @@ class NetDevice(object):
         """
         Get mac address of specified pci device on linux.
         """
-        driver_alias = driver.replace('-', '_')
+        driver_alias = driver.replace("-", "_")
         try:
-            get_mac_addr_linux = getattr(
-                self,
-                'get_mac_addr_linux_%s' %
-                driver_alias)
+            get_mac_addr_linux = getattr(self, "get_mac_addr_linux_%s" % driver_alias)
         except Exception as e:
-            generic_driver = 'generic'
-            get_mac_addr_linux = getattr(
-                self,
-                'get_mac_addr_linux_%s' %
-                generic_driver)
+            generic_driver = "generic"
+            get_mac_addr_linux = getattr(self, "get_mac_addr_linux_%s" % generic_driver)
 
         return get_mac_addr_linux(intf, domain_id, bus_id, devfun_id, driver)
 
@@ -351,37 +374,44 @@ class NetDevice(object):
         """
         Get MAC by the default way on linux.
         """
-        command = ('cat /sys/bus/pci/devices/%s\:%s\:%s/net/%s/address' %
-                   (domain_id, bus_id, devfun_id, intf))
-        return self.__send_expect(command, '# ')
+        command = "cat /sys/bus/pci/devices/%s\:%s\:%s/net/%s/address" % (
+            domain_id,
+            bus_id,
+            devfun_id,
+            intf,
+        )
+        return self.__send_expect(command, "# ")
 
     def get_mac_addr_linux_virtio_pci(self, intf, domain_id, bus_id, devfun_id, driver):
         """
         Get MAC by the default way on linux.
         """
-        virtio_cmd = ('ls /sys/bus/pci/devices/%s\:%s\:%s/ | grep --color=never virtio' %
-                      (domain_id, bus_id, devfun_id))
-        virtio = self.__send_expect(virtio_cmd, '# ')
+        virtio_cmd = (
+            "ls /sys/bus/pci/devices/%s\:%s\:%s/ | grep --color=never virtio"
+            % (domain_id, bus_id, devfun_id)
+        )
+        virtio = self.__send_expect(virtio_cmd, "# ")
 
-        command = ('cat /sys/bus/pci/devices/%s\:%s\:%s/%s/net/%s/address' %
-                   (domain_id, bus_id, devfun_id, virtio, intf))
-        return self.__send_expect(command, '# ')
+        command = "cat /sys/bus/pci/devices/%s\:%s\:%s/%s/net/%s/address" % (
+            domain_id,
+            bus_id,
+            devfun_id,
+            virtio,
+            intf,
+        )
+        return self.__send_expect(command, "# ")
 
     def get_mac_addr_freebsd(self, intf, domain_id, bus_id, devfun_id, driver):
         """
         Get mac address of specified pci device on Freebsd.
         """
         try:
-            get_mac_addr_freebsd = getattr(
-                self,
-                'get_mac_addr_freebsd_%s' %
-                driver)
+            get_mac_addr_freebsd = getattr(self, "get_mac_addr_freebsd_%s" % driver)
         except Exception as e:
-            generic_driver = 'generic'
+            generic_driver = "generic"
             get_mac_addr_freebsd = getattr(
-                self,
-                'get_mac_addr_freebsd_%s' %
-                generic_driver)
+                self, "get_mac_addr_freebsd_%s" % generic_driver
+            )
 
         return get_mac_addr_freebsd(intf, domain_id, bus_id, devfun_id)
 
@@ -389,7 +419,7 @@ class NetDevice(object):
         """
         Get the MAC by the default way on Freebsd.
         """
-        out = self.__send_expect('ifconfig %s' % intf, '# ')
+        out = self.__send_expect("ifconfig %s" % intf, "# ")
         rexp = r"ether ([\da-f:]*)"
         pattern = re.compile(rexp)
         match = pattern.findall(out)
@@ -400,8 +430,7 @@ class NetDevice(object):
         """
         Get ipv4 address of specified pci device.
         """
-        get_ipv4_addr = getattr(
-            self, 'get_ipv4_addr_%s' % self.__get_os_type())
+        get_ipv4_addr = getattr(self, "get_ipv4_addr_%s" % self.__get_os_type())
         return get_ipv4_addr(self.intf_name, self.current_driver)
 
     def get_ipv4_addr_linux(self, intf, driver):
@@ -409,12 +438,12 @@ class NetDevice(object):
         Get ipv4 address of specified pci device on linux.
         """
         try:
-            get_ipv4_addr_linux = getattr(self, 'get_ipv4_addr_linux_%s' % driver)
+            get_ipv4_addr_linux = getattr(self, "get_ipv4_addr_linux_%s" % driver)
         except Exception as e:
-            generic_driver = 'generic'
+            generic_driver = "generic"
             get_ipv4_addr_linux = getattr(
-                self, 'get_ipv4_addr_linux_%s' %
-                generic_driver)
+                self, "get_ipv4_addr_linux_%s" % generic_driver
+            )
 
         return get_ipv4_addr_linux(intf)
 
@@ -422,25 +451,23 @@ class NetDevice(object):
         """
         Get IPv4 address by the default way on linux.
         """
-        out = self.__send_expect("ip -family inet address show dev %s | awk '/inet/ { print $2 }'"
-                                 % intf, "# ")
-        return out.split('/')[0]
+        out = self.__send_expect(
+            "ip -family inet address show dev %s | awk '/inet/ { print $2 }'" % intf,
+            "# ",
+        )
+        return out.split("/")[0]
 
     def get_ipv4_addr_freebsd(self, intf, driver):
         """
         Get ipv4 address of specified pci device on Freebsd.
         """
         try:
-            get_ipv4_addr_freebsd = getattr(
-                self,
-                'get_ipv4_addr_freebsd_%s' %
-                driver)
+            get_ipv4_addr_freebsd = getattr(self, "get_ipv4_addr_freebsd_%s" % driver)
         except Exception as e:
-            generic_driver = 'generic'
+            generic_driver = "generic"
             get_ipv4_addr_freebsd = getattr(
-                self,
-                'get_ipv4_addr_freebsd_%s' %
-                generic_driver)
+                self, "get_ipv4_addr_freebsd_%s" % generic_driver
+            )
 
         return get_ipv4_addr_freebsd(intf)
 
@@ -448,7 +475,7 @@ class NetDevice(object):
         """
         Get the IPv4 address by the default way on Freebsd.
         """
-        out = self.__send_expect('ifconfig %s' % intf, '# ')
+        out = self.__send_expect("ifconfig %s" % intf, "# ")
         rexp = r"inet ([\d:]*)%"
         pattern = re.compile(rexp)
         match = pattern.findall(out)
@@ -465,24 +492,21 @@ class NetDevice(object):
         if self.current_driver != self.default_driver:
             return
 
-        enable_ipv6 = getattr(
-            self, 'enable_ipv6_%s' % self.__get_os_type())
+        enable_ipv6 = getattr(self, "enable_ipv6_%s" % self.__get_os_type())
         return enable_ipv6(self.intf_name)
 
     def enable_ipv6_linux(self, intf):
         """
         Enable ipv6 address of specified pci device on linux.
         """
-        self.__send_expect("sysctl net.ipv6.conf.%s.disable_ipv6=0" %
-                           intf, "# ")
+        self.__send_expect("sysctl net.ipv6.conf.%s.disable_ipv6=0" % intf, "# ")
         # FVL interface need down and up for re-enable ipv6
-        if self.default_driver == 'i40e':
+        if self.default_driver == "i40e":
             self.__send_expect("ifconfig %s down" % intf, "# ")
             self.__send_expect("ifconfig %s up" % intf, "# ")
 
     def enable_ipv6_freebsd(self, intf):
-        self.__send_expect("sysctl net.ipv6.conf.%s.disable_ipv6=0" %
-                           intf, "# ")
+        self.__send_expect("sysctl net.ipv6.conf.%s.disable_ipv6=0" % intf, "# ")
         self.__send_expect("ifconfig %s down" % intf, "# ")
         self.__send_expect("ifconfig %s up" % intf, "# ")
 
@@ -493,20 +517,17 @@ class NetDevice(object):
         """
         if self.current_driver != self.default_driver:
             return
-        disable_ipv6 = getattr(
-            self, 'disable_ipv6_%s' % self.__get_os_type())
+        disable_ipv6 = getattr(self, "disable_ipv6_%s" % self.__get_os_type())
         return disable_ipv6(self.intf_name)
 
     def disable_ipv6_linux(self, intf):
         """
         Disable ipv6 address of specified pci device on linux.
         """
-        self.__send_expect("sysctl net.ipv6.conf.%s.disable_ipv6=1" %
-                           intf, "# ")
+        self.__send_expect("sysctl net.ipv6.conf.%s.disable_ipv6=1" % intf, "# ")
 
     def disable_ipv6_freebsd(self, intf):
-        self.__send_expect("sysctl net.ipv6.conf.%s.disable_ipv6=1" %
-                           intf, "# ")
+        self.__send_expect("sysctl net.ipv6.conf.%s.disable_ipv6=1" % intf, "# ")
         self.__send_expect("ifconfig %s down" % intf, "# ")
         self.__send_expect("ifconfig %s up" % intf, "# ")
 
@@ -515,8 +536,7 @@ class NetDevice(object):
         """
         Get ipv6 address of specified pci device.
         """
-        get_ipv6_addr = getattr(
-            self, 'get_ipv6_addr_%s' % self.__get_os_type())
+        get_ipv6_addr = getattr(self, "get_ipv6_addr_%s" % self.__get_os_type())
         return get_ipv6_addr(self.intf_name, self.current_driver)
 
     def get_ipv6_addr_linux(self, intf, driver):
@@ -524,16 +544,12 @@ class NetDevice(object):
         Get ipv6 address of specified pci device on linux.
         """
         try:
-            get_ipv6_addr_linux = getattr(
-                self,
-                'get_ipv6_addr_linux_%s' %
-                driver)
+            get_ipv6_addr_linux = getattr(self, "get_ipv6_addr_linux_%s" % driver)
         except Exception as e:
-            generic_driver = 'generic'
+            generic_driver = "generic"
             get_ipv6_addr_linux = getattr(
-                self,
-                'get_ipv6_addr_linux_%s' %
-                generic_driver)
+                self, "get_ipv6_addr_linux_%s" % generic_driver
+            )
 
         return get_ipv6_addr_linux(intf)
 
@@ -541,25 +557,23 @@ class NetDevice(object):
         """
         Get the IPv6 address by the default way on linux.
         """
-        out = self.__send_expect("ip -family inet6 address show dev %s | awk '/inet6/ { print $2 }'"
-                                 % intf, "# ")
-        return out.split('/')[0]
+        out = self.__send_expect(
+            "ip -family inet6 address show dev %s | awk '/inet6/ { print $2 }'" % intf,
+            "# ",
+        )
+        return out.split("/")[0]
 
     def get_ipv6_addr_freebsd(self, intf, driver):
         """
         Get ipv6 address of specified pci device on Freebsd.
         """
         try:
-            get_ipv6_addr_freebsd = getattr(
-                self,
-                'get_ipv6_addr_freebsd_%s' %
-                driver)
+            get_ipv6_addr_freebsd = getattr(self, "get_ipv6_addr_freebsd_%s" % driver)
         except Exception as e:
-            generic_driver = 'generic'
+            generic_driver = "generic"
             get_ipv6_addr_freebsd = getattr(
-                self,
-                'get_ipv6_addr_freebsd_%s' %
-                generic_driver)
+                self, "get_ipv6_addr_freebsd_%s" % generic_driver
+            )
 
         return get_ipv6_addr_freebsd(intf)
 
@@ -567,7 +581,7 @@ class NetDevice(object):
         """
         Get the IPv6 address by the default way on Freebsd.
         """
-        out = self.__send_expect('ifconfig %s' % intf, '# ')
+        out = self.__send_expect("ifconfig %s" % intf, "# ")
         rexp = r"inet6 ([\da-f:]*)%"
         pattern = re.compile(rexp)
         match = pattern.findall(out)
@@ -593,15 +607,16 @@ class NetDevice(object):
         """
         Get the speed of specified pci device.
         """
-        get_nic_speed = getattr(
-            self, 'get_nic_speed_%s' %
-            self.__get_os_type())
+        get_nic_speed = getattr(self, "get_nic_speed_%s" % self.__get_os_type())
         return get_nic_speed(self.domain_id, self.bus_id, self.devfun_id)
 
     def get_nic_speed_linux(self, domain_id, bus_id, devfun_id):
-        command = ('cat /sys/bus/pci/devices/%s\:%s\:%s/net/*/speed' %
-                   (domain_id, bus_id, devfun_id))
-        nic_speed = self.__send_expect(command, '# ')
+        command = "cat /sys/bus/pci/devices/%s\:%s\:%s/net/*/speed" % (
+            domain_id,
+            bus_id,
+            devfun_id,
+        )
+        nic_speed = self.__send_expect(command, "# ")
         return nic_speed
 
     def get_nic_speed_freebsd(self, domain_id, bus_id, devfun_id):
@@ -612,9 +627,10 @@ class NetDevice(object):
         """
         Get all SRIOV VF pci bus of specified pci device.
         """
-        get_sriov_vfs_pci = getattr(
-            self, 'get_sriov_vfs_pci_%s' % self.__get_os_type())
-        return get_sriov_vfs_pci(self.domain_id, self.bus_id, self.devfun_id, self.current_driver)
+        get_sriov_vfs_pci = getattr(self, "get_sriov_vfs_pci_%s" % self.__get_os_type())
+        return get_sriov_vfs_pci(
+            self.domain_id, self.bus_id, self.devfun_id, self.current_driver
+        )
 
     def get_sriov_vfs_pci_freebsd(self, domain_id, bus_id, devfun_id, driver):
         """
@@ -629,15 +645,13 @@ class NetDevice(object):
         """
         try:
             get_sriov_vfs_pci_linux = getattr(
-                self,
-                'get_sriov_vfs_pci_linux_%s' %
-                driver)
+                self, "get_sriov_vfs_pci_linux_%s" % driver
+            )
         except Exception as e:
-            generic_driver = 'generic'
+            generic_driver = "generic"
             get_sriov_vfs_pci_linux = getattr(
-                self,
-                'get_sriov_vfs_pci_linux_%s' %
-                generic_driver)
+                self, "get_sriov_vfs_pci_linux_%s" % generic_driver
+            )
 
         return get_sriov_vfs_pci_linux(domain_id, bus_id, devfun_id)
 
@@ -646,8 +660,10 @@ class NetDevice(object):
         Get all the VF PCIs of specified PF by the default way on linux.
         """
         sriov_numvfs = self.__send_expect(
-            "cat /sys/bus/pci/devices/%s\:%s\:%s/sriov_numvfs" %
-            (domain_id, bus_id, devfun_id), "# ")
+            "cat /sys/bus/pci/devices/%s\:%s\:%s/sriov_numvfs"
+            % (domain_id, bus_id, devfun_id),
+            "# ",
+        )
         sriov_vfs_pci = []
 
         if "No such file" in sriov_numvfs:
@@ -658,18 +674,25 @@ class NetDevice(object):
         else:
             try:
                 virtfns = self.__send_expect(
-                    "ls --color=never -d /sys/bus/pci/devices/%s\:%s\:%s/virtfn*" %
-                    (domain_id, bus_id, devfun_id), "# ")
+                    "ls --color=never -d /sys/bus/pci/devices/%s\:%s\:%s/virtfn*"
+                    % (domain_id, bus_id, devfun_id),
+                    "# ",
+                )
                 for virtfn in virtfns.split():
                     vf_uevent = self.__send_expect(
-                        "cat %s" %
-                        os.path.join(virtfn, "uevent"), "# ")
+                        "cat %s" % os.path.join(virtfn, "uevent"), "# "
+                    )
                     vf_pci = re.search(
-                        r"PCI_SLOT_NAME=(%s+:[0-9a-f]+:[0-9a-f]+\.[0-9a-f]+)" %domain_id,
-                        vf_uevent).group(1)
+                        r"PCI_SLOT_NAME=(%s+:[0-9a-f]+:[0-9a-f]+\.[0-9a-f]+)"
+                        % domain_id,
+                        vf_uevent,
+                    ).group(1)
                     sriov_vfs_pci.append(vf_pci)
             except Exception as e:
-                print("Scan linux port [%s:%s.%s] sriov vf failed: %s" % (domain_id, bus_id, devfun_id, e))
+                print(
+                    "Scan linux port [%s:%s.%s] sriov vf failed: %s"
+                    % (domain_id, bus_id, devfun_id, e)
+                )
 
         return sriov_vfs_pci
 
@@ -681,25 +704,23 @@ class NetDevice(object):
         if vf_num == 0:
             self.bind_vf_driver()
         generate_sriov_vfs = getattr(
-            self, 'generate_sriov_vfs_%s' %
-            self.__get_os_type())
+            self, "generate_sriov_vfs_%s" % self.__get_os_type()
+        )
         generate_sriov_vfs(
-            self.domain_id,
-            self.bus_id,
-            self.devfun_id,
-            vf_num,
-            self.current_driver)
+            self.domain_id, self.bus_id, self.devfun_id, vf_num, self.current_driver
+        )
         if vf_num != 0:
             self.sriov_vfs_pci = self.get_sriov_vfs_pci()
 
             vf_pci = self.sriov_vfs_pci[0]
-            addr_array = vf_pci.split(':')
+            addr_array = vf_pci.split(":")
             domain_id = addr_array[0]
             bus_id = addr_array[1]
             devfun_id = addr_array[2]
 
             self.default_vf_driver = self.crb.get_pci_dev_driver(
-                domain_id, bus_id, devfun_id)
+                domain_id, bus_id, devfun_id
+            )
         else:
             self.sriov_vfs_pci = []
         time.sleep(1)
@@ -710,15 +731,13 @@ class NetDevice(object):
         """
         try:
             generate_sriov_vfs_linux = getattr(
-                self,
-                'generate_sriov_vfs_linux_%s' %
-                driver)
+                self, "generate_sriov_vfs_linux_%s" % driver
+            )
         except Exception as e:
-            generic_driver = 'generic'
+            generic_driver = "generic"
             generate_sriov_vfs_linux = getattr(
-                self,
-                'generate_sriov_vfs_linux_%s' %
-                generic_driver)
+                self, "generate_sriov_vfs_linux_%s" % generic_driver
+            )
 
         return generate_sriov_vfs_linux(domain_id, bus_id, devfun_id, vf_num)
 
@@ -732,10 +751,11 @@ class NetDevice(object):
             return None
 
         vf_reg_file = "sriov_numvfs"
-        vf_reg_path = os.path.join("/sys/bus/pci/devices/%s:%s:%s" %
-                                   (domain_id, bus_id, devfun_id), vf_reg_file)
-        self.__send_expect("echo %d > %s" %
-                           (int(vf_num), vf_reg_path), "# ")
+        vf_reg_path = os.path.join(
+            "/sys/bus/pci/devices/%s:%s:%s" % (domain_id, bus_id, devfun_id),
+            vf_reg_file,
+        )
+        self.__send_expect("echo %d > %s" % (int(vf_num), vf_reg_path), "# ")
 
     def generate_sriov_vfs_linux_igb_uio(self, domain_id, bus_id, devfun_id, vf_num):
         """
@@ -747,14 +767,20 @@ class NetDevice(object):
             return None
 
         vf_reg_file = "max_vfs"
-        if self.default_driver == 'i40e':
-            regx_reg_path = "find /sys -name %s | grep %s:%s:%s" % (vf_reg_file, domain_id, bus_id, devfun_id)
+        if self.default_driver == "i40e":
+            regx_reg_path = "find /sys -name %s | grep %s:%s:%s" % (
+                vf_reg_file,
+                domain_id,
+                bus_id,
+                devfun_id,
+            )
             vf_reg_path = self.__send_expect(regx_reg_path, "# ")
         else:
-            vf_reg_path = os.path.join("/sys/bus/pci/devices/%s:%s:%s" %
-                                       (domain_id, bus_id, devfun_id), vf_reg_file)
-        self.__send_expect("echo %d > %s" %
-                           (int(vf_num), vf_reg_path), "# ")
+            vf_reg_path = os.path.join(
+                "/sys/bus/pci/devices/%s:%s:%s" % (domain_id, bus_id, devfun_id),
+                vf_reg_file,
+            )
+        self.__send_expect("echo %d > %s" % (int(vf_num), vf_reg_path), "# ")
 
     def destroy_sriov_vfs(self):
         """
@@ -762,11 +788,11 @@ class NetDevice(object):
         """
         self.generate_sriov_vfs(0)
 
-    def bind_vf_driver(self, pci='', driver=''):
+    def bind_vf_driver(self, pci="", driver=""):
         """
         Bind the specified driver to VF.
         """
-        bind_vf_driver = getattr(self, 'bind_driver_%s' % self.__get_os_type())
+        bind_vf_driver = getattr(self, "bind_driver_%s" % self.__get_os_type())
         if not driver:
             if not self.default_vf_driver:
                 print("Must specify a driver because default VF driver is NULL!")
@@ -778,25 +804,25 @@ class NetDevice(object):
                 print("No VFs on the nic [%s]!" % self.pci)
                 return
             for vf_pci in self.sriov_vfs_pci:
-                addr_array = vf_pci.split(':')
+                addr_array = vf_pci.split(":")
                 domain_id = addr_array[0]
                 bus_id = addr_array[1]
                 devfun_id = addr_array[2]
 
                 bind_vf_driver(domain_id, bus_id, devfun_id, driver)
         else:
-            addr_array = pci.split(':')
+            addr_array = pci.split(":")
             domain_id = addr_array[0]
             bus_id = addr_array[1]
             devfun_id = addr_array[2]
 
             bind_vf_driver(domain_id, bus_id, devfun_id, driver)
 
-    def bind_driver(self, driver=''):
+    def bind_driver(self, driver=""):
         """
         Bind specified driver to PF.
         """
-        bind_driver = getattr(self, 'bind_driver_%s' % self.__get_os_type())
+        bind_driver = getattr(self, "bind_driver_%s" % self.__get_os_type())
         if not driver:
             if not self.default_driver:
                 print("Must specify a driver because default driver is NULL!")
@@ -810,35 +836,32 @@ class NetDevice(object):
         """
         Bind NIC port to specified driver on linux.
         """
-        driver_alias = driver.replace('-', '_')
+        driver_alias = driver.replace("-", "_")
         try:
-            bind_driver_linux = getattr(
-                self,
-                'bind_driver_linux_%s' %
-                driver_alias)
+            bind_driver_linux = getattr(self, "bind_driver_linux_%s" % driver_alias)
             return bind_driver_linux(domain_id, bus_id, devfun_id)
         except Exception as e:
-            driver_alias = 'generic'
-            bind_driver_linux = getattr(
-                self,
-                'bind_driver_linux_%s' %
-                driver_alias)
+            driver_alias = "generic"
+            bind_driver_linux = getattr(self, "bind_driver_linux_%s" % driver_alias)
             return bind_driver_linux(domain_id, bus_id, devfun_id, driver)
 
     def bind_driver_linux_generic(self, domain_id, bus_id, devfun_id, driver):
         """
         Bind NIC port to specified driver by the default way on linux.
         """
-        new_id = self.pci_id.replace(':', ' ')
-        nic_pci_num = ':'.join([domain_id, bus_id, devfun_id])
+        new_id = self.pci_id.replace(":", " ")
+        nic_pci_num = ":".join([domain_id, bus_id, devfun_id])
         self.__send_expect(
-            "echo %s > /sys/bus/pci/drivers/%s/new_id" % (new_id, driver), "# ")
+            "echo %s > /sys/bus/pci/drivers/%s/new_id" % (new_id, driver), "# "
+        )
         self.__send_expect(
-            "echo %s > /sys/bus/pci/devices/%s\:%s\:%s/driver/unbind" %
-            (nic_pci_num, domain_id, bus_id, devfun_id), "# ")
+            "echo %s > /sys/bus/pci/devices/%s\:%s\:%s/driver/unbind"
+            % (nic_pci_num, domain_id, bus_id, devfun_id),
+            "# ",
+        )
         self.__send_expect(
-            "echo %s > /sys/bus/pci/drivers/%s/bind" %
-            (nic_pci_num, driver), "# ")
+            "echo %s > /sys/bus/pci/drivers/%s/bind" % (nic_pci_num, driver), "# "
+        )
         if driver == self.default_driver:
             itf = self.get_interface_name()
             self.__send_expect("ifconfig %s up" % itf, "# ")
@@ -850,27 +873,28 @@ class NetDevice(object):
         """
         Bind NIC port to the pci-stub driver on linux.
         """
-        new_id = self.pci_id.replace(':', ' ')
-        nic_pci_num = ':'.join([domain_id, bus_id, devfun_id])
+        new_id = self.pci_id.replace(":", " ")
+        nic_pci_num = ":".join([domain_id, bus_id, devfun_id])
         self.__send_expect(
-            "echo %s > /sys/bus/pci/drivers/pci-stub/new_id" % new_id, "# ")
+            "echo %s > /sys/bus/pci/drivers/pci-stub/new_id" % new_id, "# "
+        )
         self.__send_expect(
-            "echo %s > /sys/bus/pci/devices/%s\:%s\:%s/driver/unbind" %
-            (nic_pci_num, domain_id, bus_id, devfun_id), "# ")
+            "echo %s > /sys/bus/pci/devices/%s\:%s\:%s/driver/unbind"
+            % (nic_pci_num, domain_id, bus_id, devfun_id),
+            "# ",
+        )
         self.__send_expect(
-            "echo %s > /sys/bus/pci/drivers/pci-stub/bind" %
-            nic_pci_num, "# ")
+            "echo %s > /sys/bus/pci/drivers/pci-stub/bind" % nic_pci_num, "# "
+        )
 
     @nic_has_driver
-    def unbind_driver(self, driver=''):
+    def unbind_driver(self, driver=""):
         """
         Unbind driver.
         """
-        unbind_driver = getattr(
-            self, 'unbind_driver_%s' %
-            self.__get_os_type())
+        unbind_driver = getattr(self, "unbind_driver_%s" % self.__get_os_type())
         if not driver:
-            driver = 'generic'
+            driver = "generic"
         ret = unbind_driver(self.domain_id, self.bus_id, self.devfun_id, driver)
         time.sleep(1)
         return ret
@@ -879,22 +903,21 @@ class NetDevice(object):
         """
         Unbind driver on linux.
         """
-        driver_alias = driver.replace('-', '_')
+        driver_alias = driver.replace("-", "_")
 
-        unbind_driver_linux = getattr(
-            self, 'unbind_driver_linux_%s' % driver_alias)
+        unbind_driver_linux = getattr(self, "unbind_driver_linux_%s" % driver_alias)
         return unbind_driver_linux(domain_id, bus_id, devfun_id)
 
     def unbind_driver_linux_generic(self, domain_id, bus_id, devfun_id):
         """
         Unbind driver by the default way on linux.
         """
-        nic_pci_num = ':'.join([domain_id, bus_id, devfun_id])
+        nic_pci_num = ":".join([domain_id, bus_id, devfun_id])
         cmd = "echo %s > /sys/bus/pci/devices/%s\:%s\:%s/driver/unbind"
         self.__send_expect(cmd % (nic_pci_num, domain_id, bus_id, devfun_id), "# ")
 
     def _cal_mtu(self, framesize):
-        return framesize - HEADER_SIZE['eth']
+        return framesize - HEADER_SIZE["eth"]
 
     def enable_jumbo(self, framesize=0):
         if self.intf_name == "N/A":
@@ -913,13 +936,19 @@ def get_pci_id(crb, domain_id, bus_id, devfun_id):
     """
     Return pci device type
     """
-    command = ('cat /sys/bus/pci/devices/%s\:%s\:%s/vendor' %
-               (domain_id, bus_id, devfun_id))
+    command = "cat /sys/bus/pci/devices/%s\:%s\:%s/vendor" % (
+        domain_id,
+        bus_id,
+        devfun_id,
+    )
     out = crb.send_expect(command, "# ")
     vendor = out[2:]
-    command = ('cat /sys/bus/pci/devices/%s\:%s\:%s/device' %
-               (domain_id, bus_id, devfun_id))
-    out = crb.send_expect(command, '# ')
+    command = "cat /sys/bus/pci/devices/%s\:%s\:%s/device" % (
+        domain_id,
+        bus_id,
+        devfun_id,
+    )
+    out = crb.send_expect(command, "# ")
     device = out[2:]
     return "%s:%s" % (vendor, device)
 
@@ -930,9 +959,9 @@ def add_to_list(host, obj):
     Parameter 'host' is ip address, 'obj' is netdevice object
     """
     nic = {}
-    nic['host'] = host
-    nic['pci'] = obj.pci
-    nic['port'] = obj
+    nic["host"] = host
+    nic["pci"] = obj.pci
+    nic["port"] = obj
     NICS_LIST.append(nic)
 
 
@@ -942,10 +971,10 @@ def get_from_list(host, domain_id, bus_id, devfun_id):
     Parameter will by host ip, pci domain id, pci bus id, pci function id
     """
     for nic in NICS_LIST:
-        if host == nic['host']:
-            pci = ':'.join((domain_id, bus_id, devfun_id))
-            if pci == nic['pci'] and nic['port'].crb.session:
-                return nic['port']
+        if host == nic["host"]:
+            pci = ":".join((domain_id, bus_id, devfun_id))
+            if pci == nic["pci"] and nic["port"].crb.session:
+                return nic["port"]
     return None
 
 
@@ -955,7 +984,7 @@ def remove_from_list(host):
     Parameter will by host ip
     """
     for nic in NICS_LIST[:]:
-        if host == nic['host']:
+        if host == nic["host"]:
             NICS_LIST.remove(nic)
 
 
@@ -965,7 +994,7 @@ def GetNicObj(crb, domain_id, bus_id, devfun_id):
     return object.
     """
     # find existed NetDevice object
-    obj = get_from_list(crb.crb['My IP'], domain_id, bus_id, devfun_id)
+    obj = get_from_list(crb.crb["My IP"], domain_id, bus_id, devfun_id)
     if obj:
         return obj
 
@@ -973,7 +1002,7 @@ def GetNicObj(crb, domain_id, bus_id, devfun_id):
     obj = NetDevice(crb, domain_id, bus_id, devfun_id)
 
     # save NetDevice object to cache, directly get it from cache next time
-    add_to_list(crb.crb['My IP'], obj)
+    add_to_list(crb.crb["My IP"], obj)
     return obj
 
 
@@ -981,4 +1010,4 @@ def RemoveNicObj(crb):
     """
     Remove network device object.
     """
-    remove_from_list(crb.crb['My IP'])
+    remove_from_list(crb.crb["My IP"])

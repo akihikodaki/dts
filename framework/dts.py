@@ -48,6 +48,7 @@ import framework.logger as logger
 import framework.rst as rst  # rst file support
 import framework.settings as settings  # dts settings
 import framework.texttable as texttable  # text format
+from framework.asan_test import ASanTestProcess
 
 from .checkCase import CheckCase
 from .config import CrbsConf
@@ -67,7 +68,7 @@ from .utils import (
     create_parallel_locks,
     get_subclasses,
 )
-from framework.asan_test import ASanTestProcess
+
 imp.reload(sys)
 
 requested_tests = None
@@ -86,17 +87,17 @@ def dts_parse_param(config, section, log_handler):
     performance = False
     functional = False
     # Set parameters
-    shared_lib_parameters = ''
+    shared_lib_parameters = ""
     try:
-        shared_lib_parameters = config.get(section, 'shared_lib_param')
+        shared_lib_parameters = config.get(section, "shared_lib_param")
     except Exception as e:
-        shared_lib_parameters = ''
-    shared_lib_parameters = shared_lib_parameters.split(':')
+        shared_lib_parameters = ""
+    shared_lib_parameters = shared_lib_parameters.split(":")
 
-    parameters = config.get(section, 'parameters').split(':')
-    drivername = config.get(section, 'drivername').split('=')[-1]
+    parameters = config.get(section, "parameters").split(":")
+    drivername = config.get(section, "drivername").split("=")[-1]
 
-    driver = drivername.split(':')
+    driver = drivername.split(":")
     if len(driver) == 2:
         drivername = driver[0]
         drivermode = driver[1]
@@ -108,65 +109,70 @@ def dts_parse_param(config, section, log_handler):
 
     shared_lib_paramDict = dict()
     for param in shared_lib_parameters:
-        (key, _, value) = param.partition('=')
+        (key, _, value) = param.partition("=")
         shared_lib_paramDict[key] = value
-    if 'use_shared_lib' in shared_lib_paramDict and shared_lib_paramDict['use_shared_lib'].lower() == 'true':
-        settings.save_global_setting(settings.HOST_SHARED_LIB_SETTING, 'true')
+    if (
+        "use_shared_lib" in shared_lib_paramDict
+        and shared_lib_paramDict["use_shared_lib"].lower() == "true"
+    ):
+        settings.save_global_setting(settings.HOST_SHARED_LIB_SETTING, "true")
     else:
-        settings.save_global_setting(settings.HOST_SHARED_LIB_SETTING, 'false')
+        settings.save_global_setting(settings.HOST_SHARED_LIB_SETTING, "false")
 
-    if 'shared_lib_path' in shared_lib_paramDict:
-        if not shared_lib_paramDict['shared_lib_path'] \
-                and settings.load_global_setting(settings.HOST_SHARED_LIB_SETTING):
+    if "shared_lib_path" in shared_lib_paramDict:
+        if not shared_lib_paramDict["shared_lib_path"] and settings.load_global_setting(
+            settings.HOST_SHARED_LIB_SETTING
+        ):
             raise ValueError("use shared lib but shared lib path is empty")
-        settings.save_global_setting(settings.HOST_SHARED_LIB_PATH, shared_lib_paramDict['shared_lib_path'])
+        settings.save_global_setting(
+            settings.HOST_SHARED_LIB_PATH, shared_lib_paramDict["shared_lib_path"]
+        )
 
     paramDict = dict()
     for param in parameters:
-        (key, _, value) = param.partition('=')
+        (key, _, value) = param.partition("=")
         paramDict[key] = value
 
-    if 'perf' in paramDict and paramDict['perf'] == 'true':
+    if "perf" in paramDict and paramDict["perf"] == "true":
         performance = True
-    if 'func' in paramDict and paramDict['func'] == 'true':
+    if "func" in paramDict and paramDict["func"] == "true":
         functional = True
 
-    if 'nic_type' not in paramDict:
-        paramDict['nic_type'] = 'any'
+    if "nic_type" not in paramDict:
+        paramDict["nic_type"] = "any"
 
-    settings.save_global_setting(settings.HOST_NIC_SETTING, paramDict['nic_type'])
+    settings.save_global_setting(settings.HOST_NIC_SETTING, paramDict["nic_type"])
 
     # save perf/function setting in environment
     if performance:
-        settings.save_global_setting(settings.PERF_SETTING, 'yes')
+        settings.save_global_setting(settings.PERF_SETTING, "yes")
     else:
-        settings.save_global_setting(settings.PERF_SETTING, 'no')
+        settings.save_global_setting(settings.PERF_SETTING, "no")
 
     if functional:
-        settings.save_global_setting(settings.FUNC_SETTING, 'yes')
+        settings.save_global_setting(settings.FUNC_SETTING, "yes")
     else:
-        settings.save_global_setting(settings.FUNC_SETTING, 'no')
+        settings.save_global_setting(settings.FUNC_SETTING, "no")
 
 
 def dts_parse_config(config, section):
     """
     Parse execution file configuration.
     """
-    duts = [dut_.strip() for dut_ in config.get(section,
-                                                'crbs').split(',')]
-    targets = [target.strip()
-               for target in config.get(section, 'targets').split(',')]
-    test_suites = [suite.strip()
-                   for suite in config.get(section, 'test_suites').split(',')]
+    duts = [dut_.strip() for dut_ in config.get(section, "crbs").split(",")]
+    targets = [target.strip() for target in config.get(section, "targets").split(",")]
+    test_suites = [
+        suite.strip() for suite in config.get(section, "test_suites").split(",")
+    ]
     try:
-        rx_mode = config.get(section, 'rx_mode').strip().lower()
+        rx_mode = config.get(section, "rx_mode").strip().lower()
     except:
-        rx_mode = 'default'
+        rx_mode = "default"
 
     settings.save_global_setting(settings.DPDK_RXMODE_SETTING, rx_mode)
 
     for suite in test_suites:
-        if suite == '':
+        if suite == "":
             test_suites.remove(suite)
 
     return duts, targets, test_suites
@@ -181,16 +187,12 @@ def dts_parse_commands(commands):
     if commands is None:
         return dts_commands
 
-    args_format = {"shell": 0,
-                   "crb": 1,
-                   "stage": 2,
-                   "check": 3,
-                   "max_num": 4}
+    args_format = {"shell": 0, "crb": 1, "stage": 2, "check": 3, "max_num": 4}
     cmd_fmt = r"\[(.*)\]"
 
     for command in commands:
-        args = command.split(':')
-        if len(args) != args_format['max_num']:
+        args = command.split(":")
+        if len(args) != args_format["max_num"]:
             log_handler.error("Command [%s] is lack of arguments" % command)
             raise VerifyFailure("commands input is not corrected")
             continue
@@ -198,22 +200,22 @@ def dts_parse_commands(commands):
 
         m = re.match(cmd_fmt, args[0])
         if m:
-            cmds = m.group(1).split(',')
+            cmds = m.group(1).split(",")
             shell_cmd = ""
             for cmd in cmds:
                 shell_cmd += cmd
-                shell_cmd += ' '
-            dts_command['command'] = shell_cmd[:-1]
+                shell_cmd += " "
+            dts_command["command"] = shell_cmd[:-1]
         else:
-            dts_command['command'] = args[0]
+            dts_command["command"] = args[0]
         if args[1] == "tester":
-            dts_command['host'] = "tester"
+            dts_command["host"] = "tester"
         else:
-            dts_command['host'] = "dut"
+            dts_command["host"] = "dut"
         if args[2] == "post-init":
-            dts_command['stage'] = "post-init"
+            dts_command["stage"] = "post-init"
         else:
-            dts_command['stage'] = "pre-init"
+            dts_command["stage"] = "pre-init"
         if args[3] == "ignore":
             dts_command["verify"] = False
         else:
@@ -229,13 +231,13 @@ def dts_run_commands(crb, dts_commands):
     Run dts input commands
     """
     for dts_command in dts_commands:
-        command = dts_command['command']
-        if dts_command['host'] in crb.NAME:
-            if crb.stage == dts_command['stage']:
+        command = dts_command["command"]
+        if dts_command["host"] in crb.NAME:
+            if crb.stage == dts_command["stage"]:
                 ret = crb.send_expect(command, expected="# ", verify=True)
                 if type(ret) is int:
                     log_handler.error("[%s] return failure" % command)
-                    if dts_command['verify'] is True:
+                    if dts_command["verify"] is True:
                         raise VerifyFailure("Command execution failed")
 
 
@@ -244,13 +246,16 @@ def get_project_obj(project_name, super_class, crbInst, serializer, dut_id):
     Load project module and return crb instance.
     """
     project_obj = None
-    PROJECT_MODULE_PREFIX = 'project_'
+    PROJECT_MODULE_PREFIX = "project_"
     try:
         _project_name = PROJECT_MODULE_PREFIX + project_name
-        project_module = __import__('framework.' + _project_name,
-                                    fromlist=[_project_name])
+        project_module = __import__(
+            "framework." + _project_name, fromlist=[_project_name]
+        )
 
-        for project_subclassname, project_subclass in get_subclasses(project_module, super_class):
+        for project_subclassname, project_subclass in get_subclasses(
+            project_module, super_class
+        ):
             project_obj = project_subclass(crbInst, serializer, dut_id)
         if project_obj is None:
             project_obj = super_class(crbInst, serializer, dut_id)
@@ -265,23 +270,25 @@ def dts_log_testsuite(duts, tester, suite_obj, log_handler, test_classname):
     """
     Change to SUITE self logger handler.
     """
-    log_handler.config_suite(test_classname, 'dts')
-    tester.logger.config_suite(test_classname, 'tester')
-    if hasattr(tester, 'logger_alt'):
-        tester.logger_alt.config_suite(test_classname, 'tester')
-    if hasattr(tester, 'logger_scapy'):
-        tester.logger_scapy.config_suite(test_classname, 'tester')
+    log_handler.config_suite(test_classname, "dts")
+    tester.logger.config_suite(test_classname, "tester")
+    if hasattr(tester, "logger_alt"):
+        tester.logger_alt.config_suite(test_classname, "tester")
+    if hasattr(tester, "logger_scapy"):
+        tester.logger_scapy.config_suite(test_classname, "tester")
 
     for dutobj in duts:
-        dutobj.logger.config_suite(test_classname, 'dut')
+        dutobj.logger.config_suite(test_classname, "dut")
         dutobj.test_classname = test_classname
 
     try:
         if tester.it_uses_external_generator():
-            if tester.is_pktgen and \
-               hasattr(tester, 'pktgen') and \
-               getattr(tester, 'pktgen'):
-                tester.pktgen.logger.config_suite(test_classname, 'pktgen')
+            if (
+                tester.is_pktgen
+                and hasattr(tester, "pktgen")
+                and getattr(tester, "pktgen")
+            ):
+                tester.pktgen.logger.config_suite(test_classname, "pktgen")
     except Exception as ex:
         pass
 
@@ -290,40 +297,47 @@ def dts_log_execution(duts, tester, log_handler):
     """
     Change to DTS default logger handler.
     """
-    log_handler.config_execution('dts')
-    tester.logger.config_execution('tester')
+    log_handler.config_execution("dts")
+    tester.logger.config_execution("tester")
 
     for dutobj in duts:
-        dutobj.logger.config_execution('dut' + settings.LOG_NAME_SEP + '%s' % dutobj.crb['My IP'])
+        dutobj.logger.config_execution(
+            "dut" + settings.LOG_NAME_SEP + "%s" % dutobj.crb["My IP"]
+        )
 
     try:
         if tester.it_uses_external_generator():
-            if tester.is_pktgen and \
-               hasattr(tester, 'pktgen') and \
-               getattr(tester, 'pktgen'):
-                tester.pktgen.logger.config_execution('pktgen')
+            if (
+                tester.is_pktgen
+                and hasattr(tester, "pktgen")
+                and getattr(tester, "pktgen")
+            ):
+                tester.pktgen.logger.config_execution("pktgen")
     except Exception as ex:
         pass
 
 
-def dts_crbs_init(crbInsts, skip_setup, read_cache, project, base_dir, serializer, virttype):
+def dts_crbs_init(
+    crbInsts, skip_setup, read_cache, project, base_dir, serializer, virttype
+):
     """
     Create dts dut/tester instance and initialize them.
     """
     duts = []
 
-    serializer.set_serialized_filename(settings.FOLDERS['Output'] +
-                                       '/.%s.cache' % crbInsts[0]['IP'])
+    serializer.set_serialized_filename(
+        settings.FOLDERS["Output"] + "/.%s.cache" % crbInsts[0]["IP"]
+    )
     serializer.load_from_file()
 
     testInst = copy.copy(crbInsts[0])
-    testInst['My IP'] = crbInsts[0]['tester IP']
+    testInst["My IP"] = crbInsts[0]["tester IP"]
     tester = get_project_obj(project, Tester, testInst, serializer, dut_id=0)
 
     dut_id = 0
     for crbInst in crbInsts:
         dutInst = copy.copy(crbInst)
-        dutInst['My IP'] = crbInst['IP']
+        dutInst["My IP"] = crbInst["IP"]
         dutobj = get_project_obj(project, Dut, dutInst, serializer, dut_id=dut_id)
         duts.append(dutobj)
         dut_id += 1
@@ -374,7 +388,7 @@ def dts_run_prerequisties(duts, tester, pkgName, patch, dts_commands, serializer
         dts_run_commands(tester, dts_commands)
     except Exception as ex:
         log_handler.error(" PREREQ EXCEPTION " + traceback.format_exc())
-        log_handler.info('CACHE: Discarding cache.')
+        log_handler.info("CACHE: Discarding cache.")
         serializer.discard_cache()
         settings.report_error("TESTER_SETUP_ERR")
         return False
@@ -390,7 +404,7 @@ def dts_run_prerequisties(duts, tester, pkgName, patch, dts_commands, serializer
     except Exception as ex:
         log_handler.error(" PREREQ EXCEPTION " + traceback.format_exc())
         result.add_failed_dut(duts[0], str(ex))
-        log_handler.info('CACHE: Discarding cache.')
+        log_handler.info("CACHE: Discarding cache.")
         serializer.discard_cache()
         settings.report_error("DUT_SETUP_ERR")
         return False
@@ -441,14 +455,15 @@ def dts_run_suite(duts, tester, test_suites, target, subtitle):
         try:
             # check whether config the test cases
             append_requested_case_list = None
-            if ':' in suite_name:
-                case_list = suite_name[suite_name.find(':')+1:]
-                append_requested_case_list = case_list.split('\\')
-                suite_name = suite_name[:suite_name.find(':')]
+            if ":" in suite_name:
+                case_list = suite_name[suite_name.find(":") + 1 :]
+                append_requested_case_list = case_list.split("\\")
+                suite_name = suite_name[: suite_name.find(":")]
             result.test_suite = suite_name
-            _suite_full_name = 'TestSuite_' + suite_name
-            suite_module = __import__('tests.' + _suite_full_name,
-                                      fromlist=[_suite_full_name])
+            _suite_full_name = "TestSuite_" + suite_name
+            suite_module = __import__(
+                "tests." + _suite_full_name, fromlist=[_suite_full_name]
+            )
             for test_classname, test_class in get_subclasses(suite_module, TestCase):
 
                 suite_obj = test_class(duts, tester, target, suite_name)
@@ -495,10 +510,28 @@ def dts_run_suite(duts, tester, test_suites, target, subtitle):
                 log_handler.error(str(e))
 
 
-def run_all(config_file, pkgName, git, patch, skip_setup,
-            read_cache, project, suite_dir, test_cases,
-            base_dir, output_dir, verbose, virttype, debug,
-            debugcase, re_run, commands, subtitle, update_expected, asan):
+def run_all(
+    config_file,
+    pkgName,
+    git,
+    patch,
+    skip_setup,
+    read_cache,
+    project,
+    suite_dir,
+    test_cases,
+    base_dir,
+    output_dir,
+    verbose,
+    virttype,
+    debug,
+    debugcase,
+    re_run,
+    commands,
+    subtitle,
+    update_expected,
+    asan,
+):
     """
     Main process of DTS, it will run all test suites in the config file.
     """
@@ -521,8 +554,8 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     check_case_inst = CheckCase()
 
     # prepare the output folder
-    if output_dir == '':
-        output_dir = settings.FOLDERS['Output']
+    if output_dir == "":
+        output_dir = settings.FOLDERS["Output"]
 
     # prepare ASan test
     ASanTestProcess.test_prepare(asan, output_dir)
@@ -532,13 +565,13 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
 
     # enable debug mode
     if debug is True:
-        settings.save_global_setting(settings.DEBUG_SETTING, 'yes')
+        settings.save_global_setting(settings.DEBUG_SETTING, "yes")
     if debugcase is True:
-        settings.save_global_setting(settings.DEBUG_CASE_SETTING, 'yes')
+        settings.save_global_setting(settings.DEBUG_CASE_SETTING, "yes")
 
     # enable update-expected
     if update_expected is True:
-        settings.save_global_setting(settings.UPDATE_EXPECTED, 'yes')
+        settings.save_global_setting(settings.UPDATE_EXPECTED, "yes")
 
     # init log_handler handler
     if verbose is True:
@@ -549,15 +582,15 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
         re_run = 0
 
     logger.log_dir = output_dir
-    log_handler = getLogger('dts')
-    log_handler.config_execution('dts')
+    log_handler = getLogger("dts")
+    log_handler.config_execution("dts")
 
     # run designated test case
     requested_tests = test_cases
 
     # Read config file
     dts_cfg_folder = settings.load_global_setting(settings.DTS_CFG_FOLDER)
-    if dts_cfg_folder != '':
+    if dts_cfg_folder != "":
         config_file = dts_cfg_folder + os.sep + config_file
 
     config = configparser.SafeConfigParser()
@@ -574,9 +607,9 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     rst.path2Result = output_dir
 
     # report objects
-    excel_report = ExcelReporter(output_dir + '/test_results.xls')
-    json_report = JSONReporter(output_dir + '/test_results.json')
-    stats_report = StatsReporter(output_dir + '/statistics.txt')
+    excel_report = ExcelReporter(output_dir + "/test_results.xls")
+    json_report = JSONReporter(output_dir + "/test_results.json")
+    stats_report = StatsReporter(output_dir + "/statistics.txt")
     result = Result()
 
     crbs_conf = CrbsConf()
@@ -595,7 +628,7 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
         # look up in crbs - to find the matching IP
         for dut in duts:
             for crb in crbs:
-                if crb['section'] == dut:
+                if crb["section"] == dut:
                     crbInsts.append(crb)
                     break
 
@@ -610,7 +643,9 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
         create_parallel_locks(len(duts))
 
         # init dut, tester crb
-        duts, tester = dts_crbs_init(crbInsts, skip_setup, read_cache, project, base_dir, serializer, virttype)
+        duts, tester = dts_crbs_init(
+            crbInsts, skip_setup, read_cache, project, base_dir, serializer, virttype
+        )
         tester.set_re_run(re_run)
         # register exit action
         atexit.register(quit_execution, duts, tester)
@@ -618,12 +653,21 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
         check_case_inst.check_dut(duts[0])
 
         # Run DUT prerequisites
-        if dts_run_prerequisties(duts, tester, pkgName, patch, dts_commands, serializer) is False:
+        if (
+            dts_run_prerequisties(
+                duts, tester, pkgName, patch, dts_commands, serializer
+            )
+            is False
+        ):
             dts_crbs_exit(duts, tester)
             continue
-        result.kdriver = duts[0].nic.default_driver + '-' + duts[0].nic.driver_version
+        result.kdriver = duts[0].nic.default_driver + "-" + duts[0].nic.driver_version
         result.firmware = duts[0].nic.firmware
-        result.package = duts[0].nic.pkg['type'] + ' ' + duts[0].nic.pkg['version'] if duts[0].nic.pkg else None
+        result.package = (
+            duts[0].nic.pkg["type"] + " " + duts[0].nic.pkg["version"]
+            if duts[0].nic.pkg
+            else None
+        )
         result.driver = settings.load_global_setting(settings.HOST_DRIVER_SETTING)
         result.dpdk_version = duts[0].dpdk_version
         dts_run_target(duts, tester, targets, test_suites, subtitle)
@@ -638,14 +682,14 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
 
 def show_speedup_options_messages(read_cache, skip_setup):
     if read_cache:
-        log_handler.info('CACHE: All configuration will be read from cache.')
+        log_handler.info("CACHE: All configuration will be read from cache.")
     else:
-        log_handler.info('CACHE: Cache will not be read.')
+        log_handler.info("CACHE: Cache will not be read.")
 
     if skip_setup:
-        log_handler.info('SKIP: Skipping DPDK setup.')
+        log_handler.info("SKIP: Skipping DPDK setup.")
     else:
-        log_handler.info('SKIP: The DPDK setup steps will be executed.')
+        log_handler.info("SKIP: The DPDK setup steps will be executed.")
 
 
 def save_all_results():
@@ -664,9 +708,9 @@ def quit_execution(duts, tester):
     """
     # close all nics
     for dutobj in duts:
-        if getattr(dutobj, 'ports_info', None) and dutobj.ports_info:
+        if getattr(dutobj, "ports_info", None) and dutobj.ports_info:
             for port_info in dutobj.ports_info:
-                netdev = port_info['port']
+                netdev = port_info["port"]
                 netdev.close()
         # close all session
         dutobj.close()

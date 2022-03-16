@@ -47,7 +47,6 @@ Generate Plots for performance test results
 
 
 class tableData(object):
-
     def __init__(self):
         self.headers = []
         """
@@ -59,37 +58,34 @@ class tableData(object):
 class Plotting(object):
 
     path_2_result = path2Result
-    plots_subfolder = 'images'
-    image_format = 'png'
+    plots_subfolder = "images"
+    image_format = "png"
 
     default_bar_colours = [
-        '#f70202',
-        '#0f0b0b',
-        '#123eed',
-        '#07601b',
-        '#36f760',
-        '#87210d',
-        '#512f28',
-        '#11c6b1',
-        '#45f94e',
-        '#f94566'
+        "#f70202",
+        "#0f0b0b",
+        "#123eed",
+        "#07601b",
+        "#36f760",
+        "#87210d",
+        "#512f28",
+        "#11c6b1",
+        "#45f94e",
+        "#f94566",
     ]
 
-    default_line_markers = [
-        'o'
-    ]
+    default_line_markers = ["o"]
 
-    default_line_styles = [
-        '--'
-    ]
+    default_line_styles = ["--"]
 
     def __init__(self, crb, target, nic):
 
         # Ensure the folder exist
         try:
 
-            path = '/'.join([Plotting.path_2_result, crb, target, nic,
-                             Plotting.plots_subfolder])
+            path = "/".join(
+                [Plotting.path_2_result, crb, target, nic, Plotting.plots_subfolder]
+            )
 
             if not os.path.exists(path):
                 os.makedirs(path)
@@ -102,17 +98,33 @@ class Plotting(object):
     def clear_all_plots(self, crb, target):
         shutil.rmtree(self.plots_path, True)
 
-    def create_bars_plot(self, image_filename, plot_title, xdata, ydata,
-                         xlabel='', ylabel='', legend=[],
-                         bar_colours=default_bar_colours):
+    def create_bars_plot(
+        self,
+        image_filename,
+        plot_title,
+        xdata,
+        ydata,
+        xlabel="",
+        ylabel="",
+        legend=[],
+        bar_colours=default_bar_colours,
+    ):
 
         for yseries in ydata:
             if len(xdata) != len(yseries):
-                print(utils.RED("The number of items in X axis (%s) and Y axis (%s) does not match." % (xdata, ydata)))
-                return ''
+                print(
+                    utils.RED(
+                        "The number of items in X axis (%s) and Y axis (%s) does not match."
+                        % (xdata, ydata)
+                    )
+                )
+                return ""
 
-        image_path = "%s/%s.%s" % (self.plots_path, image_filename,
-                                   Plotting.image_format)
+        image_path = "%s/%s.%s" % (
+            self.plots_path,
+            image_filename,
+            Plotting.image_format,
+        )
 
         pgraph = Plot2DGraph()
         pgraph.resetMe()
@@ -138,22 +150,30 @@ class Plotting(object):
 
         return image_path
 
-    def create_lines_plot(self,
-                          image_filename, plot_title,
-                          xdata, ydata,
-                          xticks=[], yticks=[],
-                          xlabel='', ylabel='',
-                          legend=[],
-                          line_colours=default_bar_colours,
-                          line_markers=default_line_markers,
-                          line_styles=default_line_styles,
-                          addHline=False,
-                          hLine={},
-                          testing=False
-                          ):
+    def create_lines_plot(
+        self,
+        image_filename,
+        plot_title,
+        xdata,
+        ydata,
+        xticks=[],
+        yticks=[],
+        xlabel="",
+        ylabel="",
+        legend=[],
+        line_colours=default_bar_colours,
+        line_markers=default_line_markers,
+        line_styles=default_line_styles,
+        addHline=False,
+        hLine={},
+        testing=False,
+    ):
 
-        image_path = "%s/%s.%s" % (self.plots_path, image_filename,
-                                   Plotting.image_format)
+        image_path = "%s/%s.%s" % (
+            self.plots_path,
+            image_filename,
+            Plotting.image_format,
+        )
 
         pgraph = Plot2DGraph()
         pgraph.resetMe()
@@ -168,7 +188,7 @@ class Plotting(object):
 
         # workaround
         if numPlots > len(line_colours):
-            print('WARNING - numPlots > len(line_colours)')
+            print("WARNING - numPlots > len(line_colours)")
             r = 0x00
             g = 0x66
             b = 0xFF
@@ -176,7 +196,7 @@ class Plotting(object):
                 r = r % 256
                 g = g % 256
                 b = b % 256
-                _ = '#%0.2x%0.2x%0.2x' % (r, g, b)
+                _ = "#%0.2x%0.2x%0.2x" % (r, g, b)
                 line_colours.append(_)
                 r += 7
                 g -= 10
@@ -195,12 +215,17 @@ class Plotting(object):
         # For each value in the x axis add corresponding bar (array in ydata)
         for i in list(range(numPlots)):
             yDataStart = i * numticks
-            pgraph.addPlotData(i, 'Number of active pipes per output port',
-                               ylabel,
-                               xticks, [],
-                               xdata,
-                               ydata[yDataStart: (yDataStart + numticks)],
-                               [], [])
+            pgraph.addPlotData(
+                i,
+                "Number of active pipes per output port",
+                ylabel,
+                xticks,
+                [],
+                xdata,
+                ydata[yDataStart : (yDataStart + numticks)],
+                [],
+                [],
+            )
 
         pgraph.xLen = 0.6
         pgraph.titleFontSize = 18
@@ -209,14 +234,13 @@ class Plotting(object):
 
         if addHline:
             pgraph.horizontalLine = True
-            pgraph.hLineName = hLine['name']
-            pgraph.hLine = hLine['value']
-            pgraph.hLineBoxX = hLine['boxXvalue']
-            pgraph.hLineBoxY = hLine['boxYvalue']
+            pgraph.hLineName = hLine["name"]
+            pgraph.hLine = hLine["value"]
+            pgraph.hLineBoxX = hLine["boxXvalue"]
+            pgraph.hLineBoxY = hLine["boxYvalue"]
 
-        pgraph.generatePlot(plotName=image_path,
-                            keys=legend,
-                            title=plot_title,
-                            firstYvalue=1)
+        pgraph.generatePlot(
+            plotName=image_path, keys=legend, title=plot_title, firstYvalue=1
+        )
 
         return image_path

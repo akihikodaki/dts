@@ -17,6 +17,7 @@ class MultipleVM(object):
     Param max_vm: maximum number of threads
     Param duts: list of DUT objects
     """
+
     def __init__(self, max_vm, duts):
         self.max_vm = max_vm
         self.duts = duts
@@ -26,7 +27,9 @@ class MultipleVM(object):
         self._pool_executors = dict()
         self.logger = getLogger("multiple_vm")
 
-        self.logger.info("Created MultipleVM instance with %d DUTs and %d VMs" % (len(duts), max_vm))
+        self.logger.info(
+            "Created MultipleVM instance with %d DUTs and %d VMs" % (len(duts), max_vm)
+        )
 
     def parallel_vm_start(self, args):
         """
@@ -65,11 +68,11 @@ class MultipleVM(object):
         """
 
         result = {}
-        vm_name = args['name']
-        dut_id = args['dut_id']
+        vm_name = args["name"]
+        dut_id = args["dut_id"]
 
-        if 'autodetect_topo' in args:
-            autodetect_topo = args['autodetect_topo']
+        if "autodetect_topo" in args:
+            autodetect_topo = args["autodetect_topo"]
         else:
             autodetect_topo = True
 
@@ -78,19 +81,19 @@ class MultipleVM(object):
 
         from .qemu_kvm import QEMUKvm
 
-        # VM configured by configuration file 
-        if 'virt_config' in args:
-            suite_name = args['virt_config']['suite_name']
-            vm_name = args['virt_config']['vm_name']
+        # VM configured by configuration file
+        if "virt_config" in args:
+            suite_name = args["virt_config"]["suite_name"]
+            vm_name = args["virt_config"]["vm_name"]
             vm_obj = QEMUKvm(self.duts[dut_id], vm_name, suite_name)
-            if 'virt_params' in args:
-                virt_params = args['virt_params']
+            if "virt_params" in args:
+                virt_params = args["virt_params"]
             else:
                 virt_params = dict()
         else:
             # VM configured by parameters
-            vm_obj = QEMUKvm(self.duts[dut_id], vm_name, 'multi_vm')
-            virt_params = args['virt_params']
+            vm_obj = QEMUKvm(self.duts[dut_id], vm_name, "multi_vm")
+            virt_params = args["virt_params"]
             # just save config, should be list
             vm_obj.set_local_config([virt_params])
 
@@ -100,7 +103,7 @@ class MultipleVM(object):
             self.logger.debug("Check VM[%s] is alive" % vm_name)
             vm_obj.attach()
             self.logger.debug("VM[%s] attach is done" % vm_name)
-            if 'migration' in virt_params:
+            if "migration" in virt_params:
                 self.logger.debug("Immigrated VM[%s] is ready" % vm_name)
             else:
                 vm_dut = vm_obj.instantiate_vm_dut(autodetect_topo=autodetect_topo)
@@ -108,7 +111,7 @@ class MultipleVM(object):
         else:
             vm_obj.quick_start()
             self.duts[dut_id].logger.debug("VM[%s] quick start is done" % vm_name)
-            if 'migration' in virt_params:
+            if "migration" in virt_params:
                 self.logger.debug("Immigrated VM[%s] is ready" % vm_name)
             else:
                 vm_obj._check_vm_status()
@@ -116,10 +119,10 @@ class MultipleVM(object):
                 vm_dut = vm_obj.instantiate_vm_dut(autodetect_topo=autodetect_topo)
                 self.logger.debug("VM[%s] instantiate vm dut is done" % vm_name)
 
-        result['name'] = vm_name
-        result['dut_id'] = dut_id
-        result['vm_obj'] = vm_obj
-        result['vm_dut'] = vm_dut
+        result["name"] = vm_name
+        result["dut_id"] = dut_id
+        result["vm_obj"] = vm_obj
+        result["vm_dut"] = vm_dut
         self.logger.info("Parallel task DUT%d %s Done and returned" % (dut_id, vm_name))
         return result
 
@@ -140,16 +143,16 @@ class MultipleVM(object):
         }
         """
         result = {}
-        vm_name = args['name']
-        vm_dut = args['vm_dut']
-        dut_id = args['dut_id']
-        commands = args['commands']
-        expects = args['expects']
-        timeouts = args['timeouts']
+        vm_name = args["name"]
+        vm_dut = args["vm_dut"]
+        dut_id = args["dut_id"]
+        commands = args["commands"]
+        expects = args["expects"]
+        timeouts = args["timeouts"]
         outputs = []
 
-        if 'delay' in args:
-            time.sleep(args['delay'])
+        if "delay" in args:
+            time.sleep(args["delay"])
 
         self.logger.debug("Parallel task start for DUT%d %s" % (dut_id, vm_name))
 
@@ -165,10 +168,12 @@ class MultipleVM(object):
                 output = vm_dut.send_expect(command, expect, timeout)
             outputs.append(output)
 
-        result['name'] = vm_name
-        result['dut_id'] = dut_id
-        result['outputs'] = outputs
-        self.logger.debug("Parallel task for DUT%d %s has been done and returned" % (dut_id, vm_name))
+        result["name"] = vm_name
+        result["dut_id"] = dut_id
+        result["outputs"] = outputs
+        self.logger.debug(
+            "Parallel task for DUT%d %s has been done and returned" % (dut_id, vm_name)
+        )
 
         return result
 
@@ -184,17 +189,17 @@ class MultipleVM(object):
         }
         """
         result = {}
-        vm_name = args['name']
-        vm_obj = args['vm_obj']
-        dut_id = args['dut_id']
-        remote_ip = args['remote_ip']
-        migrate_port = args['migrate_port']
+        vm_name = args["name"]
+        vm_obj = args["vm_obj"]
+        dut_id = args["dut_id"]
+        remote_ip = args["remote_ip"]
+        migrate_port = args["migrate_port"]
 
         vm_obj.start_migration(remote_ip, migrate_port)
         vm_obj.wait_migration_done()
 
-        result['name'] = vm_name
-        result['dut_id'] = dut_id
+        result["name"] = vm_name
+        result["dut_id"] = dut_id
 
         return result
 
@@ -202,8 +207,8 @@ class MultipleVM(object):
         """
         Save result in local variable, will be used later
         """
-        self.pool_result[result['dut_id']][result['name']] = result
-        self.pool_result[result['dut_id']][result['name']]['status'] = 0
+        self.pool_result[result["dut_id"]][result["name"]] = result
+        self.pool_result[result["dut_id"]][result["name"]]["status"] = 0
 
     def handle_vm_exception(self, request, exc_info):
         """
@@ -217,14 +222,18 @@ class MultipleVM(object):
             raise SystemExit
 
         # print traceback info for exception
-        name = request.args[0]['name']
-        self.logger.error(("**** Exception occurred DUT%d:%s" % (request.args[0]['dut_id'], name)))
+        name = request.args[0]["name"]
+        self.logger.error(
+            ("**** Exception occurred DUT%d:%s" % (request.args[0]["dut_id"], name))
+        )
         exc_type, exc_value, exc_traceback = exc_info
         self.logger.error(repr(traceback.format_tb(exc_traceback)))
 
-        result = {'name': name, 'dut_id': request.args[0]['dut_id']}
-        self.pool_result[result['dut_id']][result['name']] = result
-        self.pool_result[result['dut_id']][result['name']]['status'] = DTS_ERR_TBL["PARALLEL_EXECUTE_ERR"]
+        result = {"name": name, "dut_id": request.args[0]["dut_id"]}
+        self.pool_result[result["dut_id"]][result["name"]] = result
+        self.pool_result[result["dut_id"]][result["name"]]["status"] = DTS_ERR_TBL[
+            "PARALLEL_EXECUTE_ERR"
+        ]
 
     def add_parallel_task(self, action, config):
         """
@@ -236,7 +245,7 @@ class MultipleVM(object):
             data = config
         elif action == "stop":
             task = self.parallel_vm_stop
-            data = config['name']
+            data = config["name"]
         elif action == "cmd":
             # just string command by now
             task = self.parallel_vm_command
@@ -246,7 +255,9 @@ class MultipleVM(object):
             data = config
 
         # due to threadpool request, one item
-        request = threadpool.makeRequests(task, [data], self.save_result, self.handle_vm_exception)
+        request = threadpool.makeRequests(
+            task, [data], self.save_result, self.handle_vm_exception
+        )
         self._pool_requests.extend(request)
 
     def do_parallel_task(self):
@@ -254,7 +265,7 @@ class MultipleVM(object):
         Do configured tasks in parallel, will return if all tasks finished
         """
         # set parallel mode
-        save_global_setting(DTS_PARALLEL_SETTING, 'yes')
+        save_global_setting(DTS_PARALLEL_SETTING, "yes")
 
         self.pool_result = [dict() for _ in self.duts]
         for req in self._pool_requests:
@@ -269,7 +280,9 @@ class MultipleVM(object):
                 time.sleep(0.5)
                 self.pool.poll()
             except threadpool.NoResultsPending:
-                self.logger.info("All parallel tasks have been done at %s" % time.ctime())
+                self.logger.info(
+                    "All parallel tasks have been done at %s" % time.ctime()
+                )
                 break
             except Exception as e:
                 self.logger.error("Met exception %s" % (str(e)))
@@ -282,7 +295,7 @@ class MultipleVM(object):
         time.sleep(2)
 
         # exit from parallel mode
-        save_global_setting(DTS_PARALLEL_SETTING, 'no')
+        save_global_setting(DTS_PARALLEL_SETTING, "no")
 
     def get_parallel_result(self):
         """

@@ -1,4 +1,4 @@
-#BSD LICENSE
+# BSD LICENSE
 #
 # Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
 # All rights reserved.
@@ -42,7 +42,6 @@ from framework.test_case import TestCase
 
 
 class TestExamplebuild(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -59,11 +58,22 @@ class TestExamplebuild(TestCase):
         """
         Verify example applications compile successfully
         """
-        out = self.dut.send_expect('ls /root/intel-cmt-cat-master/lib', '#')
+        out = self.dut.send_expect("ls /root/intel-cmt-cat-master/lib", "#")
         if "No such file or directory" not in out:
-            self.dut.send_expect('export PQOS_INSTALL_PATH=/root/intel-cmt-cat-master/lib', '#')
-        out = self.dut.build_dpdk_apps("./examples", '#')
-        verify_info = ['Error','Stop','terminate','failed','No such file','no input files','not found','No rule']
+            self.dut.send_expect(
+                "export PQOS_INSTALL_PATH=/root/intel-cmt-cat-master/lib", "#"
+            )
+        out = self.dut.build_dpdk_apps("./examples", "#")
+        verify_info = [
+            "Error",
+            "Stop",
+            "terminate",
+            "failed",
+            "No such file",
+            "no input files",
+            "not found",
+            "No rule",
+        ]
         for failed_info in verify_info:
             self.verify(failed_info not in out, "Test failed")
 

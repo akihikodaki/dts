@@ -41,8 +41,7 @@ class Singleton(type):
 
     def __call__(self, *args, **kwargs):
         if self not in self._instances:
-            self._instances[self] = \
-                super(Singleton, self).__call__(*args, **kwargs)
+            self._instances[self] = super(Singleton, self).__call__(*args, **kwargs)
         return self._instances[self]
 
 
@@ -58,7 +57,7 @@ class Serializer(object):
 
     def __init__(self):
         self.volatile_cache = {}
-        self.filename = 'serializer.cache'
+        self.filename = "serializer.cache"
 
     def save(self, object_name, object_to_save):
         """
@@ -85,7 +84,7 @@ class Serializer(object):
         module. Returns True in case everything went OK, False otherwise.
         """
         try:
-            serialized_file = open(self.filename, 'w')
+            serialized_file = open(self.filename, "w")
             pickle.dump(self.volatile_cache, serialized_file)
             serialized_file.close()
             return True
@@ -99,7 +98,7 @@ class Serializer(object):
         otherwise.
         """
         try:
-            serialized_file = open(self.filename, 'r')
+            serialized_file = open(self.filename, "r")
             self.volatile_cache = pickle.load(serialized_file)
             serialized_file.close()
             return True

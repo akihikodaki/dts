@@ -56,7 +56,6 @@ Check the unit tests for more information about how the class works.
 
 
 class IXIABufferFileParser(object):
-
     def __init__(self, filenames):
         self.frames_files = []
         self.counter = 0
@@ -70,7 +69,7 @@ class IXIABufferFileParser(object):
         processed by reading and discarding the first two lines on each file.
         """
         for filename in filenames:
-            a_file = open(filename, 'r')
+            a_file = open(filename, "r")
             self.__discard_headers(a_file)
             self.frames_files.append(a_file)
 
@@ -91,9 +90,9 @@ class IXIABufferFileParser(object):
         starting from the back if we split the line by \t.
         The counter only takes chars inside the payload.
         """
-        counter = frame.rsplit('\t', 3)[1]
+        counter = frame.rsplit("\t", 3)[1]
         counter = counter[:11]
-        return int(counter.replace(' ', ''), 16)
+        return int(counter.replace(" ", ""), 16)
 
     def __change_current_file(self):
         """

@@ -41,7 +41,6 @@ from framework.virt_common import VM
 
 
 class TestPortControl(TestCase):
-
     def set_up_all(self):
         """
         Run before each test suite
@@ -56,12 +55,14 @@ class TestPortControl(TestCase):
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
         self.pf_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.vf_mac = "00:01:23:45:67:89"
-        self.txitf = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
+        self.txitf = self.tester.get_interface(
+            self.tester.get_local_port(self.dut_ports[0])
+        )
         self.host_testpmd = PmdOutput(self.dut)
-        self.vf_assign_method = 'vfio-pci'
-        self.dut.send_expect('modprobe vfio-pci', '#')
+        self.vf_assign_method = "vfio-pci"
+        self.dut.send_expect("modprobe vfio-pci", "#")
         self.socket = self.dut.get_numa_id(self.dut_ports[0])
-        port = self.dut.ports_info[0]['port']
+        port = self.dut.ports_info[0]["port"]
         self.pf_default_driver = port.get_nic_driver()
 
     def set_up(self):
@@ -70,7 +71,7 @@ class TestPortControl(TestCase):
         """
         pass
 
-    def setup_vm_env(self, driver='default'):
+    def setup_vm_env(self, driver="default"):
         """
         Create testing environment with 1VF generated from 1PF
         """
@@ -80,17 +81,17 @@ class TestPortControl(TestCase):
         # bind to default driver
         self.bind_nic_driver(self.dut_ports[:1], driver="")
         self.used_dut_port = self.dut_ports[0]
-        self.host_intf = self.dut.ports_info[self.used_dut_port]['intf']
+        self.host_intf = self.dut.ports_info[self.used_dut_port]["intf"]
         self.dut.generate_sriov_vfs_by_port(self.used_dut_port, 1, driver=driver)
-        self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port]['vfs_port']
+        self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port]["vfs_port"]
         try:
             for port in self.sriov_vfs_port:
                 port.bind_driver(self.vf_assign_method)
             time.sleep(1)
-            vf_popt = {'opt_host': self.sriov_vfs_port[0].pci}
+            vf_popt = {"opt_host": self.sriov_vfs_port[0].pci}
 
             # set up VM ENV
-            self.vm = VM(self.dut, 'vm0', 'port_control')
+            self.vm = VM(self.dut, "vm0", "port_control")
             self.vm.set_vm_device(driver=self.vf_assign_method, **vf_popt)
             self.vm_dut = self.vm.start()
             if self.vm_dut is None:
@@ -107,8 +108,8 @@ class TestPortControl(TestCase):
         self.env_done = True
 
     def destroy_vm_env(self):
-        if getattr(self, 'vm', None):
-            if getattr(self, 'vm_dut', None):
+        if getattr(self, "vm", None):
+            if getattr(self, "vm_dut", None):
                 self.vm_dut.kill_all()
             self.vm_testpmd = None
             self.vm_dut_ports = None
@@ -118,7 +119,7 @@ class TestPortControl(TestCase):
             time.sleep(3)
             self.vm = None
 
-        if getattr(self, 'used_dut_port', None) != None:
+        if getattr(self, "used_dut_port", None) != None:
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port)
             self.used_dut_port = None
         self.bind_nic_driver(self.dut_ports[:1], driver=self.pf_default_driver)
@@ -133,23 +134,25 @@ class TestPortControl(TestCase):
         terminal.send_expect("ifconfig %s hw ether %s" % (vf_if[1], self.vf_mac), "#")
         terminal.send_expect("ifconfig %s up" % vf_if[1], "#")
         terminal.send_expect("ip addr flush %s " % vf_if[1], "#")
-        terminal.send_expect("./usertools/dpdk-devbind.py -b vfio-pci --force %s" % vf_pci[1], "#")
-        app_name = terminal.apps_name['test-pmd']
+        terminal.send_expect(
+            "./usertools/dpdk-devbind.py -b vfio-pci --force %s" % vf_pci[1], "#"
+        )
+        app_name = terminal.apps_name["test-pmd"]
         cmd = app_name + "-n 1 -a %s --vfio-intr=legacy -- -i" % vf_pci[1]
         terminal.send_expect(cmd, "testpmd>", 10)
 
     def start_testpmd(self, terminal):
         terminal.start_testpmd(ports=[0], socket=self.socket)
-        res = terminal.wait_link_status_up('all', timeout=5)
-        self.verify(res is True, 'there have port link is down')
-        terminal.execute_cmd('set fwd mac')
-        terminal.execute_cmd('set promisc all off')
+        res = terminal.wait_link_status_up("all", timeout=5)
+        self.verify(res is True, "there have port link is down")
+        terminal.execute_cmd("set fwd mac")
+        terminal.execute_cmd("set promisc all off")
 
     def start_pmd_port(self, terminal):
         terminal.execute_cmd("port start all")
         terminal.execute_cmd("start")
         time.sleep(5)
-        terminal.wait_link_status_up('all', timeout=5)
+        terminal.wait_link_status_up("all", timeout=5)
         ret = terminal.get_port_link_status(self.port_id_0)
         self.verify(ret == "up", "port not up!")
 
@@ -157,16 +160,19 @@ class TestPortControl(TestCase):
         terminal.execute_cmd("stop")
         terminal.execute_cmd("port stop all")
         ret = terminal.get_port_link_status(self.port_id_0)
-        if self.nic.startswith('columbiaville') or (getattr(self, 'vm_testpmd', None) and terminal is self.vm_testpmd):
+        if self.nic.startswith("columbiaville") or (
+            getattr(self, "vm_testpmd", None) and terminal is self.vm_testpmd
+        ):
             self.verify(ret != "", "port status error!")
         else:
             self.verify(ret == "down", "port not down!")
 
-
     def reset_pmd_port(self, terminal):
         terminal.execute_cmd("port reset all")
         ret = terminal.get_port_link_status(self.port_id_0)
-        if self.nic.startswith('columbiaville') or (getattr(self, 'vm_testpmd', None) and terminal is self.vm_testpmd):
+        if self.nic.startswith("columbiaville") or (
+            getattr(self, "vm_testpmd", None) and terminal is self.vm_testpmd
+        ):
             self.verify(ret != "", "port status error!")
         else:
             self.verify(ret == "down", "port not down!")
@@ -174,13 +180,17 @@ class TestPortControl(TestCase):
     def close_pmd_port(self, terminal):
         terminal.execute_cmd("port close all")
         ret = terminal.execute_cmd("show port info all")
-        ret = ret.split('\r')
-        self.verify(ret[1] == '', "close all port fail!")
+        ret = ret.split("\r")
+        self.verify(ret[1] == "", "close all port fail!")
 
     def calculate_stats(self, start_stats, end_stats):
         ret_stats = {}
-        ret_stats['RX-packets'] = int(end_stats['RX-packets']) - int(start_stats['RX-packets'])
-        ret_stats['TX-packets'] = int(end_stats['TX-packets']) - int(start_stats['TX-packets'])
+        ret_stats["RX-packets"] = int(end_stats["RX-packets"]) - int(
+            start_stats["RX-packets"]
+        )
+        ret_stats["TX-packets"] = int(end_stats["TX-packets"]) - int(
+            start_stats["TX-packets"]
+        )
         return ret_stats
 
     def send_and_verify_packets(self, terminal):
@@ -195,12 +205,17 @@ class TestPortControl(TestCase):
         self.pkt = packet.Packet('Ether(dst="%s")/IP()/Raw("x"*40)' % self.dts_mac)
 
         pf_start_stats = terminal.get_pmd_stats(self.port_id_0)
-        self.pkt.send_pkt(crb=self.tester, tx_port=self.txitf, count=self.pkt_count, timeout=30)
+        self.pkt.send_pkt(
+            crb=self.tester, tx_port=self.txitf, count=self.pkt_count, timeout=30
+        )
         pf_end_stats = terminal.get_pmd_stats(self.port_id_0)
         pf_ret_stats = self.calculate_stats(pf_start_stats, pf_end_stats)
 
-        self.verify(pf_ret_stats['RX-packets'] == self.pkt_count and pf_ret_stats['TX-packets'] == self.pkt_count,
-                    "Packets receive and forward fail!")
+        self.verify(
+            pf_ret_stats["RX-packets"] == self.pkt_count
+            and pf_ret_stats["TX-packets"] == self.pkt_count,
+            "Packets receive and forward fail!",
+        )
 
     def test_pf_start_stop_reset_close(self):
         self.start_testpmd(self.host_testpmd)

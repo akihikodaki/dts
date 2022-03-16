@@ -50,6 +50,7 @@ ST_UNKNOWN = "UNKNOWN"
 VM_IMG_LIST = []
 mutex_vm_list = threading.Lock()
 
+
 class VirtBase(object):
     """
     Basic module for customer special virtual type. This module implement
@@ -82,8 +83,7 @@ class VirtBase(object):
 
         if not self.has_virtual_ability():
             if not self.enable_virtual_ability():
-                raise Exception(
-                    "Dut [ %s ] cannot have the virtual ability!!!")
+                raise Exception("Dut [ %s ] cannot have the virtual ability!!!")
 
         self.virt_type = self.get_virt_type()
 
@@ -97,8 +97,8 @@ class VirtBase(object):
         self.vm_status = ST_RUNNING
 
         # by default no special kernel module is required
-        self.def_driver = ''
-        self.driver_mode = ''
+        self.def_driver = ""
+        self.driver_mode = ""
 
     def get_virt_type(self):
         """
@@ -166,7 +166,7 @@ class VirtBase(object):
         """
         # load local configuration by suite and vm name
         try:
-            conf = VirtConf(CONFIG_ROOT_PATH + os.sep + suite_name + '.cfg')
+            conf = VirtConf(CONFIG_ROOT_PATH + os.sep + suite_name + ".cfg")
             conf.load_virt_config(self.vm_name)
             self.local_conf = conf.get_virt_config()
         except:
@@ -176,7 +176,7 @@ class VirtBase(object):
 
         # replace global configurations with local configurations
         for param in self.local_conf:
-            if 'virt_type' in list(param.keys()):
+            if "virt_type" in list(param.keys()):
                 # param 'virt_type' is for virt_base only
                 continue
             # save local configurations
@@ -202,7 +202,7 @@ class VirtBase(object):
             key = list(param.keys())[0]
             value = param[key]
             try:
-                param_func = getattr(self, 'add_vm_' + key)
+                param_func = getattr(self, "add_vm_" + key)
                 if callable(param_func):
                     if type(value) is list:
                         for option in value:
@@ -210,8 +210,8 @@ class VirtBase(object):
                 else:
                     print(utils.RED("Virt %s function not callable!!!" % key))
             except AttributeError:
-                    self.host_logger.error(traceback.print_exception(*sys.exc_info()))
-                    print(utils.RED("Virt %s function not implemented!!!" % key))
+                self.host_logger.error(traceback.print_exception(*sys.exc_info()))
+                print(utils.RED("Virt %s function not implemented!!!" % key))
             except Exception:
                 self.host_logger.error(traceback.print_exception(*sys.exc_info()))
                 raise exception.VirtConfigParamException(key)
@@ -220,10 +220,10 @@ class VirtBase(object):
         """
         Set default driver which may required when setup VM
         """
-        if 'driver_name' in list(options.keys()):
-            self.def_driver = options['driver_name']
-        if 'driver_mode' in list(options.keys()):
-            self.driver_mode = options['driver_mode']
+        if "driver_name" in list(options.keys()):
+            self.def_driver = options["driver_name"]
+        if "driver_mode" in list(options.keys()):
+            self.driver_mode = options["driver_mode"]
 
     def find_option_index(self, option):
         """
@@ -245,9 +245,10 @@ class VirtBase(object):
         """
         Generate a unique MAC based on the DUT.
         """
-        mac_head = '00:00:00:'
-        mac_tail = ':'.join(
-            ['%02x' % x for x in map(lambda x:randint(0, 255), list(range(3)))])
+        mac_head = "00:00:00:"
+        mac_tail = ":".join(
+            ["%02x" % x for x in map(lambda x: randint(0, 255), list(range(3)))]
+        )
         return mac_head + mac_tail
 
     def get_vm_ip(self):
@@ -267,8 +268,8 @@ class VirtBase(object):
         Check whether VM existed.
         """
         vm_status = self.host_session.send_expect(
-            "ps aux | grep qemu | grep 'name %s '| grep -v grep"
-            % self.vm_name, "# ")
+            "ps aux | grep qemu | grep 'name %s '| grep -v grep" % self.vm_name, "# "
+        )
 
         if self.vm_name in vm_status:
             return True
@@ -298,7 +299,7 @@ class VirtBase(object):
         self._attach_vm()
         return None
 
-    def start(self, load_config=True, set_target=True, cpu_topo='', bind_dev=True):
+    def start(self, load_config=True, set_target=True, cpu_topo="", bind_dev=True):
         """
         Start VM and instantiate the VM with VirtDut.
         """
@@ -313,7 +314,9 @@ class VirtBase(object):
 
             if self.vm_status is ST_RUNNING:
                 # connect vm dut and init running environment
-                vm_dut = self.instantiate_vm_dut(set_target, cpu_topo, bind_dev=bind_dev, autodetect_topo=True)
+                vm_dut = self.instantiate_vm_dut(
+                    set_target, cpu_topo, bind_dev=bind_dev, autodetect_topo=True
+                )
             else:
                 vm_dut = None
 
@@ -329,7 +332,7 @@ class VirtBase(object):
             return None
         return vm_dut
 
-    def quick_start(self, load_config=True, set_target=True, cpu_topo=''):
+    def quick_start(self, load_config=True, set_target=True, cpu_topo=""):
         """
         Only Start VM and not do anything else, will be helpful in multiple VMs
         """
@@ -351,7 +354,7 @@ class VirtBase(object):
             if callable(self.callback):
                 self.callback()
 
-    def migrated_start(self, set_target=True, cpu_topo=''):
+    def migrated_start(self, set_target=True, cpu_topo=""):
         """
         Instantiate the VM after migration done
         There's no need to load param and start VM because VM has been started
@@ -361,7 +364,9 @@ class VirtBase(object):
                 # flag current vm is migration vm
                 self.migration_vm = True
                 # connect backup vm dut and it just inherited from host
-                vm_dut = self.instantiate_vm_dut(set_target, cpu_topo, bind_dev=False, autodetect_topo=False)
+                vm_dut = self.instantiate_vm_dut(
+                    set_target, cpu_topo, bind_dev=False, autodetect_topo=False
+                )
         except Exception as vm_except:
             if self.handle_exception(vm_except):
                 print(utils.RED("Handled exception " + str(type(vm_except))))
@@ -375,8 +380,9 @@ class VirtBase(object):
     def handle_exception(self, vm_except):
         # show exception back trace
         exc_type, exc_value, exc_traceback = sys.exc_info()
-        traceback.print_exception(exc_type, exc_value, exc_traceback,
-                                  limit=2, file=sys.stdout)
+        traceback.print_exception(
+            exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout
+        )
         if type(vm_except) is exception.ConfigParseException:
             # nothing to handle just return True
             return True
@@ -421,25 +427,33 @@ class VirtBase(object):
         """
         param_len = len(self.params)
         for i in range(param_len):
-            if 'disk' in list(self.params[i].keys()):
-                value = self.params[i]['disk'][0]
-                if 'file' in list(value.keys()):
+            if "disk" in list(self.params[i].keys()):
+                value = self.params[i]["disk"][0]
+                if "file" in list(value.keys()):
                     host_ip = self.host_dut.get_ip_address()
-                    return host_ip + ':' + self.host_dut.test_classname + ':' + value['file']
+                    return (
+                        host_ip
+                        + ":"
+                        + self.host_dut.test_classname
+                        + ":"
+                        + value["file"]
+                    )
         return None
 
-    def instantiate_vm_dut(self, set_target=True, cpu_topo='', bind_dev=True, autodetect_topo=True):
+    def instantiate_vm_dut(
+        self, set_target=True, cpu_topo="", bind_dev=True, autodetect_topo=True
+    ):
         """
         Instantiate the Dut class for VM.
         """
         crb = self.host_dut.crb.copy()
-        crb['bypass core0'] = False
+        crb["bypass core0"] = False
         vm_ip = self.get_vm_ip()
-        crb['IP'] = vm_ip
-        crb['My IP'] = vm_ip
+        crb["IP"] = vm_ip
+        crb["My IP"] = vm_ip
         username, password = self.get_vm_login()
-        crb['user'] = username
-        crb['pass'] = password
+        crb["user"] = username
+        crb["pass"] = password
 
         serializer = self.host_dut.serializer
 
@@ -452,13 +466,14 @@ class VirtBase(object):
                 self.vm_name,
                 self.suite,
                 cpu_topo,
-                dut_id=self.host_dut.dut_id)
+                dut_id=self.host_dut.dut_id,
+            )
         except Exception as vm_except:
             self.handle_exception(vm_except)
             raise exception.VirtDutConnectException
             return None
 
-        vm_dut.nic_type = 'any'
+        vm_dut.nic_type = "any"
         vm_dut.tester = self.host_dut.tester
         vm_dut.host_dut = self.host_dut
         vm_dut.host_session = self.host_session
@@ -484,7 +499,9 @@ class VirtBase(object):
         try:
             # setting up dpdk in vm, must call at last
             vm_dut.target = self.host_dut.target
-            vm_dut.prerequisites(self.host_dut.package, self.host_dut.patches, autodetect_topo)
+            vm_dut.prerequisites(
+                self.host_dut.package, self.host_dut.patches, autodetect_topo
+            )
             if set_target:
                 target = self.host_dut.target
                 vm_dut.set_target(target, bind_dev, self.def_driver, self.driver_mode)
@@ -514,12 +531,12 @@ class VirtBase(object):
         """
         Just quit connection to the VM
         """
-        if getattr(self, 'host_session', None):
+        if getattr(self, "host_session", None):
             self.host_session.close()
             self.host_session = None
 
         # vm_dut may not init in migration case
-        if getattr(self, 'vm_dut', None):
+        if getattr(self, "vm_dut", None):
             if self.vm_status is ST_RUNNING:
                 self.vm_dut.close()
             else:

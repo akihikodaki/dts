@@ -38,8 +38,8 @@ JUMBO_FRAME_MTU = 9600
 DEFAULT_MTU_VALUE = 1500
 COMMON_PKT_LEN = 64
 JUMBO_FRAME_LENGTH = 9000
-IPV4_SRC = '192.168.0.11'
-IPV4_DST = '192.168.0.12'
+IPV4_SRC = "192.168.0.11"
+IPV4_DST = "192.168.0.12"
 LAUNCH_QUEUE = 4
 PACKAGE_COUNT = 32
 
@@ -50,10 +50,12 @@ class SmokeTest(object):
         for name in kwargs:
             setattr(self, name, kwargs[name])
 
-    def send_pkg_return_stats(self, pkt_size=COMMON_PKT_LEN, l3_src=IPV4_SRC, l3_dst=IPV4_DST, rss=False):
+    def send_pkg_return_stats(
+        self, pkt_size=COMMON_PKT_LEN, l3_src=IPV4_SRC, l3_dst=IPV4_DST, rss=False
+    ):
         self.test_case.dut.send_expect("clear port stats all", "testpmd> ")
-        l3_len = pkt_size - HEADER_SIZE['eth']
-        payload = pkt_size - HEADER_SIZE['eth'] - HEADER_SIZE['ip']
+        l3_len = pkt_size - HEADER_SIZE["eth"]
+        payload = pkt_size - HEADER_SIZE["eth"] - HEADER_SIZE["ip"]
         hash_flag = False
         if rss:
             pkt = []
@@ -64,34 +66,40 @@ class SmokeTest(object):
                     self.test_case.smoke_tester_mac,
                     l3_src,
                     l3_len,
-                    payload)
+                    payload,
+                )
                 pkt.append(p)
         else:
-            pkt = ["Ether(dst='{}',src='{}')/IP(src='{}',dst='{}',len={})/Raw(load='X'*{})".format(
-                self.test_case.smoke_dut_mac,
-                self.test_case.smoke_tester_mac,
-                l3_src,
-                l3_dst,
-                l3_len,
-                payload)]
+            pkt = [
+                "Ether(dst='{}',src='{}')/IP(src='{}',dst='{}',len={})/Raw(load='X'*{})".format(
+                    self.test_case.smoke_dut_mac,
+                    self.test_case.smoke_tester_mac,
+                    l3_src,
+                    l3_dst,
+                    l3_len,
+                    payload,
+                )
+            ]
 
         self.test_case.pkt.update_pkt(pkt)
 
         # wait package update
         time.sleep(1)
-        self.test_case.pkt.send_pkt(crb=self.test_case.tester, tx_port=self.test_case.smoke_tester_nic)
-        time.sleep(.5)
+        self.test_case.pkt.send_pkt(
+            crb=self.test_case.tester, tx_port=self.test_case.smoke_tester_nic
+        )
+        time.sleep(0.5)
         out = self.test_case.pmd_out.get_output(timeout=1)
-        queue_pattern = re.compile(r'Receive\squeue=(\w+)')
+        queue_pattern = re.compile(r"Receive\squeue=(\w+)")
         # collect all queues
         queues = queue_pattern.findall(out)
         # get dpdk statistical information
         stats = self.test_case.pmd_out.get_pmd_stats(self.test_case.smoke_dut_ports[0])
-        if 'RTE_MBUF_F_RX_RSS_HASH' in out:
+        if "RTE_MBUF_F_RX_RSS_HASH" in out:
             hash_flag = True
 
         if rss:
-            rss_pattern = re.compile(r'-\sRSS\shash=(\w+)')
+            rss_pattern = re.compile(r"-\sRSS\shash=(\w+)")
             # collect all hash value
             rss_hash = rss_pattern.findall(out)
             if 0 != len(rss_hash):
@@ -113,16 +121,21 @@ class SmokeTest(object):
         """
         pkg_size = JUMBO_FRAME_LENGTH + 1
         queues, stats = self.send_pkg_return_stats(pkg_size)
-        if 1 != stats['RX-errors'] and 0 != stats['TX-packets']:
-            self.test_case.logger.info("jumbo frame: The RX[{}] or TX[{}] packet error".format(stats['RX-errors'],
-                                                                                               stats['TX-packets']))
+        if 1 != stats["RX-errors"] and 0 != stats["TX-packets"]:
+            self.test_case.logger.info(
+                "jumbo frame: The RX[{}] or TX[{}] packet error".format(
+                    stats["RX-errors"], stats["TX-packets"]
+                )
+            )
             return False
 
         # The packet can be forwarded successfully.
         pkg_size = JUMBO_FRAME_LENGTH
         queues, stats = self.send_pkg_return_stats(pkg_size)
-        if 1 != stats['TX-packets']:
-            self.test_case.logger.info("jumbo frame: The TX[{}] packet error".format(stats['TX-packets']))
+        if 1 != stats["TX-packets"]:
+            self.test_case.logger.info(
+                "jumbo frame: The TX[{}] packet error".format(stats["TX-packets"])
+            )
             return False
 
         return True
@@ -139,7 +152,9 @@ class SmokeTest(object):
 
         # verify that each queue has packets, verify hash value are not equal, and hash flag exists.
         if LAUNCH_QUEUE != len(queues) or 1 == hash_values or hash_flag is False:
-            self.test_case.logger.info("rss the hash flag [{}] [{}] error".format(queues, hash_values))
+            self.test_case.logger.info(
+                "rss the hash flag [{}] [{}] error".format(queues, hash_values)
+            )
             return False
 
         return True
@@ -159,10 +174,10 @@ class SmokeTest(object):
         self.test_case.dut.send_expect("port config all rxq 1", "testpmd> ")
         self.test_case.dut.send_expect("port config all txq 1", "testpmd> ")
         out = self.test_case.dut.send_expect("show config rxtx", "testpmd> ")
-        if 'RX queue number: 1' not in out:
+        if "RX queue number: 1" not in out:
             self.test_case.logger.info("RX queue number 1 no display")
             return False
-        if 'Tx queue number: 1' not in out:
+        if "Tx queue number: 1" not in out:
             self.test_case.logger.info("Tx queue number 1 no display")
             return False
 
@@ -172,7 +187,9 @@ class SmokeTest(object):
         queue_after, stats = self.send_pkg_return_stats()
 
         if queue_after is None:
-            self.test_case.logger.info("after txq rxq the queue [{}] error".format(queue_after))
+            self.test_case.logger.info(
+                "after txq rxq the queue [{}] error".format(queue_after)
+            )
             return False
 
         return True

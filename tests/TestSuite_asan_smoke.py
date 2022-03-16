@@ -29,20 +29,21 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .smoke_base import SmokeTest
 from framework.packet import Packet
 from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 
-class TestASanSmoke(TestCase):
+from .smoke_base import SmokeTest
 
+
+class TestASanSmoke(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
         Generic filter Prerequistites
         """
         self.smoke_dut_ports = self.dut.get_ports(self.nic)
-        self.ports_pci = [self.dut.ports_info[self.smoke_dut_ports[0]]['pci']]
+        self.ports_pci = [self.dut.ports_info[self.smoke_dut_ports[0]]["pci"]]
         # Verify that enough ports are available
         self.verify(len(self.smoke_dut_ports) >= 1, "Insufficient ports")
         self.tester_port0 = self.tester.get_local_port(self.smoke_dut_ports[0])
@@ -60,8 +61,10 @@ class TestASanSmoke(TestCase):
         self.pmd_out = PmdOutput(self.dut)
 
         # build dpdk with ASan tool
-        self.dut.build_install_dpdk(target=self.target,
-                                    extra_options="-Dbuildtype=debug -Db_lundef=false -Db_sanitize=address")
+        self.dut.build_install_dpdk(
+            target=self.target,
+            extra_options="-Dbuildtype=debug -Db_lundef=false -Db_sanitize=address",
+        )
 
     def set_up(self):
         """
@@ -86,16 +89,30 @@ class TestASanSmoke(TestCase):
     def check_testpmd_status(self):
         cmd = "ps -aux | grep testpmd | grep -v grep"
         out = self.dut.send_expect(cmd, "#", 15, alt_session=True)
-        self.verify("testpmd" in out, "After build dpdk with ASan, start testpmd failed")
+        self.verify(
+            "testpmd" in out, "After build dpdk with ASan, start testpmd failed"
+        )
 
     def test_rxtx_with_ASan_enable(self):
         out = self.pmd_out.start_testpmd(cores=self.cores, ports=self.ports_pci)
         self.check_testpmd_status()
-        self.verify(all([error_key not in out for error_key in ['heap-buffer-overflow', 'use-after-free']]),
-                    "the testpmd have error key words")
+        self.verify(
+            all(
+                [
+                    error_key not in out
+                    for error_key in ["heap-buffer-overflow", "use-after-free"]
+                ]
+            ),
+            "the testpmd have error key words",
+        )
         self.pmd_out.execute_cmd("set fwd mac")
         self.pmd_out.execute_cmd("set verbose 1")
         self.pmd_out.execute_cmd("start")
         queues, stats = self.smoke_base.send_pkg_return_stats()
-        self.verify(stats['RX-packets'] != 0 and stats['RX-packets'] == stats['TX-packets'], "RX-packets: {} "
-                            "TX-packets : {}, rx tx test failed".format(stats['RX-packets'], stats['TX-packets']))
+        self.verify(
+            stats["RX-packets"] != 0 and stats["RX-packets"] == stats["TX-packets"],
+            "RX-packets: {} "
+            "TX-packets : {}, rx tx test failed".format(
+                stats["RX-packets"], stats["TX-packets"]
+            ),
+        )

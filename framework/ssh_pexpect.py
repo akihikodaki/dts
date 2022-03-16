@@ -15,7 +15,6 @@ Also supports transfer files to tester or DUT.
 
 
 class SSHPexpect:
-
     def __init__(self, host, username, password, dut_id):
         self.magic_prompt = "MAGIC PROMPT"
         self.logger = None
@@ -38,35 +37,48 @@ class SSHPexpect:
         """
         retry_times = 10
         try:
-            if ':' in self.host:
+            if ":" in self.host:
                 while retry_times:
-                    self.ip = self.host.split(':')[0]
-                    self.port = int(self.host.split(':')[1])
-                    self.session = pxssh.pxssh(encoding='utf-8')
+                    self.ip = self.host.split(":")[0]
+                    self.port = int(self.host.split(":")[1])
+                    self.session = pxssh.pxssh(encoding="utf-8")
                     try:
-                        self.session.login(self.ip, self.username,
-                                           self.password, original_prompt='[$#>]',
-                                           port=self.port, login_timeout=20, password_regex=r'(?i)(?:password:)|(?:passphrase for key)|(?i)(password for .+:)')
+                        self.session.login(
+                            self.ip,
+                            self.username,
+                            self.password,
+                            original_prompt="[$#>]",
+                            port=self.port,
+                            login_timeout=20,
+                            password_regex=r"(?i)(?:password:)|(?:passphrase for key)|(?i)(password for .+:)",
+                        )
                     except Exception as e:
                         print(e)
                         time.sleep(2)
                         retry_times -= 1
-                        print("retry %d times connecting..." % (10-retry_times))
+                        print("retry %d times connecting..." % (10 - retry_times))
                     else:
                         break
                 else:
-                    raise Exception('connect to %s:%s failed' % (self.ip, self.port))
+                    raise Exception("connect to %s:%s failed" % (self.ip, self.port))
             else:
-                self.session = pxssh.pxssh(encoding='utf-8')
-                self.session.login(self.host, self.username,
-                                   self.password, original_prompt='[$#>]', password_regex=r'(?i)(?:password:)|(?:passphrase for key)|(?i)(password for .+:)')
-            self.send_expect('stty -echo', '#')
-            self.send_expect('stty columns 1000', "#")
+                self.session = pxssh.pxssh(encoding="utf-8")
+                self.session.login(
+                    self.host,
+                    self.username,
+                    self.password,
+                    original_prompt="[$#>]",
+                    password_regex=r"(?i)(?:password:)|(?:passphrase for key)|(?i)(password for .+:)",
+                )
+            self.send_expect("stty -echo", "#")
+            self.send_expect("stty columns 1000", "#")
         except Exception as e:
             print(RED(e))
-            if getattr(self, 'port', None):
-                suggestion = "\nSuggession: Check if the firewall on [ %s ] " % \
-                    self.ip + "is stopped\n"
+            if getattr(self, "port", None):
+                suggestion = (
+                    "\nSuggession: Check if the firewall on [ %s ] " % self.ip
+                    + "is stopped\n"
+                )
                 print(GREEN(suggestion))
 
             raise SSHConnectionException(self.host)
@@ -101,8 +113,13 @@ class SSHPexpect:
             else:
                 return ret
         except Exception as e:
-            print(RED("Exception happened in [%s] and output is [%s]" % (command, self.get_output_before())))
-            raise(e)
+            print(
+                RED(
+                    "Exception happened in [%s] and output is [%s]"
+                    % (command, self.get_output_before())
+                )
+            )
+            raise (e)
 
     def send_command(self, command, timeout=1):
         try:
@@ -111,9 +128,9 @@ class SSHPexpect:
             self.__sendline(command)
             aware_keyintr()
         except Exception as e:
-            raise(e)
+            raise (e)
 
-        output =  self.get_session_before(timeout=timeout)
+        output = self.get_session_before(timeout=timeout)
         self.session.PROMPT = self.session.UNIQUE_PROMPT
         self.session.prompt(0.1)
 
@@ -153,7 +170,7 @@ class SSHPexpect:
     def __sendline(self, command):
         if not self.isalive():
             raise SSHSessionDeadException(self.host)
-        if len(command) == 2 and command.startswith('^'):
+        if len(command) == 2 and command.startswith("^"):
             self.session.sendcontrol(command[1])
         else:
             self.session.sendline(command)
@@ -161,7 +178,7 @@ class SSHPexpect:
     def get_output_before(self):
         if not self.isalive():
             raise SSHSessionDeadException(self.host)
-        before = self.session.before.rsplit('\r\n', 1)
+        before = self.session.before.rsplit("\r\n", 1)
         if before[0] == "[PEXPECT]":
             before[0] = ""
 
@@ -182,31 +199,34 @@ class SSHPexpect:
     def isalive(self):
         return self.session.isalive()
 
-    def copy_file_from(self, src, dst=".", password='', crb_session=None):
+    def copy_file_from(self, src, dst=".", password="", crb_session=None):
         """
         Copies a file from a remote place into local.
         """
-        command = 'scp -v {0}@{1}:{2} {3}'.format(self.username, self.host, src, dst)
-        if ':' in self.host:
-            command = 'scp -v -P {0} -o NoHostAuthenticationForLocalhost=yes {1}@{2}:{3} {4}'.format(
-                str(self.port), self.username, self.ip, src, dst)
-        if password == '':
+        command = "scp -v {0}@{1}:{2} {3}".format(self.username, self.host, src, dst)
+        if ":" in self.host:
+            command = "scp -v -P {0} -o NoHostAuthenticationForLocalhost=yes {1}@{2}:{3} {4}".format(
+                str(self.port), self.username, self.ip, src, dst
+            )
+        if password == "":
             self._spawn_scp(command, self.password, crb_session)
         else:
             self._spawn_scp(command, password, crb_session)
 
-    def copy_file_to(self, src, dst="~/", password='', crb_session=None):
+    def copy_file_to(self, src, dst="~/", password="", crb_session=None):
         """
         Sends a local file to a remote place.
         """
-        command = 'scp {0} {1}@{2}:{3}'.format(src, self.username, self.host, dst)
-        if ':' in self.host:
-            command = 'scp -v -P {0} -o NoHostAuthenticationForLocalhost=yes {1} {2}@{3}:{4}'.format(
-                str(self.port), src, self.username, self.ip, dst)
+        command = "scp {0} {1}@{2}:{3}".format(src, self.username, self.host, dst)
+        if ":" in self.host:
+            command = "scp -v -P {0} -o NoHostAuthenticationForLocalhost=yes {1} {2}@{3}:{4}".format(
+                str(self.port), src, self.username, self.ip, dst
+            )
         else:
-            command = 'scp -v {0} {1}@{2}:{3}'.format(
-                src, self.username, self.host, dst)
-        if password == '':
+            command = "scp -v {0} {1}@{2}:{3}".format(
+                src, self.username, self.host, dst
+            )
+        if password == "":
             self._spawn_scp(command, self.password, crb_session)
         else:
             self._spawn_scp(command, password, crb_session)
@@ -225,12 +245,13 @@ class SSHPexpect:
         else:
             p = pexpect.spawn(scp_cmd)
         time.sleep(0.5)
-        ssh_newkey = 'Are you sure you want to continue connecting'
-        i = p.expect([ssh_newkey, '[pP]assword', "# ", pexpect.EOF,
-                      pexpect.TIMEOUT], 120)
+        ssh_newkey = "Are you sure you want to continue connecting"
+        i = p.expect(
+            [ssh_newkey, "[pP]assword", "# ", pexpect.EOF, pexpect.TIMEOUT], 120
+        )
         if i == 0:  # add once in trust list
-            p.sendline('yes')
-            i = p.expect([ssh_newkey, '[pP]assword', pexpect.EOF], 2)
+            p.sendline("yes")
+            i = p.expect([ssh_newkey, "[pP]assword", pexpect.EOF], 2)
 
         if i == 1:
             time.sleep(0.5)

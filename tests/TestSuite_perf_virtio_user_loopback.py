@@ -51,7 +51,6 @@ from framework.test_case import TestCase
 
 
 class TestPerfVirtioUserLoopback(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -60,12 +59,13 @@ class TestPerfVirtioUserLoopback(TestCase):
         self.nb_ports = 1
         self.nb_cores = 1
         self.queue_number = 1
-        cores_num = len(set([int(core['socket']) for core in self.dut.cores]))
+        cores_num = len(set([int(core["socket"]) for core in self.dut.cores]))
         # set diff arg about mem_socket base on socket number
-        self.socket_mem = ','.join(['1024']*cores_num)
+        self.socket_mem = ",".join(["1024"] * cores_num)
         self.core_config = "1S/4C/1T"
-        self.verify(len(self.core_config) >= 4,
-                        "There has not enought cores to test this suite")
+        self.verify(
+            len(self.core_config) >= 4, "There has not enought cores to test this suite"
+        )
         self.core_list = self.dut.get_core_list(self.core_config)
         self.core_list_user = self.core_list[0:2]
         self.core_list_host = self.core_list[2:4]
@@ -76,7 +76,7 @@ class TestPerfVirtioUserLoopback(TestCase):
         self.virtio_user_pmd = PmdOutput(self.dut, self.virtio_user)
         self.save_result_flag = True
         self.json_obj = dict()
-        self.path=self.dut.apps_name['test-pmd']
+        self.path = self.dut.apps_name["test-pmd"]
 
     def set_up(self):
         """
@@ -84,57 +84,93 @@ class TestPerfVirtioUserLoopback(TestCase):
         It's more convenient to load suite configuration here than
         set_up_all in debug mode.
         """
-        self.dut.send_expect('rm ./vhost-net*', '# ')
+        self.dut.send_expect("rm ./vhost-net*", "# ")
         # test parameters include: frames size, descriptor numbers
-        self.test_parameters = self.get_suite_cfg()['test_parameters']
+        self.test_parameters = self.get_suite_cfg()["test_parameters"]
 
         # traffic duraion in second
-        self.test_duration = self.get_suite_cfg()['test_duration']
+        self.test_duration = self.get_suite_cfg()["test_duration"]
 
         # initilize throughput attribution
         # {'$framesize':{"$nb_desc": 'throughput'}
         self.throughput = {}
 
         # Accepted tolerance in Mpps
-        self.gap = self.get_suite_cfg()['accepted_tolerance']
+        self.gap = self.get_suite_cfg()["accepted_tolerance"]
 
         # header to print test result table
-        self.table_header = ['Frame Size', 'TXD/RXD', 'Throughput', 'Rate',
-                             'Expected Throughput', 'Throughput Difference']
+        self.table_header = [
+            "Frame Size",
+            "TXD/RXD",
+            "Throughput",
+            "Rate",
+            "Expected Throughput",
+            "Throughput Difference",
+        ]
         self.test_result = {}
         # get the frame_sizes from cfg file
-        if 'packet_sizes' in self.get_suite_cfg():
-            self.frame_sizes = self.get_suite_cfg()['packet_sizes']
+        if "packet_sizes" in self.get_suite_cfg():
+            self.frame_sizes = self.get_suite_cfg()["packet_sizes"]
 
     def start_vhost_testpmd(self, nb_desc):
         """
         start testpmd on vhost
         """
-        vdevs = "'net_vhost0,iface=vhost-net,queues={},client=0'".format(self.queue_number)
+        vdevs = "'net_vhost0,iface=vhost-net,queues={},client=0'".format(
+            self.queue_number
+        )
         eal_params = "--socket-mem {} --vdev {}".format(self.socket_mem, vdevs)
-        param = "--nb-cores={} --rxq={} --txq={} --txd={} --rxd={}".format(self.nb_cores, self.queue_number, self.queue_number, nb_desc, nb_desc)
-        self.vhost_pmd.start_testpmd(self.core_list_host, param=param, no_pci=True, ports=[], eal_param=eal_params, prefix='vhost', fixed_prefix=True)
+        param = "--nb-cores={} --rxq={} --txq={} --txd={} --rxd={}".format(
+            self.nb_cores, self.queue_number, self.queue_number, nb_desc, nb_desc
+        )
+        self.vhost_pmd.start_testpmd(
+            self.core_list_host,
+            param=param,
+            no_pci=True,
+            ports=[],
+            eal_param=eal_params,
+            prefix="vhost",
+            fixed_prefix=True,
+        )
         self.vhost_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
 
     def start_virtio_testpmd(self, nb_desc, args):
         """
         start testpmd on virtio
         """
-        eal_param = "--socket-mem {} --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues={},{}".format(self.socket_mem, self.queue_number, args["version"])
+        eal_param = "--socket-mem {} --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues={},{}".format(
+            self.socket_mem, self.queue_number, args["version"]
+        )
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        if 'vectorized_path' in self.running_case:
+        if "vectorized_path" in self.running_case:
             eal_param += " --force-max-simd-bitwidth=512"
-        param = "{} --rss-ip --nb-cores={} --rxq={} --txq={} --txd={} --rxd={}".format(args["path"], self.nb_cores, self.queue_number, self.queue_number, nb_desc, nb_desc)
-        self.virtio_user_pmd.start_testpmd(cores=self.core_list_user, param=param, eal_param=eal_param, \
-                no_pci=True, ports=[], prefix="virtio", fixed_prefix=True)
+        param = "{} --rss-ip --nb-cores={} --rxq={} --txq={} --txd={} --rxd={}".format(
+            args["path"],
+            self.nb_cores,
+            self.queue_number,
+            self.queue_number,
+            nb_desc,
+            nb_desc,
+        )
+        self.virtio_user_pmd.start_testpmd(
+            cores=self.core_list_user,
+            param=param,
+            eal_param=eal_param,
+            no_pci=True,
+            ports=[],
+            prefix="virtio",
+            fixed_prefix=True,
+        )
         self.virtio_user_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
         self.virtio_user_pmd.execute_cmd("start", "testpmd> ", 120)
 
     @property
     def check_2M_env(self):
-        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
-        return True if out == '2048' else False
+        out = self.dut.send_expect(
+            "cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# "
+        )
+        return True if out == "2048" else False
 
     def calculate_avg_throughput(self):
         """
@@ -163,11 +199,18 @@ class TestPerfVirtioUserLoopback(TestCase):
             self.vhost_pmd.execute_cmd("set txpkts %d" % frame_size, "testpmd> ", 30)
             self.vhost_pmd.execute_cmd("start tx_first 32", "testpmd> ", 30)
             Mpps = self.calculate_avg_throughput()
-            self.verify(Mpps > 0, "%s can not receive packets of frame size %d" % (self.running_case, frame_size))
+            self.verify(
+                Mpps > 0,
+                "%s can not receive packets of frame size %d"
+                % (self.running_case, frame_size),
+            )
             self.throughput[frame_size][nb_desc] = Mpps
-            self.logger.info("Trouthput of " +
-                             "framesize: {}, rxd/txd: {} is :{} Mpps".format(
-                                 frame_size, nb_desc, Mpps))
+            self.logger.info(
+                "Trouthput of "
+                + "framesize: {}, rxd/txd: {} is :{} Mpps".format(
+                    frame_size, nb_desc, Mpps
+                )
+            )
             self.vhost_pmd.execute_cmd("stop", "testpmd> ", 60)
 
     def close_all_testpmd(self):
@@ -191,7 +234,9 @@ class TestPerfVirtioUserLoopback(TestCase):
         if load_global_setting(UPDATE_EXPECTED) == "yes":
             for frame_size in self.test_parameters.keys():
                 for nb_desc in self.test_parameters[frame_size]:
-                    self.expected_throughput[frame_size][nb_desc] = round(self.throughput[frame_size][nb_desc],3)
+                    self.expected_throughput[frame_size][nb_desc] = round(
+                        self.throughput[frame_size][nb_desc], 3
+                    )
 
     def handle_results(self):
         """
@@ -209,14 +254,18 @@ class TestPerfVirtioUserLoopback(TestCase):
                 ret_data[header[0]] = frame_size
                 ret_data[header[1]] = nb_desc
                 ret_data[header[2]] = "{:.3f} Mpps".format(
-                    self.throughput[frame_size][nb_desc])
+                    self.throughput[frame_size][nb_desc]
+                )
                 ret_data[header[3]] = "{:.3f}%".format(
-                    self.throughput[frame_size][nb_desc] * 100 / wirespeed)
+                    self.throughput[frame_size][nb_desc] * 100 / wirespeed
+                )
                 ret_data[header[4]] = "{:.3f} Mpps".format(
-                    self.expected_throughput[frame_size][nb_desc])
+                    self.expected_throughput[frame_size][nb_desc]
+                )
                 ret_data[header[5]] = "{:.3f} Mpps".format(
-                    self.throughput[frame_size][nb_desc] -
-                        self.expected_throughput[frame_size][nb_desc])
+                    self.throughput[frame_size][nb_desc]
+                    - self.expected_throughput[frame_size][nb_desc]
+                )
                 ret_datas[nb_desc] = deepcopy(ret_data)
             self.test_result[frame_size] = deepcopy(ret_datas)
         # Create test results table
@@ -225,8 +274,7 @@ class TestPerfVirtioUserLoopback(TestCase):
             for nb_desc in self.test_parameters[frame_size]:
                 table_row = list()
                 for i in range(len(header)):
-                    table_row.append(
-                        self.test_result[frame_size][nb_desc][header[i]])
+                    table_row.append(self.test_result[frame_size][nb_desc][header[i]])
                 self.result_table_add(table_row)
         # present test results to screen
         self.result_table_print()
@@ -235,11 +283,11 @@ class TestPerfVirtioUserLoopback(TestCase):
             self.save_result(self.test_result)
 
     def save_result(self, data):
-        '''
+        """
         Saves the test results as a separated file named with
         self.nic+_single_core_perf.json in output folder
         if self.save_result_flag is True
-        '''
+        """
         case_name = self.running_case
         self.json_obj[case_name] = list()
         status_result = []
@@ -247,33 +295,46 @@ class TestPerfVirtioUserLoopback(TestCase):
             for nb_desc in self.test_parameters[frame_size]:
                 row_in = self.test_result[frame_size][nb_desc]
                 row_dict0 = dict()
-                row_dict0['performance'] = list()
-                row_dict0['parameters'] = list()
-                row_dict0['parameters'] = list()
-                result_throughput = float(row_in['Throughput'].split()[0])
-                expected_throughput = float(row_in['Expected Throughput'].split()[0])
+                row_dict0["performance"] = list()
+                row_dict0["parameters"] = list()
+                row_dict0["parameters"] = list()
+                result_throughput = float(row_in["Throughput"].split()[0])
+                expected_throughput = float(row_in["Expected Throughput"].split()[0])
                 # delta value and accepted tolerance in percentage
                 delta = result_throughput - expected_throughput
                 gap = expected_throughput * -self.gap * 0.01
-                delta=float(delta)
-                gap=float(gap)
-                self.logger.info("Accept tolerance of %d are (Mpps) %f" %(frame_size, gap))
-                self.logger.info("Throughput Difference of %d are (Mpps) %f" %(frame_size, delta))
+                delta = float(delta)
+                gap = float(gap)
+                self.logger.info(
+                    "Accept tolerance of %d are (Mpps) %f" % (frame_size, gap)
+                )
+                self.logger.info(
+                    "Throughput Difference of %d are (Mpps) %f" % (frame_size, delta)
+                )
                 if result_throughput > expected_throughput + gap:
-                    row_dict0['status'] = 'PASS'
+                    row_dict0["status"] = "PASS"
                 else:
-                    row_dict0['status'] = 'FAIL'
-                row_dict1 = dict(name="Throughput", value=result_throughput, unit="Mpps", delta=delta)
-                row_dict2 = dict(name="Txd/Rxd", value=row_in["TXD/RXD"], unit="descriptor")
-                row_dict3 = dict(name="frame_size", value=row_in["Frame Size"], unit="bytes")
-                row_dict0['performance'].append(row_dict1)
-                row_dict0['parameters'].append(row_dict2)
-                row_dict0['parameters'].append(row_dict3)
+                    row_dict0["status"] = "FAIL"
+                row_dict1 = dict(
+                    name="Throughput", value=result_throughput, unit="Mpps", delta=delta
+                )
+                row_dict2 = dict(
+                    name="Txd/Rxd", value=row_in["TXD/RXD"], unit="descriptor"
+                )
+                row_dict3 = dict(
+                    name="frame_size", value=row_in["Frame Size"], unit="bytes"
+                )
+                row_dict0["performance"].append(row_dict1)
+                row_dict0["parameters"].append(row_dict2)
+                row_dict0["parameters"].append(row_dict3)
                 self.json_obj[case_name].append(row_dict0)
-                status_result.append(row_dict0['status'])
-        with open(os.path.join(rst.path2Result,
-                               '{0:s}_{1}.json'.format(
-                                   self.nic, self.suite_name)), 'w') as fp:
+                status_result.append(row_dict0["status"])
+        with open(
+            os.path.join(
+                rst.path2Result, "{0:s}_{1}.json".format(self.nic, self.suite_name)
+            ),
+            "w",
+        ) as fp:
             json.dump(self.json_obj, fp)
         self.verify("FAIL" not in status_result, "Exceeded Gap")
 
@@ -281,10 +342,14 @@ class TestPerfVirtioUserLoopback(TestCase):
         """
         performance for Vhost PVP virtio 1.1 inorder mergeable Path.
         """
-        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=1",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
+        virtio_pmd_arg = {
+            "version": "in_order=1,packed_vq=1,mrg_rxbuf=1",
+            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+        }
         self.test_target = "packed_ring_inorder_mergeable"
-        self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
         nb_desc = self.test_parameters[64][0]
         self.start_vhost_testpmd(nb_desc)
         self.start_virtio_testpmd(nb_desc, virtio_pmd_arg)
@@ -298,9 +363,13 @@ class TestPerfVirtioUserLoopback(TestCase):
         performance for Vhost PVP virtio1.1 inorder non-mergeable Path.
         """
         self.test_target = "packed_ring_inorder_non-mergeable"
-        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
-        self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
+        virtio_pmd_arg = {
+            "version": "in_order=1,packed_vq=1,mrg_rxbuf=0",
+            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+        }
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
         nb_desc = self.test_parameters[64][0]
         self.start_vhost_testpmd(nb_desc)
         self.start_virtio_testpmd(nb_desc, virtio_pmd_arg)
@@ -313,10 +382,14 @@ class TestPerfVirtioUserLoopback(TestCase):
         """
         performance for Vhost PVP virtio 1.1 Mergeable Path.
         """
-        virtio_pmd_arg = {"version": "in_order=0,packed_vq=1,mrg_rxbuf=1",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
+        virtio_pmd_arg = {
+            "version": "in_order=0,packed_vq=1,mrg_rxbuf=1",
+            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+        }
         self.test_target = "packed_ring_mergeable"
-        self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
         nb_desc = self.test_parameters[64][0]
         self.start_vhost_testpmd(nb_desc)
         self.start_virtio_testpmd(nb_desc, virtio_pmd_arg)
@@ -330,9 +403,13 @@ class TestPerfVirtioUserLoopback(TestCase):
         performance for Vhost PVP virtio1.1 non-mergeable Path.
         """
         self.test_target = "packed_ring_non-mergeable"
-        virtio_pmd_arg = {"version": "in_order=0,packed_vq=1,mrg_rxbuf=0",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
-        self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
+        virtio_pmd_arg = {
+            "version": "in_order=0,packed_vq=1,mrg_rxbuf=0",
+            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+        }
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
         nb_desc = self.test_parameters[64][0]
         self.start_vhost_testpmd(nb_desc)
         self.start_virtio_testpmd(nb_desc, virtio_pmd_arg)
@@ -346,9 +423,13 @@ class TestPerfVirtioUserLoopback(TestCase):
         performance for Vhost PVP In_order Mergeable Path.
         """
         self.test_target = "split_ring_inorder_mergeable"
-        virtio_pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=1",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
-        self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
+        virtio_pmd_arg = {
+            "version": "packed_vq=0,in_order=1,mrg_rxbuf=1",
+            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+        }
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
         nb_desc = self.test_parameters[64][0]
         self.start_vhost_testpmd(nb_desc)
         self.start_virtio_testpmd(nb_desc, virtio_pmd_arg)
@@ -362,9 +443,13 @@ class TestPerfVirtioUserLoopback(TestCase):
         performance for Vhost PVP Inorder Non-mergeable Path.
         """
         self.test_target = "split_ring_inorder_non-mergeable"
-        virtio_pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=0",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
-        self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
+        virtio_pmd_arg = {
+            "version": "packed_vq=0,in_order=1,mrg_rxbuf=0",
+            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+        }
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
         nb_desc = self.test_parameters[64][0]
         self.start_vhost_testpmd(nb_desc)
         self.start_virtio_testpmd(nb_desc, virtio_pmd_arg)
@@ -378,9 +463,13 @@ class TestPerfVirtioUserLoopback(TestCase):
         performance for Vhost PVP Mergeable Path.
         """
         self.test_target = "split_ring_mergeable"
-        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=1",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
-        self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
+        virtio_pmd_arg = {
+            "version": "packed_vq=0,in_order=0,mrg_rxbuf=1",
+            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+        }
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
         nb_desc = self.test_parameters[64][0]
         self.start_vhost_testpmd(nb_desc)
         self.start_virtio_testpmd(nb_desc, virtio_pmd_arg)
@@ -394,9 +483,13 @@ class TestPerfVirtioUserLoopback(TestCase):
         performance for Vhost PVP Non-mergeable Path.
         """
         self.test_target = "split_ring_non-mergeable"
-        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
-        self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
+        virtio_pmd_arg = {
+            "version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
+            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+        }
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
         nb_desc = self.test_parameters[64][0]
         self.start_vhost_testpmd(nb_desc)
         self.start_virtio_testpmd(nb_desc, virtio_pmd_arg)
@@ -410,9 +503,13 @@ class TestPerfVirtioUserLoopback(TestCase):
         performance for Vhost PVP Vector_RX Path
         """
         self.test_target = "split_ring_vector_rx"
-        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
-                          "path": "--tx-offloads=0x0"}
-        self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
+        virtio_pmd_arg = {
+            "version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
+            "path": "--tx-offloads=0x0",
+        }
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
         nb_desc = self.test_parameters[64][0]
         self.start_vhost_testpmd(nb_desc)
         self.start_virtio_testpmd(nb_desc, virtio_pmd_arg)
@@ -426,9 +523,13 @@ class TestPerfVirtioUserLoopback(TestCase):
         Test Case 10: loopback test with packed ring vectorized path
         """
         self.test_target = "packed_ring_vectorized_path"
-        virtio_pmd_arg = {"version": "packed_vq=1,in_order=1,mrg_rxbuf=0,vectorized=1",
-                          "path": "--tx-offloads=0x0"}
-        self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
+        virtio_pmd_arg = {
+            "version": "packed_vq=1,in_order=1,mrg_rxbuf=0,vectorized=1",
+            "path": "--tx-offloads=0x0",
+        }
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
         nb_desc = self.test_parameters[64][0]
         self.start_vhost_testpmd(nb_desc)
         self.start_virtio_testpmd(nb_desc, virtio_pmd_arg)

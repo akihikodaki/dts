@@ -62,7 +62,6 @@ from .utils import BLUE, RED
 
 
 class TestCase(object):
-
     def __init__(self, duts, tester, target, suitename):
         self.suite_name = suitename
         self.dut = duts[0]
@@ -72,7 +71,7 @@ class TestCase(object):
 
         # local variable
         self._requested_tests = None
-        self._subtitle 		    = None
+        self._subtitle = None
 
         # check session and reconnect if possible
         for dutobj in self.duts:
@@ -87,7 +86,7 @@ class TestCase(object):
 
         # result object for save suite result
         self._suite_result = Result()
-        self._suite_result.dut = self.dut.crb['IP']
+        self._suite_result.dut = self.dut.crb["IP"]
         self._suite_result.target = target
         self._suite_result.nic = self.nic
         self._suite_result.test_suite = self.suite_name
@@ -118,7 +117,9 @@ class TestCase(object):
         self.drivername = load_global_setting(HOST_DRIVER_SETTING)
 
         # create rst format report for this suite
-        self._rst_obj = RstReport('rst_report', target, self.nic, self.suite_name, self._enable_perf)
+        self._rst_obj = RstReport(
+            "rst_report", target, self.nic, self.suite_name, self._enable_perf
+        )
 
         # load suite configuration
         self._suite_conf = SuiteConf(self.suite_name)
@@ -142,7 +143,7 @@ class TestCase(object):
 
         if result is False:
             crb.reconnect_session()
-            if 'dut' in str(type(crb)):
+            if "dut" in str(type(crb)):
                 crb.send_expect("cd %s" % crb.base_dir, "#")
                 crb.set_env_variable()
 
@@ -171,14 +172,14 @@ class TestCase(object):
             if self._enable_debug:
                 print(RED("Error happened, dump command history..."))
                 self.dump_history()
-                print("Error \"%s\" happened" % RED(description))
+                print('Error "%s" happened' % RED(description))
                 print(RED("History dump finished."))
             raise VerifyFailure(description)
 
     def skip_case(self, passed, description):
         if not passed:
             if self._enable_debug:
-                print("skip case: \"%s\" " % RED(description))
+                print('skip case: "%s" ' % RED(description))
             raise VerifySkip(description)
 
     def _get_nic_driver(self, nic_name):
@@ -211,13 +212,13 @@ class TestCase(object):
         """
         Get all functional test cases.
         """
-        return self._get_test_cases(r'test_(?!perf_)')
+        return self._get_test_cases(r"test_(?!perf_)")
 
     def _get_performance_cases(self):
         """
         Get all performance test cases.
         """
-        return self._get_test_cases(r'test_perf_')
+        return self._get_test_cases(r"test_perf_")
 
     def _has_it_been_requested(self, test_case, test_name_regex):
         """
@@ -252,7 +253,9 @@ class TestCase(object):
         """
         for test_case_name in dir(self):
             test_case = getattr(self, test_case_name)
-            if callable(test_case) and self._has_it_been_requested(test_case, test_name_regex):
+            if callable(test_case) and self._has_it_been_requested(
+                test_case, test_name_regex
+            ):
                 yield test_case
 
     def execute_setup_all(self):
@@ -271,7 +274,7 @@ class TestCase(object):
             self.set_up_all()
             return True
         except VerifySkip as v:
-            self.logger.info('set_up_all SKIPPED:\n' + traceback.format_exc())
+            self.logger.info("set_up_all SKIPPED:\n" + traceback.format_exc())
             # record all cases N/A
             if self._enable_func:
                 for case_obj in self._get_functional_cases():
@@ -282,16 +285,20 @@ class TestCase(object):
                     self._suite_result.test_case = case_obj.__name__
                     self._suite_result.test_case_skip(str(v))
         except Exception as v:
-            self.logger.error('set_up_all failed:\n' + traceback.format_exc())
+            self.logger.error("set_up_all failed:\n" + traceback.format_exc())
             # record all cases blocked
             if self._enable_func:
                 for case_obj in self._get_functional_cases():
                     self._suite_result.test_case = case_obj.__name__
-                    self._suite_result.test_case_blocked('set_up_all failed: {}'.format(str(v)))
+                    self._suite_result.test_case_blocked(
+                        "set_up_all failed: {}".format(str(v))
+                    )
             if self._enable_perf:
                 for case_obj in self._get_performance_cases():
                     self._suite_result.test_case = case_obj.__name__
-                    self._suite_result.test_case_blocked('set_up_all failed: {}'.format(str(v)))
+                    self._suite_result.test_case_blocked(
+                        "set_up_all failed: {}".format(str(v))
+                    )
             return False
 
     def _execute_test_case(self, case_obj):
@@ -315,14 +322,14 @@ class TestCase(object):
 
         case_result = True
         if self._check_inst is not None:
-            if self._check_inst.case_skip(case_name[len("test_"):]):
-                self.logger.info('Test Case %s Result SKIPPED:' % case_name)
+            if self._check_inst.case_skip(case_name[len("test_") :]):
+                self.logger.info("Test Case %s Result SKIPPED:" % case_name)
                 self._rst_obj.write_result("N/A")
                 self._suite_result.test_case_skip(self._check_inst.comments)
                 return case_result
 
-            if not self._check_inst.case_support(case_name[len("test_"):]):
-                self.logger.info('Test Case %s Result SKIPPED:' % case_name)
+            if not self._check_inst.case_support(case_name[len("test_") :]):
+                self.logger.info("Test Case %s Result SKIPPED:" % case_name)
                 self._rst_obj.write_result("N/A")
                 self._suite_result.test_case_skip(self._check_inst.comments)
                 return case_result
@@ -330,7 +337,7 @@ class TestCase(object):
         if self._enable_perf:
             self._rst_obj.write_annex_title("Annex: " + case_name)
         try:
-            self.logger.info('Test Case %s Begin' % case_name)
+            self.logger.info("Test Case %s Begin" % case_name)
 
             self.running_case = case_name
             # clean session
@@ -345,38 +352,40 @@ class TestCase(object):
             self._suite_result.test_case_passed()
 
             self._rst_obj.write_result("PASS")
-            self.logger.info('Test Case %s Result PASSED:' % case_name)
+            self.logger.info("Test Case %s Result PASSED:" % case_name)
 
         except VerifyFailure as v:
             case_result = False
             self._suite_result.test_case_failed(str(v))
             self._rst_obj.write_result("FAIL")
-            self.logger.error('Test Case %s Result FAILED: ' % (case_name) + str(v))
+            self.logger.error("Test Case %s Result FAILED: " % (case_name) + str(v))
         except VerifySkip as v:
             self._suite_result.test_case_skip(str(v))
             self._rst_obj.write_result("N/A")
-            self.logger.info('Test Case %s N/A: ' % (case_name))
+            self.logger.info("Test Case %s N/A: " % (case_name))
         except KeyboardInterrupt:
             self._suite_result.test_case_blocked("Skipped")
-            self.logger.error('Test Case %s SKIPPED: ' % (case_name))
+            self.logger.error("Test Case %s SKIPPED: " % (case_name))
             self.tear_down()
             raise KeyboardInterrupt("Stop DTS")
         except TimeoutException as e:
             case_result = False
             self._rst_obj.write_result("FAIL")
             self._suite_result.test_case_failed(str(e))
-            self.logger.error('Test Case %s Result FAILED: ' % (case_name) + str(e))
-            self.logger.error('%s' % (e.get_output()))
+            self.logger.error("Test Case %s Result FAILED: " % (case_name) + str(e))
+            self.logger.error("%s" % (e.get_output()))
         except Exception:
             case_result = False
             trace = traceback.format_exc()
             self._suite_result.test_case_failed(trace)
-            self.logger.error('Test Case %s Result ERROR: ' % (case_name) + trace)
+            self.logger.error("Test Case %s Result ERROR: " % (case_name) + trace)
         finally:
             # update expected
-            if load_global_setting(UPDATE_EXPECTED) == "yes" and \
-                'update_expected' in self.get_suite_cfg() and \
-                self.get_suite_cfg()['update_expected'] == True:
+            if (
+                load_global_setting(UPDATE_EXPECTED) == "yes"
+                and "update_expected" in self.get_suite_cfg()
+                and self.get_suite_cfg()["update_expected"] == True
+            ):
                 self._suite_conf.update_case_config(SUITE_SECTION_NAME)
             self.execute_tear_down()
             return case_result
@@ -388,25 +397,29 @@ class TestCase(object):
         # prepare debugger rerun case environment
         if self._enable_debug or self._debug_case:
             debugger.AliveSuite = self
-            _suite_full_name = 'TestSuite_' + self.suite_name
-            debugger.AliveModule = __import__('tests.' + _suite_full_name,
-                                              fromlist=[_suite_full_name])
+            _suite_full_name = "TestSuite_" + self.suite_name
+            debugger.AliveModule = __import__(
+                "tests." + _suite_full_name, fromlist=[_suite_full_name]
+            )
 
-        if load_global_setting(FUNC_SETTING) == 'yes':
+        if load_global_setting(FUNC_SETTING) == "yes":
             for case_obj in self._get_functional_cases():
                 for i in range(self.tester.re_run_time + 1):
                     ret = self.execute_test_case(case_obj)
 
                     if ret is False and self.tester.re_run_time:
                         for dutobj in self.duts:
-                            dutobj.get_session_output(timeout = 0.5 * (i + 1))
-                        self.tester.get_session_output(timeout = 0.5 * (i + 1))
+                            dutobj.get_session_output(timeout=0.5 * (i + 1))
+                        self.tester.get_session_output(timeout=0.5 * (i + 1))
                         time.sleep(i + 1)
-                        self.logger.info(" Test case %s failed and re-run %d time" % (case_obj.__name__, i + 1))
+                        self.logger.info(
+                            " Test case %s failed and re-run %d time"
+                            % (case_obj.__name__, i + 1)
+                        )
                     else:
                         break
 
-        if load_global_setting(PERF_SETTING) == 'yes':
+        if load_global_setting(PERF_SETTING) == "yes":
             for case_obj in self._get_performance_cases():
                 self.execute_test_case(case_obj)
 
@@ -450,7 +463,7 @@ class TestCase(object):
         """
         update one element of suite configuration
         """
-        self._suite_cfg[key]=value
+        self._suite_cfg[key] = value
 
     def execute_tear_downall(self):
         """
@@ -459,7 +472,7 @@ class TestCase(object):
         try:
             self.tear_down_all()
         except Exception:
-            self.logger.error('tear_down_all failed:\n' + traceback.format_exc())
+            self.logger.error("tear_down_all failed:\n" + traceback.format_exc())
 
         for dutobj in self.duts:
             dutobj.kill_all()
@@ -477,8 +490,11 @@ class TestCase(object):
         try:
             self.tear_down()
         except Exception:
-            self.logger.error('tear_down failed:\n' + traceback.format_exc())
-            self.logger.warning("tear down %s failed, might iterfere next case's result!" % self.running_case)
+            self.logger.error("tear_down failed:\n" + traceback.format_exc())
+            self.logger.warning(
+                "tear down %s failed, might iterfere next case's result!"
+                % self.running_case
+            )
 
     def enable_history(self, history):
         """
@@ -494,9 +510,9 @@ class TestCase(object):
         Dump recorded command history
         """
         for cmd_history in self.setup_history:
-            print('%-20s: %s' % (BLUE(cmd_history['name']), cmd_history['command']))
+            print("%-20s: %s" % (BLUE(cmd_history["name"]), cmd_history["command"]))
         for cmd_history in self.test_history:
-            print('%-20s: %s' % (BLUE(cmd_history['name']), cmd_history['command']))
+            print("%-20s: %s" % (BLUE(cmd_history["name"]), cmd_history["command"]))
 
     def wirespeed(self, nic, frame_size, num_ports):
         """
@@ -504,8 +520,8 @@ class TestCase(object):
         """
         bitrate = 1000.0  # 1Gb ('.0' forces to operate as float)
         if self.nic == "any" or self.nic == "cfg":
-            driver = self._get_nic_driver(self.dut.ports_info[0]['type'])
-            nic = get_nic_name(self.dut.ports_info[0]['type'])
+            driver = self._get_nic_driver(self.dut.ports_info[0]["type"])
+            nic = get_nic_name(self.dut.ports_info[0]["type"])
         else:
             driver = self._get_nic_driver(self.nic)
             nic = self.nic
@@ -516,30 +532,31 @@ class TestCase(object):
             bitrate *= 2.5  # 2.5 Gb NICs
         elif nic in ["fortville_spirit", "fortville_spirit_single"]:
             bitrate *= 40
-        elif nic == 'fortville_eagle':
+        elif nic == "fortville_eagle":
             bitrate *= 10
-        elif nic == 'fortpark_TLV':
+        elif nic == "fortpark_TLV":
             bitrate *= 10
-        elif driver == 'thunder-nicvf':
+        elif driver == "thunder-nicvf":
             bitrate *= 10
-        elif nic == 'fortville_25g':
-            bitrate *=25
-        elif nic == 'columbiaville_25g':
+        elif nic == "fortville_25g":
             bitrate *= 25
-        elif nic == 'columbiaville_25gx2':
+        elif nic == "columbiaville_25g":
             bitrate *= 25
-        elif nic == 'columbiaville_100g':
+        elif nic == "columbiaville_25gx2":
+            bitrate *= 25
+        elif nic == "columbiaville_100g":
             bitrate *= 100
 
         return bitrate * num_ports / 8 / (frame_size + 20)
 
     def bind_nic_driver(self, ports, driver=""):
         for port in ports:
-            netdev = self.dut.ports_info[port]['port']
+            netdev = self.dut.ports_info[port]["port"]
             driver_now = netdev.get_nic_driver()
             driver_new = driver if driver else netdev.default_driver
             if driver_new != driver_now:
                 netdev.bind_driver(driver=driver_new)
+
 
 def skip_unsupported_pkg(pkgs):
     """
@@ -552,15 +569,19 @@ def skip_unsupported_pkg(pkgs):
         @wraps(func)
         def wrapper(*args, **kwargs):
             test_case = args[0]
-            pkg_type = test_case.pkg.get('type')
-            pkg_version = test_case.pkg.get('version')
+            pkg_type = test_case.pkg.get("type")
+            pkg_version = test_case.pkg.get("version")
             if not pkg_type or not pkg_version:
-                raise VerifyFailure('Failed due to pkg is empty'.format(test_case.pkg))
+                raise VerifyFailure("Failed due to pkg is empty".format(test_case.pkg))
             for pkg in pkgs:
                 if pkg in pkg_type:
-                    raise VerifySkip('{} {} do not support this case'.format(pkg_type, pkg_version))
+                    raise VerifySkip(
+                        "{} {} do not support this case".format(pkg_type, pkg_version)
+                    )
             return func(*args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -576,9 +597,11 @@ def skip_unsupported_nic(nics):
         def wrapper(*args, **kwargs):
             test_case = args[0]
             if test_case.nic in nics:
-                raise VerifySkip('{} do not support this case'.format(test_case.nic))
+                raise VerifySkip("{} do not support this case".format(test_case.nic))
             return func(*args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -594,7 +617,9 @@ def check_supported_nic(nics):
         def wrapper(*args, **kwargs):
             test_case = args[0]
             if test_case.nic not in nics:
-                raise VerifySkip('{} do not support this case'.format(test_case.nic))
+                raise VerifySkip("{} do not support this case".format(test_case.nic))
             return func(*args, **kwargs)
+
         return wrapper
+
     return decorator

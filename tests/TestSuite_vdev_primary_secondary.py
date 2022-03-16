@@ -50,7 +50,6 @@ from framework.virt_common import VM
 
 
 class TestVdevPrimarySecondary(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -63,10 +62,10 @@ class TestVdevPrimarySecondary(TestCase):
         cores = self.dut.get_core_list("1S/12C/1T", socket=self.ports_socket)
         self.coremask = utils.create_mask(cores)
         self.verify(len(self.coremask) >= 6, "The machine has too few cores.")
-        self.base_dir = self.dut.base_dir.replace('~', '/root')
-        self.pci_info = self.dut.ports_info[0]['pci']
-        self.app_testpmd_path = self.dut.apps_name['test-pmd']
-        self.app_symmetric_mp_path = self.dut.apps_name['symmetric_mp']
+        self.base_dir = self.dut.base_dir.replace("~", "/root")
+        self.pci_info = self.dut.ports_info[0]["pci"]
+        self.app_testpmd_path = self.dut.apps_name["test-pmd"]
+        self.app_symmetric_mp_path = self.dut.apps_name["symmetric_mp"]
         self.testpmd_name = self.app_testpmd_path.split("/")[-1]
 
     def set_up(self):
@@ -82,15 +81,17 @@ class TestVdevPrimarySecondary(TestCase):
         Create testing environment
         """
         self.virtio_mac = "52:54:00:00:00:0"
-        self.vm = VM(self.dut, 'vm0', 'vhost_sample')
+        self.vm = VM(self.dut, "vm0", "vhost_sample")
         for i in range(self.queues):
             vm_params = {}
-            vm_params['driver'] = 'vhost-user'
-            vm_params['opt_path'] = self.base_dir + '/vhost-net%d' % i
-            vm_params['opt_mac'] = "%s%d" % (self.virtio_mac, i+2)
-            vm_params['opt_queue'] = self.queues
-            vm_params['opt_server'] = 'server'
-            vm_params['opt_settings'] = 'mrg_rxbuf=on,mq=on,vectors=%d' % (2*self.queues+2)
+            vm_params["driver"] = "vhost-user"
+            vm_params["opt_path"] = self.base_dir + "/vhost-net%d" % i
+            vm_params["opt_mac"] = "%s%d" % (self.virtio_mac, i + 2)
+            vm_params["opt_queue"] = self.queues
+            vm_params["opt_server"] = "server"
+            vm_params["opt_settings"] = "mrg_rxbuf=on,mq=on,vectors=%d" % (
+                2 * self.queues + 2
+            )
             self.vm.set_vm_device(**vm_params)
 
         try:
@@ -107,18 +108,35 @@ class TestVdevPrimarySecondary(TestCase):
         launch testpmd
         """
         testcmd = self.app_testpmd_path + " "
-        vdev1 = " --vdev 'net_vhost0,iface=%s/vhost-net0,queues=%d,client=1'" % (self.base_dir, self.queues)
-        vdev2 = " --vdev 'net_vhost1,iface=%s/vhost-net1,queues=%d,client=1'" % (self.base_dir, self.queues)
-        eal_params = self.dut.create_eal_parameters(cores="1S/12C/1T", prefix='vhost', ports=[self.pci_info])
-        para = " -- -i --nb-cores=4 --rxq=%d --txq=%d --txd=1024 --rxd=1024" % (self.queues, self.queues)
+        vdev1 = " --vdev 'net_vhost0,iface=%s/vhost-net0,queues=%d,client=1'" % (
+            self.base_dir,
+            self.queues,
+        )
+        vdev2 = " --vdev 'net_vhost1,iface=%s/vhost-net1,queues=%d,client=1'" % (
+            self.base_dir,
+            self.queues,
+        )
+        eal_params = self.dut.create_eal_parameters(
+            cores="1S/12C/1T", prefix="vhost", ports=[self.pci_info]
+        )
+        para = " -- -i --nb-cores=4 --rxq=%d --txq=%d --txd=1024 --rxd=1024" % (
+            self.queues,
+            self.queues,
+        )
         start_cmd = testcmd + eal_params + vdev1 + vdev2 + para
         self.dut.send_expect(start_cmd, "testpmd> ", 120)
         self.dut.send_expect("set fwd txonly", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
 
     def launch_examples(self):
-        example_cmd_auto = self.app_symmetric_mp_path + " -l 0 -n %d --proc-type=auto -- -p 3 --num-procs=%d --proc-id=0"
-        example_cmd_secondary = self.app_symmetric_mp_path + " -l 1 -n %d --proc-type=secondary -- -p 3 --num-procs=%d --proc-id=1"
+        example_cmd_auto = (
+            self.app_symmetric_mp_path
+            + " -l 0 -n %d --proc-type=auto -- -p 3 --num-procs=%d --proc-id=0"
+        )
+        example_cmd_secondary = (
+            self.app_symmetric_mp_path
+            + " -l 1 -n %d --proc-type=secondary -- -p 3 --num-procs=%d --proc-id=1"
+        )
         final_cmd_first = example_cmd_auto % (self.mem_channels, self.queues)
         final_cmd_secondary = example_cmd_secondary % (self.mem_channels, self.queues)
         self.vhost_first.send_expect(final_cmd_first, "Lcore", 120)
@@ -126,7 +144,7 @@ class TestVdevPrimarySecondary(TestCase):
         self.vhost_secondary.send_expect(final_cmd_secondary, "Lcore", 120)
 
     def prepare_symmetric_mp(self):
-        out = self.vm_dut.build_dpdk_apps('./examples/multi_process/symmetric_mp')
+        out = self.vm_dut.build_dpdk_apps("./examples/multi_process/symmetric_mp")
         self.verify("Error" not in out, "compilation symmetric_mp error")
 
     def close_session(self):
@@ -145,14 +163,20 @@ class TestVdevPrimarySecondary(TestCase):
         # start symmetric_mp
         self.launch_examples()
         time.sleep(3)
-        vhost_first_out =  self.vhost_first.send_expect("^c", "#", 15)
+        vhost_first_out = self.vhost_first.send_expect("^c", "#", 15)
         print(vhost_first_out)
         time.sleep(3)
         vhost_secondary_out = self.vhost_secondary.send_expect("^c", "#", 15)
         print(vhost_secondary_out)
-        result_first = re.findall(r'Port \d: RX - (\w+)', vhost_first_out)
-        result_secondary = re.findall(r'Port \d: RX - (\w+)', vhost_secondary_out)
-        self.verify(len(result_first[0]) != 0 and len(result_first[1]) != 0 and len(result_secondary[0]) != 0 and len(result_secondary[1]) != 0, "RX no data")
+        result_first = re.findall(r"Port \d: RX - (\w+)", vhost_first_out)
+        result_secondary = re.findall(r"Port \d: RX - (\w+)", vhost_secondary_out)
+        self.verify(
+            len(result_first[0]) != 0
+            and len(result_first[1]) != 0
+            and len(result_secondary[0]) != 0
+            and len(result_secondary[1]) != 0,
+            "RX no data",
+        )
         self.dut.send_expect("quit", "#", 15)
 
     def tear_down(self):

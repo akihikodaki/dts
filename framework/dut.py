@@ -60,15 +60,15 @@ class Dut(Crb):
     or CRBBareMetal.
     """
 
-    PORT_MAP_CACHE_KEY = 'dut_port_map'
-    PORT_INFO_CACHE_KEY = 'dut_port_info'
-    NUMBER_CORES_CACHE_KEY = 'dut_number_cores'
-    CORE_LIST_CACHE_KEY = 'dut_core_list'
-    PCI_DEV_CACHE_KEY = 'dut_pci_dev_info'
+    PORT_MAP_CACHE_KEY = "dut_port_map"
+    PORT_INFO_CACHE_KEY = "dut_port_info"
+    NUMBER_CORES_CACHE_KEY = "dut_number_cores"
+    CORE_LIST_CACHE_KEY = "dut_core_list"
+    PCI_DEV_CACHE_KEY = "dut_pci_dev_info"
 
     def __init__(self, crb, serializer, dut_id=0, name=None, alt_session=True):
         if not name:
-            name = 'dut' + LOG_NAME_SEP + '%s' % crb['My IP']
+            name = "dut" + LOG_NAME_SEP + "%s" % crb["My IP"]
             self.NAME = name
         super(Dut, self).__init__(crb, serializer, dut_id, name, alt_session)
         self.host_init_flag = False
@@ -81,26 +81,30 @@ class Dut(Crb):
         self.virt_pool = None
         # hypervisor pid list, used for cleanup
         self.virt_pids = []
-        self.prefix_subfix = str(os.getpid()) + '_' + time.strftime("%Y%m%d%H%M%S", time.localtime())
+        self.prefix_subfix = (
+            str(os.getpid()) + "_" + time.strftime("%Y%m%d%H%M%S", time.localtime())
+        )
         self.hugepage_path = None
         self.apps_name_conf = {}
         self.apps_name = {}
-        self.dpdk_version = ''
+        self.dpdk_version = ""
         self.nic = None
 
     def filter_cores_from_crb_cfg(self):
         # get core list from crbs.cfg
         core_list = []
-        all_core_list = [str(core['core']) for core in self.cores]
-        core_list_str = self.crb['dut_cores']
-        if core_list_str == '':
+        all_core_list = [str(core["core"]) for core in self.cores]
+        core_list_str = self.crb["dut_cores"]
+        if core_list_str == "":
             core_list = all_core_list
-        split_by_comma = core_list_str.split(',')
+        split_by_comma = core_list_str.split(",")
         range_cores = []
         for item in split_by_comma:
-            if '-' in item:
-                tmp = item.split('-')
-                range_cores.extend([str(i) for i in range(int(tmp[0]), int(tmp[1]) + 1)])
+            if "-" in item:
+                tmp = item.split("-")
+                range_cores.extend(
+                    [str(i) for i in range(int(tmp[0]), int(tmp[1]) + 1)]
+                )
             else:
                 core_list.append(item)
         core_list.extend(range_cores)
@@ -111,25 +115,28 @@ class Dut(Crb):
                 abnormal_core_list.append(core)
 
         if abnormal_core_list:
-            self.logger.info('those %s cores are out of range system, all core list of system are %s' % (abnormal_core_list, all_core_list))
-            raise Exception('configured cores out of range system')
+            self.logger.info(
+                "those %s cores are out of range system, all core list of system are %s"
+                % (abnormal_core_list, all_core_list)
+            )
+            raise Exception("configured cores out of range system")
 
-        core_list = [core for core in self.cores if str(core['core']) in core_list]
+        core_list = [core for core in self.cores if str(core["core"]) in core_list]
         self.cores = core_list
         self.number_of_cores = len(self.cores)
 
     def create_eal_parameters(
-            self,
-            fixed_prefix: bool = False,
-            socket: Optional[int] = None,
-            cores: Union[str, List[int], List[str]] = "default",
-            ports: Union[List[str], List[int]] = None,
-            port_options: Dict[Union[str, int], str] = None,
-            prefix: str = "",
-            no_pci: bool = False,
-            b_ports: Union[List[str], List[int]] = None,
-            vdevs: List[str] = None,
-            other_eal_param: str = "",
+        self,
+        fixed_prefix: bool = False,
+        socket: Optional[int] = None,
+        cores: Union[str, List[int], List[str]] = "default",
+        ports: Union[List[str], List[int]] = None,
+        port_options: Dict[Union[str, int], str] = None,
+        prefix: str = "",
+        no_pci: bool = False,
+        b_ports: Union[List[str], List[int]] = None,
+        vdevs: List[str] = None,
+        other_eal_param: str = "",
     ) -> str:
         """
         generate eal parameters character string;
@@ -200,9 +207,11 @@ class Dut(Crb):
     def get_eal_of_prefix(self, prefix=None):
 
         if prefix:
-            file_prefix = [prefix_name for prefix_name in self.prefix_list if prefix in prefix_name]
+            file_prefix = [
+                prefix_name for prefix_name in self.prefix_list if prefix in prefix_name
+            ]
         else:
-            file_prefix = 'dpdk' + '_' + self.prefix_subfix
+            file_prefix = "dpdk" + "_" + self.prefix_subfix
 
         return file_prefix
 
@@ -212,20 +221,23 @@ class Dut(Crb):
         """
         self.host_session = SSHConnection(
             self.get_ip_address(),
-            vm_name + '_host',
+            vm_name + "_host",
             self.get_username(),
-            self.get_password())
+            self.get_password(),
+        )
         self.host_session.init_log(self.logger)
-        self.logger.info("[%s] create new session for VM" % (threading.current_thread().name))
+        self.logger.info(
+            "[%s] create new session for VM" % (threading.current_thread().name)
+        )
 
     def new_session(self, suite=""):
         """
         Create new session for dut instance. Session name will be unique.
         """
         if len(suite):
-            session_name = self.NAME + '_' + suite
+            session_name = self.NAME + "_" + suite
         else:
-            session_name = self.NAME + '_' + str(uuid4())
+            session_name = self.NAME + "_" + str(uuid4())
         session = self.create_session(name=session_name)
         if suite != "":
             session.logger.config_suite(suite, self.NAME)
@@ -247,15 +259,18 @@ class Dut(Crb):
         """
         This function change option in the config file
         """
-        self.send_expect("sed -i 's/%s=.*$/%s=%s/'  config/defconfig_%s" %
-                         (parameter, parameter, value, target), "# ")
+        self.send_expect(
+            "sed -i 's/%s=.*$/%s=%s/'  config/defconfig_%s"
+            % (parameter, parameter, value, target),
+            "# ",
+        )
 
     def set_nic_type(self, nic_type):
         """
         Set CRB NICS ready to validated.
         """
         self.nic_type = nic_type
-        if 'cfg' in nic_type:
+        if "cfg" in nic_type:
             self.conf.load_ports_config(self.get_ip_address())
 
     def set_toolchain(self, target):
@@ -266,10 +281,10 @@ class Dut(Crb):
         """
         self.kill_all()
         self.target = target
-        [arch, _, _, toolchain] = target.split('-')
+        [arch, _, _, toolchain] = target.split("-")
 
         if toolchain == "icc":
-            icc_vars = os.getenv('ICC_VARS', "/opt/intel/composer_xe_2013/bin/")
+            icc_vars = os.getenv("ICC_VARS", "/opt/intel/composer_xe_2013/bin/")
             icc_vars += "compilervars.sh"
 
             if arch == "x86_64":
@@ -284,7 +299,7 @@ class Dut(Crb):
         """
         Mount proc file system.
         """
-        mount_procfs = getattr(self, 'mount_procfs_%s' % self.get_os_type())
+        mount_procfs = getattr(self, "mount_procfs_%s" % self.get_os_type())
         mount_procfs()
 
     def mount_procfs_linux(self):
@@ -294,25 +309,25 @@ class Dut(Crb):
         """
         Mount proc file system in Freebsd.
         """
-        self.send_expect('mount -t procfs proc /proc', '# ')
+        self.send_expect("mount -t procfs proc /proc", "# ")
 
     def get_ip_address(self):
         """
         Get DUT's ip address.
         """
-        return self.crb['IP']
+        return self.crb["IP"]
 
     def get_password(self):
         """
         Get DUT's login password.
         """
-        return self.crb['pass']
+        return self.crb["pass"]
 
     def get_username(self):
         """
         Get DUT's login username.
         """
-        return self.crb['user']
+        return self.crb["user"]
 
     def dut_prerequisites(self):
         """
@@ -322,17 +337,17 @@ class Dut(Crb):
         At last setup DUT' environment for validation.
         """
         out = self.send_expect("cd %s" % self.base_dir, "# ")
-        assert 'No such file or directory' not in out, "Can't switch to dpdk folder!!!"
+        assert "No such file or directory" not in out, "Can't switch to dpdk folder!!!"
         out = self.send_expect("cat VERSION", "# ")
-        if 'No such file or directory' in out:
+        if "No such file or directory" in out:
             self.logger.error("Can't get DPDK version due to VERSION not exist!!!")
         else:
             self.dpdk_version = out
         self.send_expect("alias ls='ls --color=none'", "#")
 
-        if self.get_os_type() == 'freebsd':
-            self.send_expect('alias make=gmake', '# ')
-            self.send_expect('alias sed=gsed', '# ')
+        if self.get_os_type() == "freebsd":
+            self.send_expect("alias make=gmake", "# ")
+            self.send_expect("alias sed=gsed", "# ")
 
         self.init_core_list()
         self.filter_cores_from_crb_cfg()
@@ -371,20 +386,20 @@ class Dut(Crb):
     def get_nic_configurations(self):
         retry_times = 3
         if self.ports_info:
-            self.nic = self.ports_info[0]['port']
+            self.nic = self.ports_info[0]["port"]
             self.nic.get_driver_firmware()
-            if self.nic.default_driver == 'ice':
+            if self.nic.default_driver == "ice":
                 self.get_nic_pkg(retry_times)
 
     def get_nic_pkg(self, retry_times=3):
         self.nic.pkg = self.nic.get_nic_pkg()
-        while not self.nic.pkg.get('type') and retry_times > 0:
+        while not self.nic.pkg.get("type") and retry_times > 0:
             self.restore_interfaces()
             self.nic.pkg = self.nic.get_nic_pkg()
             retry_times = retry_times - 1
-        self.logger.info('pkg: {}'.format(self.nic.pkg))
+        self.logger.info("pkg: {}".format(self.nic.pkg))
         if not self.nic.pkg:
-            raise Exception('Get nic pkg failed')
+            raise Exception("Get nic pkg failed")
 
     def restore_interfaces(self):
         """
@@ -394,7 +409,7 @@ class Dut(Crb):
         if self.read_cache:
             return
 
-        restore_interfaces = getattr(self, 'restore_interfaces_%s' % self.get_os_type())
+        restore_interfaces = getattr(self, "restore_interfaces_%s" % self.get_os_type())
         return restore_interfaces()
 
     def restore_interfaces_freebsd(self):
@@ -413,7 +428,7 @@ class Dut(Crb):
             driver = settings.get_nic_driver(pci_id)
             if driver is not None:
                 # unbind device driver
-                addr_array = pci_bus.split(':')
+                addr_array = pci_bus.split(":")
                 domain_id = addr_array[0]
                 bus_id = addr_array[1]
                 devfun_id = addr_array[2]
@@ -425,62 +440,72 @@ class Dut(Crb):
         Restore Linux interfaces.
         """
         for port in self.ports_info:
-            pci_bus = port['pci']
-            pci_id = port['type']
+            pci_bus = port["pci"]
+            pci_id = port["type"]
             # get device driver
             driver = settings.get_nic_driver(pci_id)
             if driver is not None:
                 # unbind device driver
-                addr_array = pci_bus.split(':')
+                addr_array = pci_bus.split(":")
                 domain_id = addr_array[0]
                 bus_id = addr_array[1]
                 devfun_id = addr_array[2]
 
                 port = GetNicObj(self, domain_id, bus_id, devfun_id)
 
-                self.send_expect('echo %s > /sys/bus/pci/devices/%s\:%s\:%s/driver/unbind'
-                                 % (pci_bus, domain_id, bus_id, devfun_id), '# ', timeout=30)
+                self.send_expect(
+                    "echo %s > /sys/bus/pci/devices/%s\:%s\:%s/driver/unbind"
+                    % (pci_bus, domain_id, bus_id, devfun_id),
+                    "# ",
+                    timeout=30,
+                )
                 # bind to linux kernel driver
-                self.send_expect('modprobe %s' % driver, '# ')
-                self.send_expect('echo %s > /sys/bus/pci/drivers/%s/bind'
-                                 % (pci_bus, driver), '# ')
+                self.send_expect("modprobe %s" % driver, "# ")
+                self.send_expect(
+                    "echo %s > /sys/bus/pci/drivers/%s/bind" % (pci_bus, driver), "# "
+                )
                 pull_retries = 5
-                itf = 'N/A'
+                itf = "N/A"
                 while pull_retries > 0:
                     itf = port.get_interface_name()
-                    if not itf or itf == 'N/A':
+                    if not itf or itf == "N/A":
                         time.sleep(1)
                         pull_retries -= 1
                     else:
                         break
                 else:
                     # try to bind nic with iavf
-                    if driver == 'iavf':
-                        self.send_expect('modprobe %s' % driver, '# ')
-                        self.send_expect('echo %s > /sys/bus/pci/drivers/%s/bind'
-                                         % (pci_bus, driver), '# ')
+                    if driver == "iavf":
+                        self.send_expect("modprobe %s" % driver, "# ")
+                        self.send_expect(
+                            "echo %s > /sys/bus/pci/drivers/%s/bind"
+                            % (pci_bus, driver),
+                            "# ",
+                        )
                         pull_retries = 5
-                        itf = 'N/A'
+                        itf = "N/A"
                         while pull_retries > 0:
                             itf = port.get_interface_name()
-                            if not itf or itf == 'N/A':
+                            if not itf or itf == "N/A":
                                 time.sleep(1)
                                 pull_retries -= 1
                             else:
                                 break
-                if itf == 'N/A':
+                if itf == "N/A":
                     self.logger.warning("Fail to bind the device with the linux driver")
                 else:
                     self.send_expect("ifconfig %s up" % itf, "# ")
             else:
-                self.logger.info("NOT FOUND DRIVER FOR PORT (%s|%s)!!!" % (pci_bus, pci_id))
+                self.logger.info(
+                    "NOT FOUND DRIVER FOR PORT (%s|%s)!!!" % (pci_bus, pci_id)
+                )
 
     def setup_memory(self, hugepages=-1):
         """
         Setup hugepage on DUT.
         """
         try:
-            function_name = 'setup_memory_%s' % self.get_os_type()
+            function_name = "setup_memory_%s" % self.get_os_type()
             setup_memory = getattr(self, function_name)
             setup_memory(hugepages)
         except AttributeError:
@@ -490,10 +515,11 @@ class Dut(Crb):
         """
         Get RTE configuration from config/defconfig_*.
         """
-        out = self.send_expect("cat config/defconfig_%s | sed '/^#/d' | sed '/^\s*$/d'"
-                                        % self.target, "# ")
+        out = self.send_expect(
+            "cat config/defconfig_%s | sed '/^#/d' | sed '/^\s*$/d'" % self.target, "# "
+        )
 
-        def_rte_config = re.findall(config+'=(\S+)', out)
+        def_rte_config = re.findall(config + "=(\S+)", out)
         if def_rte_config:
             return def_rte_config[0]
         else:
@@ -503,9 +529,11 @@ class Dut(Crb):
         """
         Setup Linux hugepages.
         """
-        if self.virttype == 'XEN':
+        if self.virttype == "XEN":
             return
-        hugepages_size = self.send_expect("awk '/Hugepagesize/ {print $2}' /proc/meminfo", "# ")
+        hugepages_size = self.send_expect(
+            "awk '/Hugepagesize/ {print $2}' /proc/meminfo", "# "
+        )
         total_huge_pages = self.get_total_huge_pages()
         numa_nodes = self.send_expect("ls /sys/devices/system/node | grep node*", "# ")
         if not numa_nodes:
@@ -514,7 +542,6 @@ class Dut(Crb):
             numa_nodes = numa_nodes.splitlines()
             total_numa_nodes = len(numa_nodes)
             self.logger.info(numa_nodes)
-
 
         force_socket = False
 
@@ -537,19 +564,23 @@ class Dut(Crb):
                     arch_huge_pages = hugepages if hugepages > 0 else 2048
 
             if total_huge_pages != arch_huge_pages:
-                if total_numa_nodes == -1 :
+                if total_numa_nodes == -1:
                     self.set_huge_pages(arch_huge_pages)
                 else:
                     # before all hugepage average distribution  by all socket,
-                    # but sometimes create mbuf pool on socket 0 failed when 
+                    # but sometimes create mbuf pool on socket 0 failed when
                     # setup testpmd, so set all huge page on first socket
                     if force_socket:
                         self.set_huge_pages(arch_huge_pages, numa_nodes[0])
                         self.logger.info("force_socket on %s" % numa_nodes[0])
                     else:
-                        numa_service_num = self.get_def_rte_config('CONFIG_RTE_MAX_NUMA_NODES')
+                        numa_service_num = self.get_def_rte_config(
+                            "CONFIG_RTE_MAX_NUMA_NODES"
+                        )
                         if numa_service_num is not None:
-                            total_numa_nodes = min(total_numa_nodes, int(numa_service_num))
+                            total_numa_nodes = min(
+                                total_numa_nodes, int(numa_service_num)
+                            )
 
                         # set huge pages to configured total_numa_nodes
                         for numa_node in numa_nodes[:total_numa_nodes]:
@@ -567,16 +598,16 @@ class Dut(Crb):
 
         num_buffers = hugepages / 1024
         if num_buffers:
-            self.send_expect('kenv hw.contigmem.num_buffers=%d' % num_buffers, "#")
+            self.send_expect("kenv hw.contigmem.num_buffers=%d" % num_buffers, "#")
 
         self.send_expect("kldunload contigmem.ko", "#")
         self.send_expect("kldload ./%s/kmod/contigmem.ko" % self.target, "#")
 
     def taskset(self, core):
-        if self.get_os_type() != 'linux':
-            return ''
+        if self.get_os_type() != "linux":
+            return ""
 
-        return 'taskset %s ' % core
+        return "taskset %s " % core
 
     def is_ssh_session_port(self, pci_bus):
         """
@@ -584,8 +615,8 @@ class Dut(Crb):
         """
         port = None
         for port_info in self.ports_info:
-            if pci_bus == port_info['pci']:
-                port = port_info['port']
+            if pci_bus == port_info["pci"]:
+                port = port_info["port"]
                 break
         if port and port.get_ipv4_addr() == self.get_ip_address().strip():
             return True
@@ -595,22 +626,22 @@ class Dut(Crb):
     def get_dpdk_bind_script(self):
         op = self.send_expect("ls", "#")
         if "usertools" in op:
-            res = 'usertools/dpdk-devbind.py'
+            res = "usertools/dpdk-devbind.py"
         else:
             op = self.send_expect("ls tools", "#")
             if "dpdk_nic_bind.py" in op:
-                res = 'tools/dpdk_nic_bind.py'
+                res = "tools/dpdk_nic_bind.py"
             else:
-                res = 'tools/dpdk-devbind.py'
+                res = "tools/dpdk-devbind.py"
         return res
 
-    def bind_interfaces_linux(self, driver='igb_uio', nics_to_bind=None):
+    def bind_interfaces_linux(self, driver="igb_uio", nics_to_bind=None):
         """
         Bind the interfaces to the selected driver. nics_to_bind can be None
         to bind all interfaces or an array with the port indexes
         """
 
-        binding_list = '--bind=%s ' % driver
+        binding_list = "--bind=%s " % driver
 
         current_nic = 0
         for (pci_bus, pci_id) in self.pci_devices_info:
@@ -619,21 +650,21 @@ class Dut(Crb):
                     continue
 
                 if nics_to_bind is None or current_nic in nics_to_bind:
-                    binding_list += '%s ' % (pci_bus)
+                    binding_list += "%s " % (pci_bus)
 
                 current_nic += 1
         if current_nic == 0:
             self.logger.info("Not nic need bind driver: %s" % driver)
             return
         bind_script_path = self.get_dpdk_bind_script()
-        self.send_expect('%s --force %s' % (bind_script_path, binding_list), '# ')
+        self.send_expect("%s --force %s" % (bind_script_path, binding_list), "# ")
 
     def unbind_interfaces_linux(self, nics_to_bind=None):
         """
         Unbind the interfaces.
         """
 
-        binding_list = '-u '
+        binding_list = "-u "
 
         current_nic = 0
         for (pci_bus, pci_id) in self.pci_devices_info:
@@ -642,7 +673,7 @@ class Dut(Crb):
                     continue
 
                 if nics_to_bind is None or current_nic in nics_to_bind:
-                    binding_list += '%s ' % (pci_bus)
+                    binding_list += "%s " % (pci_bus)
 
                 current_nic += 1
 
@@ -651,17 +682,17 @@ class Dut(Crb):
             return
 
         bind_script_path = self.get_dpdk_bind_script()
-        self.send_expect('%s --force %s' % (bind_script_path, binding_list), '# ')
+        self.send_expect("%s --force %s" % (bind_script_path, binding_list), "# ")
 
-    def bind_eventdev_port(self, driver='vfio-pci', port_to_bind=None):
+    def bind_eventdev_port(self, driver="vfio-pci", port_to_bind=None):
         """
         Bind the eventdev interfaces to the selected driver. port_to_bind set to default, can be
         changed at run time
         """
 
-        binding_list = '--bind=%s %s' % (driver, port_to_bind)
+        binding_list = "--bind=%s %s" % (driver, port_to_bind)
         bind_script_path = self.get_dpdk_bind_script()
-        self.send_expect('%s --force %s' % (bind_script_path, binding_list), '# ')
+        self.send_expect("%s --force %s" % (bind_script_path, binding_list), "# ")
 
     def set_eventdev_port_limits(self, device_id, port):
         """
@@ -669,17 +700,35 @@ class Dut(Crb):
         """
 
         bind_script_path = self.get_dpdk_bind_script()
-        eventdev_ports = self.send_expect('%s -s |grep -e %s | cut -d " " -f1' % (bind_script_path, device_id), '#')
+        eventdev_ports = self.send_expect(
+            '%s -s |grep -e %s | cut -d " " -f1' % (bind_script_path, device_id), "#"
+        )
         eventdev_ports = eventdev_ports.split("\r\n")
         for eventdev_port in eventdev_ports:
-            self.send_expect('echo 0 >  /sys/bus/pci/devices/%s/limits/sso' % (eventdev_port), '#')
-            self.send_expect('echo 0 >  /sys/bus/pci/devices/%s/limits/ssow' % (eventdev_port), '#')
+            self.send_expect(
+                "echo 0 >  /sys/bus/pci/devices/%s/limits/sso" % (eventdev_port), "#"
+            )
+            self.send_expect(
+                "echo 0 >  /sys/bus/pci/devices/%s/limits/ssow" % (eventdev_port), "#"
+            )
         for eventdev_port in eventdev_ports:
             if eventdev_port == port:
-                self.send_expect('echo 1 >  /sys/bus/pci/devices/%s/limits/tim' % (eventdev_port), '#')
-                self.send_expect('echo 1 >  /sys/bus/pci/devices/%s/limits/npa' % (eventdev_port), '#')
-                self.send_expect('echo 10 >  /sys/bus/pci/devices/%s/limits/sso' % (eventdev_port), '#')
-                self.send_expect('echo 32 >  /sys/bus/pci/devices/%s/limits/ssow' % (eventdev_port), '#')
+                self.send_expect(
+                    "echo 1 >  /sys/bus/pci/devices/%s/limits/tim" % (eventdev_port),
+                    "#",
+                )
+                self.send_expect(
+                    "echo 1 >  /sys/bus/pci/devices/%s/limits/npa" % (eventdev_port),
+                    "#",
+                )
+                self.send_expect(
+                    "echo 10 >  /sys/bus/pci/devices/%s/limits/sso" % (eventdev_port),
+                    "#",
+                )
+                self.send_expect(
+                    "echo 32 >  /sys/bus/pci/devices/%s/limits/ssow" % (eventdev_port),
+                    "#",
+                )
 
     def unbind_eventdev_port(self, port_to_unbind=None):
         """
@@ -687,11 +736,11 @@ class Dut(Crb):
         changed at run time
         """
 
-        binding_list = '-u  %s' % (port_to_unbind)
+        binding_list = "-u  %s" % (port_to_unbind)
         bind_script_path = self.get_dpdk_bind_script()
-        self.send_expect('%s  %s' % (bind_script_path, binding_list), '# ')
+        self.send_expect("%s  %s" % (bind_script_path, binding_list), "# ")
 
-    def get_ports(self, nic_type='any', perf=None, socket=None):
+    def get_ports(self, nic_type="any", perf=None, socket=None):
         """
         Return DUT port list with the filter of NIC type, whether run IXIA
         performance test, whether request specified socket.
@@ -700,39 +749,48 @@ class Dut(Crb):
         candidates = []
 
         nictypes = []
-        if nic_type == 'any':
+        if nic_type == "any":
             for portid in range(len(self.ports_info)):
                 ports.append(portid)
             return ports
-        elif nic_type == 'cfg':
+        elif nic_type == "cfg":
             for portid in range(len(self.ports_info)):
-                if self.ports_info[portid]['source'] == 'cfg':
-                    if (socket is None or
-                        self.ports_info[portid]['numa'] == -1 or
-                            socket == self.ports_info[portid]['numa']):
+                if self.ports_info[portid]["source"] == "cfg":
+                    if (
+                        socket is None
+                        or self.ports_info[portid]["numa"] == -1
+                        or socket == self.ports_info[portid]["numa"]
+                    ):
                         ports.append(portid)
             return ports
         else:
             for portid in range(len(self.ports_info)):
                 port_info = self.ports_info[portid]
                 # match nic type
-                if port_info['type'] == NICS[nic_type]:
+                if port_info["type"] == NICS[nic_type]:
                     # match numa or none numa awareness
-                    if (socket is None or
-                        port_info['numa'] == -1 or
-                            socket == port_info['numa']):
+                    if (
+                        socket is None
+                        or port_info["numa"] == -1
+                        or socket == port_info["numa"]
+                    ):
                         # port has link,
                         if self.tester.get_local_port(portid) != -1:
                             ports.append(portid)
             return ports
 
-    def get_ports_performance(self, nic_type='any', perf=None, socket=None,
-                              force_same_socket=True,
-                              force_different_nic=True):
+    def get_ports_performance(
+        self,
+        nic_type="any",
+        perf=None,
+        socket=None,
+        force_same_socket=True,
+        force_different_nic=True,
+    ):
         """
-            Return the maximum available number of ports meeting the parameters.
-            Focuses on getting ports with same/different NUMA node and/or
-            same/different NIC.
+        Return the maximum available number of ports meeting the parameters.
+        Focuses on getting ports with same/different NUMA node and/or
+        same/different NIC.
         """
 
         available_ports = self.get_ports(nic_type, perf, socket)
@@ -747,10 +805,16 @@ class Dut(Crb):
             for port in available_ports[1:]:
 
                 if force_same_socket and socket is None:
-                    if self.ports_info[port]['numa'] != self.ports_info[accepted_ports[0]]['numa']:
+                    if (
+                        self.ports_info[port]["numa"]
+                        != self.ports_info[accepted_ports[0]]["numa"]
+                    ):
                         continue
                 if force_different_nic:
-                    if self.ports_info[port]['pci'][:-1] == self.ports_info[accepted_ports[0]]['pci'][:-1]:
+                    if (
+                        self.ports_info[port]["pci"][:-1]
+                        == self.ports_info[accepted_ports[0]]["pci"][:-1]
+                    ):
                         continue
 
                 accepted_ports.append(port)
@@ -768,48 +832,48 @@ class Dut(Crb):
         """
         return the peer pci address of dut port
         """
-        if 'peer' not in self.ports_info[port_num]:
+        if "peer" not in self.ports_info[port_num]:
             return None
         else:
-            return self.ports_info[port_num]['peer']
+            return self.ports_info[port_num]["peer"]
 
     def get_mac_address(self, port_num):
         """
         return the port mac on dut
         """
-        return self.ports_info[port_num]['mac']
+        return self.ports_info[port_num]["mac"]
 
     def get_ipv6_address(self, port_num):
         """
         return the IPv6 address on dut
         """
-        return self.ports_info[port_num]['ipv6']
+        return self.ports_info[port_num]["ipv6"]
 
     def get_numa_id(self, port_num):
         """
         return the Numa Id of port
         """
-        if self.ports_info[port_num]['numa'] == -1:
-            self.logger.warning('NUMA not supported')
+        if self.ports_info[port_num]["numa"] == -1:
+            self.logger.warning("NUMA not supported")
 
-        return self.ports_info[port_num]['numa']
+        return self.ports_info[port_num]["numa"]
 
     def lcore_table_print(self, horizontal=False):
         if not horizontal:
-            result_table = ResultTable(['Socket', 'Core', 'Thread'])
+            result_table = ResultTable(["Socket", "Core", "Thread"])
 
             for lcore in self.cores:
-                result_table.add_row([lcore['socket'], lcore['core'], lcore['thread']])
+                result_table.add_row([lcore["socket"], lcore["core"], lcore["thread"]])
             result_table.table_print()
         else:
-            result_table = ResultTable(['X'] + [''] * len(self.cores))
-            result_table.add_row(['Thread'] + [n['thread'] for n in self.cores])
-            result_table.add_row(['Core'] + [n['core'] for n in self.cores])
-            result_table.add_row(['Socket'] + [n['socket'] for n in self.cores])
+            result_table = ResultTable(["X"] + [""] * len(self.cores))
+            result_table.add_row(["Thread"] + [n["thread"] for n in self.cores])
+            result_table.add_row(["Core"] + [n["core"] for n in self.cores])
+            result_table.add_row(["Socket"] + [n["socket"] for n in self.cores])
             result_table.table_print()
 
     def get_memory_channels(self):
-        n = self.crb['memory channels']
+        n = self.crb["memory channels"]
         if n is not None and n > 0:
             return n
         else:
@@ -820,9 +884,9 @@ class Dut(Crb):
         Check that whether auto scanned ports ready to use
         """
         pci_addr = "%s:%s" % (pci_bus, pci_id)
-        if self.nic_type == 'any':
+        if self.nic_type == "any":
             return True
-        elif self.nic_type == 'cfg':
+        elif self.nic_type == "cfg":
             if self.conf.check_port_available(pci_bus) is True:
                 return True
         elif self.nic_type not in list(NICS.keys()):
@@ -849,44 +913,51 @@ class Dut(Crb):
         """
         rescan ports and update port's mac address, intf, ipv6 address.
         """
-        rescan_ports_uncached = getattr(self, 'rescan_ports_uncached_%s' % self.get_os_type())
+        rescan_ports_uncached = getattr(
+            self, "rescan_ports_uncached_%s" % self.get_os_type()
+        )
         return rescan_ports_uncached()
 
     def rescan_ports_uncached_linux(self):
-        unknow_interface = RED('Skipped: unknow_interface')
+        unknow_interface = RED("Skipped: unknow_interface")
 
         for port_info in self.ports_info:
-            port = port_info['port']
+            port = port_info["port"]
             intf = port.get_interface_name()
-            port_info['intf'] = intf
+            port_info["intf"] = intf
             out = self.send_expect("ip link show %s" % intf, "# ")
             if "DOWN" in out:
                 self.send_expect("ip link set %s up" % intf, "# ")
                 time.sleep(5)
-            port_info['mac'] = port.get_mac_addr()
-            out = self.send_expect("ip -family inet6 address show dev %s | awk '/inet6/ { print $2 }'"
-                                   % intf, "# ")
-            ipv6 = out.split('/')[0]
+            port_info["mac"] = port.get_mac_addr()
+            out = self.send_expect(
+                "ip -family inet6 address show dev %s | awk '/inet6/ { print $2 }'"
+                % intf,
+                "# ",
+            )
+            ipv6 = out.split("/")[0]
             # Unconnected ports don't have IPv6
             if ":" not in ipv6:
                 ipv6 = "Not connected"
 
-            out = self.send_expect("ip -family inet address show dev %s | awk '/inet/ { print $2 }'"
-                    % intf, "# ")
-            ipv4 = out.split('/')[0]
+            out = self.send_expect(
+                "ip -family inet address show dev %s | awk '/inet/ { print $2 }'"
+                % intf,
+                "# ",
+            )
+            ipv4 = out.split("/")[0]
 
-            port_info['ipv6'] = ipv6
-            port_info['ipv4'] = ipv4
+            port_info["ipv6"] = ipv6
+            port_info["ipv4"] = ipv4
 
     def rescan_ports_uncached_freebsd(self):
-        unknow_interface = RED('Skipped: unknow_interface')
+        unknow_interface = RED("Skipped: unknow_interface")
 
         for port_info in self.ports_info:
-            port = port_info['port']
+            port = port_info["port"]
             intf = port.get_interface_name()
             if "No such file" in intf:
-                self.logger.info("DUT: [%s] %s" % (port_info['pci'],
-                                                   unknow_interface))
+                self.logger.info("DUT: [%s] %s" % (port_info["pci"], unknow_interface))
                 continue
             self.send_expect("ifconfig %s up" % intf, "# ")
             time.sleep(5)
@@ -896,9 +967,9 @@ class Dut(Crb):
             if ipv6 is None:
                 ipv6 = "Not connected"
 
-            port_info['mac'] = macaddr
-            port_info['intf'] = intf
-            port_info['ipv6'] = ipv6
+            port_info["mac"] = macaddr
+            port_info["intf"] = intf
+            port_info["ipv6"] = ipv6
 
     def load_serializer_ports(self):
         cached_ports_info = self.serializer.load(self.PORT_INFO_CACHE_KEY)
@@ -932,7 +1003,7 @@ class Dut(Crb):
         """
         Scan cached ports, instantiate tester port
         """
-        scan_ports_cached = getattr(self, 'scan_ports_cached_%s' % self.get_os_type())
+        scan_ports_cached = getattr(self, "scan_ports_cached_%s" % self.get_os_type())
         return scan_ports_cached()
 
     def scan_ports_cached_linux(self):
@@ -943,22 +1014,26 @@ class Dut(Crb):
             return
 
         for port_info in self.ports_info:
-            addr_array = port_info['pci'].split(':')
+            addr_array = port_info["pci"].split(":")
             domain_id = addr_array[0]
             bus_id = addr_array[1]
             devfun_id = addr_array[2]
 
             port = GetNicObj(self, domain_id, bus_id, devfun_id)
-            port_info['port'] = port
+            port_info["port"] = port
 
-            self.logger.info("DUT cached: [%s %s] %s" % (port_info['pci'],
-                                port_info['type'], port_info['intf']))
+            self.logger.info(
+                "DUT cached: [%s %s] %s"
+                % (port_info["pci"], port_info["type"], port_info["intf"])
+            )
 
     def scan_ports_uncached(self):
         """
         Scan ports and collect port's pci id, mac address, ipv6 address.
         """
-        scan_ports_uncached = getattr(self, 'scan_ports_uncached_%s' % self.get_os_type())
+        scan_ports_uncached = getattr(
+            self, "scan_ports_uncached_%s" % self.get_os_type()
+        )
         return scan_ports_uncached()
 
     def scan_ports_uncached_linux(self):
@@ -967,16 +1042,15 @@ class Dut(Crb):
         """
         self.ports_info = []
 
-        skipped = RED('Skipped: Unknown/not selected')
-        unknow_interface = RED('Skipped: unknow_interface')
+        skipped = RED("Skipped: Unknown/not selected")
+        unknow_interface = RED("Skipped: unknow_interface")
 
         for (pci_bus, pci_id) in self.pci_devices_info:
             if self.check_ports_available(pci_bus, pci_id) is False:
-                self.logger.info("DUT: [%s %s] %s" % (pci_bus, pci_id,
-                                                      skipped))
+                self.logger.info("DUT: [%s %s] %s" % (pci_bus, pci_id, skipped))
                 continue
 
-            addr_array = pci_bus.split(':')
+            addr_array = pci_bus.split(":")
             domain_id = addr_array[0]
             bus_id = addr_array[1]
             devfun_id = addr_array[2]
@@ -995,8 +1069,15 @@ class Dut(Crb):
             numa = port.socket
             # store the port info to port mapping
             self.ports_info.append(
-                {'port': port, 'pci': pci_bus, 'type': pci_id, 'numa': numa,
-                 'intf': intf, 'mac': macaddr})
+                {
+                    "port": port,
+                    "pci": pci_bus,
+                    "type": pci_id,
+                    "numa": numa,
+                    "intf": intf,
+                    "mac": macaddr,
+                }
+            )
 
             if not port.get_interface2_name():
                 continue
@@ -1006,8 +1087,15 @@ class Dut(Crb):
             numa = port.socket
             # store the port info to port mapping
             self.ports_info.append(
-                {'port': port, 'pci': pci_bus, 'type': pci_id, 'numa': numa,
-                 'intf': intf, 'mac': macaddr})
+                {
+                    "port": port,
+                    "pci": pci_bus,
+                    "type": pci_id,
+                    "numa": numa,
+                    "intf": intf,
+                    "mac": macaddr,
+                }
+            )
 
     def scan_ports_uncached_freebsd(self):
         """
@@ -1015,20 +1103,19 @@ class Dut(Crb):
         """
         self.ports_info = []
 
-        skipped = RED('Skipped: Unknown/not selected')
+        skipped = RED("Skipped: Unknown/not selected")
 
         for (pci_bus, pci_id) in self.pci_devices_info:
 
             if not settings.accepted_nic(pci_id):
-                self.logger.info("DUT: [%s %s] %s" % (pci_bus, pci_id,
-                                                      skipped))
+                self.logger.info("DUT: [%s %s] %s" % (pci_bus, pci_id, skipped))
                 continue
-            addr_array = pci_bus.split(':')
+            addr_array = pci_bus.split(":")
             domain_id = addr_array[0]
             bus_id = addr_array[1]
             devfun_id = addr_array[2]
             port = GetNicObj(self, domain_id, bus_id, devfun_id)
-            port.pci_id= pci_id
+            port.pci_id = pci_id
             port.name = settings.get_nic_name(pci_id)
             port.default_driver = settings.get_nic_driver(pci_id)
             intf = port.get_interface_name()
@@ -1044,7 +1131,7 @@ class Dut(Crb):
             self.logger.info("DUT: [%s %s] %s %s" % (pci_bus, pci_id, intf, ipv6))
 
             # convert bsd format to linux format
-            pci_split = pci_bus.split(':')
+            pci_split = pci_bus.split(":")
             pci_bus_id = hex(int(pci_split[0]))[2:]
             if len(pci_split[1]) == 1:
                 pci_dev_str = "0" + pci_split[1]
@@ -1054,8 +1141,17 @@ class Dut(Crb):
             pci_str = "%s:%s.%s" % (pci_bus_id, pci_dev_str, pci_split[2])
 
             # store the port info to port mapping
-            self.ports_info.append({'port': port, 'pci': pci_str, 'type': pci_id, 'intf':
-                                    intf, 'mac': macaddr, 'ipv6': ipv6, 'numa': -1})
+            self.ports_info.append(
+                {
+                    "port": port,
+                    "pci": pci_str,
+                    "type": pci_id,
+                    "intf": intf,
+                    "mac": macaddr,
+                    "ipv6": ipv6,
+                    "numa": -1,
+                }
+            )
 
     def setup_virtenv(self, virttype):
         """
@@ -1063,19 +1159,20 @@ class Dut(Crb):
         """
         self.virttype = virttype
         # remove VM rsa keys from tester
-        remove_old_rsa_key(self.tester, self.crb['My IP'])
+        remove_old_rsa_key(self.tester, self.crb["My IP"])
 
-    def generate_sriov_vfs_by_port(self, port_id, vf_num, driver='default'):
+    def generate_sriov_vfs_by_port(self, port_id, vf_num, driver="default"):
         """
         Generate SRIOV VFs with default driver it is bound now or specified driver.
         """
-        port = self.ports_info[port_id]['port']
+        port = self.ports_info[port_id]["port"]
         port_driver = port.get_nic_driver()
 
-        if driver == 'default':
+        if driver == "default":
             if not port_driver:
                 self.logger.info(
-                    "No driver on specified port, can not generate SRIOV VF.")
+                    "No driver on specified port, can not generate SRIOV VF."
+                )
                 return None
         else:
             if port_driver != driver:
@@ -1084,42 +1181,43 @@ class Dut(Crb):
 
         # append the VF PCIs into the ports_info
         sriov_vfs_pci = port.get_sriov_vfs_pci()
-        self.ports_info[port_id]['sriov_vfs_pci'] = sriov_vfs_pci
+        self.ports_info[port_id]["sriov_vfs_pci"] = sriov_vfs_pci
 
         # instantiate the VF
         vfs_port = []
         for vf_pci in sriov_vfs_pci:
-            addr_array = vf_pci.split(':')
+            addr_array = vf_pci.split(":")
             domain_id = addr_array[0]
             bus_id = addr_array[1]
             devfun_id = addr_array[2]
             vf_port = GetNicObj(self, domain_id, bus_id, devfun_id)
             vfs_port.append(vf_port)
-        self.ports_info[port_id]['vfs_port'] = vfs_port
+        self.ports_info[port_id]["vfs_port"] = vfs_port
 
-        pci = self.ports_info[port_id]['pci']
+        pci = self.ports_info[port_id]["pci"]
         self.virt_pool.add_vf_on_pf(pf_pci=pci, vflist=sriov_vfs_pci)
 
     def destroy_sriov_vfs_by_port(self, port_id):
-        port = self.ports_info[port_id]['port']
+        port = self.ports_info[port_id]["port"]
         vflist = []
         port_driver = port.get_nic_driver()
-        if 'sriov_vfs_pci' in self.ports_info[port_id] and \
-           self.ports_info[port_id]['sriov_vfs_pci']:
-            vflist = self.ports_info[port_id]['sriov_vfs_pci']
+        if (
+            "sriov_vfs_pci" in self.ports_info[port_id]
+            and self.ports_info[port_id]["sriov_vfs_pci"]
+        ):
+            vflist = self.ports_info[port_id]["sriov_vfs_pci"]
         else:
             if not port.get_sriov_vfs_pci():
                 return
 
         if not port_driver:
-            self.logger.info(
-                "No driver on specified port, skip destroy SRIOV VF.")
+            self.logger.info("No driver on specified port, skip destroy SRIOV VF.")
         else:
             sriov_vfs_pci = port.destroy_sriov_vfs()
-        self.ports_info[port_id]['sriov_vfs_pci'] = []
-        self.ports_info[port_id]['vfs_port'] = []
+        self.ports_info[port_id]["sriov_vfs_pci"] = []
+        self.ports_info[port_id]["vfs_port"] = []
 
-        pci = self.ports_info[port_id]['pci']
+        pci = self.ports_info[port_id]["pci"]
         self.virt_pool.del_vf_on_pf(pf_pci=pci, vflist=vflist)
 
     def destroy_all_sriov_vfs(self):
@@ -1135,23 +1233,25 @@ class Dut(Crb):
         not same as auto scanned, still use information in configuration file.
         """
         for port in self.ports_info:
-            pci_bus = port['pci']
+            pci_bus = port["pci"]
             ports_cfg = self.conf.get_ports_config()
             if pci_bus in ports_cfg:
                 port_cfg = ports_cfg[pci_bus]
-                port_cfg['source'] = 'cfg'
+                port_cfg["source"] = "cfg"
             else:
                 port_cfg = {}
 
-            for key in ['intf', 'mac', 'peer', 'source']:
+            for key in ["intf", "mac", "peer", "source"]:
                 if key in port_cfg:
                     if key in port and port_cfg[key].lower() != port[key].lower():
-                        self.logger.warning("CONFIGURED %s NOT SAME AS SCANNED!!!" % (key.upper()))
+                        self.logger.warning(
+                            "CONFIGURED %s NOT SAME AS SCANNED!!!" % (key.upper())
+                        )
                     port[key] = port_cfg[key].lower()
-            if 'numa' in port_cfg:
-                if port_cfg['numa'] != port['numa']:
+            if "numa" in port_cfg:
+                if port_cfg["numa"] != port["numa"]:
                     self.logger.warning("CONFIGURED NUMA NOT SAME AS SCANNED!!!")
-                port['numa'] = port_cfg['numa']
+                port["numa"] = port_cfg["numa"]
 
     def map_available_ports(self):
         """
@@ -1181,16 +1281,23 @@ class Dut(Crb):
 
         for dutPort in range(nrPorts):
             peer = self.get_peer_pci(dutPort)
-            dutpci = self.ports_info[dutPort]['pci']
+            dutpci = self.ports_info[dutPort]["pci"]
             if peer is not None:
                 for remotePort in range(len(self.tester.ports_info)):
-                    if self.tester.ports_info[remotePort]['type'].lower() == 'trex':
-                        if self.tester.ports_info[remotePort]['intf'].lower() == peer.lower() or \
-                                self.tester.ports_info[remotePort]['pci'].lower() == peer.lower():
+                    if self.tester.ports_info[remotePort]["type"].lower() == "trex":
+                        if (
+                            self.tester.ports_info[remotePort]["intf"].lower()
+                            == peer.lower()
+                            or self.tester.ports_info[remotePort]["pci"].lower()
+                            == peer.lower()
+                        ):
                             hits[remotePort] = True
                             self.ports_map[dutPort] = remotePort
                             break
-                    elif self.tester.ports_info[remotePort]['pci'].lower() == peer.lower():
+                    elif (
+                        self.tester.ports_info[remotePort]["pci"].lower()
+                        == peer.lower()
+                    ):
                         hits[remotePort] = True
                         self.ports_map[dutPort] = remotePort
                         break
@@ -1204,33 +1311,40 @@ class Dut(Crb):
                     continue
 
                 # skip ping self port
-                remotepci = self.tester.ports_info[remotePort]['pci']
-                if (self.crb['IP'] == self.crb['tester IP']) and (dutpci == remotepci):
+                remotepci = self.tester.ports_info[remotePort]["pci"]
+                if (self.crb["IP"] == self.crb["tester IP"]) and (dutpci == remotepci):
                     continue
 
                 # skip ping those not connected port
                 ipv6 = self.get_ipv6_address(dutPort)
                 if ipv6 == "Not connected":
-                    if 'ipv4' in self.tester.ports_info[remotePort]:
+                    if "ipv4" in self.tester.ports_info[remotePort]:
                         out = self.tester.send_ping(
-                            dutPort, self.tester.ports_info[remotePort]['ipv4'],
-                            self.get_mac_address(dutPort))
+                            dutPort,
+                            self.tester.ports_info[remotePort]["ipv4"],
+                            self.get_mac_address(dutPort),
+                        )
                     else:
                         continue
                 else:
-                    if getattr(self, 'send_ping6', None):
+                    if getattr(self, "send_ping6", None):
                         out = self.send_ping6(
-                            dutPort, self.tester.ports_info[remotePort]['ipv6'],
-                            self.get_mac_address(dutPort))
+                            dutPort,
+                            self.tester.ports_info[remotePort]["ipv6"],
+                            self.get_mac_address(dutPort),
+                        )
                     else:
                         out = self.tester.send_ping6(
-                            remotePort, ipv6, self.get_mac_address(dutPort))
+                            remotePort, ipv6, self.get_mac_address(dutPort)
+                        )
 
-                    if out and '64 bytes from' in out:
-                        self.logger.info("PORT MAP: [dut %d: tester %d]" % (dutPort, remotePort))
+                    if out and "64 bytes from" in out:
+                        self.logger.info(
+                            "PORT MAP: [dut %d: tester %d]" % (dutPort, remotePort)
+                        )
                         self.ports_map[dutPort] = remotePort
                         hits[remotePort] = True
-                        if self.crb['IP'] == self.crb['tester IP']:
+                        if self.crb["IP"] == self.crb["tester IP"]:
                             # remove dut port act as tester port
                             remove_port = self.get_port_info(remotepci)
                             if remove_port is not None:
@@ -1246,32 +1360,40 @@ class Dut(Crb):
 
     def disable_tester_ipv6(self):
         for tester_port in self.ports_map:
-            if self.tester.ports_info[tester_port]['type'].lower() not in ('ixia', 'trex'):
-                port = self.tester.ports_info[tester_port]['port']
+            if self.tester.ports_info[tester_port]["type"].lower() not in (
+                "ixia",
+                "trex",
+            ):
+                port = self.tester.ports_info[tester_port]["port"]
                 port.disable_ipv6()
 
     def enable_tester_ipv6(self):
         for tester_port in range(len(self.tester.ports_info)):
-            if self.tester.ports_info[tester_port]['type'].lower() not in ('ixia', 'trex'):
-                port = self.tester.ports_info[tester_port]['port']
+            if self.tester.ports_info[tester_port]["type"].lower() not in (
+                "ixia",
+                "trex",
+            ):
+                port = self.tester.ports_info[tester_port]["port"]
                 port.enable_ipv6()
 
     def check_port_occupied(self, port):
-        out = self.alt_session.send_expect('lsof -i:%d' % port, '# ')
-        if out == '':
+        out = self.alt_session.send_expect("lsof -i:%d" % port, "# ")
+        if out == "":
             return False
         else:
             return True
 
     def get_maximal_vnc_num(self):
-        out = self.send_expect("ps aux | grep '\-vnc' | grep -v grep", '# ')
+        out = self.send_expect("ps aux | grep '\-vnc' | grep -v grep", "# ")
         if out:
-            ports = re.findall(r'-vnc .*?:(\d+)', out)
+            ports = re.findall(r"-vnc .*?:(\d+)", out)
             for num in range(len(ports)):
                 ports[num] = int(ports[num])
                 ports.sort()
         else:
-            ports = [0, ]
+            ports = [
+                0,
+            ]
         return ports[-1]
 
     def close(self):
@@ -1308,18 +1430,18 @@ class Dut(Crb):
 
 class _EalParameter(object):
     def __init__(
-            self,
-            dut: Dut,
-            fixed_prefix: bool,
-            socket: int,
-            cores: Union[str, List[int], List[str]],
-            ports: Union[List[str], List[int]],
-            port_options: Dict[Union[str, int], str],
-            prefix: str,
-            no_pci: bool,
-            b_ports: Union[List[str], List[int]],
-            vdevs: List[str],
-            other_eal_param: str,
+        self,
+        dut: Dut,
+        fixed_prefix: bool,
+        socket: int,
+        cores: Union[str, List[int], List[str]],
+        ports: Union[List[str], List[int]],
+        port_options: Dict[Union[str, int], str],
+        prefix: str,
+        no_pci: bool,
+        b_ports: Union[List[str], List[int]],
+        vdevs: List[str],
+        other_eal_param: str,
     ):
         """
         generate eal parameters character string;
@@ -1365,15 +1487,15 @@ class _EalParameter(object):
         self.other_eal_param = other_eal_param
 
     _param_validate_exception_info_template = (
-        'Invalid parameter of %s about value of %s, Please reference API doc.'
+        "Invalid parameter of %s about value of %s, Please reference API doc."
     )
 
     @staticmethod
     def _validate_cores(cores: Union[str, List[int], List[str]]):
         core_string_match = r"default|all|\d+S/\d+C/\d+T|$"
         if isinstance(cores, list) and (
-                all(map(lambda _core: type(_core) == int, cores))
-                or all(map(lambda _core: type(_core) == str, cores))
+            all(map(lambda _core: type(_core) == int, cores))
+            or all(map(lambda _core: type(_core) == str, cores))
         ):
             return cores
         elif type(cores) == str and re.match(core_string_match, cores, re.I):
@@ -1386,17 +1508,17 @@ class _EalParameter(object):
         if not isinstance(ports, list):
             raise ParameterInvalidException("ports", ports)
         if not (
-                all(map(lambda _port: type(_port) == int, ports))
-                or all(map(lambda _port: type(_port) == str, ports))
-                and all(
-            map(
-                lambda _port: re.match(r"^([\d\w]+:){1,2}[\d\w]+\.[\d\w]+$", _port),
-                ports,
+            all(map(lambda _port: type(_port) == int, ports))
+            or all(map(lambda _port: type(_port) == str, ports))
+            and all(
+                map(
+                    lambda _port: re.match(r"^([\d\w]+:){1,2}[\d\w]+\.[\d\w]+$", _port),
+                    ports,
+                )
             )
-        )
         ):
             raise ParameterInvalidException(
-                _EalParameter._param_validate_exception_info_template % ('ports', ports)
+                _EalParameter._param_validate_exception_info_template % ("ports", ports)
             )
         return ports
 
@@ -1404,7 +1526,8 @@ class _EalParameter(object):
     def _validate_port_options(port_options: Dict[Union[str, int], str]):
         if not isinstance(port_options, Dict):
             raise ParameterInvalidException(
-                _EalParameter._param_validate_exception_info_template % ('port_options', port_options)
+                _EalParameter._param_validate_exception_info_template
+                % ("port_options", port_options)
             )
         port_list = port_options.keys()
         _EalParameter._validate_ports(list(port_list))
@@ -1414,14 +1537,14 @@ class _EalParameter(object):
     def _validate_vdev(vdev: List[str]):
         if not isinstance(vdev, list):
             raise ParameterInvalidException(
-                _EalParameter._param_validate_exception_info_template % ('vdev', vdev)
+                _EalParameter._param_validate_exception_info_template % ("vdev", vdev)
             )
 
     def _make_cores_param(self) -> str:
         is_use_default_cores = (
-                self.cores == ""
-                or isinstance(self.cores, str)
-                and self.cores.lower() == "default"
+            self.cores == ""
+            or isinstance(self.cores, str)
+            and self.cores.lower() == "default"
         )
         if is_use_default_cores:
             default_cores = "1S/2C/1T"
@@ -1464,12 +1587,12 @@ class _EalParameter(object):
 
     def _make_ports_param(self) -> str:
         no_port_config = (
-                len(self.ports) == 0 and len(self.b_ports) == 0 and not self.no_pci
+            len(self.ports) == 0 and len(self.b_ports) == 0 and not self.no_pci
         )
         port_config_not_in_eal_param = not (
-                "-a" in self.other_eal_param
-                or "-b" in self.other_eal_param
-                or "--no-pci" in self.other_eal_param
+            "-a" in self.other_eal_param
+            or "-b" in self.other_eal_param
+            or "--no-pci" in self.other_eal_param
         )
         if no_port_config and port_config_not_in_eal_param:
             return self._make_default_ports_param()
@@ -1535,7 +1658,10 @@ class _EalParameter(object):
             "avx512": "512",
             "nolimit": "0",
         }
-        if rx_mode in bitwith_dict and "force-max-simd-bitwidth" not in self.other_eal_param:
+        if (
+            rx_mode in bitwith_dict
+            and "force-max-simd-bitwidth" not in self.other_eal_param
+        ):
             return param_template % bitwith_dict.get(rx_mode)
         else:
             return ""
@@ -1569,7 +1695,7 @@ class _EalParameter(object):
 
     def _make_allow_option(self) -> str:
         is_new_dpdk_version = (
-                self.dut.dpdk_version > "20.11.0-rc3" or self.dut.dpdk_version == "20.11.0"
+            self.dut.dpdk_version > "20.11.0-rc3" or self.dut.dpdk_version == "20.11.0"
         )
         return "-a" if is_new_dpdk_version else "-w"
 

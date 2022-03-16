@@ -41,7 +41,6 @@ from framework.virt_common import VM
 
 
 class TestVhostUserLiveMigration(TestCase):
-
     def set_up_all(self):
         # verify at least two duts
         self.verify(len(self.duts) >= 2, "Insufficient duts for live migration!!!")
@@ -51,65 +50,75 @@ class TestVhostUserLiveMigration(TestCase):
         # each dut required one ports
         host_dut_ports = self.host_dut.get_ports()
         backup_dut_ports = self.backup_dut.get_ports()
-        self.verify(len(host_dut_ports) >= 1 and len(backup_dut_ports) >= 1,
-                        "Insufficient ports for testing")
+        self.verify(
+            len(host_dut_ports) >= 1 and len(backup_dut_ports) >= 1,
+            "Insufficient ports for testing",
+        )
 
         # get mount info from cfg file
-        conf_info = UserConf(os.path.join(CONFIG_ROOT_PATH, f'{self.suite_name}.cfg'))
-        conf_session = conf_info.conf._sections['mount_info']
-        self.mount_path = conf_session['backup_mount_path']
-        self.share_path = conf_session['host_share_dir']
+        conf_info = UserConf(os.path.join(CONFIG_ROOT_PATH, f"{self.suite_name}.cfg"))
+        conf_session = conf_info.conf._sections["mount_info"]
+        self.mount_path = conf_session["backup_mount_path"]
+        self.share_path = conf_session["host_share_dir"]
         # config the mount server and client
         self.config_mount_server()
         self.config_mount_client()
 
         host_dut_port = host_dut_ports[0]
-        host_dut_ip = self.host_dut.crb['My IP']
+        host_dut_ip = self.host_dut.crb["My IP"]
         backup_dut_port = backup_dut_ports[0]
-        self.backup_dut_ip = self.backup_dut.crb['My IP']
+        self.backup_dut_ip = self.backup_dut.crb["My IP"]
 
         host_tport = self.tester.get_local_port_bydut(host_dut_port, host_dut_ip)
-        backup_tport = self.tester.get_local_port_bydut(backup_dut_port, self.backup_dut_ip)
+        backup_tport = self.tester.get_local_port_bydut(
+            backup_dut_port, self.backup_dut_ip
+        )
         self.host_tintf = self.tester.get_interface(host_tport)
         self.backup_tintf = self.tester.get_interface(backup_tport)
 
-        self.host_pci_info = self.host_dut.ports_info[0]['pci']
-        self.backup_pci_info = self.backup_dut.ports_info[0]['pci']
+        self.host_pci_info = self.host_dut.ports_info[0]["pci"]
+        self.backup_pci_info = self.backup_dut.ports_info[0]["pci"]
 
         self.virio_mac = "52:54:00:00:00:01"
         self.queue_number = 1
         self.vm_dut_host = None
         self.backup_vm = None
-        self.screen_name = 'migration'
-        self.base_dir = self.dut.base_dir.replace('~', '/root')
-        host_socket_num = len(set([int(core['socket']) for core in self.host_dut.cores]))
-        backup_socket_num = len(set([int(core['socket']) for core in self.backup_dut.cores]))
-        self.host_socket_mem = ','.join(['1024']*host_socket_num)
-        self.backup_socket_mem = ','.join(['1024']*backup_socket_num)
-        self.testpmd_path=self.dut.apps_name['test-pmd']
+        self.screen_name = "migration"
+        self.base_dir = self.dut.base_dir.replace("~", "/root")
+        host_socket_num = len(
+            set([int(core["socket"]) for core in self.host_dut.cores])
+        )
+        backup_socket_num = len(
+            set([int(core["socket"]) for core in self.backup_dut.cores])
+        )
+        self.host_socket_mem = ",".join(["1024"] * host_socket_num)
+        self.backup_socket_mem = ",".join(["1024"] * backup_socket_num)
+        self.testpmd_path = self.dut.apps_name["test-pmd"]
         self.testpmd_name = self.testpmd_path.split("/")[-1]
 
     def set_up(self):
-        self.host_dut.send_expect('rm ./vhost-net*', '# ', 30)
-        self.backup_dut.send_expect('rm ./vhost-net*', '# ', 30)
+        self.host_dut.send_expect("rm ./vhost-net*", "# ", 30)
+        self.backup_dut.send_expect("rm ./vhost-net*", "# ", 30)
         self.migration_done = False
 
     def config_mount_server(self):
-        '''
+        """
         get the mount server config from file /etc/exports
         if not config the mount info of host_dut and backup_dut, config it
-        '''
-        config = '%s %s(rw,sync,no_root_squash)' % (
-                    self.share_path, self.backup_dut.crb['IP'])
+        """
+        config = "%s %s(rw,sync,no_root_squash)" % (
+            self.share_path,
+            self.backup_dut.crb["IP"],
+        )
         try:
-            fd = open('/etc/exports', 'r+')
+            fd = open("/etc/exports", "r+")
         except Exception as e:
-            self.logger.error('read file /etc/exports failed as %s' % str(e))
+            self.logger.error("read file /etc/exports failed as %s" % str(e))
             raise e
         line = fd.readline()
-        while(line):
+        while line:
             # already config in etc file
-            if not line.startswith('#') and config in line:
+            if not line.startswith("#") and config in line:
                 break
             line = fd.readline()
         # not config in etc file, wirte the config to it
@@ -118,31 +127,38 @@ class TestVhostUserLiveMigration(TestCase):
         fd.close()
 
     def config_mount_client(self):
-        '''
+        """
         config the mount client to access the mount server
-        '''
-        out = self.backup_dut.send_expect('ls -d %s' % self.mount_path, '# ')
-        if 'No such file or directory' in out:
-            self.backup_dut.send_expect('mkdir -p %s' % self.mount_path, '# ')
-        config = 'mount -t nfs -o nolock,vers=4  %s:%s %s' % (
-                    self.host_dut.crb['IP'], self.share_path, self.mount_path)
-        self.host_dut.send_expect('service nfs-server restart', '# ')
-        self.backup_dut.send_expect('service nfs-server restart', '# ')
-        self.backup_dut.send_expect('umount %s' % self.mount_path, '# ')
-        self.backup_dut.send_expect(config, '# ')
+        """
+        out = self.backup_dut.send_expect("ls -d %s" % self.mount_path, "# ")
+        if "No such file or directory" in out:
+            self.backup_dut.send_expect("mkdir -p %s" % self.mount_path, "# ")
+        config = "mount -t nfs -o nolock,vers=4  %s:%s %s" % (
+            self.host_dut.crb["IP"],
+            self.share_path,
+            self.mount_path,
+        )
+        self.host_dut.send_expect("service nfs-server restart", "# ")
+        self.backup_dut.send_expect("service nfs-server restart", "# ")
+        self.backup_dut.send_expect("umount %s" % self.mount_path, "# ")
+        self.backup_dut.send_expect(config, "# ")
         time.sleep(2)
         # verify the mount result
-        out_host = self.host_dut.send_expect('ls %s' % self.share_path, '#')
-        out_backup = self.backup_dut.send_expect('ls %s' % self.mount_path, '#')
-        self.verify(out_host == out_backup, 'the mount action failed, please confrim it')
+        out_host = self.host_dut.send_expect("ls %s" % self.share_path, "#")
+        out_backup = self.backup_dut.send_expect("ls %s" % self.mount_path, "#")
+        self.verify(
+            out_host == out_backup, "the mount action failed, please confrim it"
+        )
 
     def get_core_list(self):
         core_number = self.queue_number + 1
-        core_config = '1S/%dC/1T' % core_number
+        core_config = "1S/%dC/1T" % core_number
         self.core_list0 = self.duts[0].get_core_list(core_config)
         self.core_list1 = self.duts[1].get_core_list(core_config)
-        self.verify(len(self.core_list0) >= core_number and len(self.core_list1) >= core_number,
-                    'There have not enough cores to start testpmd on duts')
+        self.verify(
+            len(self.core_list0) >= core_number and len(self.core_list1) >= core_number,
+            "There have not enough cores to start testpmd on duts",
+        )
 
     def launch_testpmd_as_vhost_on_both_dut(self):
         """
@@ -150,39 +166,58 @@ class TestVhostUserLiveMigration(TestCase):
         """
         self.get_core_list()
         testcmd = self.testpmd_path + " "
-        vdev = ['eth_vhost0,iface=%s/vhost-net,queues=%d' % (self.base_dir, self.queue_number)]
-        para = " -- -i --nb-cores=%d --rxq=%d --txq=%d" % (self.queue_number, self.queue_number, self.queue_number)
-        eal_params_first = self.dut.create_eal_parameters(cores=self.core_list0, prefix='vhost', ports=[self.host_pci_info], vdevs=vdev)
-        eal_params_secondary = self.dut.create_eal_parameters(cores=self.core_list1, prefix='vhost', ports=[self.backup_pci_info], vdevs=vdev)
+        vdev = [
+            "eth_vhost0,iface=%s/vhost-net,queues=%d"
+            % (self.base_dir, self.queue_number)
+        ]
+        para = " -- -i --nb-cores=%d --rxq=%d --txq=%d" % (
+            self.queue_number,
+            self.queue_number,
+            self.queue_number,
+        )
+        eal_params_first = self.dut.create_eal_parameters(
+            cores=self.core_list0,
+            prefix="vhost",
+            ports=[self.host_pci_info],
+            vdevs=vdev,
+        )
+        eal_params_secondary = self.dut.create_eal_parameters(
+            cores=self.core_list1,
+            prefix="vhost",
+            ports=[self.backup_pci_info],
+            vdevs=vdev,
+        )
         host_cmd_line = testcmd + eal_params_first + para
         backup_cmd_line = testcmd + eal_params_secondary + para
-        self.host_dut.send_expect(host_cmd_line, 'testpmd> ', 30)
-        self.backup_dut.send_expect(backup_cmd_line, 'testpmd> ', 30)
+        self.host_dut.send_expect(host_cmd_line, "testpmd> ", 30)
+        self.backup_dut.send_expect(backup_cmd_line, "testpmd> ", 30)
 
-    def start_testpmd_with_fwd_mode_on_both_dut(self, fwd_mode='io'):
-        self.host_dut.send_expect('set fwd %s' % fwd_mode, 'testpmd> ', 30)
-        self.host_dut.send_expect('start', 'testpmd> ', 30)
-        self.backup_dut.send_expect('set fwd %s' % fwd_mode, 'testpmd> ', 30)
-        self.backup_dut.send_expect('start', 'testpmd> ', 30)
+    def start_testpmd_with_fwd_mode_on_both_dut(self, fwd_mode="io"):
+        self.host_dut.send_expect("set fwd %s" % fwd_mode, "testpmd> ", 30)
+        self.host_dut.send_expect("start", "testpmd> ", 30)
+        self.backup_dut.send_expect("set fwd %s" % fwd_mode, "testpmd> ", 30)
+        self.backup_dut.send_expect("start", "testpmd> ", 30)
 
-    def setup_vm_env_on_both_dut(self, driver='default', packed=False):
+    def setup_vm_env_on_both_dut(self, driver="default", packed=False):
         """
         Create testing environment on Host and Backup
         """
         try:
             # set up host virtual machine
-            self.host_vm = VM(self.duts[0], 'host', '%s' % self.suite_name)
+            self.host_vm = VM(self.duts[0], "host", "%s" % self.suite_name)
             vhost_params = {}
-            vhost_params['driver'] = 'vhost-user'
-            vhost_params['opt_path'] = self.base_dir + '/vhost-net'
-            vhost_params['opt_mac'] = self.virio_mac
-            opt_params = 'mrg_rxbuf=on'
+            vhost_params["driver"] = "vhost-user"
+            vhost_params["opt_path"] = self.base_dir + "/vhost-net"
+            vhost_params["opt_mac"] = self.virio_mac
+            opt_params = "mrg_rxbuf=on"
             if self.queue_number > 1:
-                vhost_params['opt_queue'] = self.queue_number
-                opt_params = 'mrg_rxbuf=on,mq=on,vectors=%d' % (2*self.queue_number + 2)
+                vhost_params["opt_queue"] = self.queue_number
+                opt_params = "mrg_rxbuf=on,mq=on,vectors=%d" % (
+                    2 * self.queue_number + 2
+                )
             if packed:
-                opt_params = opt_params + ',packed=on'
-            vhost_params['opt_settings'] = opt_params
+                opt_params = opt_params + ",packed=on"
+            vhost_params["opt_settings"] = opt_params
             self.host_vm.set_vm_device(**vhost_params)
 
             self.logger.info("Start virtual machine on host")
@@ -192,14 +227,14 @@ class TestVhostUserLiveMigration(TestCase):
                 raise Exception("Set up host VM ENV failed!")
             self.logger.info("Start virtual machine on backup host")
             # set up backup virtual machine
-            self.backup_vm = VM(self.duts[1], 'backup', 'vhost_user_live_migration')
+            self.backup_vm = VM(self.duts[1], "backup", "vhost_user_live_migration")
             vhost_params = {}
-            vhost_params['driver'] = 'vhost-user'
-            vhost_params['opt_path'] = self.base_dir + '/vhost-net'
-            vhost_params['opt_mac'] = self.virio_mac
+            vhost_params["driver"] = "vhost-user"
+            vhost_params["opt_path"] = self.base_dir + "/vhost-net"
+            vhost_params["opt_mac"] = self.virio_mac
             if self.queue_number > 1:
-                vhost_params['opt_queue'] = self.queue_number
-            vhost_params['opt_settings'] = opt_params
+                vhost_params["opt_queue"] = self.queue_number
+            vhost_params["opt_settings"] = opt_params
             self.backup_vm.set_vm_device(**vhost_params)
 
             # start qemu command
@@ -221,35 +256,35 @@ class TestVhostUserLiveMigration(TestCase):
         try:
             if self.vm_dut_host is not None:
                 if not self.migration_done:
-                    self.vm_dut_host.send_expect('pkill screen', '# ')
+                    self.vm_dut_host.send_expect("pkill screen", "# ")
                 self.host_vm.stop()
                 self.host_vm = None
         except Exception as e:
-            self.logger.error('stop the qemu host failed as %s' % str(e))
+            self.logger.error("stop the qemu host failed as %s" % str(e))
 
         self.logger.info("Stop virtual machine on backup host")
         try:
             if self.backup_vm is not None:
                 if self.migration_done:
-                    self.vm_dut_backup.send_expect('pkill screen', '# ')
+                    self.vm_dut_backup.send_expect("pkill screen", "# ")
                     self.vm_dut_backup.kill_all()
                 self.backup_vm.stop()
                 self.backup_vm = None
         except Exception as e:
-            self.logger.error('stop the qemu backup failed as %s' % str(e))
+            self.logger.error("stop the qemu backup failed as %s" % str(e))
 
         # after vm stopped, stop vhost testpmd
         for crb in self.duts:
-            crb.send_expect('quit', '# ')
+            crb.send_expect("quit", "# ")
             crb.kill_all()
 
     def bind_nic_driver_of_vm(self, crb, driver=""):
         # modprobe vfio driver
         ports = crb.get_ports()
         if driver == "vfio-pci":
-            crb.send_expect('modprobe vfio-pci', '# ')
+            crb.send_expect("modprobe vfio-pci", "# ")
         for port in ports:
-            netdev = crb.ports_info[port]['port']
+            netdev = crb.ports_info[port]["port"]
             driver_now = netdev.get_nic_driver()
             if driver_now != driver:
                 netdev.bind_driver(driver)
@@ -259,39 +294,39 @@ class TestVhostUserLiveMigration(TestCase):
         send packet from tester
         """
         sendp_fmt = "sendp([Ether(dst='%s')/IP(src='%s', dst='%s')/UDP(sport=11,dport=12)/('x'*18)], iface='%s', loop=1, inter=0.5)"
-        sendp_cmd = sendp_fmt % (self.virio_mac, '1.1.1.1', '2.2.2.2', self.host_tintf)
+        sendp_cmd = sendp_fmt % (self.virio_mac, "1.1.1.1", "2.2.2.2", self.host_tintf)
         self.send_pks_session = self.tester.create_session("scapy1")
         self.send_pks_session.send_expect("scapy", ">>>")
         self.send_pks_session.send_command(sendp_cmd)
 
         if self.host_tintf != self.backup_tintf:
-            sendp_cmd = sendp_fmt % {'DMAC': self.virio_mac, 'INTF': self.backup_tintf}
+            sendp_cmd = sendp_fmt % {"DMAC": self.virio_mac, "INTF": self.backup_tintf}
             self.send_pks_session2 = self.tester.create_session("scapy2")
             self.send_pks_session2.send_expect("scapy", ">>>")
             self.send_pks_session2.send_command(sendp_cmd)
 
     def stop_send_pkts_on_tester(self):
-        self.tester.send_expect('pkill scapy', '# ')
+        self.tester.send_expect("pkill scapy", "# ")
         if getattr(self, "scapy1", None):
             self.tester.destroy_session(self.send_pks_session)
         if getattr(self, "scapy2", None):
             self.tester.destroy_session(self.send_pks_session2)
 
     def start_testpmd_on_vm(self, vm_dut):
-        vm_dut.send_expect('export TERM=screen', '# ')
-        vm_dut.send_expect('screen -S %s' % self.screen_name, '# ', 120)
+        vm_dut.send_expect("export TERM=screen", "# ")
+        vm_dut.send_expect("screen -S %s" % self.screen_name, "# ", 120)
 
-        vm_testpmd = self.testpmd_path + ' -c 0x3 -n 4 -- -i'
-        vm_dut.send_expect(vm_testpmd, 'testpmd> ', 120)
-        vm_dut.send_expect('set fwd rxonly', 'testpmd> ', 30)
-        vm_dut.send_expect('set promisc all off', 'testpmd> ', 30)
-        vm_dut.send_expect('start', 'testpmd> ', 30)
-        vm_dut.send_command('^a')
-        vm_dut.send_command('^d')
+        vm_testpmd = self.testpmd_path + " -c 0x3 -n 4 -- -i"
+        vm_dut.send_expect(vm_testpmd, "testpmd> ", 120)
+        vm_dut.send_expect("set fwd rxonly", "testpmd> ", 30)
+        vm_dut.send_expect("set promisc all off", "testpmd> ", 30)
+        vm_dut.send_expect("start", "testpmd> ", 30)
+        vm_dut.send_command("^a")
+        vm_dut.send_command("^d")
 
     def verify_dpdk(self, vm_dut):
-        vm_dut.send_expect('export TERM=screen', '# ')
-        vm_dut.send_command('screen -r %s' % self.screen_name)
+        vm_dut.send_expect("export TERM=screen", "# ")
+        vm_dut.send_command("screen -r %s" % self.screen_name)
 
         stats_pat = re.compile("RX-packets: (\d+)")
         vm_dut.send_expect("clear port stats all", "testpmd> ")
@@ -305,29 +340,29 @@ class TestVhostUserLiveMigration(TestCase):
             num_received = 0
 
         self.verify(num_received > 0, "Not receive packets as expected!!!")
-        vm_dut.send_command('^a')
-        vm_dut.send_command('^d')
+        vm_dut.send_command("^a")
+        vm_dut.send_command("^d")
 
     def verify_kernel(self, vm_dut):
         """
         Function to verify packets received by virtIO
         """
-        vm_dut.send_expect('export TERM=screen', '# ')
-        vm_dut.send_command('screen -r %s' % self.screen_name)
+        vm_dut.send_expect("export TERM=screen", "# ")
+        vm_dut.send_command("screen -r %s" % self.screen_name)
         # clean the output info before verify
         time.sleep(5)
         out = vm_dut.get_session_output(timeout=1)
         print(out)
-        num = out.count('UDP')
+        num = out.count("UDP")
         self.verify(num > 0, "Not receive packets as expected!!!")
-        vm_dut.send_command('^a')
-        vm_dut.send_command('^d')
+        vm_dut.send_command("^a")
+        vm_dut.send_command("^d")
 
     def start_tcpdump_on_vm(self, vm_dut):
-        vm_dut.send_expect('export TERM=screen', '# ')
-        vm_dut.send_expect('screen -S %s' % self.screen_name, '# ', 120)
+        vm_dut.send_expect("export TERM=screen", "# ")
+        vm_dut.send_expect("screen -S %s" % self.screen_name, "# ", 120)
         # get host interface
-        vm_intf = vm_dut.ports_info[0]['port'].get_interface_name()
+        vm_intf = vm_dut.ports_info[0]["port"].get_interface_name()
         # start tcpdump the interface
         vm_dut.send_expect("ifconfig %s up" % vm_intf, "# ")
         direct_pat = re.compile(r"(\s+)\[ (\S+) in\|out\|inout \]")
@@ -339,18 +374,20 @@ class TestVhostUserLiveMigration(TestCase):
         else:
             direct_param = ""
 
-        vm_dut.send_expect("tcpdump -i %s %s -v" % (vm_intf, direct_param), "listening on", 120)
+        vm_dut.send_expect(
+            "tcpdump -i %s %s -v" % (vm_intf, direct_param), "listening on", 120
+        )
         time.sleep(2)
-        vm_dut.send_command('^a')
-        vm_dut.send_command('^d')
+        vm_dut.send_command("^a")
+        vm_dut.send_command("^d")
 
     def send_and_verify(self, verify_fun, multi_queue=False):
-        '''
+        """
         start to send packets
         verify vm_host can recevied packets before migration
         verify vm_host can recevied packets during migration
         verify vm_backup can recevied packets after migration
-        '''
+        """
         # send packets from tester
         self.send_pkts_in_bg()
 
@@ -361,9 +398,14 @@ class TestVhostUserLiveMigration(TestCase):
         # start live migration
         self.host_vm.start_migration(self.backup_dut_ip, self.backup_vm.migrate_port)
         if multi_queue is True:
-            vm_intf = self.vm_dut_host.ports_info[0]['port'].get_interface_name()
-            out = self.vm_dut_host.send_expect('ethtool -L %s combined 4' % vm_intf, '# ')
-            self.verify('Error' not in out and 'Failed' not in out, 'ethtool set combined failed during migration')
+            vm_intf = self.vm_dut_host.ports_info[0]["port"].get_interface_name()
+            out = self.vm_dut_host.send_expect(
+                "ethtool -L %s combined 4" % vm_intf, "# "
+            )
+            self.verify(
+                "Error" not in out and "Failed" not in out,
+                "ethtool set combined failed during migration",
+            )
 
         self.logger.info("Waiting migration process done")
         # wait live migration done
@@ -393,7 +435,9 @@ class TestVhostUserLiveMigration(TestCase):
         self.start_tcpdump_on_vm(self.vm_dut_host)
         self.send_and_verify(self.verify_kernel)
 
-    def test_adjust_split_ring_virtio_net_queue_numbers_while_migreting_with_virtio_net(self):
+    def test_adjust_split_ring_virtio_net_queue_numbers_while_migreting_with_virtio_net(
+        self,
+    ):
         self.queue_number = 4
         self.launch_testpmd_as_vhost_on_both_dut()
         self.start_testpmd_with_fwd_mode_on_both_dut()
@@ -435,7 +479,9 @@ class TestVhostUserLiveMigration(TestCase):
         self.start_tcpdump_on_vm(self.vm_dut_host)
         self.send_and_verify(self.verify_kernel)
 
-    def test_adjust_packed_ring_virtio_net_queue_numbers_while_migreting_with_virtio_net(self):
+    def test_adjust_packed_ring_virtio_net_queue_numbers_while_migreting_with_virtio_net(
+        self,
+    ):
         self.queue_number = 4
         self.launch_testpmd_as_vhost_on_both_dut()
         self.start_testpmd_with_fwd_mode_on_both_dut()
@@ -447,8 +493,8 @@ class TestVhostUserLiveMigration(TestCase):
 
     def tear_down(self):
         self.destroy_vm_env()
-        self.duts[0].send_expect('killall -s INT qemu-system-x86_64', '#')
-        self.duts[1].send_expect('killall -s INT qemu-system-x86_64', '#')
+        self.duts[0].send_expect("killall -s INT qemu-system-x86_64", "#")
+        self.duts[1].send_expect("killall -s INT qemu-system-x86_64", "#")
         pass
 
     def tear_down_all(self):

@@ -49,16 +49,15 @@ ETHER_JUMBO_FRAME_MTU = 9000
 
 
 class TestJumboframes(TestCase):
-
     def jumboframes_get_stat(self, portid, rx_tx):
         """
         Get packets number from port statistic
         """
         stats = self.pmdout.get_pmd_stats(portid)
         if rx_tx == "rx":
-            return [stats['RX-packets'], stats['RX-errors'], stats['RX-bytes']]
+            return [stats["RX-packets"], stats["RX-errors"], stats["RX-bytes"]]
         elif rx_tx == "tx":
-            return [stats['TX-packets'], stats['TX-errors'], stats['TX-bytes']]
+            return [stats["TX-packets"], stats["TX-errors"], stats["TX-bytes"]]
         else:
             return None
 
@@ -66,8 +65,12 @@ class TestJumboframes(TestCase):
         """
         Send 1 packet to portid
         """
-        tx_pkts_ori, _, tx_bytes_ori = [int(_) for _ in self.jumboframes_get_stat(self.rx_port, "tx")]
-        rx_pkts_ori, rx_err_ori, rx_bytes_ori = [int(_) for _ in self.jumboframes_get_stat(self.tx_port, "rx")]
+        tx_pkts_ori, _, tx_bytes_ori = [
+            int(_) for _ in self.jumboframes_get_stat(self.rx_port, "tx")
+        ]
+        rx_pkts_ori, rx_err_ori, rx_bytes_ori = [
+            int(_) for _ in self.jumboframes_get_stat(self.tx_port, "rx")
+        ]
 
         itf = self.tester.get_interface(self.tester.get_local_port(self.tx_port))
         mac = self.dut.get_mac_address(self.tx_port)
@@ -79,13 +82,20 @@ class TestJumboframes(TestCase):
 
         self.tester.scapy_foreground()
         self.tester.scapy_append('nutmac="%s"' % mac)
-        self.tester.scapy_append('sendp([Ether(dst=nutmac, src="52:00:00:00:00:00")/IP(len=%s)/Raw(load="\x50"*%s)], iface="%s")' % (pktlen, padding, itf))
+        self.tester.scapy_append(
+            'sendp([Ether(dst=nutmac, src="52:00:00:00:00:00")/IP(len=%s)/Raw(load="\x50"*%s)], iface="%s")'
+            % (pktlen, padding, itf)
+        )
 
         out = self.tester.scapy_execute()
         sleep(5)
 
-        tx_pkts, _, tx_bytes = [int(_) for _ in self.jumboframes_get_stat(self.rx_port, "tx")]
-        rx_pkts, rx_err, rx_bytes = [int(_) for _ in self.jumboframes_get_stat(self.tx_port, "rx")]
+        tx_pkts, _, tx_bytes = [
+            int(_) for _ in self.jumboframes_get_stat(self.rx_port, "tx")
+        ]
+        rx_pkts, rx_err, rx_bytes = [
+            int(_) for _ in self.jumboframes_get_stat(self.tx_port, "rx")
+        ]
 
         tx_pkts -= tx_pkts_ori
         tx_bytes -= tx_bytes_ori
@@ -94,18 +104,22 @@ class TestJumboframes(TestCase):
         rx_err -= rx_err_ori
 
         if received:
-           if self.nic.startswith('fastlinq'):
-              self.verify(self.pmdout.check_tx_bytes(tx_pkts, rx_pkts)
-                           and ( self.pmdout.check_tx_bytes(tx_bytes, pktsize ))
-                           and (rx_bytes == pktsize),
-                           "packet pass assert error")
-           else:
-              self.verify(self.pmdout.check_tx_bytes(tx_pkts, rx_pkts)
-                           and ( self.pmdout.check_tx_bytes(tx_bytes + 4, pktsize ))
-                           and ((rx_bytes + 4) == pktsize),
-                           "packet pass assert error")
+            if self.nic.startswith("fastlinq"):
+                self.verify(
+                    self.pmdout.check_tx_bytes(tx_pkts, rx_pkts)
+                    and (self.pmdout.check_tx_bytes(tx_bytes, pktsize))
+                    and (rx_bytes == pktsize),
+                    "packet pass assert error",
+                )
+            else:
+                self.verify(
+                    self.pmdout.check_tx_bytes(tx_pkts, rx_pkts)
+                    and (self.pmdout.check_tx_bytes(tx_bytes + 4, pktsize))
+                    and ((rx_bytes + 4) == pktsize),
+                    "packet pass assert error",
+                )
         else:
-              self.verify(rx_err == 1 or tx_pkts == 0, "packet drop assert error")
+            self.verify(rx_err == 1 or tx_pkts == 0, "packet drop assert error")
         return out
 
     #
@@ -127,7 +141,14 @@ class TestJumboframes(TestCase):
 
         self.port_mask = utils.create_mask([self.rx_port, self.tx_port])
 
-        self.tester.send_expect("ifconfig %s mtu %s" % (self.tester.get_interface(self.tester.get_local_port(self.rx_port)), ETHER_JUMBO_FRAME_MTU + 200), "# ")
+        self.tester.send_expect(
+            "ifconfig %s mtu %s"
+            % (
+                self.tester.get_interface(self.tester.get_local_port(self.rx_port)),
+                ETHER_JUMBO_FRAME_MTU + 200,
+            ),
+            "# ",
+        )
 
         self.pmdout = PmdOutput(self.dut)
 
@@ -142,7 +163,11 @@ class TestJumboframes(TestCase):
         This case aims to test transmitting normal size packet without jumbo
         frame on testpmd app.
         """
-        self.pmdout.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_STANDARD_MTU))
+        self.pmdout.start_testpmd(
+            "Default",
+            "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000"
+            % (ETHER_STANDARD_MTU),
+        )
         self.dut.send_expect("set fwd mac", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
 
@@ -157,7 +182,11 @@ class TestJumboframes(TestCase):
         This case aims to test transmitting jumbo frame packet on testpmd without
         jumbo frame support.
         """
-        self.pmdout.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_STANDARD_MTU))
+        self.pmdout.start_testpmd(
+            "Default",
+            "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000"
+            % (ETHER_STANDARD_MTU),
+        )
         self.dut.send_expect("set fwd mac", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
 
@@ -171,7 +200,11 @@ class TestJumboframes(TestCase):
         When jumbo frame is supported, this case is to verify that the normal size
         packet forwarding should be supported correctly.
         """
-        self.pmdout.start_testpmd("Default", "--max-pkt-len=%s --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
+        self.pmdout.start_testpmd(
+            "Default",
+            "--max-pkt-len=%s --port-topology=loop --tx-offloads=0x8000"
+            % (ETHER_JUMBO_FRAME_MTU),
+        )
         self.dut.send_expect("set fwd mac", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
 
@@ -186,7 +219,11 @@ class TestJumboframes(TestCase):
         When jumbo frame supported, this case is to verify that jumbo frame
         packet can be forwarded correct.
         """
-        self.pmdout.start_testpmd("Default", "--max-pkt-len=%s --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
+        self.pmdout.start_testpmd(
+            "Default",
+            "--max-pkt-len=%s --port-topology=loop --tx-offloads=0x8000"
+            % (ETHER_JUMBO_FRAME_MTU),
+        )
         self.dut.send_expect("set fwd mac", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
 
@@ -202,10 +239,14 @@ class TestJumboframes(TestCase):
         When the jubmo frame MTU set as 9000, this case is to verify that the
         packet with a length bigger than MTU can not be forwarded.
         """
-        self.pmdout.start_testpmd("Default", "--max-pkt-len=%s --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
+        self.pmdout.start_testpmd(
+            "Default",
+            "--max-pkt-len=%s --port-topology=loop --tx-offloads=0x8000"
+            % (ETHER_JUMBO_FRAME_MTU),
+        )
         self.dut.send_expect("set fwd mac", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
-        
+
         """
         On 1G NICs, when the jubmo frame MTU set as 9000, the software adjust it to 9004.
         """
@@ -227,4 +268,11 @@ class TestJumboframes(TestCase):
         When the case of this test suite finished, the environment should
         clear up.
         """
-        self.tester.send_expect("ifconfig %s mtu %s" % (self.tester.get_interface(self.tester.get_local_port(self.rx_port)), ETHER_STANDARD_MTU), "# ")
+        self.tester.send_expect(
+            "ifconfig %s mtu %s"
+            % (
+                self.tester.get_interface(self.tester.get_local_port(self.rx_port)),
+                ETHER_STANDARD_MTU,
+            ),
+            "# ",
+        )

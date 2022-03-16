@@ -1,28 +1,32 @@
 import configparser
 import os
 import re
-import xlrd
-import framework.settings as settings
-
 from contextlib import contextmanager
+
+import xlrd
+
+import framework.settings as settings
 from framework.excel_reporter import ExcelReporter
-from .json_reporter import JSONReporter
-from .stats_reporter import StatsReporter
 from framework.test_result import Result
 
-ASan_CONFIG_SECT = 'ASan'
-ASan_FILTER_BOUNDS = 'filter_bounds'
-ASan_PARAM_KEY = 'build_param'
-ASan_CONFIG_FILE_PATH = '%s/asan.cfg' % settings.CONFIG_ROOT_PATH
-COMMAND_PATTERN_OF_ADDRESS_RANDOM_SWITCH = 'echo %s > /proc/sys/kernel/randomize_va_space'
+from .json_reporter import JSONReporter
+from .stats_reporter import StatsReporter
+
+ASan_CONFIG_SECT = "ASan"
+ASan_FILTER_BOUNDS = "filter_bounds"
+ASan_PARAM_KEY = "build_param"
+ASan_CONFIG_FILE_PATH = "%s/asan.cfg" % settings.CONFIG_ROOT_PATH
+COMMAND_PATTERN_OF_ADDRESS_RANDOM_SWITCH = (
+    "echo %s > /proc/sys/kernel/randomize_va_space"
+)
 COMMAND_OF_CLOSE_ADDRESS_RANDOM = COMMAND_PATTERN_OF_ADDRESS_RANDOM_SWITCH % 0
 COMMAND_OF_OPEN_ADDRESS_RANDOM = COMMAND_PATTERN_OF_ADDRESS_RANDOM_SWITCH % 2
-NEW_TEST_REPORT_FILE = 'asan_test_results.xls'
-NEW_JSON_REPORT_FILE = 'asan_test_results.json'
-NEW_STATS_REPORT_FILE = 'asan_statistics.txt'
-ORIGIN_TEST_REPORT_FILE = 'test_results.xls'
+NEW_TEST_REPORT_FILE = "asan_test_results.xls"
+NEW_JSON_REPORT_FILE = "asan_test_results.json"
+NEW_STATS_REPORT_FILE = "asan_statistics.txt"
+ORIGIN_TEST_REPORT_FILE = "test_results.xls"
 MIN_LENGTH_OF_FILTERED_OUTPUT = 50
-REPORT_OUTPUT_PATH = ''
+REPORT_OUTPUT_PATH = ""
 
 
 class ASanTestProcess(object):
@@ -54,10 +58,13 @@ class _FrameworkADAPTER(object):
         added_param = _ASanConfig().build_param
         if added_param is not None:
             from framework.project_dpdk import DPDKdut
+
             origin_func = DPDKdut.build_install_dpdk
 
             def new_func(*args, **kwargw):
-                kwargw['extra_options'] = ' '.join([kwargw.get('extra_options', ''), added_param])
+                kwargw["extra_options"] = " ".join(
+                    [kwargw.get("extra_options", ""), added_param]
+                )
                 origin_func(*args, **kwargw)
 
             DPDKdut.build_install_dpdk = new_func
@@ -65,6 +72,7 @@ class _FrameworkADAPTER(object):
     @staticmethod
     def decorator_dts_run():
         import framework.dts as dts
+
         origin_func = dts.dts_run_suite
 
         def new_func(*args, **kwargs):
@@ -82,20 +90,25 @@ class _FrameworkADAPTER(object):
     @staticmethod
     def decorator_send_expect():
         import framework.ssh_pexpect as ssh_pexpect
+
         origin_func = ssh_pexpect.SSHPexpect._SSHPexpect__flush
 
         def new_func(self):
-            DELETE_CONTENT_PATTERN = r'^\s*\[?PEXPECT\]?#?\s*$'
-            befored_info = re.sub(DELETE_CONTENT_PATTERN, '', self.session.before).strip()
+            DELETE_CONTENT_PATTERN = r"^\s*\[?PEXPECT\]?#?\s*$"
+            befored_info = re.sub(
+                DELETE_CONTENT_PATTERN, "", self.session.before
+            ).strip()
             if len(befored_info) > MIN_LENGTH_OF_FILTERED_OUTPUT and self.logger:
-                self.logger.info(f'Buffered info: {befored_info}')
+                self.logger.info(f"Buffered info: {befored_info}")
             origin_func(self)
 
         ssh_pexpect.SSHPexpect._SSHPexpect__flush = new_func
 
 
 class _ASanConfig(object):
-    def __init__(self, ):
+    def __init__(
+        self,
+    ):
         self.config = configparser.ConfigParser()
         self.config.read(ASan_CONFIG_FILE_PATH)
         self._filter_list = None
@@ -107,8 +120,10 @@ class _ASanConfig(object):
     def _set_ASan_filter(self):
         try:
             origin_filter_string = self._read_ASan_sect_conf(ASan_FILTER_BOUNDS)
-            self._filter_list = [tuple(re.split(r':\s*', _filter)) for _filter in
-                                 re.split(r',\s*', origin_filter_string)]
+            self._filter_list = [
+                tuple(re.split(r":\s*", _filter))
+                for _filter in re.split(r",\s*", origin_filter_string)
+            ]
         except KeyError:
             self._filter_list = []
 
@@ -116,7 +131,7 @@ class _ASanConfig(object):
         try:
             param_string = self._read_ASan_sect_conf(ASan_PARAM_KEY)
         except KeyError:
-            param_string = ''
+            param_string = ""
         self._build_params = param_string
 
     @property
@@ -143,7 +158,11 @@ class _OldExcelReport(object):
             if self.current_row_num >= self._rows:
                 raise IndexError
             row_number_of_jump_to = yield self._sheet_obj.row(self.current_row_num)
-            row = row_number_of_jump_to if row_number_of_jump_to is not None else self.current_row_num + 1
+            row = (
+                row_number_of_jump_to
+                if row_number_of_jump_to is not None
+                else self.current_row_num + 1
+            )
             self.current_row_num = row
 
 
@@ -171,10 +190,12 @@ class _OldExcelReportReader(object):
         header_row_title = self._gen_report_rows.send(self._header_line_num - 1)
         header_row_content = self._gen_report_rows.send(self._header_line_num)
         cell_num = 0
-        while header_row_title[cell_num].value != 'Test suite':
+        while header_row_title[cell_num].value != "Test suite":
             header_cell_title: str = header_row_title[cell_num].value
             header_cell_content = header_row_content[cell_num].value
-            self._report_content_dict[header_cell_title.lower().replace(' ', '_')] = header_cell_content
+            self._report_content_dict[
+                header_cell_title.lower().replace(" ", "_")
+            ] = header_cell_content
             cell_num = cell_num + 1
         self._test_env_content_column = cell_num - 1
         self._test_suite_content_column = cell_num
@@ -184,12 +205,12 @@ class _OldExcelReportReader(object):
         return [cell.value for cell in cells_list_of_row]
 
     def _get_test_env(self):
-        env_key_list = ['driver', 'kdriver', 'firmware', 'package']
+        env_key_list = ["driver", "kdriver", "firmware", "package"]
         for env_key in env_key_list:
             env_info_row = next(self._gen_report_rows)
             env_cell_value = env_info_row[self._test_env_content_column].value
             if env_cell_value:
-                env_value = env_cell_value.split(': ')[1]
+                env_value = env_cell_value.split(": ")[1]
                 self._report_content_dict[env_key] = env_value
             else:
                 self._report_content_dict[env_key] = None
@@ -200,8 +221,9 @@ class _OldExcelReportReader(object):
         for row_cells in self._gen_report_rows:
             suite_content_column_begin = self._test_suite_content_column
             suite_content_column_end = self._test_suite_content_column + 3
-            suite_name, case_name, original_result_msg = \
-                self._get_value_from_cell(row_cells[suite_content_column_begin:suite_content_column_end])
+            suite_name, case_name, original_result_msg = self._get_value_from_cell(
+                row_cells[suite_content_column_begin:suite_content_column_end]
+            )
             EMPTY_LINE_CONDITION = not suite_name and not case_name
             NO_CASE_LINE_CONDITION = not case_name
             SUITE_BEGIN_LINE_CONDITON = suite_name
@@ -227,13 +249,19 @@ class _SuiteLogReader(object):
 
     @contextmanager
     def suite_log_file(self):
-        from framework.utils import get_subclasses
         from framework.test_case import TestCase
-        suite_full_name = 'TestSuite_' + self._suite_name
-        suite_module = __import__('tests.' + suite_full_name, fromlist=[suite_full_name])
-        suite_class_name = [test_case_name for test_case_name, _ in get_subclasses(suite_module, TestCase)][0]
+        from framework.utils import get_subclasses
+
+        suite_full_name = "TestSuite_" + self._suite_name
+        suite_module = __import__(
+            "tests." + suite_full_name, fromlist=[suite_full_name]
+        )
+        suite_class_name = [
+            test_case_name
+            for test_case_name, _ in get_subclasses(suite_module, TestCase)
+        ][0]
         log_file_path = os.path.join(REPORT_OUTPUT_PATH, suite_class_name)
-        log_file_obj = open(log_file_path + '.log', 'r')
+        log_file_obj = open(log_file_path + ".log", "r")
         yield log_file_obj
         log_file_obj.close()
 
@@ -242,7 +270,9 @@ class _NewReport(object):
     def __init__(self):
         self._excel_report_file = os.path.join(REPORT_OUTPUT_PATH, NEW_TEST_REPORT_FILE)
         self._json_report_file = os.path.join(REPORT_OUTPUT_PATH, NEW_JSON_REPORT_FILE)
-        self._stats_report_file = os.path.join(REPORT_OUTPUT_PATH, NEW_STATS_REPORT_FILE)
+        self._stats_report_file = os.path.join(
+            REPORT_OUTPUT_PATH, NEW_STATS_REPORT_FILE
+        )
         self._remove_history_asan_report()
         self._excel_report = ExcelReporter(self._excel_report_file)
         self._json_report = JSONReporter(self._json_report_file)
@@ -259,7 +289,16 @@ class _NewReport(object):
         self._filter_end = None
 
     def process_report_header(self):
-        head_key_list = ['dut', 'kdriver', 'firmware', 'package', 'driver', 'dpdk_version', 'target', 'nic']
+        head_key_list = [
+            "dut",
+            "kdriver",
+            "firmware",
+            "package",
+            "driver",
+            "dpdk_version",
+            "target",
+            "nic",
+        ]
         for head_key in head_key_list:
             head_value = self._old_report_content.setdefault(head_key, None)
             self._old_report_content.pop(head_key)
@@ -281,7 +320,9 @@ class _NewReport(object):
         for case in self._old_report_content[self._current_suite]:
             self._result_obj.test_case = case
             if case in self._new_suites_result:
-                self._result_obj._Result__set_test_case_result(*self._new_suites_result[case])
+                self._result_obj._Result__set_test_case_result(
+                    *self._new_suites_result[case]
+                )
             else:
                 origin_result = self._get_origin_case_result(case)
                 self._result_obj._Result__set_test_case_result(*origin_result)
@@ -291,17 +332,23 @@ class _NewReport(object):
             report.save(self._result_obj)
 
     def _remove_history_asan_report(self):
-        for file in (self._excel_report_file, self._json_report_file, self._stats_report_file):
+        for file in (
+            self._excel_report_file,
+            self._json_report_file,
+            self._stats_report_file,
+        ):
             if os.path.exists(file):
                 os.remove(file)
 
     def _get_origin_case_result(self, case_name):
         origin_cases_result: dict = self._old_report_content.get(self._current_suite)
         origin_case_result: str = origin_cases_result.get(case_name)
-        CASE_RESULT_AND_MSG_PATTERN = r'(\S+)\s?(.*)'
-        result, msg = re.search(CASE_RESULT_AND_MSG_PATTERN, origin_case_result).groups()
+        CASE_RESULT_AND_MSG_PATTERN = r"(\S+)\s?(.*)"
+        result, msg = re.search(
+            CASE_RESULT_AND_MSG_PATTERN, origin_case_result
+        ).groups()
         if msg:
-            msg = msg.replace("'", '').replace('"', '')
+            msg = msg.replace("'", "").replace('"', "")
 
         return result, msg
 
@@ -313,7 +360,7 @@ class _NewReport(object):
             self._log_file_end_handler()
 
     def _filter_asan_except(self, line):
-        CASE_LOG_BEGIN_PATTERN = r'Test Case test_(\w+) Begin'
+        CASE_LOG_BEGIN_PATTERN = r"Test Case test_(\w+) Begin"
         case_begin_match = re.search(CASE_LOG_BEGIN_PATTERN, line)
 
         if case_begin_match:
@@ -339,7 +386,7 @@ class _NewReport(object):
         self._save_previous_case_result_and_clean_env()
         self._current_case = case_name
 
-    def _filter_matched_begin_handler(self, begin_key,  line):
+    def _filter_matched_begin_handler(self, begin_key, line):
         self._filter_begin = begin_key
         self._filtered_line_cache.append(line)
 
@@ -355,8 +402,9 @@ class _NewReport(object):
 
     def _save_previous_case_result_and_clean_env(self):
         exist_previous_case_condition = self._current_case is not None
-        origin_report_contain_previous_case_result = \
+        origin_report_contain_previous_case_result = (
             self._current_case in self._old_report_content.get(self._current_suite)
+        )
 
         if exist_previous_case_condition and origin_report_contain_previous_case_result:
             self._save_case_result()
@@ -373,13 +421,19 @@ class _NewReport(object):
 
         if cached_content:
             # filter hit scene
-            self._new_suites_result[self._current_case] = ('FAILED', cached_content)
+            self._new_suites_result[self._current_case] = ("FAILED", cached_content)
         else:
             # filter not hit scene
-            self._new_suites_result[self._current_case] = self._get_origin_case_result(self._current_case)
+            self._new_suites_result[self._current_case] = self._get_origin_case_result(
+                self._current_case
+            )
 
     def _get_filtered_cached_result(self):
-        ASan_FILTER_CONTENT_PATTERN = rf"{self._filter_begin}[\s\S]+(?!{self._filter_end})?"
-        key_search_result = re.findall(ASan_FILTER_CONTENT_PATTERN, ''.join(self._filtered_line_cache))
+        ASan_FILTER_CONTENT_PATTERN = (
+            rf"{self._filter_begin}[\s\S]+(?!{self._filter_end})?"
+        )
+        key_search_result = re.findall(
+            ASan_FILTER_CONTENT_PATTERN, "".join(self._filtered_line_cache)
+        )
 
-        return key_search_result[0] if key_search_result else ''
+        return key_search_result[0] if key_search_result else ""

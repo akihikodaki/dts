@@ -41,12 +41,14 @@ from framework.test_case import TestCase
 
 
 class TestMultiplePthread(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
         """
-        self.verify(self.dut.get_os_type() == 'linux', "Test suite currently only supports Linux platforms")
+        self.verify(
+            self.dut.get_os_type() == "linux",
+            "Test suite currently only supports Linux platforms",
+        )
         self.dut_ports = self.dut.get_ports(self.nic)
         global valports
         valports = [_ for _ in self.dut_ports if self.tester.get_local_port(_) != -1]
@@ -57,8 +59,8 @@ class TestMultiplePthread(TestCase):
         self.cores = self.dut.get_core_list("1S/8C/1T", socket=self.socket)
         self.cores.sort(key=lambda i: int(i))
         self.verify(self.cores is not None, "Requested 8 cores failed")
-        self.out_view = {'header': [], 'data': []}
-        self.path=self.dut.apps_name["test-pmd"].rstrip()
+        self.out_view = {"header": [], "data": []}
+        self.path = self.dut.apps_name["test-pmd"].rstrip()
 
     def set_up(self):
         """
@@ -84,8 +86,10 @@ class TestMultiplePthread(TestCase):
         """
         mutiple_pthread_session = self.dut.new_session()
         testpmd_name = self.path.split("/")[-1]
-        out = mutiple_pthread_session.send_expect(f"ps -C {testpmd_name} -L -opid,tid,%cpu,psr,args", "#", 20)
-        m = cmdline.replace('"', '', 2)
+        out = mutiple_pthread_session.send_expect(
+            f"ps -C {testpmd_name} -L -opid,tid,%cpu,psr,args", "#", 20
+        )
+        m = cmdline.replace('"', "", 2)
         out_list = out.split(m)
         mutiple_pthread_session.send_expect("^C", "#")
         self.dut.close_session(mutiple_pthread_session)
@@ -96,26 +100,28 @@ class TestMultiplePthread(TestCase):
         handle out info before send packets and recode the status.
         """
         for data in out_list:
-            if data != '':
-                data_row = re.findall(r'[\d\.]+', data)
+            if data != "":
+                data_row = re.findall(r"[\d\.]+", data)
                 if data_row[0] == data_row[1]:
                     self.verify(float(data_row[2]) > 0, "master thread are not running")
                     # add data to the table
                 self.result_table_add(data_row)
-                self.out_view['data'].append(data_row)
+                self.out_view["data"].append(data_row)
 
     def verify_after_send_packets(self, out_list, lcore_list):
         """
         handle out info after send packets and verify the core's status.
         """
         for data in out_list:
-            if data != '':
-                data_row = re.findall(r'[\d\.]+', data)
+            if data != "":
+                data_row = re.findall(r"[\d\.]+", data)
                 for lcore in lcore_list:
                     if data_row[3] == lcore:
-                        self.verify(float(data_row[2]) > 0, "TID:%s not running" % data_row[1])
+                        self.verify(
+                            float(data_row[2]) > 0, "TID:%s not running" % data_row[1]
+                        )
                 self.result_table_add(data_row)
-                self.out_view['data'].append(data_row)
+                self.out_view["data"].append(data_row)
         # print table
         self.result_table_print()
 
@@ -124,14 +130,19 @@ class TestMultiplePthread(TestCase):
         multiple pthread test according to lcores, cpus, etc.
         """
         header_row = ["PID", "TID", "%CPU", "PSRF"]
-        self.out_view['header'] = header_row
+        self.out_view["header"] = header_row
         self.result_table_create(header_row)
-        self.out_view['data'] = []
+        self.out_view["data"] = []
 
         # Allocate enough streams based on the number of CPUs
         if len(cpu_list) > 2:
             queue_num = len(cpu_list)
-            cmdline = './%s --lcores="%s" -n 4 -- -i --txq=%d --rxq=%d' % (self.path, lcores, queue_num, queue_num)
+            cmdline = './%s --lcores="%s" -n 4 -- -i --txq=%d --rxq=%d' % (
+                self.path,
+                lcores,
+                queue_num,
+                queue_num,
+            )
         else:
             cmdline = './%s --lcores="%s" -n 4 -- -i' % (self.path, lcores)
         # start application
@@ -151,10 +162,14 @@ class TestMultiplePthread(TestCase):
         # check fwd config
         if len(cpu_list) >= 2:
             for core in cpu_list[:2]:
-                self.verify('Logical Core %s' % core in out, "set corelist config failed")
+                self.verify(
+                    "Logical Core %s" % core in out, "set corelist config failed"
+                )
         else:
             for core in cpu_list:
-                self.verify('Logical Core %s' % core in out, "set corelist config failed")
+                self.verify(
+                    "Logical Core %s" % core in out, "set corelist config failed"
+                )
         self.send_packet()
         # get cpu statictis and verify the result
         out_list = self.get_cores_statistic(cmdline)
@@ -180,52 +195,87 @@ class TestMultiplePthread(TestCase):
         n = self.cores
         CONFIG_RTE_MAX_LCORE = 128
         test_list = [
-                     {"lcores": "(%s,%s)@(%s,%s)" % (n[0], CONFIG_RTE_MAX_LCORE-1, n[1], n[2]),
-                      "cpu_list":[CONFIG_RTE_MAX_LCORE-1],
-                      "core_list":n[1:3]},
-                     {"lcores": "%s@%s,(%s,%s)@(%s,%s,%s,%s)" % (n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7]),
-                      "cpu_list":n[2:4],
-                      "core_list":n[4:]},
-                     {"lcores": "(%s,%s,%s,%s)@(%s,%s)" % (n[0], n[1], n[2], n[3], n[4], n[5]),
-                      "cpu_list":n[1:4],
-                      "core_list":n[4:6]},
-                     {"lcores": "%s,(%s,%s,%s)@%s" % (n[0], n[1], n[2], n[3], n[4]),
-                      "cpu_list":n[1:4],
-                      "core_list":n[4:5]},
-                     {"lcores": "(%s,%s,%s,%s,%s)@(%s,%s)" % (n[0], n[1], n[2], n[3], n[4], n[5], n[6]),
-                      "cpu_list":n[1:5],
-                      "core_list":n[5:7]},
-                     {"lcores": "%s,%s@(%s,%s,%s,%s,%s,%s),(%s,%s,%s)@%s,(%s,%s)"
-                                % (n[0], n[1], n[0], n[1], n[2], n[3], n[4], n[5], n[2], n[3], n[5], n[4], n[6], n[7]),
-                      "cpu_list":[n[1], n[2], n[3], n[5]],
-                      "core_list":n[1:6]}
-                     ]
+            {
+                "lcores": "(%s,%s)@(%s,%s)"
+                % (n[0], CONFIG_RTE_MAX_LCORE - 1, n[1], n[2]),
+                "cpu_list": [CONFIG_RTE_MAX_LCORE - 1],
+                "core_list": n[1:3],
+            },
+            {
+                "lcores": "%s@%s,(%s,%s)@(%s,%s,%s,%s)"
+                % (n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7]),
+                "cpu_list": n[2:4],
+                "core_list": n[4:],
+            },
+            {
+                "lcores": "(%s,%s,%s,%s)@(%s,%s)"
+                % (n[0], n[1], n[2], n[3], n[4], n[5]),
+                "cpu_list": n[1:4],
+                "core_list": n[4:6],
+            },
+            {
+                "lcores": "%s,(%s,%s,%s)@%s" % (n[0], n[1], n[2], n[3], n[4]),
+                "cpu_list": n[1:4],
+                "core_list": n[4:5],
+            },
+            {
+                "lcores": "(%s,%s,%s,%s,%s)@(%s,%s)"
+                % (n[0], n[1], n[2], n[3], n[4], n[5], n[6]),
+                "cpu_list": n[1:5],
+                "core_list": n[5:7],
+            },
+            {
+                "lcores": "%s,%s@(%s,%s,%s,%s,%s,%s),(%s,%s,%s)@%s,(%s,%s)"
+                % (
+                    n[0],
+                    n[1],
+                    n[0],
+                    n[1],
+                    n[2],
+                    n[3],
+                    n[4],
+                    n[5],
+                    n[2],
+                    n[3],
+                    n[5],
+                    n[4],
+                    n[6],
+                    n[7],
+                ),
+                "cpu_list": [n[1], n[2], n[3], n[5]],
+                "core_list": n[1:6],
+            },
+        ]
         for params in test_list:
-            self.multiple_pthread_test(params["lcores"], params["cpu_list"], params["core_list"])
+            self.multiple_pthread_test(
+                params["lcores"], params["cpu_list"], params["core_list"]
+            )
 
     def test_negative(self):
         """
         Test an random parameter from an defined table which has a couple of invalid lcore parameters.
         """
-        cmdline_list = ["./%s --lcores='(0-,4-7)@(4,5)' -n 4 -- -i",
-                        "./%s --lcores='(-1,4-7)@(4,5)' -n 4 -- -i",
-                        "./%s --lcores='(0,4-7-9)@(4,5)' -n 4 -- -i",
-                        "./%s --lcores='(0,abcd)@(4,5)' -n 4 -- -i",
-                        "./%s --lcores='(0,4-7)@(1-,5)' -n 4 -- -i",
-                        "./%s --lcores='(0,4-7)@(-1,5)' -n 4 -- -i",
-                        "./%s --lcores='(0,4-7)@(4,5-8-9)' -n 4 -- -i",
-                        "./%s --lcores='(0,4-7)@(abc,5)' -n 4 -- -i",
-                        "./%s --lcores='(0,4-7)@(4,xyz)' -n 4 -- -i",
-                        "./%s --lcores='(0,4-7)=(8,9)' -n 4 -- -i",
-                        "./%s --lcores='2,3 at 4,(0-1,,4))' -n 4 -- -i",
-                        "./%s --lcores='[0-,4-7]@(4,5)' -n 4 -- -i",
-                        "./%s --lcores='(0-,4-7)@[4,5]' -n 4 -- -i",
-                        "./%s --lcores='3-4 at 3,2 at 5-6' -n 4 -- -i",
-                        "./%s --lcores='2,,3''2--3' -n 4 -- -i",
-                        "./%s --lcores='2,,,3''2--3' -n 4 -- -i",]
+        cmdline_list = [
+            "./%s --lcores='(0-,4-7)@(4,5)' -n 4 -- -i",
+            "./%s --lcores='(-1,4-7)@(4,5)' -n 4 -- -i",
+            "./%s --lcores='(0,4-7-9)@(4,5)' -n 4 -- -i",
+            "./%s --lcores='(0,abcd)@(4,5)' -n 4 -- -i",
+            "./%s --lcores='(0,4-7)@(1-,5)' -n 4 -- -i",
+            "./%s --lcores='(0,4-7)@(-1,5)' -n 4 -- -i",
+            "./%s --lcores='(0,4-7)@(4,5-8-9)' -n 4 -- -i",
+            "./%s --lcores='(0,4-7)@(abc,5)' -n 4 -- -i",
+            "./%s --lcores='(0,4-7)@(4,xyz)' -n 4 -- -i",
+            "./%s --lcores='(0,4-7)=(8,9)' -n 4 -- -i",
+            "./%s --lcores='2,3 at 4,(0-1,,4))' -n 4 -- -i",
+            "./%s --lcores='[0-,4-7]@(4,5)' -n 4 -- -i",
+            "./%s --lcores='(0-,4-7)@[4,5]' -n 4 -- -i",
+            "./%s --lcores='3-4 at 3,2 at 5-6' -n 4 -- -i",
+            "./%s --lcores='2,,3''2--3' -n 4 -- -i",
+            "./%s --lcores='2,,,3''2--3' -n 4 -- -i",
+        ]
 
         cmdline = random.sample(cmdline_list, 1)
-        out = self.dut.send_expect(cmdline[0]%self.path, "#", 60)
+        out = self.dut.send_expect(cmdline[0] % self.path, "#", 60)
         self.verify("invalid parameter" in out, "it's a valid parameter")
 
     def tear_down(self):

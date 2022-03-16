@@ -42,10 +42,10 @@ from framework.packet import Packet
 from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 
-DEV_TX_OFFLOAD_MULTI_SEGS = '0x00008000'
+DEV_TX_OFFLOAD_MULTI_SEGS = "0x00008000"
+
 
 class TestIeee1588(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -56,13 +56,17 @@ class TestIeee1588(TestCase):
 
         # recompile the package with extra options of support IEEE1588.
         self.dut.skip_setup = False
-        self.dut.build_install_dpdk(self.target, extra_options='-Dc_args=-DRTE_LIBRTE_IEEE1588')
+        self.dut.build_install_dpdk(
+            self.target, extra_options="-Dc_args=-DRTE_LIBRTE_IEEE1588"
+        )
 
         self.pmdout = PmdOutput(self.dut)
         # For IEEE1588, the full-feature tx path needs to be enabled.
         # Enabling any tx offload will force DPDK utilize full tx path.
         # Enabling multiple segment offload is more reasonable for user cases.
-        self.pmdout.start_testpmd("Default", " --tx-offloads=%s" % DEV_TX_OFFLOAD_MULTI_SEGS)
+        self.pmdout.start_testpmd(
+            "Default", " --tx-offloads=%s" % DEV_TX_OFFLOAD_MULTI_SEGS
+        )
 
     def set_up(self):
         """
@@ -75,7 +79,7 @@ class TestIeee1588(TestCase):
         IEEE1588 Enable test case.
         """
         self.dut.send_expect("set fwd ieee1588", "testpmd> ", 10)
-        if (self.nic in ["cavium_a063", "cavium_a064"]):
+        if self.nic in ["cavium_a063", "cavium_a064"]:
             self.dut.send_expect("set port 0 ptype_mask 0xf", "testpmd> ", 10)
         # Waiting for 'testpmd> ' Fails due to log messages, "Received non PTP
         # packet", in the output
@@ -90,14 +94,15 @@ class TestIeee1588(TestCase):
         port = self.tester.get_local_port(dutPorts[0])
         itf = self.tester.get_interface(port)
 
-        self.send_session = self.tester.create_session('send_session')
+        self.send_session = self.tester.create_session("send_session")
         self.send_session.send_expect(
-            "tcpdump -i %s -e ether src %s" % (itf, mac), "tcpdump", 20)
+            "tcpdump -i %s -e ether src %s" % (itf, mac), "tcpdump", 20
+        )
 
-        setattr(self.send_session, 'tmp_file', self.tester.tmp_file)
-        setattr(self.send_session, 'tmp_file', self.tester.get_session_output)
-        pkt = Packet(pkt_type='TIMESYNC')
-        pkt.config_layer('ether', {'dst': mac})
+        setattr(self.send_session, "tmp_file", self.tester.tmp_file)
+        setattr(self.send_session, "tmp_file", self.tester.get_session_output)
+        pkt = Packet(pkt_type="TIMESYNC")
+        pkt.config_layer("ether", {"dst": mac})
         pkt.send_pkt(self.tester, tx_port=itf)
         time.sleep(1)
 
@@ -142,14 +147,14 @@ class TestIeee1588(TestCase):
         itf = self.tester.get_interface(port)
 
         self.tester.scapy_background()
-        self.tester.scapy_append(
-            'p = sniff(iface="%s", count=2, timeout=1)' % itf)
-        self.tester.scapy_append('RESULT = p[1].summary()')
+        self.tester.scapy_append('p = sniff(iface="%s", count=2, timeout=1)' % itf)
+        self.tester.scapy_append("RESULT = p[1].summary()")
 
         self.tester.scapy_foreground()
         self.tester.scapy_append('nutmac="%s"' % mac)
         self.tester.scapy_append(
-            'sendp([Ether(dst=nutmac,type=0x88f7)/"\\x00\\x02"], iface="%s")' % itf)
+            'sendp([Ether(dst=nutmac,type=0x88f7)/"\\x00\\x02"], iface="%s")' % itf
+        )
 
         self.tester.scapy_execute()
         time.sleep(2)
@@ -170,5 +175,5 @@ class TestIeee1588(TestCase):
         self.dut.send_expect("quit", "# ", 30)
 
         # Restore the config file and recompile the package.
-        self.dut.set_build_options({'RTE_LIBRTE_IEEE1588': 'n'})
+        self.dut.set_build_options({"RTE_LIBRTE_IEEE1588": "n"})
         self.dut.build_install_dpdk(self.target)

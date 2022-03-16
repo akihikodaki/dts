@@ -65,10 +65,26 @@ class TestScatter(TestCase):
         self.intf = self.tester.get_interface(tester_port)
 
         self.pmdout = PmdOutput(self.dut)
-        if self.nic in ["magnolia_park", "niantic", "sageville", "fortpark", "fortville_eagle",
-                        "fortville_spirit", "fortville_spirit_single", "fortville_25g", "x722_37d2",
-                        "ironpond", "twinpond", "springfountain", "fortpark_TLV","fortpark_BASE-T",
-                        "sagepond", "carlsville","columbiaville_25g","columbiaville_100g"]:
+        if self.nic in [
+            "magnolia_park",
+            "niantic",
+            "sageville",
+            "fortpark",
+            "fortville_eagle",
+            "fortville_spirit",
+            "fortville_spirit_single",
+            "fortville_25g",
+            "x722_37d2",
+            "ironpond",
+            "twinpond",
+            "springfountain",
+            "fortpark_TLV",
+            "fortpark_BASE-T",
+            "sagepond",
+            "carlsville",
+            "columbiaville_25g",
+            "columbiaville_100g",
+        ]:
             self.mbsize = 2048
         else:
             self.mbsize = 1024
@@ -83,7 +99,7 @@ class TestScatter(TestCase):
 
         inst = self.tester.tcpdump_sniff_packets(self.intf)
         pkt = Packet(pkt_type="IP_RAW", pkt_len=pktsize)
-        pkt.config_layer('ether', {'dst': dmac})
+        pkt.config_layer("ether", {"dst": dmac})
         pkt.send_pkt(self.tester, tx_port=self.intf)
         sniff_pkts = self.tester.load_tcpdump_sniff_packets(inst)
 
@@ -103,8 +119,11 @@ class TestScatter(TestCase):
         Scatter 2048 mbuf
         """
         out = self.pmdout.start_testpmd(
-            "1S/2C/1T", "--mbcache=200 --mbuf-size=%d --portmask=0x1 "
-            "--max-pkt-len=9000 --port-topology=loop --tx-offloads=0x00008000" % (self.mbsize))
+            "1S/2C/1T",
+            "--mbcache=200 --mbuf-size=%d --portmask=0x1 "
+            "--max-pkt-len=9000 --port-topology=loop --tx-offloads=0x00008000"
+            % (self.mbsize),
+        )
 
         self.verify("Error" not in out, "launch error 1")
 
@@ -114,8 +133,7 @@ class TestScatter(TestCase):
 
         for offset in [-1, 0, 1, 4, 5]:
             ret = self.scatter_pktgen_send_packet(self.mbsize + offset)
-            self.verify(
-                "58 58 58 58 58 58 58 58" in ret, "packet receive error")
+            self.verify("58 58 58 58 58 58 58 58" in ret, "packet receive error")
 
         self.dut.send_expect("stop", "testpmd> ")
         self.dut.send_expect("quit", "# ", 30)

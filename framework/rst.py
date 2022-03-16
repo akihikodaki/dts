@@ -53,12 +53,11 @@ Result:
     Result: PASS
 """
 
-path2Plan = 'test_plans'
-path2Result = 'output'
+path2Plan = "test_plans"
+path2Result = "output"
 
 
 class RstReport(object):
-
     def __init__(self, crbName, target, nic, suite, perf=False):
         """
         copy desc from #Name#_test_plan.rst to TestResult_#Name#.rst
@@ -67,20 +66,22 @@ class RstReport(object):
             path = [path2Result, crbName, target, nic]
             # ensure the level folder exist
             for node in range(0, len(path)):
-                if not os.path.exists('/'.join(path[:node + 1])):
+                if not os.path.exists("/".join(path[: node + 1])):
                     for level in range(node, len(path)):
-                        os.mkdir('/'.join(path[:level + 1]))
+                        os.mkdir("/".join(path[: level + 1]))
                     break
 
-            self.rstName = "%s/TestResult_%s.rst" % ('/'.join(path), suite)
-            rstReport = open(self.rstName, 'w')
+            self.rstName = "%s/TestResult_%s.rst" % ("/".join(path), suite)
+            rstReport = open(self.rstName, "w")
 
             if perf is True:
                 self.rstAnnexName = "%s/TestResult_%s_Annex.rst" % (
-                    '/'.join(path), suite)
-                rstAnnexReport = open(self.rstAnnexName, 'w')
+                    "/".join(path),
+                    suite,
+                )
+                rstAnnexReport = open(self.rstAnnexName, "w")
 
-            f = open("%s/%s_test_plan.rst" % (path2Plan, suite), 'r')
+            f = open("%s/%s_test_plan.rst" % (path2Plan, suite), "r")
             for line in f:
                 if line[:13] == "Prerequisites":
                     break
@@ -96,7 +97,7 @@ class RstReport(object):
 
     def clear_all_rst(self, crbName, target):
         path = [path2Result, crbName, target]
-        shutil.rmtree('/'.join(path), True)
+        shutil.rmtree("/".join(path), True)
 
     def write_title(self, text):
         """
@@ -106,7 +107,7 @@ class RstReport(object):
         line = "\n%s\n" % text
         with open(self.rstName, "a") as f:
             f.write(line)
-            f.write('-' * len(line) + '\n')
+            f.write("-" * len(line) + "\n")
 
     def write_subtitle(self):
         if self._subtitle is not None:
@@ -121,7 +122,7 @@ class RstReport(object):
         line = "\n%s\n" % text
         with open(self.rstAnnexName, "a") as f:
             f.write(line)
-            f.write('-' * len(line) + '\n')
+            f.write("-" * len(line) + "\n")
 
     def write_text(self, text, annex=False):
         rstFile = self.rstAnnexName if annex else self.rstName
@@ -131,7 +132,7 @@ class RstReport(object):
 
     def write_frame(self, text, annex=False):
         self.write_text("\n::\n\n", annex)
-        parts = re.findall(r'\S+', text)
+        parts = re.findall(r"\S+", text)
         text = ""
         length = 0
 

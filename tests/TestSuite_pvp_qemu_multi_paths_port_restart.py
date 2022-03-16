@@ -49,7 +49,6 @@ from framework.virt_common import VM
 
 
 class TestPVPQemuMultiPathPortRestart(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -61,20 +60,21 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         # get core mask
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.core_list = self.dut.get_core_list(
-            self.core_config, socket=self.ports_socket)
+            self.core_config, socket=self.ports_socket
+        )
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.vm_dut = None
         self.virtio1_mac = "52:54:00:00:00:01"
 
-        self.out_path = '/tmp'
-        out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
-        if 'No such file or directory' in out:
-            self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
+        self.out_path = "/tmp"
+        out = self.tester.send_expect("ls -d %s" % self.out_path, "# ")
+        if "No such file or directory" in out:
+            self.tester.send_expect("mkdir -p %s" % self.out_path, "# ")
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
-        self.pci_info = self.dut.ports_info[0]['pci']
+        self.pci_info = self.dut.ports_info[0]["pci"]
         self.number_of_ports = 1
-        self.path=self.dut.apps_name['test-pmd']
+        self.path = self.dut.apps_name["test-pmd"]
         self.testpmd_name = self.path.split("/")[-1]
 
     def set_up(self):
@@ -83,11 +83,16 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         """
         # Clean the execution ENV
         self.dut.send_expect("rm -rf ./vhost.out", "#")
-        self.dut.send_expect("killall -s INT %s" % self.testpmd_name , "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         # Prepare the result table
-        self.table_header = ["FrameSize(B)", "Mode",
-                            "Throughput(Mpps)", "% linerate", "Cycle"]
+        self.table_header = [
+            "FrameSize(B)",
+            "Mode",
+            "Throughput(Mpps)",
+            "% linerate",
+            "Cycle",
+        ]
         self.result_table_create(self.table_header)
 
         self.vhost = self.dut.new_session(suite="vhost-user")
@@ -96,10 +101,12 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         """
         start testpmd on vhost
         """
-        self.dut.send_expect("killall -s INT %s" % self.testpmd_name , "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
         vdev = [r"'net_vhost0,iface=vhost-net,queues=1'"]
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list, prefix='vhost', ports=[self.pci_info], vdevs=vdev)
+        eal_params = self.dut.create_eal_parameters(
+            cores=self.core_list, prefix="vhost", ports=[self.pci_info], vdevs=vdev
+        )
         para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
         command_line_client = self.path + eal_params + para
         self.vhost.send_expect(command_line_client, "testpmd> ", 120)
@@ -111,18 +118,20 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         start testpmd in vm depend on different path
         """
         if path == "mergeable":
-            command = self.path + \
-                      "-c 0x3 -n 3 -- -i " + \
-                      "--nb-cores=1 --txd=1024 --rxd=1024"
+            command = (
+                self.path + "-c 0x3 -n 3 -- -i " + "--nb-cores=1 --txd=1024 --rxd=1024"
+            )
         elif path == "normal":
-            command = self.path + \
-                      "-c 0x3 -n 3 -- -i " + \
-                      "--tx-offloads=0x0 --enable-hw-vlan-strip " + \
-                      "--nb-cores=1 --txd=1024 --rxd=1024"
+            command = (
+                self.path
+                + "-c 0x3 -n 3 -- -i "
+                + "--tx-offloads=0x0 --enable-hw-vlan-strip "
+                + "--nb-cores=1 --txd=1024 --rxd=1024"
+            )
         elif path == "vector_rx":
-            command = self.path + \
-                      "-c 0x3 -n 3 -- -i " + \
-                      "--nb-cores=1 --txd=1024 --rxd=1024"
+            command = (
+                self.path + "-c 0x3 -n 3 -- -i " + "--nb-cores=1 --txd=1024 --rxd=1024"
+            )
         self.vm_dut.send_expect(command, "testpmd> ", 30)
         self.vm_dut.send_expect("set fwd mac", "testpmd> ", 30)
         self.vm_dut.send_expect("start", "testpmd> ", 30)
@@ -131,19 +140,27 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         """
         start qemu
         """
-        self.vm = VM(self.dut, 'vm0', 'vhost_sample')
+        self.vm = VM(self.dut, "vm0", "vhost_sample")
         vm_params = {}
-        vm_params['driver'] = 'vhost-user'
-        vm_params['opt_path'] = './vhost-net'
-        vm_params['opt_mac'] = self.virtio1_mac
+        vm_params["driver"] = "vhost-user"
+        vm_params["opt_path"] = "./vhost-net"
+        vm_params["opt_mac"] = self.virtio1_mac
         if modem == 1 and mergeable == 0:
-            vm_params['opt_settings'] = "disable-modern=false,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024"
+            vm_params[
+                "opt_settings"
+            ] = "disable-modern=false,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024"
         elif modem == 1 and mergeable == 1:
-            vm_params['opt_settings'] = "disable-modern=false,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024"
+            vm_params[
+                "opt_settings"
+            ] = "disable-modern=false,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024"
         elif modem == 0 and mergeable == 0:
-            vm_params['opt_settings'] = "disable-modern=true,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024"
+            vm_params[
+                "opt_settings"
+            ] = "disable-modern=true,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024"
         elif modem == 0 and mergeable == 1:
-            vm_params['opt_settings'] = "disable-modern=true,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024"
+            vm_params[
+                "opt_settings"
+            ] = "disable-modern=true,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024"
         self.vm.set_vm_device(**vm_params)
 
         try:
@@ -158,7 +175,7 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         check the throughput after port stop
         """
         loop = 1
-        while(loop <= 5):
+        while loop <= 5:
             out = self.vhost.send_expect("show port stats 0", "testpmd>", 60)
             lines = re.search("Rx-pps:\s*(\d*)", out)
             result = lines.group(1)
@@ -166,17 +183,19 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
                 break
             time.sleep(3)
             loop = loop + 1
-        self.verify(result == "0", "port stop failed, it alse can recevie data after stop.")
+        self.verify(
+            result == "0", "port stop failed, it alse can recevie data after stop."
+        )
 
     def check_port_link_status_after_port_restart(self):
         """
         check the link status after port restart
         """
         loop = 1
-        while(loop <= 5):
+        while loop <= 5:
             out = self.vhost.send_expect("show port info all", "testpmd> ", 120)
             port_status = re.findall("Link\s*status:\s*([a-z]*)", out)
-            if("down" not in port_status):
+            if "down" not in port_status:
                 break
             time.sleep(3)
             loop = loop + 1
@@ -203,7 +222,15 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
     @property
     def check_value(self):
         check_dict = dict.fromkeys(self.frame_sizes)
-        linerate = {64: 0.075, 128: 0.10, 256: 0.10, 512: 0.20, 1024: 0.35, 1280: 0.40, 1518: 0.45}
+        linerate = {
+            64: 0.075,
+            128: 0.10,
+            256: 0.10,
+            512: 0.20,
+            1024: 0.35,
+            1280: 0.40,
+            1518: 0.45,
+        }
         for size in self.frame_sizes:
             speed = self.wirespeed(self.nic, size, self.number_of_ports)
             check_dict[size] = round(speed * linerate[size], 2)
@@ -213,24 +240,29 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         """
         start to send packet and get the throughput
         """
-        pkt = Packet(pkt_type='IP_RAW', pkt_len=frame_size)
-        pkt.config_layer('ether', {'dst': '%s' % self.dst_mac})
+        pkt = Packet(pkt_type="IP_RAW", pkt_len=frame_size)
+        pkt.config_layer("ether", {"dst": "%s" % self.dst_mac})
         pkt.save_pcapfile(self.tester, "%s/pvp_multipath.pcap" % (self.out_path))
 
         tgenInput = []
         port = self.tester.get_local_port(self.dut_ports[0])
         tgenInput.append((port, port, "%s/pvp_multipath.pcap" % self.out_path))
         self.tester.pktgen.clear_streams()
-        streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100, None, self.tester.pktgen)
+        streams = self.pktgen_helper.prepare_stream_from_tginput(
+            tgenInput, 100, None, self.tester.pktgen
+        )
         # set traffic option
-        traffic_opt = {'delay': 5}
-        _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
+        traffic_opt = {"delay": 5}
+        _, pps = self.tester.pktgen.measure_throughput(
+            stream_ids=streams, options=traffic_opt
+        )
         Mpps = pps / 1000000.0
-        self.verify(Mpps > self.check_value[frame_size],
-                    "%s of frame size %d speed verify failed, expect %s, result %s" % (
-                        self.running_case, frame_size, self.check_value[frame_size], Mpps))
-        throughput = Mpps * 100 / \
-                    float(self.wirespeed(self.nic, frame_size, 1))
+        self.verify(
+            Mpps > self.check_value[frame_size],
+            "%s of frame size %d speed verify failed, expect %s, result %s"
+            % (self.running_case, frame_size, self.check_value[frame_size], Mpps),
+        )
+        throughput = Mpps * 100 / float(self.wirespeed(self.nic, frame_size, 1))
         return Mpps, throughput
 
     def send_and_verify(self, case_info):
@@ -238,15 +270,22 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         start to send packets and verify it
         """
         for frame_size in self.frame_sizes:
-            info = "Running test %s, and %d frame size." % (self.running_case, frame_size)
+            info = "Running test %s, and %d frame size." % (
+                self.running_case,
+                frame_size,
+            )
             self.logger.info(info)
 
             Mpps, throughput = self.calculate_avg_throughput(frame_size)
-            self.update_table_info(case_info, frame_size, Mpps, throughput, "Before Restart")
+            self.update_table_info(
+                case_info, frame_size, Mpps, throughput, "Before Restart"
+            )
 
             self.port_restart()
             Mpps, throughput = self.calculate_avg_throughput(frame_size)
-            self.update_table_info(case_info, frame_size, Mpps, throughput, "After Restart")
+            self.update_table_info(
+                case_info, frame_size, Mpps, throughput, "After Restart"
+            )
 
     def close_all_testpmd(self):
         """
@@ -345,10 +384,12 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         Mpps, throughput = self.calculate_avg_throughput(64)
         self.update_table_info(case_info, 64, Mpps, throughput, "Before Restart")
         for cycle in range(100):
-            self.logger.info('now port restart  %d times' % (cycle+1))
+            self.logger.info("now port restart  %d times" % (cycle + 1))
             self.port_restart()
             Mpps, throughput = self.calculate_avg_throughput(64)
-            self.update_table_info(case_info, 64, Mpps, throughput, "After port restart")
+            self.update_table_info(
+                case_info, 64, Mpps, throughput, "After port restart"
+            )
 
         self.close_all_testpmd()
         self.result_table_print()
@@ -358,7 +399,7 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect("killall -s INT %s" % self.testpmd_name , "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.close_session()
         time.sleep(2)

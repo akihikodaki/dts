@@ -52,11 +52,11 @@ class TestVfL3fwdLpmIpv6KernelPf(TestCase, PerfTestBase):
         """
         Run at the start of each test suite.
         """
-        self.verify(self.nic in VF_L3FWD_NIC_SUPPORT,
-                    "NIC Unsupported: " + str(self.nic))
+        self.verify(
+            self.nic in VF_L3FWD_NIC_SUPPORT, "NIC Unsupported: " + str(self.nic)
+        )
         self.dut_ports = self.dut.get_ports(self.nic)
-        valports = [
-            _ for _ in self.dut_ports if self.tester.get_local_port(_) != -1]
+        valports = [_ for _ in self.dut_ports if self.tester.get_local_port(_) != -1]
         self.logger.debug(valports)
         self.verify_ports_number(valports)
         # get socket and cores
@@ -89,5 +89,5 @@ class TestVfL3fwdLpmIpv6KernelPf(TestCase, PerfTestBase):
         self.perf_reset_cur_case()
 
     def test_perf_vf_throughput_ipv6_lpm(self):
-        self.perf_set_cur_case('test_perf_vf_throughput_ipv6_lpm')
+        self.perf_set_cur_case("test_perf_vf_throughput_ipv6_lpm")
         self.ms_throughput(l3_proto=IP_TYPE.V6, mode=MATCH_MODE.LPM)

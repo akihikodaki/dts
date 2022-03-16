@@ -47,18 +47,17 @@ from framework.virt_common import VM
 
 
 class TestVhostMultiQueueQemu(TestCase):
-
     def set_up_all(self):
         # Get and verify the ports
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
         # Get the port's socket
         self.pf = self.dut_ports[0]
-        netdev = self.dut.ports_info[self.pf]['port']
+        netdev = self.dut.ports_info[self.pf]["port"]
         self.socket = netdev.get_nic_socket()
         self.cores = self.dut.get_core_list("1S/3C/1T", socket=self.socket)
         self.verify(len(self.cores) >= 3, "Insufficient cores for speed testing")
-        self.pci_info = self.dut.ports_info[0]['pci']
+        self.pci_info = self.dut.ports_info[0]["pci"]
         self.frame_sizes = [64, 128, 256, 512, 1024, 1500]
         self.queue_number = 2
         # Using file to save the vhost sample output since in jumboframe case,
@@ -73,15 +72,15 @@ class TestVhostMultiQueueQemu(TestCase):
         self.memory_channel = self.dut.get_memory_channels()
         self.pmd_out = PmdOutput(self.dut)
 
-        self.out_path = '/tmp'
-        out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
-        if 'No such file or directory' in out:
-            self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
+        self.out_path = "/tmp"
+        out = self.tester.send_expect("ls -d %s" % self.out_path, "# ")
+        if "No such file or directory" in out:
+            self.tester.send_expect("mkdir -p %s" % self.out_path, "# ")
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
-        self.base_dir = self.dut.base_dir.replace('~', '/root')
-        self.app_path = self.dut.apps_name['test-pmd']
-        self.app_name = self.app_path[self.app_path.rfind('/')+1:]
+        self.base_dir = self.dut.base_dir.replace("~", "/root")
+        self.app_path = self.dut.apps_name["test-pmd"]
+        self.app_name = self.app_path[self.app_path.rfind("/") + 1 :]
 
     def set_up(self):
         """
@@ -90,17 +89,29 @@ class TestVhostMultiQueueQemu(TestCase):
         self.dut.send_expect("rm -rf ./vhost.out", "#")
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.dut.send_expect("killall -s INT %s" % self.app_name, "#")
-        self.vm_testpmd_vector = self.app_path + "-c %s -n 3" + \
-                                 " -- -i --tx-offloads=0x0 " + \
-                                 " --rxq=%d --txq=%d --rss-ip --nb-cores=2" % (self.queue_number, self.queue_number)
+        self.vm_testpmd_vector = (
+            self.app_path
+            + "-c %s -n 3"
+            + " -- -i --tx-offloads=0x0 "
+            + " --rxq=%d --txq=%d --rss-ip --nb-cores=2"
+            % (self.queue_number, self.queue_number)
+        )
 
     def launch_testpmd(self):
         """
         Launch the vhost sample with different parameters
         """
-        vdev = [r"'net_vhost0,iface=%s/vhost-net,queues=%d'" % (self.base_dir, self.queue_number)]
-        eal_params = self.dut.create_eal_parameters(cores=self.cores, ports=[self.pci_info], vdevs=vdev)
-        para = " -- -i --rxq=%d --txq=%d --nb-cores=2" % (self.queue_number, self.queue_number)
+        vdev = [
+            r"'net_vhost0,iface=%s/vhost-net,queues=%d'"
+            % (self.base_dir, self.queue_number)
+        ]
+        eal_params = self.dut.create_eal_parameters(
+            cores=self.cores, ports=[self.pci_info], vdevs=vdev
+        )
+        para = " -- -i --rxq=%d --txq=%d --nb-cores=2" % (
+            self.queue_number,
+            self.queue_number,
+        )
         testcmd_start = self.app_path + eal_params + para
         self.dut.send_expect(testcmd_start, "testpmd> ", 120)
         self.dut.send_expect("set fwd mac", "testpmd> ", 120)
@@ -110,13 +121,15 @@ class TestVhostMultiQueueQemu(TestCase):
         """
         Start One VM with one virtio device
         """
-        self.vm = VM(self.dut, 'vm0', 'vhost_sample')
+        self.vm = VM(self.dut, "vm0", "vhost_sample")
         vm_params = {}
-        vm_params['driver'] = 'vhost-user'
-        vm_params['opt_path'] = self.base_dir + '/vhost-net'
-        vm_params['opt_mac'] = self.virtio1_mac
-        vm_params['opt_queue'] = self.queue_number
-        vm_params['opt_settings'] = 'mrg_rxbuf=on,mq=on,vectors=%d' % (2*self.queue_number + 2)
+        vm_params["driver"] = "vhost-user"
+        vm_params["opt_path"] = self.base_dir + "/vhost-net"
+        vm_params["opt_mac"] = self.virtio1_mac
+        vm_params["opt_queue"] = self.queue_number
+        vm_params["opt_settings"] = "mrg_rxbuf=on,mq=on,vectors=%d" % (
+            2 * self.queue_number + 2
+        )
 
         self.vm.set_vm_device(**vm_params)
 
@@ -134,13 +147,24 @@ class TestVhostMultiQueueQemu(TestCase):
         Get the vm coremask
         """
         cores = self.vm_dut.get_core_list("1S/3C/1T")
-        self.verify(len(cores) >= 3, "Insufficient cores for speed testing, add the cpu number in cfg file.")
+        self.verify(
+            len(cores) >= 3,
+            "Insufficient cores for speed testing, add the cpu number in cfg file.",
+        )
         self.vm_coremask = utils.create_mask(cores)
 
     @property
     def check_value(self):
         check_dict = dict.fromkeys(self.frame_sizes)
-        linerate = {64: 0.09, 128: 0.15, 256: 0.25, 512: 0.40, 1024: 0.50, 1280: 0.55, 1500: 0.60}
+        linerate = {
+            64: 0.09,
+            128: 0.15,
+            256: 0.25,
+            512: 0.40,
+            1024: 0.50,
+            1280: 0.55,
+            1500: 0.60,
+        }
         for size in self.frame_sizes:
             speed = self.wirespeed(self.nic, size, self.number_of_ports)
             check_dict[size] = round(speed * linerate[size], 2)
@@ -152,34 +176,60 @@ class TestVhostMultiQueueQemu(TestCase):
         """
         self.result_table_create(self.header_row)
         for frame_size in self.frame_sizes:
-            info = "Running test %s, and %d frame size." % (self.running_case, frame_size)
+            info = "Running test %s, and %d frame size." % (
+                self.running_case,
+                frame_size,
+            )
             self.logger.info(info)
-            payload_size = frame_size - HEADER_SIZE['eth'] - HEADER_SIZE['ip']
+            payload_size = frame_size - HEADER_SIZE["eth"] - HEADER_SIZE["ip"]
             tgenInput = []
 
             pkt1 = Packet()
-            pkt1.assign_layers(['ether', 'ipv4', 'raw'])
-            pkt1.config_layers([('ether', {'dst': '%s' % self.virtio1_mac}), ('ipv4', {'dst': '1.1.1.1'}),
-                               ('raw', {'payload': ['01'] * int('%d' % payload_size)})])
+            pkt1.assign_layers(["ether", "ipv4", "raw"])
+            pkt1.config_layers(
+                [
+                    ("ether", {"dst": "%s" % self.virtio1_mac}),
+                    ("ipv4", {"dst": "1.1.1.1"}),
+                    ("raw", {"payload": ["01"] * int("%d" % payload_size)}),
+                ]
+            )
 
             pkt1.save_pcapfile(self.tester, "%s/multiqueue.pcap" % self.out_path)
 
             port = self.tester.get_local_port(self.pf)
             tgenInput.append((port, port, "%s/multiqueue.pcap" % self.out_path))
 
-            fields_config = {'ip':  {'dst': {'action': 'random'}, }, }
+            fields_config = {
+                "ip": {
+                    "dst": {"action": "random"},
+                },
+            }
             self.tester.pktgen.clear_streams()
-            streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100, fields_config, self.tester.pktgen)
-            traffic_opt = {'delay': 5}
-            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
+            streams = self.pktgen_helper.prepare_stream_from_tginput(
+                tgenInput, 100, fields_config, self.tester.pktgen
+            )
+            traffic_opt = {"delay": 5}
+            _, pps = self.tester.pktgen.measure_throughput(
+                stream_ids=streams, options=traffic_opt
+            )
             Mpps = pps / 1000000.0
-            pct = Mpps * 100 / float(self.wirespeed(self.nic, frame_size,
-                                     self.number_of_ports))
-            data_row = [frame_size, str(Mpps), str(pct), "Mergeable Multiqueue Performance"]
+            pct = (
+                Mpps
+                * 100
+                / float(self.wirespeed(self.nic, frame_size, self.number_of_ports))
+            )
+            data_row = [
+                frame_size,
+                str(Mpps),
+                str(pct),
+                "Mergeable Multiqueue Performance",
+            ]
             self.result_table_add(data_row)
-            self.verify(Mpps > self.check_value[frame_size],
-                        "%s of frame size %d speed verify failed, expect %s, result %s" % (
-                            self.running_case, frame_size, self.check_value[frame_size], Mpps))
+            self.verify(
+                Mpps > self.check_value[frame_size],
+                "%s of frame size %d speed verify failed, expect %s, result %s"
+                % (self.running_case, frame_size, self.check_value[frame_size], Mpps),
+            )
         self.result_table_print()
 
     def send_and_verify(self, verify_type):
@@ -192,27 +242,56 @@ class TestVhostMultiQueueQemu(TestCase):
         local_port = self.tester.get_local_port(self.dut_ports[0])
         self.tx_interface = self.tester.get_interface(local_port)
         for frame_size in self.frame_sizes:
-            info = "Running test %s, and %d frame size." % (self.running_case, frame_size)
+            info = "Running test %s, and %d frame size." % (
+                self.running_case,
+                frame_size,
+            )
             self.logger.info(info)
             self.dut.send_expect("clear port stats all", "testpmd> ", 120)
-            payload_size = frame_size - HEADER_SIZE['eth'] - HEADER_SIZE['ip'] - HEADER_SIZE['udp']
+            payload_size = (
+                frame_size - HEADER_SIZE["eth"] - HEADER_SIZE["ip"] - HEADER_SIZE["udp"]
+            )
             pkts = Packet()
             pkt1 = Packet()
-            pkt1.assign_layers(['ether', 'ipv4', 'udp', 'raw'])
-            pkt1.config_layers([('ether', {'dst': '%s' % self.virtio1_mac}), ('ipv4', {'dst': '1.1.1.1'}),
-                               ('udp', {'src': 4789, 'dst': 4789}), ('raw', {'payload': ['01'] * int('%d' % payload_size)})])
+            pkt1.assign_layers(["ether", "ipv4", "udp", "raw"])
+            pkt1.config_layers(
+                [
+                    ("ether", {"dst": "%s" % self.virtio1_mac}),
+                    ("ipv4", {"dst": "1.1.1.1"}),
+                    ("udp", {"src": 4789, "dst": 4789}),
+                    ("raw", {"payload": ["01"] * int("%d" % payload_size)}),
+                ]
+            )
             pkt2 = Packet()
-            pkt2.assign_layers(['ether', 'ipv4', 'udp', 'raw'])
-            pkt2.config_layers([('ether', {'dst': '%s' % self.virtio1_mac}), ('ipv4', {'dst': '1.1.1.20'}),
-                              ('udp', {'src': 4789, 'dst': 4789}), ('raw', {'payload': ['01'] * int('%d' % payload_size)})])
+            pkt2.assign_layers(["ether", "ipv4", "udp", "raw"])
+            pkt2.config_layers(
+                [
+                    ("ether", {"dst": "%s" % self.virtio1_mac}),
+                    ("ipv4", {"dst": "1.1.1.20"}),
+                    ("udp", {"src": 4789, "dst": 4789}),
+                    ("raw", {"payload": ["01"] * int("%d" % payload_size)}),
+                ]
+            )
             pkt3 = Packet()
-            pkt3.assign_layers(['ether', 'ipv4', 'udp', 'raw'])
-            pkt3.config_layers([('ether', {'dst': '%s' % self.virtio1_mac}), ('ipv4', {'dst': '1.1.1.7'}),
-                               ('udp', {'src': 4789, 'dst': 4789}), ('raw', {'payload': ['01'] * int('%d' % payload_size)})])
+            pkt3.assign_layers(["ether", "ipv4", "udp", "raw"])
+            pkt3.config_layers(
+                [
+                    ("ether", {"dst": "%s" % self.virtio1_mac}),
+                    ("ipv4", {"dst": "1.1.1.7"}),
+                    ("udp", {"src": 4789, "dst": 4789}),
+                    ("raw", {"payload": ["01"] * int("%d" % payload_size)}),
+                ]
+            )
             pkt4 = Packet()
-            pkt4.assign_layers(['ether', 'ipv4', 'udp', 'raw'])
-            pkt4.config_layers([('ether', {'dst': '%s' % self.virtio1_mac}), ('ipv4', {'dst': '1.1.1.8'}),
-                               ('udp', {'src': 4789, 'dst': 4789}), ('raw', {'payload': ['01'] * int('%d' % payload_size)})])
+            pkt4.assign_layers(["ether", "ipv4", "udp", "raw"])
+            pkt4.config_layers(
+                [
+                    ("ether", {"dst": "%s" % self.virtio1_mac}),
+                    ("ipv4", {"dst": "1.1.1.8"}),
+                    ("udp", {"src": 4789, "dst": 4789}),
+                    ("raw", {"payload": ["01"] * int("%d" % payload_size)}),
+                ]
+            )
 
             pkt = [pkt1, pkt2, pkt3, pkt4]
             for i in pkt:
@@ -225,15 +304,20 @@ class TestVhostMultiQueueQemu(TestCase):
             rx_num = int(rx_packet.group(1))
             tx_packet = re.search("TX-packets:\s*(\d*)", out)
             tx_num = int(tx_packet.group(1))
-            if verify_type == "vhost queue = virtio queue" or verify_type == "vhost queue < virtio queue":
+            if (
+                verify_type == "vhost queue = virtio queue"
+                or verify_type == "vhost queue < virtio queue"
+            ):
                 verify_rx_num = 40
                 verify_tx_num = 40
             elif verify_type == "vhost queue > virtio queue":
                 verify_rx_num = 40
                 verify_tx_num = 10
 
-            self.verify(rx_num >= verify_rx_num and tx_num >= verify_tx_num,
-                        "The rx or tx lost some packets of frame-size:%d" % frame_size)
+            self.verify(
+                rx_num >= verify_rx_num and tx_num >= verify_tx_num,
+                "The rx or tx lost some packets of frame-size:%d" % frame_size,
+            )
 
     def test_perf_pvp_multiqemu_mergeable_pmd(self):
         """
@@ -243,7 +327,9 @@ class TestVhostMultiQueueQemu(TestCase):
         self.start_onevm()
         self.get_vm_coremask()
 
-        self.vm_dut.send_expect(self.vm_testpmd_vector % self.vm_coremask, "testpmd>", 20)
+        self.vm_dut.send_expect(
+            self.vm_testpmd_vector % self.vm_coremask, "testpmd>", 20
+        )
         self.vm_dut.send_expect("set fwd mac", "testpmd>", 20)
         self.vm_dut.send_expect("start", "testpmd>")
 
@@ -259,17 +345,22 @@ class TestVhostMultiQueueQemu(TestCase):
         """
         self.launch_testpmd()
         self.start_onevm()
-        self.vm_testpmd_queue_1 = self.app_path + "-c %s -n 3" + \
-                                  " -- -i --tx-offloads=0x0 " + \
-                                  " --rxq=1 --txq=1 --rss-ip --nb-cores=1"
+        self.vm_testpmd_queue_1 = (
+            self.app_path
+            + "-c %s -n 3"
+            + " -- -i --tx-offloads=0x0 "
+            + " --rxq=1 --txq=1 --rss-ip --nb-cores=1"
+        )
         self.get_vm_coremask()
-        self.vm_dut.send_expect(self.vm_testpmd_queue_1 % self.vm_coremask, "testpmd>", 20)
+        self.vm_dut.send_expect(
+            self.vm_testpmd_queue_1 % self.vm_coremask, "testpmd>", 20
+        )
         self.vm_dut.send_expect("set fwd mac", "testpmd>", 20)
         self.vm_dut.send_expect("start", "testpmd>")
 
         self.dut.send_expect("clear port stats all", "testpmd> ", 120)
-        res = self.pmd_out.wait_link_status_up('all', timeout = 15)
-        self.verify(res is True, 'There has port link is down')
+        res = self.pmd_out.wait_link_status_up("all", timeout=15)
+        self.verify(res is True, "There has port link is down")
         self.send_and_verify("vhost queue > virtio queue")
 
         self.vm_dut.send_expect("stop", "testpmd>", 20)
@@ -281,9 +372,8 @@ class TestVhostMultiQueueQemu(TestCase):
 
         self.dut.send_expect("stop", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
-        res = self.pmd_out.wait_link_status_up('all', timeout = 15)
-        self.verify(res is True, 'There has port link is down')
-
+        res = self.pmd_out.wait_link_status_up("all", timeout=15)
+        self.verify(res is True, "There has port link is down")
 
         self.dut.send_expect("clear port stats all", "testpmd> ", 120)
         self.send_and_verify("vhost queue = virtio queue")
@@ -297,7 +387,9 @@ class TestVhostMultiQueueQemu(TestCase):
         """
         self.queue_number = 2
         vdev = [r"'net_vhost0,iface=%s/vhost-net,queues=2'" % self.base_dir]
-        eal_params = self.dut.create_eal_parameters(cores=self.cores, ports=[self.pci_info], vdevs=vdev)
+        eal_params = self.dut.create_eal_parameters(
+            cores=self.cores, ports=[self.pci_info], vdevs=vdev
+        )
         para = " -- -i --rxq=1 --txq=1 --nb-cores=1"
         testcmd_start = self.app_path + eal_params + para
         self.dut.send_expect(testcmd_start, "testpmd> ", 120)
@@ -307,12 +399,14 @@ class TestVhostMultiQueueQemu(TestCase):
         self.start_onevm()
 
         self.get_vm_coremask()
-        self.vm_dut.send_expect(self.vm_testpmd_vector % self.vm_coremask, "testpmd>", 20)
+        self.vm_dut.send_expect(
+            self.vm_testpmd_vector % self.vm_coremask, "testpmd>", 20
+        )
         self.vm_dut.send_expect("set fwd mac", "testpmd>", 20)
         self.vm_dut.send_expect("start", "testpmd>")
         self.dut.send_expect("clear port stats all", "testpmd> ", 120)
-        res = self.pmd_out.wait_link_status_up('all', timeout = 15)
-        self.verify(res is True, 'There has port link is down')
+        res = self.pmd_out.wait_link_status_up("all", timeout=15)
+        self.verify(res is True, "There has port link is down")
 
         self.send_and_verify("vhost queue < virtio queue")
 
@@ -323,8 +417,8 @@ class TestVhostMultiQueueQemu(TestCase):
         self.dut.send_expect("port start all", "testpmd>", 20)
         self.dut.send_expect("start", "testpmd>")
         self.dut.send_expect("clear port stats all", "testpmd>")
-        res = self.pmd_out.wait_link_status_up('all', timeout = 15)
-        self.verify(res is True, 'There has port link is down')
+        res = self.pmd_out.wait_link_status_up("all", timeout=15)
+        self.verify(res is True, "There has port link is down")
 
         self.send_and_verify("vhost queue = virtio queue")
 

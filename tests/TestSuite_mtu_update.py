@@ -50,7 +50,7 @@ from framework.settings import HEADER_SIZE
 from framework.test_case import TestCase
 
 ETHER_HEADER_LEN = 18
-VLAN=4
+VLAN = 4
 IP_HEADER_LEN = 20
 ETHER_STANDARD_MTU = 1518
 ETHER_JUMBO_FRAME_MTU = 9000
@@ -76,8 +76,11 @@ class TestMtuUpdate(TestCase):
         When the case of this test suite finished, the environment should
         clear up.
         """
-        self.tester.send_expect(f"ifconfig {self.tester.get_interface(self.tester.get_local_port(self.rx_port))} " +
-                                f"mtu {ETHER_STANDARD_MTU}", "# ")
+        self.tester.send_expect(
+            f"ifconfig {self.tester.get_interface(self.tester.get_local_port(self.rx_port))} "
+            + f"mtu {ETHER_STANDARD_MTU}",
+            "# ",
+        )
         super().tear_down_all()
 
     def exec(self, command: str) -> str:
@@ -105,21 +108,26 @@ class TestMtuUpdate(TestCase):
         # pktlen = pktsize - ETHER_HEADER_LEN
         if self.kdriver in ["igb", "igc", "ixgbe"]:
             max_pktlen = pktsize + ETHER_HEADER_LEN + VLAN
-            padding = max_pktlen - IP_HEADER_LEN - ETHER_HEADER_LEN-VLAN
+            padding = max_pktlen - IP_HEADER_LEN - ETHER_HEADER_LEN - VLAN
         else:
             max_pktlen = pktsize + ETHER_HEADER_LEN + VLAN * 2
             padding = max_pktlen - IP_HEADER_LEN - ETHER_HEADER_LEN
-        out = self.send_scapy_packet(port_id,
-                                     f'Ether(dst=dutmac, src="52:00:00:00:00:00")/IP()/Raw(load="\x50"*{padding})')
+        out = self.send_scapy_packet(
+            port_id,
+            f'Ether(dst=dutmac, src="52:00:00:00:00:00")/IP()/Raw(load="\x50"*{padding})',
+        )
         return out
-
 
     def send_packet_of_size_to_tx_port(self, pktsize, received=True):
         """
         Send 1 packet to portid
         """
-        tx_pkts_ori, tx_err_ori, _ = [int(_) for _ in self.get_port_status_tx(self.tx_port)]
-        rx_pkts_ori, rx_err_ori, _ = [int(_) for _ in self.get_port_status_rx(self.rx_port)]
+        tx_pkts_ori, tx_err_ori, _ = [
+            int(_) for _ in self.get_port_status_tx(self.tx_port)
+        ]
+        rx_pkts_ori, rx_err_ori, _ = [
+            int(_) for _ in self.get_port_status_rx(self.rx_port)
+        ]
 
         out = self.send_packet_of_size_to_port(self.rx_port, pktsize)
 
@@ -135,22 +143,29 @@ class TestMtuUpdate(TestCase):
 
         if received:
             self.verify(tx_pkts_difference >= 1, "No packet was sent")
-            self.verify(tx_pkts_difference == rx_pkts_difference, "different numbers of packets sent and received")
+            self.verify(
+                tx_pkts_difference == rx_pkts_difference,
+                "different numbers of packets sent and received",
+            )
             self.verify(tx_err_difference == 0, "unexpected tx error")
             self.verify(rx_err_difference == 0, "unexpected rx error")
         else:
-            self.verify(rx_err_difference == 1 or tx_pkts_difference == 0 or tx_err_difference == 1,
-                        "packet that either should have either caused an error " +
-                        "or been rejected for transmission was not")
+            self.verify(
+                rx_err_difference == 1
+                or tx_pkts_difference == 0
+                or tx_err_difference == 1,
+                "packet that either should have either caused an error "
+                + "or been rejected for transmission was not",
+            )
         return out
 
     def get_port_status_rx(self, portid) -> Tuple[str, str, str]:
         stats = self.pmdout.get_pmd_stats(portid)
-        return stats['RX-packets'], stats['RX-errors'], stats['RX-bytes']
+        return stats["RX-packets"], stats["RX-errors"], stats["RX-bytes"]
 
     def get_port_status_tx(self, portid) -> Tuple[str, str, str]:
         stats = self.pmdout.get_pmd_stats(portid)
-        return stats['TX-packets'], stats['TX-errors'], stats['TX-bytes']
+        return stats["TX-packets"], stats["TX-errors"], stats["TX-bytes"]
 
     def set_up_all(self):
         """
@@ -179,7 +194,7 @@ class TestMtuUpdate(TestCase):
         """
         Do some operations to the network interface port, such as "up" or "down".
         """
-        if self.tester.get_os_type() == 'freebsd':
+        if self.tester.get_os_type() == "freebsd":
             self.tester.admin_ports(local_port, status)
         else:
             eth = self.tester.get_interface(local_port)
@@ -203,17 +218,31 @@ class TestMtuUpdate(TestCase):
         """
         Sends a packet of the given size into the testing machine.
         """
-        if self.kdriver == "mlx5_core" or self.kdriver == "mlx4_core" or self.kdriver == "ixgbe":
-        # Mellanox will need extra options to start testpmd
-            self.pmdout.start_testpmd("Default", "--max-pkt-len=9500 --tx-offloads=0x8000 --enable-scatter -a")
+        if (
+            self.kdriver == "mlx5_core"
+            or self.kdriver == "mlx4_core"
+            or self.kdriver == "ixgbe"
+        ):
+            # Mellanox will need extra options to start testpmd
+            self.pmdout.start_testpmd(
+                "Default", "--max-pkt-len=9500 --tx-offloads=0x8000 --enable-scatter -a"
+            )
         else:
             self.pmdout.start_testpmd("Default")
 
         self.exec("port stop all")
         self.exec(f"port config mtu 0 {packet_size:d}")
         self.exec(f"port config mtu 1 {packet_size:d}")
-        self.verify(int(self.pmdout.get_detail_from_port_info("MTU: ", "\d+", 0)) == packet_size, "MTU did not update")
-        self.verify(int(self.pmdout.get_detail_from_port_info("MTU: ", "\d+", 1)) == packet_size, "MTU did not update")
+        self.verify(
+            int(self.pmdout.get_detail_from_port_info("MTU: ", "\d+", 0))
+            == packet_size,
+            "MTU did not update",
+        )
+        self.verify(
+            int(self.pmdout.get_detail_from_port_info("MTU: ", "\d+", 1))
+            == packet_size,
+            "MTU did not update",
+        )
         self.exec("port start all")
         self.exec("set fwd mac")
         self.exec("start")

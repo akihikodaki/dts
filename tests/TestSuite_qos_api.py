@@ -46,7 +46,6 @@ from framework.test_case import TestCase
 
 
 class TestQosApi(TestCase):
-
     def set_up_all(self):
         """
         ip_fragmentation Prerequisites
@@ -63,7 +62,7 @@ class TestQosApi(TestCase):
         # each flow to 200Mbps
         self.bps = 200000000
         self.bps_rate = [0, 0.1]
-        self.eal_param = ' --main-lcore=1'
+        self.eal_param = " --main-lcore=1"
         # Verify that enough threads are available
         cores = self.dut.get_core_list("1S/1C/1T")
         self.verify(cores is not None, "Insufficient cores for speed testing")
@@ -80,8 +79,7 @@ class TestQosApi(TestCase):
         if self.logger.log_path.startswith(os.sep):
             self.output_path = self.logger.log_path
         else:
-            cur_path = os.path.dirname(
-                                os.path.dirname(os.path.realpath(__file__)))
+            cur_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
             self.output_path = os.sep.join([cur_path, self.logger.log_path])
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
@@ -92,32 +90,47 @@ class TestQosApi(TestCase):
         """
 
     def add_root_non_leaf_node(self):
-        self.dut.send_expect('add port tm nonleaf node 1 1000000 -1 0 1 0 -1 1 0 0', 'testpmd> ')
+        self.dut.send_expect(
+            "add port tm nonleaf node 1 1000000 -1 0 1 0 -1 1 0 0", "testpmd> "
+        )
 
     def add_private_shaper(self, n):
         for i in range(n):
-            self.dut.send_expect('add port tm node shaper profile 1 %s 0 0 25000000 0 0' % str(i + 1), 'testpmd> ')
+            self.dut.send_expect(
+                "add port tm node shaper profile 1 %s 0 0 25000000 0 0" % str(i + 1),
+                "testpmd> ",
+            )
 
     def add_private_shaper_ixgbe(self, n):
         for i in range(n):
-            self.dut.send_expect('add port tm node shaper profile 1 %s 0 0 25000000 0 0' % i, 'testpmd> ')
+            self.dut.send_expect(
+                "add port tm node shaper profile 1 %s 0 0 25000000 0 0" % i, "testpmd> "
+            )
 
     def add_tc_node(self, n):
         for i in range(n):
-            self.dut.send_expect('add port tm nonleaf node 1 %s 1000000 0 1 1 1 1 0 0' % (900000 + i), 'testpmd> ')
+            self.dut.send_expect(
+                "add port tm nonleaf node 1 %s 1000000 0 1 1 1 1 0 0" % (900000 + i),
+                "testpmd> ",
+            )
 
     def add_tc_node_ixgbe(self, n):
         for i in range(n):
-            self.dut.send_expect('add port tm nonleaf node 1 %s 1000000 0 1 1 -1 1 0 0' % (900000 + i), 'testpmd> ')
+            self.dut.send_expect(
+                "add port tm nonleaf node 1 %s 1000000 0 1 1 -1 1 0 0" % (900000 + i),
+                "testpmd> ",
+            )
 
     def set_dcb(self, n):
         """
         set DCB
         """
-        self.dut.send_expect('port stop all', 'testpmd> ')
+        self.dut.send_expect("port stop all", "testpmd> ")
         for i in range(len(self.dut.ports_info)):
-            self.dut.send_expect('port config %s dcb vt off %s pfc off' % (i, n), 'testpmd> ')
-        self.dut.send_expect('port start all', 'testpmd> ')
+            self.dut.send_expect(
+                "port config %s dcb vt off %s pfc off" % (i, n), "testpmd> "
+            )
+        self.dut.send_expect("port start all", "testpmd> ")
 
     def scapy_send_packet_verify(self, n):
         self.host_testpmd.wait_link_status_up(self.dut_ports[0])
@@ -127,25 +140,37 @@ class TestQosApi(TestCase):
         queues_8tc = [0, 16, 32, 48, 64, 80, 96, 112]
         print(dmac)
         for i in range(n):
-            pkt = "Ether(dst='%s', src='00:02:00:00:00:01')/Dot1Q(prio=%s)/IP()/Raw('x'*20)" % (dmac, i)
+            pkt = (
+                "Ether(dst='%s', src='00:02:00:00:00:01')/Dot1Q(prio=%s)/IP()/Raw('x'*20)"
+                % (dmac, i)
+            )
             self.tester.scapy_append('sendp([%s], iface="%s")' % (pkt, self.txItf))
             self.tester.scapy_execute()
             time.sleep(2)
             out = self.dut.get_session_output()
-            if self.kdriver == 'i40e':
-                self.verify('queue %s' % i in out and dmac.upper() in out, 'wrong queue receive packet')
+            if self.kdriver == "i40e":
+                self.verify(
+                    "queue %s" % i in out and dmac.upper() in out,
+                    "wrong queue receive packet",
+                )
             else:
                 if n == 4:
-                    self.verify('queue %s' % queues_4tc[i] in out and dmac.upper() in out, 'wrong queue receive packet')
+                    self.verify(
+                        "queue %s" % queues_4tc[i] in out and dmac.upper() in out,
+                        "wrong queue receive packet",
+                    )
                 else:
-                    self.verify('queue %s' % queues_8tc[i] in out and dmac.upper() in out, 'wrong queue receive packet')
+                    self.verify(
+                        "queue %s" % queues_8tc[i] in out and dmac.upper() in out,
+                        "wrong queue receive packet",
+                    )
 
     def queue_map_test(self, n):
         self.set_dcb(n)
-        self.dut.send_expect('port start all', 'testpmd> ')
-        self.dut.send_expect('set fwd rxonly', 'testpmd> ')
-        self.dut.send_expect('set verbose 1', 'testpmd> ')
-        self.dut.send_expect('start', 'testpmd> ')
+        self.dut.send_expect("port start all", "testpmd> ")
+        self.dut.send_expect("set fwd rxonly", "testpmd> ")
+        self.dut.send_expect("set verbose 1", "testpmd> ")
+        self.dut.send_expect("start", "testpmd> ")
         self.scapy_send_packet_verify(n)
 
     def shaping_tc_test_i40e(self, n):
@@ -154,60 +179,100 @@ class TestQosApi(TestCase):
         self.add_private_shaper(n)
         self.add_tc_node(n)
         self.add_queue_leaf_node(n)
-        self.dut.send_expect('port tm hierarchy commit 1 no', 'testpmd> ')
-        self.dut.send_expect('start', 'testpmd> ')
+        self.dut.send_expect("port tm hierarchy commit 1 no", "testpmd> ")
+        self.dut.send_expect("start", "testpmd> ")
         self.perf_test(n)
 
     def test_dcb_4tc_queue_map_i40e(self):
         self.verify(self.kdriver in ["i40e"], "NIC Unsupported: " + str(self.nic))
-        self.host_testpmd.start_testpmd("1S/5C/1T", " --nb-cores=4 --txq=4 --rxq=4 --rss-ip ", eal_param=self.eal_param)
+        self.host_testpmd.start_testpmd(
+            "1S/5C/1T",
+            " --nb-cores=4 --txq=4 --rxq=4 --rss-ip ",
+            eal_param=self.eal_param,
+        )
         self.queue_map_test(4)
 
     def test_dcb_8tc_queue_map_i40e(self):
         self.verify(self.kdriver in ["i40e"], "NIC Unsupported: " + str(self.nic))
-        self.host_testpmd.start_testpmd("1S/9C/1T", " --nb-cores=8 --txq=8 --rxq=8 --rss-ip ", eal_param=self.eal_param)
+        self.host_testpmd.start_testpmd(
+            "1S/9C/1T",
+            " --nb-cores=8 --txq=8 --rxq=8 --rss-ip ",
+            eal_param=self.eal_param,
+        )
         self.queue_map_test(8)
 
     def test_perf_shaping_for_port_i40e(self):
         self.verify(self.kdriver in ["i40e"], "NIC Unsupported: " + str(self.nic))
-        eal_param = ' --master-lcore=1'
-        self.host_testpmd.start_testpmd("1S/5C/1T", " --nb-cores=4 --txq=4 --rxq=4 --rss-ip ", eal_param=self.eal_param)
-        self.dut.send_expect('port stop 1', 'testpmd> ')
-        self.dut.send_expect('add port tm node shaper profile 1 0 0 0 25000000 0 0', 'testpmd> ')
-        self.dut.send_expect('add port tm nonleaf node 1 1000000 -1 0 1 0 0 1 0 0', 'testpmd> ')
-        self.dut.send_expect('port tm hierarchy commit 1 no', 'testpmd> ')
-        self.dut.send_expect('port start 1', 'testpmd> ')
-        self.dut.send_expect('start', 'testpmd> ')
+        eal_param = " --master-lcore=1"
+        self.host_testpmd.start_testpmd(
+            "1S/5C/1T",
+            " --nb-cores=4 --txq=4 --rxq=4 --rss-ip ",
+            eal_param=self.eal_param,
+        )
+        self.dut.send_expect("port stop 1", "testpmd> ")
+        self.dut.send_expect(
+            "add port tm node shaper profile 1 0 0 0 25000000 0 0", "testpmd> "
+        )
+        self.dut.send_expect(
+            "add port tm nonleaf node 1 1000000 -1 0 1 0 0 1 0 0", "testpmd> "
+        )
+        self.dut.send_expect("port tm hierarchy commit 1 no", "testpmd> ")
+        self.dut.send_expect("port start 1", "testpmd> ")
+        self.dut.send_expect("start", "testpmd> ")
         self.perf_test(4)
 
     def test_perf_shaping_1port_4tc_i40e(self):
         self.verify(self.kdriver in ["i40e"], "NIC Unsupported: " + str(self.nic))
-        self.host_testpmd.start_testpmd("1S/5C/1T", " --nb-cores=4 --txq=4 --rxq=4 --rss-ip ", eal_param=self.eal_param)
+        self.host_testpmd.start_testpmd(
+            "1S/5C/1T",
+            " --nb-cores=4 --txq=4 --rxq=4 --rss-ip ",
+            eal_param=self.eal_param,
+        )
         self.shaping_tc_test_i40e(4)
 
     def test_perf_shaping_1port_8tc_i40e(self):
         self.verify(self.kdriver in ["i40e"], "NIC Unsupported: " + str(self.nic))
-        self.host_testpmd.start_testpmd("1S/9C/1T", " --nb-cores=8 --txq=8 --rxq=8 --rss-ip ", eal_param=self.eal_param)
+        self.host_testpmd.start_testpmd(
+            "1S/9C/1T",
+            " --nb-cores=8 --txq=8 --rxq=8 --rss-ip ",
+            eal_param=self.eal_param,
+        )
         self.shaping_tc_test_i40e(8)
 
     def test_dcb_4tc_queue_map_ixgbe(self):
         self.verify(self.kdriver in ["ixgbe"], "NIC Unsupported: " + str(self.nic))
-        self.host_testpmd.start_testpmd("1S/5C/1T", " --nb-cores=4 --txq=4 --rxq=4 --disable-rss ", eal_param=self.eal_param)
+        self.host_testpmd.start_testpmd(
+            "1S/5C/1T",
+            " --nb-cores=4 --txq=4 --rxq=4 --disable-rss ",
+            eal_param=self.eal_param,
+        )
         self.queue_map_test(4)
 
     def test_dcb_8tc_queue_map_ixgbe(self):
         self.verify(self.kdriver in ["ixgbe"], "NIC Unsupported: " + str(self.nic))
-        self.host_testpmd.start_testpmd("1S/9C/1T", " --nb-cores=8 --txq=8 --rxq=8 --disable-rss ", eal_param=self.eal_param)
+        self.host_testpmd.start_testpmd(
+            "1S/9C/1T",
+            " --nb-cores=8 --txq=8 --rxq=8 --disable-rss ",
+            eal_param=self.eal_param,
+        )
         self.queue_map_test(8)
 
     def test_perf_shaping_1port_4tc_ixgbe(self):
         self.verify(self.kdriver in ["ixgbe"], "NIC Unsupported: " + str(self.nic))
-        self.host_testpmd.start_testpmd("1S/5C/1T", " --nb-cores=4 --txq=4 --rxq=4 --disable-rss ", eal_param=self.eal_param)
+        self.host_testpmd.start_testpmd(
+            "1S/5C/1T",
+            " --nb-cores=4 --txq=4 --rxq=4 --disable-rss ",
+            eal_param=self.eal_param,
+        )
         self.shaping_tc_test_ixgbe(4)
 
     def test_perf_shaping_1port_8tc_ixgbe(self):
         self.verify(self.kdriver in ["ixgbe"], "NIC Unsupported: " + str(self.nic))
-        self.host_testpmd.start_testpmd("1S/9C/1T", " --nb-cores=8 --txq=8 --rxq=8 --disable-rss ", eal_param=self.eal_param)
+        self.host_testpmd.start_testpmd(
+            "1S/9C/1T",
+            " --nb-cores=8 --txq=8 --rxq=8 --disable-rss ",
+            eal_param=self.eal_param,
+        )
         self.shaping_tc_test_ixgbe(8)
 
     def shaping_tc_test_ixgbe(self, n):
@@ -216,8 +281,8 @@ class TestQosApi(TestCase):
         self.add_tc_node_ixgbe(n)
         self.add_private_shaper_ixgbe(n)
         self.add_queue_leaf_node_ixgbe(n)
-        self.dut.send_expect('port tm hierarchy commit 1 no', 'testpmd> ')
-        self.dut.send_expect('start', 'testpmd> ')
+        self.dut.send_expect("port tm hierarchy commit 1 no", "testpmd> ")
+        self.dut.send_expect("start", "testpmd> ")
         self.perf_test(n)
 
     def perf_test(self, n):
@@ -225,7 +290,10 @@ class TestQosApi(TestCase):
         dmac = self.dut.get_mac_address(self.dut_ports[0])
         pkts = []
         for i in range(n):
-            pkt = 'Ether(dst="%s", src="00:02:00:00:00:01")/Dot1Q(prio=%s)/IP()/("x"*26)' % (dmac, i)
+            pkt = (
+                'Ether(dst="%s", src="00:02:00:00:00:01")/Dot1Q(prio=%s)/IP()/("x"*26)'
+                % (dmac, i)
+            )
             pkts.append(pkt)
         for i in range(n):
             flow = pkts[i]
@@ -235,29 +303,50 @@ class TestQosApi(TestCase):
 
             tgenInput = []
             pcap = os.sep.join([self.output_path, "test.pcap"])
-            tgenInput.append((self.tester.get_local_port(self.dut_ports[0]), self.tester.get_local_port(self.dut_ports[1]), pcap))
+            tgenInput.append(
+                (
+                    self.tester.get_local_port(self.dut_ports[0]),
+                    self.tester.get_local_port(self.dut_ports[1]),
+                    pcap,
+                )
+            )
 
             self.tester.pktgen.clear_streams()
-            streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100, None, self.tester.pktgen)
-            traffic_opt = {'delay': 10}
-            bps, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
-            bps_rate = abs(float(self.bps) - bps)/self.bps
+            streams = self.pktgen_helper.prepare_stream_from_tginput(
+                tgenInput, 100, None, self.tester.pktgen
+            )
+            traffic_opt = {"delay": 10}
+            bps, pps = self.tester.pktgen.measure_throughput(
+                stream_ids=streams, options=traffic_opt
+            )
+            bps_rate = abs(float(self.bps) - bps) / self.bps
             print("bps_rate", bps_rate)
-            self.verify(round(self.bps_rate[1] >= bps_rate, 3) >= self.bps_rate[0], 'rx bps is not match 200M')
+            self.verify(
+                round(self.bps_rate[1] >= bps_rate, 3) >= self.bps_rate[0],
+                "rx bps is not match 200M",
+            )
 
     def add_queue_leaf_node(self, n):
         for i in range(n):
-            self.dut.send_expect('add port tm leaf node 1 %s %s 0 1 2 -1 0 0xffffffff 0 0' % (i, 900000 + i), 'testpmd> ')
+            self.dut.send_expect(
+                "add port tm leaf node 1 %s %s 0 1 2 -1 0 0xffffffff 0 0"
+                % (i, 900000 + i),
+                "testpmd> ",
+            )
 
     def add_queue_leaf_node_ixgbe(self, n):
         for i in range(n):
-            self.dut.send_expect('add port tm leaf node 1 %s %s 0 1 2 0 0 0xffffffff 0 0' % (i, 900000 + i), 'testpmd> ')
+            self.dut.send_expect(
+                "add port tm leaf node 1 %s %s 0 1 2 0 0 0xffffffff 0 0"
+                % (i, 900000 + i),
+                "testpmd> ",
+            )
 
     def tear_down(self):
         """
         Run after each test case.
         """
-        self.dut.send_expect('quit', '# ')
+        self.dut.send_expect("quit", "# ")
 
     def tear_down_all(self):
         """

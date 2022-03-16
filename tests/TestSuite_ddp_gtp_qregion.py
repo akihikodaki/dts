@@ -43,15 +43,14 @@ from framework.test_case import TestCase
 
 
 class TestDdpGtpQregion(TestCase):
-
     def set_up_all(self):
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
-        profile_file = 'dep/gtp.pkgo'
+        profile_file = "dep/gtp.pkgo"
         profile_dst = "/tmp/"
         self.dut.session.copy_file_to(profile_file, profile_dst)
         out = self.dut.send_expect("cat config/rte_config.h", "]# ", 10)
-        self.PF_Q_strip = 'RTE_LIBRTE_I40E_QUEUE_NUM_PER_PF'
+        self.PF_Q_strip = "RTE_LIBRTE_I40E_QUEUE_NUM_PER_PF"
         pattern = "define (%s) (\d*)" % self.PF_Q_strip
         self.PF_QUEUE = self.element_strip(out, pattern)
         self.used_dut_port = self.dut_ports[0]
@@ -70,7 +69,7 @@ class TestDdpGtpQregion(TestCase):
         s = re.compile(pattern)
         res = s.search(out)
         if res is None:
-            print((utils.RED('Search no queue number.')))
+            print((utils.RED("Search no queue number.")))
             return None
         else:
             result = res.group(2)
@@ -83,16 +82,17 @@ class TestDdpGtpQregion(TestCase):
         during initialization stage.
         """
         self.dut_testpmd.start_testpmd(
-            "Default", "--pkt-filter-mode=perfect --port-topology=chained \
+            "Default",
+            "--pkt-filter-mode=perfect --port-topology=chained \
             --txq=%s --rxq=%s"
-            % (self.PF_QUEUE, self.PF_QUEUE))
-        self.dut_testpmd.execute_cmd('port stop all')
+            % (self.PF_QUEUE, self.PF_QUEUE),
+        )
+        self.dut_testpmd.execute_cmd("port stop all")
         time.sleep(1)
-        self.dut_testpmd.execute_cmd('ddp add 0 /tmp/gtp.pkgo,/tmp/gtp.bak')
-        out = self.dut_testpmd.execute_cmd('ddp get list 0')
-        self.verify("Profile number is: 1" in out,
-                    "Failed to load ddp profile!!!")
-        self.dut_testpmd.execute_cmd('port start all')
+        self.dut_testpmd.execute_cmd("ddp add 0 /tmp/gtp.pkgo,/tmp/gtp.bak")
+        out = self.dut_testpmd.execute_cmd("ddp get list 0")
+        self.verify("Profile number is: 1" in out, "Failed to load ddp profile!!!")
+        self.dut_testpmd.execute_cmd("port start all")
 
     def flowtype_qregion_mapping(self):
         """
@@ -104,12 +104,18 @@ class TestDdpGtpQregion(TestCase):
         q_nums = [8, 16, 8, 16]
         flowtypes = [26, 23, 24, 25]
         for rg_id, idx_id, q_num in zip(rg_ids, idx_ids, q_nums):
-            self.dut_testpmd.execute_cmd('set port 0 queue-region region_id \
-                %d queue_start_index %d queue_num %d' % (rg_id, idx_id, q_num))
+            self.dut_testpmd.execute_cmd(
+                "set port 0 queue-region region_id \
+                %d queue_start_index %d queue_num %d"
+                % (rg_id, idx_id, q_num)
+            )
         for rg_id, flowtype in zip(rg_ids, flowtypes):
-            self.dut_testpmd.execute_cmd('set port 0 queue-region region_id \
-                %d flowtype %d' % (rg_id, flowtype))
-        self.dut_testpmd.execute_cmd('set port 0 queue-region flush on')
+            self.dut_testpmd.execute_cmd(
+                "set port 0 queue-region region_id \
+                %d flowtype %d"
+                % (rg_id, flowtype)
+            )
+        self.dut_testpmd.execute_cmd("set port 0 queue-region flush on")
 
     def gtp_pkts(self, flowtype, keyword, opt):
         """
@@ -119,41 +125,47 @@ class TestDdpGtpQregion(TestCase):
         dst_ip = "2.2.2.2"
         src_ipv6 = "1001:0db8:85a3:0000:0000:8a2e:0370:0001"
         dst_ipv6 = "2001:0db8:85a3:0000:0000:8a2e:0370:0001"
-        teid = hex(0xfe)
+        teid = hex(0xFE)
         sport = 100
         dport = 200
-        if opt is 'chg_preword_opt':
-            if keyword is 'dst_ipv6_64pre':
+        if opt is "chg_preword_opt":
+            if keyword is "dst_ipv6_64pre":
                 dst_ipv6 = "2001:0db8:85a3:0001:0000:8a2e:0370:0001"
-            if keyword is 'src_ipv6_48pre':
+            if keyword is "src_ipv6_48pre":
                 src_ipv6 = "1001:0db8:85a4:0000:0000:8a2e:0370:0001"
-            if keyword is 'dst_ipv6_32pre':
+            if keyword is "dst_ipv6_32pre":
                 dst_ipv6 = "2001:0db9:85a3:0000:0000:8a2e:0370:0001"
-        elif opt in ['chg_sufword_opt', 'notword_opt']:
-            if keyword is 'src_ip':
+        elif opt in ["chg_sufword_opt", "notword_opt"]:
+            if keyword is "src_ip":
                 src_ip = "1.1.1.2"
-            if keyword is 'dst_ip':
+            if keyword is "dst_ip":
                 dst_ip = "2.2.2.3"
-            if keyword in ['src_ipv6', 'src_ipv6_48pre']:
+            if keyword in ["src_ipv6", "src_ipv6_48pre"]:
                 src_ipv6 = "1001:0db8:85a3:0000:0000:8a2e:0370:0002"
-            if keyword in ['dst_ipv6', 'dst_ipv6_32pre', 'dst_ipv6_64pre']:
+            if keyword in ["dst_ipv6", "dst_ipv6_32pre", "dst_ipv6_64pre"]:
                 dst_ipv6 = "2001:0db8:85a3:0000:0000:8a2e:0370:0002"
-            if keyword is 'teid':
-                teid = hex(0xff)
-            if keyword is 'sport':
+            if keyword is "teid":
+                teid = hex(0xFF)
+            if keyword is "sport":
                 sport = 101
-            if keyword is 'dport':
+            if keyword is "dport":
                 dport = 201
 
         if flowtype == 23:
-            pkts = {'IPV6/GTPU/IPV6/UDP': 'Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=%s)/IPv6(src="%s",dst="%s")/UDP(sport=%d,dport=%d)/Raw("X"*20)'
-                    % (teid, src_ipv6, dst_ipv6, sport, dport)}
+            pkts = {
+                "IPV6/GTPU/IPV6/UDP": 'Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=%s)/IPv6(src="%s",dst="%s")/UDP(sport=%d,dport=%d)/Raw("X"*20)'
+                % (teid, src_ipv6, dst_ipv6, sport, dport)
+            }
         if flowtype == 25:
-            pkts = {'IPV6/GTPC': 'Ether()/IPv6(src="%s",dst="%s")/UDP(dport=2123)/GTP_U_Header(teid=%s)/Raw("X"*20)'
-                    % (src_ipv6, dst_ipv6, teid)}
+            pkts = {
+                "IPV6/GTPC": 'Ether()/IPv6(src="%s",dst="%s")/UDP(dport=2123)/GTP_U_Header(teid=%s)/Raw("X"*20)'
+                % (src_ipv6, dst_ipv6, teid)
+            }
         if flowtype == 26:
-            pkts = {'IPV6/GTPU/IPV4/UDP': 'Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=%s)/IP(src="%s",dst="%s")/UDP(sport=%d,dport=%d)/Raw("X"*20)'
-                    % (teid, src_ip, dst_ip, sport, dport)}
+            pkts = {
+                "IPV6/GTPU/IPV4/UDP": 'Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=%s)/IP(src="%s",dst="%s")/UDP(sport=%d,dport=%d)/Raw("X"*20)'
+                % (teid, src_ip, dst_ip, sport, dport)
+            }
         return pkts
 
     def raw_packet_generate(self, flowtype):
@@ -166,7 +178,7 @@ class TestDdpGtpQregion(TestCase):
             a = 'Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IPv6(dst="1001:0db8:85a3:0000:0000:8a2e:0370:0001", src="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP(dport=100, sport=200)/Raw("X"*20)'
         if flowtype == 26:
             a = 'Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IP(dst="1.1.1.1", src="2.2.2.2")/UDP(dport=100, sport=200)/Raw("X"*20)'
-        rawfile_src = '/tmp/test_gtp.raw'
+        rawfile_src = "/tmp/test_gtp.raw"
         packet.write_raw_pkt(a, rawfile_src)
         rawfile_dst = "/tmp/"
         self.dut.session.copy_file_to(rawfile_src, rawfile_dst)
@@ -182,17 +194,12 @@ class TestDdpGtpQregion(TestCase):
             out = self.dut.get_session_output(timeout=2)
             pattern = "port (\d)/queue (\d{1,2}): received (\d) packets"
             qnum = self.element_strip(out, pattern)
-            ptypes = packet_type.split('/')
-            layerparams = ['L3_', 'TUNNEL_',
-                           'INNER_L3_', 'INNER_L4_']
-            endparams = ['_EXT_UNKNOWN', '',
-                         '_EXT_UNKNOWN', '']
-            for layerparam, ptype, endparam in zip(
-                    layerparams, ptypes, endparams):
+            ptypes = packet_type.split("/")
+            layerparams = ["L3_", "TUNNEL_", "INNER_L3_", "INNER_L4_"]
+            endparams = ["_EXT_UNKNOWN", "", "_EXT_UNKNOWN", ""]
+            for layerparam, ptype, endparam in zip(layerparams, ptypes, endparams):
                 layer_type = layerparam + ptype + endparam
-                self.verify(
-                    layer_type in out,
-                    "Failed to output ptype information!!!")
+                self.verify(layer_type in out, "Failed to output ptype information!!!")
             return qnum
 
     def send_and_verify(self, flowtype, qmin, qmax, keyword):
@@ -213,28 +220,29 @@ class TestDdpGtpQregion(TestCase):
         notword_opt: change not keyword, e.g. check dst controls queue number,
                      change src then check pmd receives packet from same queue.
         """
-        for opt in ['word_opt', 'chg_preword_opt', 'chg_sufword_opt',
-                    'notword_opt']:
-            if opt is 'chg_preword_opt':
-                if keyword not in ['dst_ipv6_64pre', 'src_ipv6_48pre',
-                                   'dst_ipv6_32pre']:
+        for opt in ["word_opt", "chg_preword_opt", "chg_sufword_opt", "notword_opt"]:
+            if opt is "chg_preword_opt":
+                if keyword not in [
+                    "dst_ipv6_64pre",
+                    "src_ipv6_48pre",
+                    "dst_ipv6_32pre",
+                ]:
                     continue
-            if opt is 'notword_opt':
-                if keyword == 'teid':
+            if opt is "notword_opt":
+                if keyword == "teid":
                     break
-                elif keyword == 'sport':
-                    keyword = 'dport'
-                elif keyword == 'dport':
-                    keyword = 'sport'
-                elif keyword == 'src_ip':
-                    keyword = 'dst_ip'
-                elif keyword == 'dst_ip':
-                    keyword = 'src_ip'
-                elif keyword in ['src_ipv6', 'src_ipv6_48pre']:
-                    keyword = 'dst_ipv6'
-                elif keyword in ['dst_ipv6', 'dst_ipv6_64pre',
-                                 'dst_ipv6_32pre']:
-                    keyword = 'src_ipv6'
+                elif keyword == "sport":
+                    keyword = "dport"
+                elif keyword == "dport":
+                    keyword = "sport"
+                elif keyword == "src_ip":
+                    keyword = "dst_ip"
+                elif keyword == "dst_ip":
+                    keyword = "src_ip"
+                elif keyword in ["src_ipv6", "src_ipv6_48pre"]:
+                    keyword = "dst_ipv6"
+                elif keyword in ["dst_ipv6", "dst_ipv6_64pre", "dst_ipv6_32pre"]:
+                    keyword = "src_ipv6"
             pkts = self.gtp_pkts(flowtype, keyword, opt)
             for packet_type in list(pkts.keys()):
                 pkt = packet.Packet(pkts[packet_type])
@@ -243,54 +251,69 @@ class TestDdpGtpQregion(TestCase):
                 self.verify("RTE_MBUF_F_RX_RSS_HASH" in out, "Failed to test RSS!!!")
                 pattern = "port (\d)/queue (\d{1,2}): received (\d) packets"
                 qnum = self.element_strip(out, pattern)
-                if opt is 'word_opt':
+                if opt is "word_opt":
                     crol_qnum = qnum
-                layerparams = ['L3_', 'TUNNEL_',
-                               'INNER_L3_', 'INNER_L4_']
-                ptypes = packet_type.split('/')
-                endparams = ['_EXT_UNKNOWN', '',
-                             '_EXT_UNKNOWN', '']
-                for layerparam, ptype, endparam in zip(
-                        layerparams, ptypes, endparams):
+                layerparams = ["L3_", "TUNNEL_", "INNER_L3_", "INNER_L4_"]
+                ptypes = packet_type.split("/")
+                endparams = ["_EXT_UNKNOWN", "", "_EXT_UNKNOWN", ""]
+                for layerparam, ptype, endparam in zip(layerparams, ptypes, endparams):
                     layer_type = layerparam + ptype + endparam
                     self.verify(
-                        layer_type in out,
-                        "Failed to output ptype information!!!")
-                self.verify(qnum <= qmax and qnum >= qmin,
-                            "Queue is not between this queue range!!!")
-                if opt is 'chg_preword_opt':
-                    self.verify(qnum != crol_qnum,
-                                "Failed to test rss if changing prefix key \
-                                 words!!!")
-                if opt is 'chg_sufword_opt':
-                    if keyword in ['dst_ipv6_64pre', 'src_ipv6_48pre',
-                                   'dst_ipv6_32pre']:
-                        self.verify(qnum == crol_qnum,
-                                    "Failed to test rss if changing suffixal \
-                                     key words!!!")
+                        layer_type in out, "Failed to output ptype information!!!"
+                    )
+                self.verify(
+                    qnum <= qmax and qnum >= qmin,
+                    "Queue is not between this queue range!!!",
+                )
+                if opt is "chg_preword_opt":
+                    self.verify(
+                        qnum != crol_qnum,
+                        "Failed to test rss if changing prefix key \
+                                 words!!!",
+                    )
+                if opt is "chg_sufword_opt":
+                    if keyword in [
+                        "dst_ipv6_64pre",
+                        "src_ipv6_48pre",
+                        "dst_ipv6_32pre",
+                    ]:
+                        self.verify(
+                            qnum == crol_qnum,
+                            "Failed to test rss if changing suffixal \
+                                     key words!!!",
+                        )
                     else:
-                        self.verify(qnum != crol_qnum,
-                                    "Failed to test rss if changing key \
-                                     words!!!")
-                if opt is 'notword_opt':
-                    self.verify(qnum == crol_qnum,
-                                "Failed to test rss if changing to other key \
-                                words!!!")
+                        self.verify(
+                            qnum != crol_qnum,
+                            "Failed to test rss if changing key \
+                                     words!!!",
+                        )
+                if opt is "notword_opt":
+                    self.verify(
+                        qnum == crol_qnum,
+                        "Failed to test rss if changing to other key \
+                                words!!!",
+                    )
 
     def flowtype_pctype_mapping(self, flowtype, pctype):
-        self.dut_testpmd.execute_cmd('port config 0 pctype mapping reset')
-        out = self.dut_testpmd.execute_cmd('show port 0 pctype mapping')
-        self.verify("pctype: 63  ->  flowtype: 14" in out,
-                    "Failed show flow type to pctype mapping!!!")
-        self.verify("pctype: %s  ->  flowtype: %s"
-                    % (pctype, flowtype) not in out,
-                    "Failed show flow type to pctype mapping!!!")
+        self.dut_testpmd.execute_cmd("port config 0 pctype mapping reset")
+        out = self.dut_testpmd.execute_cmd("show port 0 pctype mapping")
+        self.verify(
+            "pctype: 63  ->  flowtype: 14" in out,
+            "Failed show flow type to pctype mapping!!!",
+        )
+        self.verify(
+            "pctype: %s  ->  flowtype: %s" % (pctype, flowtype) not in out,
+            "Failed show flow type to pctype mapping!!!",
+        )
         self.dut_testpmd.execute_cmd(
-            'port config 0 pctype mapping update %s %s' % (pctype, flowtype))
-        out = self.dut_testpmd.execute_cmd('show port 0 pctype mapping')
-        self.verify("pctype: %s  ->  flowtype: %s"
-                    % (pctype, flowtype) in out,
-                    "Failed update flow type to pctype mapping!!!")
+            "port config 0 pctype mapping update %s %s" % (pctype, flowtype)
+        )
+        out = self.dut_testpmd.execute_cmd("show port 0 pctype mapping")
+        self.verify(
+            "pctype: %s  ->  flowtype: %s" % (pctype, flowtype) in out,
+            "Failed update flow type to pctype mapping!!!",
+        )
 
     def run_fd_test(self, crlwords, flowtype, pctype, keywords, qchecks):
         """
@@ -310,37 +333,43 @@ class TestDdpGtpQregion(TestCase):
 
         self.flowtype_pctype_mapping(flowtype, pctype)
         if crlwords is not None:
-            self.dut_testpmd.execute_cmd('port stop all')
+            self.dut_testpmd.execute_cmd("port stop all")
             time.sleep(1)
             self.dut_testpmd.execute_cmd(
-                'port config 0 pctype %s fdir_inset clear all' % pctype)
+                "port config 0 pctype %s fdir_inset clear all" % pctype
+            )
             for word in crlwords:
                 self.dut_testpmd.execute_cmd(
-                    'port config 0 pctype %s fdir_inset set field %s'
-                    % (pctype, word))
-            self.dut_testpmd.execute_cmd('port start all')
-        self.dut_testpmd.execute_cmd('set fwd rxonly')
-        self.dut_testpmd.execute_cmd('set verbose 1')
-        self.dut_testpmd.execute_cmd('start')
+                    "port config 0 pctype %s fdir_inset set field %s" % (pctype, word)
+                )
+            self.dut_testpmd.execute_cmd("port start all")
+        self.dut_testpmd.execute_cmd("set fwd rxonly")
+        self.dut_testpmd.execute_cmd("set verbose 1")
+        self.dut_testpmd.execute_cmd("start")
         self.dut_testpmd.wait_link_status_up(self.dut_ports[0])
-        qnum = self.send_verify_fd(flowtype, keywords, 'word_opt')
+        qnum = self.send_verify_fd(flowtype, keywords, "word_opt")
         self.verify(qnum == 0, "Receive packet from wrong queue!!!")
         self.raw_packet_generate(flowtype)
         queue = random.randint(1, self.PF_QUEUE - 1)
         self.dut_testpmd.execute_cmd(
-            'flow_director_filter 0 mode raw add flow %d fwd queue %d \
-            fd_id 1 packet /tmp/test_gtp.raw' % (flowtype, queue))
-        qnum = self.send_verify_fd(flowtype, keywords, 'word_opt')
+            "flow_director_filter 0 mode raw add flow %d fwd queue %d \
+            fd_id 1 packet /tmp/test_gtp.raw"
+            % (flowtype, queue)
+        )
+        qnum = self.send_verify_fd(flowtype, keywords, "word_opt")
         qdef = qnum
         self.verify(qnum == queue, "Receive packet from wrong queue!!!")
         for word, chk in zip(keywords, qchecks):
-            qnum = self.send_verify_fd(flowtype, word, 'chg_sufword_opt')
+            qnum = self.send_verify_fd(flowtype, word, "chg_sufword_opt")
             if qnum == qdef:
-                result = 'sameq'
+                result = "sameq"
             elif qnum == 0:
-                result = 'difq'
-            self.verify(result == chk, "Faild to verify flow director when \
-                key word change!!!")
+                result = "difq"
+            self.verify(
+                result == chk,
+                "Faild to verify flow director when \
+                key word change!!!",
+            )
 
     def run_gtp_test(self, crlwords, flowtype, pctype, qmin, qmax, keyword):
         """
@@ -373,19 +402,20 @@ class TestDdpGtpQregion(TestCase):
         """
         self.flowtype_qregion_mapping()
         self.flowtype_pctype_mapping(flowtype, pctype)
-        self.dut_testpmd.execute_cmd('port stop all')
+        self.dut_testpmd.execute_cmd("port stop all")
         time.sleep(1)
         self.dut_testpmd.execute_cmd(
-            'port config 0 pctype %s hash_inset clear all' % pctype)
+            "port config 0 pctype %s hash_inset clear all" % pctype
+        )
         for word in crlwords:
             self.dut_testpmd.execute_cmd(
-                'port config 0 pctype %s hash_inset set field %s'
-                % (pctype, word))
-        self.dut_testpmd.execute_cmd('port start all')
-        self.dut_testpmd.execute_cmd('port config all rss %s' % flowtype)
-        self.dut_testpmd.execute_cmd('set fwd rxonly')
-        self.dut_testpmd.execute_cmd('set verbose 1')
-        self.dut_testpmd.execute_cmd('start')
+                "port config 0 pctype %s hash_inset set field %s" % (pctype, word)
+            )
+        self.dut_testpmd.execute_cmd("port start all")
+        self.dut_testpmd.execute_cmd("port config all rss %s" % flowtype)
+        self.dut_testpmd.execute_cmd("set fwd rxonly")
+        self.dut_testpmd.execute_cmd("set verbose 1")
+        self.dut_testpmd.execute_cmd("start")
         self.dut_testpmd.wait_link_status_up(self.dut_ports[0])
         self.send_and_verify(flowtype, qmin, qmax, keyword)
 
@@ -529,8 +559,8 @@ class TestDdpGtpQregion(TestCase):
         packets to configured queue, otherwise direct packets to queue 0.
         """
         crlwords = None
-        keywords = ['src_ip', 'dst_ip', 'sport', 'dport', 'teid']
-        qchecks = ['sameq', 'sameq', 'sameq', 'sameq', 'difq']
+        keywords = ["src_ip", "dst_ip", "sport", "dport", "teid"]
+        qchecks = ["sameq", "sameq", "sameq", "sameq", "difq"]
         self.run_fd_test(crlwords, 26, 22, keywords, qchecks)
 
     def test_fd_gtpu_ipv4_dstip(self):
@@ -543,8 +573,8 @@ class TestDdpGtpQregion(TestCase):
         otherwise direct packets to queue 0.
         """
         crlwords = list(range(27, 29))
-        keywords = ['src_ip', 'sport', 'dport', 'dst_ip']
-        qchecks = ['sameq', 'sameq', 'sameq', 'difq']
+        keywords = ["src_ip", "sport", "dport", "dst_ip"]
+        qchecks = ["sameq", "sameq", "sameq", "difq"]
         self.run_fd_test(crlwords, 26, 22, keywords, qchecks)
 
     def test_fd_gtpu_ipv4_srcip(self):
@@ -557,8 +587,8 @@ class TestDdpGtpQregion(TestCase):
         otherwise direct packets to queue 0.
         """
         crlwords = list(range(15, 17))
-        keywords = ['dst_ip', 'sport', 'dport', 'src_ip']
-        qchecks = ['sameq', 'sameq', 'sameq', 'difq']
+        keywords = ["dst_ip", "sport", "dport", "src_ip"]
+        qchecks = ["sameq", "sameq", "sameq", "difq"]
         self.run_fd_test(crlwords, 26, 22, keywords, qchecks)
 
     def test_fd_gtpu_ipv6(self):
@@ -570,8 +600,8 @@ class TestDdpGtpQregion(TestCase):
         packets to configured queue, otherwise direct packets to queue 0.
         """
         crlwords = None
-        keywords = ['src_ipv6', 'dst_ipv6', 'sport', 'dport', 'teid']
-        qchecks = ['sameq', 'sameq', 'sameq', 'sameq', 'difq']
+        keywords = ["src_ipv6", "dst_ipv6", "sport", "dport", "teid"]
+        qchecks = ["sameq", "sameq", "sameq", "sameq", "difq"]
         self.run_fd_test(crlwords, 23, 23, keywords, qchecks)
 
     def test_fd_gtpu_ipv6_dstipv6(self):
@@ -584,8 +614,8 @@ class TestDdpGtpQregion(TestCase):
         otherwise direct packets to queue 0.
         """
         crlwords = list(range(21, 29))
-        keywords = ['src_ipv6', 'sport', 'dport', 'teid', 'dst_ipv6']
-        qchecks = ['sameq', 'sameq', 'sameq', 'sameq', 'difq']
+        keywords = ["src_ipv6", "sport", "dport", "teid", "dst_ipv6"]
+        qchecks = ["sameq", "sameq", "sameq", "sameq", "difq"]
         self.run_fd_test(crlwords, 23, 23, keywords, qchecks)
 
     def test_fd_gtpu_ipv6_srcipv6(self):
@@ -598,8 +628,8 @@ class TestDdpGtpQregion(TestCase):
         otherwise direct packets to queue 0.
         """
         crlwords = list(range(13, 21))
-        keywords = ['dst_ipv6', 'sport', 'dport', 'teid', 'src_ipv6']
-        qchecks = ['sameq', 'sameq', 'sameq', 'sameq', 'difq']
+        keywords = ["dst_ipv6", "sport", "dport", "teid", "src_ipv6"]
+        qchecks = ["sameq", "sameq", "sameq", "sameq", "difq"]
         self.run_fd_test(crlwords, 23, 23, keywords, qchecks)
 
     def test_outer_64pre_dst_contrl_gtpcq(self):
@@ -636,17 +666,18 @@ class TestDdpGtpQregion(TestCase):
         self.run_gtp_test(crlwords, 23, 23, 10, 25, "dst_ipv6_32pre")
 
     def tear_down(self):
-        self.dut_testpmd.execute_cmd('stop')
-        self.dut_testpmd.execute_cmd('set port 0 queue-region flush off')
-        out = self.dut_testpmd.execute_cmd('ddp get list 0')
+        self.dut_testpmd.execute_cmd("stop")
+        self.dut_testpmd.execute_cmd("set port 0 queue-region flush off")
+        out = self.dut_testpmd.execute_cmd("ddp get list 0")
         if "Profile number is: 0" not in out:
-            self.dut_testpmd.execute_cmd('port stop all')
+            self.dut_testpmd.execute_cmd("port stop all")
             time.sleep(1)
-            self.dut_testpmd.execute_cmd('ddp del 0 /tmp/gtp.bak')
-            out = self.dut_testpmd.execute_cmd('ddp get list 0')
-            self.verify("Profile number is: 0" in out,
-                        "Failed to delete ddp profile!!!")
-            self.dut_testpmd.execute_cmd('port start all')
+            self.dut_testpmd.execute_cmd("ddp del 0 /tmp/gtp.bak")
+            out = self.dut_testpmd.execute_cmd("ddp get list 0")
+            self.verify(
+                "Profile number is: 0" in out, "Failed to delete ddp profile!!!"
+            )
+            self.dut_testpmd.execute_cmd("port start all")
         self.dut_testpmd.quit()
 
     def tear_down_all(self):

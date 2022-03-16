@@ -3,9 +3,7 @@ Static configuration data for any CRBs that can be used.
 """
 
 crbs_desc = {
-    'CrownPassCRB1':
-
-    """
+    "CrownPassCRB1": """
     - Intel Grizzly Pass Server Board populated with:
 
       - 2x Intel Xeon CPU E5-2680 @ 2.7GHz with 64 KB L1 D-cache (per

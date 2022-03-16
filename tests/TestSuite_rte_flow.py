@@ -64,7 +64,9 @@ class RteFlow(TestCase):
 
     def send_scapy_packet(self, port_id: int, packet: str):
         itf = self.tester.get_interface(port_id)
-        return self.tester.send_expect(f'sendp({packet}, iface="{itf}")', ">>>", timeout=30)
+        return self.tester.send_expect(
+            f'sendp({packet}, iface="{itf}")', ">>>", timeout=30
+        )
 
     def set_up_all(self):
         """
@@ -87,20 +89,29 @@ class RteFlow(TestCase):
             return False
 
         output = self.exec(f"flow create {self.dut_ports[0]} {rule}")
-        self.verify("created" in output or "Flow rule validated" in output, "Flow rule was not created: " + output)
+        self.verify(
+            "created" in output or "Flow rule validated" in output,
+            "Flow rule was not created: " + output,
+        )
         return True
 
-    def send_packets(self, packets, pass_fail_function: Callable[[str], bool], error_message: str):
+    def send_packets(
+        self, packets, pass_fail_function: Callable[[str], bool], error_message: str
+    ):
         for packet in packets:
             output = self.send_scapy_packet(self.dut_ports[1], packet)
             output = self.pmdout.get_output()
-            self.verify(pass_fail_function(output),
-                        error_message + "\r\n" + output)
+            self.verify(pass_fail_function(output), error_message + "\r\n" + output)
 
-    def do_test_with_callable_tests_for_pass_fail(self, rule: str, pass_packets: frozenset, fail_packets: frozenset,
-                                                  pass_check_function: Callable[[str], bool],
-                                                  fail_check_function: Callable[[str], bool],
-                                                  error_message: str):
+    def do_test_with_callable_tests_for_pass_fail(
+        self,
+        rule: str,
+        pass_packets: frozenset,
+        fail_packets: frozenset,
+        pass_check_function: Callable[[str], bool],
+        fail_check_function: Callable[[str], bool],
+        error_message: str,
+    ):
         was_valid: bool = self.initialize_flow_rule(rule)
         if not was_valid:  # If a PMD rejects a test case, we let it pass
             return None
@@ -109,19 +120,35 @@ class RteFlow(TestCase):
         self.send_packets(pass_packets, pass_check_function, error_message)
         self.send_packets(fail_packets, fail_check_function, error_message)
 
-    def do_test_with_expected_strings_for_pass_fail(self, rule: str, pass_packets: frozenset,
-                                                    fail_packets: frozenset,
-                                                    pass_expect: str, fail_expect: str, error_message: str):
-        self.do_test_with_callable_tests_for_pass_fail(rule, pass_packets, fail_packets,
-                                                       lambda output: pass_expect in output,
-                                                       lambda output: fail_expect in output,
-                                                       error_message)
+    def do_test_with_expected_strings_for_pass_fail(
+        self,
+        rule: str,
+        pass_packets: frozenset,
+        fail_packets: frozenset,
+        pass_expect: str,
+        fail_expect: str,
+        error_message: str,
+    ):
+        self.do_test_with_callable_tests_for_pass_fail(
+            rule,
+            pass_packets,
+            fail_packets,
+            lambda output: pass_expect in output,
+            lambda output: fail_expect in output,
+            error_message,
+        )
 
-    def do_test_with_queue_action(self, rule: str, pass_packets: frozenset, fail_packets: frozenset):
-        self.do_test_with_expected_strings_for_pass_fail(rule, pass_packets, fail_packets,
-                                                         f"port {self.dut_ports[0]}/queue 1",
-                                                         f"port {self.dut_ports[0]}/queue 0",
-                                                         "Error: packet went to the wrong queue")
+    def do_test_with_queue_action(
+        self, rule: str, pass_packets: frozenset, fail_packets: frozenset
+    ):
+        self.do_test_with_expected_strings_for_pass_fail(
+            rule,
+            pass_packets,
+            fail_packets,
+            f"port {self.dut_ports[0]}/queue 1",
+            f"port {self.dut_ports[0]}/queue 0",
+            "Error: packet went to the wrong queue",
+        )
 
     def set_up(self):
         """
@@ -157,25 +184,32 @@ class RteFlow(TestCase):
         constraints or other limits inside of either the parser or the nic.
         """
         self.do_test_with_queue_action(
-            "ingress pattern eth / ipv4 / " + (
-                    "void / " * 200) + "udp / end actions queue index 1 / end",
-            frozenset({'Ether() / IP() / UDP() / Raw(\'\\x00\' * 64)'}),
-            frozenset({
-                'Ether() / IP() / TCP() / Raw(\'\\x00\' * 64)',
-                'Ether() / IP() / SCTP() / Raw(\'\\x00\' * 64)',
-                'Ether() / IPv6() / UDP() / Raw(\'\\x00\' * 64)',
-            })
+            "ingress pattern eth / ipv4 / "
+            + ("void / " * 200)
+            + "udp / end actions queue index 1 / end",
+            frozenset({"Ether() / IP() / UDP() / Raw('\\x00' * 64)"}),
+            frozenset(
+                {
+                    "Ether() / IP() / TCP() / Raw('\\x00' * 64)",
+                    "Ether() / IP() / SCTP() / Raw('\\x00' * 64)",
+                    "Ether() / IPv6() / UDP() / Raw('\\x00' * 64)",
+                }
+            ),
         )
 
     def test_excessive_tunneling(self):
         self.do_test_with_queue_action(
-            "ingress pattern " + ("eth / gre / " * 20) + "eth / ipv4 / udp / end actions queue index 1 / end",
-            frozenset({'Ether() / IP() / UDP() / Raw(\'\\x00\' * 64)'}),
-            frozenset({
-                'Ether() / IP() / TCP() / Raw(\'\\x00\' * 64)',
-                'Ether() / IP() / SCTP() / Raw(\'\\x00\' * 64)',
-                'Ether() / IPv6() / UDP() / Raw(\'\\x00\' * 64)',
-            })
+            "ingress pattern "
+            + ("eth / gre / " * 20)
+            + "eth / ipv4 / udp / end actions queue index 1 / end",
+            frozenset({"Ether() / IP() / UDP() / Raw('\\x00' * 64)"}),
+            frozenset(
+                {
+                    "Ether() / IP() / TCP() / Raw('\\x00' * 64)",
+                    "Ether() / IP() / SCTP() / Raw('\\x00' * 64)",
+                    "Ether() / IPv6() / UDP() / Raw('\\x00' * 64)",
+                }
+            ),
         )
 
     """
@@ -187,23 +221,37 @@ class RteFlow(TestCase):
     def test_drop_case1(self):
         self.do_test_with_callable_tests_for_pass_fail(
             "ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions drop / end",
-            frozenset({'Ether() / IP(src="192.168.0.1") / UDP() / Raw(\'\\x00\' * 64)'}),
-            frozenset({'Ether() / IP(src="10.0.30.99") / UDP() / Raw(\'\\x00\' * 64)',
-                       'Ether() / IP(src="132.177.0.99") / UDP() / Raw(\'\\x00\' * 64)',
-                       'Ether() / IP(src="192.168.0.2") / UDP() / Raw(\'\\x00\' * 64)',
-                       'Ether() / IP(src="8.8.8.8") / UDP() / Raw(\'\\x00\' * 64)'}),
+            frozenset(
+                {"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}
+            ),
+            frozenset(
+                {
+                    "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                    "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)",
+                    "Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                    "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                }
+            ),
             lambda output: "port" not in output,
             lambda output: "port" in output,
-            "Drop function was not correctly applied")
+            "Drop function was not correctly applied",
+        )
 
     def test_queue_case1(self):
         self.do_test_with_queue_action(
             "ingress pattern eth / ipv4 src is 192.168.0.1 / udp / end actions queue index 1 / end",
-            frozenset({'Ether() / IP(src="192.168.0.1") / UDP() / Raw(\'\\x00\' * 64)'}), frozenset(
-                {'Ether() / IP(src="10.0.30.99") / UDP() / Raw(\'\\x00\' * 64)',
-                 'Ether() / IP(src="132.177.0.99") / UDP() / Raw(\'\\x00\' * 64)',
-                 'Ether() / IP(src="192.168.0.2") / UDP() / Raw(\'\\x00\' * 64)',
-                 'Ether() / IP(src="8.8.8.8") / UDP() / Raw(\'\\x00\' * 64)'}))
+            frozenset(
+                {"Ether() / IP(src=\"192.168.0.1\") / UDP() / Raw('\\x00' * 64)"}
+            ),
+            frozenset(
+                {
+                    "Ether() / IP(src=\"10.0.30.99\") / UDP() / Raw('\\x00' * 64)",
+                    "Ether() / IP(src=\"132.177.0.99\") / UDP() / Raw('\\x00' * 64)",
+                    "Ether() / IP(src=\"192.168.0.2\") / UDP() / Raw('\\x00' * 64)",
+                    "Ether() / IP(src=\"8.8.8.8\") / UDP() / Raw('\\x00' * 64)",
+                }
+            ),
+        )
 
 
 def do_runtime_test_generation():
@@ -212,13 +260,18 @@ def do_runtime_test_generation():
     issue to keep using the generator manually, so this approach is designed
     """
     print("Generating test cases for RTE Flow test suite.")
-    pattern_functions = generator.create_test_function_strings(generator.get_patterns_with_properties())
+    pattern_functions = generator.create_test_function_strings(
+        generator.get_patterns_with_properties()
+    )
 
     pattern_function_string = "\n".join(pattern_functions)
     exec(pattern_function_string)
 
     # Copy it because a for loop creates local variables, which changes the dict at runtime.
-    locals_copy = filter(lambda name_function_tuple: name_function_tuple[0].startswith("test_"), locals().items())
+    locals_copy = filter(
+        lambda name_function_tuple: name_function_tuple[0].startswith("test_"),
+        locals().items(),
+    )
 
     for name, function in locals_copy:
         setattr(RteFlow, name, function)

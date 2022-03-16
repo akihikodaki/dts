@@ -53,12 +53,14 @@ class TestUnitTestsKni(TestCase):
 
     def insmod_kni(self):
 
-        out = self.dut.send_expect('lsmod | grep rte_kni', "# ")
+        out = self.dut.send_expect("lsmod | grep rte_kni", "# ")
 
         if "rte_kni" in out:
-            self.dut.send_expect('rmmod rte_kni.ko', "# ")
+            self.dut.send_expect("rmmod rte_kni.ko", "# ")
 
-        out = self.dut.send_expect('insmod ./%s/kmod/rte_kni.ko lo_mode=lo_mode_fifo' % (self.target), "# ")
+        out = self.dut.send_expect(
+            "insmod ./%s/kmod/rte_kni.ko lo_mode=lo_mode_fifo" % (self.target), "# "
+        )
 
         self.verify("Error" not in out, "Error loading KNI module: " + out)
 
@@ -87,12 +89,12 @@ class TestUnitTestsKni(TestCase):
         Run kni autotest.
         """
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        app_name = self.dut.apps_name['test']
-        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", 60)        
+        app_name = self.dut.apps_name["test"]
+        self.dut.send_expect(app_name + eal_params, "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("kni_autotest", "RTE>>", 60)
         self.dut.send_expect("quit", "# ")
 
-        self.verify('Test OK' in out, 'Test Failed')
+        self.verify("Test OK" in out, "Test Failed")
 
     def tear_down(self):
         """

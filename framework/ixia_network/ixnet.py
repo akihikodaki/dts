@@ -50,7 +50,8 @@ from .packet_parser import PacketParser
 
 class IxnetTrafficGenerator(object):
     """ixNetwork Traffic Generator."""
-    json_header = {'content-type': 'application/json'}
+
+    json_header = {"content-type": "application/json"}
 
     def __init__(self, config, logger):
         # disable SSL warnings
@@ -58,31 +59,31 @@ class IxnetTrafficGenerator(object):
         self.logger = logger
         self.tg_ip = config.tg_ip
         self.tg_ports = config.tg_ports
-        port = config.tg_ip_port or '11009'
+        port = config.tg_ip_port or "11009"
         # id will always be 1 when using windows api server
-        self.api_server = 'http://{0}:{1}'.format(self.tg_ip, port)
+        self.api_server = "http://{0}:{1}".format(self.tg_ip, port)
         self.session = requests.session()
         self.session_id = self.get_session_id(self.api_server)
         self.session_url = "{0}/api/v1/sessions/{1}".format(
-            self.api_server, self.session_id)
+            self.api_server, self.session_id
+        )
         # initialize ixNetwork
         self.new_blank_config()
         self.tg_vports = self.assign_ports(self.tg_ports)
         self.OUTPUT_DIR = None
 
     def get_session_id(self, api_server):
-        url = '{server}/api/v1/sessions'.format(server=api_server)
-        response = self.session.post(
-            url, headers=self.json_header, verify=False)
-        session_id = response.json()['links'][0]['href'].split('/')[-1]
+        url = "{server}/api/v1/sessions".format(server=api_server)
+        response = self.session.post(url, headers=self.json_header, verify=False)
+        session_id = response.json()["links"][0]["href"].split("/")[-1]
         msg = "{0}: Session ID is {1}".format(api_server, session_id)
         self.logger.info(msg)
         return session_id
 
     def destroy_config(self, name):
         json_header = {
-            'content-type': 'application/json',
-            'X-HTTP-Method-Override': 'DELETE',
+            "content-type": "application/json",
+            "X-HTTP-Method-Override": "DELETE",
         }
         response = self.session.post(name, headers=json_header, verify=False)
         return response
@@ -92,7 +93,7 @@ class IxnetTrafficGenerator(object):
         return self.tg_vports
 
     def disable_port_misdirected(self):
-        msg = 'close mismatched flag'
+        msg = "close mismatched flag"
         self.logger.debug(msg)
         url = "{0}/ixnetwork/traffic".format(self.session_url)
         data = {
@@ -100,7 +101,8 @@ class IxnetTrafficGenerator(object):
             "disablePortLevelMisdirected": True,
         }
         response = self.session.patch(
-            url, data=json.dumps(data), headers=self.json_header, verify=False)
+            url, data=json.dumps(data), headers=self.json_header, verify=False
+        )
 
     def delete_session(self):
         """delete session after test done"""
@@ -109,13 +111,14 @@ class IxnetTrafficGenerator(object):
             response = self.destroy_config(url)
             self.logger.debug("STATUS CODE: %s" % response.status_code)
         except requests.exceptions.RequestException as err_msg:
-            raise Exception('DELETE error: {0}\n'.format(err_msg))
+            raise Exception("DELETE error: {0}\n".format(err_msg))
 
     def configure_streams(self, pkt, field_config=None):
         hParser = PacketParser()
         hParser._parse_pcap(pkt)
         hConfig = IxnetConfigStream(
-            hParser.packetLayers, field_config, hParser.framesize)
+            hParser.packetLayers, field_config, hParser.framesize
+        )
         return hConfig.ixnet_packet
 
     def regenerate_trafficitems(self, trafficItemList):
@@ -124,20 +127,23 @@ class IxnetTrafficGenerator(object):
             trafficItemList: ['/api/v1/sessions/1/ixnetwork/traffic/trafficItem/1', ...]
         """
         url = "{0}/ixnetwork/traffic/trafficItem/operations/generate".format(
-            self.session_url)
+            self.session_url
+        )
         data = {"arg1": trafficItemList}
-        self.logger.info('Regenerating traffic items: %s' % trafficItemList)
+        self.logger.info("Regenerating traffic items: %s" % trafficItemList)
         response = self.session.post(
-            url, data=json.dumps(data), headers=self.json_header, verify=False)
-        self.wait_for_complete(response, url + '/' + response.json()['id'])
+            url, data=json.dumps(data), headers=self.json_header, verify=False
+        )
+        self.wait_for_complete(response, url + "/" + response.json()["id"])
 
     def apply_traffic(self):
         """Apply the configured traffic."""
         url = "{0}/ixnetwork/traffic/operations/apply".format(self.session_url)
         data = {"arg1": f"/api/v1/sessions/{self.session_id}/ixnetwork/traffic"}
         response = self.session.post(
-            url, data=json.dumps(data), headers=self.json_header, verify=False)
-        self.wait_for_complete(response, url + '/' + response.json()['id'])
+            url, data=json.dumps(data), headers=self.json_header, verify=False
+        )
+        self.wait_for_complete(response, url + "/" + response.json()["id"])
 
     def start_traffic(self):
         """start the configured traffic."""
@@ -145,9 +151,11 @@ class IxnetTrafficGenerator(object):
         url = "{0}/ixnetwork/traffic/operations/start".format(self.session_url)
         data = {"arg1": f"/api/v1/sessions/{self.session_id}/ixnetwork/traffic"}
         response = self.session.post(
-            url, data=json.dumps(data), headers=self.json_header, verify=False)
+            url, data=json.dumps(data), headers=self.json_header, verify=False
+        )
         self.check_traffic_state(
-            expectedState=['started', 'startedWaitingForStats'], timeout=45)
+            expectedState=["started", "startedWaitingForStats"], timeout=45
+        )
         self.logger.info("Traffic started Successfully.")
 
     def stop_traffic(self):
@@ -155,12 +163,12 @@ class IxnetTrafficGenerator(object):
         url = "{0}/ixnetwork/traffic/operations/stop".format(self.session_url)
         data = {"arg1": f"/api/v1/sessions/{self.session_id}/ixnetwork/traffic"}
         response = self.session.post(
-            url, data=json.dumps(data), headers=self.json_header, verify=False)
-        self.check_traffic_state(
-            expectedState=['stopped', 'stoppedWaitingForStats'])
+            url, data=json.dumps(data), headers=self.json_header, verify=False
+        )
+        self.check_traffic_state(expectedState=["stopped", "stoppedWaitingForStats"])
         time.sleep(5)
 
-    def check_traffic_state(self, expectedState=['stopped'], timeout=45):
+    def check_traffic_state(self, expectedState=["stopped"], timeout=45):
         """
         Description
             Check the traffic state for the expected state.
@@ -178,82 +186,86 @@ class IxnetTrafficGenerator(object):
                       need to increase the timeout time.
         """
         if type(expectedState) != list:
-            expectedState.split(' ')
+            expectedState.split(" ")
 
         self.logger.info(
-            'check_traffic_state: expecting traffic state {0}'.format(expectedState))
+            "check_traffic_state: expecting traffic state {0}".format(expectedState)
+        )
         for counter in range(1, timeout + 1):
             url = "{0}/ixnetwork/traffic".format(self.session_url)
-            response = self.session.get(
-                url, headers=self.json_header, verify=False)
-            current_traffic_state = response.json()['state']
-            self.logger.info('check_traffic_state: {trafficstate}: Waited {counter}/{timeout} seconds'.format(
-                trafficstate=current_traffic_state,
-                counter=counter,
-                timeout=timeout))
+            response = self.session.get(url, headers=self.json_header, verify=False)
+            current_traffic_state = response.json()["state"]
+            self.logger.info(
+                "check_traffic_state: {trafficstate}: Waited {counter}/{timeout} seconds".format(
+                    trafficstate=current_traffic_state, counter=counter, timeout=timeout
+                )
+            )
             if counter < timeout and current_traffic_state not in expectedState:
                 time.sleep(1)
                 continue
             if counter < timeout and current_traffic_state in expectedState:
                 time.sleep(8)
                 self.logger.info(
-                    'check_traffic_state: got expected [ %s ], Done' % current_traffic_state)
+                    "check_traffic_state: got expected [ %s ], Done"
+                    % current_traffic_state
+                )
                 return 0
 
         raise Exception(
-            'Traffic state did not reach the expected state (%s):' % expectedState)
+            "Traffic state did not reach the expected state (%s):" % expectedState
+        )
 
-    def _get_stats(self, viewName='Flow Statistics', csvFile=None, csvEnableFileTimestamp=False):
+    def _get_stats(
+        self, viewName="Flow Statistics", csvFile=None, csvEnableFileTimestamp=False
+    ):
         """
-         sessionUrl: http://10.219.x.x:11009/api/v1/sessions/1/ixnetwork
+        sessionUrl: http://10.219.x.x:11009/api/v1/sessions/1/ixnetwork
 
-         csvFile = None or <filename.csv>.
-                   None will not create a CSV file.
-                   Provide a <filename>.csv to record all stats to a CSV file.
-                   Example: _get_stats(sessionUrl, csvFile='Flow_Statistics.csv')
+        csvFile = None or <filename.csv>.
+                  None will not create a CSV file.
+                  Provide a <filename>.csv to record all stats to a CSV file.
+                  Example: _get_stats(sessionUrl, csvFile='Flow_Statistics.csv')
 
-         csvEnableFileTimestamp = True or False. If True, timestamp will be appended to the filename.
+        csvEnableFileTimestamp = True or False. If True, timestamp will be appended to the filename.
 
-         viewName options (Not case sensitive):
+        viewName options (Not case sensitive):
 
-            'Port Statistics'
-            'Tx-Rx Frame Rate Statistics'
-            'Port CPU Statistics'
-            'Global Protocol Statistics'
-            'Protocols Summary'
-            'Port Summary'
-            'OSPFv2-RTR Drill Down'
-            'OSPFv2-RTR Per Port'
-            'IPv4 Drill Down'
-            'L2-L3 Test Summary Statistics'
-            'Flow Statistics'
-            'Traffic Item Statistics'
-            'IGMP Host Drill Down'
-            'IGMP Host Per Port'
-            'IPv6 Drill Down'
-            'MLD Host Drill Down'
-            'MLD Host Per Port'
-            'PIMv6 IF Drill Down'
-            'PIMv6 IF Per Port'
+           'Port Statistics'
+           'Tx-Rx Frame Rate Statistics'
+           'Port CPU Statistics'
+           'Global Protocol Statistics'
+           'Protocols Summary'
+           'Port Summary'
+           'OSPFv2-RTR Drill Down'
+           'OSPFv2-RTR Per Port'
+           'IPv4 Drill Down'
+           'L2-L3 Test Summary Statistics'
+           'Flow Statistics'
+           'Traffic Item Statistics'
+           'IGMP Host Drill Down'
+           'IGMP Host Per Port'
+           'IPv6 Drill Down'
+           'MLD Host Drill Down'
+           'MLD Host Per Port'
+           'PIMv6 IF Drill Down'
+           'PIMv6 IF Per Port'
 
-         Note: Not all of the viewNames are listed here. You have to get the exact names from
-               the IxNetwork GUI in statistics based on your protocol(s).
+        Note: Not all of the viewNames are listed here. You have to get the exact names from
+              the IxNetwork GUI in statistics based on your protocol(s).
 
-         Return you a dictionary of all the stats: statDict[rowNumber][columnName] == statValue
-           Get stats on row 2 for 'Tx Frames' = statDict[2]['Tx Frames']
+        Return you a dictionary of all the stats: statDict[rowNumber][columnName] == statValue
+          Get stats on row 2 for 'Tx Frames' = statDict[2]['Tx Frames']
         """
         url = "{0}/ixnetwork/statistics/view".format(self.session_url)
-        viewList = self.session.get(
-            url, headers=self.json_header, verify=False)
-        views = ['{0}/{1}'.format(url, str(i['id'])) for i in viewList.json()]
+        viewList = self.session.get(url, headers=self.json_header, verify=False)
+        views = ["{0}/{1}".format(url, str(i["id"])) for i in viewList.json()]
 
         for view in views:
             # GetAttribute
-            response = self.session.get(
-                view, headers=self.json_header, verify=False)
+            response = self.session.get(view, headers=self.json_header, verify=False)
             if response.status_code != 200:
-                raise Exception('getStats: Failed: %s' % response.text)
-            captionMatch = re.match(viewName, response.json()['caption'], re.I)
+                raise Exception("getStats: Failed: %s" % response.text)
+            captionMatch = re.match(viewName, response.json()["caption"], re.I)
             if captionMatch:
                 # viewObj: sessionUrl + /statistics/view/11'
                 viewObj = view
@@ -262,41 +274,49 @@ class IxnetTrafficGenerator(object):
         self.logger.info("viewName: %s, %s" % (viewName, viewObj))
 
         try:
-            response = self.session.patch(viewObj, data=json.dumps(
-                {'enabled': 'true'}), headers=self.json_header, verify=False)
+            response = self.session.patch(
+                viewObj,
+                data=json.dumps({"enabled": "true"}),
+                headers=self.json_header,
+                verify=False,
+            )
         except Exception as e:
-            raise Exception('get_stats error: No stats available')
+            raise Exception("get_stats error: No stats available")
 
         for counter in range(0, 31):
             response = self.session.get(
-                viewObj + '/page', headers=self.json_header, verify=False)
-            totalPages = response.json()['totalPages']
-            if totalPages == 'null':
+                viewObj + "/page", headers=self.json_header, verify=False
+            )
+            totalPages = response.json()["totalPages"]
+            if totalPages == "null":
                 self.logger.info(
-                    'Getting total pages is not ready yet. Waiting %d/30 seconds' % counter)
+                    "Getting total pages is not ready yet. Waiting %d/30 seconds"
+                    % counter
+                )
                 time.sleep(1)
-            if totalPages != 'null':
+            if totalPages != "null":
                 break
-            if totalPages == 'null' and counter == 30:
-                raise Exception('getStats: failed to get total pages')
+            if totalPages == "null" and counter == 30:
+                raise Exception("getStats: failed to get total pages")
 
         if csvFile is not None:
-            csvFileName = csvFile.replace(' ', '_')
+            csvFileName = csvFile.replace(" ", "_")
             if csvEnableFileTimestamp:
-                timestamp = datetime.now().strftime('%H%M%S')
-                if '.' in csvFileName:
-                    csvFileNameTemp = csvFileName.split('.')[0]
-                    csvFileNameExtension = csvFileName.split('.')[1]
-                    csvFileName = csvFileNameTemp + '_' + \
-                        timestamp + '.' + csvFileNameExtension
+                timestamp = datetime.now().strftime("%H%M%S")
+                if "." in csvFileName:
+                    csvFileNameTemp = csvFileName.split(".")[0]
+                    csvFileNameExtension = csvFileName.split(".")[1]
+                    csvFileName = (
+                        csvFileNameTemp + "_" + timestamp + "." + csvFileNameExtension
+                    )
                 else:
-                    csvFileName = csvFileName + '_' + timestamp
+                    csvFileName = csvFileName + "_" + timestamp
 
-            csvFile = open(csvFileName, 'w')
+            csvFile = open(csvFileName, "w")
             csvWriteObj = csv.writer(csvFile)
 
         # Get the stat column names
-        columnList = response.json()['columnCaptions']
+        columnList = response.json()["columnCaptions"]
         if csvFile is not None:
             csvWriteObj.writerow(columnList)
 
@@ -304,22 +324,27 @@ class IxnetTrafficGenerator(object):
         flowNumber = 1
         # Get the stat values
         for pageNumber in range(1, totalPages + 1):
-            self.session.patch(viewObj + '/page', data=json.dumps(
-                {'currentPage': pageNumber}), headers=self.json_header, verify=False)
+            self.session.patch(
+                viewObj + "/page",
+                data=json.dumps({"currentPage": pageNumber}),
+                headers=self.json_header,
+                verify=False,
+            )
             response = self.session.get(
-                viewObj + '/page', headers=self.json_header, verify=False)
-            statValueList = response.json()['pageValues']
+                viewObj + "/page", headers=self.json_header, verify=False
+            )
+            statValueList = response.json()["pageValues"]
             for statValue in statValueList:
                 if csvFile is not None:
                     csvWriteObj.writerow(statValue[0])
 
-                self.logger.info('Row: %d' % flowNumber)
+                self.logger.info("Row: %d" % flowNumber)
                 statDict[flowNumber] = {}
                 index = 0
                 for statValue in statValue[0]:
                     statName = columnList[index]
                     statDict[flowNumber].update({statName: statValue})
-                    self.logger.info('%s: %s' % (statName, statValue))
+                    self.logger.info("%s: %s" % (statName, statValue))
                     index += 1
                 flowNumber += 1
 
@@ -363,40 +388,44 @@ class IxnetTrafficGenerator(object):
         Start a new blank configuration.
         """
         url = "{0}/ixnetwork/operations/newconfig".format(self.session_url)
-        self.logger.info('newBlankConfig: %s' % url)
+        self.logger.info("newBlankConfig: %s" % url)
         response = self.session.post(url, verify=False)
-        url = "{0}/{1}".format(url, response.json()['id'])
+        url = "{0}/{1}".format(url, response.json()["id"])
         self.wait_for_complete(response, url)
 
-    def wait_for_complete(self, response='', url='', timeout=120):
+    def wait_for_complete(self, response="", url="", timeout=120):
         """
         Wait for an operation progress to complete.
         response: The POST action response.
         """
-        if response.json() == '' and response.json()['state'] == 'SUCCESS':
-            self.logger.info('State: SUCCESS')
+        if response.json() == "" and response.json()["state"] == "SUCCESS":
+            self.logger.info("State: SUCCESS")
             return
 
         if response.json() == []:
-            raise Exception('waitForComplete: response is empty.')
+            raise Exception("waitForComplete: response is empty.")
 
-        if 'errors' in response.json():
+        if "errors" in response.json():
             raise Exception(response.json()["errors"][0])
 
-        if response.json()['state'] in ["ERROR", "EXCEPTION"]:
-            raise Exception('WaitForComplete: STATE=%s: %s' %
-                            (response.json()['state'], response.text))
+        if response.json()["state"] in ["ERROR", "EXCEPTION"]:
+            raise Exception(
+                "WaitForComplete: STATE=%s: %s"
+                % (response.json()["state"], response.text)
+            )
 
         self.logger.info("%s" % url)
         self.logger.info("State: %s" % (response.json()["state"]))
-        while response.json()["state"] == "IN_PROGRESS" or response.json()["state"] == "down":
+        while (
+            response.json()["state"] == "IN_PROGRESS"
+            or response.json()["state"] == "down"
+        ):
             if timeout == 0:
-                raise Exception('%s' % response.text)
+                raise Exception("%s" % response.text)
             time.sleep(1)
-            response = self.session.get(
-                url, headers=self.json_header, verify=False)
+            response = self.session.get(url, headers=self.json_header, verify=False)
             self.logger.info("State: %s" % (response.json()["state"]))
-            if response.json()["state"] == 'SUCCESS':
+            if response.json()["state"] == "SUCCESS":
                 return
             timeout = timeout - 1
 
@@ -417,22 +446,23 @@ class IxnetTrafficGenerator(object):
 
             card = portList[index][1]
             port = portList[index][2]
-            portNumber = str(card) + '/' + str(port)
-            self.logger.info('Name: %s' % portNumber)
-            data = {'name': portNumber}
+            portNumber = str(card) + "/" + str(port)
+            self.logger.info("Name: %s" % portNumber)
+            data = {"name": portNumber}
             response = self.session.post(
-                url, data=json.dumps(data), headers=self.json_header, verify=False)
-            vportObj = response.json()['links'][0]['href']
-            self.logger.info('createVports: %s' % vportObj)
+                url, data=json.dumps(data), headers=self.json_header, verify=False
+            )
+            vportObj = response.json()["links"][0]["href"]
+            self.logger.info("createVports: %s" % vportObj)
             if rawTrafficVport:
-                createdVportList.append(vportObj + '/protocols')
+                createdVportList.append(vportObj + "/protocols")
             else:
                 createdVportList.append(vportObj)
 
         if createdVportList == []:
-            raise Exception('No vports created')
+            raise Exception("No vports created")
 
-        self.logger.info('createVports: %s' % createdVportList)
+        self.logger.info("createVports: %s" % createdVportList)
         return createdVportList
 
     def assign_ports(self, portList, createVports=True, rawTraffic=True, timeout=90):
@@ -462,31 +492,36 @@ class IxnetTrafficGenerator(object):
             vportList = self.create_vports(portList, rawTrafficVport=False)
         url = "{0}/ixnetwork/operations/assignports".format(self.session_url)
         data = {"arg1": [], "arg2": [], "arg3": vportList, "arg4": "true"}
-        [data["arg1"].append({"arg1": str(chassis), "arg2": str(
-            card), "arg3": str(port)}) for chassis, card, port in portList]
+        [
+            data["arg1"].append(
+                {"arg1": str(chassis), "arg2": str(card), "arg3": str(port)}
+            )
+            for chassis, card, port in portList
+        ]
         response = self.session.post(
-            url, data=json.dumps(data), headers=self.json_header, verify=False)
-        self.logger.info('%s' % response.json())
-        url = "{0}/{1}".format(url, response.json()['id'])
+            url, data=json.dumps(data), headers=self.json_header, verify=False
+        )
+        self.logger.info("%s" % response.json())
+        url = "{0}/{1}".format(url, response.json()["id"])
         self.wait_for_complete(response, url)
 
         for vport in vportList:
             url = "{0}{1}/l1Config".format(self.api_server, vport)
-            response = self.session.get(
-                url, headers=self.json_header, verify=False)
-            url = url + '/' + response.json()['currentType']
+            response = self.session.get(url, headers=self.json_header, verify=False)
+            url = url + "/" + response.json()["currentType"]
             data = {"enabledFlowControl": False}
             response = self.session.patch(
-                url, data=json.dumps(data), headers=self.json_header, verify=False)
+                url, data=json.dumps(data), headers=self.json_header, verify=False
+            )
 
         if rawTraffic:
             vportList_protocol = []
             for vport in vportList:
-                vportList_protocol.append(vport + '/protocols')
-            self.logger.info('vports: %s' % vportList_protocol)
+                vportList_protocol.append(vport + "/protocols")
+            self.logger.info("vports: %s" % vportList_protocol)
             return vportList_protocol
         else:
-            self.logger.info('vports: %s' % vportList)
+            self.logger.info("vports: %s" % vportList)
             return vportList
 
     def destroy_assign_ports(self, vportList):
@@ -501,44 +536,50 @@ class IxnetTrafficGenerator(object):
         Parameters
         config_element_obj: /api/v1/sessions/1/ixnetwork/traffic/trafficItem/{id}/configElement/{id}
         """
-        url = self.api_server + config_element_obj + '/transmissionControl'
-        if 'transmissionType' in config_elements:
-            data = {'type': config_elements['transmissionType']}
+        url = self.api_server + config_element_obj + "/transmissionControl"
+        if "transmissionType" in config_elements:
+            data = {"type": config_elements["transmissionType"]}
             self.session.patch(
-                url, data=json.dumps(data), headers=self.json_header, verify=False)
+                url, data=json.dumps(data), headers=self.json_header, verify=False
+            )
 
-        if 'burstPacketCount' in config_elements:
-            data = {
-                'burstPacketCount': int(config_elements['burstPacketCount'])}
+        if "burstPacketCount" in config_elements:
+            data = {"burstPacketCount": int(config_elements["burstPacketCount"])}
             self.session.patch(
-                url, data=json.dumps(data), headers=self.json_header, verify=False)
+                url, data=json.dumps(data), headers=self.json_header, verify=False
+            )
 
-        if 'frameCount' in config_elements:
-            data = {'frameCount': int(config_elements['frameCount'])}
+        if "frameCount" in config_elements:
+            data = {"frameCount": int(config_elements["frameCount"])}
             self.session.patch(
-                url, data=json.dumps(data), headers=self.json_header, verify=False)
+                url, data=json.dumps(data), headers=self.json_header, verify=False
+            )
 
-        if 'duration' in config_elements:
-            data = {'duration': int(config_elements['duration'])}
+        if "duration" in config_elements:
+            data = {"duration": int(config_elements["duration"])}
             self.session.patch(
-                url, data=json.dumps(data), headers=self.json_header, verify=False)
+                url, data=json.dumps(data), headers=self.json_header, verify=False
+            )
 
-        url = self.api_server + config_element_obj + '/frameRate'
-        if 'frameRate' in config_elements:
-            data = {'rate': int(config_elements['frameRate'])}
+        url = self.api_server + config_element_obj + "/frameRate"
+        if "frameRate" in config_elements:
+            data = {"rate": int(config_elements["frameRate"])}
             self.session.patch(
-                url, data=json.dumps(data), headers=self.json_header, verify=False)
+                url, data=json.dumps(data), headers=self.json_header, verify=False
+            )
 
-        if 'frameRateType' in config_elements:
-            data = {'type': config_elements['frameRateType']}
+        if "frameRateType" in config_elements:
+            data = {"type": config_elements["frameRateType"]}
             self.session.patch(
-                url, data=json.dumps(data), headers=self.json_header, verify=False)
+                url, data=json.dumps(data), headers=self.json_header, verify=False
+            )
 
-        url = self.api_server + config_element_obj + '/frameSize'
-        if 'frameSize' in config_elements:
-            data = {'fixedSize': int(config_elements['frameSize'])}
+        url = self.api_server + config_element_obj + "/frameSize"
+        if "frameSize" in config_elements:
+            data = {"fixedSize": int(config_elements["frameSize"])}
             self.session.patch(
-                url, data=json.dumps(data), headers=self.json_header, verify=False)
+                url, data=json.dumps(data), headers=self.json_header, verify=False
+            )
 
     def import_json_config_obj(self, data_obj):
         """
@@ -547,14 +588,18 @@ class IxnetTrafficGenerator(object):
         Note
             arg2 value must be a string of JSON data: '{"xpath": "/traffic/trafficItem[1]", "enabled": false}'
         """
-        data = {"arg1": "/api/v1/sessions/1/ixnetwork/resourceManager",
-                "arg2": json.dumps(data_obj),
-                "arg3": False}
+        data = {
+            "arg1": "/api/v1/sessions/1/ixnetwork/resourceManager",
+            "arg2": json.dumps(data_obj),
+            "arg3": False,
+        }
         url = "{0}/ixnetwork/resourceManager/operations/importconfig".format(
-            self.session_url)
+            self.session_url
+        )
         response = self.session.post(
-            url, data=json.dumps(data), headers=self.json_header, verify=False)
-        url = "{0}/{1}".format(url, response.json()['id'])
+            url, data=json.dumps(data), headers=self.json_header, verify=False
+        )
+        url = "{0}/{1}".format(url, response.json()["id"])
         self.wait_for_complete(response, url)
 
     def send_rfc2544_throughput(self, options):
@@ -563,26 +608,24 @@ class IxnetTrafficGenerator(object):
         until minimum rate at which no packet loss is detected is found.
         """
         # new added parameters
-        duration = options.get('duration') or 10
-        initialBinaryLoadRate = max_rate = options.get('max_rate') or 100.0
-        min_rate = options.get('min_rate') or 0.0
-        accuracy = options.get('accuracy') or 0.001
-        permit_loss_rate = options.get('pdr') or 0.0
+        duration = options.get("duration") or 10
+        initialBinaryLoadRate = max_rate = options.get("max_rate") or 100.0
+        min_rate = options.get("min_rate") or 0.0
+        accuracy = options.get("accuracy") or 0.001
+        permit_loss_rate = options.get("pdr") or 0.0
         # old parameters
-        traffic_list = options.get('traffic_list')
+        traffic_list = options.get("traffic_list")
         if traffic_list is None:
-            raise Exception('traffic_list is empty.')
+            raise Exception("traffic_list is empty.")
 
         # close port mismatched statistics
         self.disable_port_misdirected()
 
         url = "{0}/ixnetwork/traffic/trafficItem".format(self.session_url)
-        response = self.session.get(
-            url, headers=self.json_header, verify=False)
+        response = self.session.get(url, headers=self.json_header, verify=False)
         if response.json() != []:
             for item in response.json():
-                url = "{0}{1}".format(
-                    self.api_server, item['links'][0]['href'])
+                url = "{0}{1}".format(self.api_server, item["links"][0]["href"])
                 response = self.destroy_config(url)
                 if response.status_code != 200:
                     raise Exception("remove trafficitem failed")
@@ -595,55 +638,56 @@ class IxnetTrafficGenerator(object):
             url = "{0}/ixnetwork/traffic/trafficItem".format(self.session_url)
             data = {"name": "Traffic Item " + str(index), "trafficType": "raw"}
             response = self.session.post(
-                url, data=json.dumps(data), headers=self.json_header, verify=False)
-            trafficitem_obj = response.json()['links'][0]['href']
-            self.logger.info('create traffic item: %s' % trafficitem_obj)
+                url, data=json.dumps(data), headers=self.json_header, verify=False
+            )
+            trafficitem_obj = response.json()["links"][0]["href"]
+            self.logger.info("create traffic item: %s" % trafficitem_obj)
             trafficitem_list.append(trafficitem_obj)
             # create endpointset
             url = "{0}{1}/endpointSet".format(self.api_server, trafficitem_obj)
-            data = {
-                "sources": [traffic[0]],
-                "destinations": [traffic[1]]
-            }
+            data = {"sources": [traffic[0]], "destinations": [traffic[1]]}
             response = self.session.post(
-                url, data=json.dumps(data), headers=self.json_header, verify=False)
+                url, data=json.dumps(data), headers=self.json_header, verify=False
+            )
             # packet config
             config_stack_obj = eval(
-                str(traffic[2]).replace('trafficItem[1]', 'trafficItem[' + str(index) + ']'))
+                str(traffic[2]).replace(
+                    "trafficItem[1]", "trafficItem[" + str(index) + "]"
+                )
+            )
             self.import_json_config_obj(config_stack_obj)
             # get framesize
             url = "{0}{1}/configElement/1/frameSize".format(
-                self.api_server, trafficitem_obj)
-            response = self.session.get(
-                url, headers=self.json_header, verify=False)
-            frame_size = response.json()['fixedSize']
+                self.api_server, trafficitem_obj
+            )
+            response = self.session.get(url, headers=self.json_header, verify=False)
+            frame_size = response.json()["fixedSize"]
 
         self.regenerate_trafficitems(trafficitem_list)
 
         # query existing quick test
-        url = "{0}/ixnetwork/quickTest/rfc2544throughput".format(
-            self.session_url)
-        response = self.session.get(
-            url, headers=self.json_header, verify=False)
+        url = "{0}/ixnetwork/quickTest/rfc2544throughput".format(self.session_url)
+        response = self.session.get(url, headers=self.json_header, verify=False)
         if response.json() != []:
             for qt in response.json():
-                url = "{0}{1}".format(self.api_server, qt['links'][0]['href'])
+                url = "{0}{1}".format(self.api_server, qt["links"][0]["href"])
                 response = self.destroy_config(url)
                 if response.status_code != 200:
                     raise Exception("remove quick test failed")
         # create quick test
-        url = "{0}/ixnetwork/quickTest/rfc2544throughput".format(
-            self.session_url)
+        url = "{0}/ixnetwork/quickTest/rfc2544throughput".format(self.session_url)
         data = [{"name": "QuickTest1", "mode": "existingMode"}]
         response = self.session.post(
-            url, data=json.dumps(data), headers=self.json_header, verify=False)
-        quicktest_obj = response.json()['links'][0]['href']
-        self.logger.info('create quick test: %s' % quicktest_obj)
+            url, data=json.dumps(data), headers=self.json_header, verify=False
+        )
+        quicktest_obj = response.json()["links"][0]["href"]
+        self.logger.info("create quick test: %s" % quicktest_obj)
         # add trafficitems
         url = "{0}{1}/trafficSelection".format(self.api_server, quicktest_obj)
         data = [{"__id__": item_obj} for item_obj in trafficitem_list]
         response = self.session.post(
-            url, data=json.dumps(data), headers=self.json_header, verify=False)
+            url, data=json.dumps(data), headers=self.json_header, verify=False
+        )
         self.logger.info("add traffic item status: %s" % response.content)
         # modify quick test config
         url = "{0}{1}/testConfig".format(self.api_server, quicktest_obj)
@@ -681,36 +725,37 @@ class IxnetTrafficGenerator(object):
             "binaryTolerance": permit_loss_rate,
         }
         response = self.session.patch(
-            url, data=json.dumps(data), headers=self.json_header, verify=False)
+            url, data=json.dumps(data), headers=self.json_header, verify=False
+        )
         if response.status_code != 200:
             raise Exception("change quick test config failed")
         # run the quick test
         url = "{0}{1}/operations/run".format(self.api_server, quicktest_obj)
         data = {"arg1": quicktest_obj, "arg2": ""}
         response = self.session.post(
-            url, data=json.dumps(data), headers=self.json_header, verify=False)
-        url = url + '/' + response.json()['id']
+            url, data=json.dumps(data), headers=self.json_header, verify=False
+        )
+        url = url + "/" + response.json()["id"]
         state = response.json()["state"]
         self.logger.info("Quicktest State: %s" % state)
         while state == "IN_PROGRESS":
-            response = self.session.get(
-                url, headers=self.json_header, verify=False)
+            response = self.session.get(url, headers=self.json_header, verify=False)
             state = response.json()["state"]
             self.logger.info("Quicktest State: %s" % state)
             time.sleep(5)
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        copy_to_path = os.sep.join([
-            self.OUTPUT_DIR,
-            'ixnet' + datetime.now().strftime("%Y%m%d_%H%M%S")])
+        copy_to_path = os.sep.join(
+            [self.OUTPUT_DIR, "ixnet" + datetime.now().strftime("%Y%m%d_%H%M%S")]
+        )
         if not os.path.exists(copy_to_path):
             os.makedirs(copy_to_path)
-        self.get_quicktest_csvfiles(quicktest_obj, copy_to_path, csvfile='all')
+        self.get_quicktest_csvfiles(quicktest_obj, copy_to_path, csvfile="all")
         qt_result_csv = "{0}/AggregateResults.csv".format(copy_to_path)
         return self.parse_quicktest_results(qt_result_csv)
 
     def parse_quicktest_results(self, path_file):
-        """ parse csv filte and return quicktest result """
+        """parse csv filte and return quicktest result"""
         results = OrderedDict()
 
         if not os.path.exists(path_file):
@@ -723,12 +768,12 @@ class IxnetTrafficGenerator(object):
             qt_result = csv.DictReader(f)
             for row in qt_result:
                 ret_result.append(row)
-                results['framesize'] = row['Framesize']
-                results['throughput'] = row['Agg Rx Throughput (fps)']
-                results['linerate%'] = row['Agg Rx Throughput (% Line Rate)']
-                results['min_latency'] = row['Min Latency (ns)']
-                results['max_latency'] = row['Max Latency (ns)']
-                results['avg_latency'] = row['Avg Latency (ns)']
+                results["framesize"] = row["Framesize"]
+                results["throughput"] = row["Agg Rx Throughput (fps)"]
+                results["linerate%"] = row["Agg Rx Throughput (% Line Rate)"]
+                results["min_latency"] = row["Min Latency (ns)"]
+                results["max_latency"] = row["Max Latency (ns)"]
+                results["avg_latency"] = row["Avg Latency (ns)"]
 
         return ret_result
 
@@ -737,11 +782,10 @@ class IxnetTrafficGenerator(object):
         quicktest_obj = /api/v1/sessions/1/ixnetwork/quickTest/rfc2544throughput/2
         """
         url = "{0}{1}/results".format(self.api_server, quicktest_obj)
-        response = self.session.get(
-            url, headers=self.json_header, verify=False)
-        return response.json()['resultPath']
+        response = self.session.get(url, headers=self.json_header, verify=False)
+        return response.json()["resultPath"]
 
-    def get_quicktest_csvfiles(self, quicktest_obj, copy_to_path, csvfile='all'):
+    def get_quicktest_csvfiles(self, quicktest_obj, copy_to_path, csvfile="all"):
         """
         Description
             Copy Quick Test CSV result files to a specified path on either Windows or Linux.
@@ -754,10 +798,15 @@ class IxnetTrafficGenerator(object):
                  AggregateResults.csv, iteration.csv, results.csv, logFile.txt, portMap.csv
         """
         results_path = self.get_quicktest_resultpath(quicktest_obj)
-        self.logger.info('get_quickTest_csvfiles: %s' % results_path)
-        if csvfile == 'all':
+        self.logger.info("get_quickTest_csvfiles: %s" % results_path)
+        if csvfile == "all":
             get_csv_files = [
-                'AggregateResults.csv', 'iteration.csv', 'results.csv', 'logFile.txt', 'portMap.csv']
+                "AggregateResults.csv",
+                "iteration.csv",
+                "results.csv",
+                "logFile.txt",
+                "portMap.csv",
+            ]
         else:
             if type(csvfile) is not list:
                 get_csv_files = [csvfile]
@@ -766,12 +815,13 @@ class IxnetTrafficGenerator(object):
 
         for each_csvfile in get_csv_files:
             # Backslash indicates the results resides on a Windows OS.
-            if '\\' in results_path:
+            if "\\" in results_path:
                 cnt = 0
                 while cnt < 5:
                     try:
                         self.copyfile_windows2linux(
-                            results_path + '\\{0}'.format(each_csvfile), copy_to_path)
+                            results_path + "\\{0}".format(each_csvfile), copy_to_path
+                        )
                         break
                     except Exception as e:
                         time.sleep(5)
@@ -796,49 +846,54 @@ class IxnetTrafficGenerator(object):
             post: /api/v1/sessions/1/ixnetwork/operations/copyfile
             data: {'arg1': winPathFile, 'arg2': '/api/v1/sessions/1/ixnetwork/files/'+fileName'}
         """
-        self.logger.info('copyfile From: %s to %s' % (winPathFile, linuxPath))
-        fileName = winPathFile.split('\\')[-1]
-        fileName = fileName.replace(' ', '_')
-        destinationPath = '/api/v1/sessions/1/ixnetwork/files/' + fileName
-        currentTimestamp = datetime.now().strftime('%H%M%S')
+        self.logger.info("copyfile From: %s to %s" % (winPathFile, linuxPath))
+        fileName = winPathFile.split("\\")[-1]
+        fileName = fileName.replace(" ", "_")
+        destinationPath = "/api/v1/sessions/1/ixnetwork/files/" + fileName
+        currentTimestamp = datetime.now().strftime("%H%M%S")
 
         # Step 1 of 2:
         url = "{0}/ixnetwork/operations/copyfile".format(self.session_url)
         data = {"arg1": winPathFile, "arg2": destinationPath}
         response = self.session.post(
-            url, data=json.dumps(data), headers=self.json_header, verify=False)
+            url, data=json.dumps(data), headers=self.json_header, verify=False
+        )
 
         # Step 2 of 2:
         url = "{0}/ixnetwork/files/{1}".format(self.session_url, fileName)
         requestStatus = self.session.get(
-            url, stream=True, headers=self.json_header, verify=False)
+            url, stream=True, headers=self.json_header, verify=False
+        )
         if requestStatus.status_code == 200:
             contents = requestStatus.raw.read()
 
             if includeTimestamp:
-                tempFileName = fileName.split('.')
+                tempFileName = fileName.split(".")
                 if len(tempFileName) > 1:
-                    extension = fileName.split('.')[-1]
-                    fileName = tempFileName[0] + '_' + currentTimestamp + '.' + extension
+                    extension = fileName.split(".")[-1]
+                    fileName = (
+                        tempFileName[0] + "_" + currentTimestamp + "." + extension
+                    )
                 else:
-                    fileName = tempFileName[0] + '_' + currentTimestamp
+                    fileName = tempFileName[0] + "_" + currentTimestamp
 
-                linuxPath = linuxPath + '/' + fileName
+                linuxPath = linuxPath + "/" + fileName
             else:
-                linuxPath = linuxPath + '/' + fileName
+                linuxPath = linuxPath + "/" + fileName
 
-            with open(linuxPath, 'wb') as downloadedFileContents:
+            with open(linuxPath, "wb") as downloadedFileContents:
                 downloadedFileContents.write(contents)
 
             url = "{0}/ixnetwork/files".format(self.session_url)
-            response = self.session.get(
-                url, headers=self.json_header, verify=False)
-            self.logger.info('A copy of saved file is in: %s' % (winPathFile))
+            response = self.session.get(url, headers=self.json_header, verify=False)
+            self.logger.info("A copy of saved file is in: %s" % (winPathFile))
             self.logger.info(
-                'copyfile_windows2linux: The copyfile is in %s' % linuxPath)
+                "copyfile_windows2linux: The copyfile is in %s" % linuxPath
+            )
         else:
             raise Exception(
-                "copyfile_windows2linux: Failed to download file from IxNetwork API Server.")
+                "copyfile_windows2linux: Failed to download file from IxNetwork API Server."
+            )
 
     def tear_down(self):
         """do needed clean up"""

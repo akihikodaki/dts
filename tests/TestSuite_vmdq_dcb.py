@@ -47,7 +47,6 @@ from framework.test_case import TestCase
 
 
 class TestVmdqDcb(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -62,8 +61,7 @@ class TestVmdqDcb(TestCase):
         if self.logger.log_path.startswith(os.sep):
             self.output_path = self.logger.log_path
         else:
-            cur_path = os.path.dirname(
-                                os.path.dirname(os.path.realpath(__file__)))
+            cur_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
             self.output_path = os.sep.join([cur_path, self.logger.log_path])
 
         # create an instance to set stream field setting
@@ -93,7 +91,9 @@ class TestVmdqDcb(TestCase):
         """
         Rebuild dpdk
         """
-        self.dut.set_build_options({'RTE_LIBRTE_I40E_QUEUE_NUM_PER_VM': nb_queue_per_vm})
+        self.dut.set_build_options(
+            {"RTE_LIBRTE_I40E_QUEUE_NUM_PER_VM": nb_queue_per_vm}
+        )
         self.dut.build_install_dpdk(self.target)
 
     def start_application(self, npools, ntcs):
@@ -106,23 +106,28 @@ class TestVmdqDcb(TestCase):
         port_mask = utils.create_mask(self.dut_ports)
         eal_param = ""
         for i in self.dut_ports:
-            eal_param += " -a %s" % self.dut.ports_info[i]['pci']
+            eal_param += " -a %s" % self.dut.ports_info[i]["pci"]
         # Run the application
-        app_name = self.dut.apps_name['vmdq_dcb']
-        command = app_name + "-c %s -n 4 %s -- -p %s --nb-pools %s --nb-tcs %s " \
-                             "--enable-rss" % (core_mask, eal_param, port_mask, str(npools), str(ntcs))
+        app_name = self.dut.apps_name["vmdq_dcb"]
+        command = (
+            app_name + "-c %s -n 4 %s -- -p %s --nb-pools %s --nb-tcs %s "
+            "--enable-rss" % (core_mask, eal_param, port_mask, str(npools), str(ntcs))
+        )
         self.dut.send_expect(command, "reading queues", 120)
 
     def create_pcaps(self, prios):
         """
         create traffic flows to pcap files
         """
-        payload = self.frame_size - HEADER_SIZE['ip'] - HEADER_SIZE['eth']
+        payload = self.frame_size - HEADER_SIZE["ip"] - HEADER_SIZE["eth"]
         for prio in prios:
             self.tester.scapy_append(
                 'flows = [Ether(dst="%s")/Dot1Q(vlan=0,prio=%d)/IP(src="1.2.3.4", dst="1.1.1.1")/("X"*%d)]'
-                % (self.destmac_port, prio, payload))
-            pcap = os.sep.join([self.output_path, "%s%d.pcap" % (self.suite_name, prio)])
+                % (self.destmac_port, prio, payload)
+            )
+            pcap = os.sep.join(
+                [self.output_path, "%s%d.pcap" % (self.suite_name, prio)]
+            )
             self.tester.scapy_append('wrpcap("%s", flows)' % pcap)
         self.tester.scapy_execute()
 
@@ -131,10 +136,11 @@ class TestVmdqDcb(TestCase):
         rx_port = self.tester.get_local_port(self.dut_ports[1])
         tgen_input = []
         for prio in prios:
-            pcap = os.sep.join([self.output_path, "%s%d.pcap" % (self.suite_name, prio)])
+            pcap = os.sep.join(
+                [self.output_path, "%s%d.pcap" % (self.suite_name, prio)]
+            )
             tgen_input.append((tx_port, rx_port, "%s" % pcap))
         return tgen_input
-
 
     def set_fields(self, vid_range, dmac_range):
         """
@@ -142,19 +148,19 @@ class TestVmdqDcb(TestCase):
         """
 
         fields_config = {
-            'vlan': {
-                0: {'range': vid_range, 'action': 'inc'}},
-            'mac': {
-                'dst': {'range': dmac_range, 'action': 'inc'}},
-               'ip': { 'src': {'action': 'random'}},
-            }
+            "vlan": {0: {"range": vid_range, "action": "inc"}},
+            "mac": {"dst": {"range": dmac_range, "action": "inc"}},
+            "ip": {"src": {"action": "random"}},
+        }
 
         return fields_config
 
     def get_vmdq_stats(self):
         vmdq_dcb_session = self.dut.new_session()
-        app_name = self.dut.apps_name['vmdq_dcb'].split('/')[-1]
-        vmdq_dcb_session.send_expect("kill -s SIGHUP  `pgrep -fl %s | awk '{print $1}'`" % app_name, "#", 20)
+        app_name = self.dut.apps_name["vmdq_dcb"].split("/")[-1]
+        vmdq_dcb_session.send_expect(
+            "kill -s SIGHUP  `pgrep -fl %s | awk '{print $1}'`" % app_name, "#", 20
+        )
         out = self.dut.get_session_output()
         self.logger.info(out)
         return out
@@ -167,11 +173,14 @@ class TestVmdqDcb(TestCase):
         lines_list = out.split("\r\n")
         nb_packets = []
         for pool_info in lines_list:
-            if pool_info.startswith('Pool'):
+            if pool_info.startswith("Pool"):
                 nb_packets += pool_info.split()[2:]
         nb_packets = list(map(int, nb_packets))
         self.verify(min(nb_packets) > 0, "Some queues don't get any packet!")
-        self.verify(float((max(nb_packets) - min(nb_packets))/max(nb_packets)) <= 0.15, "Too wide variation in queue stats")
+        self.verify(
+            float((max(nb_packets) - min(nb_packets)) / max(nb_packets)) <= 0.15,
+            "Too wide variation in queue stats",
+        )
 
     def vmdq_dcb_test(self, npools, ntcs):
         """
@@ -186,13 +195,20 @@ class TestVmdqDcb(TestCase):
         # Start traffic transmission using approx 10% of line rate.
         ratePercent = 50
         # run packet generator
-        streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, ratePercent, vm_config, self.tester.pktgen)
+        streams = self.pktgen_helper.prepare_stream_from_tginput(
+            tgen_input, ratePercent, vm_config, self.tester.pktgen
+        )
         # set traffic option
-        options = {'duration': 15}
+        options = {"duration": 15}
         loss = self.tester.pktgen.measure_loss(stream_ids=streams, options=options)
-        self.logger.info("loss is [loss rate, SendNumbers, ReceNumbers]{}!".format(loss))
+        self.logger.info(
+            "loss is [loss rate, SendNumbers, ReceNumbers]{}!".format(loss)
+        )
         # Verify there is no packet loss
-        self.verify(loss[1] == loss[2], "Packet Loss! Send: %d, but only Receive: %d!".format(loss[1], loss[2]))
+        self.verify(
+            loss[1] == loss[2],
+            "Packet Loss! Send: %d, but only Receive: %d!".format(loss[1], loss[2]),
+        )
         self.verify_all_vmdq_stats()
 
     def test_perf_32pools_4tcs(self):

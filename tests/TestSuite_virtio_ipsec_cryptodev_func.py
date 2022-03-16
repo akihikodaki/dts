@@ -46,13 +46,13 @@ from framework.test_case import TestCase
 
 class VirtioCryptodevIpsecTest(TestCase):
     def set_up_all(self):
-        self.sample_app = self.dut.apps_name['vhost_crypto']
-        self.user_app = self.dut.apps_name['ipsec-secgw']
+        self.sample_app = self.dut.apps_name["vhost_crypto"]
+        self.user_app = self.dut.apps_name["ipsec-secgw"]
         self._default_ipsec_gw_opts = {
             "p": "0x3",
             "config": None,
             "f": "ipsec_test.cfg",
-            "u": "0x1"
+            "u": "0x1",
         }
 
         self.vm0, self.vm0_dut = None, None
@@ -60,7 +60,7 @@ class VirtioCryptodevIpsecTest(TestCase):
         self.dut.skip_setup = True
 
         self.dut_ports = self.dut.get_ports(self.nic)
-        self.verify(len(self.dut_ports) >= 4, 'Insufficient ports for test')
+        self.verify(len(self.dut_ports) >= 4, "Insufficient ports for test")
         self.cores = self.dut.get_core_list("1S/5C/1T")
         self.mem_channel = self.dut.get_memory_channels()
         self.port_mask = utils.create_mask([self.dut_ports[0]])
@@ -89,18 +89,18 @@ class VirtioCryptodevIpsecTest(TestCase):
     def set_up(self):
         pass
 
-    def dut_execut_cmd(self, cmdline, ex='#', timout=30):
+    def dut_execut_cmd(self, cmdline, ex="#", timout=30):
         return self.dut.send_expect(cmdline, ex, timout)
 
     def get_vhost_eal(self):
         default_eal_opts = {
             "c": None,
-            "l": ','.join(self.cores),
+            "l": ",".join(self.cores),
             "a": None,
             "vdev": None,
             "config": None,
             "socket-mem": "2048,0",
-            "n": self.mem_channel
+            "n": self.mem_channel,
         }
         opts = default_eal_opts.copy()
 
@@ -111,7 +111,7 @@ class VirtioCryptodevIpsecTest(TestCase):
 
         # Generate option string
         opt_str = ""
-        for key,value in list(opts.items()):
+        for key, value in list(opts.items()):
             if value is None:
                 continue
             dash = "-" if len(key) == 1 else "--"
@@ -127,33 +127,31 @@ class VirtioCryptodevIpsecTest(TestCase):
             "#SP IPv4 rules\n"
             "sp ipv4 out esp protect 5 pri 1 dst 192.168.105.0/24 sport 0:65535 dport 0:65535\n"
             "sp ipv4 in esp protect 105 pri 1 dst 192.168.115.0/24 sport 0:65535 dport 0:65535\n"
-
             "#SA rules\n"
             "sa out 5 cipher_algo aes-128-cbc cipher_key 0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 auth_algo sha1-hmac auth_key 0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 mode ipv4-tunnel src 172.16.1.5 dst 172.16.2.5\n"
             "sa in 105 cipher_algo aes-128-cbc cipher_key 0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 auth_algo sha1-hmac auth_key 0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 mode ipv4-tunnel src 172.16.2.5 dst 172.16.1.5\n"
-
             "#Routing rules\n"
             "rt ipv4 dst 172.16.2.5/32 port 0\n"
-            "rt ipv4 dst 192.168.115.0/24 port 1\n")
+            "rt ipv4 dst 192.168.115.0/24 port 1\n"
+        )
 
         ep1 = (
             "#SP IPv4 rules\n"
             "sp ipv4 in esp protect 5 pri 1 dst 192.168.105.0/24 sport 0:65535 dport 0:65535\n"
             "sp ipv4 out esp protect 105 pri 1 dst 192.168.115.0/24 sport 0:65535 dport 0:65535\n"
-
             "#SA rules\n"
             "sa in 5 cipher_algo aes-128-cbc cipher_key 0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 auth_algo sha1-hmac auth_key 0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 mode ipv4-tunnel src 172.16.1.5 dst 172.16.2.5\n"
             "sa out 105 cipher_algo aes-128-cbc cipher_key 0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 auth_algo sha1-hmac auth_key 0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 mode ipv4-tunnel src 172.16.2.5 dst 172.16.1.5\n"
-
             "#Routing rules\n"
             "rt ipv4 dst 172.16.1.5/32 port 0\n"
-            "rt ipv4 dst 192.168.105.0/24 port 1\n")
+            "rt ipv4 dst 192.168.105.0/24 port 1\n"
+        )
 
-        self.set_cfg(dut, 'ep0.cfg', ep0)
-        self.set_cfg(dut, 'ep1.cfg', ep1)
+        self.set_cfg(dut, "ep0.cfg", ep0)
+        self.set_cfg(dut, "ep1.cfg", ep1)
 
     def set_cfg(self, dut, filename, cfg):
-        with open(filename, 'w') as f:
+        with open(filename, "w") as f:
             f.write(cfg)
 
         dut.session.copy_file_to(filename, dut.base_dir)
@@ -163,12 +161,18 @@ class VirtioCryptodevIpsecTest(TestCase):
         eal_opt_str = self.get_vhost_eal()
 
         config = '"(%s,0,0),(%s,0,0),(%s,0,0),(%s,0,0)"' % tuple(self.cores[-4:])
-        socket_file = "%s,/tmp/vm0_crypto0.sock\
+        socket_file = (
+            "%s,/tmp/vm0_crypto0.sock\
         --socket-file=%s,/tmp/vm0_crypto1.sock\
         --socket-file=%s,/tmp/vm1_crypto0.sock\
-        --socket-file=%s,/tmp/vm1_crypto1.sock"% tuple(self.cores[-4:])
-        self.vhost_switch_cmd = cc.get_dpdk_app_cmd_str(self.sample_app, eal_opt_str,
-                                    '--config %s --socket-file %s' % (config, socket_file))
+        --socket-file=%s,/tmp/vm1_crypto1.sock"
+            % tuple(self.cores[-4:])
+        )
+        self.vhost_switch_cmd = cc.get_dpdk_app_cmd_str(
+            self.sample_app,
+            eal_opt_str,
+            "--config %s --socket-file %s" % (config, socket_file),
+        )
         self.dut_execut_cmd("rm -r /tmp/*")
         out = self.dut_execut_cmd(self.vhost_switch_cmd, "socket created", 30)
         self.logger.info(out)
@@ -186,23 +190,26 @@ class VirtioCryptodevIpsecTest(TestCase):
     def set_virtio_pci(self, dut):
         out = dut.send_expect("lspci -d:1054|awk '{{print $1}}'", "# ", 10)
         virtio_list = out.replace("\r", "\n").replace("\n\n", "\n").split("\n")
-        dut.send_expect('modprobe uio_pci_generic', '#', 10)
+        dut.send_expect("modprobe uio_pci_generic", "#", 10)
         for line in virtio_list:
             cmd = "echo 0000:{} > /sys/bus/pci/devices/0000\:{}/driver/unbind".format(
-                line, line.replace(":", "\:"))
+                line, line.replace(":", "\:")
+            )
             dut.send_expect(cmd, "# ", 10)
-        dut.send_expect('echo "1af4 1054" > /sys/bus/pci/drivers/uio_pci_generic/new_id', "# ", 10)
+        dut.send_expect(
+            'echo "1af4 1054" > /sys/bus/pci/drivers/uio_pci_generic/new_id', "# ", 10
+        )
 
         return virtio_list
 
     def launch_virtio_dut(self, vm_name):
-        vm = QEMUKvm(self.dut, vm_name, 'virtio_ipsec_cryptodev_func')
+        vm = QEMUKvm(self.dut, vm_name, "virtio_ipsec_cryptodev_func")
         if vm_name == "vm0":
-            vf0 = {'opt_host': self.sriov_port[0].pci}
-            vf1 = {'opt_host': self.sriov_port[1].pci}
+            vf0 = {"opt_host": self.sriov_port[0].pci}
+            vf1 = {"opt_host": self.sriov_port[1].pci}
         elif vm_name == "vm1":
-            vf0 = {'opt_host': self.sriov_port[2].pci}
-            vf1 = {'opt_host': self.sriov_port[3].pci}
+            vf0 = {"opt_host": self.sriov_port[2].pci}
+            vf1 = {"opt_host": self.sriov_port[3].pci}
 
         vm.set_vm_device(driver=self.vf_assign_method, **vf0)
         vm.set_vm_device(driver=self.vf_assign_method, **vf1)
@@ -212,7 +219,7 @@ class VirtioCryptodevIpsecTest(TestCase):
             self.dut.skip_setup = True
             vm_dut = vm.start()
             if vm_dut is None:
-                print(('{} start failed'.format(vm_name)))
+                print(("{} start failed".format(vm_name)))
         except Exception as err:
             raise err
 
@@ -239,11 +246,13 @@ class VirtioCryptodevIpsecTest(TestCase):
         inst = self.tester.tcpdump_sniff_packets(self.rx_interface)
 
         PACKET_COUNT = 65
-        payload = 256 * ['11']
+        payload = 256 * ["11"]
 
         pkt = Packet()
         pkt.assign_layers(["ether", "ipv4", "udp", "raw"])
-        pkt.config_layer("ether", {"src": "52:00:00:00:00:00", "dst": "52:00:00:00:00:01"})
+        pkt.config_layer(
+            "ether", {"src": "52:00:00:00:00:00", "dst": "52:00:00:00:00:01"}
+        )
         src_ip = "192.168.105.200"
         dst_ip = "192.168.105.100"
         pkt.config_layer("ipv4", {"src": src_ip, "dst": dst_ip})
@@ -254,17 +263,24 @@ class VirtioCryptodevIpsecTest(TestCase):
 
         self.logger.info("dump: {} packets".format(len(pkt_rec)))
         if len(pkt_rec) != PACKET_COUNT:
-            self.logger.info("dump pkg: {}, the num of pkg dumped is incorrtct!".format(len(pkt_rec)))
+            self.logger.info(
+                "dump pkg: {}, the num of pkg dumped is incorrtct!".format(len(pkt_rec))
+            )
             status = False
         for i in range(len(pkt_rec)):
-            if src_ip != pkt_rec.pktgen.strip_layer3("src", p_index=i) or dst_ip != pkt_rec.pktgen.strip_layer3("dst", p_index=i):
+            if src_ip != pkt_rec.pktgen.strip_layer3(
+                "src", p_index=i
+            ) or dst_ip != pkt_rec.pktgen.strip_layer3("dst", p_index=i):
                 self.logger.info("the ip of pkg dumped is incorrtct!")
                 status = False
 
-            dump_text = str(binascii.b2a_hex(pkt_rec[i]["Raw"].getfieldval("load")), encoding='utf-8')
-            if dump_text != ''.join(payload):
+            dump_text = str(
+                binascii.b2a_hex(pkt_rec[i]["Raw"].getfieldval("load")),
+                encoding="utf-8",
+            )
+            if dump_text != "".join(payload):
                 self.logger.info(dump_text)
-                self.logger.info(''.join(payload))
+                self.logger.info("".join(payload))
                 self.logger.info("the text of pkg dumped is incorrtct!")
                 status = False
 
@@ -274,23 +290,51 @@ class VirtioCryptodevIpsecTest(TestCase):
         if cc.is_test_skip(self):
             return
 
-        eal_opt_str_0 = cc.get_eal_opt_str(self, {"l": ','.join(self.vm0.cores[-3:]),
-                                                "socket-mem":"512,0",
-                                                "a": " -a ".join(self.vm0.ports),
-                                                "vdev":"crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2"})
+        eal_opt_str_0 = cc.get_eal_opt_str(
+            self,
+            {
+                "l": ",".join(self.vm0.cores[-3:]),
+                "socket-mem": "512,0",
+                "a": " -a ".join(self.vm0.ports),
+                "vdev": "crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2",
+            },
+        )
 
-        crypto_ipsec_opt_str0 = cc.get_opt_str(self, self._default_ipsec_gw_opts, override_opts={'f': "/root/dpdk/ep0.cfg", "config": '"(0,0,%s),(1,0,%s)"' % tuple(self.vm0.cores[-2:])})
+        crypto_ipsec_opt_str0 = cc.get_opt_str(
+            self,
+            self._default_ipsec_gw_opts,
+            override_opts={
+                "f": "/root/dpdk/ep0.cfg",
+                "config": '"(0,0,%s),(1,0,%s)"' % tuple(self.vm0.cores[-2:]),
+            },
+        )
 
-        out0 = self._run_crypto_ipsec(self.vm0_dut, eal_opt_str_0, crypto_ipsec_opt_str0)
+        out0 = self._run_crypto_ipsec(
+            self.vm0_dut, eal_opt_str_0, crypto_ipsec_opt_str0
+        )
         self.logger.info(out0)
 
-        eal_opt_str_1 = cc.get_eal_opt_str(self, {"l": ','.join(self.vm1.cores[-3:]),
-                                                "socket-mem":"512,0",
-                                                "a": " -a ".join(self.vm1.ports),
-                                                "vdev": "crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2"})
+        eal_opt_str_1 = cc.get_eal_opt_str(
+            self,
+            {
+                "l": ",".join(self.vm1.cores[-3:]),
+                "socket-mem": "512,0",
+                "a": " -a ".join(self.vm1.ports),
+                "vdev": "crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2",
+            },
+        )
 
-        crypto_ipsec_opt_str1 = cc.get_opt_str(self, self._default_ipsec_gw_opts, override_opts={'f': "/root/dpdk/ep1.cfg", "config": '"(0,0,%s),(1,0,%s)"' % tuple(self.vm1.cores[-2:])})
-        out1 = self._run_crypto_ipsec(self.vm1_dut, eal_opt_str_1, crypto_ipsec_opt_str1)
+        crypto_ipsec_opt_str1 = cc.get_opt_str(
+            self,
+            self._default_ipsec_gw_opts,
+            override_opts={
+                "f": "/root/dpdk/ep1.cfg",
+                "config": '"(0,0,%s),(1,0,%s)"' % tuple(self.vm1.cores[-2:]),
+            },
+        )
+        out1 = self._run_crypto_ipsec(
+            self.vm1_dut, eal_opt_str_1, crypto_ipsec_opt_str1
+        )
         self.logger.info(out1)
 
         result = self.send_and_dump_pkg()
@@ -300,31 +344,59 @@ class VirtioCryptodevIpsecTest(TestCase):
         if cc.is_test_skip(self):
             return
 
-        eal_opt_str_0 = cc.get_eal_opt_str(self, {"l": ','.join(self.vm0.cores[-3:]),
-                                                "socket-mem":"512,0",
-                                                "a": " -a ".join(self.vm0.ports + self.vm0.virtio_list),
-                                                "vdev":None})
+        eal_opt_str_0 = cc.get_eal_opt_str(
+            self,
+            {
+                "l": ",".join(self.vm0.cores[-3:]),
+                "socket-mem": "512,0",
+                "a": " -a ".join(self.vm0.ports + self.vm0.virtio_list),
+                "vdev": None,
+            },
+        )
 
-        crypto_ipsec_opt_str0 = cc.get_opt_str(self, self._default_ipsec_gw_opts, override_opts={'f': "/root/dpdk/ep0.cfg", "config": '"(0,0,%s),(1,0,%s)"' % tuple(self.vm0.cores[-2:])})
-        out0 = self._run_crypto_ipsec(self.vm0_dut, eal_opt_str_0, crypto_ipsec_opt_str0)
+        crypto_ipsec_opt_str0 = cc.get_opt_str(
+            self,
+            self._default_ipsec_gw_opts,
+            override_opts={
+                "f": "/root/dpdk/ep0.cfg",
+                "config": '"(0,0,%s),(1,0,%s)"' % tuple(self.vm0.cores[-2:]),
+            },
+        )
+        out0 = self._run_crypto_ipsec(
+            self.vm0_dut, eal_opt_str_0, crypto_ipsec_opt_str0
+        )
         self.logger.info(out0)
 
-        eal_opt_str_1 = cc.get_eal_opt_str(self, {"l": ','.join(self.vm1.cores[-3:]),
-                                                "socket-mem":"512,0",
-                                                "a": " -a ".join(self.vm1.ports + self.vm1.virtio_list),
-                                                "vdev": None})
+        eal_opt_str_1 = cc.get_eal_opt_str(
+            self,
+            {
+                "l": ",".join(self.vm1.cores[-3:]),
+                "socket-mem": "512,0",
+                "a": " -a ".join(self.vm1.ports + self.vm1.virtio_list),
+                "vdev": None,
+            },
+        )
 
-        crypto_ipsec_opt_str1 = cc.get_opt_str(self, self._default_ipsec_gw_opts, override_opts={'f': "/root/dpdk/ep1.cfg", "config": '"(0,0,%s),(1,0,%s)"' % tuple(self.vm1.cores[-2:])})
-        out1 = self._run_crypto_ipsec(self.vm1_dut, eal_opt_str_1, crypto_ipsec_opt_str1)
+        crypto_ipsec_opt_str1 = cc.get_opt_str(
+            self,
+            self._default_ipsec_gw_opts,
+            override_opts={
+                "f": "/root/dpdk/ep1.cfg",
+                "config": '"(0,0,%s),(1,0,%s)"' % tuple(self.vm1.cores[-2:]),
+            },
+        )
+        out1 = self._run_crypto_ipsec(
+            self.vm1_dut, eal_opt_str_1, crypto_ipsec_opt_str1
+        )
         self.logger.info(out1)
 
         result = self.send_and_dump_pkg()
         self.verify(result, "FAILED")
 
     def _run_crypto_ipsec(self, vm_dut, eal_opt_str, case_opt_str):
-        cmd_str = cc.get_dpdk_app_cmd_str(self.user_app,
-                                          eal_opt_str,
-                                          case_opt_str + " -l")
+        cmd_str = cc.get_dpdk_app_cmd_str(
+            self.user_app, eal_opt_str, case_opt_str + " -l"
+        )
         self.logger.info(cmd_str)
         try:
             out = vm_dut.send_expect(cmd_str, "IPSEC", 600)
@@ -339,12 +411,12 @@ class VirtioCryptodevIpsecTest(TestCase):
         self.vm1_dut.send_expect("^C", "# ")
 
     def tear_down_all(self):
-        if getattr(self, 'vm0', None):
+        if getattr(self, "vm0", None):
             self.vm0_dut.kill_all()
             self.vm0.stop()
             self.vm0 = None
 
-        if getattr(self, 'vm1', None):
+        if getattr(self, "vm1", None):
             self.vm1_dut.kill_all()
             self.vm1.stop()
             self.vm1 = None
@@ -355,7 +427,7 @@ class VirtioCryptodevIpsecTest(TestCase):
             self.vm1 = None
 
         self.dut_execut_cmd("^C", "# ")
-        self.app_name = self.sample_app[self.sample_app.rfind('/')+1:]
+        self.app_name = self.sample_app[self.sample_app.rfind("/") + 1 :]
         self.dut.send_expect("killall -s INT %s" % self.app_name, "#")
         self.dut_execut_cmd("killall -s INT qemu-system-x86_64")
         self.dut_execut_cmd("rm -r /tmp/*")

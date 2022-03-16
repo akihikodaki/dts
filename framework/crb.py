@@ -63,24 +63,29 @@ class Crb(object):
         self.serializer = serializer
         self.ports_info = []
         self.sessions = []
-        self.stage = 'pre-init'
+        self.stage = "pre-init"
         self.name = name
         self.trex_prefix = None
         self.default_hugepages_cleared = False
         self.prefix_list = []
 
         self.logger = getLogger(name)
-        self.session = SSHConnection(self.get_ip_address(), name,
-                                     self.get_username(),
-                                     self.get_password(), dut_id)
+        self.session = SSHConnection(
+            self.get_ip_address(),
+            name,
+            self.get_username(),
+            self.get_password(),
+            dut_id,
+        )
         self.session.init_log(self.logger)
         if alt_session:
             self.alt_session = SSHConnection(
                 self.get_ip_address(),
-                name + '_alt',
+                name + "_alt",
                 self.get_username(),
                 self.get_password(),
-                dut_id)
+                dut_id,
+            )
             self.alt_session.init_log(self.logger)
         else:
             self.alt_session = None
@@ -103,8 +108,15 @@ class Crb(object):
         """
         raise NotImplementedError
 
-    def send_expect(self, cmds, expected, timeout=TIMEOUT,
-                    alt_session=False, verify=False, trim_whitespace=True):
+    def send_expect(
+        self,
+        cmds,
+        expected,
+        timeout=TIMEOUT,
+        alt_session=False,
+        verify=False,
+        trim_whitespace=True,
+    ):
         """
         Send commands to crb and return string before expected string. If
         there's no expected string found before timeout, TimeoutException will
@@ -119,8 +131,7 @@ class Crb(object):
 
         # sometimes there will be no alt_session like VM dut
         if alt_session and self.alt_session:
-            return self.alt_session.session.send_expect(cmds, expected,
-                                                        timeout, verify)
+            return self.alt_session.session.send_expect(cmds, expected, timeout, verify)
 
         return self.session.send_expect(cmds, expected, timeout, verify)
 
@@ -129,11 +140,13 @@ class Crb(object):
         Create new session for additional usage. This session will not enable log.
         """
         logger = getLogger(name)
-        session = SSHConnection(self.get_ip_address(),
-                                name,
-                                self.get_username(),
-                                self.get_password(),
-                                dut_id = self.dut_id)
+        session = SSHConnection(
+            self.get_ip_address(),
+            name,
+            self.get_username(),
+            self.get_password(),
+            dut_id=self.dut_id,
+        )
         session.init_log(logger)
         self.sessions.append(session)
         return session
@@ -165,13 +178,18 @@ class Crb(object):
         if alt_session:
             session = SSHConnection(
                 self.get_ip_address(),
-                self.name + '_alt',
+                self.name + "_alt",
                 self.get_username(),
-                self.get_password())
+                self.get_password(),
+            )
             self.alt_session = session
         else:
-            session = SSHConnection(self.get_ip_address(), self.name,
-                                    self.get_username(), self.get_password())
+            session = SSHConnection(
+                self.get_ip_address(),
+                self.name,
+                self.get_username(),
+                self.get_password(),
+            )
             self.session = session
 
         session.init_log(self.logger)
@@ -204,8 +222,8 @@ class Crb(object):
         Get the huge page number of CRB.
         """
         huge_pages = self.send_expect(
-            "awk '/HugePages_Total/ { print $2 }' /proc/meminfo",
-            "# ", alt_session=True)
+            "awk '/HugePages_Total/ { print $2 }' /proc/meminfo", "# ", alt_session=True
+        )
         if huge_pages != "":
             return int(huge_pages.split()[0])
         return 0
@@ -214,12 +232,12 @@ class Crb(object):
         """
         Mount hugepage file system on CRB.
         """
-        self.send_expect("umount `awk '/hugetlbfs/ { print $2 }' /proc/mounts`", '# ')
+        self.send_expect("umount `awk '/hugetlbfs/ { print $2 }' /proc/mounts`", "# ")
         out = self.send_expect("awk '/hugetlbfs/ { print $2 }' /proc/mounts", "# ")
         # only mount hugepage when no hugetlbfs mounted
         if not len(out):
-            self.send_expect('mkdir -p /mnt/huge', '# ')
-            self.send_expect('mount -t hugetlbfs nodev /mnt/huge', '# ')
+            self.send_expect("mkdir -p /mnt/huge", "# ")
+            self.send_expect("mount -t hugetlbfs nodev /mnt/huge", "# ")
 
     def strip_hugepage_path(self):
         mounts = self.send_expect("cat /proc/mounts |grep hugetlbfs", "# ")
@@ -227,28 +245,50 @@ class Crb(object):
         if len(infos) >= 2:
             return infos[1]
         else:
-            return ''
+            return ""
 
     def set_huge_pages(self, huge_pages, numa=""):
         """
         Set numbers of huge pages
         """
-        page_size = self.send_expect("awk '/Hugepagesize/ {print $2}' /proc/meminfo", "# ")
+        page_size = self.send_expect(
+            "awk '/Hugepagesize/ {print $2}' /proc/meminfo", "# "
+        )
 
         if not numa:
-            self.send_expect('echo %d > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (huge_pages, page_size), '# ', 5)
+            self.send_expect(
+                "echo %d > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages"
+                % (huge_pages, page_size),
+                "# ",
+                5,
+            )
         else:
             # sometimes we set hugepage on kernel cmdline, so we clear it
             if not self.default_hugepages_cleared:
-                self.send_expect('echo 0 > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (page_size), '# ', 5)
+                self.send_expect(
+                    "echo 0 > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages"
+                    % (page_size),
+                    "# ",
+                    5,
+                )
                 self.default_hugepages_cleared = True
 
             # some platform not support numa, example vm dut
             try:
-                self.send_expect('echo %d > /sys/devices/system/node/%s/hugepages/hugepages-%skB/nr_hugepages' % (huge_pages, numa, page_size), '# ', 5)
+                self.send_expect(
+                    "echo %d > /sys/devices/system/node/%s/hugepages/hugepages-%skB/nr_hugepages"
+                    % (huge_pages, numa, page_size),
+                    "# ",
+                    5,
+                )
             except:
                 self.logger.warning("set %d hugepage on %s error" % (huge_pages, numa))
-                self.send_expect('echo %d > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (huge_pages. page_size), '# ', 5)
+                self.send_expect(
+                    "echo %d > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages"
+                    % (huge_pages.page_size),
+                    "# ",
+                    5,
+                )
 
     def set_speedup_options(self, read_cache, skip_setup):
         """
@@ -267,23 +307,23 @@ class Crb(object):
         """
         Force set port's interface status.
         """
-        admin_ports_freebsd = getattr(self, 'admin_ports_freebsd_%s' % self.get_os_type())
+        admin_ports_freebsd = getattr(
+            self, "admin_ports_freebsd_%s" % self.get_os_type()
+        )
         return admin_ports_freebsd()
 
     def admin_ports_freebsd(self, port, status):
         """
         Force set remote interface link status in FreeBSD.
         """
-        eth = self.ports_info[port]['intf']
-        self.send_expect("ifconfig %s %s" %
-                         (eth, status), "# ", alt_session=True)
+        eth = self.ports_info[port]["intf"]
+        self.send_expect("ifconfig %s %s" % (eth, status), "# ", alt_session=True)
 
     def admin_ports_linux(self, eth, status):
         """
         Force set remote interface link status in Linux.
         """
-        self.send_expect("ip link set  %s %s" %
-                         (eth, status), "# ", alt_session=True)
+        self.send_expect("ip link set  %s %s" % (eth, status), "# ", alt_session=True)
 
     def pci_devices_information(self):
         """
@@ -300,35 +340,36 @@ class Crb(object):
         """
         Scan CRB NIC's information on different OS.
         """
-        pci_devices_information_uncached = getattr(self, 'pci_devices_information_uncached_%s' % self.get_os_type())
+        pci_devices_information_uncached = getattr(
+            self, "pci_devices_information_uncached_%s" % self.get_os_type()
+        )
         return pci_devices_information_uncached()
 
     def pci_devices_information_uncached_linux(self):
         """
         Look for the NIC's information (PCI Id and card type).
         """
-        out = self.send_expect(
-            "lspci -Dnn | grep -i eth", "# ", alt_session=True)
+        out = self.send_expect("lspci -Dnn | grep -i eth", "# ", alt_session=True)
         rexp = r"([\da-f]{4}:[\da-f]{2}:[\da-f]{2}.\d{1}) .*Eth.*?ernet .*?([\da-f]{4}:[\da-f]{4})"
         pattern = re.compile(rexp)
         match = pattern.findall(out)
         self.pci_devices_info = []
 
         obj_str = str(self)
-        if 'VirtDut' in obj_str:
+        if "VirtDut" in obj_str:
             # there is no port.cfg in VM, so need to scan all pci in VM.
             pass
         else:
             # only scan configured pcis
             portconf = PortConf(PORTCONF)
-            portconf.load_ports_config(self.crb['IP'])
+            portconf.load_ports_config(self.crb["IP"])
             configed_pcis = portconf.get_ports_config()
             if configed_pcis:
-                if 'tester' in str(self):
+                if "tester" in str(self):
                     tester_pci_in_cfg = []
                     for item in list(configed_pcis.values()):
                         for pci_info in match:
-                            if item['peer'] == pci_info[0]:
+                            if item["peer"] == pci_info[0]:
                                 tester_pci_in_cfg.append(pci_info)
                     match = tester_pci_in_cfg[:]
                 else:
@@ -345,10 +386,14 @@ class Crb(object):
                 pass
 
         for i in range(len(match)):
-            #check if device is cavium and check its linkspeed, append only if it is 10G
+            # check if device is cavium and check its linkspeed, append only if it is 10G
             if "177d:" in match[i][1]:
                 linkspeed = "10000"
-                nic_linkspeed = self.send_expect("cat /sys/bus/pci/devices/%s/net/*/speed" % match[i][0], "# ", alt_session=True)
+                nic_linkspeed = self.send_expect(
+                    "cat /sys/bus/pci/devices/%s/net/*/speed" % match[i][0],
+                    "# ",
+                    alt_session=True,
+                )
                 if nic_linkspeed.split()[0] == linkspeed:
                     self.pci_devices_info.append((match[i][0], match[i][1]))
             else:
@@ -372,16 +417,19 @@ class Crb(object):
         """
         Get the driver of specified pci device.
         """
-        get_pci_dev_driver = getattr(
-            self, 'get_pci_dev_driver_%s' % self.get_os_type())
+        get_pci_dev_driver = getattr(self, "get_pci_dev_driver_%s" % self.get_os_type())
         return get_pci_dev_driver(domain_id, bus_id, devfun_id)
 
     def get_pci_dev_driver_linux(self, domain_id, bus_id, devfun_id):
         """
         Get the driver of specified pci device on linux.
         """
-        out = self.send_expect("cat /sys/bus/pci/devices/%s\:%s\:%s/uevent" %
-                               (domain_id, bus_id, devfun_id), "# ", alt_session=True)
+        out = self.send_expect(
+            "cat /sys/bus/pci/devices/%s\:%s\:%s/uevent"
+            % (domain_id, bus_id, devfun_id),
+            "# ",
+            alt_session=True,
+        )
         rexp = r"DRIVER=(.+?)\r"
         pattern = re.compile(rexp)
         match = pattern.search(out)
@@ -399,16 +447,19 @@ class Crb(object):
         """
         Get the pci id of specified pci device.
         """
-        get_pci_dev_id = getattr(
-            self, 'get_pci_dev_id_%s' % self.get_os_type())
+        get_pci_dev_id = getattr(self, "get_pci_dev_id_%s" % self.get_os_type())
         return get_pci_dev_id(domain_id, bus_id, devfun_id)
 
     def get_pci_dev_id_linux(self, domain_id, bus_id, devfun_id):
         """
         Get the pci id of specified pci device on linux.
         """
-        out = self.send_expect("cat /sys/bus/pci/devices/%s\:%s\:%s/uevent" %
-                               (domain_id, bus_id, devfun_id), "# ", alt_session=True)
+        out = self.send_expect(
+            "cat /sys/bus/pci/devices/%s\:%s\:%s/uevent"
+            % (domain_id, bus_id, devfun_id),
+            "# ",
+            alt_session=True,
+        )
         rexp = r"PCI_ID=(.+)"
         pattern = re.compile(rexp)
         match = re.search(pattern, out)
@@ -420,8 +471,7 @@ class Crb(object):
         """
         Get numa number of specified pci device.
         """
-        get_device_numa = getattr(
-            self, "get_device_numa_%s" % self.get_os_type())
+        get_device_numa = getattr(self, "get_device_numa_%s" % self.get_os_type())
         return get_device_numa(domain_id, bus_id, devfun_id)
 
     def get_device_numa_linux(self, domain_id, bus_id, devfun_id):
@@ -429,8 +479,11 @@ class Crb(object):
         Get numa number of specified pci device on Linux.
         """
         numa = self.send_expect(
-            "cat /sys/bus/pci/devices/%s\:%s\:%s/numa_node" %
-            (domain_id, bus_id, devfun_id), "# ", alt_session=True)
+            "cat /sys/bus/pci/devices/%s\:%s\:%s/numa_node"
+            % (domain_id, bus_id, devfun_id),
+            "# ",
+            alt_session=True,
+        )
 
         try:
             numa = int(numa)
@@ -443,22 +496,25 @@ class Crb(object):
         """
         Get ipv6 address of specified pci device.
         """
-        get_ipv6_addr = getattr(self, 'get_ipv6_addr_%s' % self.get_os_type())
+        get_ipv6_addr = getattr(self, "get_ipv6_addr_%s" % self.get_os_type())
         return get_ipv6_addr(intf)
 
     def get_ipv6_addr_linux(self, intf):
         """
         Get ipv6 address of specified pci device on linux.
         """
-        out = self.send_expect("ip -family inet6 address show dev %s | awk '/inet6/ { print $2 }'"
-                               % intf, "# ", alt_session=True)
-        return out.split('/')[0]
+        out = self.send_expect(
+            "ip -family inet6 address show dev %s | awk '/inet6/ { print $2 }'" % intf,
+            "# ",
+            alt_session=True,
+        )
+        return out.split("/")[0]
 
     def get_ipv6_addr_freebsd(self, intf):
         """
         Get ipv6 address of specified pci device on Freebsd.
         """
-        out = self.send_expect('ifconfig %s' % intf, '# ', alt_session=True)
+        out = self.send_expect("ifconfig %s" % intf, "# ", alt_session=True)
         rexp = r"inet6 ([\da-f:]*)%"
         pattern = re.compile(rexp)
         match = pattern.findall(out)
@@ -471,26 +527,24 @@ class Crb(object):
         """
         Disable ipv6 of of specified interface
         """
-        if intf != 'N/A':
-            self.send_expect("sysctl net.ipv6.conf.%s.disable_ipv6=1" %
-                             intf, "# ", alt_session=True)
+        if intf != "N/A":
+            self.send_expect(
+                "sysctl net.ipv6.conf.%s.disable_ipv6=1" % intf, "# ", alt_session=True
+            )
 
     def enable_ipv6(self, intf):
         """
         Enable ipv6 of of specified interface
         """
-        if intf != 'N/A':
-            self.send_expect("sysctl net.ipv6.conf.%s.disable_ipv6=0" %
-                             intf, "# ", alt_session=True)
+        if intf != "N/A":
+            self.send_expect(
+                "sysctl net.ipv6.conf.%s.disable_ipv6=0" % intf, "# ", alt_session=True
+            )
 
-            out = self.send_expect(
-                "ifconfig %s" % intf, "# ", alt_session=True)
+            out = self.send_expect("ifconfig %s" % intf, "# ", alt_session=True)
             if "inet6" not in out:
-                self.send_expect("ifconfig %s down" %
-                                 intf, "# ", alt_session=True)
-                self.send_expect(
-                    "ifconfig %s up" % intf, "# ", alt_session=True)
-
+                self.send_expect("ifconfig %s down" % intf, "# ", alt_session=True)
+                self.send_expect("ifconfig %s up" % intf, "# ", alt_session=True)
 
     def create_file(self, contents, fileName):
         """
@@ -505,15 +559,19 @@ class Crb(object):
         if the tester and dut on same server
         and pktgen is trex, do not kill the process
         """
-        if 'pktgen' in self.crb and (self.crb['pktgen'] is not None) and (self.crb['pktgen'].lower() == 'trex'):
-            if self.crb['IP'] == self.crb['tester IP'] and self.trex_prefix is None:
-                conf_inst = PktgenConf('trex')
+        if (
+            "pktgen" in self.crb
+            and (self.crb["pktgen"] is not None)
+            and (self.crb["pktgen"].lower() == "trex")
+        ):
+            if self.crb["IP"] == self.crb["tester IP"] and self.trex_prefix is None:
+                conf_inst = PktgenConf("trex")
                 conf_info = conf_inst.load_pktgen_config()
-                if 'config_file' in conf_info:
-                    config_file = conf_info['config_file']
+                if "config_file" in conf_info:
+                    config_file = conf_info["config_file"]
                 else:
-                    config_file = '/etc/trex_cfg.yaml'
-                fd = open(config_file, 'r')
+                    config_file = "/etc/trex_cfg.yaml"
+                fd = open(config_file, "r")
                 output = fd.read()
                 fd.close()
                 prefix = re.search("prefix\s*:\s*(\S*)", output)
@@ -528,31 +586,40 @@ class Crb(object):
         trex_prefix = self.check_trex_process_existed()
         if trex_prefix is not None and trex_prefix in prefix_list:
             prefix_list.remove(trex_prefix)
-        file_directorys = ['/var/run/dpdk/%s/config' % file_prefix for file_prefix in prefix_list]
+        file_directorys = [
+            "/var/run/dpdk/%s/config" % file_prefix for file_prefix in prefix_list
+        ]
         pids = []
-        pid_reg = r'p(\d+)'
+        pid_reg = r"p(\d+)"
         for config_file in file_directorys:
             # Covers case where the process is run as a unprivileged user and does not generate the file
-            isfile = self.send_expect('ls -l {}'.format(config_file), "# ", 20, alt_session)
+            isfile = self.send_expect(
+                "ls -l {}".format(config_file), "# ", 20, alt_session
+            )
             if isfile:
-                cmd = 'lsof -Fp %s' % config_file
+                cmd = "lsof -Fp %s" % config_file
                 out = self.send_expect(cmd, "# ", 20, alt_session)
                 if len(out):
-                    lines = out.split('\r\n')
+                    lines = out.split("\r\n")
                     for line in lines:
                         m = re.match(pid_reg, line)
                         if m:
                             pids.append(m.group(1))
                 for pid in pids:
-                    self.send_expect('kill -9 %s' % pid, '# ', 20, alt_session)
+                    self.send_expect("kill -9 %s" % pid, "# ", 20, alt_session)
                     self.get_session_output(timeout=2)
 
-        hugepage_info = ['/var/run/dpdk/%s/hugepage_info' % file_prefix for file_prefix in prefix_list]
+        hugepage_info = [
+            "/var/run/dpdk/%s/hugepage_info" % file_prefix
+            for file_prefix in prefix_list
+        ]
         for hugepage in hugepage_info:
             # Covers case where the process is run as a unprivileged user and does not generate the file
-            isfile = self.send_expect('ls -l {}'.format(hugepage), "# ", 20, alt_session)
+            isfile = self.send_expect(
+                "ls -l {}".format(hugepage), "# ", 20, alt_session
+            )
             if isfile:
-                cmd = 'lsof -Fp %s' % hugepage
+                cmd = "lsof -Fp %s" % hugepage
                 out = self.send_expect(cmd, "# ", 20, alt_session)
                 if len(out) and "No such file or directory" not in out:
                     self.logger.warning("There are some dpdk process not free hugepage")
@@ -561,36 +628,40 @@ class Crb(object):
                     self.logger.warning("**************************************")
 
         # remove directory
-        directorys = ['/var/run/dpdk/%s' % file_prefix for file_prefix in prefix_list]
+        directorys = ["/var/run/dpdk/%s" % file_prefix for file_prefix in prefix_list]
         for directory in directorys:
-            cmd = 'rm -rf %s' % directory
+            cmd = "rm -rf %s" % directory
             self.send_expect(cmd, "# ", 20, alt_session)
 
         # delete hugepage on mnt path
-        if getattr(self, 'hugepage_path', None):
+        if getattr(self, "hugepage_path", None):
             for file_prefix in prefix_list:
-                cmd = 'rm -rf %s/%s*' % (self.hugepage_path, file_prefix)
-                self.send_expect(cmd, '# ', 20, alt_session)
+                cmd = "rm -rf %s/%s*" % (self.hugepage_path, file_prefix)
+                self.send_expect(cmd, "# ", 20, alt_session)
 
     def kill_all(self, alt_session=True):
         """
         Kill all dpdk applications on CRB.
         """
-        if 'tester' in str(self):
-            self.logger.info('kill_all: called by tester')
+        if "tester" in str(self):
+            self.logger.info("kill_all: called by tester")
             pass
         else:
             if self.prefix_list:
-                self.logger.info('kill_all: called by dut and prefix list has value.')
+                self.logger.info("kill_all: called by dut and prefix list has value.")
                 self.get_dpdk_pids(self.prefix_list, alt_session)
                 # init prefix_list
                 self.prefix_list = []
             else:
-                self.logger.info('kill_all: called by dut and has no prefix list.')
-                out = self.send_command("ls -l /var/run/dpdk |awk '/^d/ {print $NF}'", timeout=0.5, alt_session=True)
+                self.logger.info("kill_all: called by dut and has no prefix list.")
+                out = self.send_command(
+                    "ls -l /var/run/dpdk |awk '/^d/ {print $NF}'",
+                    timeout=0.5,
+                    alt_session=True,
+                )
                 # the last directory is expect string, eg: [PEXPECT]#
-                if out != '':
-                    dir_list = out.split('\r\n')
+                if out != "":
+                    dir_list = out.split("\r\n")
                     self.get_dpdk_pids(dir_list[:-1], alt_session)
 
     def close(self):
@@ -605,21 +676,23 @@ class Crb(object):
         Get OS type from execution configuration file.
         """
         from .dut import Dut
-        if isinstance(self, Dut) and 'OS' in self.crb:
-            return str(self.crb['OS']).lower()
 
-        return 'linux'
+        if isinstance(self, Dut) and "OS" in self.crb:
+            return str(self.crb["OS"]).lower()
+
+        return "linux"
 
     def check_os_type(self):
         """
         Check real OS type whether match configured type.
         """
         from .dut import Dut
-        expected = 'Linux.*#'
-        if isinstance(self, Dut) and self.get_os_type() == 'freebsd':
-            expected = 'FreeBSD.*#'
 
-        self.send_expect('uname', expected, 2, alt_session=True)
+        expected = "Linux.*#"
+        if isinstance(self, Dut) and self.get_os_type() == "freebsd":
+            expected = "FreeBSD.*#"
+
+        self.send_expect("uname", expected, 2, alt_session=True)
 
     def init_core_list(self):
         """
@@ -638,7 +711,9 @@ class Crb(object):
         """
         Scan cores on CRB and create core information list.
         """
-        init_core_list_uncached = getattr(self, 'init_core_list_uncached_%s' % self.get_os_type())
+        init_core_list_uncached = getattr(
+            self, "init_core_list_uncached_%s" % self.get_os_type()
+        )
         init_core_list_uncached()
 
     def init_core_list_uncached_freebsd(self):
@@ -665,9 +740,9 @@ class Crb(object):
                 threads = [int(x) for x in core.text.split(",")]
                 for thread in threads:
                     if thread != 0:
-                        self.cores.append({'socket': socket_id,
-                                           'core': core_id,
-                                           'thread': thread})
+                        self.cores.append(
+                            {"socket": socket_id, "core": core_id, "thread": thread}
+                        )
                 core_id += 1
             socket_id += 1
         self.number_of_cores = len(self.cores)
@@ -678,33 +753,37 @@ class Crb(object):
         """
         self.cores = []
 
-        cpuinfo = \
-            self.send_expect(
-                "lscpu -p=CPU,CORE,SOCKET,NODE|grep -v \#",
-                "#", alt_session=True)
+        cpuinfo = self.send_expect(
+            "lscpu -p=CPU,CORE,SOCKET,NODE|grep -v \#", "#", alt_session=True
+        )
 
-        #cpuinfo = cpuinfo.split()
+        # cpuinfo = cpuinfo.split()
         cpuinfo = [i for i in cpuinfo.split() if re.match("^\d.+", i)]
         # haswell cpu on cottonwood core id not correct
         # need additional coremap for haswell cpu
         core_id = 0
         coremap = {}
         for line in cpuinfo:
-            (thread, core, socket, node) = line.split(',')[0:4]
+            (thread, core, socket, node) = line.split(",")[0:4]
 
             if core not in list(coremap.keys()):
                 coremap[core] = core_id
                 core_id += 1
 
-            if self.crb['bypass core0'] and core == '0' and socket == '0':
+            if self.crb["bypass core0"] and core == "0" and socket == "0":
                 self.logger.info("Core0 bypassed")
                 continue
-            if self.crb.get('dut arch') == "arm64" or self.crb.get('dut arch') == "ppc64" :
+            if (
+                self.crb.get("dut arch") == "arm64"
+                or self.crb.get("dut arch") == "ppc64"
+            ):
                 self.cores.append(
-                        {'thread': thread, 'socket': node, 'core': coremap[core]})
+                    {"thread": thread, "socket": node, "core": coremap[core]}
+                )
             else:
                 self.cores.append(
-                        {'thread': thread, 'socket': socket, 'core': coremap[core]})
+                    {"thread": thread, "socket": socket, "core": coremap[core]}
+                )
 
         self.number_of_cores = len(self.cores)
 
@@ -731,7 +810,11 @@ class Crb(object):
         """
         partial_cores = self.cores
         # remove hyper-threading core
-        self.reserved_cores = list(self.remove_hyper_core(partial_cores, key=lambda d: (d['core'], d['socket'])))
+        self.reserved_cores = list(
+            self.remove_hyper_core(
+                partial_cores, key=lambda d: (d["core"], d["socket"])
+            )
+        )
 
     def remove_reserved_cores(self, core_list, args):
         """
@@ -751,11 +834,11 @@ class Crb(object):
         if m is None:
             return []
 
-        partial_cores = [n for n in self.reserved_cores if int(n['socket']) == socket]
+        partial_cores = [n for n in self.reserved_cores if int(n["socket"]) == socket]
         if len(partial_cores) < nr_cores:
             return []
 
-        thread_list = [self.reserved_cores[n]['thread'] for n in range(nr_cores)]
+        thread_list = [self.reserved_cores[n]["thread"] for n in range(nr_cores)]
 
         # remove used core from reserved_cores
         rsv_list = [n for n in range(nr_cores)]
@@ -764,19 +847,19 @@ class Crb(object):
         # return thread list
         return list(map(str, thread_list))
 
-    def get_core_list(self, config, socket=-1, from_last = False):
+    def get_core_list(self, config, socket=-1, from_last=False):
         """
         Get lcore array according to the core config like "all", "1S/1C/1T".
         We can specify the physical CPU socket by the "socket" parameter.
         """
-        if config == 'all':
+        if config == "all":
             cores = []
             if socket != -1:
                 for core in self.cores:
-                    if int(core['socket']) == socket:
-                        cores.append(core['thread'])
+                    if int(core["socket"]) == socket:
+                        cores.append(core["thread"])
             else:
-                cores = [core['thread'] for core in self.cores]
+                cores = [core["thread"] for core in self.cores]
             return cores
 
         m = re.match("([1234])S/([0-9]+)C/([12])T", config)
@@ -791,28 +874,28 @@ class Crb(object):
             # If not specify socket sockList will be [0,1] in numa system
             # If specify socket will just use the socket
             if socket < 0:
-                sockList = set([int(core['socket']) for core in partial_cores])
+                sockList = set([int(core["socket"]) for core in partial_cores])
             else:
                 for n in partial_cores:
-                    if (int(n['socket']) == socket):
-                        sockList = [int(n['socket'])]
+                    if int(n["socket"]) == socket:
+                        sockList = [int(n["socket"])]
 
             if from_last:
                 sockList = list(sockList)[-nr_sockets:]
             else:
                 sockList = list(sockList)[:nr_sockets]
-            partial_cores = [n for n in partial_cores if int(n['socket'])
-                             in sockList]
-            core_list = set([int(n['core']) for n in partial_cores])
+            partial_cores = [n for n in partial_cores if int(n["socket"]) in sockList]
+            core_list = set([int(n["core"]) for n in partial_cores])
             core_list = list(core_list)
-            thread_list = set([int(n['thread']) for n in partial_cores])
+            thread_list = set([int(n["thread"]) for n in partial_cores])
             thread_list = list(thread_list)
 
             # filter usable core to core_list
             temp = []
             for sock in sockList:
-                core_list = set([int(
-                    n['core']) for n in partial_cores if int(n['socket']) == sock])
+                core_list = set(
+                    [int(n["core"]) for n in partial_cores if int(n["socket"]) == sock]
+                )
                 if from_last:
                     core_list = list(core_list)[-nr_cores:]
                 else:
@@ -824,19 +907,25 @@ class Crb(object):
             # if system core less than request just use all cores in in socket
             if len(core_list) < (nr_cores * nr_sockets):
                 partial_cores = self.cores
-                sockList = set([int(n['socket']) for n in partial_cores])
+                sockList = set([int(n["socket"]) for n in partial_cores])
 
                 if from_last:
                     sockList = list(sockList)[-nr_sockets:]
                 else:
                     sockList = list(sockList)[:nr_sockets]
-                partial_cores = [n for n in partial_cores if int(
-                    n['socket']) in sockList]
+                partial_cores = [
+                    n for n in partial_cores if int(n["socket"]) in sockList
+                ]
 
                 temp = []
                 for sock in sockList:
-                    core_list = list([int(n['thread']) for n in partial_cores if int(
-                        n['socket']) == sock])
+                    core_list = list(
+                        [
+                            int(n["thread"])
+                            for n in partial_cores
+                            if int(n["socket"]) == sock
+                        ]
+                    )
                     if from_last:
                         core_list = core_list[-nr_cores:]
                     else:
@@ -845,23 +934,33 @@ class Crb(object):
 
                 core_list = temp
 
-            partial_cores = [n for n in partial_cores if int(
-                n['core']) in core_list]
+            partial_cores = [n for n in partial_cores if int(n["core"]) in core_list]
             temp = []
             if len(core_list) < nr_cores:
-                raise ValueError("Cannot get requested core configuration "
-                                 "requested {} have {}".format(config, self.cores))
+                raise ValueError(
+                    "Cannot get requested core configuration "
+                    "requested {} have {}".format(config, self.cores)
+                )
             if len(sockList) < nr_sockets:
-                raise ValueError("Cannot get requested core configuration "
-                                 "requested {} have {}".format(config, self.cores))
+                raise ValueError(
+                    "Cannot get requested core configuration "
+                    "requested {} have {}".format(config, self.cores)
+                )
             # recheck the core_list and create the thread_list
             i = 0
             for sock in sockList:
-                coreList_aux = [int(core_list[n])for n in range(
-                    (nr_cores * i), (nr_cores * i + nr_cores))]
+                coreList_aux = [
+                    int(core_list[n])
+                    for n in range((nr_cores * i), (nr_cores * i + nr_cores))
+                ]
                 for core in coreList_aux:
-                    thread_list = list([int(n['thread']) for n in partial_cores if (
-                        (int(n['core']) == core) and (int(n['socket']) == sock))])
+                    thread_list = list(
+                        [
+                            int(n["thread"])
+                            for n in partial_cores
+                            if ((int(n["core"]) == core) and (int(n["socket"]) == sock))
+                        ]
+                    )
                     if from_last:
                         thread_list = thread_list[-nr_threads:]
                     else:
@@ -871,7 +970,7 @@ class Crb(object):
                 i += 1
             return list(map(str, thread_list))
 
-    def get_lcore_id(self, config, inverse = False):
+    def get_lcore_id(self, config, inverse=False):
         """
         Get lcore id of specified core by config "C{socket.core.thread}"
         """
@@ -889,41 +988,41 @@ class Crb(object):
                 threadid += 1
                 threadid = -threadid
 
-            perSocklCs = [_ for _ in self.cores if _['socket'] == sockid]
-            coreNum = perSocklCs[coreid]['core']
+            perSocklCs = [_ for _ in self.cores if _["socket"] == sockid]
+            coreNum = perSocklCs[coreid]["core"]
 
-            perCorelCs = [_ for _ in perSocklCs if _['core'] == coreNum]
+            perCorelCs = [_ for _ in perSocklCs if _["core"] == coreNum]
 
-            return perCorelCs[threadid]['thread']
+            return perCorelCs[threadid]["thread"]
 
     def get_port_info(self, pci):
         """
         return port info by pci id
         """
         for port_info in self.ports_info:
-            if port_info['pci'] == pci:
+            if port_info["pci"] == pci:
                 return port_info
 
     def get_port_pci(self, port_id):
         """
         return port pci address by port index
         """
-        return self.ports_info[port_id]['pci']
+        return self.ports_info[port_id]["pci"]
 
     def enable_promisc(self, intf):
-        if intf != 'N/A':
+        if intf != "N/A":
             self.send_expect("ifconfig %s promisc" % intf, "# ", alt_session=True)
 
     def get_priv_flags_state(self, intf, flag, timeout=TIMEOUT):
-        '''
+        """
 
         :param intf: nic name
         :param flag: priv-flags flag
         :return: flag state
-        '''
+        """
         check_flag = "ethtool --show-priv-flags %s" % intf
         out = self.send_expect(check_flag, "# ", timeout)
-        p = re.compile('%s\s*:\s+(\w+)' % flag)
+        p = re.compile("%s\s*:\s+(\w+)" % flag)
         state = re.search(p, out)
         if state:
             return state.group(1)
@@ -937,7 +1036,7 @@ class Crb(object):
         """
         for i in range(timeout):
             link_status = self.get_interface_link_status(intf)
-            if link_status == 'Up':
+            if link_status == "Up":
                 return True
             time.sleep(1)
         self.logger.error(f"check and wait {intf} link up timeout")
@@ -949,7 +1048,7 @@ class Crb(object):
         """
         for i in range(timeout):
             link_status = self.get_interface_link_status(intf)
-            if link_status == 'Down':
+            if link_status == "Down":
                 return True
             time.sleep(1)
         self.logger.error(f"check and wait {intf} link down timeout")
@@ -957,6 +1056,6 @@ class Crb(object):
 
     def get_interface_link_status(self, intf):
         out = self.send_expect(f"ethtool {intf}", "#")
-        link_status_matcher = r'Link detected: (\w+)'
+        link_status_matcher = r"Link detected: (\w+)"
         link_status = re.search(link_status_matcher, out).groups()[0]
-        return 'Up' if link_status == 'yes' else 'Down'
+        return "Up" if link_status == "yes" else "Down"

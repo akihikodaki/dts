@@ -46,7 +46,6 @@ from framework.test_case import TestCase
 
 
 class TestVlan(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -69,11 +68,13 @@ class TestVlan(TestCase):
         portMask = utils.create_mask(valports[:1])
 
         self.pmdout = PmdOutput(self.dut)
-        self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % portMask)
+        self.pmdout.start_testpmd(
+            "Default", "--portmask=%s --port-topology=loop" % portMask
+        )
 
         self.dut.send_expect("set verbose 1", "testpmd> ")
         self.dut.send_expect("set fwd mac", "testpmd> ")
-        self.dut.send_expect("set promisc all off",  "testpmd> ")
+        self.dut.send_expect("set promisc all off", "testpmd> ")
         self.dut.send_expect("vlan set filter on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("vlan set strip off %s" % dutRxPortId, "testpmd> ")
         self.vlan = 51
@@ -105,12 +106,12 @@ class TestVlan(TestCase):
         self.inst = self.tester.tcpdump_sniff_packets(self.rxItf)
         # FIXME  send a burst with only num packet
         if vid == -1:
-            pkt = Packet(pkt_type='UDP')
-            pkt.config_layer('ether', {'dst': self.dmac, 'src': self.smac})
+            pkt = Packet(pkt_type="UDP")
+            pkt.config_layer("ether", {"dst": self.dmac, "src": self.smac})
         else:
-            pkt = Packet(pkt_type='VLAN_UDP')
-            pkt.config_layer('ether', {'dst': self.dmac, 'src': self.smac})
-            pkt.config_layer('vlan', {'vlan': vid})
+            pkt = Packet(pkt_type="VLAN_UDP")
+            pkt.config_layer("ether", {"dst": self.dmac, "src": self.smac})
+            pkt.config_layer("vlan", {"vlan": vid})
 
         pkt.send_pkt(self.tester, tx_port=self.txItf, count=4, timeout=30)
 
@@ -124,7 +125,9 @@ class TestVlan(TestCase):
         """
         Enable receipt of VLAN packets and strip off
         """
-        self.dut.send_expect("rx_vlan add %d %s" % (self.vlan, dutRxPortId), "testpmd> ")
+        self.dut.send_expect(
+            "rx_vlan add %d %s" % (self.vlan, dutRxPortId), "testpmd> "
+        )
         self.dut.send_expect("vlan set strip off  %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("start", "testpmd> ", 120)
         out = self.dut.send_expect("show port info %s" % dutRxPortId, "testpmd> ", 20)
@@ -160,7 +163,9 @@ class TestVlan(TestCase):
         Enable receipt of VLAN packets and strip on
         """
         self.dut.send_expect("vlan set strip on %s" % dutRxPortId, "testpmd> ", 20)
-        self.dut.send_expect("rx_vlan add %d %s" % (self.vlan, dutRxPortId), "testpmd> ", 20)
+        self.dut.send_expect(
+            "rx_vlan add %d %s" % (self.vlan, dutRxPortId), "testpmd> ", 20
+        )
         out = self.dut.send_expect("show port info %s" % dutRxPortId, "testpmd> ", 20)
         self.verify("strip on" in out, "Wrong strip:" + out)
 
@@ -177,7 +182,9 @@ class TestVlan(TestCase):
         """
         self.dut.send_expect("stop", "testpmd> ")
         self.dut.send_expect("port stop all", "testpmd> ")
-        self.dut.send_expect("tx_vlan set %s %d" % (dutTxPortId, self.vlan), "testpmd> ")
+        self.dut.send_expect(
+            "tx_vlan set %s %d" % (dutTxPortId, self.vlan), "testpmd> "
+        )
         self.dut.send_expect("port start all", "testpmd> ")
 
         self.dut.send_expect("start", "testpmd> ")

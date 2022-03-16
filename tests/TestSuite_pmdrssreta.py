@@ -60,52 +60,64 @@ class TestPmdrssreta(TestCase):
 
         self.tester.scapy_foreground()
         self.tester.scapy_append('sys.path.append("./")')
-        self.tester.scapy_append('from sctp import *')
+        self.tester.scapy_append("from sctp import *")
         self.dut.send_expect("start", "testpmd>")
         mac = self.dut.get_mac_address(0)
         # send packet with different source and dest ip
         if tran_type == "IPV4":
             for i in range(16):
-                packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")], iface="%s")' % (
-                    mac, i + 1, i + 2, itf)
+                packet = (
+                    r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")], iface="%s")'
+                    % (mac, i + 1, i + 2, itf)
+                )
                 self.tester.scapy_append(packet)
             self.tester.scapy_execute()
-            time.sleep(.5)
+            time.sleep(0.5)
         elif tran_type == "IPV4&TCP":
             for i in range(16):
-                packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")/TCP(sport=1024,dport=1024)], iface="%s")' % (
-                    mac, i + 1, i + 2, itf)
+                packet = (
+                    r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")/TCP(sport=1024,dport=1024)], iface="%s")'
+                    % (mac, i + 1, i + 2, itf)
+                )
                 self.tester.scapy_append(packet)
             self.tester.scapy_execute()
-            time.sleep(.5)
+            time.sleep(0.5)
         elif tran_type == "IPV4&UDP":
             for i in range(16):
-                packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")/UDP(sport=1024,dport=1024)], iface="%s")' % (
-                    mac, i + 1, i + 2, itf)
+                packet = (
+                    r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")/UDP(sport=1024,dport=1024)], iface="%s")'
+                    % (mac, i + 1, i + 2, itf)
+                )
                 self.tester.scapy_append(packet)
             self.tester.scapy_execute()
-            time.sleep(.5)
+            time.sleep(0.5)
         elif tran_type == "IPV6":
             for i in range(16):
-                packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")], iface="%s")' % (
-                    mac, i + 1, i + 2, itf)
+                packet = (
+                    r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")], iface="%s")'
+                    % (mac, i + 1, i + 2, itf)
+                )
                 self.tester.scapy_append(packet)
             self.tester.scapy_execute()
-            time.sleep(.5)
+            time.sleep(0.5)
         elif tran_type == "IPV6&TCP":
             for i in range(16):
-                packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/TCP(sport=1024,dport=1024)], iface="%s")' % (
-                    mac, i + 1, i + 2, itf)
+                packet = (
+                    r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/TCP(sport=1024,dport=1024)], iface="%s")'
+                    % (mac, i + 1, i + 2, itf)
+                )
                 self.tester.scapy_append(packet)
             self.tester.scapy_execute()
-            time.sleep(.5)
+            time.sleep(0.5)
         elif tran_type == "IPV6&UDP":
             for i in range(16):
-                packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/UDP(sport=1024,dport=1024)], iface="%s")' % (
-                    mac, i + 1, i + 2, itf)
+                packet = (
+                    r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/UDP(sport=1024,dport=1024)], iface="%s")'
+                    % (mac, i + 1, i + 2, itf)
+                )
                 self.tester.scapy_append(packet)
             self.tester.scapy_execute()
-            time.sleep(.5)
+            time.sleep(0.5)
         else:
             print("\ntran_type error!\n")
         out = self.dut.get_session_output(timeout=1)
@@ -119,7 +131,7 @@ class TestPmdrssreta(TestCase):
             if len(line) != 0 and line.startswith(("src=",)):
                 for item in line.split("-"):
                     item = item.strip()
-                    if(item.startswith("RSS hash")):
+                    if item.startswith("RSS hash"):
                         name, value = item.split("=", 1)
                         print(name + "-" + value)
 
@@ -147,30 +159,46 @@ class TestPmdrssreta(TestCase):
         global reta_lines
         result = []
         self.result_table_create(
-            ['packet index', 'hash value', 'hash index', 'queue id', 'actual queue id', 'pass '])
+            [
+                "packet index",
+                "hash value",
+                "hash index",
+                "queue id",
+                "actual queue id",
+                "pass ",
+            ]
+        )
 
         i = 0
         for tmp_reta_line in reta_lines:
             status = "false"
-            if(self.nic in ["cavium_a063", "cavium_a064"]):
+            if self.nic in ["cavium_a063", "cavium_a064"]:
                 # compute the hash index calculation
                 hash_index = int(tmp_reta_line["RSS hash"], 16) % 64
-            elif(self.nic in ["hi1822"]):
+            elif self.nic in ["hi1822"]:
                 hash_index = int(tmp_reta_line["RSS hash"], 16) % 256
-            elif (self.nic in ["niantic", "foxville", "twinpond"]):
+            elif self.nic in ["niantic", "foxville", "twinpond"]:
                 # compute the hash result of five tuple into the 7 LSBs value.
                 hash_index = int(tmp_reta_line["RSS hash"], 16) % 128
             else:
                 # compute the hash result of five tuple into the 7 LSBs value.
                 hash_index = int(tmp_reta_line["RSS hash"], 16) % 512
-            if(reta_entries[hash_index] == int(tmp_reta_line["queue"])):
+            if reta_entries[hash_index] == int(tmp_reta_line["queue"]):
                 status = "true"
                 result.insert(i, 0)
             else:
                 status = "fail"
                 result.insert(i, 1)
             self.result_table_add(
-                [i, tmp_reta_line["RSS hash"], hash_index, reta_entries[hash_index], tmp_reta_line["queue"], status])
+                [
+                    i,
+                    tmp_reta_line["RSS hash"],
+                    hash_index,
+                    reta_entries[hash_index],
+                    tmp_reta_line["queue"],
+                    status,
+                ]
+            )
             i = i + 1
 
         self.result_table_print()
@@ -200,66 +228,107 @@ class TestPmdrssreta(TestCase):
         dutPorts = self.dut.get_ports(self.nic)
         localPort = self.tester.get_local_port(dutPorts[0])
         itf = self.tester.get_interface(localPort)
-        iptypes = {'IPV4': 'ip',
-                   'IPV4&UDP': 'udp',
-                   'IPV4&TCP': 'tcp',
-                   'IPV6': 'ip',
-                   'IPV6&UDP': 'udp',
-                   'IPV6&TCP': 'tcp'
-                   }
+        iptypes = {
+            "IPV4": "ip",
+            "IPV4&UDP": "udp",
+            "IPV4&TCP": "tcp",
+            "IPV6": "ip",
+            "IPV6&UDP": "udp",
+            "IPV6&TCP": "tcp",
+        }
 
         self.dut.kill_all()
         global testQueues
-        if self.nic == 'foxville':
+        if self.nic == "foxville":
             testQueues = [2]
         # test with different rss queues
         for queue in testQueues:
-            if(queue == 16):
+            if queue == 16:
                 self.pmdout.start_testpmd(
-                    "all", "--rxq=%d --txq=%d --rx-offloads=0x00080000 " % (queue, queue), socket=self.ports_socket)
+                    "all",
+                    "--rxq=%d --txq=%d --rx-offloads=0x00080000 " % (queue, queue),
+                    socket=self.ports_socket,
+                )
             else:
                 self.pmdout.start_testpmd(
-                    "all", "--mbcache=128 --rxq=%d --txq=%d --rx-offloads=0x00080000" % (queue, queue), socket=self.ports_socket)
+                    "all",
+                    "--mbcache=128 --rxq=%d --txq=%d --rx-offloads=0x00080000"
+                    % (queue, queue),
+                    socket=self.ports_socket,
+                )
 
             for iptype, rsstype in list(iptypes.items()):
                 self.dut.send_expect("set verbose 8", "testpmd> ")
                 self.dut.send_expect("set fwd rxonly", "testpmd> ")
-                self.dut.send_expect(
-                    "set nbcore %d" % (queue + 1), "testpmd> ")
+                self.dut.send_expect("set nbcore %d" % (queue + 1), "testpmd> ")
 
                 out = self.dut.send_expect(
-                    "port config all rss %s" % rsstype, "testpmd> ")
-                self.verify("error" not in out, "Configuration of RSS hash failed: Invalid argument")
+                    "port config all rss %s" % rsstype, "testpmd> "
+                )
+                self.verify(
+                    "error" not in out,
+                    "Configuration of RSS hash failed: Invalid argument",
+                )
 
                 # configure the reta with specific mappings.
-                if(self.nic in ["cavium_a063", "cavium_a064"]):
+                if self.nic in ["cavium_a063", "cavium_a064"]:
                     for i in range(64):
                         reta_entries.insert(i, random.randint(0, queue - 1))
                         self.dut.send_expect(
-                            "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
-                elif(self.nic in ["hi1822"]):
+                            "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]),
+                            "testpmd> ",
+                        )
+                elif self.nic in ["hi1822"]:
                     for i in range(256):
                         reta_entries.insert(i, random.randint(0, queue - 1))
                         self.dut.send_expect(
-                            "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
-                elif (self.nic in ["niantic", "foxville"]):
+                            "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]),
+                            "testpmd> ",
+                        )
+                elif self.nic in ["niantic", "foxville"]:
                     for i in range(128):
                         reta_entries.insert(i, random.randint(0, queue - 1))
                         self.dut.send_expect(
-                            "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
+                            "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]),
+                            "testpmd> ",
+                        )
                 else:
                     for i in range(512):
                         reta_entries.insert(i, random.randint(0, queue - 1))
                         self.dut.send_expect(
-                            "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
+                            "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]),
+                            "testpmd> ",
+                        )
 
                 self.send_packet(itf, iptype)
 
             self.dut.send_expect("quit", "# ", 30)
 
     def test_rss_key_size(self):
-        nic_rss_key_size = {"columbiaville_25g": 52, "columbiaville_100g": 52, "fortville_eagle": 52, "fortville_spirit": 52, "fortville_spirit_single": 52, "fortville_25g": 52, "niantic": 40, "e1000": 40, "fortpark_TLV": 52,"fortpark_BASE-T": 52, "hi1822": 40, "cavium_a063": 48, "cavium_a064": 48, "carlsville": 52, "sagepond": 40, "sageville": 40, "foxville": 40, "twinpond": 40}
-        self.verify(self.nic in list(nic_rss_key_size.keys()), "Not supporte rss key on %s" % self.nic)
+        nic_rss_key_size = {
+            "columbiaville_25g": 52,
+            "columbiaville_100g": 52,
+            "fortville_eagle": 52,
+            "fortville_spirit": 52,
+            "fortville_spirit_single": 52,
+            "fortville_25g": 52,
+            "niantic": 40,
+            "e1000": 40,
+            "fortpark_TLV": 52,
+            "fortpark_BASE-T": 52,
+            "hi1822": 40,
+            "cavium_a063": 48,
+            "cavium_a064": 48,
+            "carlsville": 52,
+            "sagepond": 40,
+            "sageville": 40,
+            "foxville": 40,
+            "twinpond": 40,
+        }
+        self.verify(
+            self.nic in list(nic_rss_key_size.keys()),
+            "Not supporte rss key on %s" % self.nic,
+        )
 
         dutPorts = self.dut.get_ports(self.nic)
         localPort = self.tester.get_local_port(dutPorts[0])
@@ -276,8 +345,13 @@ class TestPmdrssreta(TestCase):
         if m is not None:
             size = m.group(1)
             print(utils.GREEN("******************"))
-            print(utils.GREEN("NIC %s hash size %d and expected %d" % (self.nic, int(size), nic_rss_key_size[self.nic])))
-            if (nic_rss_key_size[self.nic] == int(size)):
+            print(
+                utils.GREEN(
+                    "NIC %s hash size %d and expected %d"
+                    % (self.nic, int(size), nic_rss_key_size[self.nic])
+                )
+            )
+            if nic_rss_key_size[self.nic] == int(size):
                 self.verify(True, "pass")
             else:
                 self.verify(False, "fail")

@@ -50,8 +50,7 @@ class TestL3fwdLpmIpv4Rfc2544(TestCase, PerfTestBase):
         """
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports(self.nic)
-        valports = [
-            _ for _ in self.dut_ports if self.tester.get_local_port(_) != -1]
+        valports = [_ for _ in self.dut_ports if self.tester.get_local_port(_) != -1]
         self.logger.debug(valports)
         self.verify_ports_number(valports)
         # get socket and cores
@@ -83,5 +82,5 @@ class TestL3fwdLpmIpv4Rfc2544(TestCase, PerfTestBase):
         self.perf_reset_cur_case()
 
     def test_perf_rfc2544_ipv4_lpm(self):
-        self.perf_set_cur_case('test_perf_rfc2544_ipv4_lpm')
+        self.perf_set_cur_case("test_perf_rfc2544_ipv4_lpm")
         self.qt_rfc2544(l3_proto=IP_TYPE.V4, mode=MATCH_MODE.LPM)

@@ -40,7 +40,7 @@ from framework.test_case import TestCase
 from framework.utils import RED
 from framework.virt_common import VM
 
-VM_CORES_MASK = 'all'
+VM_CORES_MASK = "all"
 
 ETHER_STANDARD_MTU = 1518
 ETHER_JUMBO_FRAME_MTU = 9000
@@ -48,7 +48,7 @@ ETHER_JUMBO_FRAME_MTU = 9000
 
 class TestVfJumboFrame(TestCase):
 
-    supported_vf_driver = ['pci-stub', 'vfio-pci']
+    supported_vf_driver = ["pci-stub", "vfio-pci"]
 
     def set_up_all(self):
 
@@ -63,20 +63,20 @@ class TestVfJumboFrame(TestCase):
         self.port_mask = utils.create_mask([self.port])
 
         # set vf assign method and vf driver
-        self.dut.send_expect('modprobe vfio-pci', '#')
-        self.vf_driver = self.get_suite_cfg()['vf_driver']
+        self.dut.send_expect("modprobe vfio-pci", "#")
+        self.vf_driver = self.get_suite_cfg()["vf_driver"]
         if self.vf_driver is None:
-            self.vf_driver = 'pci-stub'
+            self.vf_driver = "pci-stub"
         self.verify(self.vf_driver in self.supported_vf_driver, "Unspported vf driver")
-        if self.vf_driver == 'pci-stub':
-            self.vf_assign_method = 'pci-assign'
+        if self.vf_driver == "pci-stub":
+            self.vf_assign_method = "pci-assign"
         else:
-            self.vf_assign_method = 'vfio-pci'
-            self.dut.send_expect('modprobe vfio-pci', '#')
-        
+            self.vf_assign_method = "vfio-pci"
+            self.dut.send_expect("modprobe vfio-pci", "#")
+
         # enable tester mtu
         tester_port = self.tester.get_local_port(self.port)
-        self.netobj = self.tester.ports_info[tester_port]['port']
+        self.netobj = self.tester.ports_info[tester_port]["port"]
         self.netobj.enable_jumbo(framesize=ETHER_JUMBO_FRAME_MTU + 100)
 
         self.setup_vm_env()
@@ -84,7 +84,7 @@ class TestVfJumboFrame(TestCase):
     def set_up(self):
         pass
 
-    def setup_vm_env(self, driver='default'):
+    def setup_vm_env(self, driver="default"):
         """
         Create testing environment with 1VF generated from 1PF
         """
@@ -95,17 +95,16 @@ class TestVfJumboFrame(TestCase):
         self.bind_nic_driver(self.dut_ports[:1], driver="")
 
         self.used_dut_port = self.dut_ports[0]
-        self.host_intf = self.dut.ports_info[self.used_dut_port]['intf']
+        self.host_intf = self.dut.ports_info[self.used_dut_port]["intf"]
         tester_port = self.tester.get_local_port(self.used_dut_port)
         self.tester_intf = self.tester.get_interface(tester_port)
 
-        self.dut.generate_sriov_vfs_by_port(
-            self.used_dut_port, 1, driver=driver)
-        self.sriov_vfs_port = self.dut.ports_info[
-            self.used_dut_port]['vfs_port']
+        self.dut.generate_sriov_vfs_by_port(self.used_dut_port, 1, driver=driver)
+        self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port]["vfs_port"]
         self.vf_mac = "00:10:00:00:00:00"
-        self.dut.send_expect("ip link set %s vf 0 mac %s" %
-                             (self.host_intf, self.vf_mac), "# ")
+        self.dut.send_expect(
+            "ip link set %s vf 0 mac %s" % (self.host_intf, self.vf_mac), "# "
+        )
 
         try:
 
@@ -113,10 +112,10 @@ class TestVfJumboFrame(TestCase):
                 port.bind_driver(self.vf_driver)
 
             time.sleep(1)
-            vf_popt = {'opt_host': self.sriov_vfs_port[0].pci}
+            vf_popt = {"opt_host": self.sriov_vfs_port[0].pci}
 
             # set up VM ENV
-            self.vm = VM(self.dut, 'vm0', 'vf_jumboframe')
+            self.vm = VM(self.dut, "vm0", "vf_jumboframe")
             self.vm.set_vm_device(driver=self.vf_assign_method, **vf_popt)
             self.vm_dut = self.vm.start()
             if self.vm_dut is None:
@@ -131,8 +130,8 @@ class TestVfJumboFrame(TestCase):
         self.env_done = True
 
     def destroy_vm_env(self):
-        if getattr(self, 'vm', None):
-            if getattr(self, 'vm_dut', None):
+        if getattr(self, "vm", None):
+            if getattr(self, "vm_dut", None):
                 self.vm_dut.kill_all()
             self.vm_testpmd = None
             self.vm_dut_ports = None
@@ -142,13 +141,12 @@ class TestVfJumboFrame(TestCase):
             time.sleep(3)
             self.vm = None
 
-        if getattr(self, 'used_dut_port', None) != None:
+        if getattr(self, "used_dut_port", None) != None:
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port)
             self.used_dut_port = None
-        self.bind_nic_driver(self.dut_ports[:1], driver='default')
+        self.bind_nic_driver(self.dut_ports[:1], driver="default")
 
         self.env_done = False
-
 
     def jumboframes_get_stat(self, portid, rx_tx):
         """
@@ -156,9 +154,9 @@ class TestVfJumboFrame(TestCase):
         """
         stats = self.vm_testpmd.get_pmd_stats(portid)
         if rx_tx == "rx":
-            return [stats['RX-packets'], stats['RX-errors'], stats['RX-bytes']]
+            return [stats["RX-packets"], stats["RX-errors"], stats["RX-bytes"]]
         elif rx_tx == "tx":
-            return [stats['TX-packets'], stats['TX-errors'], stats['TX-bytes']]
+            return [stats["TX-packets"], stats["TX-errors"], stats["TX-bytes"]]
         else:
             return None
 
@@ -166,19 +164,27 @@ class TestVfJumboFrame(TestCase):
         """
         Send 1 packet to portid
         """
-        tx_pkts_ori, _, tx_bytes_ori = [int(_) for _ in self.jumboframes_get_stat(self.vm_port, "tx")]
-        rx_pkts_ori, rx_err_ori, rx_bytes_ori = [int(_) for _ in self.jumboframes_get_stat(self.vm_port, "rx")]
+        tx_pkts_ori, _, tx_bytes_ori = [
+            int(_) for _ in self.jumboframes_get_stat(self.vm_port, "tx")
+        ]
+        rx_pkts_ori, rx_err_ori, rx_bytes_ori = [
+            int(_) for _ in self.jumboframes_get_stat(self.vm_port, "rx")
+        ]
 
         mac = self.vm_dut.get_mac_address(self.vm_port)
 
-        pkt = Packet(pkt_type='UDP', pkt_len=pktsize)
-        pkt.config_layer('ether', {'dst': mac})
+        pkt = Packet(pkt_type="UDP", pkt_len=pktsize)
+        pkt.config_layer("ether", {"dst": mac})
         pkt.send_pkt(self.tester, tx_port=self.tester_intf, timeout=30)
 
         time.sleep(1)
 
-        tx_pkts, _, tx_bytes = [int(_) for _ in self.jumboframes_get_stat(self.port, "tx")]
-        rx_pkts, rx_err, rx_bytes = [int(_) for _ in self.jumboframes_get_stat(self.vm_port, "rx")]
+        tx_pkts, _, tx_bytes = [
+            int(_) for _ in self.jumboframes_get_stat(self.port, "tx")
+        ]
+        rx_pkts, rx_err, rx_bytes = [
+            int(_) for _ in self.jumboframes_get_stat(self.vm_port, "rx")
+        ]
 
         tx_pkts -= tx_pkts_ori
         tx_bytes -= tx_bytes_ori
@@ -187,15 +193,23 @@ class TestVfJumboFrame(TestCase):
         rx_err -= rx_err_ori
 
         if received:
-            self.verify((rx_pkts == 1) and (tx_pkts == 1), "Packet forward assert error")
+            self.verify(
+                (rx_pkts == 1) and (tx_pkts == 1), "Packet forward assert error"
+            )
 
             if self.kdriver in ["ixgbe", "ice", "i40e"]:
-                self.verify((rx_bytes + 4) == pktsize, "Rx packet size should be packet size - 4")
+                self.verify(
+                    (rx_bytes + 4) == pktsize,
+                    "Rx packet size should be packet size - 4",
+                )
 
             if self.kdriver == "igb":
                 self.verify(tx_bytes == pktsize, "Tx packet size should be packet size")
             else:
-                self.verify((tx_bytes + 4) == pktsize, "Tx packet size should be packet size - 4")
+                self.verify(
+                    (tx_bytes + 4) == pktsize,
+                    "Tx packet size should be packet size - 4",
+                )
         else:
             self.verify(rx_err == 1 or tx_pkts == 0, "Packet drop assert error")
 
@@ -204,10 +218,14 @@ class TestVfJumboFrame(TestCase):
         This case aims to test transmitting normal size packet without jumbo enable
         """
         # should enable jumbo on host
-        self.dutobj = self.dut.ports_info[self.port]['port']
+        self.dutobj = self.dut.ports_info[self.port]["port"]
         self.dutobj.enable_jumbo(framesize=ETHER_STANDARD_MTU)
 
-        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_STANDARD_MTU))
+        self.vm_testpmd.start_testpmd(
+            "Default",
+            "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000"
+            % (ETHER_STANDARD_MTU),
+        )
 
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set promisc all off")
@@ -222,10 +240,14 @@ class TestVfJumboFrame(TestCase):
         packet forwarding should be support correct.
         """
         # should enable jumbo on host
-        self.dutobj = self.dut.ports_info[self.port]['port']
+        self.dutobj = self.dut.ports_info[self.port]["port"]
         self.dutobj.enable_jumbo(framesize=ETHER_JUMBO_FRAME_MTU)
 
-        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
+        self.vm_testpmd.start_testpmd(
+            "Default",
+            "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000"
+            % (ETHER_JUMBO_FRAME_MTU),
+        )
 
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set promisc all off")
@@ -240,10 +262,12 @@ class TestVfJumboFrame(TestCase):
         jumbo frame support.
         """
         # should enable jumbo on host
-        self.dutobj = self.dut.ports_info[self.port]['port']
+        self.dutobj = self.dut.ports_info[self.port]["port"]
         self.dutobj.enable_jumbo(framesize=ETHER_STANDARD_MTU)
 
-        self.vm_testpmd.start_testpmd("Default", "--port-topology=loop --tx-offloads=0x8000" )
+        self.vm_testpmd.start_testpmd(
+            "Default", "--port-topology=loop --tx-offloads=0x8000"
+        )
 
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set promisc all off")
@@ -266,10 +290,14 @@ class TestVfJumboFrame(TestCase):
         packet can be forwarded correct.
         """
         # should enable jumbo on host
-        self.dutobj = self.dut.ports_info[self.port]['port']
+        self.dutobj = self.dut.ports_info[self.port]["port"]
         self.dutobj.enable_jumbo(framesize=ETHER_JUMBO_FRAME_MTU)
 
-        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
+        self.vm_testpmd.start_testpmd(
+            "Default",
+            "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000"
+            % (ETHER_JUMBO_FRAME_MTU),
+        )
 
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set promisc all off")
@@ -285,10 +313,14 @@ class TestVfJumboFrame(TestCase):
         packet which the length bigger than MTU can not be forwarded.
         """
         # should enable jumbo on host
-        self.dutobj = self.dut.ports_info[self.port]['port']
+        self.dutobj = self.dut.ports_info[self.port]["port"]
         self.dutobj.enable_jumbo(framesize=ETHER_JUMBO_FRAME_MTU)
 
-        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
+        self.vm_testpmd.start_testpmd(
+            "Default",
+            "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000"
+            % (ETHER_JUMBO_FRAME_MTU),
+        )
 
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set promisc all off")

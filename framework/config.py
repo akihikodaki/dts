@@ -64,8 +64,7 @@ GLOBALCONF = "%s/global_suite.cfg" % CONFIG_ROOT_PATH
 APPNAMECONF = "%s/app_name.cfg" % CONFIG_ROOT_PATH
 
 
-class UserConf():
-
+class UserConf:
     def __init__(self, config):
         self.conf = configparser.SafeConfigParser()
         load_files = self.conf.read(config)
@@ -91,16 +90,16 @@ class UserConf():
         return items
 
     def load_config(self, item):
-        confs = [conf.strip() for conf in item.split(';')]
-        if '' in confs:
-            confs.remove('')
+        confs = [conf.strip() for conf in item.split(";")]
+        if "" in confs:
+            confs.remove("")
         return confs
 
     def load_param(self, conf):
         paramDict = dict()
 
-        for param in conf.split(','):
-            (key, _, value) = param.partition('=')
+        for param in conf.split(","):
+            (key, _, value) = param.partition("=")
             paramDict[key] = value
         return paramDict
 
@@ -116,7 +115,7 @@ class GlobalConf(UserConf):
         # load global configuration
         self.global_cfg = self.load_global_config()
 
-    def load_global_config(self, section_name='global'):
+    def load_global_config(self, section_name="global"):
         global_cfg = self.global_cfg.copy()
         try:
             section_confs = self.global_conf.load_section(section_name)
@@ -174,13 +173,11 @@ class SuiteConf(UserConf):
         update_suite_cfg_obj = UserConf(self.config_file)
         update_suite_cfg = update_suite_cfg_obj.load_section(case_name)
         for key in update_suite_cfg_obj.conf.options(case_name):
-            update_suite_cfg_obj.conf.set(
-                case_name, key, str(self.suite_cfg[key]))
-        update_suite_cfg_obj.conf.write(open(self.config_file, 'w'))
+            update_suite_cfg_obj.conf.set(case_name, key, str(self.suite_cfg[key]))
+        update_suite_cfg_obj.conf.write(open(self.config_file, "w"))
 
 
 class VirtConf(UserConf):
-
     def __init__(self, virt_conf=VIRTCONF):
         self.config_file = virt_conf
         self.virt_cfg = {}
@@ -218,7 +215,6 @@ class VirtConf(UserConf):
 
 
 class PortConf(UserConf):
-
     def __init__(self, port_conf=PORTCONF):
         self.config_file = port_conf
         self.ports_cfg = {}
@@ -244,29 +240,29 @@ class PortConf(UserConf):
             port_param = self.port_conf.load_param(config)
 
             # port config for vm in virtualization scenario
-            if 'dev_idx' in port_param:
+            if "dev_idx" in port_param:
                 keys = list(port_param.keys())
-                keys.remove('dev_idx')
-                self.ports_cfg[port_param['dev_idx']] = {
-                    key: port_param[key] for key in keys}
+                keys.remove("dev_idx")
+                self.ports_cfg[port_param["dev_idx"]] = {
+                    key: port_param[key] for key in keys
+                }
                 continue
 
             # check pci BDF validity
-            if 'pci' not in port_param:
+            if "pci" not in port_param:
                 print("NOT FOUND CONFIG FOR NO PCI ADDRESS!!!")
                 continue
-            m = re.match(self.pci_regex, port_param['pci'])
+            m = re.match(self.pci_regex, port_param["pci"])
             if m is None:
                 print("INVALID CONFIG FOR NO PCI ADDRESS!!!")
                 continue
 
             keys = list(port_param.keys())
-            keys.remove('pci')
-            self.ports_cfg[port_param['pci']] = {
-                key: port_param[key] for key in keys}
-            if 'numa' in self.ports_cfg[port_param['pci']]:
-                numa_str = self.ports_cfg[port_param['pci']]['numa']
-                self.ports_cfg[port_param['pci']]['numa'] = int(numa_str)
+            keys.remove("pci")
+            self.ports_cfg[port_param["pci"]] = {key: port_param[key] for key in keys}
+            if "numa" in self.ports_cfg[port_param["pci"]]:
+                numa_str = self.ports_cfg[port_param["pci"]]["numa"]
+                self.ports_cfg[port_param["pci"]]["numa"] = int(numa_str)
 
     def get_ports_config(self):
         return self.ports_cfg
@@ -279,12 +275,19 @@ class PortConf(UserConf):
 
 
 class CrbsConf(UserConf):
-    DEF_CRB = {'IP': '', 'board': 'default', 'user': '',
-               'pass': '', 'tester IP': '', 'tester pass': '',
-               'memory channels': 4,
-               PKTGEN: None,
-               'bypass core0': True, 'dut_cores': '',
-               'snapshot_load_side': 'tester'}
+    DEF_CRB = {
+        "IP": "",
+        "board": "default",
+        "user": "",
+        "pass": "",
+        "tester IP": "",
+        "tester pass": "",
+        "memory channels": 4,
+        PKTGEN: None,
+        "bypass core0": True,
+        "dut_cores": "",
+        "snapshot_load_side": "tester",
+    }
 
     def __init__(self, crbs_conf=CRBCONF):
         self.config_file = crbs_conf
@@ -302,7 +305,7 @@ class CrbsConf(UserConf):
 
         for name in sections:
             crb = self.DEF_CRB.copy()
-            crb['section'] = name
+            crb["section"] = name
             crb_confs = self.crbs_conf.load_section(name)
             if not crb_confs:
                 continue
@@ -310,43 +313,42 @@ class CrbsConf(UserConf):
             # convert file configuration to dts crbs
             for conf in crb_confs:
                 key, value = conf
-                if key == 'dut_ip':
-                    crb['IP'] = value
-                elif key == 'dut_user':
-                    crb['user'] = value
-                elif key == 'dut_passwd':
-                    crb['pass'] = value
-                elif key == 'os':
-                    crb['OS'] = value
-                elif key == 'tester_ip':
-                    crb['tester IP'] = value
-                elif key == 'tester_passwd':
-                    crb['tester pass'] = value
-                elif key == 'pktgen_group':
+                if key == "dut_ip":
+                    crb["IP"] = value
+                elif key == "dut_user":
+                    crb["user"] = value
+                elif key == "dut_passwd":
+                    crb["pass"] = value
+                elif key == "os":
+                    crb["OS"] = value
+                elif key == "tester_ip":
+                    crb["tester IP"] = value
+                elif key == "tester_passwd":
+                    crb["tester pass"] = value
+                elif key == "pktgen_group":
                     crb[PKTGEN] = value.lower()
-                elif key == 'channels':
-                    crb['memory channels'] = int(value)
-                elif key == 'bypass_core0':
-                    if value == 'True':
-                        crb['bypass core0'] = True
+                elif key == "channels":
+                    crb["memory channels"] = int(value)
+                elif key == "bypass_core0":
+                    if value == "True":
+                        crb["bypass core0"] = True
                     else:
-                        crb['bypass core0'] = False
-                elif key == 'board':
-                    crb['board'] = value
-                elif key == 'dut_arch':
-                    crb['dut arch'] = value
-                elif key == 'dut_cores':
-                    crb['dut_cores'] = value
-                elif key == 'snapshot_load_side':
-                    crb['snapshot_load_side'] = value.lower()
+                        crb["bypass core0"] = False
+                elif key == "board":
+                    crb["board"] = value
+                elif key == "dut_arch":
+                    crb["dut arch"] = value
+                elif key == "dut_cores":
+                    crb["dut_cores"] = value
+                elif key == "snapshot_load_side":
+                    crb["snapshot_load_side"] = value.lower()
 
             self.crbs_cfg.append(crb)
         return self.crbs_cfg
 
 
 class PktgenConf(UserConf):
-
-    def __init__(self, pktgen_type='ixia', pktgen_conf=PKTGENCONF):
+    def __init__(self, pktgen_type="ixia", pktgen_conf=PKTGENCONF):
         self.config_file = pktgen_conf
         self.pktgen_type = pktgen_type.lower()
         self.pktgen_cfg = {}
@@ -357,7 +359,7 @@ class PktgenConf(UserConf):
             raise ConfigParseException
 
     def load_pktgen_ixia_config(self, section):
-        port_reg = r'card=(\d+),port=(\d+)'
+        port_reg = r"card=(\d+),port=(\d+)"
         pktgen_confs = self.pktgen_conf.load_section(section)
         if not pktgen_confs:
             return
@@ -365,11 +367,11 @@ class PktgenConf(UserConf):
         ixia_group = {}
         for conf in pktgen_confs:
             key, value = conf
-            if key == 'ixia_version':
-                ixia_group['Version'] = value
-            elif key == 'ixia_ip':
-                ixia_group['IP'] = value
-            elif key == 'ixia_ports':
+            if key == "ixia_version":
+                ixia_group["Version"] = value
+            elif key == "ixia_ip":
+                ixia_group["IP"] = value
+            elif key == "ixia_ports":
                 ports = self.pktgen_conf.load_config(value)
                 ixia_ports = []
                 for port in ports:
@@ -379,20 +381,20 @@ class PktgenConf(UserConf):
                         ixia_port["card"] = int(m.group(1))
                         ixia_port["port"] = int(m.group(2))
                         ixia_ports.append(ixia_port)
-                ixia_group['Ports'] = ixia_ports
-            elif key == 'ixia_enable_rsfec':
-                ixia_group['enable_rsfec'] = value
+                ixia_group["Ports"] = ixia_ports
+            elif key == "ixia_enable_rsfec":
+                ixia_group["enable_rsfec"] = value
             else:
                 ixia_group[key] = value
 
-        if 'Version' not in ixia_group:
-            print('ixia configuration file request ixia_version option!!!')
+        if "Version" not in ixia_group:
+            print("ixia configuration file request ixia_version option!!!")
             return
-        if 'IP' not in ixia_group:
-            print('ixia configuration file request ixia_ip option!!!')
+        if "IP" not in ixia_group:
+            print("ixia configuration file request ixia_ip option!!!")
             return
-        if 'Ports' not in ixia_group:
-            print('ixia configuration file request ixia_ports option!!!')
+        if "Ports" not in ixia_group:
+            print("ixia configuration file request ixia_ports option!!!")
             return
 
         self.pktgen_cfg[section.lower()] = ixia_group
@@ -421,12 +423,17 @@ class PktgenConf(UserConf):
                 for conf in pktgen_confs:
                     key, value = conf
                     self.pktgen_cfg[key] = value
-            elif (self.pktgen_type == PKTGEN_IXIA and section.lower() == PKTGEN_IXIA) or \
-                 (self.pktgen_type == PKTGEN_IXIA_NETWORK and section.lower() == PKTGEN_IXIA_NETWORK):
+            elif (
+                self.pktgen_type == PKTGEN_IXIA and section.lower() == PKTGEN_IXIA
+            ) or (
+                self.pktgen_type == PKTGEN_IXIA_NETWORK
+                and section.lower() == PKTGEN_IXIA_NETWORK
+            ):
                 # covert file configuration to dts pktgen cfg
                 self.load_pktgen_ixia_config(section)
 
         return self.pktgen_cfg
+
 
 class AppNameConf(UserConf):
     def __init__(self, app_name_conf=APPNAMECONF):
@@ -453,13 +460,13 @@ class AppNameConf(UserConf):
                 key, value = cfg
                 name_cfg[key] = value
 
-            self.app_name_cfg[build_type.lower()]=name_cfg
+            self.app_name_cfg[build_type.lower()] = name_cfg
 
         return self.app_name_cfg
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description="Load DTS configuration files")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Load DTS configuration files")
     parser.add_argument("-p", "--portconf", default=PORTCONF)
     parser.add_argument("-c", "--crbconf", default=CRBCONF)
     parser.add_argument("-v", "--virtconf", default=VIRTCONF)
@@ -468,7 +475,7 @@ if __name__ == '__main__':
 
     # not existed configuration file
     try:
-        VirtConf('/tmp/not-existed.cfg')
+        VirtConf("/tmp/not-existed.cfg")
     except VirtConfigParseException:
         print("Capture config parse failure")
 
@@ -483,13 +490,13 @@ if __name__ == '__main__':
 
     # example for port configuration file
     portconf = PortConf(PORTCONF)
-    portconf.load_ports_config('DUT IP')
+    portconf.load_ports_config("DUT IP")
     print(portconf.get_ports_config())
-    portconf.check_port_available('86:00.0')
+    portconf.check_port_available("86:00.0")
 
     # example for global virtualization configuration file
     virtconf = VirtConf(VIRTCONF)
-    virtconf.load_virt_config('LIBVIRT')
+    virtconf.load_virt_config("LIBVIRT")
     print(virtconf.get_virt_config())
 
     # example for crbs configuration file

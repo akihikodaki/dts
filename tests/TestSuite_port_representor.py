@@ -50,8 +50,19 @@ class TestPortRepresentor(TestCase):
         """
         Prerequisite steps for each test suite.
         """
-        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
-                                 "fortville_spirit_single", "fortville_25g", "carlsville", "columbiaville_25g", "columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
+        self.verify(
+            self.nic
+            in [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "carlsville",
+                "columbiaville_25g",
+                "columbiaville_100g",
+            ],
+            "NIC Unsupported: " + str(self.nic),
+        )
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
 
@@ -65,7 +76,7 @@ class TestPortRepresentor(TestCase):
         self.tester_itf = self.tester.get_interface(localPort)
         self.tester_mac = self.tester.get_mac(localPort)
         self.pf_mac = self.dut.get_mac_address(0)
-        self.pf_pci = self.dut.ports_info[self.dut_ports[0]]['pci']
+        self.pf_pci = self.dut.ports_info[self.dut_ports[0]]["pci"]
 
         self.unicast_mac = "00:11:22:33:44:55"
 
@@ -80,7 +91,7 @@ class TestPortRepresentor(TestCase):
         except Exception as e:
             self.destroy_env()
             raise Exception(e)
-        self.vfs_pci = self.dut.ports_info[self.dut_ports[0]]['sriov_vfs_pci']
+        self.vfs_pci = self.dut.ports_info[self.dut_ports[0]]["sriov_vfs_pci"]
 
     def set_up(self):
         """
@@ -104,14 +115,26 @@ class TestPortRepresentor(TestCase):
         self.vf_flag = 0
 
     def testpmd_pf(self):
-        self.pmdout_pf.start_testpmd("Default", eal_param="-a %s,representor=0-1" % self.pf_pci, param="--port-topology=chained --total-num-mbufs=120000")
+        self.pmdout_pf.start_testpmd(
+            "Default",
+            eal_param="-a %s,representor=0-1" % self.pf_pci,
+            param="--port-topology=chained --total-num-mbufs=120000",
+        )
 
     def testpmd_vf0(self):
-        self.out_vf0 = self.pmdout_vf0.start_testpmd("Default", eal_param="-a %s --file-prefix testpmd-vf0" % self.vfs_pci[0], param="--total-num-mbufs=120000")
+        self.out_vf0 = self.pmdout_vf0.start_testpmd(
+            "Default",
+            eal_param="-a %s --file-prefix testpmd-vf0" % self.vfs_pci[0],
+            param="--total-num-mbufs=120000",
+        )
         self.vf0_mac = self.pmdout_vf0.get_port_mac(0)
 
     def testpmd_vf1(self):
-        self.out_vf1 = self.pmdout_vf1.start_testpmd("Default", eal_param="-a %s --file-prefix testpmd-vf1" % self.vfs_pci[1], param="--total-num-mbufs=120000")
+        self.out_vf1 = self.pmdout_vf1.start_testpmd(
+            "Default",
+            eal_param="-a %s --file-prefix testpmd-vf1" % self.vfs_pci[1],
+            param="--total-num-mbufs=120000",
+        )
         self.vf1_mac = self.pmdout_vf1.get_port_mac(0)
 
     def check_port_stats(self):
@@ -120,7 +143,7 @@ class TestPortRepresentor(TestCase):
         """
         out = self.pmdout_pf.execute_cmd("show port stats all", "testpmd>")
         self.logger.info(out)
-        result = re.compile('RX-packets:\s+(.*?)\s+?').findall(out, re.S)
+        result = re.compile("RX-packets:\s+(.*?)\s+?").findall(out, re.S)
         return result
 
     def clear_port_stats(self):
@@ -155,10 +178,16 @@ class TestPortRepresentor(TestCase):
         p.send_pkt(self.tester, tx_port=self.tester_itf, count=10)
         # check port stats in control testpmd
         result_before = self.check_port_stats()
-        self.verify(int(result_before[1]) == 10 and int(result_before[2]) == 10, "VF Stats show error")
+        self.verify(
+            int(result_before[1]) == 10 and int(result_before[2]) == 10,
+            "VF Stats show error",
+        )
         self.clear_port_stats()
         result_after = self.check_port_stats()
-        self.verify(int(result_after[1]) == 0 and int(result_after[2]) == 0, "VF Stats clear error")
+        self.verify(
+            int(result_after[1]) == 0 and int(result_after[2]) == 0,
+            "VF Stats clear error",
+        )
 
     def test_port_representor_vf_promiscous(self):
         """
@@ -185,7 +214,10 @@ class TestPortRepresentor(TestCase):
         p.send_pkt(self.tester, tx_port=self.tester_itf, count=10)
         # check port stats in control testpmd
         result_enable = self.check_port_stats()
-        self.verify(int(result_enable[1]) == 20 and int(result_enable[2]) == 20, "VFs receive packets error")
+        self.verify(
+            int(result_enable[1]) == 20 and int(result_enable[2]) == 20,
+            "VFs receive packets error",
+        )
         self.clear_port_stats()
         # set vf promisc disable and send 40 packets
         self.pmdout_pf.execute_cmd("set promisc 1 off", "testpmd>")
@@ -195,7 +227,10 @@ class TestPortRepresentor(TestCase):
         p.send_pkt(self.tester, tx_port=self.tester_itf, count=10)
         # check port stats in control testpmd
         result_disable = self.check_port_stats()
-        self.verify(int(result_disable[1]) == 10 and int(result_disable[2]) == 20, "VFs receive packets error")
+        self.verify(
+            int(result_disable[1]) == 10 and int(result_disable[2]) == 20,
+            "VFs receive packets error",
+        )
 
     def test_port_representor_vf_mac_addr(self):
         """
@@ -224,7 +259,9 @@ class TestPortRepresentor(TestCase):
         p.send_pkt(self.tester, tx_port=self.tester_itf, count=10)
         # check port stats in control testpmd
         result = self.check_port_stats()
-        self.verify(int(result[1]) == 10 and int(result[2]) == 10, "VFs receive packets error")
+        self.verify(
+            int(result[1]) == 10 and int(result[2]) == 10, "VFs receive packets error"
+        )
 
     def test_port_representor_vlan_filter(self):
         """
@@ -243,8 +280,14 @@ class TestPortRepresentor(TestCase):
         self.testpmd_vf1()
         self.pmdout_vf1.execute_cmd("start", "testpmd>", 2)
         # send 20 packets
-        pkt1 = 'Ether(src="%s",dst="%s")/Dot1Q(vlan=3)/IP()' % (self.tester_mac, self.vf0_mac)
-        pkt2 = 'Ether(src="%s",dst="%s")/Dot1Q(vlan=4)/IP()' % (self.tester_mac, self.vf1_mac)
+        pkt1 = 'Ether(src="%s",dst="%s")/Dot1Q(vlan=3)/IP()' % (
+            self.tester_mac,
+            self.vf0_mac,
+        )
+        pkt2 = 'Ether(src="%s",dst="%s")/Dot1Q(vlan=4)/IP()' % (
+            self.tester_mac,
+            self.vf1_mac,
+        )
         pkts = [pkt1, pkt2]
         p = Packet()
         for i in pkts:
@@ -252,7 +295,9 @@ class TestPortRepresentor(TestCase):
         p.send_pkt(self.tester, tx_port=self.tester_itf, count=10)
         # check port stats in control testpmd
         result = self.check_port_stats()
-        self.verify(int(result[1]) == 10 and int(result[2]) == 10, "VFs receive packets error")
+        self.verify(
+            int(result[1]) == 10 and int(result[2]) == 10, "VFs receive packets error"
+        )
 
     def tear_down(self):
         """

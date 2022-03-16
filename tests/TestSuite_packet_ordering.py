@@ -43,7 +43,6 @@ from framework.test_case import TestCase
 
 
 class TestPacketOrdering(TestCase):
-
     def set_up_all(self):
         """
         Executes the Packet Ordering prerequisites. Creates a simple scapy
@@ -60,7 +59,7 @@ class TestPacketOrdering(TestCase):
         # get socket and cores
         self.socket = self.dut.get_numa_id(self.dut_ports[0])
         self.cores = self.dut.get_core_list("1S/4C/1T", socket=self.socket)
-        self.eal_para = self.dut.create_eal_parameters(cores='1S/4C/1T')
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/4C/1T")
         self.verify(self.cores is not None, "Insufficient cores for speed testing")
 
         self.core_mask = utils.create_mask(self.cores)
@@ -69,8 +68,9 @@ class TestPacketOrdering(TestCase):
         # Builds the packet ordering example app and checks for errors.
         # out = self.dut.send_expect("make -C examples/packet_ordering", "#")
         out = self.dut.build_dpdk_apps("./examples/packet_ordering")
-        self.verify("Error" not in out and "No such file" not in out,
-                    "Compilation error")
+        self.verify(
+            "Error" not in out and "No such file" not in out, "Compilation error"
+        )
 
     def set_up(self):
         """
@@ -80,18 +80,17 @@ class TestPacketOrdering(TestCase):
 
     def start_application(self):
 
-        app_name = self.dut.apps_name['packet_ordering']
-        cmdline = app_name + '{0} -- -p {1}'.\
-            format(self.eal_para, self.port_mask)
+        app_name = self.dut.apps_name["packet_ordering"]
+        cmdline = app_name + "{0} -- -p {1}".format(self.eal_para, self.port_mask)
         # Executes the packet ordering example app.
-        self.dut.send_expect(cmdline, 'REORDERAPP', 120)
+        self.dut.send_expect(cmdline, "REORDERAPP", 120)
 
     def remove_dhcp_from_revpackets(self, inst, timeout=3):
 
         pkts = self.tester.load_tcpdump_sniff_packets(inst, timeout)
         i = 0
         while len(pkts) != 0 and i <= len(pkts) - 1:
-            if pkts[i].pktgen.pkt.haslayer('DHCP'):
+            if pkts[i].pktgen.pkt.haslayer("DHCP"):
                 pkts.remove(pkts[i])
                 i = i - 1
             i = i + 1
@@ -113,17 +112,24 @@ class TestPacketOrdering(TestCase):
         for _port in valports:
             index = valports[_port]
             dmac = self.dut.get_mac_address(index)
-            config_opt = [('ether', {'dst': dmac, 'src': smac}),
-                        ('ipv4', {'src': src_ip, 'dst': '11.12.1.1'}),
-                        ('udp', {'src': 123, 'dst': 12})]
-            pkt.generate_random_pkts(pktnum=packet_num, random_type=['UDP'], ip_increase=False,
-                                     random_payload=False, options={'layers_config': config_opt})
+            config_opt = [
+                ("ether", {"dst": dmac, "src": smac}),
+                ("ipv4", {"src": src_ip, "dst": "11.12.1.1"}),
+                ("udp", {"src": 123, "dst": 12}),
+            ]
+            pkt.generate_random_pkts(
+                pktnum=packet_num,
+                random_type=["UDP"],
+                ip_increase=False,
+                random_payload=False,
+                options={"layers_config": config_opt},
+            )
             # config raw info in pkts
             for i in range(packet_num):
                 payload = "0000%.3d" % (i + 1)
-                pkt.pktgen.pkts[i + packet_num * _port]['Raw'].load = payload
+                pkt.pktgen.pkts[i + packet_num * _port]["Raw"].load = payload
 
-        filt = [{'layer': 'ether', 'config': {'src': '%s' % smac}}]
+        filt = [{"layer": "ether", "config": {"src": "%s" % smac}}]
         inst = self.tester.tcpdump_sniff_packets(rx_interface, filters=filt)
         pkt.send_pkt(crb=self.tester, tx_port=tx_interface, timeout=300)
         self.pkts = self.remove_dhcp_from_revpackets(inst)
@@ -138,12 +144,14 @@ class TestPacketOrdering(TestCase):
             packet_index = 0
             for i in range(len(self.pkts)):
                 pay_load = "0000%.2d" % packet_index
-                if self.pkts[i]['IP'].src == src_ip:
+                if self.pkts[i]["IP"].src == src_ip:
                     print(self.pkts[i].show)
                     if packet_index == 0:
-                        packet_index = int(self.pkts[i]['Raw'].load[-2:])
+                        packet_index = int(self.pkts[i]["Raw"].load[-2:])
                         pay_load = "0000%.2d" % packet_index
-                    self.verify(self.pkts[i]['Raw'].load == pay_load, "The packets not ordered")
+                    self.verify(
+                        self.pkts[i]["Raw"].load == pay_load, "The packets not ordered"
+                    )
                     packet_index = packet_index + 1
 
     def test_keep_packet_oeder(self):

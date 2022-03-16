@@ -42,265 +42,410 @@ from framework.utils import GREEN, RED
 from .rte_flow_common import RssProcessing
 
 mac_qinq_ipv4_pay_src_ip = {
-    'name': 'mac_qinq_ipv4_pay_src_ip',
-    'rule': 'flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / ipv4 src is 196.222.232.221 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="196.222.232.222")/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(dst="196.222.232.221")/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)']},
-    'check_param': {'port_id':1}
+    "name": "mac_qinq_ipv4_pay_src_ip",
+    "rule": "flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / ipv4 src is 196.222.232.221 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="196.222.232.222")/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(dst="196.222.232.221")/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
 mac_qinq_ipv4_pay_dst_ip = {
-    'name': 'mac_qinq_ipv4_pay_dst_ip',
-    'rule': 'flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / ipv4 dst is 196.222.232.221 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(dst="196.222.232.221")/("X"*480)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(dst="196.222.232.222")/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(dst="196.222.232.221")/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP(dst="196.222.232.221")/("X"*480)']},
-    'check_param': {'port_id':1}
+    "name": "mac_qinq_ipv4_pay_dst_ip",
+    "rule": "flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / ipv4 dst is 196.222.232.221 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(dst="196.222.232.221")/("X"*480)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(dst="196.222.232.222")/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(dst="196.222.232.221")/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP(dst="196.222.232.221")/("X"*480)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
 mac_qinq_ipv4_pay_dest_mac = {
-    'name': 'mac_qinq_ipv4_pay_dest_mac',
-    'rule': 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/("X"*480)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP()/("X"*480)',
-                              ]},
-    'check_param': {'port_id':1}
+    "name": "mac_qinq_ipv4_pay_dest_mac",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/("X"*480)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/("X"*480)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/("X"*480)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP()/("X"*480)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
-mac_qinq_ipv4_pay = [mac_qinq_ipv4_pay_src_ip, mac_qinq_ipv4_pay_dst_ip, mac_qinq_ipv4_pay_dest_mac]
+mac_qinq_ipv4_pay = [
+    mac_qinq_ipv4_pay_src_ip,
+    mac_qinq_ipv4_pay_dst_ip,
+    mac_qinq_ipv4_pay_dest_mac,
+]
 
 mac_qinq_ipv6_pay_src_ip = {
-    'name': 'mac_qinq_ipv6_pay_src_ip',
-    'rule': 'flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / ipv6 src is 1111:2222:3333:4444:5555:6666:7777:8888 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(src="1111:2222:3333:4444:5555:6666:7777:9999")/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x86DD)/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)']},
-    'check_param': {'port_id': 1}
+    "name": "mac_qinq_ipv6_pay_src_ip",
+    "rule": "flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / ipv6 src is 1111:2222:3333:4444:5555:6666:7777:8888 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(src="1111:2222:3333:4444:5555:6666:7777:9999")/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x86DD)/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
 mac_qinq_ipv6_pay_dst_ip = {
-    'name': 'mac_qinq_ipv6_pay_dst_ip',
-    'rule': 'flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:9999")/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x86DD)/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)']},
-    'check_param': {'port_id': 1}
+    "name": "mac_qinq_ipv6_pay_dst_ip",
+    "rule": "flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:9999")/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x86DD)/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
 mac_qinq_ipv6_pay_dest_mac = {
-    'name': 'mac_qinq_ipv6_pay_dest_mac',
-    'rule': 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6()/("X"*480)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6()/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6()/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x86DD)/IPv6()/("X"*480)',
-                              ]},
-    'check_param': {'port_id': 1}
+    "name": "mac_qinq_ipv6_pay_dest_mac",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6()/("X"*480)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6()/("X"*480)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6()/("X"*480)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x86DD)/IPv6()/("X"*480)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
-mac_qinq_ipv6_pay = [mac_qinq_ipv6_pay_src_ip, mac_qinq_ipv6_pay_dst_ip, mac_qinq_ipv6_pay_dest_mac]
+mac_qinq_ipv6_pay = [
+    mac_qinq_ipv6_pay_src_ip,
+    mac_qinq_ipv6_pay_dst_ip,
+    mac_qinq_ipv6_pay_dest_mac,
+]
 
-mac_qinq_pppoe_pay = [{
-    'name': 'mac_qinq_pppoe_pay',
-    'rule': 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/("X"*480)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x21\')/IP()/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/("X"*480)']},
-    'check_param': {'port_id': 1}
-}]
+mac_qinq_pppoe_pay = [
+    {
+        "name": "mac_qinq_pppoe_pay",
+        "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / end actions vf id 1 / end",
+        "scapy_str": {
+            "matched": [
+                'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
+                'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/("X"*480)',
+            ],
+            "mismatched": [
+                'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
+                'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
+                'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
+                'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
+                'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x21\')/IP()/("X"*480)',
+                'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/("X"*480)',
+                'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/("X"*480)',
+                'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/("X"*480)',
+            ],
+        },
+        "check_param": {"port_id": 1},
+    }
+]
 
-mac_qinq_pppoe_proto = [{
-    'name': 'mac_qinq_pppoe_proto',
-    'rule': 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / pppoe_proto_id is 0x0057 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)']},
-    'check_param': {'port_id': 1}
-}]
+mac_qinq_pppoe_proto = [
+    {
+        "name": "mac_qinq_pppoe_proto",
+        "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / pppoe_proto_id is 0x0057 / end actions vf id 1 / end",
+        "scapy_str": {
+            "matched": [
+                'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)'
+            ],
+            "mismatched": [
+                'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
+                'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/("X"*480)',
+                'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
+                'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
+                'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/("X"*480)',
+            ],
+        },
+        "check_param": {"port_id": 1},
+    }
+]
 
 mac_qinq_pppoe_ipv4_src_ip = {
-    'name': 'mac_qinq_pppoe_ipv4_src_ip',
-    'rule': 'flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv4 src is 196.222.232.221 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(src="196.222.232.221")/UDP(dport=23)/("X"*480)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(src="196.222.232.222")/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(dst="196.222.232.221")/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x21\')/IP(src="196.222.232.221")/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(src="196.222.232.221")/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(src="196.222.232.221")/UDP(dport=23)/("X"*480)']},
-    'check_param': {'port_id': 1}
+    "name": "mac_qinq_pppoe_ipv4_src_ip",
+    "rule": "flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv4 src is 196.222.232.221 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(src="196.222.232.221")/UDP(dport=23)/("X"*480)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(src="196.222.232.222")/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(dst="196.222.232.221")/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x21\')/IP(src="196.222.232.221")/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(src="196.222.232.221")/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(src="196.222.232.221")/UDP(dport=23)/("X"*480)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
 mac_qinq_pppoe_ipv4_dst_ip = {
-    'name': 'mac_qinq_pppoe_ipv4_dst_ip',
-    'rule': 'flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv4 dst is 196.222.232.221 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(dst="196.222.232.221")/UDP(dport=23)/("X"*480)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(dst="196.222.232.222")/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(src="196.222.232.221")/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x21\')/IP(dst="196.222.232.221")/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(dst="196.222.232.221")/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(dst="196.222.232.221")/UDP(dport=23)/("X"*480)']},
-    'check_param': {'port_id': 1}
+    "name": "mac_qinq_pppoe_ipv4_dst_ip",
+    "rule": "flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv4 dst is 196.222.232.221 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(dst="196.222.232.221")/UDP(dport=23)/("X"*480)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(dst="196.222.232.222")/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(src="196.222.232.221")/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x21\')/IP(dst="196.222.232.221")/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(dst="196.222.232.221")/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP(dst="196.222.232.221")/UDP(dport=23)/("X"*480)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
 mac_qinq_pppoe_ipv4_dest_mac = {
-    'name': 'mac_qinq_pppoe_ipv4_dest_mac',
-    'rule': 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv4 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/UDP(dport=23)/("X"*480)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x21\')/IP()/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IPv6()/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/UDP(dport=23)/("X"*480)']},
-    'check_param': {'port_id': 1}
+    "name": "mac_qinq_pppoe_ipv4_dest_mac",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv4 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/UDP(dport=23)/("X"*480)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x21\')/IP()/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IPv6()/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x21\')/IP()/UDP(dport=23)/("X"*480)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
-mac_qinq_pppoe_ipv4 = [mac_qinq_pppoe_ipv4_src_ip, mac_qinq_pppoe_ipv4_dst_ip, mac_qinq_pppoe_ipv4_dest_mac]
+mac_qinq_pppoe_ipv4 = [
+    mac_qinq_pppoe_ipv4_src_ip,
+    mac_qinq_pppoe_ipv4_dst_ip,
+    mac_qinq_pppoe_ipv4_dest_mac,
+]
 
 mac_qinq_pppoe_ipv6_src_ip = {
-    'name': 'mac_qinq_pppoe_ipv6_src_ip',
-    'rule': 'flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv6 src is 1111:2222:3333:4444:5555:6666:7777:8888 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:9999")/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x57\')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)']},
-    'check_param': {'port_id': 1}
+    "name": "mac_qinq_pppoe_ipv6_src_ip",
+    "rule": "flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv6 src is 1111:2222:3333:4444:5555:6666:7777:8888 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:9999")/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x57\')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
 mac_qinq_pppoe_ipv6_dst_ip = {
-    'name': 'mac_qinq_pppoe_ipv6_dst_ip',
-    'rule': 'flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:9999")/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x57\')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)']},
-    'check_param': {'port_id': 1}
+    "name": "mac_qinq_pppoe_ipv6_dst_ip",
+    "rule": "flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:9999")/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x57\')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=23)/("X"*480)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
 mac_qinq_pppoe_ipv6_dest_mac = {
-    'name': 'mac_qinq_pppoe_ipv6_dest_mac',
-    'rule': 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv6 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/UDP(dport=23)/("X"*480)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x57\')/IPv6()/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IP()/UDP(dport=23)/("X"*480)',
-                              'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/UDP(dport=23)/("X"*480)']},
-    'check_param': {'port_id': 1}
+    "name": "mac_qinq_pppoe_ipv6_dest_mac",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv6 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/UDP(dport=23)/("X"*480)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(b\'\\x00\\x57\')/IPv6()/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IP()/UDP(dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(b\'\\x00\\x57\')/IPv6()/UDP(dport=23)/("X"*480)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
-mac_qinq_pppoe_ipv6 = [mac_qinq_pppoe_ipv6_src_ip, mac_qinq_pppoe_ipv6_dst_ip, mac_qinq_pppoe_ipv6_dest_mac]
+mac_qinq_pppoe_ipv6 = [
+    mac_qinq_pppoe_ipv6_src_ip,
+    mac_qinq_pppoe_ipv6_dst_ip,
+    mac_qinq_pppoe_ipv6_dest_mac,
+]
 
-#Non-pipeline mode
+# Non-pipeline mode
 tv_mac_qinq_ipv4 = {
-    'name': 'tv_mac_qinq_ipv4',
-    'rule': 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/("X"*80)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.2")/("X"*80)']},
-    'check_param': {'port_id': 1}
+    "name": "tv_mac_qinq_ipv4",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/("X"*80)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.2")/("X"*80)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
 tv_mac_qinq_ipv6 = {
-    'name': 'tv_mac_qinq_ipv6',
-    'rule': 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*80)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/("X"*80)']},
-    'check_param': {'port_id': 1}
+    "name": "tv_mac_qinq_ipv6",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*80)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/("X"*80)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
 tv_mac_qinq_ipv4_udp = {
-    'name': 'tv_mac_qinq_ipv4_udp',
-    'rule': 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / udp src is 50 dst is 23 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=50,dport=23)/("X"*80)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=50,dport=23)/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=50,dport=23)/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP()/UDP(sport=50,dport=23)/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=50,dport=22)/("X"*80)']},
-    'check_param': {'port_id': 1}
+    "name": "tv_mac_qinq_ipv4_udp",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / udp src is 50 dst is 23 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=50,dport=23)/("X"*80)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=50,dport=23)/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=50,dport=23)/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP()/UDP(sport=50,dport=23)/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/UDP(sport=50,dport=22)/("X"*80)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
 tv_mac_qinq_ipv4_tcp = {
-    'name': 'tv_mac_qinq_ipv4_tcp',
-    'rule': 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / tcp src is 50 dst is 23 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=50,dport=23)/("X"*80)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=50,dport=23)/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=50,dport=23)/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP()/TCP(sport=50,dport=23)/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=50,dport=22)/("X"*80)']},
-    'check_param': {'port_id': 1}
+    "name": "tv_mac_qinq_ipv4_tcp",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / tcp src is 50 dst is 23 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=50,dport=23)/("X"*80)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=50,dport=23)/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=50,dport=23)/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP()/TCP(sport=50,dport=23)/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/TCP(sport=50,dport=22)/("X"*80)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
-tvs_mac_l4_qinq_dcf_non_pipeline_mode = [tv_mac_qinq_ipv4, tv_mac_qinq_ipv6, tv_mac_qinq_ipv4_udp, tv_mac_qinq_ipv4_tcp]
+tvs_mac_l4_qinq_dcf_non_pipeline_mode = [
+    tv_mac_qinq_ipv4,
+    tv_mac_qinq_ipv6,
+    tv_mac_qinq_ipv4_udp,
+    tv_mac_qinq_ipv4_tcp,
+]
 
-#Pipeline mode
+# Pipeline mode
 tv_mac_qinq_ipv6_udp = {
-    'name': 'tv_mac_qinq_ipv6_udp',
-    'rule': 'flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 50 dst is 23 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=23)/("X"*80)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=23)/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=23)/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=23)/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=50,dport=22)/("X"*80)']},
-    'check_param': {'port_id': 1}
+    "name": "tv_mac_qinq_ipv6_udp",
+    "rule": "flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 50 dst is 23 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=23)/("X"*80)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=23)/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=23)/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=50,dport=23)/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=50,dport=22)/("X"*80)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
 tv_mac_qinq_ipv6_tcp = {
-    'name': 'tv_mac_qinq_ipv6_tcp',
-    'rule': 'flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 50 dst is 23 / end actions vf id 1 / end',
-    'scapy_str': {'matched': ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=23)/("X"*80)'],
-               'mismatched': ['Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=23)/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=23)/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=23)/("X"*80)',
-                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/TCP(sport=50,dport=22)/("X"*80)']},
-    'check_param': {'port_id': 1}
+    "name": "tv_mac_qinq_ipv6_tcp",
+    "rule": "flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 50 dst is 23 / end actions vf id 1 / end",
+    "scapy_str": {
+        "matched": [
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=23)/("X"*80)'
+        ],
+        "mismatched": [
+            'Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=23)/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=23)/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=50,dport=23)/("X"*80)',
+            'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/TCP(sport=50,dport=22)/("X"*80)',
+        ],
+    },
+    "check_param": {"port_id": 1},
 }
 
 tvs_mac_l4_qinq_dcf_pipeline_mode = [tv_mac_qinq_ipv6_udp, tv_mac_qinq_ipv6_tcp]
 
-class TestCvlQinq(TestCase):
 
-    @check_supported_nic(["columbiaville_25g", "columbiaville_100g", "columbiaville_25gx2"])
+class TestCvlQinq(TestCase):
+    @check_supported_nic(
+        ["columbiaville_25g", "columbiaville_100g", "columbiaville_25gx2"]
+    )
     def set_up_all(self):
-        '''
+        """
         Run at the start of each test suite.
         prerequisites.
-        '''
+        """
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports(self.nic)
-        self.verify(len(self.dut_ports) >= 1, 'Insufficient ports for testing')
+        self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
         # Verify that enough threads are available
-        cores = self.dut.get_core_list('1S/4C/1T')
-        self.verify(cores is not None, 'Insufficient cores for speed testing')
+        cores = self.dut.get_core_list("1S/4C/1T")
+        self.verify(cores is not None, "Insufficient cores for speed testing")
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.tester_port0 = self.tester.get_local_port(self.dut_ports[0])
         self.tester_port1 = self.tester.get_local_port(self.dut_ports[1])
@@ -308,56 +453,84 @@ class TestCvlQinq(TestCase):
         self.tester_iface1 = self.tester.get_interface(self.tester_port1)
 
         self.used_dut_port = self.dut_ports[0]
-        self.pf_interface = self.dut.ports_info[self.dut_ports[0]]['intf']
-        port = self.dut.ports_info[0]['port']
+        self.pf_interface = self.dut.ports_info[self.dut_ports[0]]["intf"]
+        port = self.dut.ports_info[0]["port"]
         port.bind_driver()
         # get priv-flags default stats
-        self.flag = 'vf-vlan-pruning'
+        self.flag = "vf-vlan-pruning"
         self.default_stats = self.dut.get_priv_flags_state(self.pf_interface, self.flag)
 
         self.vf_flag = False
-        self.vf0_mac = ''
-        self.vf1_mac = '00:11:22:33:44:11'
-        self.vf2_mac = '00:11:22:33:44:22'
-        self.vf3_mac = '00:11:22:33:44:33'
-        self.path = self.dut.apps_name['test-pmd']
+        self.vf0_mac = ""
+        self.vf1_mac = "00:11:22:33:44:11"
+        self.vf2_mac = "00:11:22:33:44:22"
+        self.vf3_mac = "00:11:22:33:44:33"
+        self.path = self.dut.apps_name["test-pmd"]
         self.pkt = Packet()
         self.pmd_output = PmdOutput(self.dut)
 
     def set_up(self):
-        '''
+        """
         Run before each test case.
-        '''
+        """
         self.pci_list = []
         if self.default_stats:
-            self.dut.send_expect('ethtool --set-priv-flags %s %s %s' % (self.pf_interface,self.flag, self.default_stats), "# ")
+            self.dut.send_expect(
+                "ethtool --set-priv-flags %s %s %s"
+                % (self.pf_interface, self.flag, self.default_stats),
+                "# ",
+            )
 
     def setup_pf_vfs_env(self, vfs_num=4):
 
         if self.vf_flag is False:
-            self.dut.generate_sriov_vfs_by_port(self.used_dut_port, vfs_num, driver=self.kdriver)
-            self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port]['vfs_port']
+            self.dut.generate_sriov_vfs_by_port(
+                self.used_dut_port, vfs_num, driver=self.kdriver
+            )
+            self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port]["vfs_port"]
             self.vf_flag = True
             if vfs_num > 1:
-                self.dut.send_expect('ip link set %s vf 0 trust on' % (self.pf_interface), '# ')
-                self.dut.send_expect('ip link set %s vf 1 mac %s' % (self.pf_interface, self.vf1_mac), '# ')
-                self.dut.send_expect('ip link set %s vf 2 mac %s' % (self.pf_interface, self.vf2_mac), '# ')
-                self.dut.send_expect('ip link set %s vf 3 mac %s' % (self.pf_interface, self.vf3_mac), '# ')
+                self.dut.send_expect(
+                    "ip link set %s vf 0 trust on" % (self.pf_interface), "# "
+                )
+                self.dut.send_expect(
+                    "ip link set %s vf 1 mac %s" % (self.pf_interface, self.vf1_mac),
+                    "# ",
+                )
+                self.dut.send_expect(
+                    "ip link set %s vf 2 mac %s" % (self.pf_interface, self.vf2_mac),
+                    "# ",
+                )
+                self.dut.send_expect(
+                    "ip link set %s vf 3 mac %s" % (self.pf_interface, self.vf3_mac),
+                    "# ",
+                )
             else:
-                self.dut.send_expect('ip link set %s vf 0 mac %s' % (self.pf_interface, self.vf1_mac), '# ')
+                self.dut.send_expect(
+                    "ip link set %s vf 0 mac %s" % (self.pf_interface, self.vf1_mac),
+                    "# ",
+                )
 
             try:
                 for port in self.sriov_vfs_port:
                     port.bind_driver(self.drivername)
                     self.pci_list.append(port.pci)
 
-                self.vf0_prop = {'opt_host': self.sriov_vfs_port[0].pci}
-                self.dut.send_expect('ifconfig %s up' % self.pf_interface, '# ')
-                self.dut.send_expect('ip link set dev %s vf 0 spoofchk off' % self.pf_interface, '# ')
+                self.vf0_prop = {"opt_host": self.sriov_vfs_port[0].pci}
+                self.dut.send_expect("ifconfig %s up" % self.pf_interface, "# ")
+                self.dut.send_expect(
+                    "ip link set dev %s vf 0 spoofchk off" % self.pf_interface, "# "
+                )
                 if vfs_num == 4:
-                    self.dut.send_expect('ip link set dev %s vf 1 spoofchk off' % self.pf_interface, '# ')
-                    self.dut.send_expect('ip link set dev %s vf 2 spoofchk off' % self.pf_interface, '# ')
-                    self.dut.send_expect('ip link set dev %s vf 3 spoofchk off' % self.pf_interface, '# ')
+                    self.dut.send_expect(
+                        "ip link set dev %s vf 1 spoofchk off" % self.pf_interface, "# "
+                    )
+                    self.dut.send_expect(
+                        "ip link set dev %s vf 2 spoofchk off" % self.pf_interface, "# "
+                    )
+                    self.dut.send_expect(
+                        "ip link set dev %s vf 3 spoofchk off" % self.pf_interface, "# "
+                    )
             except Exception as e:
                 self.destroy_iavf()
                 raise Exception(e)
@@ -369,35 +542,44 @@ class TestCvlQinq(TestCase):
 
     def launch_testpmd(self, vfs_num=4, dcf_param=False):
         if dcf_param:
-            port_options = {self.pci_list[0]: 'cap=dcf,representor=[1]'}
+            port_options = {self.pci_list[0]: "cap=dcf,representor=[1]"}
         else:
-            port_options = {self.pci_list[0]: 'cap=dcf'}
+            port_options = {self.pci_list[0]: "cap=dcf"}
         if vfs_num > 1:
-            param = ' '
-            self.pmd_output.start_testpmd(cores='1S/4C/1T', param=param,
-                                          ports=self.pci_list, socket=self.ports_socket, port_options=port_options)
+            param = " "
+            self.pmd_output.start_testpmd(
+                cores="1S/4C/1T",
+                param=param,
+                ports=self.pci_list,
+                socket=self.ports_socket,
+                port_options=port_options,
+            )
         else:
-            param = '--rxq=16 --txq=16'
-            self.pmd_output.start_testpmd(cores='1S/4C/1T', param=param,
-                                                ports=self.pci_list, socket=self.ports_socket)
+            param = "--rxq=16 --txq=16"
+            self.pmd_output.start_testpmd(
+                cores="1S/4C/1T",
+                param=param,
+                ports=self.pci_list,
+                socket=self.ports_socket,
+            )
         self.confing_testpmd(vfs_num, dcf_param)
 
     def confing_testpmd(self, vfs_num, dcf_param):
-        driver_type = 'Device name.*?%s.*?\n(.*)' % self.sriov_vfs_port[0].pci
+        driver_type = "Device name.*?%s.*?\n(.*)" % self.sriov_vfs_port[0].pci
         if dcf_param or vfs_num == 1:
-            flow_type = 'mac'
+            flow_type = "mac"
             if vfs_num > 1:
-                output = self.pmd_output.execute_cmd('show port info all')
+                output = self.pmd_output.execute_cmd("show port info all")
                 out = re.findall(driver_type, output)
                 self.verify(len(out) == 2, "port0 and port1 driver not is net_ice_dcf")
         else:
-            flow_type = 'rxonly'
-            output = self.pmd_output.execute_cmd('show port info 0')
+            flow_type = "rxonly"
+            output = self.pmd_output.execute_cmd("show port info 0")
             out = re.findall(driver_type, output)
             self.verify(len(out) == 1, "vf0 driver not is net_ice_dcf")
-        self.pmd_output.execute_cmd('set fwd %s' % flow_type)
-        self.pmd_output.execute_cmd('set verbose 1')
-        self.pmd_output.execute_cmd('start')
+        self.pmd_output.execute_cmd("set fwd %s" % flow_type)
+        self.pmd_output.execute_cmd("set verbose 1")
+        self.pmd_output.execute_cmd("start")
 
     def create_switch_rule(self, rule, session_name="", check_stats=True):
         if session_name == "":
@@ -406,23 +588,30 @@ class TestCvlQinq(TestCase):
         rule_list = []
         if isinstance(rule, list):
             for rule in rule:
-                out = session_name.execute_cmd(rule)  #create a rule
+                out = session_name.execute_cmd(rule)  # create a rule
                 m = p.search(out)
                 if m:
                     rule_list.append(m.group(1))
                 else:
                     rule_list.append(False)
         else:
-            out = session_name.execute_cmd(rule)  #create a rule
+            out = session_name.execute_cmd(rule)  # create a rule
             m = p.search(out)
             if m:
                 rule_list.append(m.group(1))
             else:
                 rule_list.append(False)
         if check_stats:
-            self.verify(all(rule_list), "some rules not created successfully, result %s, rule %s" % (rule_list, rule))
+            self.verify(
+                all(rule_list),
+                "some rules not created successfully, result %s, rule %s"
+                % (rule_list, rule),
+            )
         else:
-            self.verify(not any(rule_list), "all rules should create failed, result %s" % rule_list)
+            self.verify(
+                not any(rule_list),
+                "all rules should create failed, result %s" % rule_list,
+            )
         return rule_list
 
     def check_switch_rule(self, port_id=0, stats=True, rule_list=None):
@@ -436,8 +625,11 @@ class TestCvlQinq(TestCase):
                 li = out.splitlines()
                 res = list(filter(bool, list(map(p.match, li))))
                 result = [i.group(1) for i in res]
-                self.verify(sorted(result) == sorted(rule_list),
-                            "check rule list failed. expect %s, result %s" % (rule_list, result))
+                self.verify(
+                    sorted(result) == sorted(rule_list),
+                    "check rule list failed. expect %s, result %s"
+                    % (rule_list, result),
+                )
         else:
             self.verify(not matched, "flow rule on port %s is existed" % port_id)
 
@@ -446,12 +638,16 @@ class TestCvlQinq(TestCase):
             rule_id = 0
         if isinstance(rule_id, list):
             for i in rule_id:
-                out = self.dut.send_command("flow destroy %s rule %s" % (port_id, i), timeout=1)
+                out = self.dut.send_command(
+                    "flow destroy %s rule %s" % (port_id, i), timeout=1
+                )
                 p = re.compile(r"Flow rule #(\d+) destroyed")
                 m = p.search(out)
                 self.verify(m, "flow rule %s delete failed" % rule_id)
         else:
-            out = self.dut.send_command("flow destroy %s rule %s" % (port_id, rule_id), timeout=1)
+            out = self.dut.send_command(
+                "flow destroy %s rule %s" % (port_id, rule_id), timeout=1
+            )
             p = re.compile(r"Flow rule #(\d+) destroyed")
             m = p.search(out)
             self.verify(m, "flow rule %s delete failed" % rule_id)
@@ -474,35 +670,47 @@ class TestCvlQinq(TestCase):
         return out + port_stats
 
     def check_packets(self, out, port_id, pkt_num=1, check_stats=True):
-        p = 'port (\d+)/queue.*'
+        p = "port (\d+)/queue.*"
         result_list = re.findall(p, out)
         if check_stats:
-            self.verify(len(result_list) == pkt_num, "received packets mismatch".format(port_id))
+            self.verify(
+                len(result_list) == pkt_num, "received packets mismatch".format(port_id)
+            )
         for res in result_list:
             if check_stats:
-                self.verify(int(res) == port_id, "port {} did not received the packets".format(port_id))
+                self.verify(
+                    int(res) == port_id,
+                    "port {} did not received the packets".format(port_id),
+                )
             else:
-                self.verify(int(res) != port_id, "port {} should not received a packets".format(port_id))
+                self.verify(
+                    int(res) != port_id,
+                    "port {} should not received a packets".format(port_id),
+                )
 
     def _rte_flow_validate_pattern(self, test_vector):
         test_results = {}
         for test in test_vector:
             self.logger.info((GREEN("========test subcase: %s========" % test["name"])))
             try:
-                port_id = test['check_param']['port_id']
-                rule_list = self.create_switch_rule(test['rule'])
+                port_id = test["check_param"]["port_id"]
+                rule_list = self.create_switch_rule(test["rule"])
                 self.check_switch_rule()
                 # send matched packets and check
-                matched_packets = test['scapy_str']['matched']
+                matched_packets = test["scapy_str"]["matched"]
                 out = self.send_pkts_getouput(matched_packets)
                 self.check_packets(out, port_id, len(matched_packets))
                 # send mismatched packets and check
-                mismatched_packets = test['scapy_str']['mismatched']
+                mismatched_packets = test["scapy_str"]["mismatched"]
                 out = self.send_pkts_getouput(mismatched_packets)
-                self.check_packets(out, port_id, len(mismatched_packets), check_stats=False)
+                self.check_packets(
+                    out, port_id, len(mismatched_packets), check_stats=False
+                )
                 self.destroy_switch_rule()
                 out = self.send_pkts_getouput(matched_packets)
-                self.check_packets(out, port_id, len(matched_packets), check_stats=False)
+                self.check_packets(
+                    out, port_id, len(matched_packets), check_stats=False
+                )
                 test_results[test["name"]] = True
                 self.logger.info((GREEN("subcase passed: %s" % test["name"])))
             except Exception as e:
@@ -520,13 +728,19 @@ class TestCvlQinq(TestCase):
 
     def start_tcpdump(self, rxItf):
         self.tester.send_expect("rm -rf getPackageByTcpdump.cap", "#")
-        self.tester.send_expect("tcpdump -A -nn -e -vv -w getPackageByTcpdump.cap -i %s 2> /dev/null& " % rxItf, "#")
+        self.tester.send_expect(
+            "tcpdump -A -nn -e -vv -w getPackageByTcpdump.cap -i %s 2> /dev/null& "
+            % rxItf,
+            "#",
+        )
         time.sleep(2)
 
     def get_tcpdump_package(self):
         time.sleep(1)
         self.tester.send_expect("killall tcpdump", "#")
-        return self.tester.send_expect("tcpdump -A -nn -e -vv -r getPackageByTcpdump.cap", "#")
+        return self.tester.send_expect(
+            "tcpdump -A -nn -e -vv -r getPackageByTcpdump.cap", "#"
+        )
 
     def test_mac_qinq_ipv4_pay(self):
         """
@@ -544,7 +758,7 @@ class TestCvlQinq(TestCase):
         self.launch_testpmd()
         self._rte_flow_validate_pattern(mac_qinq_ipv6_pay)
 
-    @skip_unsupported_pkg('os default')
+    @skip_unsupported_pkg("os default")
     def test_mac_qinq_pppoe_pay(self):
         """
         DCF switch for MAC_QINQ_PPPOE_PAY
@@ -553,7 +767,7 @@ class TestCvlQinq(TestCase):
         self.launch_testpmd()
         self._rte_flow_validate_pattern(mac_qinq_pppoe_pay)
 
-    @skip_unsupported_pkg('os default')
+    @skip_unsupported_pkg("os default")
     def test_mac_qinq_pppoe_pay_proto(self):
         """
         DCF switch for MAC_QINQ_PPPOE_PAY_Proto
@@ -562,7 +776,7 @@ class TestCvlQinq(TestCase):
         self.launch_testpmd()
         self._rte_flow_validate_pattern(mac_qinq_pppoe_proto)
 
-    @skip_unsupported_pkg('os default')
+    @skip_unsupported_pkg("os default")
     def test_mac_qinq_pppoe_ipv4(self):
         """
         DCF switch for MAC_QINQ_PPPOE_IPV4
@@ -571,7 +785,7 @@ class TestCvlQinq(TestCase):
         self.launch_testpmd()
         self._rte_flow_validate_pattern(mac_qinq_pppoe_ipv4)
 
-    @skip_unsupported_pkg('os default')
+    @skip_unsupported_pkg("os default")
     def test_mac_qinq_pppoe_ipv6(self):
         """
         DCF switch for MAC_QINQ_PPPOE_IPV6
@@ -621,14 +835,20 @@ class TestCvlQinq(TestCase):
                     vlan_num -= 2
                 elif outer:
                     vlan_num -= 1
-                self.verify(len(vlan_list) == vlan_num, "received outer vlan packet error!!!")
+                self.verify(
+                    len(vlan_list) == vlan_num, "received outer vlan packet error!!!"
+                )
 
     def test_vlan_strip_in_pvid_enable(self):
         """
         vlan strip when pvid enable
         """
-        pkts = ['Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac,
-                'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=21,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac]
+        pkts = [
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf1_mac,
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=21,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf1_mac,
+        ]
         self.setup_pf_vfs_env()
         self.launch_testpmd(dcf_param=True)
         self.pmd_output.execute_cmd("stop")
@@ -652,7 +872,9 @@ class TestCvlQinq(TestCase):
         self.reset_vf()
         self.send_packet_check_vlan_strip(pkts, outer=True, inner=True)
 
-    def _send_packet_check_vlan_inter(self, pkts, out_vlan, port_id=3,  vlan_header=None, iner_vlan=None):
+    def _send_packet_check_vlan_inter(
+        self, pkts, out_vlan, port_id=3, vlan_header=None, iner_vlan=None
+    ):
         for pkt in pkts:
             pkt_index = pkts.index(pkt)
             self.start_tcpdump(self.tester_iface0)
@@ -665,28 +887,58 @@ class TestCvlQinq(TestCase):
                 header = re.findall(vlan_header, tcpdump_out)
             if pkt_index == 0:
                 if out_vlan == 1:
-                    self.verify(len(vlan_list) == 1, "received packet outer vlan not is %s" % out_vlan)
+                    self.verify(
+                        len(vlan_list) == 1,
+                        "received packet outer vlan not is %s" % out_vlan,
+                    )
                 elif out_vlan == 0:
-                    self.verify(len(vlan_list) == 0, "received packet outer vlan not is %s" % out_vlan)
+                    self.verify(
+                        len(vlan_list) == 0,
+                        "received packet outer vlan not is %s" % out_vlan,
+                    )
                 else:
-                    self.verify(int(vlan_list[0]) == out_vlan, "received packet outer vlan not is %s" % out_vlan)
+                    self.verify(
+                        int(vlan_list[0]) == out_vlan,
+                        "received packet outer vlan not is %s" % out_vlan,
+                    )
                 if iner_vlan:
-                    self.verify(int(vlan_list[1]) == iner_vlan, "received packet outer vlan not is %s" % iner_vlan)
+                    self.verify(
+                        int(vlan_list[1]) == iner_vlan,
+                        "received packet outer vlan not is %s" % iner_vlan,
+                    )
             else:
                 if out_vlan == 1:
-                    self.verify(len(vlan_list) == 3 and int(vlan_list[1]) == out_vlan, "received packet outer vlan not is %s" % out_vlan)
+                    self.verify(
+                        len(vlan_list) == 3 and int(vlan_list[1]) == out_vlan,
+                        "received packet outer vlan not is %s" % out_vlan,
+                    )
                 elif out_vlan == 0:
-                    self.verify(len(vlan_list) == 2, "received packet outer vlan not is %s" % out_vlan)
+                    self.verify(
+                        len(vlan_list) == 2,
+                        "received packet outer vlan not is %s" % out_vlan,
+                    )
                 else:
-                    self.verify(int(vlan_list[1]) == out_vlan, "received packet outer vlan not is %s" % out_vlan)
+                    self.verify(
+                        int(vlan_list[1]) == out_vlan,
+                        "received packet outer vlan not is %s" % out_vlan,
+                    )
                 if iner_vlan:
-                    self.verify(int(vlan_list[2]) == iner_vlan, "received packet outer vlan not is %s" % iner_vlan)
+                    self.verify(
+                        int(vlan_list[2]) == iner_vlan,
+                        "received packet outer vlan not is %s" % iner_vlan,
+                    )
             if vlan_header == "0x8100":
-                self.verify(vlan_header in tcpdump_out, "vlan header not matched, expect: %s." % vlan_header)
+                self.verify(
+                    vlan_header in tcpdump_out,
+                    "vlan header not matched, expect: %s." % vlan_header,
+                )
             elif vlan_header is None:
                 pass
             else:
-                self.verify(len(header) == 1, "vlan header not matched, expect: %s." % vlan_header)
+                self.verify(
+                    len(header) == 1,
+                    "vlan header not matched, expect: %s." % vlan_header,
+                )
 
     def test_vlan_insert_in_pvid_enable(self):
         """
@@ -695,8 +947,12 @@ class TestCvlQinq(TestCase):
         out_vlan = 24
         iner_vlan = 11
         header = "0x8100"
-        pkt_list = ['Ether(dst="%s",type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf2_mac,
-                    'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf2_mac]
+        pkt_list = [
+            'Ether(dst="%s",type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf2_mac,
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf2_mac,
+        ]
         self.setup_pf_vfs_env()
         self.launch_testpmd(dcf_param=True)
         self.pmd_output.execute_cmd("stop")
@@ -718,7 +974,9 @@ class TestCvlQinq(TestCase):
         self.pmd_output.execute_cmd("tx_vlan set 2 %d" % iner_vlan)
         self.pmd_output.execute_cmd("port start 2")
         self.pmd_output.execute_cmd("start")
-        self._send_packet_check_vlan_inter(pkt_list, out_vlan, vlan_header=header, iner_vlan=iner_vlan)
+        self._send_packet_check_vlan_inter(
+            pkt_list, out_vlan, vlan_header=header, iner_vlan=iner_vlan
+        )
         self.pmd_output.execute_cmd("quit", "# ")
         self.launch_testpmd(dcf_param=True)
         self.pmd_output.execute_cmd("stop")
@@ -727,18 +985,31 @@ class TestCvlQinq(TestCase):
         self.pmd_output.execute_cmd("port start 2")
         self.pmd_output.execute_cmd("tx_vlan set pvid 1 %d on" % out_vlan)
         self.reset_vf()
-        self._send_packet_check_vlan_inter(pkt_list, out_vlan, port_id=3, vlan_header=header, iner_vlan=iner_vlan)
+        self._send_packet_check_vlan_inter(
+            pkt_list, out_vlan, port_id=3, vlan_header=header, iner_vlan=iner_vlan
+        )
 
     def test_vlan_filter_in_pvid_enable(self):
         """
         vlan filter when pvid enable
         """
-        pkt_list1 = ['Ether(dst="%s",type=0x8100)/Dot1Q(vlan=11,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac,
-                     'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=11,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac]
-        pkt_list2 = ['Ether(dst="%s",type=0x8100)/Dot1Q(vlan=21,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac,
-                     'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=21,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac]
+        pkt_list1 = [
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=11,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf1_mac,
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=11,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf1_mac,
+        ]
+        pkt_list2 = [
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=21,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf1_mac,
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=21,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf1_mac,
+        ]
         if self.default_stats:
-            self.dut.send_expect('ethtool --set-priv-flags %s %s on' % (self.pf_interface, self.flag), '# ')
+            self.dut.send_expect(
+                "ethtool --set-priv-flags %s %s on" % (self.pf_interface, self.flag),
+                "# ",
+            )
         self.setup_pf_vfs_env()
         self.launch_testpmd(dcf_param=True)
         self.pmd_output.execute_cmd("vlan set filter on 1")
@@ -767,19 +1038,30 @@ class TestCvlQinq(TestCase):
         """
         Enable/Disable IAVF VLAN filtering
         """
-        pkt_list1 = ['Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac,
-                     'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac]
-        pkt_list2 = ['Ether(dst="%s",type=0x8100)/Dot1Q(vlan=11,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac,
-                     'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=11,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac]
+        pkt_list1 = [
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf1_mac,
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf1_mac,
+        ]
+        pkt_list2 = [
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=11,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf1_mac,
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=11,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf1_mac,
+        ]
         if self.default_stats:
-            self.dut.send_expect('ethtool --set-priv-flags %s %s on' % (self.pf_interface, self.flag), '# ')
+            self.dut.send_expect(
+                "ethtool --set-priv-flags %s %s on" % (self.pf_interface, self.flag),
+                "# ",
+            )
         self.setup_pf_vfs_env(vfs_num=1)
         self.launch_testpmd(vfs_num=1)
         self.pmd_output.execute_cmd("vlan set filter on 0")
         self.check_vlan_offload(vlan_type="filter", stats="on")
         out = self.send_pkts_getouput(pkt_list1)
-        receive_pkt = re.findall('dst=%s' % self.vf1_mac, out)
-        self.verify(len(receive_pkt) == 0, 'Failed error received vlan packet!')
+        receive_pkt = re.findall("dst=%s" % self.vf1_mac, out)
+        self.verify(len(receive_pkt) == 0, "Failed error received vlan packet!")
 
         self.pmd_output.execute_cmd("rx_vlan add 1 0")
         self.start_tcpdump(self.tester_iface0)
@@ -791,22 +1073,29 @@ class TestCvlQinq(TestCase):
         self.verify(len(tester_pkt) == 6, "Failed pass received vlan packet!")
 
         out = self.send_pkts_getouput(pkt_list2)
-        receive_pkt = re.findall('dst=%s' % self.vf1_mac, out)
-        self.verify(len(receive_pkt) == 0, 'Failed error received vlan packet!')
+        receive_pkt = re.findall("dst=%s" % self.vf1_mac, out)
+        self.verify(len(receive_pkt) == 0, "Failed error received vlan packet!")
 
         self.pmd_output.execute_cmd("rx_vlan rm 1 0")
         out = self.send_pkts_getouput(pkt_list1)
-        receive_pkt = re.findall('dst=%s' % self.vf1_mac, out)
-        self.verify(len(receive_pkt) == 0, 'Failed error received vlan packet!')
+        receive_pkt = re.findall("dst=%s" % self.vf1_mac, out)
+        self.verify(len(receive_pkt) == 0, "Failed error received vlan packet!")
 
     def test_enable_disable_iavf_vlan_strip(self):
         """
         Enable/Disable IAVF VLAN header stripping
         """
-        pkt_list = ['Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac,
-                    'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac]
+        pkt_list = [
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf1_mac,
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf1_mac,
+        ]
         if self.default_stats:
-            self.dut.send_expect('ethtool --set-priv-flags %s %s on' % (self.pf_interface, self.flag), '# ')
+            self.dut.send_expect(
+                "ethtool --set-priv-flags %s %s on" % (self.pf_interface, self.flag),
+                "# ",
+            )
         self.setup_pf_vfs_env(vfs_num=1)
         self.launch_testpmd(vfs_num=1)
         self.pmd_output.execute_cmd("vlan set filter on 0")
@@ -838,10 +1127,17 @@ class TestCvlQinq(TestCase):
         Enable/Disable IAVF VLAN header insertion
         """
         out_vlan = 1
-        pkt_list = ['Ether(dst="%s",type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac,
-                    'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=11,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac]
+        pkt_list = [
+            'Ether(dst="%s",type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf1_mac,
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=11,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf1_mac,
+        ]
         if self.default_stats:
-            self.dut.send_expect('ethtool --set-priv-flags %s %s off' % (self.pf_interface, self.flag), '# ')
+            self.dut.send_expect(
+                "ethtool --set-priv-flags %s %s off" % (self.pf_interface, self.flag),
+                "# ",
+            )
         self.setup_pf_vfs_env(vfs_num=1)
         self.launch_testpmd(vfs_num=1)
         self.pmd_output.execute_cmd("stop")
@@ -858,7 +1154,9 @@ class TestCvlQinq(TestCase):
         self.pmd_output.execute_cmd("start")
         self._send_packet_check_vlan_inter(pkt_list, out_vlan=0, port_id=0)
 
-    def _send_pkt_check_vlan_and_crc(self, pkt, pkt_len=None, vlan_strip=False, crc_strip=False):
+    def _send_pkt_check_vlan_and_crc(
+        self, pkt, pkt_len=None, vlan_strip=False, crc_strip=False
+    ):
         if pkt_len:
             self.start_tcpdump(self.tester_iface0)
         out = self.send_pkts_getouput(pkt)
@@ -867,7 +1165,7 @@ class TestCvlQinq(TestCase):
         if crc_strip:
             self.verify(rx_bytes == pkt_length, "CRC strip on failed")
         else:
-            self.verify(int(rx_bytes) == int(pkt_length)+4, "CRC strip off failed")
+            self.verify(int(rx_bytes) == int(pkt_length) + 4, "CRC strip off failed")
         if pkt_len:
             tcpdump_out = self.get_tcpdump_package()
             vlan_list = re.findall("vlan\s+\d+", tcpdump_out)
@@ -875,19 +1173,32 @@ class TestCvlQinq(TestCase):
                 self.verify(pkt_length == pkt_len, "vlan strip off failed")
                 self.verify(len(vlan_list) == 4, "Failed pass received vlan packet")
             elif vlan_strip:
-                self.verify(int(pkt_length)+4 == int(pkt_len), "vlan strip off failed")
-                self.verify(len(vlan_list) == 3 and vlan_list[0] != vlan_list[-1], "Failed error received vlan packet")
+                self.verify(
+                    int(pkt_length) + 4 == int(pkt_len), "vlan strip off failed"
+                )
+                self.verify(
+                    len(vlan_list) == 3 and vlan_list[0] != vlan_list[-1],
+                    "Failed error received vlan packet",
+                )
 
     def test_enable_disable_iavf_CRC_strip(self):
         """
         Enable/disable AVF CRC stripping
         """
-        param = '--rxq=16 --txq=16 --disable-crc-strip'
-        pkt = 'Ether(dst="%s",type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac
+        param = "--rxq=16 --txq=16 --disable-crc-strip"
+        pkt = (
+            'Ether(dst="%s",type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf1_mac
+        )
         if self.default_stats:
-            self.dut.send_expect('ethtool --set-priv-flags %s %s on' % (self.pf_interface, self.flag), '# ')
+            self.dut.send_expect(
+                "ethtool --set-priv-flags %s %s on" % (self.pf_interface, self.flag),
+                "# ",
+            )
         self.setup_pf_vfs_env(vfs_num=1)
-        self.pmd_output.start_testpmd(cores='1S/4C/1T', param=param, ports=self.pci_list, socket=self.ports_socket)
+        self.pmd_output.start_testpmd(
+            cores="1S/4C/1T", param=param, ports=self.pci_list, socket=self.ports_socket
+        )
         self.pmd_output.execute_cmd("set fwd mac")
         self.pmd_output.execute_cmd("set verbose 1")
         self.pmd_output.execute_cmd("start")
@@ -916,9 +1227,15 @@ class TestCvlQinq(TestCase):
         """
         AVF CRC strip and Vlan strip co-exists
         """
-        pkt = 'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)' % self.vf1_mac
+        pkt = (
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            % self.vf1_mac
+        )
         if self.default_stats:
-            self.dut.send_expect('ethtool --set-priv-flags %s %s on' % (self.pf_interface, self.flag), '# ')
+            self.dut.send_expect(
+                "ethtool --set-priv-flags %s %s on" % (self.pf_interface, self.flag),
+                "# ",
+            )
         self.setup_pf_vfs_env(vfs_num=1)
         self.launch_testpmd(vfs_num=1)
         self.check_vlan_offload(vlan_type="strip", stats="off")
@@ -967,10 +1284,14 @@ class TestCvlQinq(TestCase):
         self._send_pkt_check_vlan_and_crc(pkt=pkt, pkt_len=pkt_len, crc_strip=True)
 
     def tear_down(self):
-        self.pmd_output.execute_cmd('quit', '#')
+        self.pmd_output.execute_cmd("quit", "#")
         self.dut.kill_all()
         self.destroy_iavf()
 
     def tear_down_all(self):
         if self.default_stats:
-            self.dut.send_expect('ethtool --set-priv-flags %s %s %s' % (self.pf_interface, self.flag, self.default_stats), "# ")
+            self.dut.send_expect(
+                "ethtool --set-priv-flags %s %s %s"
+                % (self.pf_interface, self.flag, self.default_stats),
+                "# ",
+            )

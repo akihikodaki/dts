@@ -56,9 +56,13 @@ from .flow_rule import FlowItemType
 
 
 def get_valid_next_protocols(current_protocol, protocol_stack, type_denylist):
-    return list(filter(
-        lambda patent_item: patent_item not in type_denylist and patent_item not in {p.type for p in protocol_stack},
-        current_protocol.valid_parent_items))
+    return list(
+        filter(
+            lambda patent_item: patent_item not in type_denylist
+            and patent_item not in {p.type for p in protocol_stack},
+            current_protocol.valid_parent_items,
+        )
+    )
 
 
 def _generate(type_denylist=None) -> List[List[PatternFlowItem]]:
@@ -67,22 +71,33 @@ def _generate(type_denylist=None) -> List[List[PatternFlowItem]]:
     UNUSED_PATTERN_ITEMS = {PATTERN_ITEMS_TYPE_CLASS_MAPPING[i] for i in type_denylist}
 
     patterns: List[List[PatternFlowItem]] = []
-    for pattern_item in [clazz for clazz in PATTERN_ITEMS_TYPE_CLASS_MAPPING.values() if
-                         clazz not in UNUSED_PATTERN_ITEMS]:
+    for pattern_item in [
+        clazz
+        for clazz in PATTERN_ITEMS_TYPE_CLASS_MAPPING.values()
+        if clazz not in UNUSED_PATTERN_ITEMS
+    ]:
         protocol_stack = []
         if protocol_stack.count(pattern_item) >= 2:
             continue
 
         current_protocol = pattern_item()
-        valid_next_protocols = get_valid_next_protocols(current_protocol, protocol_stack, type_denylist)
+        valid_next_protocols = get_valid_next_protocols(
+            current_protocol, protocol_stack, type_denylist
+        )
         while len(valid_next_protocols) > 0:
             protocol_stack.append(current_protocol)
-            current_protocol = PATTERN_ITEMS_TYPE_CLASS_MAPPING[list(valid_next_protocols)[0]]()
-            valid_next_protocols = get_valid_next_protocols(current_protocol, protocol_stack, type_denylist)
+            current_protocol = PATTERN_ITEMS_TYPE_CLASS_MAPPING[
+                list(valid_next_protocols)[0]
+            ]()
+            valid_next_protocols = get_valid_next_protocols(
+                current_protocol, protocol_stack, type_denylist
+            )
 
         protocol_stack.append(current_protocol)
 
-        patterns.append(list(reversed(protocol_stack)))  # This will place the lowest level protocols first
+        patterns.append(
+            list(reversed(protocol_stack))
+        )  # This will place the lowest level protocols first
     return patterns
 
 
@@ -91,19 +106,24 @@ def convert_protocol_stack_to_flow_pattern(protocol_stack):
 
 
 def _get_patterns_with_type_denylist(type_denylist: Set):
-    return [convert_protocol_stack_to_flow_pattern(protocol_stack) for protocol_stack in (_generate(
-        type_denylist=type_denylist
-    ))]
+    return [
+        convert_protocol_stack_to_flow_pattern(protocol_stack)
+        for protocol_stack in (_generate(type_denylist=type_denylist))
+    ]
 
 
 def _get_normal_protocol_patterns() -> List[Flow]:
     return _get_patterns_with_type_denylist(
-        PATTERN_OPERATION_TYPES | ALWAYS_ALLOWED_ITEMS | {FlowItemType.ANY,
-                                                          FlowItemType.END})
+        PATTERN_OPERATION_TYPES
+        | ALWAYS_ALLOWED_ITEMS
+        | {FlowItemType.ANY, FlowItemType.END}
+    )
 
 
 def _get_tunnelled_protocol_patterns(patterns: List[Flow]) -> Generator[Flow]:
-    VXLAN_FLOW = Flow(pattern_items=[FlowItemEth(), FlowItemIpv4(), FlowItemUdp(), FlowItemVxlan()])
+    VXLAN_FLOW = Flow(
+        pattern_items=[FlowItemEth(), FlowItemIpv4(), FlowItemUdp(), FlowItemVxlan()]
+    )
     for pattern in patterns:
         yield VXLAN_FLOW / pattern
 
@@ -129,33 +149,44 @@ def get_patterns() -> Iterable[Iterable[Flow]]:
     return patterns
 
 
-def add_properties_to_patterns(patterns: Iterable[Flow]) -> Iterable[Tuple[Flow, FrozenSet[str], FrozenSet[str], str]]:
+def add_properties_to_patterns(
+    patterns: Iterable[Flow],
+) -> Iterable[Tuple[Flow, FrozenSet[str], FrozenSet[str], str]]:
     test_property_flow_iters = map(lambda f: f.get_test_property_flows(), patterns)
     for iterator in test_property_flow_iters:
         yield from iterator
 
 
-def get_patterns_with_properties() -> Iterable[Tuple[Flow, FrozenSet[str], FrozenSet[str], str]]:
+def get_patterns_with_properties() -> Iterable[
+    Tuple[Flow, FrozenSet[str], FrozenSet[str], str]
+]:
     base_patterns = get_patterns()
     return add_properties_to_patterns(base_patterns)
 
 
-def create_test_function_strings(test_configurations: Iterable[Tuple[Flow, FrozenSet[str], FrozenSet[str], str]]) -> \
-        Iterable[str]:
+def create_test_function_strings(
+    test_configurations: Iterable[Tuple[Flow, FrozenSet[str], FrozenSet[str], str]]
+) -> Iterable[str]:
     """
     This will break if the __str__ methods of frozenset ever changes or if % formatting syntax is removed.
 
     @param test_configurations: An iterable with test configurations to convert into test case strings.
     @return: An iterable containing strings that are function parameters.
     """
-    function_template = \
-        """
+    function_template = """
 def test_%s(self):
     self.do_test_with_queue_action("%s", %s, %s)
         """
-    return map(lambda test_configuration: function_template % (
-        test_configuration[-1], test_configuration[0], test_configuration[1], test_configuration[2],),
-               test_configurations)
+    return map(
+        lambda test_configuration: function_template
+        % (
+            test_configuration[-1],
+            test_configuration[0],
+            test_configuration[1],
+            test_configuration[2],
+        ),
+        test_configurations,
+    )
 
 
 def main():

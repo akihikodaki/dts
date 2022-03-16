@@ -42,23 +42,24 @@ from framework.test_case import TestCase
 
 
 class TestVirtioUserInterrupt(TestCase):
-
     def set_up_all(self):
         """
         run at the start of each test suite.
         """
         self.core_config = "1S/4C/1T"
         self.dut_ports = self.dut.get_ports()
-        self.cores_num = len([n for n in self.dut.cores if int(n['socket']) == 0])
+        self.cores_num = len([n for n in self.dut.cores if int(n["socket"]) == 0])
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
-        self.verify(self.cores_num >= 4, "There has not enought cores to test this case")
+        self.verify(
+            self.cores_num >= 4, "There has not enought cores to test this case"
+        )
         self.core_list = self.dut.get_core_list(self.core_config)
         self.core_list_vhost = self.core_list[0:2]
         self.core_list_l3fwd = self.core_list[2:4]
         self.core_mask_vhost = utils.create_mask(self.core_list_vhost)
         self.core_mask_l3fwd = utils.create_mask(self.core_list_l3fwd)
         self.core_mask_virtio = self.core_mask_l3fwd
-        self.pci_info = self.dut.ports_info[0]['pci']
+        self.pci_info = self.dut.ports_info[0]["pci"]
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.cbdma_dev_infos = []
         self.dmas_info = None
@@ -66,8 +67,8 @@ class TestVirtioUserInterrupt(TestCase):
         self.prepare_l3fwd_power()
         self.tx_port = self.tester.get_local_port(self.dut_ports[0])
         self.tx_interface = self.tester.get_interface(self.tx_port)
-        self.app_l3fwd_power_path = self.dut.apps_name['l3fwd-power']
-        self.app_testpmd_path = self.dut.apps_name['test-pmd']
+        self.app_l3fwd_power_path = self.dut.apps_name["l3fwd-power"]
+        self.app_testpmd_path = self.dut.apps_name["test-pmd"]
         self.testpmd_name = self.app_testpmd_path.split("/")[-1]
         self.l3fwdpower_name = self.app_l3fwd_power_path.split("/")[-1]
 
@@ -93,8 +94,10 @@ class TestVirtioUserInterrupt(TestCase):
 
     @property
     def check_2M_env(self):
-        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
-        return True if out == '2048' else False
+        out = self.dut.send_expect(
+            "cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# "
+        )
+        return True if out == "2048" else False
 
     def launch_l3fwd(self, path, packed=False):
         self.core_interrupt = self.core_list_l3fwd[0]
@@ -103,16 +106,20 @@ class TestVirtioUserInterrupt(TestCase):
             vdev = "virtio_user0,path=%s,cq=1" % path
         else:
             vdev = "virtio_user0,path=%s,cq=1,packed_vq=1" % path
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, prefix='l3fwd-pwd', no_pci=True, vdevs=[vdev])
+        eal_params = self.dut.create_eal_parameters(
+            cores=self.core_list_l3fwd, prefix="l3fwd-pwd", no_pci=True, vdevs=[vdev]
+        )
         if self.check_2M_env:
             eal_params += " --single-file-segments"
-        para = " --config='(0,0,%s)' --parse-ptype --interrupt-only" % self.core_interrupt
+        para = (
+            " --config='(0,0,%s)' --parse-ptype --interrupt-only" % self.core_interrupt
+        )
         cmd_l3fwd = example_para + eal_params + " --log-level='user1,7' -- -p 1 " + para
         self.l3fwd.get_session_before(timeout=2)
         self.l3fwd.send_expect(cmd_l3fwd, "POWER", 40)
         time.sleep(10)
         out = self.l3fwd.get_session_before()
-        if ("Error" in out and "Error opening" not in out):
+        if "Error" in out and "Error opening" not in out:
             self.logger.error("Launch l3fwd-power sample error")
         else:
             self.logger.info("Launch l3fwd-power sample finished")
@@ -131,16 +138,27 @@ class TestVirtioUserInterrupt(TestCase):
         if len(pci) == 0:
             if dmas:
                 vdev = ["net_vhost0,iface=vhost-net,queues=1,dmas=[%s]" % dmas]
-                eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, ports=allow_pci, vdevs=vdev)
+                eal_params = self.dut.create_eal_parameters(
+                    cores=self.core_list_vhost, ports=allow_pci, vdevs=vdev
+                )
             else:
-                eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, ports=allow_pci, vdevs=vdev)
+                eal_params = self.dut.create_eal_parameters(
+                    cores=self.core_list_vhost, ports=allow_pci, vdevs=vdev
+                )
         else:
             if dmas:
                 vdev = ["net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[%s]" % dmas]
                 para = " -- -i"
-                eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, ports=allow_pci, prefix='vhost', vdevs=vdev)
+                eal_params = self.dut.create_eal_parameters(
+                    cores=self.core_list_vhost,
+                    ports=allow_pci,
+                    prefix="vhost",
+                    vdevs=vdev,
+                )
             else:
-                eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, prefix='vhost', no_pci=True, vdevs=vdev)
+                eal_params = self.dut.create_eal_parameters(
+                    cores=self.core_list_vhost, prefix="vhost", no_pci=True, vdevs=vdev
+                )
         cmd_vhost_user = testcmd + eal_params + para
         self.vhost.send_expect(cmd_vhost_user, "testpmd>", 30)
         self.vhost.send_expect("set fwd mac", "testpmd>", 30)
@@ -155,7 +173,9 @@ class TestVirtioUserInterrupt(TestCase):
             vdev = "net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net"
         else:
             vdev = "net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1"
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, prefix='virtio', no_pci=True, vdevs=[vdev])
+        eal_params = self.dut.create_eal_parameters(
+            cores=self.core_list_l3fwd, prefix="virtio", no_pci=True, vdevs=[vdev]
+        )
         para = " -- -i --txd=512 --rxd=128 --tx-offloads=0x00"
         cmd_virtio_user = testcmd + eal_params + para
         self.virtio.send_expect(cmd_virtio_user, "testpmd>", 120)
@@ -185,10 +205,12 @@ class TestVirtioUserInterrupt(TestCase):
         """
         get all cbdma ports
         """
-        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev dma', '# ', 30)
-        device_info = out.split('\n')
+        out = self.dut.send_expect(
+            "./usertools/dpdk-devbind.py --status-dev dma", "# ", 30
+        )
+        device_info = out.split("\n")
         for device in device_info:
-            pci_info = re.search('\s*(0000:\S*:\d*.\d*)', device)
+            pci_info = re.search("\s*(0000:\S*:\d*.\d*)", device)
             if pci_info is not None:
                 dev_info = pci_info.group(1)
                 # the numa id of ioat dev, only add the device which
@@ -200,22 +222,37 @@ class TestVirtioUserInterrupt(TestCase):
                     cur_socket = 0
                 if self.ports_socket == cur_socket:
                     self.cbdma_dev_infos.append(pci_info.group(1))
-        self.verify(len(self.cbdma_dev_infos) >= cbdma_num, 'There no enough cbdma device to run this suite')
+        self.verify(
+            len(self.cbdma_dev_infos) >= cbdma_num,
+            "There no enough cbdma device to run this suite",
+        )
         self.used_cbdma = self.cbdma_dev_infos[0:cbdma_num]
-        dmas_info = ''
+        dmas_info = ""
         for dmas in self.used_cbdma:
             number = self.used_cbdma.index(dmas)
-            dmas = 'txq{}@{};'.format(number, dmas)
+            dmas = "txq{}@{};".format(number, dmas)
             dmas_info += dmas
         self.dmas_info = dmas_info[:-1]
-        self.device_str = ' '.join(self.used_cbdma)
-        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s' % (self.drivername, self.device_str), '# ', 60)
+        self.device_str = " ".join(self.used_cbdma)
+        self.dut.send_expect(
+            "./usertools/dpdk-devbind.py --force --bind=%s %s"
+            % (self.drivername, self.device_str),
+            "# ",
+            60,
+        )
 
     def bind_cbdma_device_to_kernel(self):
         if self.device_str is not None:
-            self.dut.send_expect('modprobe ioatdma', '# ')
-            self.dut.send_expect('./usertools/dpdk-devbind.py -u %s' % self.device_str, '# ', 30)
-            self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str, '# ', 60)
+            self.dut.send_expect("modprobe ioatdma", "# ")
+            self.dut.send_expect(
+                "./usertools/dpdk-devbind.py -u %s" % self.device_str, "# ", 30
+            )
+            self.dut.send_expect(
+                "./usertools/dpdk-devbind.py --force --bind=ioatdma  %s"
+                % self.device_str,
+                "# ",
+                60,
+            )
 
     def test_split_ring_virtio_user_interrupt_with_vhost_net_as_backend(self):
         """
@@ -246,8 +283,12 @@ class TestVirtioUserInterrupt(TestCase):
         self.launch_l3fwd(path="./vhost-net")
         # double check the status of interrupt core
         for i in range(2):
-            self.tester.scapy_append('pk=[Ether(dst="52:54:00:00:00:01")/IP()/("X"*64)]')
-            self.tester.scapy_append('sendp(pk, iface="%s", count=100)' % self.tx_interface)
+            self.tester.scapy_append(
+                'pk=[Ether(dst="52:54:00:00:00:01")/IP()/("X"*64)]'
+            )
+            self.tester.scapy_append(
+                'sendp(pk, iface="%s", count=100)' % self.tx_interface
+            )
             self.tester.scapy_execute()
             time.sleep(3)
             self.check_interrupt_log(status="waked up")
@@ -271,8 +312,12 @@ class TestVirtioUserInterrupt(TestCase):
         self.launch_l3fwd(path="./vhost-net", packed=True)
         # double check the status of interrupt core
         for i in range(2):
-            self.tester.scapy_append('pk=[Ether(dst="52:54:00:00:00:01")/IP()/("X"*64)]')
-            self.tester.scapy_append('sendp(pk, iface="%s", count=100)' % self.tx_interface)
+            self.tester.scapy_append(
+                'pk=[Ether(dst="52:54:00:00:00:01")/IP()/("X"*64)]'
+            )
+            self.tester.scapy_append(
+                'sendp(pk, iface="%s", count=100)' % self.tx_interface
+            )
             self.tester.scapy_execute()
             time.sleep(3)
             self.check_interrupt_log(status="waked up")
@@ -308,7 +353,9 @@ class TestVirtioUserInterrupt(TestCase):
         self.vhost.send_expect("quit", "#", 20)
         self.check_virtio_side_link_status("down")
 
-    def test_lsc_event_between_vhost_user_and_virtio_user_with_split_ring_and_cbdma_enabled(self):
+    def test_lsc_event_between_vhost_user_and_virtio_user_with_split_ring_and_cbdma_enabled(
+        self,
+    ):
         """
         Test Case7: LSC event between vhost-user and virtio-user with split ring and cbdma enabled
         """
@@ -322,7 +369,9 @@ class TestVirtioUserInterrupt(TestCase):
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.close_all_session()
 
-    def test_split_ring_virtio_user_interrupt_test_with_vhost_user_as_backend_and_cbdma_enabled(self):
+    def test_split_ring_virtio_user_interrupt_test_with_vhost_user_as_backend_and_cbdma_enabled(
+        self,
+    ):
         """
         Test Case8: Split ring virtio-user interrupt test with vhost-user as backend and cbdma enabled
         """
@@ -331,8 +380,12 @@ class TestVirtioUserInterrupt(TestCase):
         self.launch_l3fwd(path="./vhost-net")
         # double check the status of interrupt core
         for i in range(2):
-            self.tester.scapy_append('pk=[Ether(dst="52:54:00:00:00:01")/IP()/("X"*64)]')
-            self.tester.scapy_append('sendp(pk, iface="%s", count=100)' % self.tx_interface)
+            self.tester.scapy_append(
+                'pk=[Ether(dst="52:54:00:00:00:01")/IP()/("X"*64)]'
+            )
+            self.tester.scapy_append(
+                'sendp(pk, iface="%s", count=100)' % self.tx_interface
+            )
             self.tester.scapy_execute()
             time.sleep(3)
             self.check_interrupt_log(status="waked up")
@@ -340,7 +393,9 @@ class TestVirtioUserInterrupt(TestCase):
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.close_all_session()
 
-    def test_lsc_event_between_vhost_user_and_virtio_user_with_packed_ring_and_cbdma_enabled(self):
+    def test_lsc_event_between_vhost_user_and_virtio_user_with_packed_ring_and_cbdma_enabled(
+        self,
+    ):
         """
         Test Case9: LSC event between vhost-user and virtio-user with packed ring and cbdma enabled
         """
@@ -354,7 +409,9 @@ class TestVirtioUserInterrupt(TestCase):
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.close_all_session()
 
-    def test_packed_ring_virtio_user_interrupt_test_with_vhost_user_as_backend_and_cbdma_enabled(self):
+    def test_packed_ring_virtio_user_interrupt_test_with_vhost_user_as_backend_and_cbdma_enabled(
+        self,
+    ):
         """
         Test Case10: Packed ring virtio-user interrupt test with vhost-user as backend and cbdma enabled
         """
@@ -363,8 +420,12 @@ class TestVirtioUserInterrupt(TestCase):
         self.launch_l3fwd(path="./vhost-net", packed=True)
         # double check the status of interrupt core
         for i in range(2):
-            self.tester.scapy_append('pk=[Ether(dst="52:54:00:00:00:01")/IP()/("X"*64)]')
-            self.tester.scapy_append('sendp(pk, iface="%s", count=100)' % self.tx_interface)
+            self.tester.scapy_append(
+                'pk=[Ether(dst="52:54:00:00:00:01")/IP()/("X"*64)]'
+            )
+            self.tester.scapy_append(
+                'sendp(pk, iface="%s", count=100)' % self.tx_interface
+            )
             self.tester.scapy_execute()
             time.sleep(3)
             self.check_interrupt_log(status="waked up")

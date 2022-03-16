@@ -37,9 +37,8 @@ from framework.test_case import TestCase
 
 
 class UnitTestsCryptodev(TestCase):
-
     def set_up_all(self):
-        self._app_path = self.dut.apps_name['test']
+        self._app_path = self.dut.apps_name["test"]
         cc.bind_qat_device(self, "vfio-pci")
 
     def set_up(self):
@@ -78,7 +77,7 @@ class UnitTestsCryptodev(TestCase):
             for i in range(num):
                 vdev = "{}{}".format(dev, i)
                 vdev_list.append(vdev)
-            device["vdev"] = ' --vdev '.join(vdev_list)
+            device["vdev"] = " --vdev ".join(vdev_list)
 
         return device
 
@@ -140,7 +139,9 @@ class UnitTestsCryptodev(TestCase):
 
         self.logger.info("STEP_TEST: " + testsuite)
         self.dut.send_expect("dmesg -C", "# ", 30)
-        cmd_str = cc.get_dpdk_app_cmd_str(self._app_path, eal_opt_str + " --log-level=6 -a %s" % w[0])
+        cmd_str = cc.get_dpdk_app_cmd_str(
+            self._app_path, eal_opt_str + " --log-level=6 -a %s" % w[0]
+        )
         self.dut.send_expect(cmd_str, "RTE>>", 30)
 
         out = ""

@@ -58,12 +58,12 @@ class TestUnitTestsEal(TestCase):
         Run at the start of each test suite.
         """
         # icc compilation cost long long time.
-        [arch, machine, self.env, toolchain] = self.target.split('-')
+        [arch, machine, self.env, toolchain] = self.target.split("-")
         self.start_test_time = 60
         self.run_cmd_time = 180
-        default_cores = '1S/4C/1T'
+        default_cores = "1S/4C/1T"
         eal_params = self.dut.create_eal_parameters(cores=default_cores)
-        app_name = self.dut.apps_name['test']
+        app_name = self.dut.apps_name["test"]
         self.test_app_cmdline = app_name + eal_params
 
     def set_up(self):
@@ -77,8 +77,11 @@ class TestUnitTestsEal(TestCase):
         Run version autotest.
         """
 
-        self.dut.send_expect(self.dut.taskset(1) + ' ' + self.test_app_cmdline,
-                             "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.dut.taskset(1) + " " + self.test_app_cmdline,
+            "R.*T.*E.*>.*>",
+            self.start_test_time,
+        )
         out = self.dut.send_expect("version_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -88,8 +91,11 @@ class TestUnitTestsEal(TestCase):
         Run memcopy autotest.
         """
 
-        self.dut.send_expect(self.dut.taskset(1) + ' ' +  self.test_app_cmdline,
-                             "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.dut.taskset(1) + " " + self.test_app_cmdline,
+            "R.*T.*E.*>.*>",
+            self.start_test_time,
+        )
         out = self.dut.send_expect("memcpy_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -99,8 +105,11 @@ class TestUnitTestsEal(TestCase):
         Run common autotest.
         """
 
-        self.dut.send_expect(self.dut.taskset(1) + ' ' + self.test_app_cmdline,
-                             "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.dut.taskset(1) + " " + self.test_app_cmdline,
+            "R.*T.*E.*>.*>",
+            self.start_test_time,
+        )
         out = self.dut.send_expect("common_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -110,8 +119,11 @@ class TestUnitTestsEal(TestCase):
         Run memcopy autotest.
         """
 
-        self.dut.send_expect(self.dut.taskset(1) + ' ' + self.test_app_cmdline,
-                             "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.dut.taskset(1) + " " + self.test_app_cmdline,
+            "R.*T.*E.*>.*>",
+            self.start_test_time,
+        )
         out = self.dut.send_expect("eal_fs_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -121,8 +133,11 @@ class TestUnitTestsEal(TestCase):
         Run memcopy autotest.
         """
 
-        self.dut.send_expect(self.dut.taskset(1) + ' ' + self.test_app_cmdline,
-                             "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.dut.taskset(1) + " " + self.test_app_cmdline,
+            "R.*T.*E.*>.*>",
+            self.start_test_time,
+        )
         out = self.dut.send_expect("memcpy_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -131,9 +146,14 @@ class TestUnitTestsEal(TestCase):
         """
         Run memcopy performance autotest.
         """
-        self.dut.send_expect(self.dut.taskset(1) + ' ' + self.test_app_cmdline,
-                             "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("memcpy_perf_autotest", "RTE>>", self.run_cmd_time * 15)
+        self.dut.send_expect(
+            self.dut.taskset(1) + " " + self.test_app_cmdline,
+            "R.*T.*E.*>.*>",
+            self.start_test_time,
+        )
+        out = self.dut.send_expect(
+            "memcpy_perf_autotest", "RTE>>", self.run_cmd_time * 15
+        )
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
@@ -142,7 +162,9 @@ class TestUnitTestsEal(TestCase):
         Run hash autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
         out = self.dut.send_expect("hash_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
 
@@ -150,8 +172,10 @@ class TestUnitTestsEal(TestCase):
         # the keys for a given hash table size. Add the check that average
         # table utilization is 100% when extendable table is enabled.
 
-        self.verify("Average table utilization = 100.00%" in out,
-                    "Test failed for extenable bucket table")
+        self.verify(
+            "Average table utilization = 100.00%" in out,
+            "Test failed for extenable bucket table",
+        )
         self.verify("Test OK" in out, "Test failed")
 
     def test_hash_perf(self):
@@ -159,9 +183,12 @@ class TestUnitTestsEal(TestCase):
         Run has performance autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline,
-                             "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("hash_perf_autotest", "RTE>>", self.run_cmd_time * 10)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
+        out = self.dut.send_expect(
+            "hash_perf_autotest", "RTE>>", self.run_cmd_time * 10
+        )
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
@@ -170,10 +197,12 @@ class TestUnitTestsEal(TestCase):
         Run hash functions autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline,
-                             "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("hash_functions_autotest",
-                                   "RTE>>", self.run_cmd_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
+        out = self.dut.send_expect(
+            "hash_functions_autotest", "RTE>>", self.run_cmd_time
+        )
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
@@ -182,10 +211,12 @@ class TestUnitTestsEal(TestCase):
         Run hash multiwriter autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline,
-                             "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("hash_multiwriter_autotest",
-                                   "RTE>>", self.run_cmd_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
+        out = self.dut.send_expect(
+            "hash_multiwriter_autotest", "RTE>>", self.run_cmd_time
+        )
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
@@ -194,10 +225,12 @@ class TestUnitTestsEal(TestCase):
         Run hash readwrite autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline,
-                             "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("hash_readwrite_func_autotest",
-                                   "RTE>>", self.run_cmd_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
+        out = self.dut.send_expect(
+            "hash_readwrite_func_autotest", "RTE>>", self.run_cmd_time
+        )
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
@@ -207,10 +240,12 @@ class TestUnitTestsEal(TestCase):
         """
 
         eal_params = self.dut.create_eal_parameters()
-        self.dut.send_expect(self.test_app_cmdline,       
-                             "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("hash_readwrite_lf_perf_autotest",
-                                   "RTE>>", self.run_cmd_time*3)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
+        out = self.dut.send_expect(
+            "hash_readwrite_lf_perf_autotest", "RTE>>", self.run_cmd_time * 3
+        )
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
@@ -219,11 +254,13 @@ class TestUnitTestsEal(TestCase):
         Run hash readwrite perf autotest.
         """
 
-        eal_params = self.dut.create_eal_parameters(cores='1S/4C/1T')
-        self.dut.send_expect(self.test_app_cmdline,
-                             "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("hash_readwrite_perf_autotest",
-                                   "RTE>>", self.run_cmd_time*3)
+        eal_params = self.dut.create_eal_parameters(cores="1S/4C/1T")
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
+        out = self.dut.send_expect(
+            "hash_readwrite_perf_autotest", "RTE>>", self.run_cmd_time * 3
+        )
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
@@ -236,10 +273,12 @@ class TestUnitTestsEal(TestCase):
             cmdline = self.test_app_cmdline
         else:
             # mask cores only on socket 0
-            app_name = self.dut.apps_name['test']
-            cmdline = self.dut.taskset(1)+ ' ' +app_name+' -n 1 -c 5'            
+            app_name = self.dut.apps_name["test"]
+            cmdline = self.dut.taskset(1) + " " + app_name + " -n 1 -c 5"
         self.dut.send_expect(cmdline, "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("func_reentrancy_autotest", "RTE>>", self.run_cmd_time)
+        out = self.dut.send_expect(
+            "func_reentrancy_autotest", "RTE>>", self.run_cmd_time
+        )
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
@@ -248,7 +287,9 @@ class TestUnitTestsEal(TestCase):
         Run atomic autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
         out = self.dut.send_expect("atomic_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -258,8 +299,10 @@ class TestUnitTestsEal(TestCase):
         Run memory autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect('memory_autotest', "RTE>>", self.run_cmd_time * 5)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
+        out = self.dut.send_expect("memory_autotest", "RTE>>", self.run_cmd_time * 5)
         regexp = "IOVA:0x[0-9a-f]*, len:([0-9a-f]*), virt:0x[0-9a-f]*, socket_id:[0-9]*"
         match = utils.regexp(out, regexp)
         size = int(match, 16)
@@ -271,7 +314,9 @@ class TestUnitTestsEal(TestCase):
         Run lcore autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
         out = self.dut.send_expect("per_lcore_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -281,7 +326,9 @@ class TestUnitTestsEal(TestCase):
         Run spinlock autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
         out = self.dut.send_expect("spinlock_autotest", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -291,7 +338,9 @@ class TestUnitTestsEal(TestCase):
         Run prefetch autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
         out = self.dut.send_expect("prefetch_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -301,7 +350,9 @@ class TestUnitTestsEal(TestCase):
         Run byte order autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
         out = self.dut.send_expect("byteorder_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -311,7 +362,9 @@ class TestUnitTestsEal(TestCase):
         Run logs autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
         out = self.dut.send_expect("logs_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -321,7 +374,9 @@ class TestUnitTestsEal(TestCase):
         Run memzone autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
         out = self.dut.send_expect("memzone_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -331,7 +386,9 @@ class TestUnitTestsEal(TestCase):
         Run debug autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
         out = self.dut.send_expect("debug_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -341,7 +398,9 @@ class TestUnitTestsEal(TestCase):
         Run CPU flags autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
         out = self.dut.send_expect("cpuflags_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -351,7 +410,11 @@ class TestUnitTestsEal(TestCase):
         Run errno autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline, "R.*TE>>|RT.*E>>|RTE.*>>|RTE>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.test_app_cmdline,
+            "R.*TE>>|RT.*E>>|RTE.*>>|RTE>.*>",
+            self.start_test_time,
+        )
         out = self.dut.send_expect("errno_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -362,7 +425,11 @@ class TestUnitTestsEal(TestCase):
         """
 
         self.verify(self.env == "linuxapp", "Interrupt only supported in linux env")
-        self.dut.send_expect(self.test_app_cmdline, "R.*TE>>|RT.*E>>|RTE.*>>|RTE>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.test_app_cmdline,
+            "R.*TE>>|RT.*E>>|RTE.*>>|RTE>.*>",
+            self.start_test_time,
+        )
         out = self.dut.send_expect("interrupt_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -372,9 +439,15 @@ class TestUnitTestsEal(TestCase):
         Run multiprocess autotest.
         """
         if self.dut.get_os_type() == "freebsd":
-            self.dut.send_expect(self.test_app_cmdline + ' -m 64 --base-virtaddr=0x1000000000', "R.*T.*E.*>.*>", self.start_test_time)
+            self.dut.send_expect(
+                self.test_app_cmdline + " -m 64 --base-virtaddr=0x1000000000",
+                "R.*T.*E.*>.*>",
+                self.start_test_time,
+            )
         else:
-            self.dut.send_expect(self.test_app_cmdline + ' -m 64', "R.*T.*E.*>.*>", self.start_test_time)
+            self.dut.send_expect(
+                self.test_app_cmdline + " -m 64", "R.*T.*E.*>.*>", self.start_test_time
+            )
         out = self.dut.send_expect("multiprocess_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -384,7 +457,9 @@ class TestUnitTestsEal(TestCase):
         Run string autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
         out = self.dut.send_expect("string_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -394,7 +469,9 @@ class TestUnitTestsEal(TestCase):
         Run tailq autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
         out = self.dut.send_expect("tailq_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -404,7 +481,9 @@ class TestUnitTestsEal(TestCase):
         Run kvargs autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
         out = self.dut.send_expect("kvargs_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -413,12 +492,14 @@ class TestUnitTestsEal(TestCase):
         """
         Run acl autotest.
         """
-        eal_params = self.dut.create_eal_parameters(other_eal_param='force-max-simd-bitwidth')
-        app_name = self.dut.apps_name['test']
+        eal_params = self.dut.create_eal_parameters(
+            other_eal_param="force-max-simd-bitwidth"
+        )
+        app_name = self.dut.apps_name["test"]
         test_app_cmdline = app_name + eal_params
         test_app_cmdline += "--no-pci"
 
-        if self.dut.dpdk_version >= '20.11.0':
+        if self.dut.dpdk_version >= "20.11.0":
             test_app_cmdline += " --force-max-simd-bitwidth=0"
         self.dut.send_expect(test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("acl_autotest", "RTE>>", self.run_cmd_time)
@@ -430,16 +511,21 @@ class TestUnitTestsEal(TestCase):
         Run acl autotest.
         """
 
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
         out = self.dut.send_expect("link_bonding_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
     def test_link_bonding_rssconf(self):
-        """
-        """
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("link_bonding_rssconf_autotest", "RTE>>", self.run_cmd_time)
+        """ """
+        self.dut.send_expect(
+            self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time
+        )
+        out = self.dut.send_expect(
+            "link_bonding_rssconf_autotest", "RTE>>", self.run_cmd_time
+        )
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 

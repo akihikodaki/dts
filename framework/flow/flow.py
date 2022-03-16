@@ -48,20 +48,18 @@ from .flow_items import FlowItem
 from .flow_pattern_items import TUNNELING_PROTOCOLS, PatternFlowItem
 
 # Get reserved mac addresses
-NEVER_MATCH_PACKET = Ether(src="", dst="") / Raw('\x00' * 64)
+NEVER_MATCH_PACKET = Ether(src="", dst="") / Raw("\x00" * 64)
 
 
 def _iterable_deep_compare(i1, i2):
-    return reduce(
-        lambda x, y: x and y,
-        map(lambda x, y: x == y, i1, i2),
-        True
-    )
+    return reduce(lambda x, y: x and y, map(lambda x, y: x == y, i1, i2), True)
 
 
-def expand_pattern_list_with_iterable_replacing_item(patterns: List[Iterable[FlowItem]],
-                                                     it: Iterable[Tuple[FlowItem, FrozenSet[str], FrozenSet[str], str]],
-                                                     item):
+def expand_pattern_list_with_iterable_replacing_item(
+    patterns: List[Iterable[FlowItem]],
+    it: Iterable[Tuple[FlowItem, FrozenSet[str], FrozenSet[str], str]],
+    item,
+):
     """
     This function takes a list of patterns and splits each of them into 2
     parts, excluding the item at index. It then uses the provided
@@ -78,8 +76,15 @@ def expand_pattern_list_with_iterable_replacing_item(patterns: List[Iterable[Flo
     the same time, which could be fairly large.
     """
 
-    split_patterns = list(map(lambda pattern: (pattern[:pattern.index(item)], pattern[pattern.index(item) + 1:],),
-                              filter(lambda pattern: item in pattern, patterns)))
+    split_patterns = list(
+        map(
+            lambda pattern: (
+                pattern[: pattern.index(item)],
+                pattern[pattern.index(item) + 1 :],
+            ),
+            filter(lambda pattern: item in pattern, patterns),
+        )
+    )
     # Tee the iterators so I can consume all of them
 
     iterators = itertools.tee(it, len(patterns))
@@ -106,7 +111,11 @@ class Flow(object):
     pattern_items: List[PatternFlowItem]
     entry_points: FrozenSet[FlowItemType]
 
-    def __init__(self, action_items=None, pattern_items=None, ):
+    def __init__(
+        self,
+        action_items=None,
+        pattern_items=None,
+    ):
         if action_items is None:
             action_items = []
 
@@ -123,43 +132,63 @@ class Flow(object):
         @return: A Flow containing both items
         """
         if isinstance(item, Flow):
-            return Flow(pattern_items=[*self.pattern_items, *item.pattern_items],
-                        action_items=[*self.action_items, *item.action_items])
+            return Flow(
+                pattern_items=[*self.pattern_items, *item.pattern_items],
+                action_items=[*self.action_items, *item.action_items],
+            )
         elif isinstance(item, PatternFlowItem):
             if len(self.pattern_items) == 0:
-                return Flow(pattern_items=[*self.pattern_items, item], action_items=[*self.action_items])
+                return Flow(
+                    pattern_items=[*self.pattern_items, item],
+                    action_items=[*self.action_items],
+                )
             elif item.type in self.pattern_items[-1].valid_next_items:
-                return Flow(pattern_items=[*self.pattern_items, item], action_items=[*self.action_items])
+                return Flow(
+                    pattern_items=[*self.pattern_items, item],
+                    action_items=[*self.action_items],
+                )
             else:
                 raise InvalidFlowItemException(self.pattern_items[-1], item, flow=self)
         elif isinstance(item, ActionFlowItem):
             if len(self.action_items) == 0:
-                return Flow(pattern_items=[*self.pattern_items], action_items=[*self.action_items, item])
+                return Flow(
+                    pattern_items=[*self.pattern_items],
+                    action_items=[*self.action_items, item],
+                )
 
             for action in self.action_items:
                 if item.type not in action.allowed_with:
                     raise InvalidFlowItemException(action, item, flow=self)
-            return Flow(pattern_items=[*self.pattern_items], action_items=[*self.action_items, item])
+            return Flow(
+                pattern_items=[*self.pattern_items],
+                action_items=[*self.action_items, item],
+            )
 
     def __str__(self):
         return f"ingress pattern %s actions queue index 1 / end" % (
-                    " / ".join(str(item) for item in self.pattern_items) + " / end")
+            " / ".join(str(item) for item in self.pattern_items) + " / end"
+        )
 
     def __repr__(self):
         return str(self)
 
     def __eq__(self, other):
-        return isinstance(other, Flow) and \
-               len(self.action_items) == len(other.action_items) and \
-               len(self.pattern_items) == len(other.pattern_items) and \
-               _iterable_deep_compare(self.pattern_items, other.pattern_items) and \
-               _iterable_deep_compare(self.action_items, other.action_items)
+        return (
+            isinstance(other, Flow)
+            and len(self.action_items) == len(other.action_items)
+            and len(self.pattern_items) == len(other.pattern_items)
+            and _iterable_deep_compare(self.pattern_items, other.pattern_items)
+            and _iterable_deep_compare(self.action_items, other.action_items)
+        )
 
     def to_scapy_packet(self):
-        return reduce(operator.truediv, map(lambda x: x.to_scapy_packet(), self.pattern_items))
+        return reduce(
+            operator.truediv, map(lambda x: x.to_scapy_packet(), self.pattern_items)
+        )
 
-    def get_test_property_flows(self, pattern_item_types_to_update=None, action_item_types_to_update=None) -> \
-            Iterable[Flow]:
+    def get_test_property_flows(
+        self, pattern_item_types_to_update=None, action_item_types_to_update=None
+    ) -> Iterable[Flow]:
         if pattern_item_types_to_update is None and action_item_types_to_update is None:
             pattern_item_types_to_update = [self.pattern_items[-1]]
         elif pattern_item_types_to_update is None:
@@ -173,15 +202,22 @@ class Flow(object):
 
         test_flows: Iterable[Iterable[FlowItem]] = [base_pattern_items]
 
-        tunnelling_protocols = list(filter(lambda i: type(i) in TUNNELING_PROTOCOLS, base_pattern_items))
+        tunnelling_protocols = list(
+            filter(lambda i: type(i) in TUNNELING_PROTOCOLS, base_pattern_items)
+        )
         if len(tunnelling_protocols) > 0:
-            test_flows = expand_pattern_list_with_iterable_replacing_item([*test_flows],
-                                                                          tunnelling_protocols[0].get_property_stream(),
-                                                                          tunnelling_protocols[0])
+            test_flows = expand_pattern_list_with_iterable_replacing_item(
+                [*test_flows],
+                tunnelling_protocols[0].get_property_stream(),
+                tunnelling_protocols[0],
+            )
         else:
-            test_flows = expand_pattern_list_with_iterable_replacing_item([*test_flows],
-                                                                          self.pattern_items[
-                                                                              -1].get_property_stream(),
-                                                                          self.pattern_items[-1])
+            test_flows = expand_pattern_list_with_iterable_replacing_item(
+                [*test_flows],
+                self.pattern_items[-1].get_property_stream(),
+                self.pattern_items[-1],
+            )
         for pattern in test_flows:
-            yield Flow(pattern_items=pattern[0], action_items=base_action_items), *pattern[1:]
+            yield Flow(
+                pattern_items=pattern[0], action_items=base_action_items
+            ), *pattern[1:]

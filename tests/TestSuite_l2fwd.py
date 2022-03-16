@@ -42,7 +42,6 @@ from framework.test_case import TestCase
 
 
 class TestL2fwd(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -51,33 +50,35 @@ class TestL2fwd(TestCase):
         """
         self.frame_sizes = [64, 65, 128, 256, 512, 1024, 1280, 1518]
 
-        self.test_queues = [{'queues': 1, 'Mpps': {}, 'pct': {}},
-                            {'queues': 2, 'Mpps': {}, 'pct': {}},
-                            {'queues': 4, 'Mpps': {}, 'pct': {}},
-                            {'queues': 8, 'Mpps': {}, 'pct': {}}
-                            ]
+        self.test_queues = [
+            {"queues": 1, "Mpps": {}, "pct": {}},
+            {"queues": 2, "Mpps": {}, "pct": {}},
+            {"queues": 4, "Mpps": {}, "pct": {}},
+            {"queues": 8, "Mpps": {}, "pct": {}},
+        ]
 
         self.core_config = "1S/4C/1T"
         self.number_of_ports = 2
-        self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip'] + \
-            HEADER_SIZE['udp']
+        self.headers_size = HEADER_SIZE["eth"] + HEADER_SIZE["ip"] + HEADER_SIZE["udp"]
 
         self.dut_ports = self.dut.get_ports_performance(force_different_nic=False)
 
-        self.verify(len(self.dut_ports) >= self.number_of_ports,
-                    "Not enough ports for " + self.nic)
+        self.verify(
+            len(self.dut_ports) >= self.number_of_ports,
+            "Not enough ports for " + self.nic,
+        )
 
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
 
         # compile
         out = self.dut.build_dpdk_apps("./examples/l2fwd")
-        self.app_l2fwd_path = self.dut.apps_name['l2fwd']
+        self.app_l2fwd_path = self.dut.apps_name["l2fwd"]
         self.verify("Error" not in out, "Compilation error")
         self.verify("No such" not in out, "Compilation error")
 
-        self.table_header = ['Frame']
+        self.table_header = ["Frame"]
         for queue in self.test_queues:
-            self.table_header.append("%d queues Mpps" % queue['queues'])
+            self.table_header.append("%d queues Mpps" % queue["queues"])
             self.table_header.append("% linerate")
 
         self.result_table_create(self.table_header)
@@ -86,8 +87,7 @@ class TestL2fwd(TestCase):
         if self.logger.log_path.startswith(os.sep):
             self.output_path = self.logger.log_path
         else:
-            cur_path = os.path.dirname(
-                                os.path.dirname(os.path.realpath(__file__)))
+            cur_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
             self.output_path = os.sep.join([cur_path, self.logger.log_path])
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
@@ -110,8 +110,11 @@ class TestL2fwd(TestCase):
         port_mask = utils.create_mask([self.dut_ports[0], self.dut_ports[1]])
         eal_params = self.dut.create_eal_parameters()
 
-        self.dut.send_expect("./%s %s -- -q 8 -p %s  &" % (self.app_l2fwd_path, eal_params, port_mask),
-                             "L2FWD: entering main loop", 60)
+        self.dut.send_expect(
+            "./%s %s -- -q 8 -p %s  &" % (self.app_l2fwd_path, eal_params, port_mask),
+            "L2FWD: entering main loop",
+            60,
+        )
 
         for i in [0, 1]:
             tx_port = self.tester.get_local_port(self.dut_ports[i])
@@ -122,11 +125,13 @@ class TestL2fwd(TestCase):
 
             self.tester.scapy_background()
             self.tester.scapy_append('p = sniff(iface="%s", count=1)' % rx_interface)
-            self.tester.scapy_append('number_packets=len(p)')
-            self.tester.scapy_append('RESULT = str(number_packets)')
+            self.tester.scapy_append("number_packets=len(p)")
+            self.tester.scapy_append("RESULT = str(number_packets)")
 
             self.tester.scapy_foreground()
-            self.tester.scapy_append('sendp([Ether()/IP()/UDP()/("X"*46)], iface="%s")' % tx_interface)
+            self.tester.scapy_append(
+                'sendp([Ether()/IP()/UDP()/("X"*46)], iface="%s")' % tx_interface
+            )
 
             self.tester.scapy_execute()
             number_packets = self.tester.scapy_get_result()
@@ -141,13 +146,18 @@ class TestL2fwd(TestCase):
         # the cases use the first two ports
         port_mask = utils.create_mask([self.dut_ports[0], self.dut_ports[1]])
         cores = self.dut.get_core_list(self.core_config, socket=self.ports_socket)
-        core_mask = utils.create_mask(self.dut.get_core_list(self.core_config,
-                                                             socket=self.ports_socket))
+        core_mask = utils.create_mask(
+            self.dut.get_core_list(self.core_config, socket=self.ports_socket)
+        )
         eal_params = self.dut.create_eal_parameters(cores=cores)
         for queues in self.test_queues:
 
-            command_line = "./%s  %s -- -q %s -p %s &" % \
-                           (self.app_l2fwd_path, eal_params, str(queues['queues']), port_mask)
+            command_line = "./%s  %s -- -q %s -p %s &" % (
+                self.app_l2fwd_path,
+                eal_params,
+                str(queues["queues"]),
+                port_mask,
+            )
 
             self.dut.send_expect(command_line, "L2FWD: entering main loop", 60)
 
@@ -157,7 +167,11 @@ class TestL2fwd(TestCase):
             tgen_input.append((tx_port, rx_port))
 
             self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
-            result = self.tester.check_random_pkts(tgen_input, allow_miss=False, params = [('ether', {'dst': '%s'%(self.dst_mac)})])
+            result = self.tester.check_random_pkts(
+                tgen_input,
+                allow_miss=False,
+                params=[("ether", {"dst": "%s" % (self.dst_mac)})],
+            )
             self.verify(result != False, "Packet integrity check failed")
 
             self.quit_l2fwd()
@@ -176,7 +190,7 @@ class TestL2fwd(TestCase):
         eal_params = self.dut.create_eal_parameters(cores=cores)
         eal_param = ""
         for i in ports:
-            eal_param += " -a %s" % self.dut.ports_info[i]['pci']
+            eal_param += " -a %s" % self.dut.ports_info[i]["pci"]
 
         for frame_size in self.frame_sizes:
 
@@ -185,12 +199,22 @@ class TestL2fwd(TestCase):
             tgen_input = []
             cnt = 1
             for port in range(self.number_of_ports):
-                rx_port = self.tester.get_local_port(self.dut_ports[port % self.number_of_ports])
-                tx_port = self.tester.get_local_port(self.dut_ports[(port + 1) % self.number_of_ports])
-                destination_mac = self.dut.get_mac_address(self.dut_ports[(port + 1) % self.number_of_ports])
-                pcap = os.sep.join([self.output_path, "l2fwd_{0}_{1}.pcap".format(port, cnt)])
-                self.tester.scapy_append('wrpcap("%s", [Ether(dst="%s")/IP()/UDP()/("X"*%d)])' % (
-                    pcap, destination_mac, payload_size))
+                rx_port = self.tester.get_local_port(
+                    self.dut_ports[port % self.number_of_ports]
+                )
+                tx_port = self.tester.get_local_port(
+                    self.dut_ports[(port + 1) % self.number_of_ports]
+                )
+                destination_mac = self.dut.get_mac_address(
+                    self.dut_ports[(port + 1) % self.number_of_ports]
+                )
+                pcap = os.sep.join(
+                    [self.output_path, "l2fwd_{0}_{1}.pcap".format(port, cnt)]
+                )
+                self.tester.scapy_append(
+                    'wrpcap("%s", [Ether(dst="%s")/IP()/UDP()/("X"*%d)])'
+                    % (pcap, destination_mac, payload_size)
+                )
                 tgen_input.append((tx_port, rx_port, pcap))
                 time.sleep(3)
                 self.tester.scapy_execute()
@@ -198,17 +222,24 @@ class TestL2fwd(TestCase):
 
             for queues in self.test_queues:
 
-                command_line = "./%s %s %s -- -q %s -p %s &" % \
-                    (self.app_l2fwd_path, eal_params, eal_param, str(queues['queues']), port_mask)
+                command_line = "./%s %s %s -- -q %s -p %s &" % (
+                    self.app_l2fwd_path,
+                    eal_params,
+                    eal_param,
+                    str(queues["queues"]),
+                    port_mask,
+                )
 
-#                self.dut.send_expect(command_line, "memory mapped", 60)
+                #                self.dut.send_expect(command_line, "memory mapped", 60)
                 self.dut.send_expect(command_line, "L2FWD: entering main loop", 60)
-                # wait 5 second after l2fwd boot up. 
+                # wait 5 second after l2fwd boot up.
                 # It is aimed to make sure trex detect link up status.
                 if self.tester.is_pktgen:
                     time.sleep(5)
-                info = "Executing l2fwd using %s queues, frame size %d and %s setup.\n" % \
-                       (queues['queues'], frame_size, self.core_config)
+                info = (
+                    "Executing l2fwd using %s queues, frame size %d and %s setup.\n"
+                    % (queues["queues"], frame_size, self.core_config)
+                )
 
                 self.logger.info(info)
                 self.rst_report(info, annex=True)
@@ -217,32 +248,35 @@ class TestL2fwd(TestCase):
                 # clear streams before add new streams
                 self.tester.pktgen.clear_streams()
                 # run packet generator
-                streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
-                                                    None, self.tester.pktgen)
+                streams = self.pktgen_helper.prepare_stream_from_tginput(
+                    tgen_input, 100, None, self.tester.pktgen
+                )
                 _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
 
                 Mpps = pps / 1000000.0
-                queues['Mpps'][frame_size] = Mpps
-                queues['pct'][frame_size] = Mpps * 100 / float(self.wirespeed(
-                                                               self.nic,
-                                                               frame_size,
-                                                               self.number_of_ports))
+                queues["Mpps"][frame_size] = Mpps
+                queues["pct"][frame_size] = (
+                    Mpps
+                    * 100
+                    / float(self.wirespeed(self.nic, frame_size, self.number_of_ports))
+                )
 
                 self.quit_l2fwd()
 
         # Look for transmission error in the results
         for frame_size in self.frame_sizes:
             for n in range(len(self.test_queues)):
-                self.verify(self.test_queues[n]['Mpps'][frame_size] > 0,
-                            "No traffic detected")
+                self.verify(
+                    self.test_queues[n]["Mpps"][frame_size] > 0, "No traffic detected"
+                )
 
         # Prepare the results for table
         for frame_size in self.frame_sizes:
             results_row = []
             results_row.append(frame_size)
             for queue in self.test_queues:
-                results_row.append(queue['Mpps'][frame_size])
-                results_row.append(queue['pct'][frame_size])
+                results_row.append(queue["Mpps"][frame_size])
+                results_row.append(queue["pct"][frame_size])
 
             self.result_table_add(results_row)
 

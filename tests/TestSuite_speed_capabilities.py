@@ -47,8 +47,10 @@ class TestSpeedCapabilities(TestCase):
         self.ports_socket = self.dut.get_numa_id(self.ports[0])
 
         for port in self.ports:
-            self.tester.send_expect(f"ifconfig {self.tester.get_interface(self.tester.get_local_port(port))} mtu 5000"
-                                    , "# ")
+            self.tester.send_expect(
+                f"ifconfig {self.tester.get_interface(self.tester.get_local_port(port))} mtu 5000",
+                "# ",
+            )
 
         self.pmdout = PmdOutput(self.dut)
         self.vm_env_done = False
@@ -57,7 +59,7 @@ class TestSpeedCapabilities(TestCase):
         self.pmdout.start_testpmd("Default")
 
         cfg_content = self.get_suite_cfg()
-        expected_speeds = cfg_content.get('expected_speeds')
+        expected_speeds = cfg_content.get("expected_speeds")
 
         detected_interfaces = []
 
@@ -67,41 +69,54 @@ class TestSpeedCapabilities(TestCase):
             # Gives the speed in Mb/s
             interface_speed = self.pmdout.get_port_link_speed(port)
 
-            self.verify(interface_name in expected_speeds, f"The interface {interface_name} does not have an expected "
-                                                           f"speed associated with it.")
+            self.verify(
+                interface_name in expected_speeds,
+                f"The interface {interface_name} does not have an expected "
+                f"speed associated with it.",
+            )
 
             detected_interfaces.append(interface_name)
 
             expected_speed = expected_speeds[interface_name]
 
             # Isolates the unit (Either M or G)
-            expected_speed_unit = ''.join(i for i in expected_speed if not i.isdigit())
+            expected_speed_unit = "".join(i for i in expected_speed if not i.isdigit())
 
             # Removes the unit from the speed
-            expected_speed = ''.join(i for i in expected_speed if i.isdigit())
+            expected_speed = "".join(i for i in expected_speed if i.isdigit())
 
-            self.verify(len(interface_speed) > 0,
-                        f"A valid speed could not be read for the interface {interface_name}.")
+            self.verify(
+                len(interface_speed) > 0,
+                f"A valid speed could not be read for the interface {interface_name}.",
+            )
 
             # Converts Gb/s to Mb/s for consistent comparison
             if expected_speed_unit == "G":
                 expected_speed += "000"
 
-            self.verify(interface_speed == expected_speed,
-                        f"Detected speed: {interface_speed} Mb/s for the interface {interface_name}, "
-                        f"but expected speed: {expected_speed} Mb/s")
+            self.verify(
+                interface_speed == expected_speed,
+                f"Detected speed: {interface_speed} Mb/s for the interface {interface_name}, "
+                f"but expected speed: {expected_speed} Mb/s",
+            )
 
         for key, value in expected_speeds.items():
-            self.verify(key in detected_interfaces, f"The interface {key} expected the speed {value} in "
-                                                    "speed_capabilities.cfg file, but it did not detect that interface.")
+            self.verify(
+                key in detected_interfaces,
+                f"The interface {key} expected the speed {value} in "
+                "speed_capabilities.cfg file, but it did not detect that interface.",
+            )
 
     def tear_down(self):
         """
         Run after each test case.
         """
         self.dut.kill_all()
-        self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports),
-                                  socket=self.ports_socket)
+        self.pmdout.start_testpmd(
+            "Default",
+            "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports),
+            socket=self.ports_socket,
+        )
         ports_num = len(self.ports)
         # link up test, to avoid failing further tests if link was down
         for i in range(ports_num):

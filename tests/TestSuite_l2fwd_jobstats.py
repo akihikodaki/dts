@@ -48,16 +48,25 @@ class TestL2fwdJobstats(TestCase):
         Run at the start of each test suite.
         """
 
-        self.verify(self.nic not in ["fortville_eagle", "fortville_spirit",
-                                 "fortville_spirit_single", "fortville_25g", "fortpark_TLV","fortpark_BASE-T"],
-                    "NIC Unsupported: " + str(self.nic))
+        self.verify(
+            self.nic
+            not in [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "fortpark_TLV",
+                "fortpark_BASE-T",
+            ],
+            "NIC Unsupported: " + str(self.nic),
+        )
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
         self.verify(len(self.dut.cores) >= 4, "Insufficient cores for testing")
         cores = self.dut.get_core_list("1S/4C/1T")
         self.coremask = utils.create_mask(cores)
 
-        self.eal_para = self.dut.create_eal_parameters(cores='1S/4C/1T')
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/4C/1T")
         dut_port0 = self.dut_ports[0]
         dut_port1 = self.dut_ports[1]
         self.tx_ports = [dut_port0, dut_port1]
@@ -87,7 +96,10 @@ class TestL2fwdJobstats(TestCase):
         print(out)
         send_packets = re.findall(r"Total packets sent:\s+?(\d+?)\r", out)[-1]
         receive_packets = re.findall(r"Total packets received:\s+?(\d+?)\r", out)[-1]
-        self.verify(send_packets == receive_packets == str(100000*len(self.tx_ports)), "Wrong: can't receive enough packages")
+        self.verify(
+            send_packets == receive_packets == str(100000 * len(self.tx_ports)),
+            "Wrong: can't receive enough packages",
+        )
 
     def scapy_send_packet(self, count):
         """
@@ -98,7 +110,9 @@ class TestL2fwdJobstats(TestCase):
             mac = self.dut.get_mac_address(self.dut_ports[i])
             txItf = self.tester.get_interface(txport)
             self.tester.scapy_append(
-                'sendp([Ether(dst="02:00:00:00:00", src="%s")/IP()/UDP()/Raw(\'X\'*18)], iface="%s",count=%s)' % (mac, txItf, count))
+                'sendp([Ether(dst="02:00:00:00:00", src="%s")/IP()/UDP()/Raw(\'X\'*18)], iface="%s",count=%s)'
+                % (mac, txItf, count)
+            )
             self.tester.scapy_execute(timeout=120)
 
     def tear_down(self):

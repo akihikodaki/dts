@@ -43,218 +43,219 @@ from framework.test_case import TestCase
 from .rte_flow_common import RssProcessing
 
 tv_packets_basic = {
-    'tv_mac_ipv4': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.3")/("X"*40)',
-    'tv_mac_ipv6': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/("X"*40)',
-    'tv_mac_ipv4_udp': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.3")/UDP(sport=1024,dport=1025)/("X"*40)',
-    'tv_mac_ipv6_udp': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/UDP(sport=1024,dport=1025)/("X"*40)',
-    'tv_mac_ipv4_tcp': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.3")/TCP(sport=1024,dport=1025)/("X"*40)',
-    'tv_mac_ipv6_tcp': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/TCP(sport=1024,dport=1025)/("X"*40)',
-    'tv_mac_ipv4_sctp': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.3")/SCTP(sport=1024,dport=1025)/("X"*40)',
-    'tv_mac_ipv6_sctp': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)',
+    "tv_mac_ipv4": 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.3")/("X"*40)',
+    "tv_mac_ipv6": 'Ether(dst="00:11:22:33:44:55")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/("X"*40)',
+    "tv_mac_ipv4_udp": 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.3")/UDP(sport=1024,dport=1025)/("X"*40)',
+    "tv_mac_ipv6_udp": 'Ether(dst="00:11:22:33:44:55")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/UDP(sport=1024,dport=1025)/("X"*40)',
+    "tv_mac_ipv4_tcp": 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.3")/TCP(sport=1024,dport=1025)/("X"*40)',
+    "tv_mac_ipv6_tcp": 'Ether(dst="00:11:22:33:44:55")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/TCP(sport=1024,dport=1025)/("X"*40)',
+    "tv_mac_ipv4_sctp": 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.3")/SCTP(sport=1024,dport=1025)/("X"*40)',
+    "tv_mac_ipv6_sctp": 'Ether(dst="00:11:22:33:44:55")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)',
 }
 
 tvs_mac_ip = {
-    'sub_casename': 'tv_mac_ip',
-    'port_id': 0,
-    'test': [
+    "sub_casename": "tv_mac_ip",
+    "port_id": 0,
+    "test": [
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4'],
-            'action': {'save_hash': 'ipv4'},
+            "send_packet": tv_packets_basic["tv_mac_ipv4"],
+            "action": {"save_hash": "ipv4"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6'],
-            'action': {'save_hash': 'ipv6'},
+            "send_packet": tv_packets_basic["tv_mac_ipv6"],
+            "action": {"save_hash": "ipv6"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4_udp'],
-            'action': {'check_hash_same': 'ipv4'},
+            "send_packet": tv_packets_basic["tv_mac_ipv4_udp"],
+            "action": {"check_hash_same": "ipv4"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6_udp'],
-            'action': {'check_hash_same': 'ipv6'},
+            "send_packet": tv_packets_basic["tv_mac_ipv6_udp"],
+            "action": {"check_hash_same": "ipv6"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4_tcp'],
-            'action': {'check_hash_same': 'ipv4'},
+            "send_packet": tv_packets_basic["tv_mac_ipv4_tcp"],
+            "action": {"check_hash_same": "ipv4"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6_tcp'],
-            'action': {'check_hash_same': 'ipv6'},
+            "send_packet": tv_packets_basic["tv_mac_ipv6_tcp"],
+            "action": {"check_hash_same": "ipv6"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4_sctp'],
-            'action': {'check_hash_same': 'ipv4'},
+            "send_packet": tv_packets_basic["tv_mac_ipv4_sctp"],
+            "action": {"check_hash_same": "ipv4"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6_sctp'],
-            'action': {'check_hash_same': 'ipv6'},
+            "send_packet": tv_packets_basic["tv_mac_ipv6_sctp"],
+            "action": {"check_hash_same": "ipv6"},
         },
-    ]
+    ],
 }
 
 tvs_mac_udp = {
-    'sub_casename': 'tv_mac_udp',
-    'port_id': 0,
-    'test': [
+    "sub_casename": "tv_mac_udp",
+    "port_id": 0,
+    "test": [
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4_udp'],
-            'action': {'save_hash', 'ipv4_udp'},
+            "send_packet": tv_packets_basic["tv_mac_ipv4_udp"],
+            "action": {"save_hash", "ipv4_udp"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6_udp'],
-            'action': {'save_hash', 'ipv6_udp'},
+            "send_packet": tv_packets_basic["tv_mac_ipv6_udp"],
+            "action": {"save_hash", "ipv6_udp"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv4"],
+            "action": "check_no_hash",
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv6"],
+            "action": "check_no_hash",
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4_tcp'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv4_tcp"],
+            "action": "check_no_hash",
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6_tcp'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv6_tcp"],
+            "action": "check_no_hash",
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4_sctp'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv4_sctp"],
+            "action": "check_no_hash",
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6_sctp'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv6_sctp"],
+            "action": "check_no_hash",
         },
-    ]
+    ],
 }
 
 tvs_mac_tcp = {
-    'sub_casename': 'tv_mac_tcp',
-    'port_id': 0,
-    'test': [
+    "sub_casename": "tv_mac_tcp",
+    "port_id": 0,
+    "test": [
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4_tcp'],
-            'action': {'save_hash', 'ipv4_tcp'},
+            "send_packet": tv_packets_basic["tv_mac_ipv4_tcp"],
+            "action": {"save_hash", "ipv4_tcp"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6_tcp'],
-            'action': {'save_hash', 'ipv6_tcp'},
+            "send_packet": tv_packets_basic["tv_mac_ipv6_tcp"],
+            "action": {"save_hash", "ipv6_tcp"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv4"],
+            "action": "check_no_hash",
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv6"],
+            "action": "check_no_hash",
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4_udp'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv4_udp"],
+            "action": "check_no_hash",
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6_udp'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv6_udp"],
+            "action": "check_no_hash",
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4_sctp'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv4_sctp"],
+            "action": "check_no_hash",
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6_sctp'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv6_sctp"],
+            "action": "check_no_hash",
         },
-    ]
+    ],
 }
 
 tvs_mac_sctp = {
-    'sub_casename': 'tv_mac_sctp',
-    'port_id': 0,
-    'test': [
+    "sub_casename": "tv_mac_sctp",
+    "port_id": 0,
+    "test": [
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4_sctp'],
-            'action': {'save_hash', 'ipv4_sctp'},
+            "send_packet": tv_packets_basic["tv_mac_ipv4_sctp"],
+            "action": {"save_hash", "ipv4_sctp"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6_sctp'],
-            'action': {'save_hash', 'ipv6_sctp'},
+            "send_packet": tv_packets_basic["tv_mac_ipv6_sctp"],
+            "action": {"save_hash", "ipv6_sctp"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv4"],
+            "action": "check_no_hash",
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv6"],
+            "action": "check_no_hash",
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4_udp'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv4_udp"],
+            "action": "check_no_hash",
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6_udp'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv6_udp"],
+            "action": "check_no_hash",
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4_tcp'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv4_tcp"],
+            "action": "check_no_hash",
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6_tcp'],
-            'action': 'check_no_hash',
+            "send_packet": tv_packets_basic["tv_mac_ipv6_tcp"],
+            "action": "check_no_hash",
         },
-    ]
+    ],
 }
 
 tvs_mac_all = {
-    'sub_casename': 'tvs_mac_all',
-    'port_id': 0,
-    'test': [
+    "sub_casename": "tvs_mac_all",
+    "port_id": 0,
+    "test": [
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4'],
-            'action': {'save_hash', 'ipv4_all'},
+            "send_packet": tv_packets_basic["tv_mac_ipv4"],
+            "action": {"save_hash", "ipv4_all"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6'],
-            'action': {'save_hash', 'ipv6_all'},
+            "send_packet": tv_packets_basic["tv_mac_ipv6"],
+            "action": {"save_hash", "ipv6_all"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4_udp'],
-            'action': {'check_hash_different', 'ipv4_all'},
+            "send_packet": tv_packets_basic["tv_mac_ipv4_udp"],
+            "action": {"check_hash_different", "ipv4_all"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6_udp'],
-            'action': {'check_hash_different', 'ipv6_all'},
+            "send_packet": tv_packets_basic["tv_mac_ipv6_udp"],
+            "action": {"check_hash_different", "ipv6_all"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4_tcp'],
-            'action': {'check_hash_different', 'ipv4_all'},
+            "send_packet": tv_packets_basic["tv_mac_ipv4_tcp"],
+            "action": {"check_hash_different", "ipv4_all"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6_tcp'],
-            'action': {'check_hash_different', 'ipv6_all'},
+            "send_packet": tv_packets_basic["tv_mac_ipv6_tcp"],
+            "action": {"check_hash_different", "ipv6_all"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv4_sctp'],
-            'action': {'check_hash_different', 'ipv4_all'},
+            "send_packet": tv_packets_basic["tv_mac_ipv4_sctp"],
+            "action": {"check_hash_different", "ipv4_all"},
         },
         {
-            'send_packet': tv_packets_basic['tv_mac_ipv6_sctp'],
-            'action': {'check_hash_different', 'ipv6_all'},
+            "send_packet": tv_packets_basic["tv_mac_ipv6_sctp"],
+            "action": {"check_hash_different", "ipv6_all"},
         },
-    ]
+    ],
 }
 
-tvs_mac_disable_rss = eval(str(tvs_mac_all)
-                           .replace('save_hash', 'check_no_hash')
-                           .replace('check_hash_different', 'check_no_hash')
-                           )
+tvs_mac_disable_rss = eval(
+    str(tvs_mac_all)
+    .replace("save_hash", "check_no_hash")
+    .replace("check_hash_different", "check_no_hash")
+)
+
 
 class IAVFRSSConfigureTest(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -271,17 +272,19 @@ class IAVFRSSConfigureTest(TestCase):
         core_list = self.dut.get_core_list(self.cores)
         self.verify(len(core_list) >= 5, "Insufficient cores for testing")
 
-        self.vf_driver = self.get_suite_cfg()['vf_driver']
+        self.vf_driver = self.get_suite_cfg()["vf_driver"]
         if self.vf_driver is None:
-            self.vf_driver = 'vfio-pci'
-        self.pf0_intf = self.dut.ports_info[self.dut_ports[0]]['intf']
+            self.vf_driver = "vfio-pci"
+        self.pf0_intf = self.dut.ports_info[self.dut_ports[0]]["intf"]
         self.create_vf()
 
         self.queue_num = 16
         self.param = " --rxq={} --txq={} ".format(self.queue_num, self.queue_num)
         self.pmdout = PmdOutput(self.dut)
         self.launch_testpmd(param=self.param)
-        self.rssprocess = RssProcessing(self, self.pmdout, [self.tester_iface0], self.queue_num)
+        self.rssprocess = RssProcessing(
+            self, self.pmdout, [self.tester_iface0], self.queue_num
+        )
         self.dut_session = self.dut.new_session()
 
     def set_up(self):
@@ -308,20 +311,24 @@ class IAVFRSSConfigureTest(TestCase):
         self.destroy_vf()
         self.dut.kill_all()
 
-    def launch_testpmd(self, param=''):
+    def launch_testpmd(self, param=""):
         """
         start testpmd
         """
-        #Prepare testpmd EAL and parameters
-        self.pmdout.start_testpmd(cores=self.cores, param=param,
-                                          eal_param=f"-a {self.vf0_pci}", socket=self.ports_socket)
+        # Prepare testpmd EAL and parameters
+        self.pmdout.start_testpmd(
+            cores=self.cores,
+            param=param,
+            eal_param=f"-a {self.vf0_pci}",
+            socket=self.ports_socket,
+        )
         # test link status
-        res = self.pmdout.wait_link_status_up('all', timeout=15)
-        self.verify(res is True, 'there have port link is down')
+        res = self.pmdout.wait_link_status_up("all", timeout=15)
+        self.verify(res is True, "there have port link is down")
         self.pmdout.execute_cmd("set fwd rxonly", "testpmd> ", 15)
         self.pmdout.execute_cmd("set verbose 1", "testpmd> ", 15)
 
-    def restart_testpmd(self, cmd_line=''):
+    def restart_testpmd(self, cmd_line=""):
         """
         some case need to restart testpmd with param
         """
@@ -331,11 +338,13 @@ class IAVFRSSConfigureTest(TestCase):
         self.pmdout.execute_cmd("start")
 
     def create_vf(self):
-        self.dut.bind_interfaces_linux('ice')
+        self.dut.bind_interfaces_linux("ice")
         self.dut.generate_sriov_vfs_by_port(self.dut_ports[0], 1)
-        self.sriov_vfs_port = self.dut.ports_info[self.dut_ports[0]]['vfs_port']
+        self.sriov_vfs_port = self.dut.ports_info[self.dut_ports[0]]["vfs_port"]
         self.dut.send_expect("ifconfig %s up" % self.pf0_intf, "# ")
-        self.dut.send_expect('ip link set %s vf 0 mac 00:11:22:33:44:55' % self.pf0_intf, '#')
+        self.dut.send_expect(
+            "ip link set %s vf 0 mac 00:11:22:33:44:55" % self.pf0_intf, "#"
+        )
         self.vf0_pci = self.sriov_vfs_port[0].pci
         try:
             for port in self.sriov_vfs_port:
@@ -355,39 +364,39 @@ class IAVFRSSConfigureTest(TestCase):
         self.pmdout.execute_cmd("start")
 
     def test_iavf_rss_configure_to_ip(self):
-        self.set_rss_configure(rss_type='ip')
+        self.set_rss_configure(rss_type="ip")
         self.rssprocess.handle_rss_distribute_cases(cases_info=tvs_mac_ip)
 
     def test_iavf_rss_configure_to_udp(self):
-        self.set_rss_configure(rss_type='udp')
+        self.set_rss_configure(rss_type="udp")
         self.rssprocess.handle_rss_distribute_cases(cases_info=tvs_mac_udp)
 
     def test_iavf_rss_configure_to_tcp(self):
-        self.set_rss_configure(rss_type='tcp')
+        self.set_rss_configure(rss_type="tcp")
         self.rssprocess.handle_rss_distribute_cases(cases_info=tvs_mac_tcp)
 
     def test_iavf_rss_configure_to_sctp(self):
-        self.set_rss_configure(rss_type='sctp')
+        self.set_rss_configure(rss_type="sctp")
         self.rssprocess.handle_rss_distribute_cases(cases_info=tvs_mac_sctp)
 
     def test_iavf_rss_configure_to_all(self):
-        self.set_rss_configure(rss_type='all')
+        self.set_rss_configure(rss_type="all")
         self.rssprocess.handle_rss_distribute_cases(cases_info=tvs_mac_all)
 
     def test_iavf_rss_configure_to_none(self):
-        self.set_rss_configure(rss_type='none')
+        self.set_rss_configure(rss_type="none")
         self.rssprocess.handle_rss_distribute_cases(cases_info=tvs_mac_disable_rss)
 
     def test_iavf_rss_command_line_to_ip(self):
-        self.restart_testpmd(cmd_line='--rss-ip')
+        self.restart_testpmd(cmd_line="--rss-ip")
         self.rssprocess.handle_rss_distribute_cases(cases_info=tvs_mac_ip)
 
     def test_iavf_rss_command_line_to_udp(self):
-        self.restart_testpmd(cmd_line='--rss-udp')
+        self.restart_testpmd(cmd_line="--rss-udp")
         self.rssprocess.handle_rss_distribute_cases(cases_info=tvs_mac_udp)
 
     def test_iavf_rss_command_line_to_none(self):
-        self.restart_testpmd(cmd_line='--disable-rss')
+        self.restart_testpmd(cmd_line="--disable-rss")
         self.rssprocess.handle_rss_distribute_cases(cases_info=tvs_mac_disable_rss)
 
     def test_iavf_rss_command_line_to_default(self):

@@ -40,6 +40,7 @@ class IxNetworkPacketGenerator(PacketGenerator):
     """
     ixNetwork packet generator
     """
+
     def __init__(self, tester):
         super(IxNetworkPacketGenerator, self).__init__(tester)
         self.pktgen_type = PKTGEN_IXIA_NETWORK
@@ -52,13 +53,12 @@ class IxNetworkPacketGenerator(PacketGenerator):
         self._ports = []
         self._rx_ports = []
 
-
     def get_ports(self):
-        ''' used for ixNetwork packet generator '''
+        """used for ixNetwork packet generator"""
         return self._conn.get_ports()
 
     def _prepare_generator(self):
-        ''' connect with ixNetwork api server '''
+        """connect with ixNetwork api server"""
         try:
             self._connect(self.conf)
         except Exception as e:
@@ -68,6 +68,7 @@ class IxNetworkPacketGenerator(PacketGenerator):
     def _connect(self, conf):
         # initialize ixNetwork class
         from framework.ixia_network import IxNetwork
+
         self._conn = IxNetwork(self.pktgen_type, conf, self.logger)
         for p in self._conn.get_ports():
             self._ports.append(p)
@@ -75,50 +76,50 @@ class IxNetworkPacketGenerator(PacketGenerator):
         self.logger.debug(self._ports)
 
     def _disconnect(self):
-        '''
+        """
         disconnect with ixNetwork api server
-        '''
+        """
         try:
             self._remove_all_streams()
             self._conn.disconnect()
         except Exception as e:
-            msg = 'Error disconnecting: %s' % e
+            msg = "Error disconnecting: %s" % e
             self.logger.error(msg)
         self._conn = None
 
     def quit_generator(self):
-        ''' close ixNetwork session '''
+        """close ixNetwork session"""
         if self._conn is not None:
             self._disconnect()
 
     def _get_port_pci(self, port_id):
-        '''
+        """
         get ixNetwork port pci address
-        '''
+        """
         for pktgen_port_id, info in enumerate(self._ports):
             if pktgen_port_id == port_id:
-                _pci = info.get('pci')
+                _pci = info.get("pci")
                 return _pci
         else:
             return None
 
     def _get_gen_port(self, pci):
-        '''
+        """
         get port management id of the packet generator
-        '''
+        """
         for pktgen_port_id, info in enumerate(self._ports):
-            _pci = info.get('pci')
+            _pci = info.get("pci")
             if _pci == pci:
                 return pktgen_port_id
         else:
             return -1
 
     def _is_gen_port(self, pci):
-        '''
+        """
         check if a pci address is managed by the packet generator
-        '''
+        """
         for name, _port_obj in self._conn.ports.items():
-            _pci = _port_obj.info['pci_addr']
+            _pci = _port_obj.info["pci_addr"]
             self.logger.debug((_pci, pci))
             if _pci == pci:
                 return True
@@ -131,22 +132,22 @@ class IxNetworkPacketGenerator(PacketGenerator):
         """
         ports = []
         for idx in range(len(self._ports)):
-            ports.append('IXIA:%d' % idx)
+            ports.append("IXIA:%d" % idx)
         return ports
 
     def send_ping6(self, pci, mac, ipv6):
-        ''' Send ping6 packet from IXIA ports. '''
+        """Send ping6 packet from IXIA ports."""
         return self._conn.send_ping6(pci, mac, ipv6)
 
     def _clear_streams(self):
-        ''' clear streams in `PacketGenerator` '''
+        """clear streams in `PacketGenerator`"""
         # if streams has been attached, remove them from ixNetwork api server.
         self._remove_all_streams()
 
     def _remove_all_streams(self):
-        '''
+        """
         remove all stream deployed on the packet generator
-        '''
+        """
         if not self.get_streams():
             return
 
@@ -154,12 +155,12 @@ class IxNetworkPacketGenerator(PacketGenerator):
         return True
 
     def _retrieve_port_statistic(self, stream_id, mode):
-        ''' ixNetwork traffic statistics '''
+        """ixNetwork traffic statistics"""
         stats = self._conn.get_stats(self._traffic_ports, mode)
         stream = self._get_stream(stream_id)
         self.logger.debug(pformat(stream))
         self.logger.debug(pformat(stats))
-        if mode == 'rfc2544':
+        if mode == "rfc2544":
             return stats
         else:
             msg = "not support mode <{0}>".format(mode)
@@ -171,14 +172,14 @@ class IxNetworkPacketGenerator(PacketGenerator):
     #
     ##########################################################################
     def _prepare_transmission(self, stream_ids=[], latency=False):
-        ''' add one/multiple streams in one/multiple ports '''
+        """add one/multiple streams in one/multiple ports"""
         port_config = {}
 
         for stream_id in stream_ids:
             stream = self._get_stream(stream_id)
-            tx_port = stream.get('tx_port')
-            rx_port = stream.get('rx_port')
-            pcap_file = stream.get('pcap_file')
+            tx_port = stream.get("tx_port")
+            rx_port = stream.get("rx_port")
+            pcap_file = stream.get("pcap_file")
             # save port id list
             if tx_port not in self._traffic_ports:
                 self._traffic_ports.append(tx_port)
@@ -187,21 +188,21 @@ class IxNetworkPacketGenerator(PacketGenerator):
             if rx_port not in self._rx_ports:
                 self._rx_ports.append(rx_port)
             # set all streams in one port to do batch configuration
-            options = stream['options']
+            options = stream["options"]
             if tx_port not in list(port_config.keys()):
                 port_config[tx_port] = []
             config = {}
             config.update(options)
             # get stream rate percent
-            stream_config = options.get('stream_config')
-            rate_percent = stream_config.get('rate')
+            stream_config = options.get("stream_config")
+            rate_percent = stream_config.get("rate")
             # set port list input parameter of ixNetwork class
             ixia_option = [tx_port, rx_port, pcap_file, options]
             port_config[tx_port].append(ixia_option)
 
         self.rate_percent = rate_percent
         if not port_config:
-            msg = 'no stream options for ixNetwork packet generator'
+            msg = "no stream options for ixNetwork packet generator"
             raise Exception(msg)
 
         port_lists = []

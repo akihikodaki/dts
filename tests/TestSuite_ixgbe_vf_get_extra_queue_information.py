@@ -48,8 +48,6 @@ from framework.virt_common import VM
 
 
 class TestIxgbeVfGetExtraInfo(TestCase):
-
-
     def get_packet_bytes(self, queue):
         """
         Get rx queue packets and bytes.
@@ -60,11 +58,11 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         for line in lines:
             line = line.strip()
             if ("rx_queue_%s_packets" % queue) in line:
-                rev_queue, rev_num = line.split(': ', 1)
+                rev_queue, rev_num = line.split(": ", 1)
         for line in lines:
             line = line.strip()
             if ("rx_queue_%s_bytes" % queue) in line:
-                rev_queue, rev_byte = line.split(': ', 1)
+                rev_queue, rev_byte = line.split(": ", 1)
 
         return rev_num, rev_byte
 
@@ -72,7 +70,7 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         """
         Send packets including user priority and verify the result.
         """
-        if prio=="1" or prio=="2" or prio=="3":
+        if prio == "1" or prio == "2" or prio == "3":
             rev_num, rev_byte = self.get_packet_bytes(prio)
         else:
             rev_num, rev_byte = self.get_packet_bytes("0")
@@ -81,13 +79,15 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         self.tester.scapy_append('sys.path.append("./")')
         self.vm0_vf0_mac = self.vm0_dut.get_mac_address(0)
         # send packet with different parameters
-        packet = r'sendp([Ether(src="%s",dst="%s")/Dot1Q(prio=%s, vlan=%s)/IP()/Raw("x"*20)], iface="%s")' % (
-            self.src_mac, self.vm0_vf0_mac, prio, vlan, self.tester_intf)
+        packet = (
+            r'sendp([Ether(src="%s",dst="%s")/Dot1Q(prio=%s, vlan=%s)/IP()/Raw("x"*20)], iface="%s")'
+            % (self.src_mac, self.vm0_vf0_mac, prio, vlan, self.tester_intf)
+        )
         self.tester.scapy_append(packet)
         self.tester.scapy_execute()
-        time.sleep(.5)
+        time.sleep(0.5)
 
-        if prio=="1" or prio=="2" or prio=="3":
+        if prio == "1" or prio == "2" or prio == "3":
             rev_num_after, rev_byte_after = self.get_packet_bytes(prio)
         else:
             rev_num_after, rev_byte_after = self.get_packet_bytes("0")
@@ -96,9 +96,14 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         rev_byte_added = int(rev_byte_after) - int(rev_byte)
 
         if vlan == "0":
-            self.verify((rev_num_added == 1 and rev_byte_added == 60), "the packet is not sent to the right queue.")
+            self.verify(
+                (rev_num_added == 1 and rev_byte_added == 60),
+                "the packet is not sent to the right queue.",
+            )
         else:
-            self.verify((rev_num_added == 0 and rev_byte_added == 0), "the packet is received.")
+            self.verify(
+                (rev_num_added == 0 and rev_byte_added == 0), "the packet is received."
+            )
 
     def send_verify_queue(self, ptype="ip"):
         """
@@ -111,11 +116,15 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         self.vm0_vf0_mac = self.vm0_dut.get_mac_address(0)
         # send packet with different parameters
         if ptype == "ip":
-            packet = r'sendp([Ether(src="%s",dst="%s")/IP()/Raw("x"*20)], count=100, iface="%s")' % (
-                self.src_mac, self.vm0_vf0_mac, self.tester_intf)
+            packet = (
+                r'sendp([Ether(src="%s",dst="%s")/IP()/Raw("x"*20)], count=100, iface="%s")'
+                % (self.src_mac, self.vm0_vf0_mac, self.tester_intf)
+            )
         elif ptype == "udp":
-            packet = r'sendp([Ether(src="%s",dst="%s")/IP(src="192.168.0.1", dst="192.168.0.3")/UDP(sport=23,dport=24)/Raw("x"*20)], count=100, iface="%s")' % (
-                self.src_mac, self.vm0_vf0_mac, self.tester_intf)
+            packet = (
+                r'sendp([Ether(src="%s",dst="%s")/IP(src="192.168.0.1", dst="192.168.0.3")/UDP(sport=23,dport=24)/Raw("x"*20)], count=100, iface="%s")'
+                % (self.src_mac, self.vm0_vf0_mac, self.tester_intf)
+            )
         self.tester.scapy_append(packet)
         self.tester.scapy_execute()
 
@@ -140,8 +149,7 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.verify(self.nic in ["niantic"],
-            "NIC Unsupported: " + str(self.nic))
+        self.verify(self.nic in ["niantic"], "NIC Unsupported: " + str(self.nic))
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         self.cores = "1S/8C/1T"
@@ -151,18 +159,16 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         self.tester_intf = self.tester.get_interface(txport)
         self.tester_mac = self.tester.get_mac(txport)
 
-        self.pf_intf = self.dut.ports_info[self.dut_ports[0]]['intf']
-        self.pf_pci = self.dut.ports_info[self.dut_ports[0]]['pci']
-        self.src_mac = '00:02:00:00:00:01'
-        self.dut.send_expect('modprobe vfio-pci', '#')
+        self.pf_intf = self.dut.ports_info[self.dut_ports[0]]["intf"]
+        self.pf_pci = self.dut.ports_info[self.dut_ports[0]]["pci"]
+        self.src_mac = "00:02:00:00:00:01"
+        self.dut.send_expect("modprobe vfio-pci", "#")
 
         self.used_dut_port = self.dut_ports[0]
-        self.dut.generate_sriov_vfs_by_port(
-            self.used_dut_port, 1, driver='igb_uio')
-        self.sriov_vfs_port = self.dut.ports_info[
-            self.used_dut_port]['vfs_port']
+        self.dut.generate_sriov_vfs_by_port(self.used_dut_port, 1, driver="igb_uio")
+        self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port]["vfs_port"]
         for port in self.sriov_vfs_port:
-            port.bind_driver('vfio-pci')
+            port.bind_driver("vfio-pci")
         time.sleep(1)
 
     def set_up(self):
@@ -175,22 +181,23 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         """
         1pf -> 1vf , vf->vm0
         """
-        vf0_prop_1 = {'opt_host': self.sriov_vfs_port[0].pci}
-        self.vm0 = QEMUKvm(self.dut, 'vm0', 'ixgbe_vf_get_extra_queue_information')
-        self.vm0.set_vm_device(driver='vfio-pci', **vf0_prop_1)
+        vf0_prop_1 = {"opt_host": self.sriov_vfs_port[0].pci}
+        self.vm0 = QEMUKvm(self.dut, "vm0", "ixgbe_vf_get_extra_queue_information")
+        self.vm0.set_vm_device(driver="vfio-pci", **vf0_prop_1)
         try:
             self.vm0_dut = self.vm0.start()
             if self.vm0_dut is None:
                 raise Exception("Set up VM ENV failed")
             else:
-                self.verify(self.vm0_dut.ports_info[0][
-                            'intf'] != 'N/A', "Not interface")
+                self.verify(
+                    self.vm0_dut.ports_info[0]["intf"] != "N/A", "Not interface"
+                )
         except Exception as e:
             self.destroy_vm_env()
             self.logger.error("Failure for %s" % str(e))
 
         self.vm0_vf0_mac = self.vm0_dut.get_mac_address(0)
-        self.vm0_intf0 = self.vm0_dut.ports_info[0]['intf']
+        self.vm0_intf0 = self.vm0_dut.ports_info[0]["intf"]
 
         self.vm0_dut.restore_interfaces_linux()
 
@@ -198,7 +205,7 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         """
         destroy vm environment
         """
-        if getattr(self, 'vm0', None):
+        if getattr(self, "vm0", None):
             self.vm0_dut.kill_all()
             self.vm0_dut_ports = None
             self.vm0.stop()
@@ -210,9 +217,9 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         """
         destroy vf
         """
-        if getattr(self, 'used_dut_port', None) != None:
+        if getattr(self, "used_dut_port", None) != None:
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port)
-            port = self.dut.ports_info[self.used_dut_port]['port']
+            port = self.dut.ports_info[self.used_dut_port]["port"]
             self.used_dut_port = None
 
     def verify_rx_queue(self, num):
@@ -223,7 +230,7 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         self.vm0_dut.send_expect("ifconfig %s up" % self.vm0_intf0, "#")
         time.sleep(10)
         out = self.vm0_dut.send_expect("ethtool -S %s" % self.vm0_intf0, "#")
-        self.verify(("rx_queue_%d" % (num-1)) in out, "Wrong rx queue number")
+        self.verify(("rx_queue_%d" % (num - 1)) in out, "Wrong rx queue number")
         time.sleep(3)
 
     def test_enable_dcb(self):
@@ -233,7 +240,8 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         # start testpmd with PF on the host
         self.dut_testpmd = PmdOutput(self.dut)
         self.dut_testpmd.start_testpmd(
-            "%s" % self.cores, "--rxq=4 --txq=4 --nb-cores=4", "-a %s" % self.pf_pci)
+            "%s" % self.cores, "--rxq=4 --txq=4 --nb-cores=4", "-a %s" % self.pf_pci
+        )
         self.dut_testpmd.execute_cmd("port stop 0")
         self.dut_testpmd.execute_cmd("port config 0 dcb vt on 4 pfc off")
         self.dut_testpmd.execute_cmd("port start 0")
@@ -242,15 +250,15 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         # verify the vf get the extra info.
         self.verify_rx_queue(4)
         # verify the packet enter into the expected queue.
-        self.send_verify_up(prio="0",vlan="0")
-        self.send_verify_up(prio="1",vlan="0")
-        self.send_verify_up(prio="2",vlan="0")
-        self.send_verify_up(prio="3",vlan="0")
-        self.send_verify_up(prio="4",vlan="0")
-        self.send_verify_up(prio="5",vlan="0")
-        self.send_verify_up(prio="6",vlan="0")
-        self.send_verify_up(prio="7",vlan="0")
-        self.send_verify_up(prio="0",vlan="1")
+        self.send_verify_up(prio="0", vlan="0")
+        self.send_verify_up(prio="1", vlan="0")
+        self.send_verify_up(prio="2", vlan="0")
+        self.send_verify_up(prio="3", vlan="0")
+        self.send_verify_up(prio="4", vlan="0")
+        self.send_verify_up(prio="5", vlan="0")
+        self.send_verify_up(prio="6", vlan="0")
+        self.send_verify_up(prio="7", vlan="0")
+        self.send_verify_up(prio="0", vlan="1")
 
     def test_disable_dcb(self):
         """
@@ -259,7 +267,8 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         # start testpmd with PF on the host
         self.dut_testpmd = PmdOutput(self.dut)
         self.dut_testpmd.start_testpmd(
-            "%s" % self.cores, "--rxq=2 --txq=2 --nb-cores=2", "-a %s" % self.pf_pci)
+            "%s" % self.cores, "--rxq=2 --txq=2 --nb-cores=2", "-a %s" % self.pf_pci
+        )
         self.dut_testpmd.execute_cmd("start")
         time.sleep(5)
         self.setup_vm_env()
@@ -268,7 +277,10 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         # verify the packet enter into the expected queue.
         rss_queue0 = self.send_verify_queue(ptype="ip")
         rss_queue1 = self.send_verify_queue(ptype="udp")
-        self.verify(rss_queue0 != rss_queue1, "Different packets not mapping to different queues.")
+        self.verify(
+            rss_queue0 != rss_queue1,
+            "Different packets not mapping to different queues.",
+        )
 
     def tear_down(self):
         """

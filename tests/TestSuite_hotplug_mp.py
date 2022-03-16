@@ -44,18 +44,17 @@ test_loop = 2
 
 
 class TestHotplugMp(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
         """
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
-        self.intf0 = self.dut.ports_info[0]['intf']
-        self.pci0 = self.dut.ports_info[0]['pci']
+        self.intf0 = self.dut.ports_info[0]["intf"]
+        self.pci0 = self.dut.ports_info[0]["pci"]
         out = self.dut.build_dpdk_apps("./examples/multi_process/hotplug_mp")
-        self.app_path = self.dut.apps_name['hotplug_mp']
-        self.verify('Error' not in out, "Compilation failed")
+        self.app_path = self.dut.apps_name["hotplug_mp"]
+        self.verify("Error" not in out, "Compilation failed")
         # Start one new session to run primary process
         self.session_pri = self.dut.new_session()
         # Start two new sessions to run secondary process
@@ -79,18 +78,24 @@ class TestHotplugMp(TestCase):
         if self.drivername in ["igb_uio"]:
             self.iova_param = "--iova-mode=pa"
         out = self.session_pri.send_expect(
-            "%s %s --proc-type=auto"
-            % (self.app_path, self.iova_param), "example>")
-        self.verify("Auto-detected process type: PRIMARY" in out,
-                    "Failed to setup primary process!")
-        for out in [self.session_sec_1.send_expect(
-                        "%s %s --proc-type=auto"
-                        % (self.app_path, self.iova_param), "example>"),
-                    self.session_sec_2.send_expect(
-                        "%s %s --proc-type=auto"
-                        % (self.app_path, self.iova_param), "example>")]:
-            self.verify("Auto-detected process type: SECONDARY" in out,
-                        "Failed to setup secondary process!")
+            "%s %s --proc-type=auto" % (self.app_path, self.iova_param), "example>"
+        )
+        self.verify(
+            "Auto-detected process type: PRIMARY" in out,
+            "Failed to setup primary process!",
+        )
+        for out in [
+            self.session_sec_1.send_expect(
+                "%s %s --proc-type=auto" % (self.app_path, self.iova_param), "example>"
+            ),
+            self.session_sec_2.send_expect(
+                "%s %s --proc-type=auto" % (self.app_path, self.iova_param), "example>"
+            ),
+        ]:
+            self.verify(
+                "Auto-detected process type: SECONDARY" in out,
+                "Failed to setup secondary process!",
+            )
 
     def multi_process_quit(self):
         """
@@ -104,17 +109,28 @@ class TestHotplugMp(TestCase):
         """
         Check device list to verify if exist the device.
         """
-        for out in [self.session_pri.send_expect("list", "example>", 100),
-                    self.session_sec_1.send_expect("list", "example>", 100),
-                    self.session_sec_2.send_expect("list", "example>", 100)]:
-            self.verify("list all etherdev" in out,
-                        "Failed to list device on multi-process!")
+        for out in [
+            self.session_pri.send_expect("list", "example>", 100),
+            self.session_sec_1.send_expect("list", "example>", 100),
+            self.session_sec_2.send_expect("list", "example>", 100),
+        ]:
+            self.verify(
+                "list all etherdev" in out, "Failed to list device on multi-process!"
+            )
             if flg_exist == 1:
                 self.verify(dev in out, "Fail that don't have the device!")
             if flg_exist == 0:
                 self.verify(dev not in out, "Fail that have the device!")
 
-    def attach_detach(self, process="pri", is_dev=1, opt_plug="plugin", flg_loop=0, dev="0000:00:00.0", iface=None):
+    def attach_detach(
+        self,
+        process="pri",
+        is_dev=1,
+        opt_plug="plugin",
+        flg_loop=0,
+        dev="0000:00:00.0",
+        iface=None,
+    ):
         """
         Attach or detach physical/virtual device from primary/secondary
         process.
@@ -138,30 +154,30 @@ class TestHotplugMp(TestCase):
             for i in range(test_loop):
                 if process == "pri":
                     if is_dev == 0:
-                        if not 'virtio' in dev:
+                        if not "virtio" in dev:
                             self.session_pri.send_expect(
-                                "attach %s,iface=%s"
-                                % (dev, iface), "example>", 100)
+                                "attach %s,iface=%s" % (dev, iface), "example>", 100
+                            )
                         else:
                             self.session_pri.send_expect(
-                                "attach %s,%s"
-                                % (dev, iface), "example>", 100)
+                                "attach %s,%s" % (dev, iface), "example>", 100
+                            )
                     else:
-                        self.session_pri.send_expect(
-                            "attach %s" % dev, "example>", 100)
+                        self.session_pri.send_expect("attach %s" % dev, "example>", 100)
                 if process == "sec":
                     if is_dev == 0:
-                        if not 'virtio' in dev:
+                        if not "virtio" in dev:
                             self.session_sec_1.send_expect(
-                                "attach %s,iface=%s"
-                                % (dev, iface), "example>", 100)
+                                "attach %s,iface=%s" % (dev, iface), "example>", 100
+                            )
                         else:
                             self.session_sec_1.send_expect(
-                                "attach %s,%s"
-                                % (dev, iface), "example>", 100)
+                                "attach %s,%s" % (dev, iface), "example>", 100
+                            )
                     else:
                         self.session_sec_1.send_expect(
-                            "attach %s" % dev, "example>", 100)
+                            "attach %s" % dev, "example>", 100
+                        )
                 if flg_loop == 0:
                     break
 
@@ -171,17 +187,17 @@ class TestHotplugMp(TestCase):
             self.verify_devlist(dev, flg_exist=1)
             for i in range(test_loop):
                 if process == "pri":
-                    self.session_pri.send_expect(
-                        "detach %s" % dev, "example>", 100)
+                    self.session_pri.send_expect("detach %s" % dev, "example>", 100)
                 if process == "sec":
-                    self.session_sec_1.send_expect(
-                        "detach %s" % dev, "example>", 100)
+                    self.session_sec_1.send_expect("detach %s" % dev, "example>", 100)
                 if flg_loop == 0:
                     break
 
             self.verify_devlist(dev, flg_exist=0)
 
-    def attach_detach_dev(self, process="pri", opt_plug="plugin", flg_loop=0, dev="0000:00:00.0"):
+    def attach_detach_dev(
+        self, process="pri", opt_plug="plugin", flg_loop=0, dev="0000:00:00.0"
+    ):
         """
         Attach or detach physical device from primary/secondary process.
         """
@@ -211,7 +227,14 @@ class TestHotplugMp(TestCase):
         self.multi_process_quit()
         self.dut.bind_interfaces_linux(self.kdriver)
 
-    def attach_detach_vdev(self, process="pri", opt_plug="plugin", flg_loop=0, dev="net_af_packet", iface=None):
+    def attach_detach_vdev(
+        self,
+        process="pri",
+        opt_plug="plugin",
+        flg_loop=0,
+        dev="net_af_packet",
+        iface=None,
+    ):
         """
         Attach or detach virtual device from primary/secondary process.
         Check port interface is at link up status before hotplug test.
@@ -232,9 +255,13 @@ class TestHotplugMp(TestCase):
                         cross_proc = "sec"
                     elif process == "sec":
                         cross_proc = "pri"
-                    self.attach_detach(cross_proc, 0, "plugout", flg_loop, dev, iface=iface)
+                    self.attach_detach(
+                        cross_proc, 0, "plugout", flg_loop, dev, iface=iface
+                    )
                 else:
-                    self.attach_detach(process, 0, "plugout", flg_loop, dev, iface=iface)
+                    self.attach_detach(
+                        process, 0, "plugout", flg_loop, dev, iface=iface
+                    )
 
             if opt_plug == "plugin" or opt_plug == "plugout":
                 break
@@ -346,10 +373,18 @@ class TestHotplugMp(TestCase):
         Repeat to attach and detach vhost-user device
         """
         vdev = "net_vhost0"
-        self.attach_detach_vdev("pri", "hotplug", 1, vdev, iface="vhost-net,queues=1,client=0")
-        self.attach_detach_vdev("sec", "hotplug", 1, vdev, iface="vhost-net,queues=1,client=0")
-        self.attach_detach_vdev("pri", "crossplug", 1, vdev, iface="vhost-net,queues=1,client=0")
-        self.attach_detach_vdev("sec", "crossplug", 1, vdev, iface="vhost-net,queues=1,client=0")
+        self.attach_detach_vdev(
+            "pri", "hotplug", 1, vdev, iface="vhost-net,queues=1,client=0"
+        )
+        self.attach_detach_vdev(
+            "sec", "hotplug", 1, vdev, iface="vhost-net,queues=1,client=0"
+        )
+        self.attach_detach_vdev(
+            "pri", "crossplug", 1, vdev, iface="vhost-net,queues=1,client=0"
+        )
+        self.attach_detach_vdev(
+            "sec", "crossplug", 1, vdev, iface="vhost-net,queues=1,client=0"
+        )
 
     def test_attach_detach_virtio_user(self):
         """
@@ -357,17 +392,47 @@ class TestHotplugMp(TestCase):
         """
         vdev = "net_virtio_user0"
         self.path = "/home/vhost-net"
-        pmd_path = self.dut.apps_name['test-pmd']
+        pmd_path = self.dut.apps_name["test-pmd"]
         self.session_vhost.send_expect("rm -rf %s" % self.path, "#")
-        eal_param = self.dut.create_eal_parameters(no_pci=True, prefix='vhost',vdevs=["eth_vhost0,iface=%s" % self.path])
-        param = ' -- -i'
+        eal_param = self.dut.create_eal_parameters(
+            no_pci=True, prefix="vhost", vdevs=["eth_vhost0,iface=%s" % self.path]
+        )
+        param = " -- -i"
         testpmd_cmd = "%s " % pmd_path + eal_param + param
-        self.session_vhost.send_expect(testpmd_cmd, 'testpmd> ', timeout=60)
+        self.session_vhost.send_expect(testpmd_cmd, "testpmd> ", timeout=60)
         try:
-            self.attach_detach_vdev("pri", "hotplug", 1, vdev, iface="mac=00:01:02:03:04:05,path=%s,packed_vq=1,mrg_rxbuf=1,in_order=0" % self.path)
-            self.attach_detach_vdev("sec", "hotplug", 1, vdev, iface="mac=00:01:02:03:04:05,path=%s,packed_vq=1,mrg_rxbuf=1,in_order=0" % self.path)
-            self.attach_detach_vdev("pri", "crossplug", 1, vdev, iface="mac=00:01:02:03:04:05,path=%s,packed_vq=1,mrg_rxbuf=1,in_order=0" % self.path)
-            self.attach_detach_vdev("sec", "crossplug", 1, vdev, iface="mac=00:01:02:03:04:05,path=%s,packed_vq=1,mrg_rxbuf=1,in_order=0" % self.path)
+            self.attach_detach_vdev(
+                "pri",
+                "hotplug",
+                1,
+                vdev,
+                iface="mac=00:01:02:03:04:05,path=%s,packed_vq=1,mrg_rxbuf=1,in_order=0"
+                % self.path,
+            )
+            self.attach_detach_vdev(
+                "sec",
+                "hotplug",
+                1,
+                vdev,
+                iface="mac=00:01:02:03:04:05,path=%s,packed_vq=1,mrg_rxbuf=1,in_order=0"
+                % self.path,
+            )
+            self.attach_detach_vdev(
+                "pri",
+                "crossplug",
+                1,
+                vdev,
+                iface="mac=00:01:02:03:04:05,path=%s,packed_vq=1,mrg_rxbuf=1,in_order=0"
+                % self.path,
+            )
+            self.attach_detach_vdev(
+                "sec",
+                "crossplug",
+                1,
+                vdev,
+                iface="mac=00:01:02:03:04:05,path=%s,packed_vq=1,mrg_rxbuf=1,in_order=0"
+                % self.path,
+            )
         except Exception as e:
             self.logger.info(e)
             raise Exception(e)

@@ -57,17 +57,27 @@ from framework.test_case import TestCase
 
 
 class TestIpgre(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
         """
         self.printFlag = self._enable_debug
         ports = self.dut.get_ports()
-        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
-                                 "fortville_spirit_single", "fortville_25g", "carlsville",
-                                 "columbiaville_25g", "columbiaville_100g", "cavium_a063", "cavium_a064"],
-                    "GRE tunnel packet type only support by fortville, carlsville and cavium")
+        self.verify(
+            self.nic
+            in [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "carlsville",
+                "columbiaville_25g",
+                "columbiaville_100g",
+                "cavium_a063",
+                "cavium_a064",
+            ],
+            "GRE tunnel packet type only support by fortville, carlsville and cavium",
+        )
         self.verify(len(ports) >= 1, "Insufficient ports for testing")
         valports = [_ for _ in ports if self.tester.get_local_port(_) != -1]
         # start testpmd
@@ -78,16 +88,16 @@ class TestIpgre(TestCase):
         self.pmdout = PmdOutput(self.dut)
         tester_port = self.tester.get_local_port(self.dut_port)
         self.tester_iface = self.tester.get_interface(tester_port)
-        self.tester_iface_mac =  self.tester.get_mac(tester_port)
+        self.tester_iface_mac = self.tester.get_mac(tester_port)
         self.initialize_port_config()
 
     def initialize_port_config(self):
-        self.outer_mac_src = '00:00:10:00:00:00'
-        self.outer_mac_dst = '11:22:33:44:55:66'
-        self.outer_ip_src = '192.168.1.1'
-        self.outer_ip_dst = '192.168.1.2'
-        self.inner_ip_src = '192.168.2.1'
-        self.inner_ip_dst = '192.168.2.2'
+        self.outer_mac_src = "00:00:10:00:00:00"
+        self.outer_mac_dst = "11:22:33:44:55:66"
+        self.outer_ip_src = "192.168.1.1"
+        self.outer_ip_dst = "192.168.1.2"
+        self.inner_ip_src = "192.168.2.1"
+        self.inner_ip_dst = "192.168.2.2"
 
     def set_up(self):
         """
@@ -96,7 +106,9 @@ class TestIpgre(TestCase):
         """
         pass
 
-    def check_packet_transmission(self, pkt_types, layer_configs=None, queue=None, add_filter=0):
+    def check_packet_transmission(
+        self, pkt_types, layer_configs=None, queue=None, add_filter=0
+    ):
         time.sleep(1)
         for pkt_type in list(pkt_types.keys()):
             pkt_names = pkt_types[pkt_type]
@@ -109,10 +121,10 @@ class TestIpgre(TestCase):
             out = self.dut.get_session_output(timeout=2)
             time.sleep(1)
             pkt = self.tester.load_tcpdump_sniff_packets(inst)
-            if self.printFlag: # debug output
+            if self.printFlag:  # debug output
                 print(out)
             for pkt_layer_name in pkt_names:
-                if self.printFlag:# debug output
+                if self.printFlag:  # debug output
                     print(pkt_layer_name)
                 if pkt_layer_name not in out:
                     print(utils.RED("Fail to detect %s" % pkt_layer_name))
@@ -121,15 +133,20 @@ class TestIpgre(TestCase):
             else:
                 print(utils.GREEN("Detected %s successfully" % pkt_type))
             time.sleep(1)
-            if queue == None: # no filter
+            if queue == None:  # no filter
                 pass
             else:
-                if add_filter: # remove filter
-                    self.verify(("Receive queue=0x%s" % queue) in out, "Failed to enter the right queue.")
+                if add_filter:  # remove filter
+                    self.verify(
+                        ("Receive queue=0x%s" % queue) in out,
+                        "Failed to enter the right queue.",
+                    )
                 else:
-                    self.verify(("Receive queue=0x%s" % queue) not in out, "Failed to enter the right queue.")
+                    self.verify(
+                        ("Receive queue=0x%s" % queue) not in out,
+                        "Failed to enter the right queue.",
+                    )
         return pkt
-
 
     def save_ref_packet(self, pkt_types, layer_configs=None):
         for pkt_type in list(pkt_types.keys()):
@@ -158,30 +175,33 @@ class TestIpgre(TestCase):
                 payload = pkts[number]
 
             if payload.guess_payload_class(payload).name == "IP":
-                chk_sums['outer_ip'] = hex(payload[IP].chksum)
+                chk_sums["outer_ip"] = hex(payload[IP].chksum)
 
             if pkts[number].haslayer(GRE) == 1:
                 inner = pkts[number][GRE]
                 if inner.haslayer(IP) == 1:
-                    chk_sums['inner_ip'] = hex(inner[IP].chksum)
+                    chk_sums["inner_ip"] = hex(inner[IP].chksum)
                     if inner[IP].proto == 6:
-                        chk_sums['inner_tcp'] = hex(inner[TCP].chksum)
+                        chk_sums["inner_tcp"] = hex(inner[TCP].chksum)
                     if inner[IP].proto == 17:
-                        chk_sums['inner_udp'] = hex(inner[UDP].chksum)
+                        chk_sums["inner_udp"] = hex(inner[UDP].chksum)
                     if inner[IP].proto == 132:
-                        chk_sums['inner_sctp'] = hex(inner[SCTP].chksum)
+                        chk_sums["inner_sctp"] = hex(inner[SCTP].chksum)
                 break
 
         return chk_sums
 
     def compare_checksum(self, pkt):
-        chksums_ref = self.get_chksums('/tmp/ref_pkt.pcap')
+        chksums_ref = self.get_chksums("/tmp/ref_pkt.pcap")
         chksums = self.get_chksums(pcap=pkt)
-        self.logger.info("chksums_ref :: %s"%chksums_ref)
-        self.logger.info("chksums :: %s"%chksums)
+        self.logger.info("chksums_ref :: %s" % chksums_ref)
+        self.logger.info("chksums :: %s" % chksums)
         # verify saved pcap checksum same to expected checksum
         for key in chksums_ref:
-            self.verify(int(chksums[key], 16) == int(chksums_ref[key], 16), "%s not matched to %s" % (key, chksums_ref[key]))
+            self.verify(
+                int(chksums[key], 16) == int(chksums_ref[key], 16),
+                "%s not matched to %s" % (key, chksums_ref[key]),
+            )
         print(utils.GREEN("Checksum is ok"))
 
     def test_GRE_ipv4_packet_detect(self):
@@ -189,30 +209,40 @@ class TestIpgre(TestCase):
         Start testpmd and enable rxonly forwarding mode
         Send packet as table listed and packet type match each layer
         """
-        if (self.nic in ["cavium_a063", "cavium_a064"]):
+        if self.nic in ["cavium_a063", "cavium_a064"]:
             pkt_types = {
-                "MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT":        ["TUNNEL_GRE", "INNER_L4_UDP"],
-                "MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT":        ["TUNNEL_GRE", "INNER_L4_TCP"],
-                "MAC_IP_GRE_IPv4-TUNNEL_SCTP_PKT":       ["TUNNEL_GRE", "INNER_L4_SCTP"],
-                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_UDP_PKT":   ["TUNNEL_GRE", "INNER_L4_UDP"],
-                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_TCP_PKT":   ["TUNNEL_GRE", "INNER_L4_TCP"],
-                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_SCTP_PKT":  ["TUNNEL_GRE", "INNER_L4_SCTP"]
+                "MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT": ["TUNNEL_GRE", "INNER_L4_UDP"],
+                "MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT": ["TUNNEL_GRE", "INNER_L4_TCP"],
+                "MAC_IP_GRE_IPv4-TUNNEL_SCTP_PKT": ["TUNNEL_GRE", "INNER_L4_SCTP"],
+                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_UDP_PKT": ["TUNNEL_GRE", "INNER_L4_UDP"],
+                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_TCP_PKT": ["TUNNEL_GRE", "INNER_L4_TCP"],
+                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_SCTP_PKT": ["TUNNEL_GRE", "INNER_L4_SCTP"],
             }
         else:
             pkt_types = {
-                "MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT":        ["TUNNEL_GRENAT", "INNER_L4_UDP"],
-                "MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT":        ["TUNNEL_GRENAT", "INNER_L4_TCP"],
-                "MAC_IP_GRE_IPv4-TUNNEL_SCTP_PKT":       ["TUNNEL_GRENAT", "INNER_L4_SCTP"],
-                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_UDP_PKT":   ["TUNNEL_GRENAT", "INNER_L4_UDP"],
-                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_TCP_PKT":   ["TUNNEL_GRENAT", "INNER_L4_TCP"],
-                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_SCTP_PKT":  ["TUNNEL_GRENAT", "INNER_L4_SCTP"]
+                "MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT": ["TUNNEL_GRENAT", "INNER_L4_UDP"],
+                "MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT": ["TUNNEL_GRENAT", "INNER_L4_TCP"],
+                "MAC_IP_GRE_IPv4-TUNNEL_SCTP_PKT": ["TUNNEL_GRENAT", "INNER_L4_SCTP"],
+                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_UDP_PKT": [
+                    "TUNNEL_GRENAT",
+                    "INNER_L4_UDP",
+                ],
+                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_TCP_PKT": [
+                    "TUNNEL_GRENAT",
+                    "INNER_L4_TCP",
+                ],
+                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_SCTP_PKT": [
+                    "TUNNEL_GRENAT",
+                    "INNER_L4_SCTP",
+                ],
             }
-        config_layers =  {'ether': {'src': self.outer_mac_src},
-                          'ipv4': {'proto': 'gre'}}
+        config_layers = {"ether": {"src": self.outer_mac_src}, "ipv4": {"proto": "gre"}}
         # Start testpmd and enable rxonly forwarding mode
-        self.pmdout.start_testpmd("Default", "--portmask=%s " %
-                                  (self.portMask) + " --enable-rx-cksum "
-                                  , socket=self.ports_socket)
+        self.pmdout.start_testpmd(
+            "Default",
+            "--portmask=%s " % (self.portMask) + " --enable-rx-cksum ",
+            socket=self.ports_socket,
+        )
 
         self.dut.send_expect("set fwd rxonly", "testpmd>")
         self.dut.send_expect("set verbose 1", "testpmd>")
@@ -227,76 +257,111 @@ class TestIpgre(TestCase):
         Start testpmd and enable rxonly forwarding mode
         Send packet as table listed and packet type match each layer
         """
-        if (self.nic in ["cavium_a063", "cavium_a064"]):
+        if self.nic in ["cavium_a063", "cavium_a064"]:
             pkt_types_ipv6_ip = {
-                "MAC_IPv6_GRE_IPv4-TUNNEL_UDP_PKT":           ["TUNNEL_GRE", "INNER_L4_UDP"],
-                "MAC_IPv6_GRE_IPv4-TUNNEL_TCP_PKT":           ["TUNNEL_GRE", "INNER_L4_TCP"],
-                "MAC_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT":          ["TUNNEL_GRE", "INNER_L4_SCTP"]
+                "MAC_IPv6_GRE_IPv4-TUNNEL_UDP_PKT": ["TUNNEL_GRE", "INNER_L4_UDP"],
+                "MAC_IPv6_GRE_IPv4-TUNNEL_TCP_PKT": ["TUNNEL_GRE", "INNER_L4_TCP"],
+                "MAC_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT": ["TUNNEL_GRE", "INNER_L4_SCTP"],
             }
 
             pkt_types_ipv6_ipv6 = {
-                "MAC_IPv6_GRE_IPv6-TUNNEL_UDP_PKT":         ["TUNNEL_GRE", "INNER_L4_UDP"],
-                "MAC_IPv6_GRE_IPv6-TUNNEL_TCP_PKT":         ["TUNNEL_GRE", "INNER_L4_TCP"]
+                "MAC_IPv6_GRE_IPv6-TUNNEL_UDP_PKT": ["TUNNEL_GRE", "INNER_L4_UDP"],
+                "MAC_IPv6_GRE_IPv6-TUNNEL_TCP_PKT": ["TUNNEL_GRE", "INNER_L4_TCP"],
             }
 
             pkt_types_ipv6_ipv6_SCTP = {
-                "MAC_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT":        ["TUNNEL_GRE", "INNER_L4_SCTP"]
+                "MAC_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT": ["TUNNEL_GRE", "INNER_L4_SCTP"]
             }
         else:
             pkt_types_ipv6_ip = {
-                "MAC_IPv6_GRE_IPv4-TUNNEL_UDP_PKT":           ["TUNNEL_GRENAT", "INNER_L4_UDP"],
-                "MAC_IPv6_GRE_IPv4-TUNNEL_TCP_PKT":           ["TUNNEL_GRENAT", "INNER_L4_TCP"],
-                "MAC_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT":          ["TUNNEL_GRENAT", "INNER_L4_SCTP"],
-                "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_UDP_PKT":      ["TUNNEL_GRENAT", "INNER_L4_UDP", "RTE_MBUF_F_RX_VLAN"],
-                "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_TCP_PKT":      ["TUNNEL_GRENAT", "INNER_L4_TCP", "RTE_MBUF_F_RX_VLAN"],
-                "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT":     ["TUNNEL_GRENAT", "INNER_L4_SCTP", "RTE_MBUF_F_RX_VLAN"]
+                "MAC_IPv6_GRE_IPv4-TUNNEL_UDP_PKT": ["TUNNEL_GRENAT", "INNER_L4_UDP"],
+                "MAC_IPv6_GRE_IPv4-TUNNEL_TCP_PKT": ["TUNNEL_GRENAT", "INNER_L4_TCP"],
+                "MAC_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT": ["TUNNEL_GRENAT", "INNER_L4_SCTP"],
+                "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_UDP_PKT": [
+                    "TUNNEL_GRENAT",
+                    "INNER_L4_UDP",
+                    "RTE_MBUF_F_RX_VLAN",
+                ],
+                "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_TCP_PKT": [
+                    "TUNNEL_GRENAT",
+                    "INNER_L4_TCP",
+                    "RTE_MBUF_F_RX_VLAN",
+                ],
+                "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT": [
+                    "TUNNEL_GRENAT",
+                    "INNER_L4_SCTP",
+                    "RTE_MBUF_F_RX_VLAN",
+                ],
             }
 
             pkt_types_ipv6_ipv6 = {
-                "MAC_IPv6_GRE_IPv6-TUNNEL_UDP_PKT":         ["TUNNEL_GRENAT", "INNER_L4_UDP"],
-                "MAC_IPv6_GRE_IPv6-TUNNEL_TCP_PKT":         ["TUNNEL_GRENAT", "INNER_L4_TCP"],
-                "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_UDP_PKT":    ["TUNNEL_GRENAT", "INNER_L4_UDP", "RTE_MBUF_F_RX_VLAN"],
-                "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_TCP_PKT":    ["TUNNEL_GRENAT", "INNER_L4_TCP", "RTE_MBUF_F_RX_VLAN"]
+                "MAC_IPv6_GRE_IPv6-TUNNEL_UDP_PKT": ["TUNNEL_GRENAT", "INNER_L4_UDP"],
+                "MAC_IPv6_GRE_IPv6-TUNNEL_TCP_PKT": ["TUNNEL_GRENAT", "INNER_L4_TCP"],
+                "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_UDP_PKT": [
+                    "TUNNEL_GRENAT",
+                    "INNER_L4_UDP",
+                    "RTE_MBUF_F_RX_VLAN",
+                ],
+                "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_TCP_PKT": [
+                    "TUNNEL_GRENAT",
+                    "INNER_L4_TCP",
+                    "RTE_MBUF_F_RX_VLAN",
+                ],
             }
 
             pkt_types_ipv6_ipv6_SCTP = {
-                "MAC_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT":        ["TUNNEL_GRENAT", "INNER_L4_SCTP"],
-                "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT":   ["TUNNEL_GRENAT", "INNER_L4_SCTP", "RTE_MBUF_F_RX_VLAN"]
+                "MAC_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT": ["TUNNEL_GRENAT", "INNER_L4_SCTP"],
+                "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT": [
+                    "TUNNEL_GRENAT",
+                    "INNER_L4_SCTP",
+                    "RTE_MBUF_F_RX_VLAN",
+                ],
             }
 
         # Start testpmd and enable rxonly forwarding mode
-        if (self.nic in ["cavium_a063", "cavium_a064"]):
-            self.pmdout.start_testpmd("Default", "--portmask=%s " %
-                                      (self.portMask) + " --enable-rx-cksum "
-                                      , socket=self.ports_socket)
+        if self.nic in ["cavium_a063", "cavium_a064"]:
+            self.pmdout.start_testpmd(
+                "Default",
+                "--portmask=%s " % (self.portMask) + " --enable-rx-cksum ",
+                socket=self.ports_socket,
+            )
         else:
-            self.pmdout.start_testpmd("Default", "--portmask=%s " %
-                                      (self.portMask) + " --enable-rx-cksum --enable-hw-vlan"
-                                      , socket=self.ports_socket)
+            self.pmdout.start_testpmd(
+                "Default",
+                "--portmask=%s " % (self.portMask)
+                + " --enable-rx-cksum --enable-hw-vlan",
+                socket=self.ports_socket,
+            )
 
         self.dut.send_expect("set fwd rxonly", "testpmd>")
         self.dut.send_expect("set verbose 1", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
 
         # inner ipv4
-        config_layers =  {'ether': {'src': self.outer_mac_src},
-                          'ipv6': {'nh': 47},
-                          'raw':  {'payload':['78']*40}}
+        config_layers = {
+            "ether": {"src": self.outer_mac_src},
+            "ipv6": {"nh": 47},
+            "raw": {"payload": ["78"] * 40},
+        }
         self.check_packet_transmission(pkt_types_ipv6_ip, config_layers)
 
         # inner ipv6
-        config_layers =  {'ether': {'src': self.outer_mac_src},
-                          'ipv6': {'nh': 47},
-                          'gre':  {'proto': 0x86dd},
-                          'raw':  {'payload':['78']*40}}
+        config_layers = {
+            "ether": {"src": self.outer_mac_src},
+            "ipv6": {"nh": 47},
+            "gre": {"proto": 0x86DD},
+            "raw": {"payload": ["78"] * 40},
+        }
         self.check_packet_transmission(pkt_types_ipv6_ipv6, config_layers)
 
         # inner ipv6 SCTP
-        config_layers =  {'ether': {'src': self.outer_mac_src},
-                          'ipv6': {'nh': 47},
-                          'gre':  {'proto': 0x86dd},
-                          'inner_ipv6': {'nh': 132},
-                          'raw':  {'payload':['78']*40}}
+        config_layers = {
+            "ether": {"src": self.outer_mac_src},
+            "ipv6": {"nh": 47},
+            "gre": {"proto": 0x86DD},
+            "inner_ipv6": {"nh": 132},
+            "raw": {"payload": ["78"] * 40},
+        }
         self.check_packet_transmission(pkt_types_ipv6_ipv6_SCTP, config_layers)
         self.dut.send_expect("quit", "#")
 
@@ -306,9 +371,12 @@ class TestIpgre(TestCase):
         Send packet with wrong IP/TCP/UDP/SCTP checksum and check forwarded packet checksum
         """
         # Start testpmd and enable rxonly forwarding mode
-        self.pmdout.start_testpmd("Default", "--portmask=%s " %
-                                  (self.portMask) + " --enable-rx-cksum --port-topology=loop"
-                                  , socket=self.ports_socket)
+        self.pmdout.start_testpmd(
+            "Default",
+            "--portmask=%s " % (self.portMask)
+            + " --enable-rx-cksum --port-topology=loop",
+            socket=self.ports_socket,
+        )
         self.dut.send_expect("set verbose 1", "testpmd>")
         self.dut.send_expect("set fwd csum", "testpmd>")
         self.dut.send_expect("stop", "testpmd>")
@@ -324,111 +392,134 @@ class TestIpgre(TestCase):
         self.dut.send_expect("start", "testpmd>")
 
         # Send packet with wrong outer IP checksum and check forwarded packet IP checksum is correct
-        pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT": ["RTE_MBUF_F_TX_IP_CKSUM"]}
-        config_layers = {'ether': {'src': self.outer_mac_src,
-                                   'dst': self.outer_mac_dst},
-                         'ipv4': {'proto': 'gre',
-                                  'src': self.outer_ip_src,
-                                  'dst': self.outer_ip_dst},
-                         'inner_ipv4':{'src':self.inner_ip_src,
-                                       'dst':self.inner_ip_dst}}
+        pkt_types = {"MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT": ["RTE_MBUF_F_TX_IP_CKSUM"]}
+        config_layers = {
+            "ether": {"src": self.outer_mac_src, "dst": self.outer_mac_dst},
+            "ipv4": {
+                "proto": "gre",
+                "src": self.outer_ip_src,
+                "dst": self.outer_ip_dst,
+            },
+            "inner_ipv4": {"src": self.inner_ip_src, "dst": self.inner_ip_dst},
+        }
         self.save_ref_packet(pkt_types, config_layers)
-        config_layers = {'ether': {'src': self.outer_mac_src,
-                                   'dst': self.outer_mac_dst},
-                         'ipv4': {'proto': 'gre',
-                                  'src': self.outer_ip_src,
-                                  'dst': self.outer_ip_dst},
-                         'inner_ipv4':{'src':self.inner_ip_src,
-                                       'dst':self.inner_ip_dst,
-                                        'chksum': 0x0}}
+        config_layers = {
+            "ether": {"src": self.outer_mac_src, "dst": self.outer_mac_dst},
+            "ipv4": {
+                "proto": "gre",
+                "src": self.outer_ip_src,
+                "dst": self.outer_ip_dst,
+            },
+            "inner_ipv4": {
+                "src": self.inner_ip_src,
+                "dst": self.inner_ip_dst,
+                "chksum": 0x0,
+            },
+        }
         pkt = self.check_packet_transmission(pkt_types, config_layers)
         self.compare_checksum(pkt)
 
         # Send packet with wrong inner IP checksum and check forwarded packet IP checksum is correct
-        pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT": ["RTE_MBUF_F_TX_IP_CKSUM"]}
-        config_layers = {'ether': {'src': self.outer_mac_src,
-                                   'dst': self.outer_mac_dst},
-                         'ipv4': {'proto': 'gre',
-                                  'src': self.outer_ip_src,
-                                  'dst': self.outer_ip_dst},
-                         'inner_ipv4':{'src':self.inner_ip_src,
-                                       'dst':self.inner_ip_dst}}
+        pkt_types = {"MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT": ["RTE_MBUF_F_TX_IP_CKSUM"]}
+        config_layers = {
+            "ether": {"src": self.outer_mac_src, "dst": self.outer_mac_dst},
+            "ipv4": {
+                "proto": "gre",
+                "src": self.outer_ip_src,
+                "dst": self.outer_ip_dst,
+            },
+            "inner_ipv4": {"src": self.inner_ip_src, "dst": self.inner_ip_dst},
+        }
         self.save_ref_packet(pkt_types, config_layers)
-        config_layers = {'ether': {'src': self.outer_mac_src,
-                                   'dst': self.outer_mac_dst},
-                         'ipv4': {'proto': 'gre',
-                                  'src': self.outer_ip_src,
-                                  'dst': self.outer_ip_dst,
-                                  'chksum': 0x0},
-                         'inner_ipv4':{'src':self.inner_ip_src,
-                                       'dst':self.inner_ip_dst}}
+        config_layers = {
+            "ether": {"src": self.outer_mac_src, "dst": self.outer_mac_dst},
+            "ipv4": {
+                "proto": "gre",
+                "src": self.outer_ip_src,
+                "dst": self.outer_ip_dst,
+                "chksum": 0x0,
+            },
+            "inner_ipv4": {"src": self.inner_ip_src, "dst": self.inner_ip_dst},
+        }
         pkt = self.check_packet_transmission(pkt_types, config_layers)
         self.compare_checksum(pkt)
 
         # Send packet with wrong inner TCP checksum and check forwarded packet TCP checksum is correct
-        pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT": ["RTE_MBUF_F_TX_TCP_CKSUM"]}
-        config_layers = {'ether': {'src': self.outer_mac_src,
-                                   'dst': self.outer_mac_dst},
-                         'ipv4': {'proto': 'gre',
-                                  'src': self.outer_ip_src,
-                                  'dst': self.outer_ip_dst},
-                         'inner_ipv4':{'src':self.inner_ip_src,
-                                       'dst':self.inner_ip_dst},
-                         'tcp': {'src': 53,
-                                  'dst': 53}}
+        pkt_types = {"MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT": ["RTE_MBUF_F_TX_TCP_CKSUM"]}
+        config_layers = {
+            "ether": {"src": self.outer_mac_src, "dst": self.outer_mac_dst},
+            "ipv4": {
+                "proto": "gre",
+                "src": self.outer_ip_src,
+                "dst": self.outer_ip_dst,
+            },
+            "inner_ipv4": {"src": self.inner_ip_src, "dst": self.inner_ip_dst},
+            "tcp": {"src": 53, "dst": 53},
+        }
         self.save_ref_packet(pkt_types, config_layers)
-        config_layers = {'ether': {'src': self.outer_mac_src,
-                                   'dst': self.outer_mac_dst},
-                         'ipv4': {'proto': 'gre',
-                                  'src': self.outer_ip_src,
-                                  'dst': self.outer_ip_dst},
-                         'inner_ipv4':{'src':self.inner_ip_src,
-                                       'dst':self.inner_ip_dst},
-                         'tcp': {'chksum': 0x0}}
+        config_layers = {
+            "ether": {"src": self.outer_mac_src, "dst": self.outer_mac_dst},
+            "ipv4": {
+                "proto": "gre",
+                "src": self.outer_ip_src,
+                "dst": self.outer_ip_dst,
+            },
+            "inner_ipv4": {"src": self.inner_ip_src, "dst": self.inner_ip_dst},
+            "tcp": {"chksum": 0x0},
+        }
         pkt = self.check_packet_transmission(pkt_types, config_layers)
         self.compare_checksum(pkt)
 
         # Send packet with wrong inner UDP checksum and check forwarded packet UDP checksum is correct
-        pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT": ["RTE_MBUF_F_TX_UDP_CKSUM"]}
-        config_layers = {'ether': {'src': self.outer_mac_src,
-                                   'dst': self.outer_mac_dst},
-                         'ipv4': {'proto': 'gre',
-                                  'src': self.outer_ip_src,
-                                  'dst': self.outer_ip_dst},
-                         'inner_ipv4':{'src':self.inner_ip_src,
-                                       'dst':self.inner_ip_dst}}
+        pkt_types = {"MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT": ["RTE_MBUF_F_TX_UDP_CKSUM"]}
+        config_layers = {
+            "ether": {"src": self.outer_mac_src, "dst": self.outer_mac_dst},
+            "ipv4": {
+                "proto": "gre",
+                "src": self.outer_ip_src,
+                "dst": self.outer_ip_dst,
+            },
+            "inner_ipv4": {"src": self.inner_ip_src, "dst": self.inner_ip_dst},
+        }
         self.save_ref_packet(pkt_types, config_layers)
-        config_layers = {'ether': {'src': self.outer_mac_src,
-                                   'dst': self.outer_mac_dst},
-                         'ipv4': {'proto': 'gre',
-                                  'src': self.outer_ip_src,
-                                  'dst': self.outer_ip_dst},
-                         'inner_ipv4':{'src':self.inner_ip_src,
-                                       'dst':self.inner_ip_dst},
-                         'udp': {'chksum': 0xffff}}
+        config_layers = {
+            "ether": {"src": self.outer_mac_src, "dst": self.outer_mac_dst},
+            "ipv4": {
+                "proto": "gre",
+                "src": self.outer_ip_src,
+                "dst": self.outer_ip_dst,
+            },
+            "inner_ipv4": {"src": self.inner_ip_src, "dst": self.inner_ip_dst},
+            "udp": {"chksum": 0xFFFF},
+        }
         pkt = self.check_packet_transmission(pkt_types, config_layers)
         self.compare_checksum(pkt)
         if self.nic != "cavium_a063":
             # Send packet with wrong inner SCTP checksum and check forwarded packet SCTP checksum is correct
-            pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_SCTP_PKT": ["RTE_MBUF_F_TX_SCTP_CKSUM"]}
-            config_layers = {'ether': {'src': self.outer_mac_src,
-                                       'dst': self.outer_mac_dst},
-                             'ipv4': {'proto': 'gre',
-                                      'src': self.outer_ip_src,
-                                      'dst': self.outer_ip_dst},
-                             'inner_ipv4':{'src':self.inner_ip_src,
-                                           'dst':self.inner_ip_dst},
-                             'sctp': {'src': 53,
-                                      'dst': 53}}
+            pkt_types = {
+                "MAC_IP_GRE_IPv4-TUNNEL_SCTP_PKT": ["RTE_MBUF_F_TX_SCTP_CKSUM"]
+            }
+            config_layers = {
+                "ether": {"src": self.outer_mac_src, "dst": self.outer_mac_dst},
+                "ipv4": {
+                    "proto": "gre",
+                    "src": self.outer_ip_src,
+                    "dst": self.outer_ip_dst,
+                },
+                "inner_ipv4": {"src": self.inner_ip_src, "dst": self.inner_ip_dst},
+                "sctp": {"src": 53, "dst": 53},
+            }
             self.save_ref_packet(pkt_types, config_layers)
-            config_layers = {'ether': {'src': self.outer_mac_src,
-                                       'dst': self.outer_mac_dst},
-                             'ipv4': {'proto': 'gre',
-                                      'src': self.outer_ip_src,
-                                      'dst': self.outer_ip_dst},
-                             'inner_ipv4':{'src':self.inner_ip_src,
-                                           'dst':self.inner_ip_dst},
-                             'sctp': {'chksum': 0x0}}
+            config_layers = {
+                "ether": {"src": self.outer_mac_src, "dst": self.outer_mac_dst},
+                "ipv4": {
+                    "proto": "gre",
+                    "src": self.outer_ip_src,
+                    "dst": self.outer_ip_dst,
+                },
+                "inner_ipv4": {"src": self.inner_ip_src, "dst": self.inner_ip_dst},
+                "sctp": {"chksum": 0x0},
+            }
             pkt = self.check_packet_transmission(pkt_types, config_layers)
             self.compare_checksum(pkt)
 

@@ -15,7 +15,7 @@ class TimeoutException(Exception):
         self.output = output
 
     def __str__(self):
-        msg = 'TIMEOUT on %s' % (self.command)
+        msg = "TIMEOUT on %s" % (self.command)
         return msg
 
     def get_output(self):
@@ -59,7 +59,7 @@ class SSHConnectionException(Exception):
         self.host = host
 
     def __str__(self):
-        return 'Error trying to connect with %s' % self.host
+        return "Error trying to connect with %s" % self.host
 
 
 class SSHSessionDeadException(Exception):
@@ -73,7 +73,7 @@ class SSHSessionDeadException(Exception):
         self.host = host
 
     def __str__(self):
-        return 'SSH session with %s has been dead' % self.host
+        return "SSH session with %s has been dead" % self.host
 
 
 class ParameterInvalidException(Exception):
@@ -119,6 +119,7 @@ class VirtConfigParamException(Exception):
     """
     Virtualization param execution exception.
     """
+
     def __init__(self, param):
         self.param = param
 
@@ -134,11 +135,14 @@ class VirtDutInitException(Exception):
     def __init__(self, vm_dut):
         self.vm_dut = vm_dut
 
+
 class VirtDeviceCreateException(Exception):
     pass
 
+
 class VirtVmOperationException(Exception):
     pass
+
 
 class VirtHostPrepareException(Exception):
     pass

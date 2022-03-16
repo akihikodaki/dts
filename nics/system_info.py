@@ -34,17 +34,16 @@ import re
 import time
 from collections import OrderedDict
 
-#install GitPython
+# install GitPython
 from git import Repo
 
 
 class SystemInfo(object):
-
     def __init__(self, dut, pci_device_id):
         self.dut = dut
         self.pci_device_id = pci_device_id
         self.session = self.dut.session
-        self.system_info =  OrderedDict()
+        self.system_info = OrderedDict()
         self.nic_info = OrderedDict()
 
     def get_system_info(self):
@@ -53,40 +52,42 @@ class SystemInfo(object):
         self.system_info["Board"] = board
 
         processors = self.session.send_expect("dmidecode -s processor-version", "# ")
-        processor = processors.split('\r\n')[0]
-        self.system_info["CPU"] =  processor
+        processor = processors.split("\r\n")[0]
+        self.system_info["CPU"] = processor
 
         memories = self.session.send_expect("dmidecode -t memory", "]# ")
         channels, size, speed = self._strip_memory(memories)
-        memory_info = "Total %d MBs in %d channels @ %s" %(size, channels, speed)
+        memory_info = "Total %d MBs in %d channels @ %s" % (size, channels, speed)
         self.system_info["Memory"] = memory_info
 
-        release = self.session.send_expect("lsb_release -d |awk -F':' '{print $2}'", "# ")
+        release = self.session.send_expect(
+            "lsb_release -d |awk -F':' '{print $2}'", "# "
+        )
         self.system_info["Operating system"] = release
 
         kernel = self.session.send_expect("uname -r", "# ")
         self.system_info["Linux kernel version"] = kernel
-        
+
         gcc_info = self.session.send_expect("gcc --version", "# ")
-        gcc = gcc_info.split('\r\n')[0]
+        gcc = gcc_info.split("\r\n")[0]
         self.system_info["GCC version"] = gcc
 
         return self.system_info
-        
+
     def _strip_memory(self, memories):
         """
         Size: 8192 MB Locator: DIMM_A1 Speed: 2133 MHz
         """
         s_regex = r"(\s+)Size: (\d+) MB"
         s1_regex = r"(\s+)Size: (\d+) GB"
-        l_regex= r"(\s+)Locator: .*_(\w+)"
+        l_regex = r"(\s+)Locator: .*_(\w+)"
         speed_regex = r"(\s+)Speed: (.*)"
         size = ""
         locate = ""
         speed = "Unknown"
         memory_infos = []
         memory_channel = set()
-        lines = memories.split('\r\n')
+        lines = memories.split("\r\n")
         total_size = 0
         for line in lines:
             m = re.match(s_regex, line)
@@ -102,7 +103,7 @@ class SystemInfo(object):
             if s_m:
                 speed = s_m.group(2)
             if speed != "Unknown":
-                memory={"Size": size, "Locate": locate, "Speed": speed}
+                memory = {"Size": size, "Locate": locate, "Speed": speed}
                 memory_infos.append(memory)
                 speed = "Unknown"
                 total_size += int(size)
@@ -126,13 +127,18 @@ class SystemInfo(object):
         interface = self.session.send_expect(cmd, "# ")
         if "No such" in interface:
             return None
-        cmd = "ethtool -i %s | grep --color=never firmware |awk -F':' '{print $2}'" % interface
+        cmd = (
+            "ethtool -i %s | grep --color=never firmware |awk -F':' '{print $2}'"
+            % interface
+        )
         firmware = self.session.send_expect(cmd, "# ")
         if "No such" in firmware:
             return None
-        cmd = "lspci -vmmks %s |grep -i ^device |awk -F':' '{print $2}'" % self.pci_device_id
-        self.nic_info['nic_name'] = self.session.send_expect(cmd, "# ")
-        self.nic_info['device_id'] = vendor[2:] + ':' + device[2:]
-        self.nic_info['firmware-version'] = firmware
+        cmd = (
+            "lspci -vmmks %s |grep -i ^device |awk -F':' '{print $2}'"
+            % self.pci_device_id
+        )
+        self.nic_info["nic_name"] = self.session.send_expect(cmd, "# ")
+        self.nic_info["device_id"] = vendor[2:] + ":" + device[2:]
+        self.nic_info["firmware-version"] = firmware
         return self.nic_info
-

@@ -29,8 +29,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-'''
-'''
+"""
+"""
 from time import sleep
 
 from scapy.layers.inet import IP, Ether
@@ -47,7 +47,7 @@ from framework.test_case import TestCase
 class TestPmdPcap(TestCase):
 
     pcap_file_sizes = [1000, 500]
-    dut_pcap_files_path = '/root/'
+    dut_pcap_files_path = "/root/"
 
     def set_up_all(self):
         self.check_scapy_in_dut()
@@ -57,7 +57,10 @@ class TestPmdPcap(TestCase):
         # Enable PCAP features and rebuild the package
         self.pcap_config = self.get_pcap_compile_config()
         self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_LIBRTE_PMD_PCAP=n$/CONFIG_RTE_LIBRTE_PMD_PCAP=y/' config/%s" % self.pcap_config, "# ")
+            "sed -i 's/CONFIG_RTE_LIBRTE_PMD_PCAP=n$/CONFIG_RTE_LIBRTE_PMD_PCAP=y/' config/%s"
+            % self.pcap_config,
+            "# ",
+        )
         self.dut.build_install_dpdk(self.target)
 
         # make sure there is no interface to bind
@@ -66,8 +69,8 @@ class TestPmdPcap(TestCase):
         self.dut.restore_interfaces()
         os_type = self.dut.get_os_type()
         if os_type == "freebsd":
-            self.dut.send_expect("kldload contigmem", "#",20)
-        self.path=self.dut.apps_name['test-pmd']
+            self.dut.send_expect("kldload contigmem", "#", 20)
+        self.path = self.dut.apps_name["test-pmd"]
 
     def get_pcap_compile_config(self):
         config_head = "common_"
@@ -78,10 +81,12 @@ class TestPmdPcap(TestCase):
             config_tail = "bsdapp"
         else:
             raise Exception(
-                "Unknow os type, please check to make sure pcap can work in OS [ %s ]" % os_type)
+                "Unknow os type, please check to make sure pcap can work in OS [ %s ]"
+                % os_type
+            )
         out = self.dut.send_command("cat config/%s" % (config_head + config_tail))
         if "CONFIG_RTE_LIBRTE_PMD_PCAP" in out:
-                return config_head + config_tail
+            return config_head + config_tail
         else:
             return config_head + "base"
 
@@ -89,107 +94,136 @@ class TestPmdPcap(TestCase):
         flow = []
         for pkt_id in range(number_of_packets):
             pkt_id = str(hex(pkt_id % 256))
-            flow.append(Ether(src='00:00:00:00:00:%s' % pkt_id[2:], dst='00:00:00:00:00:00') / IP(
-                src='192.168.1.1', dst='192.168.1.2') / ("X" * 26))
+            flow.append(
+                Ether(src="00:00:00:00:00:%s" % pkt_id[2:], dst="00:00:00:00:00:00")
+                / IP(src="192.168.1.1", dst="192.168.1.2")
+                / ("X" * 26)
+            )
 
         wrpcap(filename, flow)
 
     def check_scapy_in_dut(self):
         try:
-            self.dut.send_expect('scapy', '>>> ')
-            self.dut.send_expect('quit()', '# ')
+            self.dut.send_expect("scapy", ">>> ")
+            self.dut.send_expect("quit()", "# ")
         except:
-            self.verify(False, 'Scapy is required in dut.')
+            self.verify(False, "Scapy is required in dut.")
 
     def check_pcap_files(self, in_pcap, out_pcap, expected_frames):
 
         # Check if the number of expected frames are in the output
-        result = self.dut.send_expect(
-            'tcpdump -n -e -r %s | wc -l' % out_pcap, '# ')
-        self.verify(str(expected_frames) in result,
-                    'Not all packets have been forwarded')
+        result = self.dut.send_expect("tcpdump -n -e -r %s | wc -l" % out_pcap, "# ")
+        self.verify(
+            str(expected_frames) in result, "Not all packets have been forwarded"
+        )
 
         # Check if the frames in the input and output files match
-        self.dut.send_expect('scapy', '>>> ')
-        self.dut.send_expect('input=rdpcap("%s")' % in_pcap, '>>> ')
-        self.dut.send_expect('output=rdpcap("%s")' % out_pcap, '>>> ')
+        self.dut.send_expect("scapy", ">>> ")
+        self.dut.send_expect('input=rdpcap("%s")' % in_pcap, ">>> ")
+        self.dut.send_expect('output=rdpcap("%s")' % out_pcap, ">>> ")
         self.dut.send_expect(
-            'result=[input[i]==output[i] for i in range(len(input))]', '>>> ')
-        result = self.dut.send_expect('False in result', '>>> ')
-        self.dut.send_expect('quit()', '# ')
+            "result=[input[i]==output[i] for i in range(len(input))]", ">>> "
+        )
+        result = self.dut.send_expect("False in result", ">>> ")
+        self.dut.send_expect("quit()", "# ")
 
-        self.verify('True' not in result, 'In/Out packets do not match.')
+        self.verify("True" not in result, "In/Out packets do not match.")
 
     def test_send_packets_with_one_device(self):
-        in_pcap = 'in_pmdpcap.pcap'
-        out_pcap = '/tmp/out_pmdpcap.pcap'
+        in_pcap = "in_pmdpcap.pcap"
+        out_pcap = "/tmp/out_pmdpcap.pcap"
 
         two_cores = self.dut.get_core_list("1S/2C/1T")
         core_mask = utils.create_mask(two_cores)
 
-        eal_para = self.dut.create_eal_parameters(cores='1S/2C/1T')
+        eal_para = self.dut.create_eal_parameters(cores="1S/2C/1T")
         self.create_pcap_file(in_pcap, TestPmdPcap.pcap_file_sizes[0])
         self.dut.session.copy_file_to(in_pcap)
 
-        command = ("{} {} " +
-                   "--vdev=eth_pcap0,rx_pcap={},tx_pcap={} " +
-                   "-- -i --port-topology=chained --no-flush-rx")
+        command = (
+            "{} {} "
+            + "--vdev=eth_pcap0,rx_pcap={},tx_pcap={} "
+            + "-- -i --port-topology=chained --no-flush-rx"
+        )
 
-        self.dut.send_expect(command.format(self.path, eal_para,
-                             TestPmdPcap.dut_pcap_files_path + in_pcap,
-                             out_pcap), 'testpmd> ', 15)
+        self.dut.send_expect(
+            command.format(
+                self.path, eal_para, TestPmdPcap.dut_pcap_files_path + in_pcap, out_pcap
+            ),
+            "testpmd> ",
+            15,
+        )
 
-        self.dut.send_expect('start', 'testpmd> ')
+        self.dut.send_expect("start", "testpmd> ")
         sleep(2)
-        self.dut.send_expect('stop', 'testpmd> ')
-        self.dut.send_expect('quit', '# ')
+        self.dut.send_expect("stop", "testpmd> ")
+        self.dut.send_expect("quit", "# ")
 
-        self.check_pcap_files(TestPmdPcap.dut_pcap_files_path + in_pcap,
-                              out_pcap, TestPmdPcap.pcap_file_sizes[0])
+        self.check_pcap_files(
+            TestPmdPcap.dut_pcap_files_path + in_pcap,
+            out_pcap,
+            TestPmdPcap.pcap_file_sizes[0],
+        )
 
     def test_send_packets_with_two_devices(self):
 
-        in_pcap1 = 'in1_pmdpcap.pcap'
-        out_pcap1 = '/tmp/out1_pmdpcap.pcap'
+        in_pcap1 = "in1_pmdpcap.pcap"
+        out_pcap1 = "/tmp/out1_pmdpcap.pcap"
 
-        in_pcap2 = 'in2_pmdpcap.pcap'
-        out_pcap2 = '/tmp/out2_pmdpcap.pcap'
+        in_pcap2 = "in2_pmdpcap.pcap"
+        out_pcap2 = "/tmp/out2_pmdpcap.pcap"
 
         four_cores = self.dut.get_core_list("1S/4C/1T")
         core_mask = utils.create_mask(four_cores)
 
-        eal_para = self.dut.create_eal_parameters(cores='1S/4C/1T')
+        eal_para = self.dut.create_eal_parameters(cores="1S/4C/1T")
         self.create_pcap_file(in_pcap1, TestPmdPcap.pcap_file_sizes[0])
         self.dut.session.copy_file_to(in_pcap1)
         self.create_pcap_file(in_pcap2, TestPmdPcap.pcap_file_sizes[1])
         self.dut.session.copy_file_to(in_pcap2)
 
-        command = ("{} {} " +
-                   "--vdev=eth_pcap0,rx_pcap={},tx_pcap={} " +
-                   "--vdev=eth_pcap1,rx_pcap={},tx_pcap={} " +
-                   "-- -i --no-flush-rx")
+        command = (
+            "{} {} "
+            + "--vdev=eth_pcap0,rx_pcap={},tx_pcap={} "
+            + "--vdev=eth_pcap1,rx_pcap={},tx_pcap={} "
+            + "-- -i --no-flush-rx"
+        )
 
-        self.dut.send_expect(command.format(self.path, eal_para,
-                                            TestPmdPcap.dut_pcap_files_path +
-                                            in_pcap1,
-                                            out_pcap1,
-                                            TestPmdPcap.dut_pcap_files_path +
-                                            in_pcap2,
-                                            out_pcap2), 'testpmd> ', 15)
+        self.dut.send_expect(
+            command.format(
+                self.path,
+                eal_para,
+                TestPmdPcap.dut_pcap_files_path + in_pcap1,
+                out_pcap1,
+                TestPmdPcap.dut_pcap_files_path + in_pcap2,
+                out_pcap2,
+            ),
+            "testpmd> ",
+            15,
+        )
 
-        self.dut.send_expect('start', 'testpmd> ')
+        self.dut.send_expect("start", "testpmd> ")
         sleep(2)
-        self.dut.send_expect('stop', 'testpmd> ')
-        self.dut.send_expect('quit', '# ')
+        self.dut.send_expect("stop", "testpmd> ")
+        self.dut.send_expect("quit", "# ")
 
-        self.check_pcap_files(TestPmdPcap.dut_pcap_files_path + in_pcap1,
-                              out_pcap2, TestPmdPcap.pcap_file_sizes[0])
+        self.check_pcap_files(
+            TestPmdPcap.dut_pcap_files_path + in_pcap1,
+            out_pcap2,
+            TestPmdPcap.pcap_file_sizes[0],
+        )
 
-        self.check_pcap_files(TestPmdPcap.dut_pcap_files_path + in_pcap2,
-                              out_pcap1, TestPmdPcap.pcap_file_sizes[1])
+        self.check_pcap_files(
+            TestPmdPcap.dut_pcap_files_path + in_pcap2,
+            out_pcap1,
+            TestPmdPcap.pcap_file_sizes[1],
+        )
 
     def tear_down_all(self):
         # Disable PCAP feature and rebuild the package
         self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_LIBRTE_PMD_PCAP=y$/CONFIG_RTE_LIBRTE_PMD_PCAP=n/' config/%s" % self.pcap_config, "# ")
+            "sed -i 's/CONFIG_RTE_LIBRTE_PMD_PCAP=y$/CONFIG_RTE_LIBRTE_PMD_PCAP=n/' config/%s"
+            % self.pcap_config,
+            "# ",
+        )
         self.dut.set_target(self.target)

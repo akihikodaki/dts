@@ -43,12 +43,13 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 from framework.virt_common import VM
 
-VM_CORES_MASK = 'all'
+VM_CORES_MASK = "all"
 send_pks_num = 2000
+
 
 class TestMDD(TestCase):
 
-    supported_vf_driver = ['pci-stub', 'vfio-pci']
+    supported_vf_driver = ["pci-stub", "vfio-pci"]
 
     def set_up_all(self):
 
@@ -57,16 +58,16 @@ class TestMDD(TestCase):
         self.vm0 = None
 
         # set vf assign method and vf driver
-        self.vf_driver = self.get_suite_cfg()['vf_driver']
+        self.vf_driver = self.get_suite_cfg()["vf_driver"]
         if self.vf_driver is None:
-            self.vf_driver = 'pci-stub'
+            self.vf_driver = "pci-stub"
         self.verify(self.vf_driver in self.supported_vf_driver, "Unspported vf driver")
-        if self.vf_driver == 'pci-stub':
-            self.vf_assign_method = 'pci-assign'
+        if self.vf_driver == "pci-stub":
+            self.vf_assign_method = "pci-assign"
         else:
-            self.vf_assign_method = 'vfio-pci'
-            self.dut.send_expect('modprobe vfio-pci', '#')
-        self.dut.send_expect('dmesg -c', '#')
+            self.vf_assign_method = "vfio-pci"
+            self.dut.send_expect("modprobe vfio-pci", "#")
+        self.dut.send_expect("dmesg -c", "#")
 
         self.port_id_0 = 0
         self.port_id_1 = 1
@@ -79,11 +80,11 @@ class TestMDD(TestCase):
 
     def setup_2pf_2vf_1vm_env(self):
         self.used_dut_port_0 = self.dut_ports[0]
-        self.dut.generate_sriov_vfs_by_port(self.used_dut_port_0, 1, driver='ixgbe')
-        self.sriov_vfs_port_0 = self.dut.ports_info[self.used_dut_port_0]['vfs_port']
+        self.dut.generate_sriov_vfs_by_port(self.used_dut_port_0, 1, driver="ixgbe")
+        self.sriov_vfs_port_0 = self.dut.ports_info[self.used_dut_port_0]["vfs_port"]
         self.used_dut_port_1 = self.dut_ports[1]
-        self.dut.generate_sriov_vfs_by_port(self.used_dut_port_1, 1, driver='ixgbe')
-        self.sriov_vfs_port_1 = self.dut.ports_info[self.used_dut_port_1]['vfs_port']
+        self.dut.generate_sriov_vfs_by_port(self.used_dut_port_1, 1, driver="ixgbe")
+        self.sriov_vfs_port_1 = self.dut.ports_info[self.used_dut_port_1]["vfs_port"]
 
         try:
 
@@ -94,11 +95,11 @@ class TestMDD(TestCase):
                 port.bind_driver(self.vf_driver)
 
             time.sleep(1)
-            vf0_prop = {'opt_host': self.sriov_vfs_port_0[0].pci}
-            vf1_prop = {'opt_host': self.sriov_vfs_port_1[0].pci}
+            vf0_prop = {"opt_host": self.sriov_vfs_port_0[0].pci}
+            vf1_prop = {"opt_host": self.sriov_vfs_port_1[0].pci}
             # not support driver=igb_uio,because driver is kernel driver
             # set up VM0 ENV
-            self.vm0 = VM(self.dut, 'vm0', 'mdd')
+            self.vm0 = VM(self.dut, "vm0", "mdd")
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
             self.vm_dut_0 = self.vm0.start()
@@ -110,11 +111,11 @@ class TestMDD(TestCase):
             raise Exception(e)
 
     def destroy_2pf_2vf_1vm_env(self):
-        if getattr(self, 'vm0', None):
+        if getattr(self, "vm0", None):
             # destroy testpmd in vm0
-            if getattr(self, 'vm0_testpmd', None):
-                self.vm0_testpmd.execute_cmd('stop')
-                self.vm0_testpmd.execute_cmd('quit', '# ')
+            if getattr(self, "vm0_testpmd", None):
+                self.vm0_testpmd.execute_cmd("stop")
+                self.vm0_testpmd.execute_cmd("quit", "# ")
                 self.vm0_testpmd = None
 
             self.vm0_dut_ports = None
@@ -124,30 +125,32 @@ class TestMDD(TestCase):
 
         self.dut.virt_exit()
 
-        if getattr(self, 'used_dut_port_0', None) != None:
+        if getattr(self, "used_dut_port_0", None) != None:
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port_0)
-            port = self.dut.ports_info[self.used_dut_port_0]['port']
+            port = self.dut.ports_info[self.used_dut_port_0]["port"]
             port.bind_driver()
             self.used_dut_port_0 = None
 
-        if getattr(self, 'used_dut_port_1', None) != None:
+        if getattr(self, "used_dut_port_1", None) != None:
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port_1)
-            port = self.dut.ports_info[self.used_dut_port_1]['port']
+            port = self.dut.ports_info[self.used_dut_port_1]["port"]
             port.bind_driver()
             self.used_dut_port_1 = None
 
         for port_id in self.dut_ports:
-            port = self.dut.ports_info[port_id]['port']
+            port = self.dut.ports_info[port_id]["port"]
             port.bind_driver()
 
-    def start_testpmd_in_vm(self, txoffload=''):
-        self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
+    def start_testpmd_in_vm(self, txoffload=""):
+        self.vm0_dut_ports = self.vm_dut_0.get_ports("any")
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
 
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, "--portmask=0x3 --tx-offloads=%s" % txoffload)
-        self.vm0_testpmd.execute_cmd('set fwd mac')
-        self.vm0_testpmd.execute_cmd('set promisc all off')
-        self.vm0_testpmd.execute_cmd('start')
+        self.vm0_testpmd.start_testpmd(
+            VM_CORES_MASK, "--portmask=0x3 --tx-offloads=%s" % txoffload
+        )
+        self.vm0_testpmd.execute_cmd("set fwd mac")
+        self.vm0_testpmd.execute_cmd("set promisc all off")
+        self.vm0_testpmd.execute_cmd("start")
 
     def send_packets(self):
 
@@ -159,11 +162,11 @@ class TestMDD(TestCase):
         dst_mac = self.pmd_vf0_mac
         src_mac = self.tester.get_mac(self.tx_port)
 
-        pkt = Packet(pkt_type='UDP', pkt_len=64)
-        pkt.config_layer('ether', {'dst': dst_mac, 'src': src_mac})
+        pkt = Packet(pkt_type="UDP", pkt_len=64)
+        pkt.config_layer("ether", {"dst": dst_mac, "src": src_mac})
         time.sleep(2)
-        self.vm0_testpmd.execute_cmd('clear port stats all')
-        self.vm0_testpmd.execute_cmd('show port stats all')
+        self.vm0_testpmd.execute_cmd("clear port stats all")
+        self.vm0_testpmd.execute_cmd("show port stats all")
         pkt.send_pkt(self.tester, tx_port=self.tester_intf, count=send_pks_num)
         time.sleep(2)
 
@@ -172,13 +175,13 @@ class TestMDD(TestCase):
         pmd0_vf1_stats = self.vm0_testpmd.get_pmd_stats(self.port_id_1)
         time.sleep(2)
 
-        vf0_rx_cnt = pmd0_vf0_stats['RX-packets']
+        vf0_rx_cnt = pmd0_vf0_stats["RX-packets"]
         self.verify(vf0_rx_cnt >= send_pks_num, "no packet was received by vm0_VF0")
 
-        vf0_rx_err = pmd0_vf0_stats['RX-errors']
+        vf0_rx_err = pmd0_vf0_stats["RX-errors"]
         self.verify(vf0_rx_err == 0, "vm0_VF0 rx-errors")
 
-        vf1_tx_cnt = pmd0_vf1_stats['TX-packets']
+        vf1_tx_cnt = pmd0_vf1_stats["TX-packets"]
         if pkt_fwd:
             self.verify(vf1_tx_cnt == send_pks_num, "Packet forwarding failed")
         else:
@@ -188,13 +191,15 @@ class TestMDD(TestCase):
         self.dut.restore_interfaces()
         self.dut.send_expect("rmmod ixgbe", "# ", 10)
         time.sleep(2)
-        count = self.dut.send_expect("./usertools/dpdk-devbind.py -s | grep ixgbe | wc -l", "#")
+        count = self.dut.send_expect(
+            "./usertools/dpdk-devbind.py -s | grep ixgbe | wc -l", "#"
+        )
         m = [value for i in range(int(count))]
         mdd = "MDD=" + str(m).replace("[", "").replace("]", "").replace(" ", "")
         self.dut.send_expect("modprobe ixgbe %s" % mdd, "# ", 10)
         time.sleep(5)
         for port_info in self.dut.ports_info:
-            port = port_info['port']
+            port = port_info["port"]
             intf = port.get_interface_name()
             self.dut.send_expect("ifconfig %s up" % intf, "# ", 10)
             time.sleep(2)
@@ -202,38 +207,38 @@ class TestMDD(TestCase):
     def test_1enable_mdd_dpdk_disable(self):
         self.config_mdd(1)
         self.setup_2pf_2vf_1vm_env()
-        self.start_testpmd_in_vm(txoffload='0x1')
+        self.start_testpmd_in_vm(txoffload="0x1")
         self.send_packets()
         self.result_verify(False)
         dmesg = self.dut.send_expect("dmesg -c |grep 'event'", "# ", 10)
-        self.verify("Malicious event" in dmesg,"mdd error")
+        self.verify("Malicious event" in dmesg, "mdd error")
 
     def test_2enable_mdd_dpdk_enable(self):
         self.config_mdd(1)
         self.setup_2pf_2vf_1vm_env()
-        self.start_testpmd_in_vm(txoffload='0x0')
+        self.start_testpmd_in_vm(txoffload="0x0")
         self.send_packets()
         self.result_verify(False)
         dmesg = self.dut.send_expect("dmesg -c |grep 'event'", "# ", 10)
-        self.verify("Malicious event" in dmesg,"mdd error")
+        self.verify("Malicious event" in dmesg, "mdd error")
 
     def test_3disable_mdd_dpdk_disable(self):
         self.config_mdd(0)
         self.setup_2pf_2vf_1vm_env()
-        self.start_testpmd_in_vm(txoffload='0x1')
+        self.start_testpmd_in_vm(txoffload="0x1")
         self.send_packets()
         self.result_verify(True)
         dmesg = self.dut.send_expect("dmesg -c |grep 'event'", "# ", 10)
-        self.verify("Malicious event" not in dmesg,"mdd error")
+        self.verify("Malicious event" not in dmesg, "mdd error")
 
     def test_4disable_mdd_dpdk_enable(self):
         self.config_mdd(0)
         self.setup_2pf_2vf_1vm_env()
-        self.start_testpmd_in_vm(txoffload='0x0')
+        self.start_testpmd_in_vm(txoffload="0x0")
         self.send_packets()
         self.result_verify(True)
         dmesg = self.dut.send_expect("dmesg -c |grep 'event'", "# ", 10)
-        self.verify("Malicious event" not in dmesg,"mdd error")
+        self.verify("Malicious event" not in dmesg, "mdd error")
 
     def tear_down(self):
         self.destroy_2pf_2vf_1vm_env()

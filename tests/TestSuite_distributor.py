@@ -41,26 +41,27 @@ from framework.test_case import TestCase
 
 
 class TestDistributor(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
         """
         # reduce tx queues for enable many workers
-        self.dut.send_expect("sed -i -e 's/.*txRings = .*/\\tconst uint16_t rxRings = 1, txRings = 1;/' ./examples/distributor/main.c", "#")
+        self.dut.send_expect(
+            "sed -i -e 's/.*txRings = .*/\\tconst uint16_t rxRings = 1, txRings = 1;/' ./examples/distributor/main.c",
+            "#",
+        )
         out = self.dut.build_dpdk_apps("./examples/distributor")
         self.verify("Error" not in out, "Compilation error")
         self.verify("No such" not in out, "Compilation error")
 
         self.dut_ports = self.dut.get_ports()
-        self.app_distributor_path = self.dut.apps_name['distributor']
-        self.app_test_path = self.dut.apps_name['test']
+        self.app_distributor_path = self.dut.apps_name["distributor"]
+        self.app_test_path = self.dut.apps_name["test"]
         # get dts output path
         if self.logger.log_path.startswith(os.sep):
             self.output_path = self.logger.log_path
         else:
-            cur_path = os.path.dirname(
-                                os.path.dirname(os.path.realpath(__file__)))
+            cur_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
             self.output_path = os.sep.join([cur_path, self.logger.log_path])
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
@@ -90,12 +91,15 @@ class TestDistributor(TestCase):
         out = self.dut.send_expect("distributor_perf_autotest", "RTE>>", 120)
         cycles_single = self.strip_cycles(out, "single")
         cycles_burst = self.strip_cycles(out, "burst")
-        self.logger.info("Cycles for single mode is %d burst mode is %d"
-                         % (cycles_single, cycles_burst))
+        self.logger.info(
+            "Cycles for single mode is %d burst mode is %d"
+            % (cycles_single, cycles_burst)
+        )
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
-        self.verify(cycles_single > cycles_burst * 2,
-                    "Burst performance should be much better")
+        self.verify(
+            cycles_single > cycles_burst * 2, "Burst performance should be much better"
+        )
 
     def test_perf_distributor(self):
         """
@@ -103,14 +107,16 @@ class TestDistributor(TestCase):
         """
         self.verify(len(self.dut_ports) >= 1, "Not enough ports")
         workers = [1, 2, 3, 4, 8, 16, 32]
-        table_header = ["Number of workers",
-                        "Throughput Rate Rx received",
-                        "Throughput Rate Rx core enqueued",
-                        "Throughput Rate Distributor Sent",
-                        "Throughput Rate Tx core dequeued",
-                        "Throughput Rate Tx transmitted",
-                        "Throughput Rate Pkts out",
-                        "Throughput Rate Pkts out line rate"]
+        table_header = [
+            "Number of workers",
+            "Throughput Rate Rx received",
+            "Throughput Rate Rx core enqueued",
+            "Throughput Rate Distributor Sent",
+            "Throughput Rate Tx core dequeued",
+            "Throughput Rate Tx transmitted",
+            "Throughput Rate Pkts out",
+            "Throughput Rate Pkts out line rate",
+        ]
 
         # output port is calculated from overall ports number
         cmd_fmt = "%s %s -- -p 0x1"
@@ -141,8 +147,9 @@ class TestDistributor(TestCase):
             # clear streams before add new streams
             self.tester.pktgen.clear_streams()
             # run packet generator
-            streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
-                                    None, self.tester.pktgen)
+            streams = self.pktgen_helper.prepare_stream_from_tginput(
+                tgen_input, 100, None, self.tester.pktgen
+            )
             _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
 
             # get aap output after sending packet
@@ -153,7 +160,9 @@ class TestDistributor(TestCase):
             pps /= 1000000.0
             rx, enq, sent, deq, trans = self.strip_performance_data(self.app_output)
             rate = pps * 100 / float(self.wirespeed(self.nic, 64, 1))
-            self.result_table_add([worker_num, rx, enq, sent, deq, trans, pps, float('%.3f' % rate)])
+            self.result_table_add(
+                [worker_num, rx, enq, sent, deq, trans, pps, float("%.3f" % rate)]
+            )
 
         self.result_table_print()
 
@@ -164,7 +173,11 @@ class TestDistributor(TestCase):
         self.verify(len(self.dut_ports) >= 1, "Not enough ports")
 
         cmd_fmt = "%s %s -- -p 0x1"
-        out = self.dut.send_expect("sed -n '/#define RTE_DISTRIB_MAX_WORKERS/p' lib/distributor/distributor_private.h", "# ", trim_whitespace=False)
+        out = self.dut.send_expect(
+            "sed -n '/#define RTE_DISTRIB_MAX_WORKERS/p' lib/distributor/distributor_private.h",
+            "# ",
+            trim_whitespace=False,
+        )
         reg_match = r"#define RTE_DISTRIB_MAX_WORKERS (.*)"
         m = re.match(reg_match, out)
         self.verify(m, "Can't find maximum worker number")
@@ -191,7 +204,7 @@ class TestDistributor(TestCase):
         socket = self.dut.get_numa_id(self.dut_ports[0])
         cores = self.dut.get_core_list("1S/%dC/1T" % (2 + 4), socket)
 
-        eal_para = self.dut.create_eal_parameters(cores=cores, ports=[0,1])
+        eal_para = self.dut.create_eal_parameters(cores=cores, ports=[0, 1])
         cmd = cmd_fmt % (self.app_distributor_path, eal_para)
         self.dut.send_expect(cmd, "doing packet RX", timeout=30)
 
@@ -207,7 +220,8 @@ class TestDistributor(TestCase):
 
     def _get_thread_lcore(self, core_num):
         def strip_core(x):
-            return(int(x['thread']))
+            return int(x["thread"])
+
         cores = list(map(strip_core, self.dut.cores[0:core_num]))
         return cores
 
@@ -235,10 +249,10 @@ class TestDistributor(TestCase):
              - Dropped:
         """
         # skip the last one, we use the next one
-        output = output[:output.rfind("RX Thread")]
+        output = output[: output.rfind("RX Thread")]
         # skip the last two, we use the next one
-        output = output[:output.rfind("RX Thread")]
-        output = output[output.rfind("RX Thread"):]
+        output = output[: output.rfind("RX Thread")]
+        output = output[output.rfind("RX Thread") :]
         rec_rate = 0.0
         enq_rate = 0.0
         sent_rate = 0.0
@@ -264,17 +278,16 @@ class TestDistributor(TestCase):
             Time per burst:  12542
             Time per packet: 195
         """
-        out = out[out.index("%s mode" % mode):]
+        out = out[out.index("%s mode" % mode) :]
         lines = out.splitlines()
         cycles = lines[2].split()[3]
         return int(cycles)
 
     def set_fields(self):
-        ''' set ip protocol field behavior '''
+        """set ip protocol field behavior"""
         fields_config = {
-        'ip':  {
-            'dst': {'mask': '255.240.0.0', 'action': 'inc'}
-        }, }
+            "ip": {"dst": {"mask": "255.240.0.0", "action": "inc"}},
+        }
 
         return fields_config
 
@@ -288,5 +301,8 @@ class TestDistributor(TestCase):
         """
         Run after each test suite.
         """
-        self.dut.send_expect("sed -i -e 's/.*txRings = .*/\\tconst uint16_t rxRings = 1, txRings = rte_lcore_count() - 1;/' ./examples/distributor/main.c", "#")
+        self.dut.send_expect(
+            "sed -i -e 's/.*txRings = .*/\\tconst uint16_t rxRings = 1, txRings = rte_lcore_count() - 1;/' ./examples/distributor/main.c",
+            "#",
+        )
         pass

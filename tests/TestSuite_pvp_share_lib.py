@@ -41,7 +41,6 @@ from framework.test_case import TestCase
 
 
 class TestPVPShareLib(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -51,10 +50,12 @@ class TestPVPShareLib(TestCase):
         self.core_config = "1S/4C/1T"
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.core_list = self.dut.get_core_list(
-            self.core_config, socket=self.ports_socket)
-        self.verify(len(self.core_list) >= 4,
-                    "There has not enought cores to test this suite %s" %
-                    self.suite_name)
+            self.core_config, socket=self.ports_socket
+        )
+        self.verify(
+            len(self.core_list) >= 4,
+            "There has not enought cores to test this suite %s" % self.suite_name,
+        )
 
         self.core_list_virtio_user = self.core_list[0:2]
         self.core_list_vhost_user = self.core_list[2:4]
@@ -62,13 +63,13 @@ class TestPVPShareLib(TestCase):
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.prepare_share_lib_env()
 
-        self.out_path = '/tmp'
-        out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
-        if 'No such file or directory' in out:
-            self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
+        self.out_path = "/tmp"
+        out = self.tester.send_expect("ls -d %s" % self.out_path, "# ")
+        if "No such file or directory" in out:
+            self.tester.send_expect("mkdir -p %s" % self.out_path, "# ")
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
-        self.path=self.dut.apps_name['test-pmd']
+        self.path = self.dut.apps_name["test-pmd"]
         self.testpmd_name = self.path.split("/")[-1]
 
     def set_up(self):
@@ -79,10 +80,18 @@ class TestPVPShareLib(TestCase):
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.vhost_user = self.dut.new_session(suite="vhost-user")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
-        self.vhost_user.send_expect("export LD_LIBRARY_PATH=%s/%s/drivers:$LD_LIBRARY_PATH" %(self.dut.base_dir, self.dut.target), "# ")
-        self.virtio_user.send_expect("export LD_LIBRARY_PATH=%s/%s/drivers:$LD_LIBRARY_PATH" %(self.dut.base_dir, self.dut.target), "# ")
+        self.vhost_user.send_expect(
+            "export LD_LIBRARY_PATH=%s/%s/drivers:$LD_LIBRARY_PATH"
+            % (self.dut.base_dir, self.dut.target),
+            "# ",
+        )
+        self.virtio_user.send_expect(
+            "export LD_LIBRARY_PATH=%s/%s/drivers:$LD_LIBRARY_PATH"
+            % (self.dut.base_dir, self.dut.target),
+            "# ",
+        )
         # Prepare the result table
-        self.table_header = ['Frame']
+        self.table_header = ["Frame"]
         self.table_header.append("Mode")
         self.table_header.append("Mpps")
         self.table_header.append("Queue Num")
@@ -101,24 +110,25 @@ class TestPVPShareLib(TestCase):
         """
         Send packet with packet generator and verify
         """
-        payload_size = 64 - HEADER_SIZE['eth'] - HEADER_SIZE['ip'] - HEADER_SIZE['tcp']
+        payload_size = 64 - HEADER_SIZE["eth"] - HEADER_SIZE["ip"] - HEADER_SIZE["tcp"]
         tgen_input = []
         rx_port = self.tester.get_local_port(self.dut_ports[0])
         tx_port = self.tester.get_local_port(self.dut_ports[0])
         self.tester.scapy_append(
-            'wrpcap("%s/vhost.pcap", [Ether(dst="%s")/IP()/TCP()/("X"*%d)])' %
-            (self.out_path, self.dst_mac, payload_size))
+            'wrpcap("%s/vhost.pcap", [Ether(dst="%s")/IP()/TCP()/("X"*%d)])'
+            % (self.out_path, self.dst_mac, payload_size)
+        )
         tgen_input.append((tx_port, rx_port, "%s/vhost.pcap" % self.out_path))
 
         self.tester.scapy_execute()
         self.tester.pktgen.clear_streams()
-        streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
-                    None, self.tester.pktgen)
+        streams = self.pktgen_helper.prepare_stream_from_tginput(
+            tgen_input, 100, None, self.tester.pktgen
+        )
         _, Pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
         self.verify(Pps > 0, "%s can not receive packets" % (self.running_case))
-        Pps /= 1E6
-        Pct = (Pps * 100) / \
-                self.wirespeed(self.nic, 64, 1)
+        Pps /= 1e6
+        Pct = (Pps * 100) / self.wirespeed(self.nic, 64, 1)
 
         results_row = [64]
         results_row.append("share_lib")
@@ -129,18 +139,28 @@ class TestPVPShareLib(TestCase):
 
     @property
     def check_2M_env(self):
-        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
-        return True if out == '2048' else False
+        out = self.dut.send_expect(
+            "cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# "
+        )
+        return True if out == "2048" else False
 
     def start_testpmd_as_vhost(self, driver):
         """
         start testpmd on vhost
         """
-        self.pci_info = self.dut.ports_info[0]['pci']
-        eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_vhost_user, prefix='vhost',
-                                                   vdevs=['net_vhost0,iface=vhost-net,queues=1'], ports=[self.pci_info])
-        eal_param += " -d librte_net_vhost.so -d librte_net_%s.so -d librte_mempool_ring.so --file-prefix=vhost" % driver
-        command_line_client = self.path + eal_param + ' -- -i'
+        self.pci_info = self.dut.ports_info[0]["pci"]
+        eal_param = self.dut.create_eal_parameters(
+            socket=self.ports_socket,
+            cores=self.core_list_vhost_user,
+            prefix="vhost",
+            vdevs=["net_vhost0,iface=vhost-net,queues=1"],
+            ports=[self.pci_info],
+        )
+        eal_param += (
+            " -d librte_net_vhost.so -d librte_net_%s.so -d librte_mempool_ring.so --file-prefix=vhost"
+            % driver
+        )
+        command_line_client = self.path + eal_param + " -- -i"
 
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost_user.send_expect("set fwd mac", "testpmd> ", 120)
@@ -150,9 +170,13 @@ class TestPVPShareLib(TestCase):
         """
         start testpmd on virtio
         """
-        eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_virtio_user, prefix='virtio-user',
-                                                   no_pci=True, vdevs=[
-                'net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net'])
+        eal_param = self.dut.create_eal_parameters(
+            socket=self.ports_socket,
+            cores=self.core_list_virtio_user,
+            prefix="virtio-user",
+            no_pci=True,
+            vdevs=["net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net"],
+        )
         if self.check_2M_env:
             eal_param += " --single-file-segments"
         eal_param += " -d librte_net_virtio.so -d librte_mempool_ring.so"
@@ -173,9 +197,11 @@ class TestPVPShareLib(TestCase):
         """
         Vhost/virtio-user pvp share lib test with niantic
         """
-        self.verify(self.nic in ['niantic'],
-                    "the nic not support this case: %s" % self.running_case)
-        self.start_testpmd_as_vhost(driver='ixgbe')
+        self.verify(
+            self.nic in ["niantic"],
+            "the nic not support this case: %s" % self.running_case,
+        )
+        self.start_testpmd_as_vhost(driver="ixgbe")
         self.start_testpmd_as_virtio()
         self.send_and_verify()
         self.result_table_print()
@@ -185,9 +211,11 @@ class TestPVPShareLib(TestCase):
         """
         Vhost/virtio-user pvp share lib test with fortville
         """
-        self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "fortville_25g"],
-                    "the nic not support this case: %s" % self.running_case)
-        self.start_testpmd_as_vhost(driver='i40e')
+        self.verify(
+            self.nic in ["fortville_eagle", "fortville_spirit", "fortville_25g"],
+            "the nic not support this case: %s" % self.running_case,
+        )
+        self.start_testpmd_as_vhost(driver="i40e")
         self.start_testpmd_as_virtio()
         self.send_and_verify()
         self.result_table_print()

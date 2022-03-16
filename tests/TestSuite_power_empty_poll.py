@@ -48,38 +48,41 @@ from framework.utils import create_mask as dts_create_mask
 
 
 class TestPowerEmptyPoll(TestCase):
-    TRAIN = 'train'
-    NOTRAIN = 'no-train'
-    MED = 'med_threshold'
-    HIGH = 'high_threshold'
+    TRAIN = "train"
+    NOTRAIN = "no-train"
+    MED = "med_threshold"
+    HIGH = "high_threshold"
 
     @property
     def target_dir(self):
         # get absolute directory of target source code
-        target_dir = '/root' + self.dut.base_dir[1:] \
-                     if self.dut.base_dir.startswith('~') else \
-                     self.dut.base_dir
+        target_dir = (
+            "/root" + self.dut.base_dir[1:]
+            if self.dut.base_dir.startswith("~")
+            else self.dut.base_dir
+        )
         return target_dir
 
     @property
     def is_use_trex(self):
-        return (hasattr(self.tester, 'is_pktgen') and
-                self.tester.is_pktgen and
-                self.tester.pktgen.pktgen_type == PKTGEN_TREX)
+        return (
+            hasattr(self.tester, "is_pktgen")
+            and self.tester.is_pktgen
+            and self.tester.pktgen.pktgen_type == PKTGEN_TREX
+        )
 
     def d_con(self, cmd):
-        _cmd = [cmd, '# ', 10] if isinstance(cmd, str) else cmd
+        _cmd = [cmd, "# ", 10] if isinstance(cmd, str) else cmd
         return self.dut.send_expect(*_cmd)
 
     def d_a_con(self, cmd):
-        _cmd = [cmd, '# ', 10] if isinstance(cmd, str) else cmd
+        _cmd = [cmd, "# ", 10] if isinstance(cmd, str) else cmd
         return self.dut.alt_session.send_expect(*_cmd)
 
     def prepare_binary(self, name):
         example_dir = "examples/" + name
-        out = self.dut.build_dpdk_apps('./' + example_dir)
-        return os.path.join(self.target_dir,
-                            self.dut.apps_name[os.path.basename(name)])
+        out = self.dut.build_dpdk_apps("./" + example_dir)
+        return os.path.join(self.target_dir, self.dut.apps_name[os.path.basename(name)])
 
     def get_cores_mask(self, cores_list):
         return dts_create_mask(cores_list)
@@ -89,7 +92,7 @@ class TestPowerEmptyPoll(TestCase):
         cnt = 0
         for pkt in send_pkts:
             _option = deepcopy(option)
-            _option['pcap'] = pkt
+            _option["pcap"] = pkt
             stream_id = self.tester.pktgen.add_stream(txport, rxport, pkt)
             self.tester.pktgen.config_stream(stream_id, _option)
             stream_ids.append(stream_id)
@@ -103,40 +106,46 @@ class TestPowerEmptyPoll(TestCase):
     def run_traffic(self, option):
         txport = self.tester.get_local_port(self.dut_ports[0])
         rxport = self.tester.get_local_port(self.dut_ports[1])
-        stm_type = option.get('stm_types')
-        rate_percent = option.get('rate', float(100))
-        duration = option.get('duration', 10)
+        stm_type = option.get("stm_types")
+        rate_percent = option.get("rate", float(100))
+        duration = option.get("duration", 10)
         send_pkts = self.set_stream(stm_type)
         # clear streams before add new streams
         self.tester.pktgen.clear_streams()
         # set stream into pktgen
         s_option = {
-            'stream_config': {
-                'txmode': {},
-                'transmit_mode': TRANSMIT_CONT,
-                'rate': rate_percent, }
+            "stream_config": {
+                "txmode": {},
+                "transmit_mode": TRANSMIT_CONT,
+                "rate": rate_percent,
+            }
         }
         stream_ids = self.add_stream_to_pktgen(txport, rxport, send_pkts, s_option)
         # run traffic options
-        traffic_opt = option.get('traffic_opt')
+        traffic_opt = option.get("traffic_opt")
         # run pktgen(ixia/trex) traffic
         result = self.tester.pktgen.measure(stream_ids, traffic_opt)
 
         return result
 
     def get_pkt_len(self, pkt_type, frame_size):
-        headers_size = sum([HEADER_SIZE[x] for x in ['eth', 'ip', pkt_type]])
+        headers_size = sum([HEADER_SIZE[x] for x in ["eth", "ip", pkt_type]])
         pktlen = frame_size - headers_size
         return pktlen
 
     def set_stream(self, stm_names=None):
         # set streams for traffic
         pkt_configs = {
-            'UDP_1': {
-                'type': 'UDP',
-                'pkt_layers': {
-                    'ipv4': {'dst': '1.1.1.1'},
-                    'raw': {'payload': ['58'] * self.get_pkt_len('udp', frame_size=self.frame_size)}}},
+            "UDP_1": {
+                "type": "UDP",
+                "pkt_layers": {
+                    "ipv4": {"dst": "1.1.1.1"},
+                    "raw": {
+                        "payload": ["58"]
+                        * self.get_pkt_len("udp", frame_size=self.frame_size)
+                    },
+                },
+            },
         }
         # create packet instance for send
         streams = []
@@ -144,8 +153,8 @@ class TestPowerEmptyPoll(TestCase):
             if stm_name not in list(pkt_configs.keys()):
                 continue
             values = pkt_configs[stm_name]
-            pkt_type = values.get('type')
-            pkt_layers = values.get('pkt_layers')
+            pkt_type = values.get("type")
+            pkt_layers = values.get("pkt_layers")
             pkt = Packet(pkt_type=pkt_type)
             for layer in list(pkt_layers.keys()):
                 pkt.config_layer(layer, pkt_layers[layer])
@@ -156,34 +165,40 @@ class TestPowerEmptyPoll(TestCase):
     @property
     def empty_poll_options(self):
         table = {
-            'train': '1,0,0',
-            'no-train': '0,350000,500000', }
+            "train": "1,0,0",
+            "no-train": "0,350000,500000",
+        }
         return table
 
     def init_l3fwd_power(self):
-        self.l3fwd_power = self.prepare_binary('l3fwd-power')
+        self.l3fwd_power = self.prepare_binary("l3fwd-power")
 
     def start_l3fwd_power(self, core):
         train_mode = self.empty_poll_options.get(self.train_mode)
-        option = ('-v '
-                  '-c {core_mask} '
-                  '-n {mem_channel} '
-                  '-- '
-                  '-p 0x3 '
-                  '-P '
-                  '--config="(0,0,{core}),(1,0,{core})" '
-                  '-l 10 -m 6 -h 1 '
-                  '--empty-poll="{empty-poll}" '
-                  ).format(**{
-                      'core': core[-1],
-                      'core_mask': self.get_cores_mask(core),
-                      'mem_channel': self.dut.get_memory_channels(),
-                      'empty-poll': train_mode, })
+        option = (
+            "-v "
+            "-c {core_mask} "
+            "-n {mem_channel} "
+            "-- "
+            "-p 0x3 "
+            "-P "
+            '--config="(0,0,{core}),(1,0,{core})" '
+            "-l 10 -m 6 -h 1 "
+            '--empty-poll="{empty-poll}" '
+        ).format(
+            **{
+                "core": core[-1],
+                "core_mask": self.get_cores_mask(core),
+                "mem_channel": self.dut.get_memory_channels(),
+                "empty-poll": train_mode,
+            }
+        )
         prompts = {
-            self.NOTRAIN: 'POWER: Bring up the Timer',
-            self.TRAIN: 'POWER: Training is Complete'}
+            self.NOTRAIN: "POWER: Bring up the Timer",
+            self.TRAIN: "POWER: Training is Complete",
+        }
         prompt = prompts.get(self.train_mode)
-        cmd = [' '.join([self.l3fwd_power, option]), prompt, 120]
+        cmd = [" ".join([self.l3fwd_power, option]), prompt, 120]
         self.d_con(cmd)
         self.is_l3fwd_on = True
 
@@ -195,12 +210,12 @@ class TestPowerEmptyPoll(TestCase):
 
     def is_hyper_threading(self):
         cpu_index = list(self.cpu_info.keys())[-1]
-        core_num = self.cpu_info[cpu_index].get('core')
+        core_num = self.cpu_info[cpu_index].get("core")
         return (cpu_index + 1) / 2 == (core_num + 1)
 
     def is_support_pbf(self):
         # check if cpu support bpf feature
-        cpu_attr = r'/sys/devices/system/cpu/cpu0/cpufreq/base_frequency'
+        cpu_attr = r"/sys/devices/system/cpu/cpu0/cpufreq/base_frequency"
         cmd = "ls {0}".format(cpu_attr)
         self.d_a_con(cmd)
         cmd = "echo $?"
@@ -222,54 +237,56 @@ class TestPowerEmptyPoll(TestCase):
 
     def get_sys_power_driver(self):
         drv_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver"
-        output = self.d_a_con('cat ' + drv_file)
+        output = self.d_a_con("cat " + drv_file)
         if not output:
-            msg = 'unknown power driver'
+            msg = "unknown power driver"
             self.verify(False, msg)
         drv_name = output.splitlines()[0].strip()
         return drv_name
 
     def get_all_cpu_attrs(self):
-        ''' get all cpus' base_frequency value '''
-        key_values = ['base_frequency',
-                      'cpuinfo_max_freq',
-                      'cpuinfo_min_freq']
-        freq = '/sys/devices/system/cpu/cpu{0}/cpufreq/{1}'.format
+        """get all cpus' base_frequency value"""
+        key_values = ["base_frequency", "cpuinfo_max_freq", "cpuinfo_min_freq"]
+        freq = "/sys/devices/system/cpu/cpu{0}/cpufreq/{1}".format
         # use dut alt session to get dut platform cpu base frequency attribute
         cpu_topos = self.dut.get_all_cores()
         cpu_info = {}
         for cpu_topo in cpu_topos:
-            cpu_id = int(cpu_topo['thread'])
+            cpu_id = int(cpu_topo["thread"])
             cpu_info[cpu_id] = {}
-            cpu_info[cpu_id]['socket'] = cpu_topo['socket']
-            cpu_info[cpu_id]['core'] = cpu_topo['core']
+            cpu_info[cpu_id]["socket"] = cpu_topo["socket"]
+            cpu_info[cpu_id]["core"] = cpu_topo["core"]
 
         for key_value in key_values:
             cmds = []
             for cpu_id in sorted(cpu_info.keys()):
-                cmds.append('cat {0}'.format(freq(cpu_id, key_value)))
-            output = self.d_a_con(';'.join(cmds))
-            freqs = [int(item) for item in output.splitlines()] \
-                if key_value != 'scaling_available_frequencies' else \
-                    [item for item in output.splitlines()]
+                cmds.append("cat {0}".format(freq(cpu_id, key_value)))
+            output = self.d_a_con(";".join(cmds))
+            freqs = (
+                [int(item) for item in output.splitlines()]
+                if key_value != "scaling_available_frequencies"
+                else [item for item in output.splitlines()]
+            )
             for index, cpu_id in enumerate(sorted(cpu_info.keys())):
-                if key_value == 'scaling_available_frequencies':
-                    cpu_info[cpu_id][key_value] = \
-                        [int(item) for item in sorted(freqs[index].split())]
+                if key_value == "scaling_available_frequencies":
+                    cpu_info[cpu_id][key_value] = [
+                        int(item) for item in sorted(freqs[index].split())
+                    ]
                 else:
                     cpu_info[cpu_id][key_value] = freqs[index]
 
         # get high priority core and normal core
         base_freqs_info = {}
         for core_index, value in list(cpu_info.items()):
-            base_frequency = value.get('base_frequency')
+            base_frequency = value.get("base_frequency")
             base_freqs_info.setdefault(base_frequency, []).append(core_index)
         base_freqs = list(base_freqs_info.keys())
         # cpu should have high priority core and normal core
         # high priority core frequency is higher than normal core frequency
-        if len(base_freqs) <= 1 or \
-           not all([len(value) for value in list(base_freqs_info.values())]):
-            msg = 'current cpu has no high priority core'
+        if len(base_freqs) <= 1 or not all(
+            [len(value) for value in list(base_freqs_info.values())]
+        ):
+            msg = "current cpu has no high priority core"
             raise VerifyFailure(msg)
         self.logger.debug(pformat(base_freqs_info))
 
@@ -277,41 +294,41 @@ class TestPowerEmptyPoll(TestCase):
 
     def get_normal_cores_index(self, number):
         normal_freq = min(self.base_freqs_info.keys())
-        cores_index = self.base_freqs_info[normal_freq][1:number] \
-            if self.base_freqs_info[normal_freq][0] == 0 else \
-            self.base_freqs_info[normal_freq][:number]
+        cores_index = (
+            self.base_freqs_info[normal_freq][1:number]
+            if self.base_freqs_info[normal_freq][0] == 0
+            else self.base_freqs_info[normal_freq][:number]
+        )
         return cores_index
 
     def get_no_turbo_max(self, core):
-        cmd = 'rdmsr -p {} 0x0CE -f 15:8 -d'.format(core)
+        cmd = "rdmsr -p {} 0x0CE -f 15:8 -d".format(core)
         output = self.d_a_con(cmd)
-        freq = output.strip() + '00000'
+        freq = output.strip() + "00000"
         return int(freq)
 
     def check_core_freq_in_traffic(self, core_index, mode):
-        '''
+        """
         check the cores frequency when running traffic
              highest frequency[no_turbo_max]: cur_min=cur_max=no_turbo_max
-        '''
+        """
         freq = self.get_no_turbo_max(core_index)
         expected_freq = freq if mode == self.HIGH else (freq - 500000)
-        msg = 'max freq is failed to get.'
+        msg = "max freq is failed to get."
         self.verify(self.scaling_max_freq, msg)
-        msg = 'max freq is not the same as highest frequency <{0}>'
-        self.verify(expected_freq == self.scaling_max_freq,
-                    msg.format(expected_freq))
-        msg = 'min freq is failed to get.'
+        msg = "max freq is not the same as highest frequency <{0}>"
+        self.verify(expected_freq == self.scaling_max_freq, msg.format(expected_freq))
+        msg = "min freq is failed to get."
         self.verify(self.scaling_min_freq, msg)
-        msg = 'min freq is not the same as highest frequency <{0}>'
-        self.verify(expected_freq == self.scaling_min_freq,
-                    msg.format(expected_freq))
-        msg = 'core <{0}>: max freq/min_freq/expected freq<{1}> are the same'
+        msg = "min freq is not the same as highest frequency <{0}>"
+        self.verify(expected_freq == self.scaling_min_freq, msg.format(expected_freq))
+        msg = "core <{0}>: max freq/min_freq/expected freq<{1}> are the same"
         self.logger.info(msg.format(core_index, expected_freq))
 
     def check_no_train(self):
         output = self.dut.get_session_output(timeout=2)
-        msg = 'training steps should not be executed'
-        self.verify('POWER: Training is Complete' not in output, msg)
+        msg = "training steps should not be executed"
+        self.verify("POWER: Training is Complete" not in output, msg)
 
     @property
     def train_mode_check_item(self):
@@ -323,7 +340,8 @@ class TestPowerEmptyPoll(TestCase):
             [100, self.HIGH],
             [1, self.MED],
             [100, self.HIGH],
-            [1, self.MED], ]
+            [1, self.MED],
+        ]
         return check_item
 
     def verify_train_mode(self):
@@ -334,19 +352,21 @@ class TestPowerEmptyPoll(TestCase):
             if self.train_mode == self.NOTRAIN:
                 self.check_no_train()
             else:
-                time.sleep(10) # wait some time for stable training
-                msg = '{0} begin test mode <{1}> with traffic rate percent {2}%'
+                time.sleep(10)  # wait some time for stable training
+                msg = "{0} begin test mode <{1}> with traffic rate percent {2}%"
                 for rate, mode in self.train_mode_check_item:
                     self.logger.info(msg.format(self.train_mode, mode, rate))
                     duration = 20 if self.is_use_trex else 10
                     info = {
-                        'traffic_opt': {
-                            'method': 'throughput',
-                            'interval': duration - 2,
-                            'duration': duration,
-                            'callback': self.query_cpu_freq},
-                        'stm_types': ['UDP_1'],
-                        'rate': rate}
+                        "traffic_opt": {
+                            "method": "throughput",
+                            "interval": duration - 2,
+                            "duration": duration,
+                            "callback": self.query_cpu_freq,
+                        },
+                        "stm_types": ["UDP_1"],
+                        "rate": rate,
+                    }
                     # run traffic
                     self.run_traffic(info)
                     time.sleep(15 if self.is_use_trex else 2)
@@ -366,10 +386,11 @@ class TestPowerEmptyPoll(TestCase):
             self.logger.info(msg)
 
     def verify_power_driver(self):
-        expected_drv = 'intel_pstate'
+        expected_drv = "intel_pstate"
         power_drv = self.get_sys_power_driver()
         msg = "{0} should work with {1} driver on DUT".format(
-            self.suite_name, expected_drv)
+            self.suite_name, expected_drv
+        )
         self.verify(power_drv == expected_drv, msg)
 
     def verify_hyper_threading(self):
@@ -386,13 +407,14 @@ class TestPowerEmptyPoll(TestCase):
         self.is_l3fwd_on = None
         self.cpu_info, self.base_freqs_info = self.get_all_cpu_attrs()
         test_content = self.get_suite_cfg()
-        self.frame_size = test_content.get('frame_size') or 1024
+        self.frame_size = test_content.get("frame_size") or 1024
         self.check_core = self.get_normal_cores_index(2)
         self.verify_hyper_threading()
         # modprobe msr module to let the application can get the CPU HW info
-        self.d_a_con('modprobe msr')
+        self.d_a_con("modprobe msr")
         # init binary
         self.init_l3fwd_power()
+
     #
     # Test cases.
     #

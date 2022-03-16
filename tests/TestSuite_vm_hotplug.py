@@ -44,11 +44,10 @@ from framework.pmd_output import PmdOutput
 from framework.qemu_kvm import QEMUKvm
 from framework.test_case import TestCase
 
-VM_CORES_MASK = 'all'
+VM_CORES_MASK = "all"
 
 
 class TestVmHotplug(TestCase):
-
     def set_up_all(self):
 
         self.dut_ports = self.dut.get_ports(self.nic)
@@ -58,7 +57,7 @@ class TestVmHotplug(TestCase):
         self.tester_intf = self.tester.get_interface(tester_port)
 
         self.ports = self.dut.get_ports()
-        self.dut.send_expect('modprobe vfio-pci', '#')
+        self.dut.send_expect("modprobe vfio-pci", "#")
         self.setup_pf_1vm_env_flag = 0
         tester_port0 = self.tester.get_local_port(self.dut_ports[0])
         tester_port1 = self.tester.get_local_port(self.dut_ports[1])
@@ -85,31 +84,38 @@ class TestVmHotplug(TestCase):
 
     def start_vm(self, device=1):
         self.host_session = self.dut.new_session(suite="host_session")
-        self.dut.bind_interfaces_linux('vfio-pci', [self.ports[0]])
+        self.dut.bind_interfaces_linux("vfio-pci", [self.ports[0]])
         if device == 2:
-            self.dut.bind_interfaces_linux('vfio-pci', [self.ports[1]])
-            self.qemu_cmd += '-device vfio-pci,host=%s,id=dev2'
-            cmd = self.qemu_cmd % (self.dut.get_ip_address(), self.dut.ports_info[0]['pci'], self.dut.ports_info[1]['pci'])
+            self.dut.bind_interfaces_linux("vfio-pci", [self.ports[1]])
+            self.qemu_cmd += "-device vfio-pci,host=%s,id=dev2"
+            cmd = self.qemu_cmd % (
+                self.dut.get_ip_address(),
+                self.dut.ports_info[0]["pci"],
+                self.dut.ports_info[1]["pci"],
+            )
         else:
-            cmd = self.qemu_cmd % (self.dut.get_ip_address(), self.dut.ports_info[0]['pci'])
+            cmd = self.qemu_cmd % (
+                self.dut.get_ip_address(),
+                self.dut.ports_info[0]["pci"],
+            )
         self.host_session.send_expect(cmd, "QEMU ")
         time.sleep(10)
         self.vm0_dut = self.connect_vm()
-        self.verify(self.vm0_dut is not None, 'vm start fail')
+        self.verify(self.vm0_dut is not None, "vm start fail")
         self.setup_pf_1vm_env_flag = 1
         self.vm_session = self.vm0_dut.new_session(suite="vm_session")
-        self.vf_pci0 = self.vm0_dut.ports_info[0]['pci']
+        self.vf_pci0 = self.vm0_dut.ports_info[0]["pci"]
         if device == 2:
-            self.vf_pci1 = self.vm0_dut.ports_info[1]['pci']
-        self.vm0_dut.get_ports('any')
+            self.vf_pci1 = self.vm0_dut.ports_info[1]["pci"]
+        self.vm0_dut.get_ports("any")
         self.vm_testpmd = PmdOutput(self.vm0_dut)
 
     def connect_vm(self):
-        self.vm0 = QEMUKvm(self.dut, 'vm0', 'vm_hotplug')
-        self.vm0.net_type = 'hostfwd'
-        self.vm0.hostfwd_addr = '%s:6000' % self.dut.get_ip_address()
-        self.vm0.def_driver = 'vfio-pci'
-        self.vm0.driver_mode = 'noiommu'
+        self.vm0 = QEMUKvm(self.dut, "vm0", "vm_hotplug")
+        self.vm0.net_type = "hostfwd"
+        self.vm0.hostfwd_addr = "%s:6000" % self.dut.get_ip_address()
+        self.vm0.def_driver = "vfio-pci"
+        self.vm0.driver_mode = "noiommu"
         self.wait_vm_net_ready()
         vm_dut = self.vm0.instantiate_vm_dut(autodetect_topo=False)
         if vm_dut:
@@ -118,19 +124,26 @@ class TestVmHotplug(TestCase):
             return None
 
     def wait_vm_net_ready(self):
-        self.vm_net_session = self.dut.new_session(suite='vm_net_session')
+        self.vm_net_session = self.dut.new_session(suite="vm_net_session")
         self.start_time = time.time()
         cur_time = time.time()
         time_diff = cur_time - self.start_time
         while time_diff < 120:
             try:
-                out = self.vm_net_session.send_expect('~/QMP/qemu-ga-client --address=/tmp/vm0_qga0.sock ifconfig', '#')
+                out = self.vm_net_session.send_expect(
+                    "~/QMP/qemu-ga-client --address=/tmp/vm0_qga0.sock ifconfig", "#"
+                )
             except Exception as EnvironmentError:
                 pass
-            if '10.0.2' in out:
-                pos = self.vm0.hostfwd_addr.find(':')
-                ssh_key = '[' + self.vm0.hostfwd_addr[:pos] + ']' + self.vm0.hostfwd_addr[pos:]
-                os.system('ssh-keygen -R %s' % ssh_key)
+            if "10.0.2" in out:
+                pos = self.vm0.hostfwd_addr.find(":")
+                ssh_key = (
+                    "["
+                    + self.vm0.hostfwd_addr[:pos]
+                    + "]"
+                    + self.vm0.hostfwd_addr[pos:]
+                )
+                os.system("ssh-keygen -R %s" % ssh_key)
                 break
             time.sleep(1)
             cur_time = time.time()
@@ -140,19 +153,19 @@ class TestVmHotplug(TestCase):
     def set_up(self):
         # according to nic number starts vm
         if self.device == 1:
-            if 'two' in self.running_case:
+            if "two" in self.running_case:
                 self.device = 2
                 self.destroy_pf_1vm_env()
                 self.dut.restore_interfaces()
                 self.start_vm(self.device)
         elif self.device == 0:
-            if 'two' in self.running_case:
+            if "two" in self.running_case:
                 self.device = 2
             else:
                 self.device = 1
             self.start_vm(self.device)
         else:
-            if 'two' in self.running_case:
+            if "two" in self.running_case:
                 pass
             else:
                 self.destroy_pf_1vm_env()
@@ -160,72 +173,80 @@ class TestVmHotplug(TestCase):
                 self.start_vm(self.device)
 
     def test_one_device_hotplug(self):
-        self.vm_testpmd.start_testpmd('all', '--hot-plug')
+        self.vm_testpmd.start_testpmd("all", "--hot-plug")
         self.verify_rxtx_only()
         # add cycle for del/add device
         for i in range(3):
-            self.host_session.send_expect('device_del dev1', '(qemu)')
+            self.host_session.send_expect("device_del dev1", "(qemu)")
             time.sleep(2)
             self.check_vf_device(has_device=False)
             self.add_pf_device_qemu(device=1)
-            out = self.vm_testpmd.execute_cmd('port attach %s' % self.vm0_dut.ports_info[0]['pci'])
-            self.verify('Port 0 is attached' in out, 'attach device fail')
+            out = self.vm_testpmd.execute_cmd(
+                "port attach %s" % self.vm0_dut.ports_info[0]["pci"]
+            )
+            self.verify("Port 0 is attached" in out, "attach device fail")
             self.verify_rxtx_only()
-        self.vm_testpmd.execute_cmd('quit', '#')
+        self.vm_testpmd.execute_cmd("quit", "#")
         time.sleep(1)
 
     def test_one_device_reset_hotplug(self):
         for i in range(3):
-            self.vm_testpmd.start_testpmd('all', '--hot-plug')
+            self.vm_testpmd.start_testpmd("all", "--hot-plug")
             self.verify_rxtx_only()
             # del device
-            self.host_session.send_expect('device_del dev1', '(qemu)')
-            self.vm_testpmd.execute_cmd('quit', '#')
+            self.host_session.send_expect("device_del dev1", "(qemu)")
+            self.vm_testpmd.execute_cmd("quit", "#")
             self.check_vf_device(has_device=False)
             self.add_pf_device_qemu(device=1)
 
-            self.vm_testpmd.start_testpmd('all', '--hot-plug')
+            self.vm_testpmd.start_testpmd("all", "--hot-plug")
             self.verify_rxtx_only()
-            self.vm_testpmd.execute_cmd('quit', '#')
+            self.vm_testpmd.execute_cmd("quit", "#")
 
     def test_two_device_hotplug(self):
-        self.vm_testpmd.start_testpmd('all', '--hot-plug')
+        self.vm_testpmd.start_testpmd("all", "--hot-plug")
         self.verify_rxtx_only()
         # add cycle for del or add device
         for i in range(3):
-            self.host_session.send_expect('device_del dev1', '(qemu)')
-            self.host_session.send_expect('device_del dev2', '(qemu)')
+            self.host_session.send_expect("device_del dev1", "(qemu)")
+            self.host_session.send_expect("device_del dev2", "(qemu)")
             time.sleep(1)
             self.check_vf_device(has_device=False, device=2)
             self.add_pf_device_qemu(device=2)
-            out = self.vm_testpmd.execute_cmd('port attach %s' % self.vm0_dut.ports_info[0]['pci'])
-            self.verify('Port 0 is attached' in out, 'attach device fail')
-            out = self.vm_testpmd.execute_cmd('port attach %s' % self.vm0_dut.ports_info[1]['pci'])
-            self.verify('Port 1 is attached' in out, 'attach device fail')
+            out = self.vm_testpmd.execute_cmd(
+                "port attach %s" % self.vm0_dut.ports_info[0]["pci"]
+            )
+            self.verify("Port 0 is attached" in out, "attach device fail")
+            out = self.vm_testpmd.execute_cmd(
+                "port attach %s" % self.vm0_dut.ports_info[1]["pci"]
+            )
+            self.verify("Port 1 is attached" in out, "attach device fail")
             self.verify_rxtx_only()
-        self.vm_testpmd.execute_cmd('quit', '#')
+        self.vm_testpmd.execute_cmd("quit", "#")
 
     def test_two_device_reset_hotplug(self):
         for i in range(3):
-            self.vm_testpmd.start_testpmd('all', '--hot-plug')
+            self.vm_testpmd.start_testpmd("all", "--hot-plug")
             self.verify_rxtx_only()
             # del device
-            self.host_session.send_expect('device_del dev1', '(qemu)')
-            self.host_session.send_expect('device_del dev2', '(qemu)')
-            self.vm_testpmd.execute_cmd('quit', '#')
+            self.host_session.send_expect("device_del dev1", "(qemu)")
+            self.host_session.send_expect("device_del dev2", "(qemu)")
+            self.vm_testpmd.execute_cmd("quit", "#")
             time.sleep(1)
 
             self.check_vf_device(has_device=False, device=2)
             self.add_pf_device_qemu(device=2)
 
-            self.vm_testpmd.start_testpmd('all', '--hot-plug')
+            self.vm_testpmd.start_testpmd("all", "--hot-plug")
             self.verify_rxtx_only()
-            self.vm_testpmd.execute_cmd('quit', '#')
+            self.vm_testpmd.execute_cmd("quit", "#")
 
     def start_tcpdump(self, iface_list):
         for iface in iface_list:
             self.tester.send_expect("rm -rf tcpdump%s.out" % iface, "#")
-            self.tester.send_expect("tcpdump -c 1500 -i %s -vv -n 2>tcpdump%s.out &" % (iface, iface), "#")
+            self.tester.send_expect(
+                "tcpdump -c 1500 -i %s -vv -n 2>tcpdump%s.out &" % (iface, iface), "#"
+            )
         time.sleep(1)
 
     def get_tcpdump_package(self, iface_list):
@@ -233,74 +254,93 @@ class TestVmHotplug(TestCase):
         result = []
         for iface in iface_list:
             out = self.tester.send_expect("cat tcpdump%s.out" % iface, "#", timeout=60)
-            cap_num = re.findall('(\d+) packets', out)
+            cap_num = re.findall("(\d+) packets", out)
             result.append(cap_num[0])
         return result
 
     def verify_rxtx_only(self):
         # rxonly
-        self.vm_testpmd.execute_cmd('set fwd rxonly')
-        self.vm_testpmd.execute_cmd('set verbose 1')
-        self.vm_testpmd.execute_cmd('port start all')
-        self.vm_testpmd.execute_cmd('start')
-        self.vm_testpmd.wait_link_status_up('all')
+        self.vm_testpmd.execute_cmd("set fwd rxonly")
+        self.vm_testpmd.execute_cmd("set verbose 1")
+        self.vm_testpmd.execute_cmd("port start all")
+        self.vm_testpmd.execute_cmd("start")
+        self.vm_testpmd.wait_link_status_up("all")
 
         self.send_packet()
         out = self.vm0_dut.get_session_output(timeout=20)
-        self.verify(self.vf0_mac in out, 'vf0 receive packet fail')
+        self.verify(self.vf0_mac in out, "vf0 receive packet fail")
         if self.device == 2:
-            self.verify(self.vf1_mac in out, 'vf1 receive packet fail')
+            self.verify(self.vf1_mac in out, "vf1 receive packet fail")
         # txonly
-        self.vm_testpmd.execute_cmd('stop')
-        self.vm_testpmd.execute_cmd('set fwd txonly')
+        self.vm_testpmd.execute_cmd("stop")
+        self.vm_testpmd.execute_cmd("set fwd txonly")
         iface_list = []
         iface_list.append(self.tester_intf0)
         if self.device == 2:
             iface_list.append(self.tester_intf1)
         self.start_tcpdump(iface_list)
-        self.vm_testpmd.execute_cmd('start')
-        self.vm_testpmd.wait_link_status_up('all')
-        self.vm_testpmd.execute_cmd('stop')
+        self.vm_testpmd.execute_cmd("start")
+        self.vm_testpmd.wait_link_status_up("all")
+        self.vm_testpmd.execute_cmd("stop")
         out = self.get_tcpdump_package(iface_list)
         for pkt_num in out:
             # rule out miscellaneous package possibility
-            self.verify(int(pkt_num) > 1000, 'vf send packet fail')
+            self.verify(int(pkt_num) > 1000, "vf send packet fail")
 
     def check_vf_device(self, has_device=True, device=1):
         time.sleep(1)
-        out = self.vm_session.send_expect('./usertools/dpdk-devbind.py -s', '#')
+        out = self.vm_session.send_expect("./usertools/dpdk-devbind.py -s", "#")
         time.sleep(2)
         if has_device:
-            self.verify(self.vf_pci0 in out, 'no vf device')
+            self.verify(self.vf_pci0 in out, "no vf device")
             if device == 2:
-                self.verify(self.vf_pci1 in out, 'no vf device')
+                self.verify(self.vf_pci1 in out, "no vf device")
         else:
-            self.verify(self.vf_pci0 not in out, 'have vf device')
+            self.verify(self.vf_pci0 not in out, "have vf device")
             if device == 2:
-                self.verify(self.vf_pci1 not in out, 'have vf device')
+                self.verify(self.vf_pci1 not in out, "have vf device")
 
     def add_pf_device_qemu(self, device=1):
-        self.host_session.send_expect('device_add vfio-pci,host=%s,id=dev1' % self.dut.ports_info[0]['pci'], '(qemu)')
+        self.host_session.send_expect(
+            "device_add vfio-pci,host=%s,id=dev1" % self.dut.ports_info[0]["pci"],
+            "(qemu)",
+        )
         if device == 2:
-            self.host_session.send_expect('device_add vfio-pci,host=%s,id=dev2' % self.dut.ports_info[1]['pci'], '(qemu)')
+            self.host_session.send_expect(
+                "device_add vfio-pci,host=%s,id=dev2" % self.dut.ports_info[1]["pci"],
+                "(qemu)",
+            )
         time.sleep(3)
         self.check_vf_device(has_device=True, device=device)
-        self.vm_session.send_expect('./usertools/dpdk-devbind.py -b vfio-pci %s' % self.vf_pci0, '#')
+        self.vm_session.send_expect(
+            "./usertools/dpdk-devbind.py -b vfio-pci %s" % self.vf_pci0, "#"
+        )
         if device == 2:
-            self.vm_session.send_expect('./usertools/dpdk-devbind.py -b vfio-pci %s' % self.vf_pci1, '#')
+            self.vm_session.send_expect(
+                "./usertools/dpdk-devbind.py -b vfio-pci %s" % self.vf_pci1, "#"
+            )
         time.sleep(1)
 
     def send_packet(self):
         # check tester's link status before send packet
         for iface in [self.tester_intf0, self.tester_intf1]:
-            self.verify(self.tester.is_interface_up(intf=iface), "Wrong link status, should be up")
+            self.verify(
+                self.tester.is_interface_up(intf=iface),
+                "Wrong link status, should be up",
+            )
         self.vf0_mac = self.vm_testpmd.get_port_mac(0)
         pkts = []
-        pkt1 = r'sendp([Ether(dst="%s")/IP()/UDP()/Raw(load="P"*26)], iface="%s")' % (self.vf0_mac, self.tester_intf)
+        pkt1 = r'sendp([Ether(dst="%s")/IP()/UDP()/Raw(load="P"*26)], iface="%s")' % (
+            self.vf0_mac,
+            self.tester_intf,
+        )
         pkts.append(pkt1)
         if self.device == 2:
             self.vf1_mac = self.vm_testpmd.get_port_mac(1)
-            pkt2 = r'sendp([Ether(dst="%s")/IP()/UDP()/Raw(load="P"*26)], iface="%s")' % (self.vf1_mac, self.tester_intf)
+            pkt2 = (
+                r'sendp([Ether(dst="%s")/IP()/UDP()/Raw(load="P"*26)], iface="%s")'
+                % (self.vf1_mac, self.tester_intf)
+            )
             pkts.append(pkt2)
         for pkt in pkts:
 
@@ -309,17 +349,17 @@ class TestVmHotplug(TestCase):
         time.sleep(2)
 
     def destroy_pf_1vm_env(self):
-        if getattr(self, 'vm0', None):
+        if getattr(self, "vm0", None):
             self.vm0_dut.close_session(self.vm_session)
             try:
                 self.vm0.stop()
             except Exception:
                 pass
-            self.dut.send_expect('killall qemu-system-x86_64', '#')
+            self.dut.send_expect("killall qemu-system-x86_64", "#")
             time.sleep(1)
-            out = self.dut.send_expect('ps -ef |grep qemu', '#')
+            out = self.dut.send_expect("ps -ef |grep qemu", "#")
             if self.dut.get_ip_address() in out:
-                self.dut.send_expect('killall qemu-system-x86_64', '#')
+                self.dut.send_expect("killall qemu-system-x86_64", "#")
             self.vm0 = None
             self.setup_pf_1vm_env_flag = 0
             self.dut.close_session(self.host_session)
@@ -328,14 +368,14 @@ class TestVmHotplug(TestCase):
 
         self.dut.virt_exit()
 
-        if getattr(self, 'used_dut_port', None):
+        if getattr(self, "used_dut_port", None):
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port)
-            port = self.dut.ports_info[self.used_dut_port]['port']
+            port = self.dut.ports_info[self.used_dut_port]["port"]
             port.bind_driver()
             self.used_dut_port = None
 
         for port_id in self.dut_ports:
-            port = self.dut.ports_info[port_id]['port']
+            port = self.dut.ports_info[port_id]["port"]
             port.bind_driver()
 
     def tear_down(self):

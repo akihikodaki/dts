@@ -43,14 +43,12 @@ from framework.test_case import TestCase
 
 
 class TestVmPowerManager(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
         """
         self.dut_ports = self.dut.get_ports(self.nic)
-        self.verify(len(self.dut_ports) >= 2,
-                    "Not enough ports for " + self.nic)
+        self.verify(len(self.dut_ports) >= 2, "Not enough ports for " + self.nic)
 
         # create temporary folder for power monitor
         self.dut.send_expect("mkdir -p /tmp/powermonitor", "# ")
@@ -66,22 +64,38 @@ class TestVmPowerManager(TestCase):
         self.vm_name = "vm0"
         self.vm = LibvirtKvm(self.dut, self.vm_name, self.suite_name)
         channels = [
-            {'path': '/tmp/powermonitor/%s.0' %
-                self.vm_name, 'name': 'virtio.serial.port.poweragent.0'},
-            {'path': '/tmp/powermonitor/%s.1' %
-                self.vm_name, 'name': 'virtio.serial.port.poweragent.1'},
-            {'path': '/tmp/powermonitor/%s.2' %
-                self.vm_name, 'name': 'virtio.serial.port.poweragent.2'},
-            {'path': '/tmp/powermonitor/%s.3' %
-                self.vm_name, 'name': 'virtio.serial.port.poweragent.3'},
-            {'path': '/tmp/powermonitor/%s.4' %
-                self.vm_name, 'name': 'virtio.serial.port.poweragent.4'},
-            {'path': '/tmp/powermonitor/%s.5' %
-                self.vm_name, 'name': 'virtio.serial.port.poweragent.5'},
-            {'path': '/tmp/powermonitor/%s.6' %
-                self.vm_name, 'name': 'virtio.serial.port.poweragent.6'},
-            {'path': '/tmp/powermonitor/%s.7' %
-                self.vm_name, 'name': 'virtio.serial.port.poweragent.7'}
+            {
+                "path": "/tmp/powermonitor/%s.0" % self.vm_name,
+                "name": "virtio.serial.port.poweragent.0",
+            },
+            {
+                "path": "/tmp/powermonitor/%s.1" % self.vm_name,
+                "name": "virtio.serial.port.poweragent.1",
+            },
+            {
+                "path": "/tmp/powermonitor/%s.2" % self.vm_name,
+                "name": "virtio.serial.port.poweragent.2",
+            },
+            {
+                "path": "/tmp/powermonitor/%s.3" % self.vm_name,
+                "name": "virtio.serial.port.poweragent.3",
+            },
+            {
+                "path": "/tmp/powermonitor/%s.4" % self.vm_name,
+                "name": "virtio.serial.port.poweragent.4",
+            },
+            {
+                "path": "/tmp/powermonitor/%s.5" % self.vm_name,
+                "name": "virtio.serial.port.poweragent.5",
+            },
+            {
+                "path": "/tmp/powermonitor/%s.6" % self.vm_name,
+                "name": "virtio.serial.port.poweragent.6",
+            },
+            {
+                "path": "/tmp/powermonitor/%s.7" % self.vm_name,
+                "name": "virtio.serial.port.poweragent.7",
+            },
         ]
         for channel in channels:
             self.vm.add_vm_virtio_serial_channel(**channel)
@@ -94,14 +108,16 @@ class TestVmPowerManager(TestCase):
         self.core_num = len(cpus)
 
         # build guest cli
-        out = self.vm_dut.build_dpdk_apps(
-            "examples/vm_power_manager/guest_cli")
+        out = self.vm_dut.build_dpdk_apps("examples/vm_power_manager/guest_cli")
         self.verify("Error" not in out, "Compilation error")
         self.verify("No such" not in out, "Compilation error")
 
-        self.path = self.vm_dut.apps_name['guest_cli']
-        self.guest_cmd = self.path + "-c 0xff -n 8 -- --vm-name=%s --vcpu-list=0,1,2,3,4,5,6,7" % self.vm_name
-        self.vm_power_dir = self.vm_dut.apps_name['vm_power_manager']
+        self.path = self.vm_dut.apps_name["guest_cli"]
+        self.guest_cmd = (
+            self.path
+            + "-c 0xff -n 8 -- --vm-name=%s --vcpu-list=0,1,2,3,4,5,6,7" % self.vm_name
+        )
+        self.vm_power_dir = self.vm_dut.apps_name["vm_power_manager"]
         mgr_cmd = self.vm_power_dir + "-c 0xfff -n 8"
         out = self.dut.send_expect(mgr_cmd, "vmpower>", 120)
         self.dut.send_expect("add_vm %s" % self.vm_name, "vmpower>")
@@ -144,8 +160,7 @@ class TestVmPowerManager(TestCase):
         out = self.vm_dut.send_expect(self.guest_cmd, "vmpower\(guest\)>", 120)
 
         for vcpu in range(self.core_num):
-            self.vm_dut.send_expect(
-                "set_cpu_freq %d max" % vcpu, "vmpower\(guest\)>")
+            self.vm_dut.send_expect("set_cpu_freq %d max" % vcpu, "vmpower\(guest\)>")
 
         for vcpu in range(self.core_num):
             # map between host cpu and guest cpu
@@ -153,14 +168,14 @@ class TestVmPowerManager(TestCase):
             # get cpu frequencies range
             freqs = self.get_cpu_freqs(vcpu)
 
-            for loop in range(len(freqs)-1):
+            for loop in range(len(freqs) - 1):
                 # connect vm power host and guest
                 self.vm_dut.send_expect(
-                    "set_cpu_freq %d down" % vcpu, "vmpower\(guest\)>")
+                    "set_cpu_freq %d down" % vcpu, "vmpower\(guest\)>"
+                )
                 cur_freq = self.get_cpu_frequency(self.vcpu_map[vcpu])
                 print((utils.GREEN("After frequency down, freq is %d\n" % cur_freq)))
-                self.verify(
-                    ori_freq > cur_freq, "Cpu freqenecy can not scale down")
+                self.verify(ori_freq > cur_freq, "Cpu freqenecy can not scale down")
                 ori_freq = cur_freq
 
         self.vm_dut.send_expect("quit", "# ")
@@ -172,20 +187,19 @@ class TestVmPowerManager(TestCase):
         out = self.vm_dut.send_expect(self.guest_cmd, "vmpower\(guest\)>", 120)
 
         for vcpu in range(self.core_num):
-            self.vm_dut.send_expect(
-                "set_cpu_freq %d min" % vcpu, "vmpower\(guest\)>")
+            self.vm_dut.send_expect("set_cpu_freq %d min" % vcpu, "vmpower\(guest\)>")
 
         for vcpu in range(self.core_num):
             ori_freq = self.get_cpu_frequency(self.vcpu_map[vcpu])
             # get cpu frequencies range
             freqs = self.get_cpu_freqs(vcpu)
-            for loop in range(len(freqs)-1):
+            for loop in range(len(freqs) - 1):
                 self.vm_dut.send_expect(
-                    "set_cpu_freq %d up" % vcpu, "vmpower\(guest\)>")
+                    "set_cpu_freq %d up" % vcpu, "vmpower\(guest\)>"
+                )
                 cur_freq = self.get_cpu_frequency(self.vcpu_map[vcpu])
                 print((utils.GREEN("After frequency up, freq is %d\n" % cur_freq)))
-                self.verify(
-                    cur_freq > ori_freq, "Cpu freqenecy can not scale up")
+                self.verify(cur_freq > ori_freq, "Cpu freqenecy can not scale up")
                 ori_freq = cur_freq
 
         self.vm_dut.send_expect("quit", "# ")
@@ -196,15 +210,16 @@ class TestVmPowerManager(TestCase):
         """
         out = self.vm_dut.send_expect(self.guest_cmd, "vmpower\(guest\)>", 120)
 
-        max_freq_path = "cat /sys/devices/system/cpu/cpu%s/cpufreq/" + \
-                        "cpuinfo_max_freq"
+        max_freq_path = (
+            "cat /sys/devices/system/cpu/cpu%s/cpufreq/" + "cpuinfo_max_freq"
+        )
         for vcpu in range(self.core_num):
-            self.vm_dut.send_expect(
-                "set_cpu_freq %d max" % vcpu, "vmpower\(guest\)>")
+            self.vm_dut.send_expect("set_cpu_freq %d max" % vcpu, "vmpower\(guest\)>")
             freq = self.get_cpu_frequency(self.vcpu_map[vcpu])
 
             out = self.dut.alt_session.send_expect(
-                max_freq_path % self.vcpu_map[vcpu], "# ")
+                max_freq_path % self.vcpu_map[vcpu], "# "
+            )
             max_freq = int(out)
 
             self.verify(freq == max_freq, "Cpu max frequency not correct")
@@ -217,15 +232,16 @@ class TestVmPowerManager(TestCase):
         """
         out = self.vm_dut.send_expect(self.guest_cmd, "vmpower\(guest\)>", 120)
 
-        min_freq_path = "cat /sys/devices/system/cpu/cpu%s/cpufreq/" + \
-                        "cpuinfo_min_freq"
+        min_freq_path = (
+            "cat /sys/devices/system/cpu/cpu%s/cpufreq/" + "cpuinfo_min_freq"
+        )
         for vcpu in range(self.core_num):
-            self.vm_dut.send_expect(
-                "set_cpu_freq %d min" % vcpu, "vmpower\(guest\)>")
+            self.vm_dut.send_expect("set_cpu_freq %d min" % vcpu, "vmpower\(guest\)>")
             freq = self.get_cpu_frequency(self.vcpu_map[vcpu])
 
             out = self.dut.alt_session.send_expect(
-                min_freq_path % self.vcpu_map[vcpu], "# ")
+                min_freq_path % self.vcpu_map[vcpu], "# "
+            )
             min_freq = int(out)
 
             self.verify(freq == min_freq, "Cpu min frequency not correct")
@@ -237,24 +253,24 @@ class TestVmPowerManager(TestCase):
         print((utils.GREEN("Current cpu frequency %d" % self.cur_freq)))
 
     def get_max_freq(self, core_num):
-        freq_path = "cat /sys/devices/system/cpu/cpu%d/cpufreq/" + \
-                    "cpuinfo_max_freq"
+        freq_path = "cat /sys/devices/system/cpu/cpu%d/cpufreq/" + "cpuinfo_max_freq"
 
         out = self.dut.alt_session.send_expect(freq_path % core_num, "# ")
         freq = int(out)
         return freq
 
     def get_min_freq(self, core_num):
-        freq_path = "cat /sys/devices/system/cpu/cpu%d/cpufreq/" + \
-                    "cpuinfo_min_freq"
+        freq_path = "cat /sys/devices/system/cpu/cpu%d/cpufreq/" + "cpuinfo_min_freq"
 
         out = self.dut.alt_session.send_expect(freq_path % core_num, "# ")
         freq = int(out)
         return freq
 
     def get_cpu_freqs(self, core_num):
-        freq_path = "cat /sys/devices/system/cpu/cpu%d/cpufreq/" + \
-                    "scaling_available_frequencies"
+        freq_path = (
+            "cat /sys/devices/system/cpu/cpu%d/cpufreq/"
+            + "scaling_available_frequencies"
+        )
 
         out = self.dut.alt_session.send_expect(freq_path % core_num, "# ")
         freqs = out.split()

@@ -39,9 +39,8 @@ from framework.test_case import TestCase
 
 
 class TestCompressdevIsalPmd(TestCase):
-
     def set_up_all(self):
-        cc.default_eals.update({'a': "0000:00:00.0", "vdev": "compress_isal"})
+        cc.default_eals.update({"a": "0000:00:00.0", "vdev": "compress_isal"})
         cc.default_opts.update({"driver-name": "compress_isal"})
         self._perf_result = dict()
         self.eals = copy.deepcopy(cc.default_eals)
@@ -63,14 +62,24 @@ class TestCompressdevIsalPmd(TestCase):
         result = cc.run_compress_func(self)
 
     def test_isal_pmd_fixed_perf(self):
-        cc.default_opts.update({"huffman-enc": "fixed", "extended-input-sz": 3244032,
-            "max-num-sgl-segs": 1})
+        cc.default_opts.update(
+            {
+                "huffman-enc": "fixed",
+                "extended-input-sz": 3244032,
+                "max-num-sgl-segs": 1,
+            }
+        )
         result = cc.run_compress_perf(self)
         self._perf_result.update(result)
 
     def test_isal_pmd_dynamic_perf(self):
-        cc.default_opts.update({"huffman-enc": "dynamic", "extended-input-sz": 3244032,
-            "max-num-sgl-segs": 1})
+        cc.default_opts.update(
+            {
+                "huffman-enc": "dynamic",
+                "extended-input-sz": 3244032,
+                "max-num-sgl-segs": 1,
+            }
+        )
         result = cc.run_compress_perf(self)
         self._perf_result.update(result)
 
@@ -82,4 +91,3 @@ class TestCompressdevIsalPmd(TestCase):
         if self._perf_result:
             with open(self.logger.log_path + "/" + self.suite_name + ".json", "a") as f:
                 json.dump(self._perf_result, f, indent=4)
-

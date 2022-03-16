@@ -70,12 +70,12 @@ class TestUnitTestsCrc(TestCase):
         """
 
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        app_name = self.dut.apps_name['test']
-        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", 60)        
+        app_name = self.dut.apps_name["test"]
+        self.dut.send_expect(app_name + eal_params, "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("crc_autotest", "RTE>>", 60)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
-        return 'SUCCESS'
+        return "SUCCESS"
 
     def tear_down(self):
         """
@@ -88,4 +88,3 @@ class TestUnitTestsCrc(TestCase):
         Run after each test suite.
         """
         pass
-                                                                       

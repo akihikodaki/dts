@@ -30,7 +30,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-
 """
 DPDK Test suite.
 
@@ -66,18 +65,18 @@ class TestQueueStartStop(TestCase):
         """
         self.ports = self.dut.get_ports(self.nic)
         self.verify(len(self.ports) >= 1, "Insufficient number of ports.")
-        self.app_testpmd_path = self.dut.apps_name['test-pmd']
+        self.app_testpmd_path = self.dut.apps_name["test-pmd"]
 
     def set_up(self):
         """
         Run before each test case.
         """
         try:
-            patch_file = FOLDERS["Depends"] + r'/macfwd_log.patch'
+            patch_file = FOLDERS["Depends"] + r"/macfwd_log.patch"
         except:
             self.logger.warning(str(FOLDERS))
-            patch_file = r'dep/macfwd_log.patch'
-            FOLDERS["Depends"] = 'dep'
+            patch_file = r"dep/macfwd_log.patch"
+            FOLDERS["Depends"] = "dep"
         patch_dst = "/tmp/"
 
         # dpdk patch and build
@@ -102,17 +101,19 @@ class TestQueueStartStop(TestCase):
 
         pkt = Packet(pkt_type="UDP", pkt_len=pktSize)
         inst = self.tester.tcpdump_sniff_packets(rxitf)
-        pkt.config_layer('ether', {'dst': dmac})
+        pkt.config_layer("ether", {"dst": dmac})
         pkt.send_pkt(self.tester, tx_port=txitf, count=4)
         sniff_pkts = self.tester.load_tcpdump_sniff_packets(inst)
 
         if received:
             res = strip_pktload(sniff_pkts, layer="L4")
-            self.verify("58 58 58 58 58 58 58 58" in res, "receive queue not work as expected")
+            self.verify(
+                "58 58 58 58 58 58 58 58" in res, "receive queue not work as expected"
+            )
         else:
             self.verify(len(sniff_pkts) == 0, "stop queue not work as expected")
 
-    def patch_hotfix_dpdk(self, patch_dir, on = True):
+    def patch_hotfix_dpdk(self, patch_dir, on=True):
         """
         This function is to apply or remove patch for dpdk.
         patch_dir: the abs path of the patch
@@ -130,10 +131,15 @@ class TestQueueStartStop(TestCase):
         """
         queue start/stop test
         """
-        #dpdk start
+        # dpdk start
         eal_para = self.dut.create_eal_parameters()
         try:
-            self.dut.send_expect("%s %s -- -i --portmask=0x1 --port-topology=loop" % (self.app_testpmd_path, eal_para), "testpmd>", 120)
+            self.dut.send_expect(
+                "%s %s -- -i --portmask=0x1 --port-topology=loop"
+                % (self.app_testpmd_path, eal_para),
+                "testpmd>",
+                120,
+            )
             time.sleep(5)
             self.dut.send_expect("set fwd mac", "testpmd>")
             self.dut.send_expect("start", "testpmd>")
@@ -161,9 +167,15 @@ class TestQueueStartStop(TestCase):
             raise IOError("queue start/stop forward failure: %s" % e)
 
         if self.nic == "cavium_a063":
-            self.verify("ports 0 queue 0 receive 4 packages" in out, "start queue revice package failed, out = %s"%out)
+            self.verify(
+                "ports 0 queue 0 receive 4 packages" in out,
+                "start queue revice package failed, out = %s" % out,
+            )
         else:
-            self.verify("ports 0 queue 0 receive 1 packages\r\n"*4 in out, "start queue revice package failed, out = %s"%out)
+            self.verify(
+                "ports 0 queue 0 receive 1 packages\r\n" * 4 in out,
+                "start queue revice package failed, out = %s" % out,
+            )
 
         try:
             # start tx queue test
@@ -192,7 +204,7 @@ class TestQueueStartStop(TestCase):
         try:
             self.patch_hotfix_dpdk(patch_dst + "macfwd_log.patch", False)
         except Exception as e:
-            print(("patch_hotfix_dpdk remove failure :%s" %e))
+            print(("patch_hotfix_dpdk remove failure :%s" % e))
 
     def tear_down_all(self):
         """

@@ -46,7 +46,6 @@ from framework.test_case import TestCase
 
 
 class TestLoopbackPortRestart(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -56,10 +55,11 @@ class TestLoopbackPortRestart(TestCase):
         self.dut_ports = self.dut.get_ports()
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.core_list = self.dut.get_core_list(
-            self.core_config, socket=self.ports_socket)
+            self.core_config, socket=self.ports_socket
+        )
         self.core_list_user = self.core_list[0:2]
         self.core_list_host = self.core_list[2:5]
-        self.path=self.dut.apps_name['test-pmd']
+        self.path = self.dut.apps_name["test-pmd"]
         self.testpmd_name = self.path.split("/")[-1]
 
     def set_up(self):
@@ -87,26 +87,45 @@ class TestLoopbackPortRestart(TestCase):
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
         eal_params = "--vdev 'net_vhost0,iface=vhost-net,queues=1,client=0'"
         param = "--nb-cores=1 --txd=1024 --rxd=1024"
-        self.vhost_pmd.start_testpmd(self.core_list_host, param=param, no_pci=True, ports=[], eal_param=eal_params, prefix='vhost', fixed_prefix=True)
+        self.vhost_pmd.start_testpmd(
+            self.core_list_host,
+            param=param,
+            no_pci=True,
+            ports=[],
+            eal_param=eal_params,
+            prefix="vhost",
+            fixed_prefix=True,
+        )
         self.vhost_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
 
     @property
     def check_2M_env(self):
-        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
-        return True if out == '2048' else False
+        out = self.dut.send_expect(
+            "cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# "
+        )
+        return True if out == "2048" else False
 
     def start_virtio_user_testpmd(self, pmd_arg):
         """
         start testpmd of vhost user
         """
-        eal_param = "--vdev 'net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,{}'".format(pmd_arg["version"])
+        eal_param = "--vdev 'net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,{}'".format(
+            pmd_arg["version"]
+        )
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        if 'vectorized_path' in self.running_case:
+        if "vectorized_path" in self.running_case:
             eal_param += " --force-max-simd-bitwidth=512"
         param = "{} --rss-ip --nb-cores=1 --txd=1024 --rxd=1024".format(pmd_arg["path"])
-        self.virtio_user_pmd.start_testpmd(cores=self.core_list_user, param=param, eal_param=eal_param, \
-                no_pci=True, ports=[], prefix="virtio", fixed_prefix=True)
+        self.virtio_user_pmd.start_testpmd(
+            cores=self.core_list_user,
+            param=param,
+            eal_param=eal_param,
+            no_pci=True,
+            ports=[],
+            prefix="virtio",
+            fixed_prefix=True,
+        )
 
         self.virtio_user_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
         self.virtio_user_pmd.execute_cmd("start", "testpmd> ", 120)
@@ -116,7 +135,7 @@ class TestLoopbackPortRestart(TestCase):
         check the throughput after port stop
         """
         loop = 1
-        while(loop <= 5):
+        while loop <= 5:
             out = self.vhost_pmd.execute_cmd("show port stats 0", "testpmd>", 60)
             lines = re.search("Rx-pps:\s*(\d*)", out)
             result = lines.group(1)
@@ -124,17 +143,19 @@ class TestLoopbackPortRestart(TestCase):
                 break
             time.sleep(3)
             loop = loop + 1
-        self.verify(result == "0", "port stop failed, it alse can recevie data after stop.")
+        self.verify(
+            result == "0", "port stop failed, it alse can recevie data after stop."
+        )
 
     def check_port_link_status_after_port_restart(self):
         """
         check the link status after port restart
         """
         loop = 1
-        while(loop <= 5):
+        while loop <= 5:
             out = self.vhost_pmd.execute_cmd("show port info all", "testpmd> ", 120)
             port_status = re.findall("Link\s*status:\s*([a-z]*)", out)
-            if("down" not in port_status):
+            if "down" not in port_status:
                 break
             time.sleep(3)
             loop = loop + 1
@@ -192,7 +213,9 @@ class TestLoopbackPortRestart(TestCase):
 
         self.port_restart(restart_times)
         Mpps = self.calculate_avg_throughput()
-        self.update_table_info(case_info, frame_size, Mpps, "After Restart and set burst to 1")
+        self.update_table_info(
+            case_info, frame_size, Mpps, "After Restart and set burst to 1"
+        )
 
     def close_all_testpmd(self):
         """
@@ -212,8 +235,10 @@ class TestLoopbackPortRestart(TestCase):
         """
         performance for [frame_sizes] and restart port on virtio1.1 mergeable path
         """
-        pmd_arg = {"version": "packed_vq=1,in_order=0,mrg_rxbuf=1 ",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip "}
+        pmd_arg = {
+            "version": "packed_vq=1,in_order=0,mrg_rxbuf=1 ",
+            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip ",
+        }
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
@@ -225,8 +250,10 @@ class TestLoopbackPortRestart(TestCase):
         """
         performance for [frame_sizes] and restart port ob virtio1.1 normal path
         """
-        pmd_arg = {"version": "packed_vq=1,in_order=0,mrg_rxbuf=0 ",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip "}
+        pmd_arg = {
+            "version": "packed_vq=1,in_order=0,mrg_rxbuf=0 ",
+            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip ",
+        }
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
@@ -235,8 +262,10 @@ class TestLoopbackPortRestart(TestCase):
         self.result_table_print()
 
     def test_lookback_test_with_packed_ring_inorder_mergeable_path(self):
-        pmd_arg = {"version": "packed_vq=1,mrg_rxbuf=1,in_order=1",
-                   "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
+        pmd_arg = {
+            "version": "packed_vq=1,mrg_rxbuf=1,in_order=1",
+            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+        }
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
@@ -248,8 +277,10 @@ class TestLoopbackPortRestart(TestCase):
         """
         performance for [frame_sizes] and restart port on inorder mergeable path
         """
-        pmd_arg = {"version": "packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1",
-                          "path": "--rx-offloads=0x10 --enable-hw-vlan-strip"}
+        pmd_arg = {
+            "version": "packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1",
+            "path": "--rx-offloads=0x10 --enable-hw-vlan-strip",
+        }
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
@@ -261,8 +292,10 @@ class TestLoopbackPortRestart(TestCase):
         """
         performance for [frame_sizes] and restart port on inorder mergeable path
         """
-        pmd_arg = {"version": "packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
+        pmd_arg = {
+            "version": "packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1",
+            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+        }
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
@@ -274,8 +307,10 @@ class TestLoopbackPortRestart(TestCase):
         """
         performance for [frame_sizes] and restart port on inorder normal path
         """
-        pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=1",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip "}
+        pmd_arg = {
+            "version": "packed_vq=0,in_order=1,mrg_rxbuf=1",
+            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip ",
+        }
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
@@ -287,8 +322,10 @@ class TestLoopbackPortRestart(TestCase):
         """
         performance for [frame_sizes] and restart port on virtio normal path
         """
-        pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=0 ",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip "}
+        pmd_arg = {
+            "version": "packed_vq=0,in_order=1,mrg_rxbuf=0 ",
+            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip ",
+        }
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
@@ -300,8 +337,10 @@ class TestLoopbackPortRestart(TestCase):
         """
         performance for [frame_sizes] and restart port on virtio normal path
         """
-        pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=1",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip "}
+        pmd_arg = {
+            "version": "packed_vq=0,in_order=0,mrg_rxbuf=1",
+            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip ",
+        }
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
@@ -313,8 +352,10 @@ class TestLoopbackPortRestart(TestCase):
         """
         performance for [frame_sizes] and restart port on virtio normal path
         """
-        pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip "}
+        pmd_arg = {
+            "version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
+            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip ",
+        }
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
@@ -326,8 +367,10 @@ class TestLoopbackPortRestart(TestCase):
         """
         performance for frame_sizes and restart port on virtio vector rx
         """
-        pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
-                          "path": "--tx-offloads=0x0 "}
+        pmd_arg = {
+            "version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
+            "path": "--tx-offloads=0x0 ",
+        }
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)

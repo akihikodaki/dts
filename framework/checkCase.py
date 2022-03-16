@@ -2,11 +2,17 @@ import collections
 import json
 import os
 
-from .settings import HOST_DRIVER_SETTING, get_nic_name, load_global_setting, CONFIG_ROOT_PATH
+from .settings import (
+    CONFIG_ROOT_PATH,
+    HOST_DRIVER_SETTING,
+    get_nic_name,
+    load_global_setting,
+)
 from .utils import RED
 
-filter_json_file = os.path.join(CONFIG_ROOT_PATH, 'test_case_checklist.json')
-support_json_file = os.path.join(CONFIG_ROOT_PATH, 'test_case_supportlist.json')
+filter_json_file = os.path.join(CONFIG_ROOT_PATH, "test_case_checklist.json")
+support_json_file = os.path.join(CONFIG_ROOT_PATH, "test_case_supportlist.json")
+
 
 class CheckCase(object):
     """
@@ -18,19 +24,31 @@ class CheckCase(object):
 
     def __init__(self):
         self.dut = None
-        self.comments = ''
+        self.comments = ""
 
         self.check_function_dict = {}
         self.support_function_dict = {}
         try:
-            self.check_function_dict = json.load(open(filter_json_file), object_pairs_hook=collections.OrderedDict)
+            self.check_function_dict = json.load(
+                open(filter_json_file), object_pairs_hook=collections.OrderedDict
+            )
         except:
-            print(RED("Can't load check list for test cases, all case will be taken as supported"))
+            print(
+                RED(
+                    "Can't load check list for test cases, all case will be taken as supported"
+                )
+            )
 
         try:
-            self.support_function_dict = json.load(open(support_json_file), object_pairs_hook=collections.OrderedDict)
+            self.support_function_dict = json.load(
+                open(support_json_file), object_pairs_hook=collections.OrderedDict
+            )
         except:
-            print(RED("Can't load support list for test cases, all case will be taken as supported"))
+            print(
+                RED(
+                    "Can't load support list for test cases, all case will be taken as supported"
+                )
+            )
 
     def check_dut(self, dut):
         """
@@ -39,7 +57,7 @@ class CheckCase(object):
         self.dut = dut
 
     def _check_os(self, os_type):
-        if 'all' == os_type[0].lower():
+        if "all" == os_type[0].lower():
             return True
         dut_os_type = self.dut.get_os_type()
         if dut_os_type in os_type:
@@ -48,16 +66,16 @@ class CheckCase(object):
             return False
 
     def _check_nic(self, nic_type):
-        if 'all' == nic_type[0].lower():
+        if "all" == nic_type[0].lower():
             return True
-        dut_nic_type = get_nic_name(self.dut.ports_info[0]['type'])
+        dut_nic_type = get_nic_name(self.dut.ports_info[0]["type"])
         if dut_nic_type in nic_type:
             return True
         else:
             return False
 
     def _check_target(self, target):
-        if 'all' == target[0].lower():
+        if "all" == target[0].lower():
             return True
         if self.dut.target in target:
             return True
@@ -66,7 +84,7 @@ class CheckCase(object):
 
     def _check_host_driver(self, drivers):
         host_driver = load_global_setting(HOST_DRIVER_SETTING)
-        if 'all' == drivers[0].lower():
+        if "all" == drivers[0].lower():
             return True
         if host_driver in drivers:
             return True
@@ -94,11 +112,11 @@ class CheckCase(object):
                 for key in list(case_check.keys()):
                     # some items like "Bug ID" and "Comments" do not need check
                     try:
-                        if 'Comments' == key:
+                        if "Comments" == key:
                             continue
-                        if 'Bug ID' == key:
+                        if "Bug ID" == key:
                             continue
-                        check_function = getattr(self, '_check_%s' % key.lower())
+                        check_function = getattr(self, "_check_%s" % key.lower())
                     except:
                         print(RED("can't check %s type" % key))
 
@@ -111,8 +129,8 @@ class CheckCase(object):
 
                 # if all items matched, this case should skip
                 if skip_flag:
-                    if 'Comments' in list(case_check.keys()):
-                        self.comments = case_check['Comments']
+                    if "Comments" in list(case_check.keys()):
+                        self.comments = case_check["Comments"]
                     return skip_flag
 
         return skip_flag
@@ -138,11 +156,11 @@ class CheckCase(object):
                 for key in list(case_support.keys()):
                     # some items like "Bug ID" and "Comments" do not need check
                     try:
-                        if 'Comments' == key:
+                        if "Comments" == key:
                             continue
-                        if 'Bug ID' == key:
+                        if "Bug ID" == key:
                             continue
-                        check_function = getattr(self, '_check_%s' % key.lower())
+                        check_function = getattr(self, "_check_%s" % key.lower())
                     except:
                         print(RED("can't check %s type" % key))
 
@@ -154,29 +172,29 @@ class CheckCase(object):
                         break
 
             if support_flag is False:
-                if 'Comments' in list(case_support.keys()):
-                    self.comments = case_support['Comments']
+                if "Comments" in list(case_support.keys()):
+                    self.comments = case_support["Comments"]
                 return support_flag
 
         return support_flag
 
 
 class simple_dut(object):
-
-    def __init__(self, os='', target='', nic=''):
+    def __init__(self, os="", target="", nic=""):
         self.ports_info = [{}]
         self.os = os
         self.target = target
-        self.ports_info[0]['type'] = nic
+        self.ports_info[0]["type"] = nic
 
     def get_os_type(self):
         return self.os
 
+
 if __name__ == "__main__":
-    dut = simple_dut(
-        os="linux", target='x86_64-native-linuxapp-gcc', nic='177d:a034')
+    dut = simple_dut(os="linux", target="x86_64-native-linuxapp-gcc", nic="177d:a034")
     dut1 = simple_dut(
-        os="freebsd", target='x86_64-native-linuxapp-gcc', nic='8086:158b')
+        os="freebsd", target="x86_64-native-linuxapp-gcc", nic="8086:158b"
+    )
 
     # create instance for check/support case list
     case_inst = CheckCase()

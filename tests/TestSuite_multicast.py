@@ -46,7 +46,7 @@ trafficFlow = {
     "F3": ["TG0", "TG0,TG1", "10.100.0.3", "224.0.0.105"],
     "F4": ["TG1", "TG1", "11.100.0.1", "224.0.0.104"],
     "F5": ["TG1", "TG0", "11.100.0.2", "224.0.0.101"],
-    "F6": ["TG1", "TG0,TG1", "11.100.0.3", "224.0.0.105"]
+    "F6": ["TG1", "TG0,TG1", "11.100.0.3", "224.0.0.105"],
 }
 
 measureTarget = [
@@ -58,12 +58,11 @@ measureTarget = [
     ["1S/2C/1T", "F2,F5", "ipv4_multicast -c %s -n 3 -- -p %s -q 1"],
     ["1S/1C/1T", "F3,F6", "ipv4_multicast -c %s -n 3 -- -p %s -q 2"],
     ["1S/1C/2T", "F3,F6", "ipv4_multicast -c %s -n 3 -- -p %s -q 1"],
-    ["1S/2C/1T", "F3,F6", "ipv4_multicast -c %s -n 3 -- -p %s -q 1"]
+    ["1S/2C/1T", "F3,F6", "ipv4_multicast -c %s -n 3 -- -p %s -q 1"],
 ]
 
 
 class TestMulticast(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -90,8 +89,8 @@ class TestMulticast(TestCase):
         TG1 = self.tester.get_local_port(TGs[1])
 
         # make application
-        out = self.dut.build_dpdk_apps('examples/ipv4_multicast')
-        self.app_ipv4_multicast_path = self.dut.apps_name['ipv4_multicast']
+        out = self.dut.build_dpdk_apps("examples/ipv4_multicast")
+        self.app_ipv4_multicast_path = self.dut.apps_name["ipv4_multicast"]
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 
@@ -107,21 +106,35 @@ class TestMulticast(TestCase):
         """
         eal_para = self.dut.create_eal_parameters(cores="1S/2C/1T")
         payload = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        self.dut.send_expect("%s %s -- -p %s -q 2" % (self.app_ipv4_multicast_path,
-                                                              eal_para, '0x5'), "IPv4_MULTICAST:", 60)
+        self.dut.send_expect(
+            "%s %s -- -p %s -q 2" % (self.app_ipv4_multicast_path, eal_para, "0x5"),
+            "IPv4_MULTICAST:",
+            60,
+        )
 
         for flow in list(trafficFlow.keys()):
             for tx_port in trafficFlow[flow][0].split(","):
                 for rx_port in trafficFlow[flow][1].split(","):
                     sniff_src = "not 00:00:00:00:00:00"
 
-                    inst = self.tester.tcpdump_sniff_packets(intf=self.tester.get_interface(eval(rx_port)),
-                        count=1, filters=[{"layer": "ether", "config": {"src": sniff_src}}] )
+                    inst = self.tester.tcpdump_sniff_packets(
+                        intf=self.tester.get_interface(eval(rx_port)),
+                        count=1,
+                        filters=[{"layer": "ether", "config": {"src": sniff_src}}],
+                    )
                     dmac = self.dut.get_mac_address(TGs[int(trafficFlow[flow][0][2])])
 
-                    self.tester.scapy_append('sendp([Ether(src="00:00:00:00:00:00", dst="%s")/IP(dst="%s",src="%s")\
-                            /Raw(load="%s")], iface="%s")' % (
-                            dmac, trafficFlow[flow][3], trafficFlow[flow][2], payload, self.tester.get_interface(eval(tx_port))))
+                    self.tester.scapy_append(
+                        'sendp([Ether(src="00:00:00:00:00:00", dst="%s")/IP(dst="%s",src="%s")\
+                            /Raw(load="%s")], iface="%s")'
+                        % (
+                            dmac,
+                            trafficFlow[flow][3],
+                            trafficFlow[flow][2],
+                            payload,
+                            self.tester.get_interface(eval(tx_port)),
+                        )
+                    )
                     self.tester.scapy_execute()
                     time.sleep(5)  # Wait for the sniffer to finish.
 
@@ -131,13 +144,24 @@ class TestMulticast(TestCase):
 
                         print(result)
                         self.verify("Ether" in result, "No packet received")
-                        self.verify("src=" + trafficFlow[flow][2] + " dst=" + trafficFlow[flow][3] in result,
-                            "Wrong IP address")
+                        self.verify(
+                            "src="
+                            + trafficFlow[flow][2]
+                            + " dst="
+                            + trafficFlow[flow][3]
+                            in result,
+                            "Wrong IP address",
+                        )
                         self.verify("load='%s'" % payload in result, "Wrong payload")
                         splitIP = trafficFlow[flow][3].rsplit(".")
-                        expectedMac = "01:00:5e:%s:%s:%s" % (str(int(splitIP[1], 8) & 0b01111111).zfill(2),
-                            str(int(splitIP[2], 8)).zfill(2), str(int(splitIP[3], 8)).zfill(2))
-                        self.verify("dst=%s" % expectedMac in result, "Wrong MAC address")
+                        expectedMac = "01:00:5e:%s:%s:%s" % (
+                            str(int(splitIP[1], 8) & 0b01111111).zfill(2),
+                            str(int(splitIP[2], 8)).zfill(2),
+                            str(int(splitIP[3], 8)).zfill(2),
+                        )
+                        self.verify(
+                            "dst=%s" % expectedMac in result, "Wrong MAC address"
+                        )
 
         self.dut.send_expect("^C", "#")
 

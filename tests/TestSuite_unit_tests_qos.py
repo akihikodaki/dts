@@ -61,7 +61,6 @@ class TestUnitTestsQos(TestCase):
         """
         self.cores = self.dut.get_core_list("all")
 
-
     def set_up(self):
         """
         Run before each test case.
@@ -74,8 +73,8 @@ class TestUnitTestsQos(TestCase):
         """
 
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        app_name = self.dut.apps_name['test']
-        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", 30)
+        app_name = self.dut.apps_name["test"]
+        self.dut.send_expect(app_name + eal_params, "R.*T.*E.*>.*>", 30)
         out = self.dut.send_expect("red_autotest", "RTE>>", 180)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -86,8 +85,8 @@ class TestUnitTestsQos(TestCase):
         """
 
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        app_name = self.dut.apps_name['test']
-        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", 30)
+        app_name = self.dut.apps_name["test"]
+        self.dut.send_expect(app_name + eal_params, "R.*T.*E.*>.*>", 30)
         out = self.dut.send_expect("meter_autotest", "RTE>>", 5)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -97,12 +96,15 @@ class TestUnitTestsQos(TestCase):
         Run sched autotest.
         """
 
-        [arch, machine, env, toolchain] = self.target.split('-')
-        self.verify(arch in ["x86_64" ,"arm64" ,"ppc_64"], "Sched auto_test only support in x86_64 or arm64 ppc_64")
+        [arch, machine, env, toolchain] = self.target.split("-")
+        self.verify(
+            arch in ["x86_64", "arm64", "ppc_64"],
+            "Sched auto_test only support in x86_64 or arm64 ppc_64",
+        )
 
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        app_name = self.dut.apps_name['test']
-        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", 30)
+        app_name = self.dut.apps_name["test"]
+        self.dut.send_expect(app_name + eal_params, "R.*T.*E.*>.*>", 30)
         out = self.dut.send_expect("sched_autotest", "RTE>>", 5)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")

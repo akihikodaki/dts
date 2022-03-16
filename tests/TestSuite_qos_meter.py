@@ -44,7 +44,6 @@ from framework.test_case import TestCase
 
 
 class TestQosMeter(TestCase):
-
     def set_up_all(self):
         """
         ip_fragmentation Prerequisites
@@ -59,7 +58,7 @@ class TestQosMeter(TestCase):
         # Verify that enough ports are available
         self.verify(len(ports) >= 2, "Insufficient ports for testing")
 
-        #get data from https://doc.dpdk.org/guides/sample_app_ug/qos_metering.html
+        # get data from https://doc.dpdk.org/guides/sample_app_ug/qos_metering.html
         self.blind_pps = 14880000
         self.aware_pps = 13880000
 
@@ -74,52 +73,62 @@ class TestQosMeter(TestCase):
         Build app and send pkt
         return bps and pps
         """
-        self.dut.send_expect('rm -rf ./examples/qos_meter/build', "#")
+        self.dut.send_expect("rm -rf ./examples/qos_meter/build", "#")
         out = self.dut.build_dpdk_apps("./examples/qos_meter")
         self.verify("Error" not in out, "Compilation error")
         self.verify("No such" not in out, "Compilation error")
-        eal_params = self.dut.create_eal_parameters(cores='1S/1C/1T', fixed_prefix=True, prefix='qos_meter')
-        app_name = self.dut.apps_name['qos_meter']
-        cmd = app_name + eal_params + '-- -p 0x3'
+        eal_params = self.dut.create_eal_parameters(
+            cores="1S/1C/1T", fixed_prefix=True, prefix="qos_meter"
+        )
+        app_name = self.dut.apps_name["qos_meter"]
+        cmd = app_name + eal_params + "-- -p 0x3"
         self.dut.send_expect(cmd, "TX = 1")
-        payload_size = 64 - HEADER_SIZE['eth'] - HEADER_SIZE['ip']
+        payload_size = 64 - HEADER_SIZE["eth"] - HEADER_SIZE["ip"]
         dts_mac = self.dut.get_mac_address(self.dut_ports[self.rx_port])
-        pkt = Packet(pkt_type='IP_RAW')
+        pkt = Packet(pkt_type="IP_RAW")
         pkt.save_pcapfile(self.tester, "%s/tester.pcap" % self.tester.tmp_file)
         stream_option = {
-            'pcap': "%s/tester.pcap" % self.tester.tmp_file,
-            'stream_config': {
-                    'rate': 100,
-                    'transmit_mode': TRANSMIT_CONT,
-                }
+            "pcap": "%s/tester.pcap" % self.tester.tmp_file,
+            "stream_config": {
+                "rate": 100,
+                "transmit_mode": TRANSMIT_CONT,
+            },
         }
         self.tester.pktgen.clear_streams()
         stream_ids = []
-        stream_id = self.tester.pktgen.add_stream(self.tx_port, self.rx_port, "%s/tester.pcap" % self.tester.tmp_file)
-        self.tester.pktgen.config_stream(stream_id,stream_option)
-        stream_ids.append(stream_id)
-        stream_id = self.tester.pktgen.add_stream(self.rx_port, self.tx_port, "%s/tester.pcap" % self.tester.tmp_file)
+        stream_id = self.tester.pktgen.add_stream(
+            self.tx_port, self.rx_port, "%s/tester.pcap" % self.tester.tmp_file
+        )
         self.tester.pktgen.config_stream(stream_id, stream_option)
         stream_ids.append(stream_id)
-        traffic_opt = {
-                          'method': 'throughput',
-                          'rate': 100,
-                          'duration': 20
-        }
+        stream_id = self.tester.pktgen.add_stream(
+            self.rx_port, self.tx_port, "%s/tester.pcap" % self.tester.tmp_file
+        )
+        self.tester.pktgen.config_stream(stream_id, stream_option)
+        stream_ids.append(stream_id)
+        traffic_opt = {"method": "throughput", "rate": 100, "duration": 20}
         bps, pps = self.tester.pktgen.measure(stream_ids, traffic_opt)
         return bps, pps
 
     def verify_throughput(self, throughput, pps):
         difference_value = throughput - pps
-        #performance data is allowed to float by 10%
-        self.verify(- pps*0.1 < difference_value < pps*0.1, "throughput validation failure")
+        # performance data is allowed to float by 10%
+        self.verify(
+            -pps * 0.1 < difference_value < pps * 0.1, "throughput validation failure"
+        )
 
     def test_perf_srTCM_blind_RED(self):
         """
         srTCM blind RED
         """
-        self.dut.send_expect(r"sed -i -e '/#define APP_PKT_COLOR_POS/s/[0-9]/5/g' ./examples/qos_meter/main.c", "#")
-        self.dut.send_expect(r"sed -i -e '/^#define APP_MODE /s/APP_MODE_*/APP_MODE_SRTCM_COLOR_BLIND/2' ./examples/qos_meter/main.c", "#")
+        self.dut.send_expect(
+            r"sed -i -e '/#define APP_PKT_COLOR_POS/s/[0-9]/5/g' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '/^#define APP_MODE /s/APP_MODE_*/APP_MODE_SRTCM_COLOR_BLIND/2' ./examples/qos_meter/main.c",
+            "#",
+        )
         bps, pps = self.build_app_and_send_package()
         self.verify_throughput(pps, self.aware_pps)
 
@@ -127,26 +136,44 @@ class TestQosMeter(TestCase):
         """
         srTCM blind GREEN
         """
-        self.dut.send_expect(r"sed -i -e '/#define APP_PKT_COLOR_POS/s/[0-9]/3/g' ./examples/qos_meter/main.c", "#")
-        self.dut.send_expect(r"sed -i -e '/^#define APP_MODE /s/APP_MODE_*/APP_MODE_SRTCM_COLOR_BLIND/2' ./examples/qos_meter/main.c", "#")
-        bps, pps= self.build_app_and_send_package()
+        self.dut.send_expect(
+            r"sed -i -e '/#define APP_PKT_COLOR_POS/s/[0-9]/3/g' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '/^#define APP_MODE /s/APP_MODE_*/APP_MODE_SRTCM_COLOR_BLIND/2' ./examples/qos_meter/main.c",
+            "#",
+        )
+        bps, pps = self.build_app_and_send_package()
         self.verify_throughput(pps, self.blind_pps)
 
     def test_perf_srTCM_aware_RED(self):
         """
         srTCM aware RED
         """
-        self.dut.send_expect(r"sed -i -e '/#define APP_PKT_COLOR_POS/s/[0-9]/5/g' ./examples/qos_meter/main.c", "#")
-        self.dut.send_expect(r"sed -i -e '/^#define APP_MODE /s/APP_MODE_*/APP_MODE_SRTCM_COLOR_AWARE/2' ./examples/qos_meter/main.c", "#")
-        bps, pps= self.build_app_and_send_package()
+        self.dut.send_expect(
+            r"sed -i -e '/#define APP_PKT_COLOR_POS/s/[0-9]/5/g' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '/^#define APP_MODE /s/APP_MODE_*/APP_MODE_SRTCM_COLOR_AWARE/2' ./examples/qos_meter/main.c",
+            "#",
+        )
+        bps, pps = self.build_app_and_send_package()
         self.verify_throughput(pps, self.blind_pps)
 
     def test_perf_trTCM_blind(self):
         """
         trTCM blind
         """
-        self.dut.send_expect(r"sed -i -e '/#define APP_PKT_COLOR_POS/s/[0-9]/5/g' ./examples/qos_meter/main.c", "#")
-        self.dut.send_expect(r"sed -i -e '/^#define APP_MODE /s/APP_MODE_*/APP_MODE_TRTCM_COLOR_BLIND/2' ./examples/qos_meter/main.c", "#")
+        self.dut.send_expect(
+            r"sed -i -e '/#define APP_PKT_COLOR_POS/s/[0-9]/5/g' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '/^#define APP_MODE /s/APP_MODE_*/APP_MODE_TRTCM_COLOR_BLIND/2' ./examples/qos_meter/main.c",
+            "#",
+        )
         bps, pps = self.build_app_and_send_package()
         self.verify_throughput(pps, self.aware_pps)
 
@@ -154,8 +181,14 @@ class TestQosMeter(TestCase):
         """
         trTCM aware
         """
-        self.dut.send_expect(r"sed -i -e '/#define APP_PKT_COLOR_POS/s/[0-9]/5/g' ./examples/qos_meter/main.c", "#")
-        self.dut.send_expect(r"sed -i -e '/^#define APP_MODE /s/APP_MODE_*/APP_MODE_TRTCM_COLOR_AWARE/2' ./examples/qos_meter/main.c", "#")
+        self.dut.send_expect(
+            r"sed -i -e '/#define APP_PKT_COLOR_POS/s/[0-9]/5/g' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '/^#define APP_MODE /s/APP_MODE_*/APP_MODE_TRTCM_COLOR_AWARE/2' ./examples/qos_meter/main.c",
+            "#",
+        )
         bps, pps = self.build_app_and_send_package()
         self.verify_throughput(pps, self.blind_pps)
 

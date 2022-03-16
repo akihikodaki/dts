@@ -42,7 +42,6 @@ from framework.test_case import TestCase
 
 
 class TestTimer(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -50,8 +49,8 @@ class TestTimer(TestCase):
 
         timer prerequisites
         """
-        out = self.dut.build_dpdk_apps('examples/timer')
-        self.app_timer_path = self.dut.apps_name['timer']
+        out = self.dut.build_dpdk_apps("examples/timer")
+        self.app_timer_path = self.dut.apps_name["timer"]
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 
@@ -67,8 +66,8 @@ class TestTimer(TestCase):
         """
 
         # get the mask for the first core
-        cores = self.dut.get_core_list('1S/1C/1T')
-        eal_para = self.dut.create_eal_parameters(cores='1S/1C/1T')
+        cores = self.dut.get_core_list("1S/1C/1T")
+        eal_para = self.dut.create_eal_parameters(cores="1S/1C/1T")
 
         # run timer on the background
         cmdline = "./%s %s " % (self.app_timer_path, eal_para) + " &"
@@ -79,13 +78,13 @@ class TestTimer(TestCase):
         self.dut.send_expect("killall timer", "# ", 5)
 
         # verify timer0
-        utils.regexp(out, r'timer0_cb\(\) on lcore (\d+)')
-        pat = re.compile(r'timer0_cb\(\) on lcore (\d+)')
+        utils.regexp(out, r"timer0_cb\(\) on lcore (\d+)")
+        pat = re.compile(r"timer0_cb\(\) on lcore (\d+)")
         match = pat.findall(out)
         self.verify(match or match[0] == 0, "timer0 error")
 
         # verify timer1
-        pat = re.compile(r'timer1_cb\(\) on lcore (\d+)')
+        pat = re.compile(r"timer1_cb\(\) on lcore (\d+)")
         matchlist = sorted(pat.findall(out))
         self.verify(list(set(matchlist)) == cores, "timer1 error")
 

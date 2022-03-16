@@ -56,35 +56,41 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         self.dut_ports = self.dut.get_ports()
         self.pf = self.dut_ports[0]
         # Get the port's socket
-        netdev = self.dut.ports_info[self.pf]['port']
+        netdev = self.dut.ports_info[self.pf]["port"]
         self.socket = netdev.get_nic_socket()
-        self.cores_num = len([n for n in self.dut.cores if int(n['socket'])
-                        == self.socket])
+        self.cores_num = len(
+            [n for n in self.dut.cores if int(n["socket"]) == self.socket]
+        )
 
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
-        self.verify(self.cores_num >= 3,
-                    "There has not enought cores to test this suite")
+        self.verify(
+            self.cores_num >= 3, "There has not enought cores to test this suite"
+        )
         self.cores = self.dut.get_core_list("1S/3C/1T", socket=self.socket)
         self.vm_dut = None
         self.packet_params_set()
 
-        self.logger.info("You can config all the path of qemu version you want to" + \
-                        " tested in the conf file %s.cfg" % self.suite_name)
-        self.logger.info("You can config packet_size in file %s.cfg," % self.suite_name + \
-                        " in region 'suite' like packet_sizes=[64, 128, 256]")
+        self.logger.info(
+            "You can config all the path of qemu version you want to"
+            + " tested in the conf file %s.cfg" % self.suite_name
+        )
+        self.logger.info(
+            "You can config packet_size in file %s.cfg," % self.suite_name
+            + " in region 'suite' like packet_sizes=[64, 128, 256]"
+        )
         res = self.verify_qemu_version_config()
         self.verify(res is True, "The path of qemu version in config file not right")
 
-        self.out_path = '/tmp'
-        out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
-        if 'No such file or directory' in out:
-            self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
+        self.out_path = "/tmp"
+        out = self.tester.send_expect("ls -d %s" % self.out_path, "# ")
+        if "No such file or directory" in out:
+            self.tester.send_expect("mkdir -p %s" % self.out_path, "# ")
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
-        self.base_dir = self.dut.base_dir.replace('~', '/root')
-        self.pci_info = self.dut.ports_info[0]['pci']
+        self.base_dir = self.dut.base_dir.replace("~", "/root")
+        self.pci_info = self.dut.ports_info[0]["pci"]
         self.number_of_ports = 1
-        self.path=self.dut.apps_name['test-pmd']
+        self.path = self.dut.apps_name["test-pmd"]
         self.testpmd_name = self.path.split("/")[-1]
 
     def set_up(self):
@@ -93,20 +99,26 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         """
         self.vhost = self.dut.new_session(suite="vhost-user")
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
-        self.dut.send_expect("killall -s INT %s" % self.testpmd_name , "#")
-        self.dut.send_expect("killall -I qemu-system-x86_64", '#', 20)
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
+        self.dut.send_expect("killall -I qemu-system-x86_64", "#", 20)
 
     def packet_params_set(self):
         self.frame_sizes = [64, 128, 256, 512, 1024, 1500]
         # get the frame_sizes from cfg file
-        if 'packet_sizes' in self.get_suite_cfg():
-            self.frame_sizes = self.get_suite_cfg()['packet_sizes']
+        if "packet_sizes" in self.get_suite_cfg():
+            self.frame_sizes = self.get_suite_cfg()["packet_sizes"]
 
         self.virtio1_mac = "52:54:00:00:00:01"
         self.src1 = "192.168.4.1"
         self.dst1 = "192.168.3.1"
-        self.header_row = ["QemuVersion", "FrameSize(B)", "Throughput(Mpps)",
-                           "LineRate(%)", "Cycle", "Expected Throughput(Mpps)"]
+        self.header_row = [
+            "QemuVersion",
+            "FrameSize(B)",
+            "Throughput(Mpps)",
+            "LineRate(%)",
+            "Cycle",
+            "Expected Throughput(Mpps)",
+        ]
 
     def get_qemu_list_from_config(self):
         """
@@ -119,8 +131,10 @@ class TestVhostPVPDiffQemuVersion(TestCase):
                 qemu_num = len(self.vm.params[qemu_index]["qemu"])
                 config_qemu = True
                 break
-        self.verify(config_qemu is True,
-                "Please config qemu path which you want to test in conf gile")
+        self.verify(
+            config_qemu is True,
+            "Please config qemu path which you want to test in conf gile",
+        )
         self.qemu_pos = qemu_index
         self.qemu_list = self.vm.params[qemu_index]["qemu"]
 
@@ -128,7 +142,7 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         """
         verify the config has config enough qemu version
         """
-        self.vm = VM(self.dut, 'vm0', self.suite_name)
+        self.vm = VM(self.dut, "vm0", self.suite_name)
         self.vm.load_config()
         # get qemu version list from config file
         self.get_qemu_list_from_config()
@@ -137,14 +151,18 @@ class TestVhostPVPDiffQemuVersion(TestCase):
             qemu_path = self.qemu_list[i]["path"]
 
             out = self.dut.send_expect("ls %s" % qemu_path, "#")
-            if 'No such file or directory' in out:
-                self.logger.error("No emulator [ %s ] on the DUT [ %s ]" %
-                                (qemu_path, self.dut.get_ip_address()))
+            if "No such file or directory" in out:
+                self.logger.error(
+                    "No emulator [ %s ] on the DUT [ %s ]"
+                    % (qemu_path, self.dut.get_ip_address())
+                )
                 return False
-            out = self.dut.send_expect("[ -x %s ];echo $?" % qemu_path, '# ')
-            if out != '0':
-                self.logger.error("Emulator [ %s ] not executable on the DUT [ %s ]" %
-                                (qemu_path, self.dut.get_ip_address()))
+            out = self.dut.send_expect("[ -x %s ];echo $?" % qemu_path, "# ")
+            if out != "0":
+                self.logger.error(
+                    "Emulator [ %s ] not executable on the DUT [ %s ]"
+                    % (qemu_path, self.dut.get_ip_address())
+                )
                 return False
 
             out = self.dut.send_expect("%s --version" % qemu_path, "#")
@@ -157,7 +175,9 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         config_qemu_version = ""
         for i in range(len(self.qemu_list)):
             config_qemu_version += self.qemu_list[i]["version"] + " "
-        self.logger.info("The suite will test the qemu version of: %s" % config_qemu_version)
+        self.logger.info(
+            "The suite will test the qemu version of: %s" % config_qemu_version
+        )
 
         return True
 
@@ -178,15 +198,15 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         """
         start vm
         """
-        self.vm = VM(self.dut, 'vm0', 'pvp_diff_qemu_version')
+        self.vm = VM(self.dut, "vm0", "pvp_diff_qemu_version")
         vm_params = {}
-        vm_params['driver'] = 'vhost-user'
-        vm_params['opt_path'] = '%s/vhost-net' % self.base_dir
-        vm_params['opt_mac'] = self.virtio1_mac
-        if(modem == 1):
-            vm_params['opt_settings'] = "disable-modern=false,mrg_rxbuf=on"
-        elif(modem == 0):
-            vm_params['opt_settings'] = "disable-modern=true,mrg_rxbuf=on"
+        vm_params["driver"] = "vhost-user"
+        vm_params["opt_path"] = "%s/vhost-net" % self.base_dir
+        vm_params["opt_mac"] = self.virtio1_mac
+        if modem == 1:
+            vm_params["opt_settings"] = "disable-modern=false,mrg_rxbuf=on"
+        elif modem == 0:
+            vm_params["opt_settings"] = "disable-modern=true,mrg_rxbuf=on"
         self.vm.set_vm_device(**vm_params)
         self.vm.load_config()
         self.rm_vm_qemu_path_config()
@@ -206,7 +226,9 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         Launch the vhost testpmd
         """
         vdev = [r"'eth_vhost0,iface=%s/vhost-net,queues=1'" % self.base_dir]
-        eal_params = self.dut.create_eal_parameters(cores=self.cores, prefix='vhost', ports=[self.pci_info], vdevs=vdev)
+        eal_params = self.dut.create_eal_parameters(
+            cores=self.cores, prefix="vhost", ports=[self.pci_info], vdevs=vdev
+        )
         para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
         command_line_client = self.path + eal_params + para
         self.vhost.send_expect(command_line_client, "testpmd> ", 30)
@@ -218,8 +240,9 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         Start testpmd in vm
         """
         if self.vm_dut is not None:
-            vm_testpmd = self.path + " -c 0x3 -n 3" \
-                + " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
+            vm_testpmd = (
+                self.path + " -c 0x3 -n 3" + " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
+            )
             self.vm_dut.send_expect(vm_testpmd, "testpmd> ", 20)
             self.vm_dut.send_expect("set fwd mac", "testpmd> ", 20)
             self.vm_dut.send_expect("start", "testpmd> ")
@@ -227,7 +250,15 @@ class TestVhostPVPDiffQemuVersion(TestCase):
     @property
     def check_value(self):
         check_dict = dict.fromkeys(self.frame_sizes)
-        linerate = {64: 0.07, 128: 0.10, 256: 0.17, 512: 0.18, 1024: 0.35, 1280: 0.40, 1500: 0.45}
+        linerate = {
+            64: 0.07,
+            128: 0.10,
+            256: 0.17,
+            512: 0.18,
+            1024: 0.35,
+            1280: 0.40,
+            1500: 0.45,
+        }
         for size in self.frame_sizes:
             speed = self.wirespeed(self.nic, size, self.number_of_ports)
             check_dict[size] = round(speed * linerate[size], 2)
@@ -237,36 +268,65 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         self.result_table_create(self.header_row)
         perf_result = {}
         for frame_size in self.frame_sizes:
-            info = "Running test %s, and %d frame size." % (self.running_case, frame_size)
+            info = "Running test %s, and %d frame size." % (
+                self.running_case,
+                frame_size,
+            )
             self.logger.info(info)
-            payload = frame_size - HEADER_SIZE['eth'] - HEADER_SIZE['ip']
+            payload = frame_size - HEADER_SIZE["eth"] - HEADER_SIZE["ip"]
             flow = '[Ether(dst="%s")/Dot1Q(vlan=%s)/IP(src="%s",dst="%s")/("X"*%d)]' % (
-                self.virtio1_mac, vlan_id1, self.src1, self.dst1, payload)
-            self.tester.scapy_append('wrpcap("%s/pvp_diff_qemu_version.pcap", %s)' % (
-                                self.out_path, flow))
+                self.virtio1_mac,
+                vlan_id1,
+                self.src1,
+                self.dst1,
+                payload,
+            )
+            self.tester.scapy_append(
+                'wrpcap("%s/pvp_diff_qemu_version.pcap", %s)' % (self.out_path, flow)
+            )
             self.tester.scapy_execute()
 
             tgenInput = []
             port = self.tester.get_local_port(self.pf)
-            tgenInput.append((port, port, "%s/pvp_diff_qemu_version.pcap" % self.out_path))
+            tgenInput.append(
+                (port, port, "%s/pvp_diff_qemu_version.pcap" % self.out_path)
+            )
 
             self.tester.pktgen.clear_streams()
-            streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100, None, self.tester.pktgen)
+            streams = self.pktgen_helper.prepare_stream_from_tginput(
+                tgenInput, 100, None, self.tester.pktgen
+            )
             # set traffic option
-            traffic_opt = {'delay': 5, 'duration': 20}
-            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
+            traffic_opt = {"delay": 5, "duration": 20}
+            _, pps = self.tester.pktgen.measure_throughput(
+                stream_ids=streams, options=traffic_opt
+            )
             Mpps = pps / 1000000.0
             line_rate = Mpps * 100 / float(self.wirespeed(self.nic, frame_size, 1))
             # update print table info
-            data_row = [qemu_version, frame_size, str(Mpps), str(line_rate), tag, self.check_value[frame_size]]
+            data_row = [
+                qemu_version,
+                frame_size,
+                str(Mpps),
+                str(line_rate),
+                tag,
+                self.check_value[frame_size],
+            ]
             self.result_table_add(data_row)
             perf_result[frame_size] = Mpps
 
         self.result_table_print()
         for frame_size in perf_result.keys():
-            self.verify(perf_result[frame_size] > self.check_value[frame_size],
-                        "%s of frame size %d speed verify failed, expect %s, result %s" % (
-                            self.running_case, frame_size, self.check_value[frame_size], perf_result[frame_size]))
+            self.verify(
+                perf_result[frame_size] > self.check_value[frame_size],
+                "%s of frame size %d speed verify failed, expect %s, result %s"
+                % (
+                    self.running_case,
+                    frame_size,
+                    self.check_value[frame_size],
+                    perf_result[frame_size],
+                ),
+            )
 
     def close_testpmd_and_qemu(self):
         """
@@ -276,7 +336,7 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         self.vm_dut.send_expect("quit", "#", 20)
         self.vhost.send_expect("quit", "#", 20)
         self.vm.stop()
-        self.dut.send_expect("killall -I %s" % self.testpmd_name, '#', 20)
+        self.dut.send_expect("killall -I %s" % self.testpmd_name, "#", 20)
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
 
     def test_perf_vhost_pvp_diffrent_qemu_version_mergeable_mac(self):
@@ -320,7 +380,7 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         """
         self.dut.close_session(self.vhost)
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        self.dut.send_expect("killall -s INT %s" % self.testpmd_name , "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         time.sleep(2)
 
     def tear_down_all(self):

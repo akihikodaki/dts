@@ -36,6 +36,6 @@ try:
 except:
     pass
 
-project = 'DPDK Test Plans'
-copyright = '2017, dpdk.org'
-master_doc = 'index'
+project = "DPDK Test Plans"
+copyright = "2017, dpdk.org"
+master_doc = "index"

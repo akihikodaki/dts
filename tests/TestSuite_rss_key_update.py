@@ -48,36 +48,36 @@ from framework.test_case import TestCase
 queue = 16
 reta_entries = []
 reta_num = 128
-iptypes = {'ipv4-sctp': 'sctp',
-           'ipv4-other': 'ip',
-           'ipv4-frag': 'ip',
-           'ipv4-udp': 'udp',
-           'ipv4-tcp': 'tcp',
-           'ipv6-other': 'ip',
-           'ipv6-sctp': 'sctp',
-           'ipv6-udp': 'udp',
-           'ipv6-tcp': 'tcp',
-           'ipv6-frag': 'ip'
-           }
+iptypes = {
+    "ipv4-sctp": "sctp",
+    "ipv4-other": "ip",
+    "ipv4-frag": "ip",
+    "ipv4-udp": "udp",
+    "ipv4-tcp": "tcp",
+    "ipv6-other": "ip",
+    "ipv6-sctp": "sctp",
+    "ipv6-udp": "udp",
+    "ipv6-tcp": "tcp",
+    "ipv6-frag": "ip",
+}
 
 
 class TestRssKeyUpdate(TestCase):
-
     def send_packet(self, itf, tran_type, symmetric):
         """
         Sends packets.
         """
         packet_list = {
-            'ipv4-sctp': 'IP(src="192.168.0.%d", dst="192.168.0.%d")/SCTP(sport=1024,dport=1024,tag=1)',
-            'ipv4-other': 'IP(src="192.168.0.%d", dst="192.168.0.%d")',
-            'ipv4-frag': 'IP(src="192.168.0.%d", dst="192.168.0.%d",frag=1,flags="MF")',
-            'ipv4-udp': 'IP(src="192.168.0.%d", dst="192.168.0.%d")/UDP(sport=1024,dport=1024)',
-            'ipv4-tcp': 'IP(src="192.168.0.%d", dst="192.168.0.%d")/TCP(sport=1024,dport=1024)',
-            'ipv6-other': 'IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")',
-            'ipv6-sctp': 'IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d", nh=132)/SCTP(sport=1024,dport=1024,tag=1)',
-            'ipv6-udp': 'IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/UDP(sport=1024,dport=1024)',
-            'ipv6-tcp': 'IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/TCP(sport=1024,dport=1024)',
-            'ipv6-frag': 'IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d",nh=44)/IPv6ExtHdrFragment()'
+            "ipv4-sctp": 'IP(src="192.168.0.%d", dst="192.168.0.%d")/SCTP(sport=1024,dport=1024,tag=1)',
+            "ipv4-other": 'IP(src="192.168.0.%d", dst="192.168.0.%d")',
+            "ipv4-frag": 'IP(src="192.168.0.%d", dst="192.168.0.%d",frag=1,flags="MF")',
+            "ipv4-udp": 'IP(src="192.168.0.%d", dst="192.168.0.%d")/UDP(sport=1024,dport=1024)',
+            "ipv4-tcp": 'IP(src="192.168.0.%d", dst="192.168.0.%d")/TCP(sport=1024,dport=1024)',
+            "ipv6-other": 'IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")',
+            "ipv6-sctp": 'IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d", nh=132)/SCTP(sport=1024,dport=1024,tag=1)',
+            "ipv6-udp": 'IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/UDP(sport=1024,dport=1024)',
+            "ipv6-tcp": 'IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/TCP(sport=1024,dport=1024)',
+            "ipv6-frag": 'IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d",nh=44)/IPv6ExtHdrFragment()',
         }
 
         received_pkts = []
@@ -87,8 +87,10 @@ class TestRssKeyUpdate(TestCase):
 
         # send packet with different source and dest ip
         if tran_type in packet_list.keys():
-            packet_temp = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/%s], iface="%s")' % (
-                mac, itf, packet_list[tran_type], itf)
+            packet_temp = (
+                r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/%s], iface="%s")'
+                % (mac, itf, packet_list[tran_type], itf)
+            )
             for i in range(10):
                 packet = packet_temp % (i + 1, i + 2)
                 self.tester.scapy_append(packet)
@@ -96,7 +98,7 @@ class TestRssKeyUpdate(TestCase):
                     packet2 = packet_temp % (i + 2, i + 1)
                     self.tester.scapy_append(packet2)
             self.tester.scapy_execute()
-            time.sleep(.5)
+            time.sleep(0.5)
         else:
             print("\ntran_type error!\n")
 
@@ -135,9 +137,17 @@ class TestRssKeyUpdate(TestCase):
         global pre_RSS_hash
         result = []
         key_id = {}
-        self.verify(len(reta_lines) > 0, 'No packet received!')
+        self.verify(len(reta_lines) > 0, "No packet received!")
         self.result_table_create(
-            ['packet index', 'hash value', 'hash index', 'queue id', 'actual queue id', 'pass '])
+            [
+                "packet index",
+                "hash value",
+                "hash index",
+                "queue id",
+                "actual queue id",
+                "pass ",
+            ]
+        )
 
         for i, tmp_reta_line in enumerate(reta_lines):
             # compute the hash result of five tuple into the 7 LSBs value.
@@ -158,7 +168,15 @@ class TestRssKeyUpdate(TestCase):
                 status = "fail"
                 result.insert(i, 1)
             self.result_table_add(
-                [i, tmp_reta_line["RSS hash"], hash_index, reta_entries[hash_index], tmp_reta_line["queue"], status])
+                [
+                    i,
+                    tmp_reta_line["RSS hash"],
+                    hash_index,
+                    reta_entries[hash_index],
+                    tmp_reta_line["queue"],
+                    status,
+                ]
+            )
             key_id[tmp_reta_line["RSS hash"]] = reta_entries[hash_index]
 
         self.result_table_print()
@@ -170,30 +188,51 @@ class TestRssKeyUpdate(TestCase):
         Run at the start of each test suite.
         """
 
-        self.verify(self.nic in ["columbiaville_25g", "columbiaville_100g", "fortville_eagle", "fortville_spirit",
-                                 "fortville_spirit_single", "fortpark_TLV", "fortpark_BASE-T", "fortville_25g", "niantic",
-                                 "carlsville", "foxville"],
-                    "NIC Unsupported: " + str(self.nic))
+        self.verify(
+            self.nic
+            in [
+                "columbiaville_25g",
+                "columbiaville_100g",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV",
+                "fortpark_BASE-T",
+                "fortville_25g",
+                "niantic",
+                "carlsville",
+                "foxville",
+            ],
+            "NIC Unsupported: " + str(self.nic),
+        )
         global reta_num
         global iptypes
         global queue
         if self.nic in ["foxville"]:
             queue = 4
 
-        if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV",
-                        "fortpark_BASE-T", "fortville_25g", "carlsville"]:
+        if self.nic in [
+            "fortville_eagle",
+            "fortville_spirit",
+            "fortville_spirit_single",
+            "fortpark_TLV",
+            "fortpark_BASE-T",
+            "fortville_25g",
+            "carlsville",
+        ]:
             reta_num = 512
         elif self.nic in ["niantic", "foxville"]:
             reta_num = 128
-            iptypes = {'ipv4-other': 'ip',
-                       'ipv4-frag': 'ip',
-                       'ipv4-udp': 'udp',
-                       'ipv4-tcp': 'tcp',
-                       'ipv6-other': 'ip',
-                       'ipv6-udp': 'udp',
-                       'ipv6-tcp': 'tcp',
-                       'ipv6-frag': 'ip'
-                       }
+            iptypes = {
+                "ipv4-other": "ip",
+                "ipv4-frag": "ip",
+                "ipv4-udp": "udp",
+                "ipv4-tcp": "tcp",
+                "ipv6-other": "ip",
+                "ipv6-udp": "udp",
+                "ipv6-tcp": "tcp",
+                "ipv6-frag": "ip",
+            }
         else:
             self.verify(False, f"NIC Unsupported: {self.nic}")
 
@@ -224,31 +263,43 @@ class TestRssKeyUpdate(TestCase):
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
         self.dut.send_expect("set promisc all off", "testpmd> ")
         self.dut.send_expect(f"set nbcore {queue + 1}", "testpmd> ")
-        key = '4439796BB54C5023B675EA5B124F9F30B8A2C03DDFDC4D02A08C9B334AF64A4C05C6FA343958D8557D99583AE138C92E81150366'
-        ck = '4439796BB54C50f3B675EF5B124F9F30B8A2C0FFFFDC4D02A08C9B334FF64A4C05C6FA343958D855FFF9583AE138C92E81150FFF'
+        key = "4439796BB54C5023B675EA5B124F9F30B8A2C03DDFDC4D02A08C9B334AF64A4C05C6FA343958D8557D99583AE138C92E81150366"
+        ck = "4439796BB54C50f3B675EF5B124F9F30B8A2C0FFFFDC4D02A08C9B334FF64A4C05C6FA343958D855FFF9583AE138C92E81150FFF"
 
         # configure the reta with specific mappings.
         for i in range(reta_num):
             reta_entries.insert(i, random.randint(0, queue - 1))
-            self.dut.send_expect(f"port config 0 rss reta ({i},{reta_entries[i]})", "testpmd> ")
+            self.dut.send_expect(
+                f"port config 0 rss reta ({i},{reta_entries[i]})", "testpmd> "
+            )
 
         for iptype, rsstype in list(iptypes.items()):
-            self.logger.info(f"***********************{iptype} rss test********************************")
-            self.dut.send_expect(f"port config 0 rss-hash-key {iptype} {key}", "testpmd> ")
+            self.logger.info(
+                f"***********************{iptype} rss test********************************"
+            )
+            self.dut.send_expect(
+                f"port config 0 rss-hash-key {iptype} {key}", "testpmd> "
+            )
             self.dut.send_expect("flow flush 0", "testpmd> ")
-            cmd = f'flow create 0 ingress pattern eth / ipv4 / end actions rss types {iptype} end queues end func toeplitz / end'
+            cmd = f"flow create 0 ingress pattern eth / ipv4 / end actions rss types {iptype} end queues end func toeplitz / end"
             self.dut.send_expect(cmd, "testpmd> ")
             out = self.dut.send_expect(f"port config all rss {rsstype}", "testpmd> ")
-            self.verify("error" not in out, "Configuration of RSS hash failed: Invalid argument")
+            self.verify(
+                "error" not in out, "Configuration of RSS hash failed: Invalid argument"
+            )
             ori_output = self.send_packet(self.itf, iptype, False)
             self.dut.send_expect("show port 0 rss-hash key", "testpmd> ")
-            self.dut.send_expect(f"port config 0 rss-hash-key {iptype} {ck}", "testpmd> ")
+            self.dut.send_expect(
+                f"port config 0 rss-hash-key {iptype} {ck}", "testpmd> "
+            )
             self.dut.send_expect("flow flush 0", "testpmd> ")
-            cmd = f'flow create 0 ingress pattern eth / ipv4 / end actions rss types {iptype} end queues end func toeplitz / end'
+            cmd = f"flow create 0 ingress pattern eth / ipv4 / end actions rss types {iptype} end queues end func toeplitz / end"
             self.dut.send_expect(cmd, "testpmd> ")
             new_output = self.send_packet(self.itf, iptype, False)
-            self.verify(ori_output != new_output,
-                        "before and after results are the same, hash key configuration failed!")
+            self.verify(
+                ori_output != new_output,
+                "before and after results are the same, hash key configuration failed!",
+            )
 
     def test_set_hash_key_toeplitz_symmetric(self):
 
@@ -256,58 +307,91 @@ class TestRssKeyUpdate(TestCase):
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
         self.dut.send_expect("set promisc all off", "testpmd> ")
         self.dut.send_expect(f"set nbcore {queue + 1}", "testpmd> ")
-        key = '4439796BB54C5023B675EA5B124F9F30B8A2C03DDFDC4D02A08C9B334AF64A4C05C6FA343958D8557D99583AE138C92E81150366'
-        ck = '4439796BB54C50f3B675EF5B124F9F30B8A2C0FFFFDC4D02A08C9B334FF64A4C05C6FA343958D855FFF9583AE138C92E81150FFF'
-        rule_action = 'func symmetric_toeplitz queues end / end'
+        key = "4439796BB54C5023B675EA5B124F9F30B8A2C03DDFDC4D02A08C9B334AF64A4C05C6FA343958D8557D99583AE138C92E81150366"
+        ck = "4439796BB54C50f3B675EF5B124F9F30B8A2C0FFFFDC4D02A08C9B334FF64A4C05C6FA343958D855FFF9583AE138C92E81150FFF"
+        rule_action = "func symmetric_toeplitz queues end / end"
 
         # configure the reta with specific mappings.
         for i in range(reta_num):
             reta_entries.insert(i, random.randint(0, queue - 1))
-            self.dut.send_expect(f"port config 0 rss reta ({i},{reta_entries[i]})", "testpmd> ")
+            self.dut.send_expect(
+                f"port config 0 rss reta ({i},{reta_entries[i]})", "testpmd> "
+            )
 
         for iptype, rsstype in list(iptypes.items()):
-            self.logger.info(f"***********************{iptype} rss test********************************")
-            self.dut.send_expect(f"port config 0 rss-hash-key {iptype} {key}", "testpmd> ")
+            self.logger.info(
+                f"***********************{iptype} rss test********************************"
+            )
+            self.dut.send_expect(
+                f"port config 0 rss-hash-key {iptype} {key}", "testpmd> "
+            )
             self.dut.send_expect("flow flush 0", "testpmd> ")
-            rule_cmd = f'flow create 0 ingress pattern eth / ipv4 / end actions rss types {iptype} end queues end {rule_action}'
-            if 'sctp' in iptype or 'udp' in iptype or 'tcp' in iptype:
-                rule_cmd = rule_cmd.replace('/ ipv4 /', f'/ ipv4 / {rsstype} /')
-            if 'ipv6' in iptype:
-                rule_cmd = rule_cmd.replace('ipv4', 'ipv6')
+            rule_cmd = f"flow create 0 ingress pattern eth / ipv4 / end actions rss types {iptype} end queues end {rule_action}"
+            if "sctp" in iptype or "udp" in iptype or "tcp" in iptype:
+                rule_cmd = rule_cmd.replace("/ ipv4 /", f"/ ipv4 / {rsstype} /")
+            if "ipv6" in iptype:
+                rule_cmd = rule_cmd.replace("ipv4", "ipv6")
 
             self.dut.send_expect(rule_cmd, "testpmd> ")
             out = self.dut.send_expect(f"port config all rss {rsstype}", "testpmd> ")
-            self.verify("error" not in out, "configuration of rss hash failed: invalid argument")
+            self.verify(
+                "error" not in out, "configuration of rss hash failed: invalid argument"
+            )
             ori_output = self.send_packet(self.itf, iptype, True)
             out = self.dut.send_expect("show port 0 rss-hash key", "testpmd> ")
             self.verify("rss disable" not in out, "rss is disable!")
-            self.dut.send_expect(f"port config 0 rss-hash-key {iptype} {ck}", "testpmd> ")
+            self.dut.send_expect(
+                f"port config 0 rss-hash-key {iptype} {ck}", "testpmd> "
+            )
 
             self.dut.send_expect("flow flush 0", "testpmd> ")
-            cmd = f'flow create 0 ingress pattern eth / ipv4 / end actions rss types {iptype} end queues end {rule_action}'
-            if 'sctp' in iptype or 'udp' in iptype or 'tcp' in iptype:
-                cmd = cmd.replace('/ ipv4 /', f'/ ipv4 / {rsstype} /')
-            if 'ipv6' in iptype:
-                cmd = cmd.replace('ipv4', 'ipv6')
+            cmd = f"flow create 0 ingress pattern eth / ipv4 / end actions rss types {iptype} end queues end {rule_action}"
+            if "sctp" in iptype or "udp" in iptype or "tcp" in iptype:
+                cmd = cmd.replace("/ ipv4 /", f"/ ipv4 / {rsstype} /")
+            if "ipv6" in iptype:
+                cmd = cmd.replace("ipv4", "ipv6")
 
             self.dut.send_expect(cmd, "testpmd> ")
             new_output = self.send_packet(self.itf, iptype, True)
-            self.verify(ori_output != new_output,
-                        "before and after results are the same, hash key configuration failed!")
+            self.verify(
+                ori_output != new_output,
+                "before and after results are the same, hash key configuration failed!",
+            )
 
     def test_set_hash_key_short_long(self):
 
-        nic_rss_key_size = {"columbiaville_25g": 52, "columbiaville_100g": 52, "fortville_eagle": 52,
-                            "fortville_spirit": 52, "fortville_spirit_single": 52, "fortville_25g": 52,
-                            "niantic": 40, "e1000": 40, "fortpark_TLV": 52, "fortpark_BASE-T": 52,
-                            "hi1822": 40, "cavium_a063": 48, "cavium_a064": 48, "carlsville": 52,
-                            "sagepond": 40, "sageville": 40, "foxville": 40, "twinpond": 40}
+        nic_rss_key_size = {
+            "columbiaville_25g": 52,
+            "columbiaville_100g": 52,
+            "fortville_eagle": 52,
+            "fortville_spirit": 52,
+            "fortville_spirit_single": 52,
+            "fortville_25g": 52,
+            "niantic": 40,
+            "e1000": 40,
+            "fortpark_TLV": 52,
+            "fortpark_BASE-T": 52,
+            "hi1822": 40,
+            "cavium_a063": 48,
+            "cavium_a064": 48,
+            "carlsville": 52,
+            "sagepond": 40,
+            "sageville": 40,
+            "foxville": 40,
+            "twinpond": 40,
+        }
 
-        self.verify(self.nic in list(nic_rss_key_size.keys()), f"Not supported rss key on {self.nic}")
+        self.verify(
+            self.nic in list(nic_rss_key_size.keys()),
+            f"Not supported rss key on {self.nic}",
+        )
 
         # Check supported hash key size
         out = self.dut.send_expect("show port info all", "testpmd> ", 120)
-        self.verify(f"Hash key size in bytes: {nic_rss_key_size[self.nic]}" in out, "not expected hash key size!")
+        self.verify(
+            f"Hash key size in bytes: {nic_rss_key_size[self.nic]}" in out,
+            "not expected hash key size!",
+        )
 
         test_keys = {
             "4439796BB54C50f3B675EF5B124F9F30B8A2C0FFFFDC4D02A08C9B334FF64A4C05C6FA343958D855FFF9583AE138C92E81150FFFFF": "longer",
@@ -316,12 +400,19 @@ class TestRssKeyUpdate(TestCase):
 
         # config key length longer/shorter than 104 hexa-decimal numbers
         for key, error in test_keys.items():
-            out = self.dut.send_expect(f"port config 0 rss-hash-key ipv4-udp {key}", "testpmd> ")
-            self.verify("invalid" in out, f"Try to set hash key {error} than 104 hexa-decimal numbers!")
+            out = self.dut.send_expect(
+                f"port config 0 rss-hash-key ipv4-udp {key}", "testpmd> "
+            )
+            self.verify(
+                "invalid" in out,
+                f"Try to set hash key {error} than 104 hexa-decimal numbers!",
+            )
 
         # config ket length same as 104 hex-decimal numbers and keep the config
         key = "4439796BB54C50f3B675EF5B124F9F30B8A2C0FFFFDC4D02A08C9B334FF64A4C05C6FA343958D855FFF9583AE138C92E81150FFF"
-        out = self.dut.send_expect(f"port config 0 rss-hash-key ipv4-udp {key}", "testpmd> ")
+        out = self.dut.send_expect(
+            f"port config 0 rss-hash-key ipv4-udp {key}", "testpmd> "
+        )
 
     def tear_down(self):
         """

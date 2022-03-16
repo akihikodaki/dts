@@ -49,21 +49,20 @@ class TestEFD(TestCase):
         self.build_server_node_efd()
 
         self.dut_ports = self.dut.get_ports()
-        self.node_app = self.dut.apps_name['node']
-        self.server_app = self.dut.apps_name['server']
-        self.app_test_path = self.dut.apps_name['test']
+        self.node_app = self.dut.apps_name["node"]
+        self.server_app = self.dut.apps_name["server"]
+        self.app_test_path = self.dut.apps_name["test"]
         # get dts output path
         if self.logger.log_path.startswith(os.sep):
             self.output_path = self.logger.log_path
         else:
-            cur_path = os.path.dirname(
-                                os.path.dirname(os.path.realpath(__file__)))
+            cur_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
             self.output_path = os.sep.join([cur_path, self.logger.log_path])
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
 
     def build_server_node_efd(self):
-        apps = ['node', 'server']
+        apps = ["node", "server"]
         for app in apps:
             out = self.dut.build_dpdk_apps("./examples/server_node_efd/%s" % app)
             self.verify("Error" not in out, "Compilation %s error" % app)
@@ -105,17 +104,14 @@ class TestEFD(TestCase):
 
         flow_num = 1024 * 1024 * 2
 
-        table_header = ["Value Bits",
-                        "Nodes",
-                        "Flow Entries",
-                        "Throughput(mpps)"]
+        table_header = ["Value Bits", "Nodes", "Flow Entries", "Throughput(mpps)"]
 
         self.result_table_create(table_header)
         # perf of different nodes
         for node_num in node_nums:
             pps = self._efd_perf_evaluate(node_num, flow_num)
 
-            self.result_table_add([8, node_num, "2M",  pps])
+            self.result_table_add([8, node_num, "2M", pps])
 
         self.result_table_print()
 
@@ -123,16 +119,21 @@ class TestEFD(TestCase):
         """
         Run EFD perf evaluation for millions of flows
         """
-        self.logger.warning("Millions of flow required huge memory, please allocate 16G hugepage")
+        self.logger.warning(
+            "Millions of flow required huge memory, please allocate 16G hugepage"
+        )
         self.dut.setup_memory_linux(hugepages=8192)
         self.verify(len(self.dut_ports) >= 2, "Not enough ports")
-        flow_nums = [1024 * 1024, 1024 * 1024 * 2, 1024 * 1024 * 4,
-                     1024 * 1024 * 8, 1024 * 1024 * 16, 1024 * 1024 * 32]
+        flow_nums = [
+            1024 * 1024,
+            1024 * 1024 * 2,
+            1024 * 1024 * 4,
+            1024 * 1024 * 8,
+            1024 * 1024 * 16,
+            1024 * 1024 * 32,
+        ]
 
-        table_header = ["Value Bits",
-                        "Nodes",
-                        "Million Flows",
-                        "Throughput(mpps)"]
+        table_header = ["Value Bits", "Nodes", "Million Flows", "Throughput(mpps)"]
 
         self.result_table_create(table_header)
 
@@ -140,7 +141,7 @@ class TestEFD(TestCase):
         for flow_num in flow_nums:
             pps = self._efd_perf_evaluate(2, flow_num)
 
-            self.result_table_add([8, 2, flow_num / (1024 * 1024),  pps])
+            self.result_table_add([8, 2, flow_num / (1024 * 1024), pps])
 
         self.result_table_print()
 
@@ -152,24 +153,28 @@ class TestEFD(TestCase):
         val_bitnums = [8, 16, 24, 32]
         flow_num = 1024 * 1024 * 2
 
-        table_header = ["Value Bits",
-                        "Nodes",
-                        "Flow Entries",
-                        "Throughput(mpps)"]
+        table_header = ["Value Bits", "Nodes", "Flow Entries", "Throughput(mpps)"]
 
         self.result_table_create(table_header)
         # perf of different value bit lengths
         for val_bitnum in val_bitnums:
             # change value length and rebuild dpdk
-            self.dut.send_expect("sed -i -e 's/#define RTE_EFD_VALUE_NUM_BITS .*$/#define RTE_EFD_VALUE_NUM_BITS (%d)/' lib/librte_efd/rte_efd.h" % val_bitnum, "#")
+            self.dut.send_expect(
+                "sed -i -e 's/#define RTE_EFD_VALUE_NUM_BITS .*$/#define RTE_EFD_VALUE_NUM_BITS (%d)/' lib/librte_efd/rte_efd.h"
+                % val_bitnum,
+                "#",
+            )
             self.dut.build_install_dpdk(self.target)
             self.build_server_node_efd()
 
             pps = self._efd_perf_evaluate(2, flow_num)
-            self.result_table_add([val_bitnum, 2, "2M",  pps])
+            self.result_table_add([val_bitnum, 2, "2M", pps])
 
         self.result_table_print()
-        self.dut.send_expect("sed -i -e 's/#define RTE_EFD_VALUE_NUM_BITS .*$/#define RTE_EFD_VALUE_NUM_BITS (8)/' lib/librte_efd/rte_efd.h", "#")
+        self.dut.send_expect(
+            "sed -i -e 's/#define RTE_EFD_VALUE_NUM_BITS .*$/#define RTE_EFD_VALUE_NUM_BITS (8)/' lib/librte_efd/rte_efd.h",
+            "#",
+        )
         self.dut.build_install_dpdk(self.target)
         self.build_server_node_efd()
 
@@ -182,7 +187,9 @@ class TestEFD(TestCase):
         socket = self.dut.get_numa_id(self.dut_ports[0])
 
         pcap = os.sep.join([self.output_path, "efd.pcap"])
-        self.tester.scapy_append('wrpcap("%s", [Ether()/IP(src="0.0.0.0", dst="0.0.0.0")/("X"*26)])' % pcap)
+        self.tester.scapy_append(
+            'wrpcap("%s", [Ether()/IP(src="0.0.0.0", dst="0.0.0.0")/("X"*26)])' % pcap
+        )
         self.tester.scapy_execute()
 
         tgen_input = []
@@ -198,7 +205,12 @@ class TestEFD(TestCase):
         self.verify(len(cores), "Can't find enough cores")
 
         eal_para = self.dut.create_eal_parameters(cores=cores[0:2], ports=[0, 1])
-        server_cmd = server_cmd_fmt % (self.server_app, eal_para, node_num, hex(flow_num))
+        server_cmd = server_cmd_fmt % (
+            self.server_app,
+            eal_para,
+            node_num,
+            hex(flow_num),
+        )
         # create table may need few minutes
         self.dut.send_expect(server_cmd, "Finished Process Init", timeout=240)
 
@@ -214,8 +226,9 @@ class TestEFD(TestCase):
         # clear streams before add new streams
         self.tester.pktgen.clear_streams()
         # run packet generator
-        streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
-                                None, self.tester.pktgen)
+        streams = self.pktgen_helper.prepare_stream_from_tginput(
+            tgen_input, 100, None, self.tester.pktgen
+        )
         _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
 
         for node_session in node_sessions:
@@ -228,13 +241,14 @@ class TestEFD(TestCase):
         return pps
 
     def set_fields(self):
-        ''' set ip protocol field behavior '''
+        """set ip protocol field behavior"""
         fields_config = {
-        'ip':  {
-            # self.flow_num not used by this suite
-            # 'dst': {'range': self.flow_num, 'action': 'inc'}
-            'dst': {'range': 64, 'action': 'inc'}
-        }, }
+            "ip": {
+                # self.flow_num not used by this suite
+                # 'dst': {'range': self.flow_num, 'action': 'inc'}
+                "dst": {"range": 64, "action": "inc"}
+            },
+        }
         return fields_config
 
     def tear_down(self):

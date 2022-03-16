@@ -73,7 +73,7 @@ class TestUnitTestsLpmIpv6(TestCase):
         Run lpm for IPv4 autotest.
         """
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        app_name = self.dut.apps_name['test']
+        app_name = self.dut.apps_name["test"]
         self.dut.send_expect(app_name + eal_params, "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("lpm_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
@@ -84,7 +84,7 @@ class TestUnitTestsLpmIpv6(TestCase):
         Run lpm for IPv6 autotest.
         """
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        app_name = self.dut.apps_name['test']
+        app_name = self.dut.apps_name["test"]
         self.dut.send_expect(app_name + eal_params, "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("lpm6_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
@@ -95,7 +95,7 @@ class TestUnitTestsLpmIpv6(TestCase):
         Run lpm for IPv4 performance autotest.
         """
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        app_name = self.dut.apps_name['test']
+        app_name = self.dut.apps_name["test"]
         self.dut.send_expect(app_name + eal_params, "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("lpm_perf_autotest", "RTE>>", 600)
         self.dut.send_expect("quit", "# ")
@@ -106,7 +106,7 @@ class TestUnitTestsLpmIpv6(TestCase):
         Run lpm for IPv6 performance autotest.
         """
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        app_name = self.dut.apps_name['test']
+        app_name = self.dut.apps_name["test"]
         self.dut.send_expect(app_name + eal_params, "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("lpm6_perf_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")

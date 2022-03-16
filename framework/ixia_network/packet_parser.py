@@ -39,30 +39,33 @@ from scapy.utils import rdpcap
 
 
 class PacketParser(object):
-    ''' parse packet full layers information '''
+    """parse packet full layers information"""
 
     def __init__(self):
         self.packetLayers = OrderedDict()
         self.framesize = 64
 
     def _parse_packet_layer(self, pkt_object):
-        ''' parse one packet every layers' fields and value '''
+        """parse one packet every layers' fields and value"""
         if pkt_object is None:
             return
 
         self.packetLayers[pkt_object.name] = OrderedDict()
         for curfield in pkt_object.fields_desc:
-            if isinstance(curfield, ConditionalField) and \
-                    not curfield._evalcond(pkt_object):
+            if isinstance(curfield, ConditionalField) and not curfield._evalcond(
+                pkt_object
+            ):
                 continue
             field_value = pkt_object.getfieldval(curfield.name)
-            if isinstance(field_value, scapyPacket) or (curfield.islist and
-                                                        curfield.holds_packets and type(field_value) is list):
+            if isinstance(field_value, scapyPacket) or (
+                curfield.islist and curfield.holds_packets and type(field_value) is list
+            ):
                 continue
             repr_value = curfield.i2repr(pkt_object, field_value)
             if isinstance(repr_value, str):
-                repr_value = repr_value.replace(os.linesep,
-                                                os.linesep + " " * (len(curfield.name) + 4))
+                repr_value = repr_value.replace(
+                    os.linesep, os.linesep + " " * (len(curfield.name) + 4)
+                )
             self.packetLayers[pkt_object.name][curfield.name] = repr_value
 
         if isinstance(pkt_object.payload, NoPayload):
@@ -71,7 +74,7 @@ class PacketParser(object):
             self._parse_packet_layer(pkt_object.payload)
 
     def _parse_pcap(self, pcapFile, number=0):
-        ''' parse one packet content '''
+        """parse one packet content"""
         self.packetLayers = OrderedDict()
         pcap_pkts = []
         if isinstance(pcapFile, str):

@@ -39,15 +39,14 @@ from framework.test_case import TestCase
 
 
 class TestHelloWorld(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
         hello_world Prerequisites:
             helloworld build pass
         """
-        out = self.dut.build_dpdk_apps('examples/helloworld')
-        self.app_helloworld_path = self.dut.apps_name['helloworld']
+        out = self.dut.build_dpdk_apps("examples/helloworld")
+        self.app_helloworld_path = self.dut.apps_name["helloworld"]
 
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
@@ -66,11 +65,14 @@ class TestHelloWorld(TestCase):
         """
 
         # get the mask for the first core
-        cores = self.dut.get_core_list('1S/1C/1T')
-        eal_para = self.dut.create_eal_parameters(cores='1S/1C/1T')
+        cores = self.dut.get_core_list("1S/1C/1T")
+        eal_para = self.dut.create_eal_parameters(cores="1S/1C/1T")
         cmdline = "./%s %s" % (self.app_helloworld_path, eal_para)
         out = self.dut.send_expect(cmdline, "# ", 30)
-        self.verify("hello from core %s" % cores[0] in out, "EAL not started on core%s" % cores[0])
+        self.verify(
+            "hello from core %s" % cores[0] in out,
+            "EAL not started on core%s" % cores[0],
+        )
 
     def test_hello_world_all_cores(self):
         """
@@ -79,20 +81,25 @@ class TestHelloWorld(TestCase):
         """
 
         # get the maximum logical core number
-        cores = self.dut.get_core_list('all')
+        cores = self.dut.get_core_list("all")
 
-        config_max_lcore = self.dut.get_def_rte_config('CONFIG_RTE_MAX_LCORE')
+        config_max_lcore = self.dut.get_def_rte_config("CONFIG_RTE_MAX_LCORE")
         if config_max_lcore:
             available_max_lcore = min(int(config_max_lcore), len(cores) + 1)
         else:
             available_max_lcore = len(cores) + 1
 
-        eal_para = self.dut.create_eal_parameters(cores=cores[:available_max_lcore - 1])
+        eal_para = self.dut.create_eal_parameters(
+            cores=cores[: available_max_lcore - 1]
+        )
 
         cmdline = "./%s %s " % (self.app_helloworld_path, eal_para)
         out = self.dut.send_expect(cmdline, "# ", 50)
         for i in range(available_max_lcore - 1):
-            self.verify("hello from core %s" % cores[i] in out, "EAL not started on core%s" % cores[i])
+            self.verify(
+                "hello from core %s" % cores[i] in out,
+                "EAL not started on core%s" % cores[i],
+            )
 
     def tear_down(self):
         """

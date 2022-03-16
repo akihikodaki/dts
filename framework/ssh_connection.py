@@ -37,6 +37,7 @@ Global structure for saving connections
 """
 CONNECTIONS = []
 
+
 class SSHConnection(object):
 
     """
@@ -44,7 +45,7 @@ class SSHConnection(object):
     Implement send_expect/copy function upper SSHPexpect module.
     """
 
-    def __init__(self, host, session_name, username, password='', dut_id=0):
+    def __init__(self, host, session_name, username, password="", dut_id=0):
         self.session = SSHPexpect(host, username, password, dut_id)
         self.name = session_name
         connection = {}
@@ -63,7 +64,7 @@ class SSHConnection(object):
         self.logger.info(cmds)
         out = self.session.send_expect(cmds, expected, timeout, verify)
         if isinstance(out, str):
-            self.logger.debug(out.replace(cmds, ''))
+            self.logger.debug(out.replace(cmds, ""))
         if type(self.history) is list:
             self.history.append({"command": cmds, "name": self.name, "output": out})
         return out
@@ -71,7 +72,7 @@ class SSHConnection(object):
     def send_command(self, cmds, timeout=1):
         self.logger.info(cmds)
         out = self.session.send_command(cmds, timeout)
-        self.logger.debug(out.replace(cmds, ''))
+        self.logger.debug(out.replace(cmds, ""))
         if type(self.history) is list:
             self.history.append({"command": cmds, "name": self.name, "output": out})
         return out
@@ -98,19 +99,19 @@ class SSHConnection(object):
 
     def check_available(self):
         MAGIC_STR = "DTS_CHECK_SESSION"
-        out = self.session.send_command('echo %s' % MAGIC_STR, timeout=0.1)
+        out = self.session.send_command("echo %s" % MAGIC_STR, timeout=0.1)
         # if not available, try to send ^C and check again
         if MAGIC_STR not in out:
             self.logger.info("Try to recover session...")
-            self.session.send_command('^C', timeout=TIMEOUT)
-            out = self.session.send_command('echo %s' % MAGIC_STR, timeout=0.1)
+            self.session.send_command("^C", timeout=TIMEOUT)
+            out = self.session.send_command("echo %s" % MAGIC_STR, timeout=0.1)
             if MAGIC_STR not in out:
                 return False
 
         return True
 
-    def copy_file_from(self, src, dst=".", password='', crb_session=None):
+    def copy_file_from(self, src, dst=".", password="", crb_session=None):
         self.session.copy_file_from(src, dst, password, crb_session)
 
-    def copy_file_to(self, src, dst="~/", password='', crb_session=None):
+    def copy_file_to(self, src, dst="~/", password="", crb_session=None):
         self.session.copy_file_to(src, dst, password, crb_session)

@@ -42,6 +42,7 @@ from functools import wraps
 
 DTS_ENV_PAT = r"DTS_*"
 
+
 def create_parallel_locks(num_duts):
     """
     Create thread lock dictionary based on DUTs number
@@ -50,7 +51,7 @@ def create_parallel_locks(num_duts):
     locks_info = []
     for _ in range(num_duts):
         lock_info = dict()
-        lock_info['update_lock'] = threading.RLock()
+        lock_info["update_lock"] = threading.RLock()
         locks_info.append(lock_info)
 
 
@@ -67,8 +68,8 @@ def parallel_lock(num=1):
     def decorate(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            if 'dut_id' in kwargs:
-                dut_id = kwargs['dut_id']
+            if "dut_id" in kwargs:
+                dut_id = kwargs["dut_id"]
             else:
                 dut_id = 0
 
@@ -77,25 +78,29 @@ def parallel_lock(num=1):
                 dut_id = 0
 
             lock_info = locks_info[dut_id]
-            uplock = lock_info['update_lock']
+            uplock = lock_info["update_lock"]
 
             name = func.__name__
             uplock.acquire()
 
             if name not in lock_info:
                 lock_info[name] = dict()
-                lock_info[name]['lock'] = threading.RLock()
-                lock_info[name]['current_thread'] = 1
+                lock_info[name]["lock"] = threading.RLock()
+                lock_info[name]["current_thread"] = 1
             else:
-                lock_info[name]['current_thread'] += 1
+                lock_info[name]["current_thread"] += 1
 
-            lock = lock_info[name]['lock']
+            lock = lock_info[name]["lock"]
 
             # make sure when owned global lock, should also own update lock
-            if lock_info[name]['current_thread'] >= num:
+            if lock_info[name]["current_thread"] >= num:
                 if lock._is_owned():
-                    print(RED("DUT%d %s waiting for func lock %s" % (dut_id,
-                              threading.current_thread().name, func.__name__)))
+                    print(
+                        RED(
+                            "DUT%d %s waiting for func lock %s"
+                            % (dut_id, threading.current_thread().name, func.__name__)
+                        )
+                    )
                 lock.acquire()
             else:
                 uplock.release()
@@ -108,7 +113,7 @@ def parallel_lock(num=1):
 
                 if lock._is_owned():
                     lock.release()
-                    lock_info[name]['current_thread'] = 0
+                    lock_info[name]["current_thread"] = 0
                 uplock.release()
                 raise e
 
@@ -117,12 +122,14 @@ def parallel_lock(num=1):
 
             if lock._is_owned():
                 lock.release()
-                lock_info[name]['current_thread'] = 0
+                lock_info[name]["current_thread"] = 0
 
             uplock.release()
 
             return ret
+
         return wrapper
+
     return decorate
 
 
@@ -196,7 +203,11 @@ def get_subclasses(module, clazz):
     Get module attribute name and attribute.
     """
     for subclazz_name, subclazz in inspect.getmembers(module):
-        if hasattr(subclazz, '__bases__') and subclazz.__bases__ and clazz in subclazz.__bases__:
+        if (
+            hasattr(subclazz, "__bases__")
+            and subclazz.__bases__
+            and clazz in subclazz.__bases__
+        ):
             yield (subclazz_name, subclazz)
 
 
@@ -215,43 +226,47 @@ def create_mask(indexes):
 
     return hex(val).rstrip("L")
 
+
 def convert_int2ip(value, ip_type=4):
-    '''
+    """
     @change:
     2019.0403 set default value
-    '''
+    """
     if ip_type == 4:
-        ip_str = socket.inet_ntop(socket.AF_INET, struct.pack('!I', value))
+        ip_str = socket.inet_ntop(socket.AF_INET, struct.pack("!I", value))
     else:
         h = value >> 64
         l = value & ((1 << 64) - 1)
-        ip_str = socket.inet_ntop(socket.AF_INET6, struct.pack('!QQ', h, l))
+        ip_str = socket.inet_ntop(socket.AF_INET6, struct.pack("!QQ", h, l))
 
     return ip_str
 
+
 def convert_ip2int(ip_str, ip_type=4):
-    '''
+    """
     @change:
     2019.0403 set default value
-    '''
+    """
     if ip_type == 4:
         ip_val = struct.unpack("!I", socket.inet_aton(ip_str))[0]
     else:
         _hex = socket.inet_pton(socket.AF_INET6, ip_str)
-        h, l = struct.unpack('!QQ', _hex)
+        h, l = struct.unpack("!QQ", _hex)
         ip_val = (h << 64) | l
 
     return ip_val
+
 
 def convert_mac2long(mac_str):
     """
     convert the MAC type from the string into the int.
     """
-    mac_hex = '0x'
-    for mac_part in mac_str.lower().split(':'):
+    mac_hex = "0x"
+    for mac_part in mac_str.lower().split(":"):
         mac_hex += mac_part
-    ret  = int(mac_hex, 16)
+    ret = int(mac_hex, 16)
     return ret
+
 
 def convert_mac2str(mac_long):
     """
@@ -259,12 +274,14 @@ def convert_mac2str(mac_long):
     """
     mac = hex(mac_long)[2:].zfill(12)
     b = []
-    [b.append(mac[n:n+2]) for n in range(len(mac)) if n % 2 == 0 ]
+    [b.append(mac[n : n + 2]) for n in range(len(mac)) if n % 2 == 0]
     new_mac = ":".join(b)
     return new_mac
 
+
 def get_backtrace_object(file_name, obj_name):
     import inspect
+
     frame = inspect.currentframe()
     obj = None
     found = False
@@ -278,39 +295,58 @@ def get_backtrace_object(file_name, obj_name):
         frame = frame.f_back
 
     if found:
-        obj = getattr(frame.f_locals['self'], obj_name, None)
+        obj = getattr(frame.f_locals["self"], obj_name, None)
 
     return obj
 
 
 def check_crb_python_version(crb):
-    cmd = 'python3 -V'
-    out = crb.send_expect(cmd, '#', 5)
+    cmd = "python3 -V"
+    out = crb.send_expect(cmd, "#", 5)
     pat = "Python (\d+).(\d+).(\d+)"
     result = re.findall(pat, out)
-    if not result or \
-       int(result[0][0]) < 3 or \
-       (int(result[0][0]) == 3 and int(result[0][1]) < 6) or \
-       (int(result[0][0]) == 3 and int(result[0][1]) == 6 and int(result[0][2]) < 9):
+    if (
+        not result
+        or int(result[0][0]) < 3
+        or (int(result[0][0]) == 3 and int(result[0][1]) < 6)
+        or (int(result[0][0]) == 3 and int(result[0][1]) == 6 and int(result[0][2]) < 9)
+    ):
         crb.logger.warning(
-            ("WARNING: Tester node python version is lower than python 3.6, "
-             "it is deprecated for use in DTS, "
-             "and will not work in future releases."))
+            (
+                "WARNING: Tester node python version is lower than python 3.6, "
+                "it is deprecated for use in DTS, "
+                "and will not work in future releases."
+            )
+        )
         crb.logger.warning("Please use Python >= 3.6.9 instead")
 
 
 def check_dts_python_version():
-    if sys.version_info.major < 3 or \
-       (sys.version_info.major == 3 and sys.version_info.minor < 6) or \
-       (sys.version_info.major == 3 and sys.version_info.minor == 6 and sys.version_info.micro < 9):
-        print(RED(
-            ("WARNING: Dts running node python version is lower than python 3.6, "
-             "it is deprecated for use in DTS, "
-             "and will not work in future releases.")), file=sys.stderr)
+    if (
+        sys.version_info.major < 3
+        or (sys.version_info.major == 3 and sys.version_info.minor < 6)
+        or (
+            sys.version_info.major == 3
+            and sys.version_info.minor == 6
+            and sys.version_info.micro < 9
+        )
+    ):
+        print(
+            RED(
+                (
+                    "WARNING: Dts running node python version is lower than python 3.6, "
+                    "it is deprecated for use in DTS, "
+                    "and will not work in future releases."
+                )
+            ),
+            file=sys.stderr,
+        )
         print(RED("Please use Python >= 3.6.9 instead"), file=sys.stderr)
+
 
 def get_module_path(module_name):
     from importlib import import_module
+
     _module = import_module(module_name)
     _module_file_path = _module.__file__
     del _module

@@ -44,7 +44,6 @@ from framework.test_case import TestCase
 
 
 class TestMacFilter(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -57,7 +56,6 @@ class TestMacFilter(TestCase):
         self.dutPorts = self.dut.get_ports()
         # Verify that enough ports are available
         self.verify(len(self.dutPorts) >= 1, "Insufficient ports")
-
 
     def set_up(self):
         """
@@ -81,8 +79,9 @@ class TestMacFilter(TestCase):
         self.verify(ret is not None, "MAC address not found")
         self.verify(operator.eq(ret.lower(), self.dest), "MAC address wrong")
 
-        self.max_mac_addr = utils.regexp(out, "Maximum number of MAC addresses: ([0-9]+)")
-
+        self.max_mac_addr = utils.regexp(
+            out, "Maximum number of MAC addresses: ([0-9]+)"
+        )
 
     def allowlist_send_packet(self, portid, destMac="00:11:22:33:44:55", count=-1):
         """
@@ -93,8 +92,8 @@ class TestMacFilter(TestCase):
             count = self.frames_to_send
 
         itf = self.tester.get_interface(self.tester.get_local_port(portid))
-        pkt = Packet(pkt_type='UDP')
-        pkt.config_layer('ether', {'src': '52:00:00:00:00:00', 'dst': destMac})
+        pkt = Packet(pkt_type="UDP")
+        pkt.config_layer("ether", {"src": "52:00:00:00:00:00", "dst": destMac})
         pkt.send_pkt(self.tester, tx_port=itf, count=count)
 
     def test_add_remove_mac_address(self):
@@ -116,35 +115,47 @@ class TestMacFilter(TestCase):
         out = self.dut.get_session_output()
         cur_rxpkt = utils.regexp(out, "received ([0-9]+) packets")
         # check the packet increase
-        self.verify(int(cur_rxpkt)*self.frames_to_send == self.frames_to_send,
-                    "Packet has not been received on default address")
+        self.verify(
+            int(cur_rxpkt) * self.frames_to_send == self.frames_to_send,
+            "Packet has not been received on default address",
+        )
 
         # send one packet to a different MAC address
         # new_mac = self.dut.get_mac_address(portid)
         self.allowlist_send_packet(portid, fake_mac_addr)
         out = self.dut.get_session_output()
         # check the packet DO NOT increase
-        self.verify("received" not in out,
-                    "Packet has been received on a new MAC address that has been removed from the port")
+        self.verify(
+            "received" not in out,
+            "Packet has been received on a new MAC address that has been removed from the port",
+        )
 
         # add the different MAC address
-        self.dut.send_expect("mac_addr add %d" % portid + " %s" % fake_mac_addr, "testpmd>")
+        self.dut.send_expect(
+            "mac_addr add %d" % portid + " %s" % fake_mac_addr, "testpmd>"
+        )
         # send again one packet to a different MAC address
         self.allowlist_send_packet(portid, fake_mac_addr)
         out = self.dut.get_session_output()
         cur_rxpkt = utils.regexp(out, "received ([0-9]+) packets")
         # check the packet increase
-        self.verify(int(cur_rxpkt) * self.frames_to_send == self.frames_to_send,
-                    "Packet has not been received on a new MAC address that has been added to the port")
+        self.verify(
+            int(cur_rxpkt) * self.frames_to_send == self.frames_to_send,
+            "Packet has not been received on a new MAC address that has been added to the port",
+        )
 
         # remove the fake MAC address
-        self.dut.send_expect("mac_addr remove %d" % portid + " %s" % fake_mac_addr, "testpmd>")
+        self.dut.send_expect(
+            "mac_addr remove %d" % portid + " %s" % fake_mac_addr, "testpmd>"
+        )
         # send again one packet to a different MAC address
         self.allowlist_send_packet(portid, fake_mac_addr)
         out = self.dut.get_session_output()
         # check the packet increase
-        self.verify("received" not in out,
-                    "Packet has been received on a new MAC address that has been removed from the port")
+        self.verify(
+            "received" not in out,
+            "Packet has been received on a new MAC address that has been removed from the port",
+        )
         self.dut.send_expect("stop", "testpmd> ")
         self.dut.send_expect("quit", "# ", 30)
 
@@ -160,17 +171,25 @@ class TestMacFilter(TestCase):
         fake_mac_addr = "00:00:00:00:00:00"
 
         # add an address with all zeroes to the port (-EINVAL)
-        out = self.dut.send_expect("mac_addr add %d" % portid + " %s" % fake_mac_addr, "testpmd>")
+        out = self.dut.send_expect(
+            "mac_addr add %d" % portid + " %s" % fake_mac_addr, "testpmd>"
+        )
         self.verify("Invalid argument" in out, "Added a NULL MAC address")
 
         # remove the default MAC address (-EADDRINUSE)
-        out = self.dut.send_expect("mac_addr remove %d" % portid + " %s" % self.dest, "testpmd>")
+        out = self.dut.send_expect(
+            "mac_addr remove %d" % portid + " %s" % self.dest, "testpmd>"
+        )
         self.verify("Address already in use" in out, "default address removed")
 
         # add same address 2 times
         fake_mac_addr = "00:00:00:00:00:01"
-        out = self.dut.send_expect("mac_addr add %d" % portid + " %s" % fake_mac_addr, "testpmd>")
-        out = self.dut.send_expect("mac_addr add %d" % portid + " %s" % fake_mac_addr, "testpmd>")
+        out = self.dut.send_expect(
+            "mac_addr add %d" % portid + " %s" % fake_mac_addr, "testpmd>"
+        )
+        out = self.dut.send_expect(
+            "mac_addr add %d" % portid + " %s" % fake_mac_addr, "testpmd>"
+        )
         self.verify("error" not in out, "added 2 times the same address with an error")
 
         # add 1 address more that max number
@@ -178,10 +197,15 @@ class TestMacFilter(TestCase):
         base_addr = "00:01:00:00:00:"
         while i < int(self.max_mac_addr):
             new_addr = base_addr + "%0.2X" % i
-            out = self.dut.send_expect("mac_addr add %d" % portid + " %s" % new_addr, "testpmd>")
+            out = self.dut.send_expect(
+                "mac_addr add %d" % portid + " %s" % new_addr, "testpmd>"
+            )
             i = i + 1
 
-        self.verify("No space left on device" in out, "added 1 address more than max MAC addresses")
+        self.verify(
+            "No space left on device" in out,
+            "added 1 address more than max MAC addresses",
+        )
         self.dut.send_expect("stop", "testpmd> ")
         self.dut.send_expect("quit", "# ", 30)
 
@@ -200,15 +224,19 @@ class TestMacFilter(TestCase):
         self.allowlist_send_packet(portid, mcast_addr, count=1)
         time.sleep(1)
         out = self.dut.get_session_output()
-        self.verify("received" in out,
-                    "Packet has not been received when it should have on a broadcast address")
+        self.verify(
+            "received" in out,
+            "Packet has not been received when it should have on a broadcast address",
+        )
 
         self.dut.send_expect(f"mcast_addr remove {portid:d} {mcast_addr}", "testpmd>")
         self.allowlist_send_packet(portid, mcast_addr, count=1)
         time.sleep(1)
         out = self.dut.get_session_output()
-        self.verify("received" not in out,
-                    "Packet has been received when it should have ignored the broadcast")
+        self.verify(
+            "received" not in out,
+            "Packet has been received when it should have ignored the broadcast",
+        )
 
         self.dut.send_expect("stop", "testpmd> ")
         self.dut.send_expect("quit", "# ", 30)

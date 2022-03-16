@@ -51,7 +51,7 @@ class TestInterruptPmd(TestCase):
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
         cores = self.dut.get_core_list("1S/4C/1T")
-        self.eal_para = self.dut.create_eal_parameters(cores='1S/4C/1T')
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/4C/1T")
         self.coremask = utils.create_mask(cores)
 
         self.path = self.dut.apps_name["l3fwd-power"]
@@ -59,8 +59,23 @@ class TestInterruptPmd(TestCase):
         self.trafficFlow = {
             "Flow1": [[0, 0, 1], [1, 0, 2]],
             "Flow2": [[0, 0, 0], [0, 1, 1], [0, 2, 2], [0, 3, 3], [0, 4, 4]],
-            "Flow3": [[0, 0, 0], [0, 1, 1], [0, 2, 2], [0, 3, 3], [0, 4, 4], [0, 5, 5], [0, 6, 6], [0, 7, 7],
-                      [1, 0, 8], [1, 1, 9], [1, 2, 10], [1, 3, 11], [1, 4, 12], [1, 5, 13], [1, 6, 14]],
+            "Flow3": [
+                [0, 0, 0],
+                [0, 1, 1],
+                [0, 2, 2],
+                [0, 3, 3],
+                [0, 4, 4],
+                [0, 5, 5],
+                [0, 6, 6],
+                [0, 7, 7],
+                [1, 0, 8],
+                [1, 1, 9],
+                [1, 2, 10],
+                [1, 3, 11],
+                [1, 4, 12],
+                [1, 5, 13],
+                [1, 6, 14],
+            ],
         }
         # build sample app
         out = self.dut.build_dpdk_apps("./examples/l3fwd-power")
@@ -76,7 +91,7 @@ class TestInterruptPmd(TestCase):
         port = self.dut.ports_info[port_id]["port"]
         return port.get_nic_driver()
 
-    def set_nic_driver(self, set_driver='vfio-pci'):
+    def set_nic_driver(self, set_driver="vfio-pci"):
         for i in self.dut_ports:
             port = self.dut.ports_info[i]["port"]
             driver = port.get_nic_driver()
@@ -90,7 +105,10 @@ class TestInterruptPmd(TestCase):
         pass
 
     def test_different_queue(self):
-        cmd = "%s %s -- -p 0x3 -P --config='(0,0,1),(1,0,2)' "% (self.path, self.eal_para)
+        cmd = "%s %s -- -p 0x3 -P --config='(0,0,1),(1,0,2)' " % (
+            self.path,
+            self.eal_para,
+        )
         self.dut.send_expect(cmd, "L3FWD_POWER", 60)
         portQueueLcore = self.trafficFlow["Flow1"]
         self.verifier_result(2, 2, portQueueLcore)
@@ -98,7 +116,10 @@ class TestInterruptPmd(TestCase):
         self.dut.kill_all()
         cores = list(range(6))
         eal_para = self.dut.create_eal_parameters(cores=cores)
-        cmd = "%s %s -- -p 0x3 -P --config='(0,0,0),(0,1,1),(0,2,2),(0,3,3),(0,4,4)' "% (self.path, eal_para)
+        cmd = (
+            "%s %s -- -p 0x3 -P --config='(0,0,0),(0,1,1),(0,2,2),(0,3,3),(0,4,4)' "
+            % (self.path, eal_para)
+        )
         self.dut.send_expect(cmd, "L3FWD_POWER", 120)
         portQueueLcore = self.trafficFlow["Flow2"]
         self.verifier_result(20, 1, portQueueLcore)
@@ -106,9 +127,12 @@ class TestInterruptPmd(TestCase):
         self.dut.kill_all()
         cores = list(range(24))
         eal_para = self.dut.create_eal_parameters(cores=cores)
-        cmd = "%s %s -- -p 0x3 -P --config='(0,0,0),(0,1,1),(0,2,2),(0,3,3),\
+        cmd = (
+            "%s %s -- -p 0x3 -P --config='(0,0,0),(0,1,1),(0,2,2),(0,3,3),\
         (0,4,4),(0,5,5),(0,6,6),(0,7,7),(1,0,8),(1,1,9),(1,2,10),(1,3,11),\
-        (1,4,12),(1,5,13),(1,6,14)' "% (self.path, eal_para)
+        (1,4,12),(1,5,13),(1,6,14)' "
+            % (self.path, eal_para)
+        )
 
         self.dut.send_expect(cmd, "L3FWD_POWER", 60)
         portQueueLcore = self.trafficFlow["Flow3"]
@@ -119,10 +143,17 @@ class TestInterruptPmd(TestCase):
         result = self.dut.get_session_output(timeout=5)
         for i in range(len(portQueueLcore)):
             lcorePort = portQueueLcore[i]
-            self.verify("FWD_POWER: lcore %d is waked up from rx interrupt on port %d queue %d" %(lcorePort[2],
-                lcorePort[0], lcorePort[1]) in result, "Wrong: lcore %d is waked up failed" % lcorePort[2])
-            self.verify("L3FWD_POWER: lcore %d sleeps until interrupt triggers" %(
-                lcorePort[2]) in result, "Wrong: lcore %d not sleeps until interrupt triggers" % lcorePort[2])
+            self.verify(
+                "FWD_POWER: lcore %d is waked up from rx interrupt on port %d queue %d"
+                % (lcorePort[2], lcorePort[0], lcorePort[1])
+                in result,
+                "Wrong: lcore %d is waked up failed" % lcorePort[2],
+            )
+            self.verify(
+                "L3FWD_POWER: lcore %d sleeps until interrupt triggers" % (lcorePort[2])
+                in result,
+                "Wrong: lcore %d not sleeps until interrupt triggers" % lcorePort[2],
+            )
 
     def scapy_send_packet(self, num, portnum):
         """
@@ -132,10 +163,15 @@ class TestInterruptPmd(TestCase):
             txport = self.tester.get_local_port(self.dut_ports[i])
             mac = self.dut.get_mac_address(self.dut_ports[i])
             txItf = self.tester.get_interface(txport)
-            self.verify(self.tester.is_interface_up(intf=txItf), "Tester's %s should be up".format(txItf))
+            self.verify(
+                self.tester.is_interface_up(intf=txItf),
+                "Tester's %s should be up".format(txItf),
+            )
             for j in range(num):
                 self.tester.scapy_append(
-                    'sendp([Ether()/IP(dst="198.0.0.%d")/UDP()/Raw(\'X\'*18)], iface="%s")' % (j, txItf))
+                    'sendp([Ether()/IP(dst="198.0.0.%d")/UDP()/Raw(\'X\'*18)], iface="%s")'
+                    % (j, txItf)
+                )
         self.tester.scapy_execute()
 
     def tear_down(self):

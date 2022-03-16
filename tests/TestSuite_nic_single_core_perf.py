@@ -49,28 +49,45 @@ from framework.test_case import TestCase
 
 
 class TestNicSingleCorePerf(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
         PMD prerequisites.
         """
-        self.verify(self.nic in ['niantic', 'fortville_25g', 'fortville_spirit', 'ConnectX5_MT4121',
-                                 'ConnectX4_LX_MT4117', 'columbiaville_100g', 'columbiaville_25g', 'columbiaville_25gx2',
-                                 'brcm_57414', 'brcm_P2100G'],
-                                 "Not required NIC ")
-        self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip']
+        self.verify(
+            self.nic
+            in [
+                "niantic",
+                "fortville_25g",
+                "fortville_spirit",
+                "ConnectX5_MT4121",
+                "ConnectX4_LX_MT4117",
+                "columbiaville_100g",
+                "columbiaville_25g",
+                "columbiaville_25gx2",
+                "brcm_57414",
+                "brcm_P2100G",
+            ],
+            "Not required NIC ",
+        )
+        self.headers_size = HEADER_SIZE["eth"] + HEADER_SIZE["ip"]
 
-        self.rx_desc_size = self.get_suite_cfg().get('rx_desc_size', 32)
-        err_msg = "Rx desc only has 16B and 32B size, %d is not valid" % self.rx_desc_size
+        self.rx_desc_size = self.get_suite_cfg().get("rx_desc_size", 32)
+        err_msg = (
+            "Rx desc only has 16B and 32B size, %d is not valid" % self.rx_desc_size
+        )
         self.verify(self.rx_desc_size == 16 or self.rx_desc_size == 32, err_msg)
         if self.rx_desc_size == 16:
-            extra_options = ''
+            extra_options = ""
             # rebuild to get best perf on fortville
             if self.nic in ["fortville_25g", "fortville_spirit"]:
-                extra_options = '-Dc_args=-DRTE_LIBRTE_I40E_16BYTE_RX_DESC'
-            elif self.nic in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
-                extra_options = '-Dc_args=-DRTE_LIBRTE_ICE_16BYTE_RX_DESC'
+                extra_options = "-Dc_args=-DRTE_LIBRTE_I40E_16BYTE_RX_DESC"
+            elif self.nic in [
+                "columbiaville_100g",
+                "columbiaville_25g",
+                "columbiaville_25gx2",
+            ]:
+                extra_options = "-Dc_args=-DRTE_LIBRTE_ICE_16BYTE_RX_DESC"
             self.dut.build_install_dpdk(self.target, extra_options=extra_options)
 
         # Based on h/w type, choose how many ports to use
@@ -85,8 +102,7 @@ class TestNicSingleCorePerf(TestCase):
         if self.logger.log_path.startswith(os.sep):
             self.output_path = self.logger.log_path
         else:
-            cur_path = os.path.dirname(
-                os.path.dirname(os.path.realpath(__file__)))
+            cur_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
             self.output_path = os.sep.join([cur_path, self.logger.log_path])
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
@@ -99,35 +115,48 @@ class TestNicSingleCorePerf(TestCase):
         """
 
         # test parameters include: frames size, descriptor numbers
-        self.test_parameters = self.get_suite_cfg()['test_parameters']
+        self.test_parameters = self.get_suite_cfg()["test_parameters"]
 
         # traffic duraion in second
-        self.test_duration = self.get_suite_cfg()['test_duration']
-        self.throughput_stat_sample_interval = self.get_suite_cfg().get('throughput_stat_sample_interval', 5)
+        self.test_duration = self.get_suite_cfg()["test_duration"]
+        self.throughput_stat_sample_interval = self.get_suite_cfg().get(
+            "throughput_stat_sample_interval", 5
+        )
 
         # load the expected throughput for required nic
         if self.nic in ["ConnectX4_LX_MT4117"]:
-            nic_speed = self.dut.ports_info[0]['port'].get_nic_speed()
+            nic_speed = self.dut.ports_info[0]["port"].get_nic_speed()
             if nic_speed == "25000":
-                self.expected_throughput = self.get_suite_cfg(
-                )['expected_throughput'][self.nic]['25G']
+                self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+                    self.nic
+                ]["25G"]
             else:
-                self.expected_throughput = self.get_suite_cfg(
-                )['expected_throughput'][self.nic]['40G']
+                self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+                    self.nic
+                ]["40G"]
         else:
-            self.expected_throughput = self.get_suite_cfg()[
-                'expected_throughput'][self.nic]
+            self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+                self.nic
+            ]
 
         # initilize throughput attribution
         # {'$framesize':{"$nb_desc": 'throughput'}
         self.throughput = {}
 
         # Accepted tolerance is ratio
-        self.gap = self.get_suite_cfg().get('accepted_tolerance', 0.1)
+        self.gap = self.get_suite_cfg().get("accepted_tolerance", 0.1)
 
         # header to print test result table
-        self.table_header = ['Fwd_core', 'Frame Size', 'TXD/RXD', 'Real-Mpps', 'Rate',
-                             'Expected-Mpps', 'Fluc Ratio', 'Status']
+        self.table_header = [
+            "Fwd_core",
+            "Frame Size",
+            "TXD/RXD",
+            "Real-Mpps",
+            "Rate",
+            "Expected-Mpps",
+            "Fluc Ratio",
+            "Status",
+        ]
         self.test_result = {}
 
     def flows(self):
@@ -142,29 +171,40 @@ class TestNicSingleCorePerf(TestCase):
             'IP(src="1.2.3.4",dst="192.18.3.0")',
             'IP(src="1.2.3.4",dst="192.18.3.1")',
             'IP(src="1.2.3.4",dst="192.18.2.0")',
-            'IP(src="1.2.3.4",dst="192.18.2.1")']
+            'IP(src="1.2.3.4",dst="192.18.2.1")',
+        ]
 
     def create_pacap_file(self, frame_size, port_num):
         """
         Prepare traffic flow
         """
-        payload_size = frame_size - HEADER_SIZE['ip'] - HEADER_SIZE['eth']
+        payload_size = frame_size - HEADER_SIZE["ip"] - HEADER_SIZE["eth"]
         pcaps = {}
         for _port in self.dut_ports:
             if 1 == port_num:
-                flow = ['Ether(src="52:00:00:00:00:00")/%s/("X"*%d)' % (self.flows()[_port], payload_size)]
+                flow = [
+                    'Ether(src="52:00:00:00:00:00")/%s/("X"*%d)'
+                    % (self.flows()[_port], payload_size)
+                ]
                 pcap = os.sep.join([self.output_path, "dst{0}.pcap".format(_port)])
-                self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, ','.join(flow)))
+                self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, ",".join(flow)))
                 self.tester.scapy_execute()
                 pcaps[_port] = []
                 pcaps[_port].append(pcap)
             else:
                 index = self.dut_ports[_port]
                 cnt = 0
-                for layer in self.flows()[_port * 2:(_port + 1) * 2]:
-                    flow = ['Ether(src="52:00:00:00:00:00")/%s/("X"*%d)' % (layer, payload_size)]
-                    pcap = os.sep.join([self.output_path, "dst{0}_{1}.pcap".format(index, cnt)])
-                    self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, ','.join(flow)))
+                for layer in self.flows()[_port * 2 : (_port + 1) * 2]:
+                    flow = [
+                        'Ether(src="52:00:00:00:00:00")/%s/("X"*%d)'
+                        % (layer, payload_size)
+                    ]
+                    pcap = os.sep.join(
+                        [self.output_path, "dst{0}_{1}.pcap".format(index, cnt)]
+                    )
+                    self.tester.scapy_append(
+                        'wrpcap("%s", [%s])' % (pcap, ",".join(flow))
+                    )
                     self.tester.scapy_execute()
                     if index not in pcaps:
                         pcaps[index] = []
@@ -184,7 +224,7 @@ class TestNicSingleCorePerf(TestCase):
                 tgen_input.append((txIntf, rxIntf, pcap))
         else:
             for rxPort in range(port_num):
-                if rxPort % port_num == 0 or rxPort ** 2 == port_num:
+                if rxPort % port_num == 0 or rxPort**2 == port_num:
                     txIntf = self.tester.get_local_port(self.dut_ports[rxPort + 1])
                     port_id = self.dut_ports[rxPort + 1]
                 else:
@@ -213,8 +253,9 @@ class TestNicSingleCorePerf(TestCase):
             for fwd_config in list(self.test_parameters.keys()):
                 for frame_size in list(self.test_parameters[fwd_config].keys()):
                     for nb_desc in self.test_parameters[fwd_config][frame_size]:
-                        self.expected_throughput[fwd_config][frame_size][nb_desc] = \
-                            round(self.throughput[fwd_config][frame_size][nb_desc], 3)
+                        self.expected_throughput[fwd_config][frame_size][
+                            nb_desc
+                        ] = round(self.throughput[fwd_config][frame_size][nb_desc], 3)
 
     def perf_test(self, port_num):
         """
@@ -223,7 +264,7 @@ class TestNicSingleCorePerf(TestCase):
         # ports allowlist
         eal_para = ""
         for i in range(port_num):
-            eal_para += " -a " + self.dut.ports_info[i]['pci']
+            eal_para += " -a " + self.dut.ports_info[i]["pci"]
 
         port_mask = utils.create_mask(self.dut_ports)
 
@@ -232,15 +273,22 @@ class TestNicSingleCorePerf(TestCase):
             param = " --portmask=%s" % (port_mask)
             # the fwd_config just the config for fwd core
             # to start testpmd should add 1C to it
-            core_config = '1S/%s' % fwd_config
-            thread_num = int(fwd_config[fwd_config.find('/')+1: fwd_config.find('T')])
+            core_config = "1S/%s" % fwd_config
+            thread_num = int(
+                fwd_config[fwd_config.find("/") + 1 : fwd_config.find("T")]
+            )
             core_list = self.dut.get_core_list(core_config, socket=self.socket)
-            self.verify(len(core_list) >= thread_num, "the Hyper-threading not open, please open it to test")
+            self.verify(
+                len(core_list) >= thread_num,
+                "the Hyper-threading not open, please open it to test",
+            )
 
             # need add one more core for start testpmd
             core_list = [core_list[0]] + [str(int(i) + 1) for i in core_list]
 
-            self.logger.info("Executing Test Using cores: %s of config %s" % (core_list, fwd_config))
+            self.logger.info(
+                "Executing Test Using cores: %s of config %s" % (core_list, fwd_config)
+            )
 
             nb_cores = thread_num
 
@@ -248,12 +296,16 @@ class TestNicSingleCorePerf(TestCase):
             if self.nic in ["fortville_25g", "fortville_spirit"] or thread_num == 2:
                 param += " --rxq=2 --txq=2"
             # columbiaville use one queue per port for best performance.
-            elif self.nic in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
+            elif self.nic in [
+                "columbiaville_100g",
+                "columbiaville_25g",
+                "columbiaville_25gx2",
+            ]:
                 param += " --rxq=1 --txq=1"
                 # workaround for that testpmd can't forward packets in io forward mode
                 param += " --port-topology=loop"
             # improves performance and reduces fluctuations
-            elif self.nic in ['ConnectX5_MT4121', 'ConnectX4_LX_MT4117']:
+            elif self.nic in ["ConnectX5_MT4121", "ConnectX4_LX_MT4117"]:
                 param += " --burst=64 --mbcache=512"
 
             self.throughput[fwd_config] = dict()
@@ -262,11 +314,18 @@ class TestNicSingleCorePerf(TestCase):
                 pcaps = self.create_pacap_file(frame_size, port_num)
                 tgenInput = self.prepare_stream(pcaps, port_num)
                 for nb_desc in self.test_parameters[fwd_config][frame_size]:
-                    self.logger.info("Test running at parameters: " +
-                        "framesize: {}, rxd/txd: {}".format(frame_size, nb_desc))
-                    parameter = param + " --txd=%d --rxd=%d --nb-cores=%d" % (nb_desc, nb_desc, nb_cores)
+                    self.logger.info(
+                        "Test running at parameters: "
+                        + "framesize: {}, rxd/txd: {}".format(frame_size, nb_desc)
+                    )
+                    parameter = param + " --txd=%d --rxd=%d --nb-cores=%d" % (
+                        nb_desc,
+                        nb_desc,
+                        nb_cores,
+                    )
                     self.pmdout.start_testpmd(
-                        core_list, parameter, eal_para, socket=self.socket)
+                        core_list, parameter, eal_para, socket=self.socket
+                    )
                     self.dut.send_expect("start", "testpmd> ", 15)
 
                     vm_config = self.set_fields()
@@ -274,15 +333,19 @@ class TestNicSingleCorePerf(TestCase):
                     self.tester.pktgen.clear_streams()
 
                     # run packet generator
-                    streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100, vm_config, self.tester.pktgen)
+                    streams = self.pktgen_helper.prepare_stream_from_tginput(
+                        tgenInput, 100, vm_config, self.tester.pktgen
+                    )
                     # set traffic option
                     traffic_opt = {
-                        'method': 'throughput',
-                        'rate': 100,
-                        'duration': self.test_duration,
-                        'interval': self.throughput_stat_sample_interval,
-                        }
-                    stats = self.tester.pktgen.measure(stream_ids=streams, traffic_opt=traffic_opt)
+                        "method": "throughput",
+                        "rate": 100,
+                        "duration": self.test_duration,
+                        "interval": self.throughput_stat_sample_interval,
+                    }
+                    stats = self.tester.pktgen.measure(
+                        stream_ids=streams, traffic_opt=traffic_opt
+                    )
 
                     #####################################################
                     # Remove max and min if count >=5, then get average
@@ -303,16 +366,22 @@ class TestNicSingleCorePerf(TestCase):
                     else:
                         total_pps_rx = stats
 
-                    self.verify(total_pps_rx > 0, "No traffic detected, please check your configuration")
+                    self.verify(
+                        total_pps_rx > 0,
+                        "No traffic detected, please check your configuration",
+                    )
                     total_mpps_rx = total_pps_rx / 1000000.0
                     self.throughput[fwd_config][frame_size][nb_desc] = total_mpps_rx
 
                     self.dut.send_expect("stop", "testpmd> ")
                     self.dut.send_expect("quit", "# ", 30)
 
-                    self.logger.info("Trouthput of " +
-                        "framesize: {}, rxd/txd: {} is :{} Mpps".format(
-                            frame_size, nb_desc, total_mpps_rx))
+                    self.logger.info(
+                        "Trouthput of "
+                        + "framesize: {}, rxd/txd: {} is :{} Mpps".format(
+                            frame_size, nb_desc, total_mpps_rx
+                        )
+                    )
 
         return self.throughput
 
@@ -341,16 +410,16 @@ class TestNicSingleCorePerf(TestCase):
                     ret_data[header[3]] = "{:.3f}".format(_real)
                     ret_data[header[4]] = "{:.3f}%".format(_real * 100 / wirespeed)
                     ret_data[header[5]] = "{:.3f}".format(_exp)
-                    delta = (_real - _exp)/_exp
+                    delta = (_real - _exp) / _exp
                     if _exp != 0:
                         ret_data[header[6]] = "{:.3f}".format(delta)
                         if delta > -self.gap:
-                            ret_data[header[7]] = 'PASS'
+                            ret_data[header[7]] = "PASS"
                         else:
-                            ret_data[header[7]] = 'FAIL'
+                            ret_data[header[7]] = "FAIL"
                     else:
                         ret_data[header[6]] = "N/A"
-                        ret_data[header[7]] = 'PASS'
+                        ret_data[header[7]] = "PASS"
 
                     ret_datas[frame_size][nb_desc] = deepcopy(ret_data)
                 self.test_result[fwd_config] = deepcopy(ret_datas)
@@ -363,7 +432,8 @@ class TestNicSingleCorePerf(TestCase):
                     table_row = list()
                     for i in range(len(header)):
                         table_row.append(
-                            self.test_result[fwd_config][frame_size][nb_desc][header[i]])
+                            self.test_result[fwd_config][frame_size][nb_desc][header[i]]
+                        )
                     self.result_table_add(table_row)
         # present test results to screen
         self.result_table_print()
@@ -373,11 +443,11 @@ class TestNicSingleCorePerf(TestCase):
             self.save_result(self.test_result)
 
     def save_result(self, data):
-        '''
+        """
         Saves the test results as a separated file named with
         self.nic+_single_core_perf.json in output folder
         if self.save_result_flag is True
-        '''
+        """
         json_obj = dict()
         case_name = self.running_case
         json_obj[case_name] = list()
@@ -387,32 +457,50 @@ class TestNicSingleCorePerf(TestCase):
                 for nb_desc in self.test_parameters[fwd_config][frame_size]:
                     row_in = self.test_result[fwd_config][frame_size][nb_desc]
                     row_dict0 = dict()
-                    row_dict0['performance'] = list()
-                    row_dict0['parameters'] = list()
-                    row_dict0['status'] = row_in['Status']
-                    row_dict1 = dict(name="Throughput", value=row_in['Real-Mpps'], unit="Mpps",
-                                     delta=row_in['Fluc Ratio'], expected=row_in['Expected-Mpps'])
-                    row_dict2 = dict(name="Txd/Rxd", value=row_in["TXD/RXD"], unit="descriptor")
-                    row_dict3 = dict(name="frame_size", value=row_in["Frame Size"], unit="bytes")
+                    row_dict0["performance"] = list()
+                    row_dict0["parameters"] = list()
+                    row_dict0["status"] = row_in["Status"]
+                    row_dict1 = dict(
+                        name="Throughput",
+                        value=row_in["Real-Mpps"],
+                        unit="Mpps",
+                        delta=row_in["Fluc Ratio"],
+                        expected=row_in["Expected-Mpps"],
+                    )
+                    row_dict2 = dict(
+                        name="Txd/Rxd", value=row_in["TXD/RXD"], unit="descriptor"
+                    )
+                    row_dict3 = dict(
+                        name="frame_size", value=row_in["Frame Size"], unit="bytes"
+                    )
                     row_dict4 = dict(name="Fwd_core", value=row_in["Fwd_core"])
-                    row_dict0['performance'].append(row_dict1)
-                    row_dict0['parameters'].append(row_dict2)
-                    row_dict0['parameters'].append(row_dict3)
-                    row_dict0['parameters'].append(row_dict4)
+                    row_dict0["performance"].append(row_dict1)
+                    row_dict0["parameters"].append(row_dict2)
+                    row_dict0["parameters"].append(row_dict3)
+                    row_dict0["parameters"].append(row_dict4)
                     json_obj[case_name].append(row_dict0)
-                    status_result.append(row_dict0['status'])
+                    status_result.append(row_dict0["status"])
 
-        json_file = os.path.join(rst.path2Result, '{0:s}_single_core_perf.json'.format(self.nic))
-        with open(json_file, 'w') as fp:
-            json.dump(json_obj, fp, indent=4, separators=(',', ': '), sort_keys=True)
+        json_file = os.path.join(
+            rst.path2Result, "{0:s}_single_core_perf.json".format(self.nic)
+        )
+        with open(json_file, "w") as fp:
+            json.dump(json_obj, fp, indent=4, separators=(",", ": "), sort_keys=True)
 
-        self.verify("FAIL" not in status_result, "Excessive gap between test results and expectations")
+        self.verify(
+            "FAIL" not in status_result,
+            "Excessive gap between test results and expectations",
+        )
 
     def set_fields(self):
         """
         set ip protocol field behavior
         """
-        fields_config = {'ip': {'src': {'action': 'random'}, }, }
+        fields_config = {
+            "ip": {
+                "src": {"action": "random"},
+            },
+        }
         return fields_config
 
     def tear_down(self):

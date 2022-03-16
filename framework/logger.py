@@ -64,29 +64,29 @@ logging.DTS_VIRTDUT_OUTPUT = logging.DEBUG + 6
 logging.DTS_PKTGEN_CMD = logging.INFO + 7
 logging.DTS_PKTGEN_OUTPUT = logging.DEBUG + 7
 
-logging.addLevelName(logging.DTS_DUT_CMD, 'DTS_DUT_CMD')
-logging.addLevelName(logging.DTS_DUT_OUTPUT, 'DTS_DUT_OUTPUT')
-logging.addLevelName(logging.DTS_DUT_RESULT, 'DTS_DUT_RESULT')
+logging.addLevelName(logging.DTS_DUT_CMD, "DTS_DUT_CMD")
+logging.addLevelName(logging.DTS_DUT_OUTPUT, "DTS_DUT_OUTPUT")
+logging.addLevelName(logging.DTS_DUT_RESULT, "DTS_DUT_RESULT")
 
-logging.addLevelName(logging.DTS_TESTER_CMD, 'DTS_TESTER_CMD')
-logging.addLevelName(logging.DTS_TESTER_OUTPUT, 'DTS_TESTER_OUTPUT')
-logging.addLevelName(logging.DTS_TESTER_RESULT, 'DTS_TESTER_RESULT')
+logging.addLevelName(logging.DTS_TESTER_CMD, "DTS_TESTER_CMD")
+logging.addLevelName(logging.DTS_TESTER_OUTPUT, "DTS_TESTER_OUTPUT")
+logging.addLevelName(logging.DTS_TESTER_RESULT, "DTS_TESTER_RESULT")
 
-logging.addLevelName(logging.DTS_VIRTDUT_CMD, 'VIRTDUT_CMD')
-logging.addLevelName(logging.DTS_VIRTDUT_OUTPUT, 'VIRTDUT_OUTPUT')
+logging.addLevelName(logging.DTS_VIRTDUT_CMD, "VIRTDUT_CMD")
+logging.addLevelName(logging.DTS_VIRTDUT_OUTPUT, "VIRTDUT_OUTPUT")
 
-logging.addLevelName(logging.SUITE_DUT_CMD, 'SUITE_DUT_CMD')
-logging.addLevelName(logging.SUITE_DUT_OUTPUT, 'SUITE_DUT_OUTPUT')
+logging.addLevelName(logging.SUITE_DUT_CMD, "SUITE_DUT_CMD")
+logging.addLevelName(logging.SUITE_DUT_OUTPUT, "SUITE_DUT_OUTPUT")
 
-logging.addLevelName(logging.SUITE_TESTER_CMD, 'SUITE_TESTER_CMD')
-logging.addLevelName(logging.SUITE_TESTER_OUTPUT, 'SUITE_TESTER_OUTPUT')
+logging.addLevelName(logging.SUITE_TESTER_CMD, "SUITE_TESTER_CMD")
+logging.addLevelName(logging.SUITE_TESTER_OUTPUT, "SUITE_TESTER_OUTPUT")
 
-logging.addLevelName(logging.DTS_PKTGEN_CMD, 'DTS_PKTGEN_CMD')
-logging.addLevelName(logging.DTS_PKTGEN_OUTPUT, 'DTS_PKTGEN_OUTPUT')
+logging.addLevelName(logging.DTS_PKTGEN_CMD, "DTS_PKTGEN_CMD")
+logging.addLevelName(logging.DTS_PKTGEN_OUTPUT, "DTS_PKTGEN_OUTPUT")
 
-date_fmt = '%d/%m/%Y %H:%M:%S'
-RESET_COLOR = '\033[0m'
-stream_fmt = '%(color)s%(name)30s: %(message)s' + RESET_COLOR
+date_fmt = "%d/%m/%Y %H:%M:%S"
+RESET_COLOR = "\033[0m"
+stream_fmt = "%(color)s%(name)30s: %(message)s" + RESET_COLOR
 log_dir = None
 
 # List for saving all using loggers
@@ -151,30 +151,31 @@ class ColorHandler(logging.StreamHandler):
     """
     Color of DTS log format.
     """
+
     LEVEL_COLORS = {
-        logging.DEBUG: '',  # SYSTEM
-        logging.DTS_DUT_OUTPUT: '\033[00;37m',  # WHITE
-        logging.DTS_TESTER_OUTPUT: '\033[00;37m',  # WHITE
-        logging.SUITE_DUT_OUTPUT: '\033[00;37m',  # WHITE
-        logging.SUITE_TESTER_OUTPUT: '\033[00;37m',  # WHITE
-        logging.INFO: '\033[00;36m',  # CYAN
-        logging.DTS_DUT_CMD: '',  # SYSTEM
-        logging.DTS_TESTER_CMD: '',  # SYSTEM
-        logging.SUITE_DUT_CMD: '',  # SYSTEM
-        logging.SUITE_TESTER_CMD: '',  # SYSTEM
-        logging.DTS_PKTGEN_CMD: '',  # SYSTEM
-        logging.DTS_PKTGEN_OUTPUT: '',  # SYSTEM
-        logging.DTS_VIRTDUT_CMD: '',  # SYSTEM
-        logging.DTS_VIRTDUT_OUTPUT: '',  # SYSTEM
-        logging.WARN: '\033[01;33m',  # BOLD YELLOW
-        logging.DTS_DUT_RESULT: '\033[01;34m',  # BOLD BLUE
-        logging.DTS_TESTER_RESULT: '\033[01;34m',  # BOLD BLUE
-        logging.ERROR: '\033[01;31m',  # BOLD RED
-        logging.CRITICAL: '\033[01;31m',  # BOLD RED
+        logging.DEBUG: "",  # SYSTEM
+        logging.DTS_DUT_OUTPUT: "\033[00;37m",  # WHITE
+        logging.DTS_TESTER_OUTPUT: "\033[00;37m",  # WHITE
+        logging.SUITE_DUT_OUTPUT: "\033[00;37m",  # WHITE
+        logging.SUITE_TESTER_OUTPUT: "\033[00;37m",  # WHITE
+        logging.INFO: "\033[00;36m",  # CYAN
+        logging.DTS_DUT_CMD: "",  # SYSTEM
+        logging.DTS_TESTER_CMD: "",  # SYSTEM
+        logging.SUITE_DUT_CMD: "",  # SYSTEM
+        logging.SUITE_TESTER_CMD: "",  # SYSTEM
+        logging.DTS_PKTGEN_CMD: "",  # SYSTEM
+        logging.DTS_PKTGEN_OUTPUT: "",  # SYSTEM
+        logging.DTS_VIRTDUT_CMD: "",  # SYSTEM
+        logging.DTS_VIRTDUT_OUTPUT: "",  # SYSTEM
+        logging.WARN: "\033[01;33m",  # BOLD YELLOW
+        logging.DTS_DUT_RESULT: "\033[01;34m",  # BOLD BLUE
+        logging.DTS_TESTER_RESULT: "\033[01;34m",  # BOLD BLUE
+        logging.ERROR: "\033[01;31m",  # BOLD RED
+        logging.CRITICAL: "\033[01;31m",  # BOLD RED
     }
 
     def format(self, record):
-        record.__dict__['color'] = self.LEVEL_COLORS[record.levelno]
+        record.__dict__["color"] = self.LEVEL_COLORS[record.levelno]
         return logging.StreamHandler.format(self, record)
 
 
@@ -193,9 +194,11 @@ class DTSLOG(BaseLoggerAdapter):
         self.debug_lvl = logging.DEBUG
 
         if log_dir is None:
-            self.log_path = os.getcwd() + "/../" + FOLDERS['Output']
+            self.log_path = os.getcwd() + "/../" + FOLDERS["Output"]
         else:
-            self.log_path = log_dir    # log dir should contain tag/crb global value and mod in dts
+            self.log_path = (
+                log_dir  # log dir should contain tag/crb global value and mod in dts
+            )
         self.dts_log = "dts.log"
 
         self.logger = logger
@@ -216,20 +219,20 @@ class DTSLOG(BaseLoggerAdapter):
         """
         Config stream handler and file handler.
         """
-        if load_global_setting(DTS_PARALLEL_SETTING) == 'yes':
-            message_fmt = '%(asctime)s %(name)30s %(threadName)s: %(message)s'
+        if load_global_setting(DTS_PARALLEL_SETTING) == "yes":
+            message_fmt = "%(asctime)s %(name)30s %(threadName)s: %(message)s"
         else:
-            message_fmt = '%(asctime)s %(name)30s: %(message)s'
+            message_fmt = "%(asctime)s %(name)30s: %(message)s"
 
         fh.setFormatter(logging.Formatter(message_fmt, date_fmt))
         ch.setFormatter(logging.Formatter(stream_fmt, date_fmt))
 
-        fh.setLevel(logging.DEBUG)   # file handler default level
+        fh.setLevel(logging.DEBUG)  # file handler default level
         global verbose
         if verbose is True:
             ch.setLevel(logging.DEBUG)
         else:
-            ch.setLevel(logging.INFO)   # console handler default level
+            ch.setLevel(logging.INFO)  # console handler default level
 
         self.logger.addHandler(fh)
         self.logger.addHandler(ch)
@@ -290,23 +293,23 @@ class DTSLOG(BaseLoggerAdapter):
         """
         Reconfigure stream&logfile level and reset info,debug,warn level.
         """
-        log_file = self.log_path + '/' + self.dts_log
+        log_file = self.log_path + "/" + self.dts_log
         fh = logging.FileHandler(log_file)
         ch = ColorHandler()
         self.__log_handler(fh, ch)
 
-        if crb.startswith('dut'):
+        if crb.startswith("dut"):
             self.info_lvl = logging.DTS_DUT_CMD
             self.debug_lvl = logging.DTS_DUT_OUTPUT
             self.warn_lvl = logging.DTS_DUT_RESULT
-        elif crb.startswith('tester'):
+        elif crb.startswith("tester"):
             self.info_lvl = logging.DTS_TESTER_CMD
             self.debug_lvl = logging.DTS_TESTER_OUTPUT
             self.warn_lvl = logging.DTS_TESTER_RESULT
-        elif crb.startswith('pktgen'):
+        elif crb.startswith("pktgen"):
             self.info_lvl = logging.DTS_PKTGEN_CMD
             self.debug_lvl = logging.DTS_PKTGEN_OUTPUT
-        elif crb.startswith('virtdut'):
+        elif crb.startswith("virtdut"):
             self.info_lvl = logging.DTS_VIRTDUT_CMD
             self.debug_lvl = logging.DTS_VIRTDUT_OUTPUT
         else:
@@ -319,7 +322,7 @@ class DTSLOG(BaseLoggerAdapter):
         """
         Reconfigure stream&logfile level and reset info,debug level.
         """
-        log_file = self.log_path + '/' + suitename + '.log'
+        log_file = self.log_path + "/" + suitename + ".log"
         fh = logging.FileHandler(log_file)
         ch = ColorHandler()
 
@@ -329,16 +332,16 @@ class DTSLOG(BaseLoggerAdapter):
         # then add handler
         self.__log_handler(fh, ch)
 
-        if crb == 'dut':
+        if crb == "dut":
             self.info_lvl = logging.SUITE_DUT_CMD
             self.debug_lvl = logging.SUITE_DUT_OUTPUT
-        elif crb == 'tester':
+        elif crb == "tester":
             self.info_lvl = logging.SUITE_TESTER_CMD
             self.debug_lvl = logging.SUITE_TESTER_OUTPUT
-        elif crb == 'pktgen':
+        elif crb == "pktgen":
             self.info_lvl = logging.DTS_PKTGEN_CMD
             self.debug_lvl = logging.DTS_PKTGEN_OUTPUT
-        elif crb == 'virtdut':
+        elif crb == "virtdut":
             self.info_lvl = logging.DTS_VIRTDUT_CMD
             self.debug_lvl = logging.DTS_VIRTDUT_OUTPUT
 
@@ -359,19 +362,19 @@ def getLogger(name, crb="suite"):
     global Loggers
     # return saved logger
     for logger in Loggers:
-        if logger['name'] == name and logger['crb'] == crb:
-            return logger['logger']
+        if logger["name"] == name and logger["crb"] == crb:
+            return logger["logger"]
 
     # return new logger
     logger = DTSLOG(logging.getLogger(name), crb)
-    Loggers.append({'logger': logger, 'name': name, 'crb': crb})
+    Loggers.append({"logger": logger, "name": name, "crb": crb})
     return logger
 
 
-_TESTSUITE_NAME_FORMAT_PATTERN = r'TEST SUITE : (.*)'
-_TESTSUITE_ENDED_FORMAT_PATTERN = r'TEST SUITE ENDED: (.*)'
-_TESTCASE_NAME_FORMAT_PATTERN = r'Test Case (.*) Begin'
-_TESTCASE_RESULT_FORMAT_PATTERN = r'Test Case (.*) Result (.*):'
+_TESTSUITE_NAME_FORMAT_PATTERN = r"TEST SUITE : (.*)"
+_TESTSUITE_ENDED_FORMAT_PATTERN = r"TEST SUITE ENDED: (.*)"
+_TESTCASE_NAME_FORMAT_PATTERN = r"Test Case (.*) Begin"
+_TESTCASE_RESULT_FORMAT_PATTERN = r"Test Case (.*) Result (.*):"
 
 
 class LogParser(object):
@@ -383,7 +386,7 @@ class LogParser(object):
         self.log_path = log_path
 
         try:
-            self.log_handler = open(self.log_path, 'r')
+            self.log_handler = open(self.log_path, "r")
         except:
             print(RED("Failed to logfile %s" % log_path))
             return None
@@ -415,7 +418,7 @@ class LogParser(object):
                 elif suite_name == m.group(1):
                     end = self.loglist.index(line)
 
-        return self.loglist[begin:end + 1]
+        return self.loglist[begin : end + 1]
 
     def locate_case(self, case_name=None):
         begin = 0
@@ -441,22 +444,22 @@ class LogParser(object):
                 elif case_name == m.group(1):
                     end = self.loglist.index(line)
 
-        return self.loglist[begin:end + 1]
+        return self.loglist[begin : end + 1]
 
     def __dict_log(self, lvl_name, msg):
         tmp = {}
-        if lvl_name != '':
+        if lvl_name != "":
             tmp[lvl_name] = msg
         return tmp
 
     def parse_logfile(self):
         loglist = []
 
-        out_type = 'DTS_DUT_OUTPUT'
+        out_type = "DTS_DUT_OUTPUT"
         for line in self.log_handler:
             tmp = {}
-            line = line.replace('\n', '')
-            line = line.replace('^M', '')
+            line = line.replace("\n", "")
+            line = line.replace("^M", "")
             m = re.match("(\d{2}/\d{2}/\d{4}) (\d{2}:\d{2}:\d{2}) (.{20}): (.*)", line)
             if m:
                 lvl_name = m.group(3).strip()

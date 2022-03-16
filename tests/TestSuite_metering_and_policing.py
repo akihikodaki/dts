@@ -1,4 +1,4 @@
-#BSD LICENSE
+# BSD LICENSE
 #
 # Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
 # All rights reserved.
@@ -51,7 +51,7 @@ class TestMeteringAndPolicing(TestCase):
 
     def start_scapy(self):
         self.tester.scapy_foreground()
-        self.tester.send_expect('scapy', '>>> ', 10)
+        self.tester.send_expect("scapy", ">>> ", 10)
         self.scapy_status = True
 
     def end_scapy(self):
@@ -68,11 +68,10 @@ class TestMeteringAndPolicing(TestCase):
         """
         Copy firmware.cli, dscp_*.sh from tester to DUT.
         """
-        file = 'meter_and_policy_config.tar.gz'
-        src_file = r'./dep/%s' % file
-        dst1 = '/tmp'
-        dst2 = os.sep.join([self.target_dir,
-                            'drivers/net/softnic'])
+        file = "meter_and_policy_config.tar.gz"
+        src_file = r"./dep/%s" % file
+        dst1 = "/tmp"
+        dst2 = os.sep.join([self.target_dir, "drivers/net/softnic"])
         self.dut.session.copy_file_to(src_file, dst1)
         self.dut.send_expect("tar xf %s/%s -C %s" % (dst1, file, dst2), "#", 30)
 
@@ -80,69 +79,121 @@ class TestMeteringAndPolicing(TestCase):
         """
         Update firmware.cli.
         """
-        self.ori_firmware_cli = os.sep.join([self.target_dir,
-                        'drivers/net/softnic/meter_and_policing_firmware.cli'])
-        
+        self.ori_firmware_cli = os.sep.join(
+            [self.target_dir, "drivers/net/softnic/meter_and_policing_firmware.cli"]
+        )
+
         if len(self.dut_ports) == 4:
-            self.ori_firmware_cli = os.sep.join([self.target_dir,
-                "drivers/net/softnic/meter_and_policing_firmware_4ports.cli"])
+            self.ori_firmware_cli = os.sep.join(
+                [
+                    self.target_dir,
+                    "drivers/net/softnic/meter_and_policing_firmware_4ports.cli",
+                ]
+            )
         self.new_firmware_cli = "%s-%s" % (self.ori_firmware_cli, caseID)
         self.dut.send_expect("rm -f %s" % self.new_firmware_cli, "#")
-        self.dut.send_expect("cp %s %s" % (self.ori_firmware_cli, self.new_firmware_cli), "#")
+        self.dut.send_expect(
+            "cp %s %s" % (self.ori_firmware_cli, self.new_firmware_cli), "#"
+        )
 
         # link dev
-        self.dut.send_expect("sed -i -e 's/^.*link LINK0 dev.*$/link LINK0 dev %s/g' %s"
-                             % (self.dut_p0_pci, self.new_firmware_cli), "#")
-        self.dut.send_expect("sed -i -e 's/^.*link LINK1 dev.*$/link LINK1 dev %s/g' %s"
-                             % (self.dut_p1_pci, self.new_firmware_cli), "#")
+        self.dut.send_expect(
+            "sed -i -e 's/^.*link LINK0 dev.*$/link LINK0 dev %s/g' %s"
+            % (self.dut_p0_pci, self.new_firmware_cli),
+            "#",
+        )
+        self.dut.send_expect(
+            "sed -i -e 's/^.*link LINK1 dev.*$/link LINK1 dev %s/g' %s"
+            % (self.dut_p1_pci, self.new_firmware_cli),
+            "#",
+        )
         if len(self.dut_ports) == 4:
-            self.dut.send_expect("sed -i -e 's/^.*link LINK2 dev.*$/link LINK2 dev %s/g' %s"
-                                 % (self.dut_p2_pci, self.new_firmware_cli), "#")
-            self.dut.send_expect("sed -i -e 's/^.*link LINK3 dev.*$/link LINK3 dev %s/g' %s"
-                                 % (self.dut_p3_pci, self.new_firmware_cli), "#")
+            self.dut.send_expect(
+                "sed -i -e 's/^.*link LINK2 dev.*$/link LINK2 dev %s/g' %s"
+                % (self.dut_p2_pci, self.new_firmware_cli),
+                "#",
+            )
+            self.dut.send_expect(
+                "sed -i -e 's/^.*link LINK3 dev.*$/link LINK3 dev %s/g' %s"
+                % (self.dut_p3_pci, self.new_firmware_cli),
+                "#",
+            )
 
         # table action
         temp = "table action profile AP0"
         if caseID == 8:
-            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s ipv6 offset 270 fwd meter trtcm tc 1 stats pkts/g' %s"
-                                 % (temp, temp, self.new_firmware_cli), "#")
+            self.dut.send_expect(
+                "sed -i -e 's/^.*%s.*$/%s ipv6 offset 270 fwd meter trtcm tc 1 stats pkts/g' %s"
+                % (temp, temp, self.new_firmware_cli),
+                "#",
+            )
         else:
-            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s ipv4 offset 270 fwd meter trtcm tc 1 stats pkts/g' %s"
-                                 % (temp, temp, self.new_firmware_cli), "#")
+            self.dut.send_expect(
+                "sed -i -e 's/^.*%s.*$/%s ipv4 offset 270 fwd meter trtcm tc 1 stats pkts/g' %s"
+                % (temp, temp, self.new_firmware_cli),
+                "#",
+            )
 
         # pipeline RX table
         temp = "pipeline RX table match"
         if caseID == 7:
             target = "hash ext key 16 mask 00FF0000FFFFFFFFFFFFFFFFFFFFFFFF offset 278 buckets 16K size 65K action AP0"
-            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s %s/g' %s"
-                                 % (temp, temp, target, self.new_firmware_cli), "#")
+            self.dut.send_expect(
+                "sed -i -e 's/^.*%s.*$/%s %s/g' %s"
+                % (temp, temp, target, self.new_firmware_cli),
+                "#",
+            )
         elif caseID == 8:
-            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s acl ipv6 offset 270 size 4K action AP0/g' %s"
-                                 % (temp, temp, self.new_firmware_cli), "#")
+            self.dut.send_expect(
+                "sed -i -e 's/^.*%s.*$/%s acl ipv6 offset 270 size 4K action AP0/g' %s"
+                % (temp, temp, self.new_firmware_cli),
+                "#",
+            )
         else:
-            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s acl ipv4 offset 270 size 4K action AP0/g' %s"
-                                 % (temp, temp, self.new_firmware_cli), "#")
+            self.dut.send_expect(
+                "sed -i -e 's/^.*%s.*$/%s acl ipv4 offset 270 size 4K action AP0/g' %s"
+                % (temp, temp, self.new_firmware_cli),
+                "#",
+            )
         # use .sh file as RX table
         temp = "pipeline RX table 0 dscp"
-        target_dir = '\/'.join(self.target_dir.split('/'))
+        target_dir = "\/".join(self.target_dir.split("/"))
         if caseID == 10:
-            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s  %s\/drivers\/net\/softnic\/dscp_red.sh/g' %s"
-                                 % (temp, temp, target_dir, self.new_firmware_cli), "#")
+            self.dut.send_expect(
+                "sed -i -e 's/^.*%s.*$/%s  %s\/drivers\/net\/softnic\/dscp_red.sh/g' %s"
+                % (temp, temp, target_dir, self.new_firmware_cli),
+                "#",
+            )
         elif caseID == 11:
-            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s  %s\/drivers\/net\/softnic\/dscp_yellow.sh/g' %s"
-                                 % (temp, temp, target_dir, self.new_firmware_cli), "#")
+            self.dut.send_expect(
+                "sed -i -e 's/^.*%s.*$/%s  %s\/drivers\/net\/softnic\/dscp_yellow.sh/g' %s"
+                % (temp, temp, target_dir, self.new_firmware_cli),
+                "#",
+            )
         elif caseID == 12:
-            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s  %s\/drivers\/net\/softnic\/dscp_green.sh/g' %s"
-                                 % (temp, temp, target_dir, self.new_firmware_cli), "#")
+            self.dut.send_expect(
+                "sed -i -e 's/^.*%s.*$/%s  %s\/drivers\/net\/softnic\/dscp_green.sh/g' %s"
+                % (temp, temp, target_dir, self.new_firmware_cli),
+                "#",
+            )
         elif caseID == 13:
-            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s  %s\/drivers\/net\/softnic\/dscp_default.sh/g' %s"
-                                 % (temp, temp, target_dir, self.new_firmware_cli), "#")
+            self.dut.send_expect(
+                "sed -i -e 's/^.*%s.*$/%s  %s\/drivers\/net\/softnic\/dscp_default.sh/g' %s"
+                % (temp, temp, target_dir, self.new_firmware_cli),
+                "#",
+            )
 
         # thread * pipeline RX/TX enable
-        self.dut.send_expect("sed -i -e 's/thread 5 pipeline RX enable/thread %d pipeline RX enable/g' %s"
-                             % (len(self.dut_ports), self.new_firmware_cli), "#")
-        self.dut.send_expect("sed -i -e 's/thread 5 pipeline TX enable/thread %d pipeline TX enable/g' %s"
-                             % (len(self.dut_ports), self.new_firmware_cli), "#")
+        self.dut.send_expect(
+            "sed -i -e 's/thread 5 pipeline RX enable/thread %d pipeline RX enable/g' %s"
+            % (len(self.dut_ports), self.new_firmware_cli),
+            "#",
+        )
+        self.dut.send_expect(
+            "sed -i -e 's/thread 5 pipeline TX enable/thread %d pipeline TX enable/g' %s"
+            % (len(self.dut_ports), self.new_firmware_cli),
+            "#",
+        )
 
     def start_testpmd(self, filename):
         """
@@ -156,12 +207,16 @@ class TestMeteringAndPolicing(TestCase):
             portmask = "0x10"
             Corelist = [0, 1, 2, 3, 4]
             Servicecorelist = "0x10"
-        self.path = self.dut.apps_name['test-pmd']
-        self.pmd_out.start_testpmd(Corelist, "--rxq=%d --txq=%d --portmask=%s --disable-rss"
-                                   % (self.port_id, self.port_id, portmask),
-                                   eal_param="-s %s --vdev 'net_softnic0,firmware=%s'" % (Servicecorelist, filename))
-        if self.nic in ["columbiaville_25g","columbiaville_100g"]:
-            self.dut.send_expect('set fwd mac','testpmd>')
+        self.path = self.dut.apps_name["test-pmd"]
+        self.pmd_out.start_testpmd(
+            Corelist,
+            "--rxq=%d --txq=%d --portmask=%s --disable-rss"
+            % (self.port_id, self.port_id, portmask),
+            eal_param="-s %s --vdev 'net_softnic0,firmware=%s'"
+            % (Servicecorelist, filename),
+        )
+        if self.nic in ["columbiaville_25g", "columbiaville_100g"]:
+            self.dut.send_expect("set fwd mac", "testpmd>")
 
     def add_port_meter_profile(self, profile_id, cbs=400, pbs=500):
         """
@@ -169,10 +224,15 @@ class TestMeteringAndPolicing(TestCase):
         """
         cir = 3125000000
         pir = 3125000000
-        self.dut.send_expect("add port meter profile trtcm_rfc2698 %d %d %d %d %d %d 0"
-                             % (self.port_id, profile_id, cir, pir, cbs, pbs), "testpmd>")
+        self.dut.send_expect(
+            "add port meter profile trtcm_rfc2698 %d %d %d %d %d %d 0"
+            % (self.port_id, profile_id, cir, pir, cbs, pbs),
+            "testpmd>",
+        )
 
-    def add_port_meter_policy(self, port_id, policy_id, g_actions, y_actions, r_actions):
+    def add_port_meter_policy(
+        self, port_id, policy_id, g_actions, y_actions, r_actions
+    ):
         """
         Add port meter policy
         """
@@ -184,16 +244,29 @@ class TestMeteringAndPolicing(TestCase):
 
         self.dut.send_expect(
             "add port meter policy %d %d g_actions %s / end y_actions %s / end r_actions %s / end"
-            % (port_id, policy_id, gyrd_action_list[0], gyrd_action_list[1], gyrd_action_list[2]), "testpmd>")
+            % (
+                port_id,
+                policy_id,
+                gyrd_action_list[0],
+                gyrd_action_list[1],
+                gyrd_action_list[2],
+            ),
+            "testpmd>",
+        )
 
     def create_port_meter(self, port_id, mtr_id, profile_id, policy_id, gyrd_action):
         """
         Create new meter object for the ethernet device.
         """
-        self.dut.send_expect("create port meter %d %d %d %d yes %s"
-                             % (port_id, mtr_id, profile_id, policy_id, gyrd_action), "testpmd>")
+        self.dut.send_expect(
+            "create port meter %d %d %d %d yes %s"
+            % (port_id, mtr_id, profile_id, policy_id, gyrd_action),
+            "testpmd>",
+        )
 
-    def create_flow_rule(self, ret_id, ip_ver, protocol, spec_id,  mtr_id, queue_index_id):
+    def create_flow_rule(
+        self, ret_id, ip_ver, protocol, spec_id, mtr_id, queue_index_id
+    ):
         """
         Create flow rule based on port meter.
         """
@@ -215,22 +288,41 @@ class TestMeteringAndPolicing(TestCase):
         if protocol == "sctp":
             proto_id = 132
 
-        out = self.dut.send_expect("flow create %d group 0 ingress pattern eth / %s proto mask 255 src mask %s dst mask"
-                                   " %s src spec %s dst spec %s proto spec %d / %s src mask 65535 dst mask 65535 src "
-                                   "spec %d dst spec %d / end actions meter mtr_id %d / queue index %d / end"
-                                   % (self.port_id, ip_ver, src_mask, dst_mask, src_ip, dst_ip, proto_id, protocol,
-                                      spec_id, spec_id, mtr_id, queue_index_id), "testpmd>")
+        out = self.dut.send_expect(
+            "flow create %d group 0 ingress pattern eth / %s proto mask 255 src mask %s dst mask"
+            " %s src spec %s dst spec %s proto spec %d / %s src mask 65535 dst mask 65535 src "
+            "spec %d dst spec %d / end actions meter mtr_id %d / queue index %d / end"
+            % (
+                self.port_id,
+                ip_ver,
+                src_mask,
+                dst_mask,
+                src_ip,
+                dst_ip,
+                proto_id,
+                protocol,
+                spec_id,
+                spec_id,
+                mtr_id,
+                queue_index_id,
+            ),
+            "testpmd>",
+        )
         if ret_id == 1:
             self.verify("Flow rule #" in out, "flow create fail")
         else:
-            self.verify("METER: Meter already attached to a flow: Invalid argument" in out,
-                        "flow create should fail, but NOT failed")
+            self.verify(
+                "METER: Meter already attached to a flow: Invalid argument" in out,
+                "flow create should fail, but NOT failed",
+            )
 
     def scapy_send_packet(self, ip_ver, protocol, fwd_port, pktsize):
         """
         Send a packet to DUT port 0
         """
-        source_port = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
+        source_port = self.tester.get_interface(
+            self.tester.get_local_port(self.dut_ports[0])
+        )
         protocol = protocol.upper()
         if ip_ver == "ipv4":
             src_ip = "1.10.11.12"
@@ -254,7 +346,19 @@ class TestMeteringAndPolicing(TestCase):
 
         self.scapyCmds.append(
             'sendp([Ether(dst="%s")/%s(src="%s",dst="%s",%s)/%s(sport=%d,dport=%d)/Raw(load="P"*%d)], iface="%s")'
-            % (self.dut_p0_mac, tag, src_ip, dst_ip, proto_str, protocol, fwd_port, fwd_port, pktsize, source_port))
+            % (
+                self.dut_p0_mac,
+                tag,
+                src_ip,
+                dst_ip,
+                proto_str,
+                protocol,
+                fwd_port,
+                fwd_port,
+                pktsize,
+                source_port,
+            )
+        )
         self.scapy_execute()
 
     def send_packet_and_check(self, ip_ver, protocol, fwd_port, pktsize, expect_port):
@@ -262,26 +366,32 @@ class TestMeteringAndPolicing(TestCase):
         Send packet and check the stats. If expect_port == -1, the packet should be dropped.
         """
         # check the ports are UP before sending packets
-        res = self.pmd_out.wait_link_status_up('all', 30)
-        self.verify(res is True, 'there have port link is down')
+        res = self.pmd_out.wait_link_status_up("all", 30)
+        self.verify(res is True, "there have port link is down")
 
         rx_before = []
         tx_before = []
         for i in range(0, len(self.dut_ports)):
-            output = self.dut.send_expect("show port stats %d" %(i),"testpmd>")
+            output = self.dut.send_expect("show port stats %d" % (i), "testpmd>")
             if i == 0:
-                rx_before.append(re.compile('RX-packets:\s+(.*?)\s+?').findall(output, re.S))
-            tx_before.append(re.compile('TX-packets:\s+(.*?)\s+?').findall(output, re.S))
+                rx_before.append(
+                    re.compile("RX-packets:\s+(.*?)\s+?").findall(output, re.S)
+                )
+            tx_before.append(
+                re.compile("TX-packets:\s+(.*?)\s+?").findall(output, re.S)
+            )
 
         self.scapy_send_packet(ip_ver, protocol, fwd_port, pktsize)
 
         rx_after = []
         tx_after = []
         for i in range(0, len(self.dut_ports)):
-            output = self.dut.send_expect("show port stats %d" %(i),"testpmd>")
+            output = self.dut.send_expect("show port stats %d" % (i), "testpmd>")
             if i == 0:
-                rx_after.append(re.compile('RX-packets:\s+(.*?)\s+?').findall(output, re.S))
-            tx_after.append(re.compile('TX-packets:\s+(.*?)\s+?').findall(output, re.S))
+                rx_after.append(
+                    re.compile("RX-packets:\s+(.*?)\s+?").findall(output, re.S)
+                )
+            tx_after.append(re.compile("TX-packets:\s+(.*?)\s+?").findall(output, re.S))
 
         rx_packets_port = []
         tx_packets_port = []
@@ -290,12 +400,19 @@ class TestMeteringAndPolicing(TestCase):
         for i in range(0, len(self.dut_ports)):
             temp2 = int(tx_after[i][0]) - int(tx_before[i][0])
             tx_packets_port.append(temp2)
-        self.verify(int(rx_packets_port[0]) == 1, "Wrong: port 0 did not recieve any packet")
+        self.verify(
+            int(rx_packets_port[0]) == 1, "Wrong: port 0 did not recieve any packet"
+        )
         if expect_port == -1:
             for i in range(0, len(self.dut_ports)):
-                self.verify(int(tx_packets_port[i]) == 0, "Wrong: the packet is not dropped")
+                self.verify(
+                    int(tx_packets_port[i]) == 0, "Wrong: the packet is not dropped"
+                )
         else:
-            self.verify(int(tx_packets_port[expect_port]) == 1, "Wrong: can't forward packet to port %d " % expect_port)
+            self.verify(
+                int(tx_packets_port[expect_port]) == 1,
+                "Wrong: can't forward packet to port %d " % expect_port,
+            )
 
     def run_param(self, cbs, pbs, head):
         """
@@ -305,25 +422,35 @@ class TestMeteringAndPolicing(TestCase):
         pkt2 = pbs - head
         pkt3 = cbs - head + 1
         pkt4 = cbs - head
-        pkt_list = [pkt1,pkt2,pkt3,pkt4]
+        pkt_list = [pkt1, pkt2, pkt3, pkt4]
         return pkt_list
 
-    def run_port_list(self,ip_ver,protocol,fwd_port,pkt_list,port_list):
+    def run_port_list(self, ip_ver, protocol, fwd_port, pkt_list, port_list):
         for i in range(len(port_list)):
-            self.send_packet_and_check(ip_ver=ip_ver, protocol=protocol, fwd_port=fwd_port, pktsize=pkt_list[i], expect_port=port_list[i])
+            self.send_packet_and_check(
+                ip_ver=ip_ver,
+                protocol=protocol,
+                fwd_port=fwd_port,
+                pktsize=pkt_list[i],
+                expect_port=port_list[i],
+            )
 
     def set_up_all(self):
         """
         Run at the start of each test suite.
         """
         # get absolute directory of target source code
-        self.target_dir = '/root' + self.dut.base_dir[1:] \
-                          if self.dut.base_dir.startswith('~') else \
-                          self.dut.base_dir
+        self.target_dir = (
+            "/root" + self.dut.base_dir[1:]
+            if self.dut.base_dir.startswith("~")
+            else self.dut.base_dir
+        )
         self.dut_ports = self.dut.get_ports()
         self.port_nums = 2
-        self.verify(len(self.dut_ports) >= self.port_nums,
-                    "Insufficient ports for speed testing")
+        self.verify(
+            len(self.dut_ports) >= self.port_nums,
+            "Insufficient ports for speed testing",
+        )
         self.dut_p0_pci = self.dut.get_port_pci(self.dut_ports[0])
         self.dut_p1_pci = self.dut.get_port_pci(self.dut_ports[1])
         if len(self.dut_ports) == 4:
@@ -351,11 +478,26 @@ class TestMeteringAndPolicing(TestCase):
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=40)
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=0,
+            g_actions="green",
+            y_actions="yellow",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=0,
+            queue_index_id=0,
+        )
         self.dut.send_expect("start", "testpmd>")
-        self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [0, 0, 0, 0])
 
     def test_ipv4_ACL_table_RFC2698_GYD(self):
         """
@@ -367,11 +509,26 @@ class TestMeteringAndPolicing(TestCase):
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=40)
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="drop")
-        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=0,
+            g_actions="green",
+            y_actions="yellow",
+            r_actions="drop",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=0,
+            queue_index_id=0,
+        )
         self.dut.send_expect("start", "testpmd>")
-        self.run_port_list("ipv4","tcp",2,pkt_list,[-1,0,0,0])
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [-1, 0, 0, 0])
 
     def test_ipv4_ACL_table_RFC2698_GDR(self):
         """
@@ -383,11 +540,26 @@ class TestMeteringAndPolicing(TestCase):
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=32)
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="drop", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="sctp", spec_id=2, mtr_id=0, queue_index_id=1)
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=0,
+            g_actions="green",
+            y_actions="drop",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="sctp",
+            spec_id=2,
+            mtr_id=0,
+            queue_index_id=1,
+        )
         self.dut.send_expect("start", "testpmd>")
-        self.run_port_list("ipv4","sctp",2,pkt_list,[1,-1,-1,1])
+        self.run_port_list("ipv4", "sctp", 2, pkt_list, [1, -1, -1, 1])
 
     def test_ipv4_ACL_table_RFC2698_DYR(self):
         """
@@ -400,11 +572,26 @@ class TestMeteringAndPolicing(TestCase):
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
 
-        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="drop", y_actions="yellow", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="udp", spec_id=2, mtr_id=0, queue_index_id=0)
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=0,
+            g_actions="drop",
+            y_actions="yellow",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="udp",
+            spec_id=2,
+            mtr_id=0,
+            queue_index_id=0,
+        )
         self.dut.send_expect("start", "testpmd>")
-        self.run_port_list("ipv4","udp",2,pkt_list,[0,0,0,-1])
+        self.run_port_list("ipv4", "udp", 2, pkt_list, [0, 0, 0, -1])
 
     def test_ipv4_ACL_table_RFC2698_DDD(self):
         """
@@ -416,11 +603,26 @@ class TestMeteringAndPolicing(TestCase):
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=40)
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="drop", y_actions="drop", r_actions="drop")
-        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=0,
+            g_actions="drop",
+            y_actions="drop",
+            r_actions="drop",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=0,
+            queue_index_id=0,
+        )
         self.dut.send_expect("start", "testpmd>")
-        self.run_port_list("ipv4","tcp",2,pkt_list,[-1,-1,-1,-1])
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [-1, -1, -1, -1])
 
     def test_ipv4_with_same_cbs_and_pbs_GDR(self):
         """
@@ -432,11 +634,26 @@ class TestMeteringAndPolicing(TestCase):
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=32)
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="drop", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="sctp", spec_id=2, mtr_id=0, queue_index_id=0)
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=0,
+            g_actions="green",
+            y_actions="drop",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="sctp",
+            spec_id=2,
+            mtr_id=0,
+            queue_index_id=0,
+        )
         self.dut.send_expect("start", "testpmd>")
-        self.run_port_list("ipv4","sctp",2,pkt_list,[0,0])
+        self.run_port_list("ipv4", "sctp", 2, pkt_list, [0, 0])
 
     def test_ipv4_HASH_table_RFC2698(self):
         """
@@ -450,53 +667,128 @@ class TestMeteringAndPolicing(TestCase):
         # test 1 'g y r 0 0 0'
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=0,
+            g_actions="green",
+            y_actions="yellow",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=0,
+            queue_index_id=0,
+        )
         self.dut.send_expect("start", "testpmd>")
-        self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [0, 0, 0, 0])
         self.dut.send_expect("quit", "#", 30)
 
         # test 2 'g y d 0 0 0'
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="drop")
-        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=0,
+            g_actions="green",
+            y_actions="yellow",
+            r_actions="drop",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=0,
+            queue_index_id=0,
+        )
         self.dut.send_expect("start", "testpmd>")
-        self.run_port_list("ipv4","tcp",2,pkt_list,[-1,0,0,0])
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [-1, 0, 0, 0])
         self.dut.send_expect("quit", "#", 30)
 
         # test 5 'd d d 0 0 0'
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="drop", y_actions="drop", r_actions="drop")
-        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=0,
+            g_actions="drop",
+            y_actions="drop",
+            r_actions="drop",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=0,
+            queue_index_id=0,
+        )
         self.dut.send_expect("start", "testpmd>")
-        self.run_port_list("ipv4","tcp",2,pkt_list,[-1,-1,-1,-1])
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [-1, -1, -1, -1])
         self.dut.send_expect("quit", "#", 30)
 
         # test 3 'g d r 0 0 0'
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=32)
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="drop", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="sctp", spec_id=2, mtr_id=0, queue_index_id=1)
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=0,
+            g_actions="green",
+            y_actions="drop",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="sctp",
+            spec_id=2,
+            mtr_id=0,
+            queue_index_id=1,
+        )
         self.dut.send_expect("start", "testpmd>")
-        self.run_port_list("ipv4","sctp",2,pkt_list,[1,-1,-1,1])
+        self.run_port_list("ipv4", "sctp", 2, pkt_list, [1, -1, -1, 1])
         self.dut.send_expect("quit", "#", 30)
 
         # test 4 'd y r 0 0 0'
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=28)
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="drop", y_actions="yellow", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="udp", spec_id=2, mtr_id=0, queue_index_id=0)
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=0,
+            g_actions="drop",
+            y_actions="yellow",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="udp",
+            spec_id=2,
+            mtr_id=0,
+            queue_index_id=0,
+        )
         self.dut.send_expect("start", "testpmd>")
-        self.run_port_list("ipv4","udp",2,pkt_list,[0,0,0,-1])
+        self.run_port_list("ipv4", "udp", 2, pkt_list, [0, 0, 0, -1])
         self.dut.send_expect("quit", "#", 30)
 
     def test_ipv6_ACL_table_RFC2698(self):
@@ -508,19 +800,49 @@ class TestMeteringAndPolicing(TestCase):
         pbs = 500
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="drop")
-        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
-        self.add_port_meter_policy(self.port_id, policy_id=1, g_actions="drop", y_actions="yellow", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=1, profile_id=0, policy_id=1, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv6", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
-        self.create_flow_rule(ret_id=1, ip_ver="ipv6", protocol="udp", spec_id=2, mtr_id=1, queue_index_id=1)
-        self.dut.send_expect("start","testpmd>")
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=0,
+            g_actions="green",
+            y_actions="yellow",
+            r_actions="drop",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0"
+        )
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=1,
+            g_actions="drop",
+            y_actions="yellow",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=1, profile_id=0, policy_id=1, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv6",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=0,
+            queue_index_id=0,
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv6",
+            protocol="udp",
+            spec_id=2,
+            mtr_id=1,
+            queue_index_id=1,
+        )
+        self.dut.send_expect("start", "testpmd>")
 
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=60)
-        self.run_port_list("ipv6","tcp",2,pkt_list,[-1,0,0,0])
+        self.run_port_list("ipv6", "tcp", 2, pkt_list, [-1, 0, 0, 0])
 
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=48)
-        self.run_port_list("ipv6","udp",2,pkt_list,[1,1,1,-1])
+        self.run_port_list("ipv6", "udp", 2, pkt_list, [1, 1, 1, -1])
 
     def test_ipv4_multiple_meter_and_profile(self):
         """
@@ -531,42 +853,75 @@ class TestMeteringAndPolicing(TestCase):
         self.add_port_meter_profile(profile_id=0, cbs=400, pbs=500)
         self.add_port_meter_profile(profile_id=1, cbs=300, pbs=400)
 
-        gyrd_action_list = [["green", "yellow", "red"], ["green", "yellow", "drop"], ["green", "drop", "red"], ["drop", "yellow", "red"],
-                            ["green", "yellow", "drop"], ["green", "drop", "red"], ["drop", "yellow", "red"], ["drop", "drop", "drop"]]
-        for i in range(0,len(gyrd_action_list)):
-            self.add_port_meter_policy(self.port_id, policy_id=i, g_actions=gyrd_action_list[i][0], y_actions=gyrd_action_list[i][1], r_actions=gyrd_action_list[i][2])
-            self.create_port_meter(self.port_id, mtr_id=i, profile_id=i * 2 / len(gyrd_action_list), policy_id=i, gyrd_action="0 0 0")
-            self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=i, mtr_id=i, queue_index_id=i%len(self.dut_ports))
-        self.create_flow_rule(ret_id=0, ip_ver="ipv4", protocol="tcp", spec_id=8, mtr_id=7, queue_index_id=0)
+        gyrd_action_list = [
+            ["green", "yellow", "red"],
+            ["green", "yellow", "drop"],
+            ["green", "drop", "red"],
+            ["drop", "yellow", "red"],
+            ["green", "yellow", "drop"],
+            ["green", "drop", "red"],
+            ["drop", "yellow", "red"],
+            ["drop", "drop", "drop"],
+        ]
+        for i in range(0, len(gyrd_action_list)):
+            self.add_port_meter_policy(
+                self.port_id,
+                policy_id=i,
+                g_actions=gyrd_action_list[i][0],
+                y_actions=gyrd_action_list[i][1],
+                r_actions=gyrd_action_list[i][2],
+            )
+            self.create_port_meter(
+                self.port_id,
+                mtr_id=i,
+                profile_id=i * 2 / len(gyrd_action_list),
+                policy_id=i,
+                gyrd_action="0 0 0",
+            )
+            self.create_flow_rule(
+                ret_id=1,
+                ip_ver="ipv4",
+                protocol="tcp",
+                spec_id=i,
+                mtr_id=i,
+                queue_index_id=i % len(self.dut_ports),
+            )
+        self.create_flow_rule(
+            ret_id=0,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=8,
+            mtr_id=7,
+            queue_index_id=0,
+        )
 
         self.dut.send_expect("start", "testpmd>")
         output = self.dut.send_expect("flow list %d" % (self.port_id), "testpmd>")
         print(output)
 
-        pkt_list = self.run_param(cbs=400,pbs=500,head=40)
+        pkt_list = self.run_param(cbs=400, pbs=500, head=40)
         if len(self.dut_ports) == 4:
-            self.run_port_list("ipv4","tcp",0,pkt_list,[0,0,0,0])
-            self.run_port_list("ipv4","tcp",1,pkt_list,[-1,1,1,1])
-            self.run_port_list("ipv4","tcp",2,pkt_list,[2,-1,-1,2])
-            self.run_port_list("ipv4","tcp",3,pkt_list,[3,3,3,-1])
+            self.run_port_list("ipv4", "tcp", 0, pkt_list, [0, 0, 0, 0])
+            self.run_port_list("ipv4", "tcp", 1, pkt_list, [-1, 1, 1, 1])
+            self.run_port_list("ipv4", "tcp", 2, pkt_list, [2, -1, -1, 2])
+            self.run_port_list("ipv4", "tcp", 3, pkt_list, [3, 3, 3, -1])
         if len(self.dut_ports) == 2:
-            self.run_port_list("ipv4","tcp",0,pkt_list,[0,0,0,0])
-            self.run_port_list("ipv4","tcp",1,pkt_list,[-1,1,1,1])
-            self.run_port_list("ipv4","tcp",2,pkt_list,[0,-1,-1,0])
-            self.run_port_list("ipv4","tcp",3,pkt_list,[1,1,1,-1])
+            self.run_port_list("ipv4", "tcp", 0, pkt_list, [0, 0, 0, 0])
+            self.run_port_list("ipv4", "tcp", 1, pkt_list, [-1, 1, 1, 1])
+            self.run_port_list("ipv4", "tcp", 2, pkt_list, [0, -1, -1, 0])
+            self.run_port_list("ipv4", "tcp", 3, pkt_list, [1, 1, 1, -1])
 
-
-        pkt_list = self.run_param(cbs=300,pbs=400,head=40)
+        pkt_list = self.run_param(cbs=300, pbs=400, head=40)
         if len(self.dut_ports) == 4:
-            self.run_port_list("ipv4","tcp",4,pkt_list,[-1,0,0,0])
-            self.run_port_list("ipv4","tcp",5,pkt_list,[1,-1,-1,1])
-            self.run_port_list("ipv4","tcp",6,pkt_list,[2,2,2,-1])
-            self.run_port_list("ipv4","tcp",7,pkt_list,[-1,-1,-1,-1])
+            self.run_port_list("ipv4", "tcp", 4, pkt_list, [-1, 0, 0, 0])
+            self.run_port_list("ipv4", "tcp", 5, pkt_list, [1, -1, -1, 1])
+            self.run_port_list("ipv4", "tcp", 6, pkt_list, [2, 2, 2, -1])
+            self.run_port_list("ipv4", "tcp", 7, pkt_list, [-1, -1, -1, -1])
         if len(self.dut_ports) == 2:
-            self.run_port_list("ipv4","tcp",4,pkt_list,[-1,0,0,0])
-            self.run_port_list("ipv4","tcp",5,pkt_list,[1,-1,-1,1])
-            self.run_port_list("ipv4","tcp",6,pkt_list,[0,0,0,-1])
-            self.run_port_list("ipv4","tcp",7,pkt_list,[-1,-1,-1,-1])
+            self.run_port_list("ipv4", "tcp", 4, pkt_list, [-1, 0, 0, 0])
+            self.run_port_list("ipv4", "tcp", 5, pkt_list, [1, -1, -1, 1])
+            self.run_port_list("ipv4", "tcp", 6, pkt_list, [0, 0, 0, -1])
+            self.run_port_list("ipv4", "tcp", 7, pkt_list, [-1, -1, -1, -1])
 
     def test_ipv4_RFC2698_pre_colored_red_by_DSCP_table(self):
         """
@@ -581,28 +936,88 @@ class TestMeteringAndPolicing(TestCase):
         self.dut.send_expect("start", "testpmd>")
 
         # test 0: GYR
-        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
-        self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=0,
+            g_actions="green",
+            y_actions="yellow",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=0,
+            queue_index_id=0,
+        )
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [0, 0, 0, 0])
 
         # test 1: GYD
-        self.add_port_meter_policy(self.port_id, policy_id=1, g_actions="green", y_actions="yellow", r_actions="drop")
-        self.create_port_meter(self.port_id, mtr_id=1, profile_id=0, policy_id=1, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=1, queue_index_id=0)
-        self.run_port_list("ipv4","tcp",2,pkt_list,[-1,-1,-1,-1])
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=1,
+            g_actions="green",
+            y_actions="yellow",
+            r_actions="drop",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=1, profile_id=0, policy_id=1, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=1,
+            queue_index_id=0,
+        )
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [-1, -1, -1, -1])
 
         # test 2: GDR
-        self.add_port_meter_policy(self.port_id, policy_id=2, g_actions="green", y_actions="drop", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=2, profile_id=0, policy_id=2, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=2, queue_index_id=0)
-        self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=2,
+            g_actions="green",
+            y_actions="drop",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=2, profile_id=0, policy_id=2, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=2,
+            queue_index_id=0,
+        )
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [0, 0, 0, 0])
 
         # test 3: DYR
-        self.add_port_meter_policy(self.port_id, policy_id=3, g_actions="drop", y_actions="yellow", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=3, profile_id=0, policy_id=3, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=3, queue_index_id=0)
-        self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=3,
+            g_actions="drop",
+            y_actions="yellow",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=3, profile_id=0, policy_id=3, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=3,
+            queue_index_id=0,
+        )
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [0, 0, 0, 0])
 
     def test_ipv4_RFC2698_pre_colored_yellow_by_DSCP_table(self):
         """
@@ -617,28 +1032,88 @@ class TestMeteringAndPolicing(TestCase):
         self.dut.send_expect("start", "testpmd>")
 
         # test 0: GYR
-        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
-        self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=0,
+            g_actions="green",
+            y_actions="yellow",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=0,
+            queue_index_id=0,
+        )
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [0, 0, 0, 0])
 
         # test 1: GYD
-        self.add_port_meter_policy(self.port_id, policy_id=1, g_actions="green", y_actions="yellow", r_actions="drop")
-        self.create_port_meter(self.port_id, mtr_id=1, profile_id=0, policy_id=1, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=1, queue_index_id=0)
-        self.run_port_list("ipv4","tcp",2,pkt_list,[-1,0,0,0])
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=1,
+            g_actions="green",
+            y_actions="yellow",
+            r_actions="drop",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=1, profile_id=0, policy_id=1, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=1,
+            queue_index_id=0,
+        )
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [-1, 0, 0, 0])
 
         # test 2: GDR
-        self.add_port_meter_policy(self.port_id, policy_id=2, g_actions="green", y_actions="drop", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=2, profile_id=0, policy_id=2, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=2, queue_index_id=0)
-        self.run_port_list("ipv4","tcp",2,pkt_list,[0,-1,-1,-1])
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=2,
+            g_actions="green",
+            y_actions="drop",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=2, profile_id=0, policy_id=2, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=2,
+            queue_index_id=0,
+        )
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [0, -1, -1, -1])
 
         # test 3: DYR
-        self.add_port_meter_policy(self.port_id, policy_id=3, g_actions="drop", y_actions="yellow", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=3, profile_id=0, policy_id=3, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=3, queue_index_id=0)
-        self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=3,
+            g_actions="drop",
+            y_actions="yellow",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=3, profile_id=0, policy_id=3, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=3,
+            queue_index_id=0,
+        )
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [0, 0, 0, 0])
 
     def test_ipv4_RFC2698_pre_colored_green_by_DSCP_table(self):
         """
@@ -653,28 +1128,88 @@ class TestMeteringAndPolicing(TestCase):
         self.dut.send_expect("start", "testpmd>")
 
         # test 0: GYR
-        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
-        self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=0,
+            g_actions="green",
+            y_actions="yellow",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=0,
+            queue_index_id=0,
+        )
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [0, 0, 0, 0])
 
         # test 1: GYD
-        self.add_port_meter_policy(self.port_id, policy_id=1, g_actions="green", y_actions="yellow", r_actions="drop")
-        self.create_port_meter(self.port_id, mtr_id=1, profile_id=0, policy_id=1, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=1, queue_index_id=0)
-        self.run_port_list("ipv4","tcp",2,pkt_list,[-1,0,0,0])
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=1,
+            g_actions="green",
+            y_actions="yellow",
+            r_actions="drop",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=1, profile_id=0, policy_id=1, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=1,
+            queue_index_id=0,
+        )
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [-1, 0, 0, 0])
 
         # test 2: GDR
-        self.add_port_meter_policy(self.port_id, policy_id=2, g_actions="green", y_actions="drop", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=2, profile_id=0, policy_id=2, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=2, queue_index_id=0)
-        self.run_port_list("ipv4","tcp",2,pkt_list,[0,-1,-1,0])
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=2,
+            g_actions="green",
+            y_actions="drop",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=2, profile_id=0, policy_id=2, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=2,
+            queue_index_id=0,
+        )
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [0, -1, -1, 0])
 
         # test 3: DYR
-        self.add_port_meter_policy(self.port_id, policy_id=3, g_actions="drop", y_actions="yellow", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=3, profile_id=0, policy_id=3, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=3, queue_index_id=0)
-        self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,-1])
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=3,
+            g_actions="drop",
+            y_actions="yellow",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=3, profile_id=0, policy_id=3, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=3,
+            queue_index_id=0,
+        )
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [0, 0, 0, -1])
 
     def test_ipv4_RFC2698_pre_colored_default_by_DSCP_table(self):
         """
@@ -689,28 +1224,88 @@ class TestMeteringAndPolicing(TestCase):
         self.dut.send_expect("start", "testpmd>")
 
         # test 0: GYR
-        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
-        self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=0,
+            g_actions="green",
+            y_actions="yellow",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=0,
+            queue_index_id=0,
+        )
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [0, 0, 0, 0])
 
         # test 1: GYD
-        self.add_port_meter_policy(self.port_id, policy_id=1, g_actions="green", y_actions="yellow", r_actions="drop")
-        self.create_port_meter(self.port_id, mtr_id=1, profile_id=0, policy_id=1, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=1, queue_index_id=0)
-        self.run_port_list("ipv4","tcp",2,pkt_list,[-1,0,0,0])
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=1,
+            g_actions="green",
+            y_actions="yellow",
+            r_actions="drop",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=1, profile_id=0, policy_id=1, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=1,
+            queue_index_id=0,
+        )
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [-1, 0, 0, 0])
 
         # test 2: GDR
-        self.add_port_meter_policy(self.port_id, policy_id=2, g_actions="green", y_actions="drop", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=2, profile_id=0, policy_id=2, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=2, queue_index_id=0)
-        self.run_port_list("ipv4","tcp",2,pkt_list,[0,-1,-1,0])
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=2,
+            g_actions="green",
+            y_actions="drop",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=2, profile_id=0, policy_id=2, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=2,
+            queue_index_id=0,
+        )
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [0, -1, -1, 0])
 
         # test 3: DYR
-        self.add_port_meter_policy(self.port_id, policy_id=3, g_actions="drop", y_actions="yellow", r_actions="red")
-        self.create_port_meter(self.port_id, mtr_id=3, profile_id=0, policy_id=3, gyrd_action="0 0 0")
-        self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=3, queue_index_id=0)
-        self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,-1])
+        self.add_port_meter_policy(
+            self.port_id,
+            policy_id=3,
+            g_actions="drop",
+            y_actions="yellow",
+            r_actions="red",
+        )
+        self.create_port_meter(
+            self.port_id, mtr_id=3, profile_id=0, policy_id=3, gyrd_action="0 0 0"
+        )
+        self.create_flow_rule(
+            ret_id=1,
+            ip_ver="ipv4",
+            protocol="tcp",
+            spec_id=2,
+            mtr_id=3,
+            queue_index_id=0,
+        )
+        self.run_port_list("ipv4", "tcp", 2, pkt_list, [0, 0, 0, -1])
 
     def tear_down(self):
         """

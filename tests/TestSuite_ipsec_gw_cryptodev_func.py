@@ -41,15 +41,18 @@ from framework.test_case import TestCase
 
 
 class TestIPsecGW(TestCase):
-
     def set_up_all(self):
         self.core_config = "1S/3C/1T"
         self.number_of_ports = 2
         self.dut_ports = self.dut.get_ports(self.nic)
-        self.verify(len(self.dut_ports) >= self.number_of_ports,
-                    "Not enough ports for " + self.nic)
+        self.verify(
+            len(self.dut_ports) >= self.number_of_ports,
+            "Not enough ports for " + self.nic,
+        )
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
-        self.core_list = self.dut.get_core_list(self.core_config, socket=self.ports_socket)
+        self.core_list = self.dut.get_core_list(
+            self.core_config, socket=self.ports_socket
+        )
 
         self.logger.info("core config = " + self.core_config)
         self.logger.info("number of ports = " + str(self.number_of_ports))
@@ -72,10 +75,10 @@ class TestIPsecGW(TestCase):
         self.logger.info("tx interface = " + self.tx_interface)
         self.logger.info("rx interface = " + self.rx_interface)
 
-        self._app_path = self.dut.apps_name['ipsec-secgw']
-        out =self.dut.build_dpdk_apps("./examples/ipsec-secgw")
-        self.verify("Error"not in out,"Compilation error")
-        self.verify("No such"not in out,"Compilation error")
+        self._app_path = self.dut.apps_name["ipsec-secgw"]
+        out = self.dut.build_dpdk_apps("./examples/ipsec-secgw")
+        self.verify("Error" not in out, "Compilation error")
+        self.verify("No such" not in out, "Compilation error")
 
         cc.bind_qat_device(self, self.drivername)
 
@@ -84,11 +87,11 @@ class TestIPsecGW(TestCase):
             "P": "",
             "p": "0x3",
             "f": "/tmp/ipsec_ep0.cfg",
-            "u": "0x1"
+            "u": "0x1",
         }
 
-        conf_file = os.path.join(CONFIG_ROOT_PATH, 'ipsec_ep0.cfg')
-        self.dut.session.copy_file_to(conf_file, '/tmp')
+        conf_file = os.path.join(CONFIG_ROOT_PATH, "ipsec_ep0.cfg")
+        self.dut.session.copy_file_to(conf_file, "/tmp")
 
     def set_up(self):
         pass
@@ -249,7 +252,7 @@ class TestIPsecGW(TestCase):
             dev = "crypto_aesni_mb"
         elif self.get_case_cfg()["devtype"] == "crypto_qat":
             w = cc.get_qat_devices(self, cpm_num=1, num=num)
-            device["a"] = ' -a '.join(w)
+            device["a"] = " -a ".join(w)
             device["vdev"] = None
         elif self.get_case_cfg()["devtype"] == "crypto_openssl":
             dev = "crypto_openssl"
@@ -272,22 +275,24 @@ class TestIPsecGW(TestCase):
                 vdev = "{}{}".format(dev, i)
                 vdev_list.append(vdev)
             device["a"] = "0000:00:00.0"
-            device["vdev"] = ' --vdev '.join(vdev_list)
+            device["vdev"] = " --vdev ".join(vdev_list)
 
         return device
 
     def _get_ipsec_gw_opt_str(self, override_ipsec_gw_opts={}):
-        if "librte_ipsec" in list(self.get_suite_cfg().keys()) and self.get_suite_cfg()["librte_ipsec"]:
-            override_ipsec_gw_opts={"l": ""}
-        return cc.get_opt_str(self, self._default_ipsec_gw_opts,
-                              override_ipsec_gw_opts)
+        if (
+            "librte_ipsec" in list(self.get_suite_cfg().keys())
+            and self.get_suite_cfg()["librte_ipsec"]
+        ):
+            override_ipsec_gw_opts = {"l": ""}
+        return cc.get_opt_str(self, self._default_ipsec_gw_opts, override_ipsec_gw_opts)
 
     def _execute_ipsec_gw_test(self):
         if cc.is_test_skip(self):
             return
 
         result = True
-        opts = {'l': ','.join(self.core_list)}
+        opts = {"l": ",".join(self.core_list)}
         devices = self._get_crypto_device(self.number_of_ports)
         opts.update(devices)
         eal_opt_str = cc.get_eal_opt_str(self, opts, add_port=True)
@@ -299,7 +304,7 @@ class TestIPsecGW(TestCase):
         inst = self.tester.tcpdump_sniff_packets(self.rx_interface)
 
         PACKET_COUNT = 65
-        payload = 256 * ['11']
+        payload = 256 * ["11"]
 
         case_cfgs = self.get_case_cfg()
         dst_ip = case_cfgs["dst_ip"]
@@ -309,13 +314,17 @@ class TestIPsecGW(TestCase):
         expected_spi = case_cfgs["expected_spi"]
 
         pkt = packet.Packet()
-        if len(dst_ip)<=15:
+        if len(dst_ip) <= 15:
             pkt.assign_layers(["ether", "ipv4", "udp", "raw"])
-            pkt.config_layer("ether", {"src": "52:00:00:00:00:00", "dst": "52:00:00:00:00:01"})
+            pkt.config_layer(
+                "ether", {"src": "52:00:00:00:00:00", "dst": "52:00:00:00:00:01"}
+            )
             pkt.config_layer("ipv4", {"src": src_ip, "dst": dst_ip})
         else:
             pkt.assign_layers(["ether", "ipv6", "udp", "raw"])
-            pkt.config_layer("ether", {"src": "52:00:00:00:00:00", "dst": "52:00:00:00:00:01"})
+            pkt.config_layer(
+                "ether", {"src": "52:00:00:00:00:00", "dst": "52:00:00:00:00:01"}
+            )
             pkt.config_layer("ipv6", {"src": src_ip, "dst": dst_ip})
         pkt.config_layer("udp", {"dst": 0})
         pkt.config_layer("raw", {"payload": payload})
@@ -334,8 +343,11 @@ class TestIPsecGW(TestCase):
             pkt_src_ip = pkt_rec.pktgen.strip_layer3("src", p_index=i)
             if pkt_src_ip != expected_src_ip:
                 pkt_rec[i].show()
-                self.logger.error("SRC IP does not match. Pkt:{0}, Expected:{1}".format(
-                                   pkt_src_ip, expected_src_ip))
+                self.logger.error(
+                    "SRC IP does not match. Pkt:{0}, Expected:{1}".format(
+                        pkt_src_ip, expected_src_ip
+                    )
+                )
                 result = False
                 break
 
@@ -343,8 +355,11 @@ class TestIPsecGW(TestCase):
             self.logger.debug(pkt_dst_ip)
             if pkt_dst_ip != expected_dst_ip:
                 pkt_rec[i].show()
-                self.logger.error("DST IP does not match. Pkt:{0}, Expected:{1}".format(
-                                  pkt_dst_ip, expected_dst_ip))
+                self.logger.error(
+                    "DST IP does not match. Pkt:{0}, Expected:{1}".format(
+                        pkt_dst_ip, expected_dst_ip
+                    )
+                )
                 result = False
                 break
 
@@ -359,8 +374,11 @@ class TestIPsecGW(TestCase):
             pkt_spi = hex(pkt_rec[i]["ESP"].getfieldval("spi"))
             self.logger.debug(pkt_spi)
             if pkt_spi != expected_spi:
-                self.logger.error("SPI does not match. Pkt:{0}, Expected:{1}".format(
-                                  pkt_spi, expected_spi))
+                self.logger.error(
+                    "SPI does not match. Pkt:{0}, Expected:{1}".format(
+                        pkt_spi, expected_spi
+                    )
+                )
                 result = False
                 break
 

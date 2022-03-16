@@ -41,11 +41,10 @@ from .smoke_base import (
     SmokeTest,
 )
 
-VF_MAC_ADDR = '00:11:22:33:44:55'
+VF_MAC_ADDR = "00:11:22:33:44:55"
 
 
 class TestVfSmoke(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -60,7 +59,7 @@ class TestVfSmoke(TestCase):
 
         # Verify that enough ports are available
         self.verify(len(self.smoke_dut_ports) >= 1, "Insufficient ports")
-        self.pf_interface = self.dut.ports_info[self.smoke_dut_ports[0]]['intf']
+        self.pf_interface = self.dut.ports_info[self.smoke_dut_ports[0]]["intf"]
         self.smoke_tester_port = self.tester.get_local_port(self.smoke_dut_ports[0])
         self.smoke_tester_nic = self.tester.get_interface(self.smoke_tester_port)
         self.smoke_tester_mac = self.tester.get_mac(self.smoke_dut_ports[0])
@@ -76,20 +75,22 @@ class TestVfSmoke(TestCase):
         # generate vf
         self.dut.bind_interfaces_linux(self.kdriver)
         self.dut.generate_sriov_vfs_by_port(self.smoke_dut_ports[0], 1, self.kdriver)
-        self.vf_ports = self.dut.ports_info[self.smoke_dut_ports[0]]['vfs_port']
+        self.vf_ports = self.dut.ports_info[self.smoke_dut_ports[0]]["vfs_port"]
         self.verify(len(self.vf_ports) != 0, "VF create failed")
         for port in self.vf_ports:
             port.bind_driver(self.drivername)
-        self.vf0_prop = {'opt_host': self.vf_ports[0].pci}
+        self.vf0_prop = {"opt_host": self.vf_ports[0].pci}
         self.dut.send_expect("ifconfig %s up" % self.pf_interface, "# ")
         self.tester.send_expect("ifconfig %s up" % self.smoke_tester_nic, "# ")
 
         # set vf mac address
-        self.dut.send_expect("ip link set %s vf 0 mac %s" % (self.pf_interface, self.smoke_dut_mac), "# ")
+        self.dut.send_expect(
+            "ip link set %s vf 0 mac %s" % (self.pf_interface, self.smoke_dut_mac), "# "
+        )
 
         # set default app parameter
         if self.vf0_prop is not None:
-            self.ports = [self.vf0_prop['opt_host']]
+            self.ports = [self.vf0_prop["opt_host"]]
 
         self.pmd_out = PmdOutput(self.dut)
         self.test_func = SmokeTest(self)
@@ -101,16 +102,23 @@ class TestVfSmoke(TestCase):
         """
         # set tester mtu and testpmd parameter
         if self._suite_result.test_case == "test_vf_jumbo_frames":
-            self.tester.send_expect("ifconfig {} mtu {}".format(self.smoke_tester_nic, JUMBO_FRAME_MTU), '# ')
-            self.param = '--max-pkt-len={} --tx-offloads=0x8000 --rxq={} --txq={}'.format(JUMBO_FRAME_LENGTH,
-                                                                                          LAUNCH_QUEUE,
-                                                                                          LAUNCH_QUEUE)
+            self.tester.send_expect(
+                "ifconfig {} mtu {}".format(self.smoke_tester_nic, JUMBO_FRAME_MTU),
+                "# ",
+            )
+            self.param = (
+                "--max-pkt-len={} --tx-offloads=0x8000 --rxq={} --txq={}".format(
+                    JUMBO_FRAME_LENGTH, LAUNCH_QUEUE, LAUNCH_QUEUE
+                )
+            )
         else:
-            self.param = '--rxq={} --txq={}'.format(LAUNCH_QUEUE, LAUNCH_QUEUE)
+            self.param = "--rxq={} --txq={}".format(LAUNCH_QUEUE, LAUNCH_QUEUE)
 
         # verify app launch state.
-        out = self.check_session.send_expect("ls -l /var/run/dpdk |awk '/^d/ {print $NF}'", '# ', 1)
-        if out == '' or 'No such file or directory' in out:
+        out = self.check_session.send_expect(
+            "ls -l /var/run/dpdk |awk '/^d/ {print $NF}'", "# ", 1
+        )
+        if out == "" or "No such file or directory" in out:
             self.vf_launch_dpdk_app()
 
     def vf_launch_dpdk_app(self):
@@ -158,13 +166,20 @@ class TestVfSmoke(TestCase):
         # set tester mtu to default value
         self.pmd_out.execute_cmd("stop")
         if self._suite_result.test_case == "test_vf_jumbo_frames":
-            self.tester.send_expect("ifconfig {} mtu {}".format(self.smoke_tester_nic, DEFAULT_MTU_VALUE), '# ')
+            self.tester.send_expect(
+                "ifconfig {} mtu {}".format(self.smoke_tester_nic, DEFAULT_MTU_VALUE),
+                "# ",
+            )
 
         # set dpdk queues to launch value
         if self._suite_result.test_case == "test_vf_tx_rx_queue":
             self.dut.send_expect("port stop all", "testpmd> ")
-            self.dut.send_expect("port config all rxq {}".format(LAUNCH_QUEUE), "testpmd> ")
-            self.dut.send_expect("port config all txq {}".format(LAUNCH_QUEUE), "testpmd> ")
+            self.dut.send_expect(
+                "port config all rxq {}".format(LAUNCH_QUEUE), "testpmd> "
+            )
+            self.dut.send_expect(
+                "port config all txq {}".format(LAUNCH_QUEUE), "testpmd> "
+            )
             self.dut.send_expect("port start all", "testpmd> ")
         self.dut.send_expect("quit", "# ")
         self.dut.kill_all()

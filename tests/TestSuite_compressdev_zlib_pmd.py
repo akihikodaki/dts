@@ -39,9 +39,8 @@ from framework.test_case import TestCase
 
 
 class TestCompressdevZlibPmd(TestCase):
-
     def set_up_all(self):
-        cc.default_eals.update({"a":"0000:00:00.0", "vdev": "compress_zlib"})
+        cc.default_eals.update({"a": "0000:00:00.0", "vdev": "compress_zlib"})
         cc.default_opts.update({"driver-name": "compress_zlib"})
         self._perf_result = dict()
 
@@ -64,14 +63,24 @@ class TestCompressdevZlibPmd(TestCase):
         result = cc.run_compress_func(self)
 
     def test_zlib_pmd_fixed_perf(self):
-        cc.default_opts.update({"huffman-enc": "fixed", "extended-input-sz": 3244032,
-            "max-num-sgl-segs": 1})
+        cc.default_opts.update(
+            {
+                "huffman-enc": "fixed",
+                "extended-input-sz": 3244032,
+                "max-num-sgl-segs": 1,
+            }
+        )
         result = cc.run_compress_perf(self)
         self._perf_result.update(result)
 
     def test_zlib_pmd_dynamic_perf(self):
-        cc.default_opts.update({"huffman-enc": "dynamic", "extended-input-sz": 3244032,
-            "max-num-sgl-segs": 1})
+        cc.default_opts.update(
+            {
+                "huffman-enc": "dynamic",
+                "extended-input-sz": 3244032,
+                "max-num-sgl-segs": 1,
+            }
+        )
         result = cc.run_compress_perf(self)
         self._perf_result.update(result)
 
@@ -81,5 +90,7 @@ class TestCompressdevZlibPmd(TestCase):
     def tear_down_all(self):
         self.dut.kill_all()
         if self._perf_result:
-            with open(self.logger.log_path + "/" + self.suite_name + ".json", "a") as fv:
+            with open(
+                self.logger.log_path + "/" + self.suite_name + ".json", "a"
+            ) as fv:
                 json.dump(self._perf_result, fv, indent=4)

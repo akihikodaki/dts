@@ -43,15 +43,15 @@ from .logger import getLogger
 from .settings import PKTGEN, PKTGEN_DPDK, PKTGEN_IXIA, PKTGEN_IXIA_NETWORK, PKTGEN_TREX
 
 # macro definition
-TRANSMIT_CONT = 'continuous'
-TRANSMIT_M_BURST = 'multi_burst'
-TRANSMIT_S_BURST = 'single_burst'
+TRANSMIT_CONT = "continuous"
+TRANSMIT_M_BURST = "multi_burst"
+TRANSMIT_S_BURST = "single_burst"
 
 
 @unique
 class STAT_TYPE(Enum):
-    RX = 'rx'
-    TXRX = 'txrx'
+    RX = "rx"
+    TXRX = "txrx"
 
 
 class PacketGenerator(object):
@@ -59,6 +59,7 @@ class PacketGenerator(object):
     Basic class for packet generator, define basic function for each kinds of
     generators
     """
+
     def __init__(self, tester):
         self.logger = getLogger(PKTGEN)
         self.tester = tester
@@ -76,22 +77,21 @@ class PacketGenerator(object):
         raise NotImplementedError
 
     def _convert_pktgen_port(self, port_id):
-        '''
+        """
         :param port_id:
             index of a port in packet generator tool
-        '''
+        """
         try:
             gen_pci = self._get_port_pci(port_id)
             if not gen_pci:
                 msg = "can't get port {0} pci address".format(port_id)
                 raise Exception(msg)
             for port_idx, info in enumerate(self.tester.ports_info):
-                if 'pci' not in info or info['pci'] == 'N/A':
+                if "pci" not in info or info["pci"] == "N/A":
                     return -1
-                tester_pci = info['pci']
+                tester_pci = info["pci"]
                 if tester_pci == gen_pci:
-                    msg = "gen port {0} map test port {1}".format(
-                                                        port_id, port_idx)
+                    msg = "gen port {0} map test port {1}".format(port_id, port_idx)
                     self.logger.debug(msg)
                     return port_idx
             else:
@@ -105,16 +105,16 @@ class PacketGenerator(object):
         raise NotImplementedError
 
     def _convert_tester_port(self, port_id):
-        '''
+        """
         :param port_id:
             index of a port in dts tester ports info
-        '''
+        """
         try:
             info = self.tester.ports_info[port_id]
             # limit to nic port, not including ixia port
-            if 'pci' not in info or info['pci'] == 'N/A':
+            if "pci" not in info or info["pci"] == "N/A":
                 return -1
-            tester_pci = info['pci']
+            tester_pci = info["pci"]
             port = self._get_gen_port(tester_pci)
             msg = "test port {0} map gen port {1}".format(port_id, port)
             self.logger.debug(msg)
@@ -128,15 +128,17 @@ class PacketGenerator(object):
         pktgen_rx_port = self._convert_tester_port(rx_port)
 
         stream_id = len(self.__streams)
-        stream = {'tx_port': pktgen_tx_port,
-                  'rx_port': pktgen_rx_port,
-                  'pcap_file': pcap_file}
+        stream = {
+            "tx_port": pktgen_tx_port,
+            "rx_port": pktgen_rx_port,
+            "pcap_file": pcap_file,
+        }
         self.__streams.append(stream)
 
         return stream_id
 
     def add_streams(self, streams):
-        '''' a group of streams '''
+        """' a group of streams"""
         raise NotImplementedError
 
     def config_stream(self, stream_id=0, opts={}):
@@ -144,10 +146,10 @@ class PacketGenerator(object):
             self.logger.error("Failed to configure stream[%d]" % stream_id)
             return
         stream = self.__streams[stream_id]
-        stream['options'] = opts
+        stream["options"] = opts
 
     def config_streams(self, stream_ids, nic, frame_size, port_num):
-        ''' all streams using the default option '''
+        """all streams using the default option"""
         raise NotImplementedError
 
     def get_streams(self):
@@ -157,33 +159,34 @@ class PacketGenerator(object):
         raise NotImplementedError
 
     def clear_streams(self):
-        ''' clear streams '''
+        """clear streams"""
         self._clear_streams()
         self.__streams = []
 
     def _set_stream_rate_percent(self, rate_percent):
-        ''' set all streams' rate percent '''
+        """set all streams' rate percent"""
         if not self.__streams:
             return
         for stream in self.__streams:
-            stream['options']['stream_config']['rate'] = rate_percent
+            stream["options"]["stream_config"]["rate"] = rate_percent
 
     def _set_stream_pps(self, pps):
-        ''' set all streams' pps '''
+        """set all streams' pps"""
         if not self.__streams:
             return
         for stream in self.__streams:
-            stream['options']['stream_config']['pps'] = pps
+            stream["options"]["stream_config"]["pps"] = pps
 
     def reset_streams(self):
         self.__streams = []
 
     def __warm_up_pktgen(self, stream_ids, options, delay):
-        ''' run warm up traffic before start main traffic '''
+        """run warm up traffic before start main traffic"""
         if not delay:
             return
-        msg = '{1} packet generator: run traffic {0}s to warm up ... '.format(
-            delay, self.pktgen_type)
+        msg = "{1} packet generator: run traffic {0}s to warm up ... ".format(
+            delay, self.pktgen_type
+        )
         self.logger.info(msg)
         self._start_transmission(stream_ids, options)
         time.sleep(delay)
@@ -195,13 +198,14 @@ class PacketGenerator(object):
         bps_tx = []
         pps_tx = []
         used_rx_port = []
-        msg = 'begin get port statistic ...'
+        msg = "begin get port statistic ..."
         self.logger.info(msg)
         for stream_id in stream_ids:
-            if self.__streams[stream_id]['rx_port'] not in used_rx_port:
+            if self.__streams[stream_id]["rx_port"] not in used_rx_port:
                 bps_rate, pps_rate = self._retrieve_port_statistic(
-                    stream_id, 'throughput')
-                used_rx_port.append(self.__streams[stream_id]['rx_port'])
+                    stream_id, "throughput"
+                )
+                used_rx_port.append(self.__streams[stream_id]["rx_port"])
                 if stat_type and stat_type is STAT_TYPE.TXRX:
                     bps_tx.append(bps_rate[0])
                     pps_tx.append(pps_rate[0])
@@ -218,21 +222,25 @@ class PacketGenerator(object):
             bps_rx_total = self._summary_statistic(bps_rx)
             pps_rx_total = self._summary_statistic(pps_rx)
             self.logger.info(
-                "throughput: pps_tx %f, bps_tx %f" % (pps_tx_total, bps_tx_total))
+                "throughput: pps_tx %f, bps_tx %f" % (pps_tx_total, bps_tx_total)
+            )
             self.logger.info(
-                "throughput: pps_rx %f, bps_rx %f" % (pps_rx_total, bps_rx_total))
+                "throughput: pps_rx %f, bps_rx %f" % (pps_rx_total, bps_rx_total)
+            )
 
             return (bps_tx_total, bps_rx_total), (pps_tx_total, pps_rx_total)
         else:
             bps_rx_total = self._summary_statistic(bps_rx)
             pps_rx_total = self._summary_statistic(pps_rx)
             self.logger.info(
-                "throughput: pps_rx %f, bps_rx %f" % (pps_rx_total, bps_rx_total))
+                "throughput: pps_rx %f, bps_rx %f" % (pps_rx_total, bps_rx_total)
+            )
 
             return bps_rx_total, pps_rx_total
 
     def __get_multi_throughput_statistic(
-            self, stream_ids, duration, interval, callback=None, stat_type=None):
+        self, stream_ids, duration, interval, callback=None, stat_type=None
+    ):
         """
         duration: traffic duration (second)
         interval: interval of get throughput statistics (second)
@@ -285,16 +293,18 @@ class PacketGenerator(object):
                 STAT_TYPE.RX  return (rx bps, rx_pps)
                 STAT_TYPE.TXRX return ((tx bps, rx_bps), (tx pps, rx_pps))
         """
-        interval = options.get('interval')
-        callback = options.get('callback')
-        duration = options.get('duration') or 10
-        delay = options.get('delay')
+        interval = options.get("interval")
+        callback = options.get("callback")
+        duration = options.get("duration") or 10
+        delay = options.get("delay")
         if self.pktgen_type == PKTGEN_TREX:
-            stat_type = options.get('stat_type') or STAT_TYPE.RX
+            stat_type = options.get("stat_type") or STAT_TYPE.RX
         else:
-            if options.get('stat_type') is not None:
-                msg = ("'stat_type' option is only for trex, "
-                       "should not set when use other pktgen tools")
+            if options.get("stat_type") is not None:
+                msg = (
+                    "'stat_type' option is only for trex, "
+                    "should not set when use other pktgen tools"
+                )
                 raise Exception(msg)
             stat_type = STAT_TYPE.RX
         self._prepare_transmission(stream_ids=stream_ids)
@@ -305,7 +315,8 @@ class PacketGenerator(object):
         # keep traffic within a duration time and get throughput statistic
         if interval and duration:
             stats = self.__get_multi_throughput_statistic(
-                stream_ids, duration, interval, callback, stat_type)
+                stream_ids, duration, interval, callback, stat_type
+            )
         else:
             time.sleep(duration)
             stats = self.__get_single_throughput_statistic(stream_ids, stat_type)
@@ -316,9 +327,9 @@ class PacketGenerator(object):
         """
         Measure lost rate on each tx/rx ports
         """
-        delay = options.get('delay')
-        duration = options.get('duration') or 10
-        throughput_stat_flag = options.get('throughput_stat_flag') or False
+        delay = options.get("delay")
+        duration = options.get("duration") or 10
+        throughput_stat_flag = options.get("throughput_stat_flag") or False
         self._prepare_transmission(stream_ids=stream_ids)
         # start warm up traffic
         self.__warm_up_pktgen(stream_ids, options, delay)
@@ -332,10 +343,10 @@ class PacketGenerator(object):
         result = {}
         used_rx_port = []
         for stream_id in stream_ids:
-            port_id = self.__streams[stream_id]['rx_port']
+            port_id = self.__streams[stream_id]["rx_port"]
             if port_id in used_rx_port:
                 continue
-            stats = self._retrieve_port_statistic(stream_id, 'loss')
+            stats = self._retrieve_port_statistic(stream_id, "loss")
             tx_pkts, rx_pkts = stats
             lost_p = tx_pkts - rx_pkts
             if tx_pkts <= 0:
@@ -351,7 +362,7 @@ class PacketGenerator(object):
             return result
 
     def measure_loss(self, stream_ids=[], options={}):
-        '''
+        """
         options usage:
             rate:
                 port rate percent, float(0--100). Default value is 100.
@@ -363,7 +374,7 @@ class PacketGenerator(object):
 
             duration:
                 traffic lasting time(second). Default value is 10 second.
-        '''
+        """
         result = self._measure_loss(stream_ids, options)
         # here only to make sure that return value is the same as dts/etgen format
         # In real testing scenario, this method can offer more data than it
@@ -378,7 +389,7 @@ class PacketGenerator(object):
         self._start_transmission(stream_ids, options)
         self._stop_transmission(None)
         # parsing test result
-        stats = self._retrieve_port_statistic(stream_ids[0], 'rfc2544')
+        stats = self._retrieve_port_statistic(stream_ids[0], "rfc2544")
         tx_pkts, rx_pkts, pps = stats
         lost_p = tx_pkts - rx_pkts
         if tx_pkts <= 0:
@@ -406,8 +417,8 @@ class PacketGenerator(object):
             duration:
                 traffic lasting time(second). Default value is 10 second.
         """
-        delay = options.get('delay')
-        duration = options.get('duration') or 10
+        delay = options.get("delay")
+        duration = options.get("duration") or 10
         self._prepare_transmission(stream_ids=stream_ids, latency=True)
         # start warm up traffic
         self.__warm_up_pktgen(stream_ids, options, delay)
@@ -420,20 +431,20 @@ class PacketGenerator(object):
         result = {}
         used_rx_port = []
         for stream_id in stream_ids:
-            port_id = self.__streams[stream_id]['rx_port']
+            port_id = self.__streams[stream_id]["rx_port"]
             if port_id in used_rx_port:
                 continue
-            stats = self._retrieve_port_statistic(stream_id, 'latency')
+            stats = self._retrieve_port_statistic(stream_id, "latency")
             result[port_id] = stats
         self.logger.info(result)
 
         return result
 
     def _check_loss_rate(self, result, permit_loss_rate):
-        '''
+        """
         support multiple link peer, if any link peer loss rate happen set
         return value to False
-        '''
+        """
         for port_id, _result in result.items():
             loss_rate, _, _ = _result
             if loss_rate > permit_loss_rate:
@@ -442,7 +453,7 @@ class PacketGenerator(object):
             return True
 
     def measure_rfc2544(self, stream_ids=[], options={}):
-        """ check loss rate with rate percent dropping
+        """check loss rate with rate percent dropping
 
         options usage:
             rate:
@@ -463,10 +474,10 @@ class PacketGenerator(object):
                 traffic lasting time(second). Default value is 10 second.
         """
         loss_rate_table = []
-        rate_percent = options.get('rate') or float(100)
-        permit_loss_rate = options.get('pdr') or 0
+        rate_percent = options.get("rate") or float(100)
+        permit_loss_rate = options.get("pdr") or 0
         self.logger.info("allow loss rate: %f " % permit_loss_rate)
-        rate_step = options.get('drop_step') or 1
+        rate_step = options.get("drop_step") or 1
         result = self._measure_loss(stream_ids, options)
         status = self._check_loss_rate(result, permit_loss_rate)
         loss_rate_table.append([rate_percent, result])
@@ -479,10 +490,10 @@ class PacketGenerator(object):
             return rate_percent, tx_num, rx_num
         _options = deepcopy(options)
         # if warm up option  'delay' is set, ignore it in next work flow
-        if 'delay' in _options:
-            _options.pop('delay')
-        if 'rate' in _options:
-            _options.pop('rate')
+        if "delay" in _options:
+            _options.pop("delay")
+        if "rate" in _options:
+            _options.pop("rate")
         while not status and rate_percent > 0:
             rate_percent = rate_percent - rate_step
             if rate_percent <= 0:
@@ -513,10 +524,10 @@ class PacketGenerator(object):
         Currently, ixia/trex use rate percent to control port flow rate,
         pps not supported.
         """
-        max_pps = options.get('max_pps')
-        min_pps = options.get('min_pps')
-        step = options.get('step') or 10000
-        permit_loss_rate = options.get('permit_loss_rate') or 0.0001
+        max_pps = options.get("max_pps")
+        min_pps = options.get("min_pps")
+        step = options.get("step") or 10000
+        permit_loss_rate = options.get("permit_loss_rate") or 0.0001
         # traffic parameters
         loss_pps_table = []
         pps = traffic_pps_max = max_pps
@@ -536,7 +547,7 @@ class PacketGenerator(object):
                 traffic_pps_min = pps
             if traffic_pps_max - traffic_pps_min < step:
                 break
-            pps = (traffic_pps_max - traffic_pps_min)/2 + traffic_pps_min
+            pps = (traffic_pps_max - traffic_pps_min) / 2 + traffic_pps_min
 
         self.logger.info("zero loss pps is %f" % pps)
         # use last result as return data to keep the same with dts/etgen format
@@ -545,7 +556,7 @@ class PacketGenerator(object):
         return list(loss_pps_table[-1][1].values())[0]
 
     def measure_rfc2544_dichotomy(self, stream_ids=[], options={}):
-        """ check loss rate using dichotomy algorithm
+        """check loss rate using dichotomy algorithm
 
         options usage:
             delay:
@@ -571,15 +582,15 @@ class PacketGenerator(object):
         if self.pktgen_type == PKTGEN_IXIA_NETWORK:
             return self._measure_rfc2544_ixnet(stream_ids, options)
 
-        max_rate = options.get('max_rate') or 100.0
-        min_rate = options.get('min_rate') or 0.0
-        accuracy = options.get('accuracy') or 0.001
-        permit_loss_rate = options.get('pdr') or 0.0
-        duration = options.get('duration') or 10.0
-        throughput_stat_flag = options.get('throughput_stat_flag') or False
+        max_rate = options.get("max_rate") or 100.0
+        min_rate = options.get("min_rate") or 0.0
+        accuracy = options.get("accuracy") or 0.001
+        permit_loss_rate = options.get("pdr") or 0.0
+        duration = options.get("duration") or 10.0
+        throughput_stat_flag = options.get("throughput_stat_flag") or False
         # start warm up traffic
-        delay = options.get('delay')
-        _options = {'duration': duration}
+        delay = options.get("delay")
+        _options = {"duration": duration}
         if delay:
             self._prepare_transmission(stream_ids=stream_ids)
             self.__warm_up_pktgen(stream_ids, _options, delay)
@@ -593,13 +604,14 @@ class PacketGenerator(object):
         while True:
             # run loss rate testing
             _options = {
-                'throughput_stat_flag': throughput_stat_flag,
-                'duration': duration, }
+                "throughput_stat_flag": throughput_stat_flag,
+                "duration": duration,
+            }
             result = self._measure_loss(stream_ids, _options)
             loss_rate_table.append([rate, result])
             status = self._check_loss_rate(
-                result[0] if throughput_stat_flag else result,
-                permit_loss_rate)
+                result[0] if throughput_stat_flag else result, permit_loss_rate
+            )
             # if upper bound rate percent hit, quit the left flow
             if rate == max_rate and status:
                 hit_result = result
@@ -616,27 +628,34 @@ class PacketGenerator(object):
                 traffic_rate_max = rate
             if traffic_rate_max - traffic_rate_min < accuracy:
                 break
-            rate = (traffic_rate_max - traffic_rate_min)/2 + traffic_rate_min
+            rate = (traffic_rate_max - traffic_rate_min) / 2 + traffic_rate_min
             self._clear_streams()
             # set stream rate percent to custom value
             self._set_stream_rate_percent(rate)
 
         if throughput_stat_flag:
             if not hit_result or not hit_result[0]:
-                msg = ('expected permit loss rate <{0}> '
-                       'not between rate {1} and rate {2}').format(
-                            permit_loss_rate, max_rate, min_rate)
+                msg = (
+                    "expected permit loss rate <{0}> "
+                    "not between rate {1} and rate {2}"
+                ).format(permit_loss_rate, max_rate, min_rate)
                 self.logger.error(msg)
                 self.logger.info(pformat(loss_rate_table))
                 ret_value = 0, result[0][0][1], result[0][0][2], 0
             else:
                 self.logger.debug(pformat(loss_rate_table))
-                ret_value = hit_rate, hit_result[0][0][1], hit_result[0][0][2], hit_result[1][1]
+                ret_value = (
+                    hit_rate,
+                    hit_result[0][0][1],
+                    hit_result[0][0][2],
+                    hit_result[1][1],
+                )
         else:
             if not hit_result:
-                msg = ('expected permit loss rate <{0}> '
-                       'not between rate {1} and rate {2}').format(
-                            permit_loss_rate, max_rate, min_rate)
+                msg = (
+                    "expected permit loss rate <{0}> "
+                    "not between rate {1} and rate {2}"
+                ).format(permit_loss_rate, max_rate, min_rate)
                 self.logger.error(msg)
                 self.logger.info(pformat(loss_rate_table))
                 ret_value = 0, result[0][1], result[0][2]
@@ -648,21 +667,21 @@ class PacketGenerator(object):
         return ret_value
 
     def measure(self, stream_ids, traffic_opt):
-        '''
+        """
         use as an unify interface method for packet generator
-        '''
-        method = traffic_opt.get('method')
-        if method == 'throughput':
+        """
+        method = traffic_opt.get("method")
+        if method == "throughput":
             result = self.measure_throughput(stream_ids, traffic_opt)
-        elif method == 'latency':
+        elif method == "latency":
             result = self.measure_latency(stream_ids, traffic_opt)
-        elif method == 'loss':
+        elif method == "loss":
             result = self.measure_loss(stream_ids, traffic_opt)
-        elif method == 'rfc2544':
+        elif method == "rfc2544":
             result = self.measure_rfc2544(stream_ids, traffic_opt)
-        elif method == 'rfc2544_with_pps':
+        elif method == "rfc2544_with_pps":
             result = self.measure_rfc2544_with_pps(stream_ids, traffic_opt)
-        elif method == 'rfc2544_dichotomy':
+        elif method == "rfc2544_dichotomy":
             result = self.measure_rfc2544_dichotomy(stream_ids, traffic_opt)
         else:
             result = None
@@ -686,8 +705,9 @@ class PacketGenerator(object):
         conf_inst = PktgenConf(self.pktgen_type)
         pktgen_inst_type = conf_inst.pktgen_conf.get_sections()
         if len(pktgen_inst_type) < 1:
-            msg = ("packet generator <{0}> has no configuration "
-                   "in pktgen.cfg").format(self.pktgen_type)
+            msg = (
+                "packet generator <{0}> has no configuration " "in pktgen.cfg"
+            ).format(self.pktgen_type)
             raise Exception(msg)
         return conf_inst
 
@@ -716,4 +736,5 @@ class PacketGenerator(object):
         pass
 
 
-class DpdkPacketGenerator(PacketGenerator): pass # not implemented
+class DpdkPacketGenerator(PacketGenerator):
+    pass  # not implemented

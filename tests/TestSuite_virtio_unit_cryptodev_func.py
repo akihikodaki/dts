@@ -1,4 +1,4 @@
- # BSD LICENSE
+# BSD LICENSE
 #
 # Copyright(c) 2018-2019 Intel Corporation. All rights reserved.
 # All rights reserved.
@@ -45,14 +45,14 @@ from framework.test_case import TestCase
 
 class VirtioCryptodevUnitTest(TestCase):
     def set_up_all(self):
-        self.sample_app = self.dut.apps_name['vhost_crypto']
-        self.user_app = self.dut.apps_name['test']
+        self.sample_app = self.dut.apps_name["vhost_crypto"]
+        self.user_app = self.dut.apps_name["test"]
 
         self.vm0, self.vm0_dut = None, None
         self.dut.skip_setup = True
 
         self.dut_ports = self.dut.get_ports(self.nic)
-        self.verify(len(self.dut_ports) >= 1, 'Insufficient ports for test')
+        self.verify(len(self.dut_ports) >= 1, "Insufficient ports for test")
         self.cores = self.dut.get_core_list("1S/3C/1T")
         self.mem_channel = self.dut.get_memory_channels()
 
@@ -64,17 +64,14 @@ class VirtioCryptodevUnitTest(TestCase):
 
         self.dut.restore_interfaces()
         self.used_dut_port = self.dut_ports[0]
-        self.dut.generate_sriov_vfs_by_port(
-            self.used_dut_port, 1, driver='default')
-        self.sriov_vfs_port = self.dut.ports_info[
-            self.used_dut_port]['vfs_port']
+        self.dut.generate_sriov_vfs_by_port(self.used_dut_port, 1, driver="default")
+        self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port]["vfs_port"]
         for port in self.sriov_vfs_port:
             port.bind_driver(self.vf_assign_method)
 
-        intf = self.dut.ports_info[self.used_dut_port]['intf']
+        intf = self.dut.ports_info[self.used_dut_port]["intf"]
         vf_mac = "52:00:00:00:00:01"
-        self.dut.send_expect("ip link set %s vf 0 mac %s" %
-                (intf, vf_mac), "# ")
+        self.dut.send_expect("ip link set %s vf 0 mac %s" % (intf, vf_mac), "# ")
 
         self.launch_vhost_switch()
         self.vm0, self.vm0_dut = self.launch_virtio_dut("vm0")
@@ -82,13 +79,13 @@ class VirtioCryptodevUnitTest(TestCase):
     def set_up(self):
         pass
 
-    def dut_execut_cmd(self, cmdline, ex='#', timout=30):
+    def dut_execut_cmd(self, cmdline, ex="#", timout=30):
         return self.dut.send_expect(cmdline, ex, timout)
 
     def get_vhost_eal(self):
         default_eal_opts = {
             "c": None,
-            "l": ','.join(self.cores),
+            "l": ",".join(self.cores),
             "a": None,
             "vdev": None,
             "socket-mem": "2048,0",
@@ -103,7 +100,7 @@ class VirtioCryptodevUnitTest(TestCase):
 
         # Generate option string
         opt_str = ""
-        for key,value in list(opts.items()):
+        for key, value in list(opts.items()):
             if value is None:
                 continue
             dash = "-" if len(key) == 1 else "--"
@@ -115,9 +112,15 @@ class VirtioCryptodevUnitTest(TestCase):
         eal_opt_str = self.get_vhost_eal()
 
         config = '"(%s,0,0),(%s,0,0)"' % tuple(self.cores[-2:])
-        socket_file = "%s,/tmp/vm0_crypto0.sock --socket-file=%s,/tmp/vm0_crypto1.sock" % tuple(self.cores[-2:])
-        self.vhost_switch_cmd = cc.get_dpdk_app_cmd_str(self.sample_app, eal_opt_str,
-                                    '--config %s --socket-file %s' % (config, socket_file))
+        socket_file = (
+            "%s,/tmp/vm0_crypto0.sock --socket-file=%s,/tmp/vm0_crypto1.sock"
+            % tuple(self.cores[-2:])
+        )
+        self.vhost_switch_cmd = cc.get_dpdk_app_cmd_str(
+            self.sample_app,
+            eal_opt_str,
+            "--config %s --socket-file %s" % (config, socket_file),
+        )
 
         out = self.dut_execut_cmd(self.vhost_switch_cmd, "socket created", 30)
         self.logger.info(out)
@@ -125,25 +128,28 @@ class VirtioCryptodevUnitTest(TestCase):
     def set_virtio_pci(self, dut):
         out = dut.send_expect("lspci -d:1054|awk '{{print $1}}'", "# ", 10)
         virtio_list = out.replace("\r", "\n").replace("\n\n", "\n").split("\n")
-        dut.send_expect('modprobe uio_pci_generic', '#', 10)
+        dut.send_expect("modprobe uio_pci_generic", "#", 10)
         for line in virtio_list:
             cmd = "echo 0000:{} > /sys/bus/pci/devices/0000\:{}/driver/unbind".format(
-                line, line.replace(":", "\:"))
+                line, line.replace(":", "\:")
+            )
             dut.send_expect(cmd, "# ", 10)
-        dut.send_expect('echo "1af4 1054" > /sys/bus/pci/drivers/uio_pci_generic/new_id', "# ", 10)
+        dut.send_expect(
+            'echo "1af4 1054" > /sys/bus/pci/drivers/uio_pci_generic/new_id', "# ", 10
+        )
 
         return virtio_list
 
     def launch_virtio_dut(self, vm_name):
         # start vm
-        vm = QEMUKvm(self.dut, vm_name, 'virtio_unit_cryptodev_func')
-        vf0 = {'opt_host': self.sriov_vfs_port[0].pci}
+        vm = QEMUKvm(self.dut, vm_name, "virtio_unit_cryptodev_func")
+        vf0 = {"opt_host": self.sriov_vfs_port[0].pci}
         vm.set_vm_device(driver=self.vf_assign_method, **vf0)
 
         try:
             vm_dut = vm.start()
             if vm_dut is None:
-                print(('{} start failed'.format(vm_name)))
+                print(("{} start failed".format(vm_name)))
         except Exception as err:
             raise err
 
@@ -157,10 +163,10 @@ class VirtioCryptodevUnitTest(TestCase):
         return vm, vm_dut
 
     def test_cryptodev_virtio_autotest(self):
-        eal_opt_str = cc.get_eal_opt_str(self, {"a":None, "vdev": "crypto_virtio"})
+        eal_opt_str = cc.get_eal_opt_str(self, {"a": None, "vdev": "crypto_virtio"})
         self.__run_unit_test("cryptodev_virtio_autotest", eal_opt_str)
 
-    def __run_unit_test(self, testsuite, eal_opt_str='', timeout=600):
+    def __run_unit_test(self, testsuite, eal_opt_str="", timeout=600):
         self.logger.info("STEP_TEST: " + testsuite)
         self.vm0_dut.send_expect("dmesg -C", "# ", 30)
         cmd_str = cc.get_dpdk_app_cmd_str(self.user_app, "--log-level 6", eal_opt_str)
@@ -185,17 +191,17 @@ class VirtioCryptodevUnitTest(TestCase):
         pass
 
     def tear_down_all(self):
-        if getattr(self, 'vm0', None):
+        if getattr(self, "vm0", None):
             self.vm0_dut.kill_all()
             self.vm0.stop()
             self.vm0 = None
 
-        if getattr(self, 'used_dut_port', None) != None:
+        if getattr(self, "used_dut_port", None) != None:
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port)
             self.used_dut_port = None
 
         self.dut_execut_cmd("^C", "# ")
-        self.app_name = self.sample_app[self.sample_app.rfind('/')+1:]
+        self.app_name = self.sample_app[self.sample_app.rfind("/") + 1 :]
         self.dut.send_expect("killall -s INT %s" % self.app_name, "#")
         self.dut_execut_cmd("killall -s INT qemu-system-x86_64")
         self.dut_execut_cmd("rm -r /tmp/*")

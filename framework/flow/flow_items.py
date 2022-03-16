@@ -37,11 +37,15 @@ import itertools
 from functools import reduce
 from typing import Any, Dict, FrozenSet, Hashable, Iterable, Set, Tuple, Union
 
-
 from .enums import FlowActionType, FlowItemType
 from .exceptions import InvalidFlowItemException
 
-PATTERN_ACTION_ITEMS = {FlowItemType.INVERT, FlowItemType.VOID, FlowItemType.MARK, FlowItemType.META}
+PATTERN_ACTION_ITEMS = {
+    FlowItemType.INVERT,
+    FlowItemType.VOID,
+    FlowItemType.MARK,
+    FlowItemType.META,
+}
 
 
 class FlowItem(object):
@@ -59,7 +63,9 @@ class FlowItem(object):
     possible_properties: Dict[str, Tuple[str, FrozenSet[str], FrozenSet[str]]]
     properties: str
 
-    def get_property_stream(self) -> Iterable[Tuple[FlowItem, FrozenSet[str], FrozenSet[str], str]]:
+    def get_property_stream(
+        self,
+    ) -> Iterable[Tuple[FlowItem, FrozenSet[str], FrozenSet[str], str]]:
         """
         This function will return a generator that will provide all
         configured property combinations.
@@ -89,23 +95,28 @@ class FlowItem(object):
             raise InvalidFlowItemException(self, other)
         elif other.type in self.valid_next_items:
             # These imports are in here so there is no circular import
-            from .flow import Flow
-            from framework.flow.flow_pattern_items import PatternFlowItem
             from framework.flow.flow_action_items import ActionFlowItem
+            from framework.flow.flow_pattern_items import PatternFlowItem
+
+            from .flow import Flow
+
             if isinstance(self, PatternFlowItem):
                 return Flow(pattern_items=[self, other])
             elif isinstance(self, ActionFlowItem):
                 return Flow(action_items=[self, other])
             else:
                 raise TypeError(
-                    f"{type(self):s} is not one of {PatternFlowItem:s}, {ActionFlowItem:s}.")
+                    f"{type(self):s} is not one of {PatternFlowItem:s}, {ActionFlowItem:s}."
+                )
         else:
             raise InvalidFlowItemException(self, other)
 
     def __eq__(self, other) -> bool:
-        return type(self) == type(other) and \
-               self.type == other.type and \
-               self.properties == other.properties
+        return (
+            type(self) == type(other)
+            and self.type == other.type
+            and self.properties == other.properties
+        )
 
     def __str__(self):
         if self.properties != "":

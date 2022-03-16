@@ -55,67 +55,70 @@ from framework.utils import create_mask as dts_create_mask
 
 class TestVmPwMgmtPolicy(TestCase):
     # policy mode
-    TIME = 'TIME'
-    TRAFFIC = 'TRAFFIC'
+    TIME = "TIME"
+    TRAFFIC = "TRAFFIC"
     # temporary file directory
-    output_path = '/tmp'
+    output_path = "/tmp"
 
     @property
     def target_dir(self):
         # get absolute directory of target source code
-        target_dir = '/root' + self.dut.base_dir[1:] \
-                     if self.dut.base_dir.startswith('~') else \
-                     self.dut.base_dir
+        target_dir = (
+            "/root" + self.dut.base_dir[1:]
+            if self.dut.base_dir.startswith("~")
+            else self.dut.base_dir
+        )
         return target_dir
 
-    def get_cores_mask(self, config='all', crb=None):
+    def get_cores_mask(self, config="all", crb=None):
         ports_socket = self.dut.get_numa_id(self.dut.get_ports()[0])
-        mask = dts_create_mask(
-            self.dut.get_core_list(config, socket=ports_socket))
+        mask = dts_create_mask(self.dut.get_core_list(config, socket=ports_socket))
         return mask
 
     def prepare_binary(self, name, host_crb=None):
         _host_crb = host_crb if host_crb else self.dut
         example_dir = "examples/" + name
-        out = _host_crb.build_dpdk_apps('./' + example_dir)
-        return os.path.join(self.target_dir,
-                            _host_crb.apps_name[os.path.basename(name)])
+        out = _host_crb.build_dpdk_apps("./" + example_dir)
+        return os.path.join(
+            self.target_dir, _host_crb.apps_name[os.path.basename(name)]
+        )
 
     def add_console(self, session):
         self.ext_con[session.name] = [
             session.send_expect,
-            session.session.get_output_all]
+            session.session.get_output_all,
+        ]
 
     def get_console(self, name):
         default_con_table = {
-            self.dut.session.name: [
-                self.dut.send_expect,
-                self.dut.get_session_output],
+            self.dut.session.name: [self.dut.send_expect, self.dut.get_session_output],
             self.dut.alt_session.name: [
                 self.dut.alt_session.send_expect,
-                self.dut.alt_session.session.get_output_all]}
+                self.dut.alt_session.session.get_output_all,
+            ],
+        }
         if name not in default_con_table:
             return self.ext_con.get(name) or [None, None]
         else:
             return default_con_table.get(name)
 
-    def execute_cmds(self, cmds, name='dut'):
+    def execute_cmds(self, cmds, name="dut"):
         console, msg_pipe = self.get_console(name)
         if len(cmds) == 0:
             return
         if isinstance(cmds, str):
-            cmds = [cmds, '# ', 5]
+            cmds = [cmds, "# ", 5]
         if not isinstance(cmds[0], list):
             cmds = [cmds]
-        outputs = [] if len(cmds) > 1 else ''
+        outputs = [] if len(cmds) > 1 else ""
         for item in cmds:
             expected_items = item[1]
             if expected_items and isinstance(expected_items, (list, tuple)):
                 check_output = True
-                expected_str = expected_items[0] or '# '
+                expected_str = expected_items[0] or "# "
             else:
                 check_output = False
-                expected_str = expected_items or '# '
+                expected_str = expected_items or "# "
 
             try:
                 if len(item) == 3:
@@ -152,9 +155,14 @@ class TestVmPwMgmtPolicy(TestCase):
         dmac = self.vm_dut.get_mac_address(0)
         # set streams for traffic
         pkt_configs = {
-            'UDP_1': {
-                'type': 'UDP',
-                'pkt_layers': {'ether': {'dst': dmac, }, }, },
+            "UDP_1": {
+                "type": "UDP",
+                "pkt_layers": {
+                    "ether": {
+                        "dst": dmac,
+                    },
+                },
+            },
         }
         # create packet for send
         streams = []
@@ -162,8 +170,8 @@ class TestVmPwMgmtPolicy(TestCase):
             if stm_name not in list(pkt_configs.keys()):
                 continue
             values = pkt_configs[stm_name]
-            pkt_type = values.get('type')
-            pkt_layers = values.get('pkt_layers')
+            pkt_type = values.get("type")
+            pkt_layers = values.get("pkt_layers")
             pkt = Packet(pkt_type=pkt_type)
             for layer in list(pkt_layers.keys()):
                 pkt.config_layer(layer, pkt_layers[layer])
@@ -176,30 +184,30 @@ class TestVmPwMgmtPolicy(TestCase):
         stream_ids = []
         for pkt in send_pkt:
             _option = deepcopy(option)
-            _option['pcap'] = pkt
+            _option["pcap"] = pkt
             stream_id = self.tester.pktgen.add_stream(txport, rxport, pkt)
             self.tester.pktgen.config_stream(stream_id, _option)
             stream_ids.append(stream_id)
         return stream_ids
 
     def send_packets_by_pktgen(self, option):
-        txport = option.get('tx_intf')
-        rxport = option.get('rx_intf')
-        rate_percent = option.get('rate_percent', float(100))
-        send_pkt = option.get('stream') or []
+        txport = option.get("tx_intf")
+        rxport = option.get("rx_intf")
+        rate_percent = option.get("rate_percent", float(100))
+        send_pkt = option.get("stream") or []
         # clear streams before add new streams
         self.tester.pktgen.clear_streams()
         # set stream into pktgen
         stream_option = {
-            'stream_config': {
-                'txmode': {},
-                'transmit_mode': TRANSMIT_CONT,
-                'rate': rate_percent, }
+            "stream_config": {
+                "txmode": {},
+                "transmit_mode": TRANSMIT_CONT,
+                "rate": rate_percent,
+            }
         }
-        stream_ids = self.add_stream_to_pktgen(
-            txport, rxport, send_pkt, stream_option)
+        stream_ids = self.add_stream_to_pktgen(txport, rxport, send_pkt, stream_option)
         # run traffic options
-        traffic_opt = option.get('traffic_opt')
+        traffic_opt = option.get("traffic_opt")
         # run pktgen traffic
         result = self.tester.pktgen.measure(stream_ids, traffic_opt)
 
@@ -215,21 +223,22 @@ class TestVmPwMgmtPolicy(TestCase):
         dut_port = self.dut_ports[self.used_port]
         tester_tx_port_id = self.tester.get_local_port(dut_port)
         tester_rx_port_id = self.tester.get_local_port(dut_port)
-        stm_type = option.get('stm_types')
-        pps = option.get('pps')
+        stm_type = option.get("stm_types")
+        pps = option.get("pps")
         rate = self.get_rate_percent(pps)
-        duration = option.get('duration', None) or 15
+        duration = option.get("duration", None) or 15
         ports_topo = {
-            'tx_intf': tester_tx_port_id,
-            'rx_intf': tester_rx_port_id,
-            'stream': self.config_stream(stm_type),
-            'rate_percent': rate,
-            'traffic_opt': {
-                'method': 'throughput',
-                'callback': self.query_cpu_freq,
-                'interval': duration - 2,
-                'duration': duration,
-            }}
+            "tx_intf": tester_tx_port_id,
+            "rx_intf": tester_rx_port_id,
+            "stream": self.config_stream(stm_type),
+            "rate_percent": rate,
+            "traffic_opt": {
+                "method": "throughput",
+                "callback": self.query_cpu_freq,
+                "interval": duration - 2,
+                "duration": duration,
+            },
+        }
         # begin traffic checking
         result = self.send_packets_by_pktgen(ports_topo)
 
@@ -237,20 +246,20 @@ class TestVmPwMgmtPolicy(TestCase):
 
     def bind_ports_to_sys(self):
         for port in self.dut.ports_info:
-            netdev = port.get('port')
+            netdev = port.get("port")
             if not netdev:
                 continue
             cur_drv = netdev.get_nic_driver()
             netdev.bind_driver(netdev.default_driver)
         else:
-            cur_drv = 'igb_uio'
+            cur_drv = "igb_uio"
         return cur_drv
 
     def bind_ports_to_dpdk(self, driver):
         if not driver:
             return
         for port in self.dut.ports_info:
-            netdev = port.get('port')
+            netdev = port.get("port")
             if not netdev:
                 continue
             cur_drv = netdev.get_nic_driver()
@@ -259,23 +268,28 @@ class TestVmPwMgmtPolicy(TestCase):
             netdev.bind_driver(driver)
 
     def init_vms_params(self):
-        self.vm = self.vcpu_map = self.vm_dut = self.guest_session = \
-            self.is_guest_on = self.is_vm_on = self.is_vf_set = None
+        self.vm = (
+            self.vcpu_map
+        ) = (
+            self.vm_dut
+        ) = (
+            self.guest_session
+        ) = self.is_guest_on = self.is_vm_on = self.is_vf_set = None
         # vm config
-        self.vm_name = 'vm0'
+        self.vm_name = "vm0"
         self.vm_max_ch = 8
-        self.vm_log_dir = '/tmp/powermonitor'
+        self.vm_log_dir = "/tmp/powermonitor"
         self.create_powermonitor_folder()
 
     def create_powermonitor_folder(self):
         # create temporary folder for power monitor
-        cmd = 'mkdir -p {0}; chmod 777 {0}'.format(self.vm_log_dir)
+        cmd = "mkdir -p {0}; chmod 777 {0}".format(self.vm_log_dir)
         self.d_a_con(cmd)
 
-    def create_vf(self, driver='default'):
+    def create_vf(self, driver="default"):
         self.dut.generate_sriov_vfs_by_port(self.used_port, 1, driver=driver)
         self.is_vf_set = True
-        sriov_vfs_port = self.dut.ports_info[self.used_port]['vfs_port']
+        sriov_vfs_port = self.dut.ports_info[self.used_port]["vfs_port"]
         return sriov_vfs_port[0].pci
 
     def destroy_vf(self):
@@ -283,15 +297,16 @@ class TestVmPwMgmtPolicy(TestCase):
             return
         self.dut.destroy_sriov_vfs_by_port(self.used_port)
         self.is_vf_set = False
-        port = self.dut.ports_info[self.used_port]['port']
+        port = self.dut.ports_info[self.used_port]["port"]
         port.bind_driver()
 
     def add_nic_device(self, pci_addr, vm_inst):
         vm_params = {
-            'driver': 'pci-assign',
-            'driver': 'vfio',
-            'opt_host': pci_addr,
-            'guestpci':  '0000:00:07.0'}
+            "driver": "pci-assign",
+            "driver": "vfio",
+            "opt_host": pci_addr,
+            "guestpci": "0000:00:07.0",
+        }
         vm_inst.set_vm_device(**vm_params)
 
     def start_vm(self):
@@ -303,15 +318,16 @@ class TestVmPwMgmtPolicy(TestCase):
         pci_addr = self.create_vf()
         self.add_nic_device(pci_addr, self.vm)
         # add channel
-        ch_name = 'virtio.serial.port.poweragent.{0}'
-        vm_path = os.path.join(self.vm_log_dir, '{0}.{1}')
+        ch_name = "virtio.serial.port.poweragent.{0}"
+        vm_path = os.path.join(self.vm_log_dir, "{0}.{1}")
         for cnt in range(self.vm_max_ch):
             channel = {
-                'path': vm_path.format(self.vm_name, cnt),
-                'name': ch_name.format(cnt)}
+                "path": vm_path.format(self.vm_name, cnt),
+                "name": ch_name.format(cnt),
+            }
             self.vm.add_vm_virtio_serial_channel(**channel)
         # set vm default driver
-        self.vm.def_driver = 'vfio-pci'
+        self.vm.def_driver = "vfio-pci"
         # boot up vm
         self.vm_dut = self.vm.start()
         self.is_vm_on = True
@@ -319,7 +335,7 @@ class TestVmPwMgmtPolicy(TestCase):
         self.add_console(self.vm_dut.session)
         # get virtual machine cpu cores
         _vcpu_map = self.vm.get_vm_cpu()
-        self.vcpu_map = [int(item) for item  in _vcpu_map]
+        self.vcpu_map = [int(item) for item in _vcpu_map]
 
     def close_vm(self):
         # close vm
@@ -331,27 +347,28 @@ class TestVmPwMgmtPolicy(TestCase):
             self.is_vm_on = False
             self.vm = None
             self.dut.virt_exit()
-            cmd_fmt = 'virsh {0} {1} > /dev/null 2>&1'.format
+            cmd_fmt = "virsh {0} {1} > /dev/null 2>&1".format
             cmds = [
-                [cmd_fmt('shutdown', self.vm_name), '# '],
-                [cmd_fmt('undefine', self.vm_name), '# '], ]
+                [cmd_fmt("shutdown", self.vm_name), "# "],
+                [cmd_fmt("undefine", self.vm_name), "# "],
+            ]
             self.d_a_con(cmds)
         # destroy vf
         if self.is_vf_set:
             self.destroy_vf()
 
     def init_vm_power_mgr(self):
-        self.vm_power_mgr = self.prepare_binary('vm_power_manager')
+        self.vm_power_mgr = self.prepare_binary("vm_power_manager")
 
     def start_vm_power_mgr(self):
-        eal_option = (
-            '-v '
-            '-c {core_mask} '
-            '-n {mem_channel} ').format(**{
-                'core_mask': self.get_cores_mask("1S/12C/1T"),
-                'mem_channel': self.dut.get_memory_channels(), })
-        prompt = 'vmpower>'
-        cmd = [' '.join([self.vm_power_mgr, eal_option]), prompt, 30]
+        eal_option = ("-v " "-c {core_mask} " "-n {mem_channel} ").format(
+            **{
+                "core_mask": self.get_cores_mask("1S/12C/1T"),
+                "mem_channel": self.dut.get_memory_channels(),
+            }
+        )
+        prompt = "vmpower>"
+        cmd = [" ".join([self.vm_power_mgr, eal_option]), prompt, 30]
         self.d_con(cmd)
         self.is_mgr_on = True
 
@@ -360,55 +377,58 @@ class TestVmPwMgmtPolicy(TestCase):
         cmds = [
             "add_vm %s" % vm_name,
             "add_channels %s all" % vm_name,
-            'set_channel_status %s all enabled' % vm_name,
-            "show_vm %s" % vm_name]
-        prompt = 'vmpower>'
+            "set_channel_status %s all enabled" % vm_name,
+            "show_vm %s" % vm_name,
+        ]
+        prompt = "vmpower>"
         self.d_con([[cmd, prompt] for cmd in cmds])
 
     def close_vm_power_mgr(self):
         if not self.is_mgr_on:
             return
-        self.d_con(['quit', '# ', 15])
+        self.d_con(["quit", "# ", 15])
         self.is_mgr_on = False
 
     def init_guest_mgr(self):
-        name = 'vm_power_manager/guest_cli'
+        name = "vm_power_manager/guest_cli"
         self.guest_cli = self.prepare_binary(name, host_crb=self.vm_dut)
-        self.guest_con_name = \
-            '_'.join([self.vm_dut.NAME, name.replace('/', '-')])
+        self.guest_con_name = "_".join([self.vm_dut.NAME, name.replace("/", "-")])
         self.guest_session = self.vm_dut.create_session(self.guest_con_name)
         self.add_console(self.guest_session)
 
     def start_guest_mgr(self, cmd_option):
         prompt = r"vmpower\(guest\)>"
         option = (
-            '-v '
-            '-c {core_mask} '
-            '-n {memory_channel} '
-            '--file-prefix={file_prefix} '
-            '-- ').format(**{
-                'core_mask': '0xff',
-                'memory_channel': self.vm_dut.get_memory_channels(),
-                'file_prefix': 'vmpower2',
-            }) + cmd_option
-        guest_cmd = ' '.join([self.guest_cli, option])
+            "-v "
+            "-c {core_mask} "
+            "-n {memory_channel} "
+            "--file-prefix={file_prefix} "
+            "-- "
+        ).format(
+            **{
+                "core_mask": "0xff",
+                "memory_channel": self.vm_dut.get_memory_channels(),
+                "file_prefix": "vmpower2",
+            }
+        ) + cmd_option
+        guest_cmd = " ".join([self.guest_cli, option])
         self.vm_g_con([guest_cmd, prompt, 120])
         self.is_guest_on = True
 
     def guest_send_policy(self):
-        self.vm_g_con(['send_policy now', r"vmpower\(guest\)>", 20])
+        self.vm_g_con(["send_policy now", r"vmpower\(guest\)>", 20])
         # it would be a problem measuring less than 500ms after sending
         # policy, so wait 2 second here.
         time.sleep(2)
 
     def guest_set_vm_turbo_status(self, vcpu, status):
         vcpu_index = self.vcpu_map.index(self.check_core)
-        cmd = ["set_cpu_freq %d %s" % (vcpu_index, status),
-               "vmpower\(guest\)>", 5]
+        cmd = ["set_cpu_freq %d %s" % (vcpu_index, status), "vmpower\(guest\)>", 5]
         output = self.vm_g_con(cmd)
         self.verify(
-            'ACK received for message sent to host'.lower() in output.lower(),
-            'vm guest failed to send message host')
+            "ACK received for message sent to host".lower() in output.lower(),
+            "vm guest failed to send message host",
+        )
 
     def close_guest_mgr(self):
         if not self.is_guest_on:
@@ -420,24 +440,19 @@ class TestVmPwMgmtPolicy(TestCase):
         self.vm_testpmd = PmdOutput(self.vm_dut)
 
     def start_vm_testpmd(self):
-        eal_param = (
-            '-v '
-            '-m {memsize} '
-            '--file-prefix={file-prefix}').format(**{
-                'file-prefix': 'vmpower1',
-                'memsize': 1024, })
+        eal_param = ("-v " "-m {memsize} " "--file-prefix={file-prefix}").format(
+            **{
+                "file-prefix": "vmpower1",
+                "memsize": 1024,
+            }
+        )
         self.vm_testpmd.start_testpmd(
-            "Default",
-            param='--port-topology=loop',
-            eal_param=eal_param)
+            "Default", param="--port-topology=loop", eal_param=eal_param
+        )
         self.is_pmd_on = True
 
     def set_vm_testpmd(self):
-        cmds = [
-            'set fwd mac',
-            'set promisc all on',
-            'port start all',
-            'start']
+        cmds = ["set fwd mac", "set promisc all on", "port start all", "start"]
         [self.vm_testpmd.execute_cmd(cmd) for cmd in cmds]
 
     def close_vm_testpmd(self):
@@ -447,9 +462,9 @@ class TestVmPwMgmtPolicy(TestCase):
         self.is_pmd_on = False
 
     def query_cpu_freq(self):
-        cmd = ("cat "
-            "/sys/devices/system/cpu/cpu{}/cpufreq/cpuinfo_cur_freq").format(
-            self.check_core)
+        cmd = ("cat " "/sys/devices/system/cpu/cpu{}/cpufreq/cpuinfo_cur_freq").format(
+            self.check_core
+        )
         output = self.d_a_con(cmd)
         self.cur_cpu_freq = 0 if not output else int(output.splitlines()[0])
 
@@ -466,17 +481,17 @@ class TestVmPwMgmtPolicy(TestCase):
         msg = "set timestamp {0}".format(timestamp)
         self.logger.debug(msg)
         date_tool = "date"
-        cmd = ';'.join([
-            "{0}",
-            "{0} -s 0",
-            "{0} -s '{1}'",
-            "hwclock -w"]).format(date_tool, timestamp)
-        self.d_a_con([cmd, '# ', 20])
+        cmd = ";".join(["{0}", "{0} -s 0", "{0} -s '{1}'", "hwclock -w"]).format(
+            date_tool, timestamp
+        )
+        self.d_a_con([cmd, "# ", 20])
         cmd = "{0} '+%H:00'".format(date_tool)
         output = self.d_a_con(cmd)
-        msg = "desired time fails to set" \
-              if output.strip() != timestamp \
-              else "desired time set successful"
+        msg = (
+            "desired time fails to set"
+            if output.strip() != timestamp
+            else "desired time set successful"
+        )
         self.logger.info(msg)
         # get begin time stamp
         pre_time = datetime.now()
@@ -490,52 +505,59 @@ class TestVmPwMgmtPolicy(TestCase):
         cur_time = datetime.now()
         interval = (cur_time - pre_time).seconds
         timestamp = ori_sys_time + timedelta(seconds=interval)
-        FMT = '\'%Y-%m-%d %H:%M:%S\''
+        FMT = "'%Y-%m-%d %H:%M:%S'"
         real_time = timestamp.strftime(FMT)
-        cmd = ';'.join([
-            "{0}",
-            "{0} -s '{1}'",
-            "hwclock -w",
-            "{0}", ]).format(date_tool, real_time)
-        self.d_a_con([cmd, '# ', 20])
+        cmd = ";".join(
+            [
+                "{0}",
+                "{0} -s '{1}'",
+                "hwclock -w",
+                "{0}",
+            ]
+        ).format(date_tool, real_time)
+        self.d_a_con([cmd, "# ", 20])
 
     def preset_core_freq(self):
         info = self.cpu_info.get(self.check_core, {})
-        freq = info.get('scaling_available_frequencies')[-3]
-        cmd = ("cpupower -c all frequency-set -f {} "
-               "> /dev/null 2>&1").format(freq)
+        freq = info.get("scaling_available_frequencies")[-3]
+        cmd = ("cpupower -c all frequency-set -f {} " "> /dev/null 2>&1").format(freq)
         self.d_a_con(cmd)
 
     def get_all_cpu_attrs(self):
-        ''' get all cpus attribute '''
+        """get all cpus attribute"""
         key_values = [
-            'scaling_max_freq',
-            'scaling_available_frequencies',
-            'scaling_min_freq']
-        freq = '/sys/devices/system/cpu/cpu{0}/cpufreq/{1}'.format
+            "scaling_max_freq",
+            "scaling_available_frequencies",
+            "scaling_min_freq",
+        ]
+        freq = "/sys/devices/system/cpu/cpu{0}/cpufreq/{1}".format
         cpu_topos = self.dut.get_all_cores()
         cpu_info = {}
         for cpu_topo in cpu_topos:
-            cpu_id = int(cpu_topo.get('thread'))
+            cpu_id = int(cpu_topo.get("thread"))
             cpu_info[cpu_id] = {
-                'socket': cpu_topo.get('socket'),
-                'core': cpu_topo.get('core')}
+                "socket": cpu_topo.get("socket"),
+                "core": cpu_topo.get("core"),
+            }
 
         for key_value in key_values:
             cmds = []
             for cpu_id in sorted(cpu_info.keys()):
-                cmds.append('cat {0}'.format(freq(cpu_id, key_value)))
-            output = self.d_a_con(';'.join(cmds))
-            freqs = [int(item) for item in output.splitlines()] \
-                if key_value != 'scaling_available_frequencies' else \
-                    [item for item in output.splitlines()]
+                cmds.append("cat {0}".format(freq(cpu_id, key_value)))
+            output = self.d_a_con(";".join(cmds))
+            freqs = (
+                [int(item) for item in output.splitlines()]
+                if key_value != "scaling_available_frequencies"
+                else [item for item in output.splitlines()]
+            )
             for index, cpu_id in enumerate(sorted(cpu_info.keys())):
-                if key_value == 'scaling_available_frequencies':
+                if key_value == "scaling_available_frequencies":
                     cpu_info[cpu_id][key_value] = freqs[index]
-                cpu_info[cpu_id][key_value] = \
-                    sorted([int(item) for item in sorted(freqs[index].split())]) \
-                    if key_value == 'scaling_available_frequencies' else \
-                    freqs[index]
+                cpu_info[cpu_id][key_value] = (
+                    sorted([int(item) for item in sorted(freqs[index].split())])
+                    if key_value == "scaling_available_frequencies"
+                    else freqs[index]
+                )
 
         return cpu_info
 
@@ -559,86 +581,91 @@ class TestVmPwMgmtPolicy(TestCase):
 
     def get_sys_power_driver(self):
         drv_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver"
-        output = self.d_a_con('cat ' + drv_file)
+        output = self.d_a_con("cat " + drv_file)
         if not output:
-            msg = 'unknown power driver'
+            msg = "unknown power driver"
             self.verify(False, msg)
         drv_name = output.splitlines()[0].strip()
         return drv_name
 
     def get_linux_cpu_attrs(self, core_num, name="scaling_setspeed"):
-        freq_path = "/sys/devices/system/cpu/cpu{0}/cpufreq/{1}".format(
-            core_num, name)
+        freq_path = "/sys/devices/system/cpu/cpu{0}/cpufreq/{1}".format(core_num, name)
         output = self.d_a_con("cat %s" % freq_path)
         return self.convert_to_values(output)
 
     def set_single_core_turbo(self, vcpu, status):
-        '''
+        """
         status: enable_turbo | disable_turbo
-        '''
+        """
         dut_core_index = self.vcpu_map[vcpu]
         self.guest_set_vm_turbo_status(vcpu, status)
         return int(dut_core_index)
 
-    def get_expected_turbo_freq(self, core_index, status='disable'):
+    def get_expected_turbo_freq(self, core_index, status="disable"):
         info = self.cpu_info.get(core_index, {})
-        value = info.get('scaling_available_frequencies')
-        expected_freq = value[-2] if status == 'disable' else value[-1]
+        value = info.get("scaling_available_frequencies")
+        expected_freq = value[-2] if status == "disable" else value[-1]
         return expected_freq
 
     def check_dut_core_turbo_enable(self, vcpu):
-        dut_core_index = self.set_single_core_turbo(vcpu, 'enable_turbo')
+        dut_core_index = self.set_single_core_turbo(vcpu, "enable_turbo")
         cur_freq = self.get_linux_cpu_attrs(dut_core_index)
-        expected_freq = self.get_expected_turbo_freq(dut_core_index, 'enable')
+        expected_freq = self.get_expected_turbo_freq(dut_core_index, "enable")
         if cur_freq != expected_freq:
-            msg = ("core <{0}> turbo status: cur frequency is <{1}> "
-                   "not as expected frequency <{2}>").format(
-                        dut_core_index, cur_freq, expected_freq)
+            msg = (
+                "core <{0}> turbo status: cur frequency is <{1}> "
+                "not as expected frequency <{2}>"
+            ).format(dut_core_index, cur_freq, expected_freq)
             raise VerifyFailure(msg)
         self.logger.info(
-            "core <{0}> turbo status set successful".format(dut_core_index))
+            "core <{0}> turbo status set successful".format(dut_core_index)
+        )
 
     def check_dut_core_turbo_disable(self, vcpu):
-        dut_core_index = self.set_single_core_turbo(vcpu, 'disable_turbo')
+        dut_core_index = self.set_single_core_turbo(vcpu, "disable_turbo")
         cur_freq = self.get_linux_cpu_attrs(dut_core_index)
-        expected_freq = self.get_expected_turbo_freq(dut_core_index, 'disable')
+        expected_freq = self.get_expected_turbo_freq(dut_core_index, "disable")
         if cur_freq != expected_freq:
-            msg = ("core <{0}> turbo status: cur frequency is <{1}> "
-                   "not as expected frequency <{2}>").format(
-                        dut_core_index, cur_freq, expected_freq)
+            msg = (
+                "core <{0}> turbo status: cur frequency is <{1}> "
+                "not as expected frequency <{2}>"
+            ).format(dut_core_index, cur_freq, expected_freq)
             raise VerifyFailure(msg)
         self.logger.info(
-            "core <{0}> turbo status disable successful".format(dut_core_index))
+            "core <{0}> turbo status disable successful".format(dut_core_index)
+        )
 
     def get_expected_freq(self, core_index, check_item):
         freqs = {
-            'max': 'scaling_max_freq',
-            'medium': 'scaling_available_frequencies',
-            'min': 'scaling_min_freq'}
+            "max": "scaling_max_freq",
+            "medium": "scaling_available_frequencies",
+            "min": "scaling_min_freq",
+        }
         info = self.cpu_info.get(core_index, {})
         value = info.get(freqs.get(check_item))
-        expected_freq = value if check_item != 'medium' else \
-            sorted(value)[len(value) / 2]
+        expected_freq = (
+            value if check_item != "medium" else sorted(value)[len(value) / 2]
+        )
         return expected_freq
 
     def check_core_freq(self, content):
-        '''
+        """
         check core running frequency is the expected status
         high workload: maximum cpu frequency
         media workload: medium cpu frequency
         low workload: minimum cpu frequency
-        '''
-        check_item = content.get('check')
+        """
+        check_item = content.get("check")
         real_freq = self.cur_cpu_freq
         self.logger.warning(real_freq)
         expected_freq = self.get_expected_freq(self.check_core, check_item)
-        msg = (
-            'core <{0}> freq <{1}> are not '
-            'the expected frequency <{2}>').format(
-                self.check_core, real_freq, expected_freq)
+        msg = ("core <{0}> freq <{1}> are not " "the expected frequency <{2}>").format(
+            self.check_core, real_freq, expected_freq
+        )
         self.verify(real_freq == expected_freq, msg)
-        msg = 'core <{0}> are running on the expected frequency <{1}>'.format(
-            self.check_core, expected_freq)
+        msg = "core <{0}> are running on the expected frequency <{1}>".format(
+            self.check_core, expected_freq
+        )
         self.logger.info(msg)
 
     def run_test_pre(self, policy_name):
@@ -661,7 +688,7 @@ class TestVmPwMgmtPolicy(TestCase):
     def run_guest_pre(self, content):
         self.preset_core_freq()
         # boot up binary processes
-        self.start_guest_mgr(content.get('option', ''))
+        self.start_guest_mgr(content.get("option", ""))
         # set binary process command
         self.guest_send_policy()
 
@@ -670,20 +697,20 @@ class TestVmPwMgmtPolicy(TestCase):
         self.close_guest_mgr()
 
     def traffic_policy(self, name, content):
-        expected_pps = content['pps']
-        test_pps = random.randint(expected_pps[0], expected_pps[1] - 1) \
-            if isinstance(expected_pps, list) \
+        expected_pps = content["pps"]
+        test_pps = (
+            random.randint(expected_pps[0], expected_pps[1] - 1)
+            if isinstance(expected_pps, list)
             else expected_pps
+        )
         msg = "run traffic with pps {0}".format(test_pps)
         self.logger.info(msg)
-        info = {
-            'stm_types': ['UDP_1'],
-            'pps': expected_pps}
+        info = {"stm_types": ["UDP_1"], "pps": expected_pps}
         # run traffic
         self.run_traffic(info)
 
     def run_policy(self, name, content):
-        """ Measure cpu frequency fluctuate with work load """
+        """Measure cpu frequency fluctuate with work load"""
         except_content = None
         try:
             self.run_guest_pre(content)
@@ -708,7 +735,7 @@ class TestVmPwMgmtPolicy(TestCase):
             raise VerifyFailure(except_content)
 
     def get_policy_test_content(self, policy_name, vm_name, edge=False):
-        '''
+        """
         -n or --vm-name
            sets the name of the vm to be used by the host OS.
         -b or --busy-hours
@@ -728,52 +755,64 @@ class TestVmPwMgmtPolicy(TestCase):
            b. x,y  e.g. --quiet-hours=3,4
            c. x-y  e.g. --busy-hours=9-12
            d. combination of above (e.g. --busy-hours=4,5-7,9)
-        '''
-        policy_opt = '--policy={policy}'  # four types
-        vm_opt = '--vm-name={vm}'
-        vcpu_opt = '--vcpu-list={vcpus}'  # full cores/one core/multiple cores
-        time_b_opt = '--busy-hours={hours}'  # all day/one hour/mixed range
-        time_q_opt = '--quiet-hours={hours}'  # all day/one hour/mixed range
+        """
+        policy_opt = "--policy={policy}"  # four types
+        vm_opt = "--vm-name={vm}"
+        vcpu_opt = "--vcpu-list={vcpus}"  # full cores/one core/multiple cores
+        time_b_opt = "--busy-hours={hours}"  # all day/one hour/mixed range
+        time_q_opt = "--quiet-hours={hours}"  # all day/one hour/mixed range
         # common option used by all policy
         opt_fmt = [vm_opt, policy_opt, vcpu_opt]
         # core option
         max_cores = len(self.vcpu_map)
         max_cores_list = ",".join([str(num) for num in range(max_cores)])
-        cores_range = [max_cores_list] if edge else ['0', max_cores_list]
+        cores_range = [max_cores_list] if edge else ["0", max_cores_list]
         # guest mgr option format configuration
         guest_opt = {
-            'opt_fmt': opt_fmt,
-            'option': {
-                'vm': [vm_name],
-                'vcpus': cores_range,
-            }
+            "opt_fmt": opt_fmt,
+            "option": {
+                "vm": [vm_name],
+                "vcpus": cores_range,
+            },
         }
         # testing content
         policy_configs = {
             # traffic policy option
             self.TRAFFIC: [
                 # low
-                {'sys_hours': ['08:00', '10:00'],
-                 'pps': 97000,  # below 1800000,
-                 'check': 'min'},
+                {
+                    "sys_hours": ["08:00", "10:00"],
+                    "pps": 97000,  # below 1800000,
+                    "check": "min",
+                },
             ],
             # time policy option
             self.TIME: [
                 # quiet hours
-                {'cmd': {
-                 'opt_fmt': [time_q_opt],
-                 'option':{
-                     # use 23:00 as default time to run test
-                     'hours': ['23'] if edge else ['23', '0-23', '4,5-7,23']}},
-                 'sys_hours': ['23:00'],
-                 'check': 'min'},
+                {
+                    "cmd": {
+                        "opt_fmt": [time_q_opt],
+                        "option": {
+                            # use 23:00 as default time to run test
+                            "hours": ["23"]
+                            if edge
+                            else ["23", "0-23", "4,5-7,23"]
+                        },
+                    },
+                    "sys_hours": ["23:00"],
+                    "check": "min",
+                },
                 # busy hours
-                {'cmd': {
-                 'opt_fmt': [time_b_opt],
-                 'option':{
-                     'hours': ['23'] if edge else ['23', '0-23', '4,5-7,23']}},
-                    'sys_hours': ['23:00'],
-                    'check': 'max'},
+                {
+                    "cmd": {
+                        "opt_fmt": [time_b_opt],
+                        "option": {
+                            "hours": ["23"] if edge else ["23", "0-23", "4,5-7,23"]
+                        },
+                    },
+                    "sys_hours": ["23:00"],
+                    "check": "max",
+                },
             ],
         }
 
@@ -782,28 +821,29 @@ class TestVmPwMgmtPolicy(TestCase):
         test_content = []
         for config in select_config:
             _common_config = deepcopy(guest_opt)
-            if 'cmd' in config:
-                option_cfg = config.get('cmd')
-                _common_config['opt_fmt'] += option_cfg.get('opt_fmt', [])
-                _common_config['option'].update(option_cfg['option'])
-                config.pop('cmd')
-            values = list(_common_config['option'].values())
-            keys = list(_common_config['option'].keys())
-            opt_fmt = _common_config['opt_fmt']
+            if "cmd" in config:
+                option_cfg = config.get("cmd")
+                _common_config["opt_fmt"] += option_cfg.get("opt_fmt", [])
+                _common_config["option"].update(option_cfg["option"])
+                config.pop("cmd")
+            values = list(_common_config["option"].values())
+            keys = list(_common_config["option"].keys())
+            opt_fmt = _common_config["opt_fmt"]
             for item in product(*values):
                 _options = dict(list(zip(keys, item)))
-                _options['policy'] = policy_name
+                _options["policy"] = policy_name
                 _opt_fmt = " ".join(opt_fmt)
                 _config = deepcopy(config)
-                _config['option'] = _opt_fmt.format(**_options)
-                _config['vcpus'] = _options['vcpus']
+                _config["option"] = _opt_fmt.format(**_options)
+                _config["vcpus"] = _options["vcpus"]
                 test_content.append(_config)
 
         return test_content
 
     def verify_policy(self, policy_name):
         test_contents = self.get_policy_test_content(
-            policy_name, self.vm_name, edge=not self.full_test)
+            policy_name, self.vm_name, edge=not self.full_test
+        )
         msg = "begin test policy <{}> ...".format(policy_name)
         self.logger.info(msg)
         except_content = None
@@ -812,8 +852,7 @@ class TestVmPwMgmtPolicy(TestCase):
             for content in test_contents:
                 self.logger.debug(pformat(content))
                 # set system time
-                pre_time, ori_sys_time = \
-                    self.set_desired_time(content.get('sys_hours'))
+                pre_time, ori_sys_time = self.set_desired_time(content.get("sys_hours"))
                 # run policy testing
                 self.run_policy(policy_name, content)
                 # restore system time
@@ -834,13 +873,13 @@ class TestVmPwMgmtPolicy(TestCase):
         msg = "begin test turbo <{}> ...".format(status)
         self.logger.info(msg)
         except_content = None
-        test_content = self.get_policy_test_content(
-            self.TIME, self.vm_name, edge=True)[0]
+        test_content = self.get_policy_test_content(self.TIME, self.vm_name, edge=True)[
+            0
+        ]
         try:
-            self.run_test_pre('turbo')
-            self.start_guest_mgr(test_content.get('option'))
-            check_func = getattr(
-                self, 'check_dut_core_turbo_{}'.format(status))
+            self.run_test_pre("turbo")
+            self.start_guest_mgr(test_content.get("option"))
+            check_func = getattr(self, "check_dut_core_turbo_{}".format(status))
             check_func(0)
         except Exception as e:
             self.logger.error(traceback.format_exc())
@@ -855,18 +894,19 @@ class TestVmPwMgmtPolicy(TestCase):
         self.logger.info(msg)
 
     def verify_power_driver(self):
-        expected_drv = 'acpi-cpufreq'
+        expected_drv = "acpi-cpufreq"
         power_drv = self.get_sys_power_driver()
         msg = "{0} should work with {1} driver on DUT".format(
-            self.suite_name, expected_drv)
+            self.suite_name, expected_drv
+        )
         self.verify(power_drv == expected_drv, msg)
 
     def verify_cpupower_tool(self):
-        name = 'cpupower'
+        name = "cpupower"
         cmd = "whereis {} > /dev/null 2>&1; echo $?".format(name)
         output = self.d_a_con(cmd)
         status = True if output and output.strip() == "0" else False
-        msg = '<{}> tool have not installed on DUT'.format(name)
+        msg = "<{}> tool have not installed on DUT".format(name)
         self.verify(status, msg)
 
     def preset_test_environment(self):
@@ -879,8 +919,8 @@ class TestVmPwMgmtPolicy(TestCase):
         self.cur_drv = self.bind_ports_to_sys()
         self.used_port = 0
         # modprobe msr module to let the application can get the CPU HW info
-        self.d_a_con('modprobe msr')
-        self.d_a_con('cpupower frequency-set -g userspace > /dev/null 2>&1')
+        self.d_a_con("modprobe msr")
+        self.d_a_con("cpupower frequency-set -g userspace > /dev/null 2>&1")
         # boot up vm
         self.start_vm()
         # init binary/tools
@@ -893,6 +933,7 @@ class TestVmPwMgmtPolicy(TestCase):
         # used to control testing range. When run with full test, cover all
         # possible command line options combination, it will be long time.
         self.full_test = False
+
     #
     # Test cases.
     #
@@ -924,7 +965,7 @@ class TestVmPwMgmtPolicy(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect('systemctl restart chronyd', '# ')
+        self.dut.send_expect("systemctl restart chronyd", "# ")
         self.vm_dut.kill_all()
         self.dut.kill_all()
 
@@ -932,13 +973,13 @@ class TestVmPwMgmtPolicy(TestCase):
         """
         verify turbo enable command
         """
-        self.verify_turbo_command('enable')
+        self.verify_turbo_command("enable")
 
     def test_perf_turbo_disable(self):
         """
         verify turbo disable command
         """
-        self.verify_turbo_command('disable')
+        self.verify_turbo_command("disable")
 
     def test_perf_policy_traffic(self):
         """

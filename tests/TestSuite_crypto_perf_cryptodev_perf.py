@@ -37,7 +37,6 @@ from framework.test_case import TestCase
 
 
 class PerfTestsCryptodev(TestCase):
-
     def set_up_all(self):
         self._perf_result = {}
         self._default_crypto_perf_opts = {
@@ -68,23 +67,37 @@ class PerfTestsCryptodev(TestCase):
             "aead-iv-sz": None,
             "aead-aad-sz": None,
             "digest-sz": None,
-            "csv-friendly": None
+            "csv-friendly": None,
         }
-        self._app_path = self.dut.apps_name['test-crypto-perf']
-        page_size = self.dut.send_expect("awk '/Hugepagesize/ {print $2}' /proc/meminfo", "# ")
+        self._app_path = self.dut.apps_name["test-crypto-perf"]
+        page_size = self.dut.send_expect(
+            "awk '/Hugepagesize/ {print $2}' /proc/meminfo", "# "
+        )
         if int(page_size) == 1024 * 1024:
-            self.dut.send_expect('echo 0 > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (page_size), '# ', 5)
-            self.dut.send_expect('echo 16 > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (page_size), '# ', 5)
+            self.dut.send_expect(
+                "echo 0 > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages"
+                % (page_size),
+                "# ",
+                5,
+            )
+            self.dut.send_expect(
+                "echo 16 > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages"
+                % (page_size),
+                "# ",
+                5,
+            )
 
         cc.bind_qat_device(self, "vfio-pci")
-        src_files = ['dep/test_aes_cbc.data', 'dep/test_aes_gcm.data']
-        self.dut_file_dir = '/tmp'
+        src_files = ["dep/test_aes_cbc.data", "dep/test_aes_gcm.data"]
+        self.dut_file_dir = "/tmp"
         for file in src_files:
             self.dut.session.copy_file_to(file, self.dut_file_dir)
 
     def tear_down_all(self):
         if self._perf_result:
-            with open(self.logger.log_path + "/" + "perf_cryptodev_result.json", "a") as fv:
+            with open(
+                self.logger.log_path + "/" + "perf_cryptodev_result.json", "a"
+            ) as fv:
                 json.dump(self._perf_result, fv, indent=4)
 
     def set_up(self):
@@ -194,8 +207,8 @@ class PerfTestsCryptodev(TestCase):
         if cc.is_test_skip(self):
             return
 
-        cores = ','.join(self.dut.get_core_list("1S/2C/1T"))
-        config = {'l': cores}
+        cores = ",".join(self.dut.get_core_list("1S/2C/1T"))
+        config = {"l": cores}
         devices = self._get_crypto_device(1)
         if not devices:
             self.logger.info("can not get device or unsupported, skip.")
@@ -205,21 +218,25 @@ class PerfTestsCryptodev(TestCase):
         eal_opt_str = cc.get_eal_opt_str(self, config)
         crypto_func_opt_str = self._get_crypto_perf_opt_str()
 
-        cmd_str = cc.get_dpdk_app_cmd_str(self._app_path,
-                                          eal_opt_str,
-                                          crypto_func_opt_str)
+        cmd_str = cc.get_dpdk_app_cmd_str(
+            self._app_path, eal_opt_str, crypto_func_opt_str
+        )
         try:
-            self.dut.send_expect(cmd_str + ">%s/%s.txt" % (
-                self.dut_file_dir, self.running_case), "#", 600)
+            self.dut.send_expect(
+                cmd_str + ">%s/%s.txt" % (self.dut_file_dir, self.running_case),
+                "#",
+                600,
+            )
         except Exception as ex:
             self.logger.error(ex)
             raise ex
 
-        out = self.dut.send_command("cat %s/%s.txt" % (
-            self.dut_file_dir, self.running_case), 30)
+        out = self.dut.send_command(
+            "cat %s/%s.txt" % (self.dut_file_dir, self.running_case), 30
+        )
 
-        self.verify('Error' not in out, "Test function failed")
-        self.verify('failed' not in out, "Test function failed")
+        self.verify("Error" not in out, "Test function failed")
+        self.verify("failed" not in out, "Test function failed")
 
     def _run_crypto_perf(self):
         if cc.is_test_skip(self):
@@ -234,9 +251,9 @@ class PerfTestsCryptodev(TestCase):
         eal_opt_str = cc.get_eal_opt_str(self, devices)
         crypto_perf_opt_str = self._get_crypto_perf_opt_str()
 
-        cmd_str = cc.get_dpdk_app_cmd_str(self._app_path,
-                                          eal_opt_str,
-                                          crypto_perf_opt_str)
+        cmd_str = cc.get_dpdk_app_cmd_str(
+            self._app_path, eal_opt_str, crypto_perf_opt_str
+        )
         try:
             out = self.dut.send_expect(cmd_str, "#", 600)
         except Exception as ex:
@@ -248,8 +265,9 @@ class PerfTestsCryptodev(TestCase):
         return results
 
     def _get_crypto_perf_opt_str(self, override_crypto_perf_opts={}):
-        return cc.get_opt_str(self, self._default_crypto_perf_opts,
-                              override_crypto_perf_opts)
+        return cc.get_opt_str(
+            self, self._default_crypto_perf_opts, override_crypto_perf_opts
+        )
 
     def _parse_output(self, output):
         try:
@@ -264,12 +282,16 @@ class PerfTestsCryptodev(TestCase):
             data_line = line_index - 2
 
             results = []
-            pattern = re.compile(r'\s+')
+            pattern = re.compile(r"\s+")
             for line in lines[data_line:-1]:
                 print(line)
                 result = {}
                 result_list = pattern.split(line.strip(" "))
-                if len(result_list) != 10 or result_list[0] == "lcore" or not result_list[0]:
+                if (
+                    len(result_list) != 10
+                    or result_list[0] == "lcore"
+                    or not result_list[0]
+                ):
                     continue
                 result["lcore_id"] = int(result_list[0])
                 result["buf_size"] = int(result_list[1])
@@ -294,27 +316,31 @@ class PerfTestsCryptodev(TestCase):
         for result in results:
             buf_size = result["buf_size"]
             if buf_size in stats_results:
-                stats_results[buf_size]["lcore_id"] = \
-                      str(stats_results[buf_size]["lcore_id"]) \
-                      + ":" + str(result["lcore_id"])
-                stats_results[buf_size]["enqueue"] = \
-                    stats_results[buf_size]["enqueue"] + \
-                    result["enqueue"]
-                stats_results[buf_size]["enqueue_failures"] = \
-                    stats_results[buf_size]["enqueue_failures"] + \
-                    result["enqueue_failures"]
-                stats_results[buf_size]["dequeue_failures"] = \
-                    stats_results[buf_size]["dequeue_failures"] + \
-                    result["dequeue_failures"]
-                stats_results[buf_size]["mops"] = \
-                    stats_results[buf_size]["mops"] + \
-                    result["mops"]
-                stats_results[buf_size]["gbps"] = \
-                    stats_results[buf_size]["gbps"] + \
-                    result["gbps"]
-                stats_results[buf_size]["cycle_buf"] = \
-                    stats_results[buf_size]["cycle_buf"] + \
-                    result["cycle_buf"]
+                stats_results[buf_size]["lcore_id"] = (
+                    str(stats_results[buf_size]["lcore_id"])
+                    + ":"
+                    + str(result["lcore_id"])
+                )
+                stats_results[buf_size]["enqueue"] = (
+                    stats_results[buf_size]["enqueue"] + result["enqueue"]
+                )
+                stats_results[buf_size]["enqueue_failures"] = (
+                    stats_results[buf_size]["enqueue_failures"]
+                    + result["enqueue_failures"]
+                )
+                stats_results[buf_size]["dequeue_failures"] = (
+                    stats_results[buf_size]["dequeue_failures"]
+                    + result["dequeue_failures"]
+                )
+                stats_results[buf_size]["mops"] = (
+                    stats_results[buf_size]["mops"] + result["mops"]
+                )
+                stats_results[buf_size]["gbps"] = (
+                    stats_results[buf_size]["gbps"] + result["gbps"]
+                )
+                stats_results[buf_size]["cycle_buf"] = (
+                    stats_results[buf_size]["cycle_buf"] + result["cycle_buf"]
+                )
                 stats_results[buf_size]["nr"] = stats_results[buf_size]["nr"] + 1
             else:
                 stats_results[buf_size] = result
@@ -323,20 +349,22 @@ class PerfTestsCryptodev(TestCase):
         return stats_results
 
     def _get_core_and_thread_num(self):
-        cpu_info ={}
+        cpu_info = {}
         out = self.dut.send_expect("lscpu", "#")
-        for each_line in out.split('\n'):
-            if each_line.find(':') == -1:
+        for each_line in out.split("\n"):
+            if each_line.find(":") == -1:
                 continue
-            key, value = each_line.split(':')
+            key, value = each_line.split(":")
             cpu_info[key] = value.strip()
         core, thread = 0, 0
         lcores = self.get_case_cfg()["l"].split(",")
         for lcore in lcores[1:]:
-            if int(lcore.strip()) < int(cpu_info['Core(s) per socket']) * int(cpu_info['Socket(s)']):
+            if int(lcore.strip()) < int(cpu_info["Core(s) per socket"]) * int(
+                cpu_info["Socket(s)"]
+            ):
                 core += 1
                 thread += 1
-            elif int(lcore) < int(cpu_info['CPU(s)']):
+            elif int(lcore) < int(cpu_info["CPU(s)"]):
                 thread += 1
         return core, thread
 
@@ -346,7 +374,7 @@ class PerfTestsCryptodev(TestCase):
             dev = "crypto_aesni_mb"
         elif self.get_case_cfg()["devtype"] == "crypto_qat":
             w = cc.get_qat_devices(self, cpm_num=1, num=num)
-            device["a"] = ' -a '.join(w)
+            device["a"] = " -a ".join(w)
             device["vdev"] = None
         elif self.get_case_cfg()["devtype"] == "crypto_openssl":
             dev = "crypto_openssl"
@@ -365,11 +393,12 @@ class PerfTestsCryptodev(TestCase):
                 return {}
             vdev_list = []
             for i in range(num):
-                vdev = "{}{},worker={}_qat_sym,worker={}_qat_sym,worker={}_qat_sym,mode=round-robin".format(dev,
-                        i, w[i*3], w[i*3 + 1], w[i*3 + 2])
+                vdev = "{}{},worker={}_qat_sym,worker={}_qat_sym,worker={}_qat_sym,mode=round-robin".format(
+                    dev, i, w[i * 3], w[i * 3 + 1], w[i * 3 + 2]
+                )
                 vdev_list.append(vdev)
-            device["a"] = ' -a '.join(w)
-            device["vdev"] = ' --vdev '.join(vdev_list)
+            device["a"] = " -a ".join(w)
+            device["vdev"] = " --vdev ".join(vdev_list)
         else:
             return {}
 
@@ -379,7 +408,7 @@ class PerfTestsCryptodev(TestCase):
                 vdev = "{}{}".format(dev, i)
                 vdev_list.append(vdev)
             device["a"] = "0000:00:00.0"
-            device["vdev"] = ' --vdev '.join(vdev_list)
+            device["vdev"] = " --vdev ".join(vdev_list)
 
         return device
 
@@ -391,28 +420,37 @@ class PerfTestsCryptodev(TestCase):
         stats_results = self._stat_results_by_buf_size(results)
         json_result = []
 
-        framesizes = self.get_case_cfg()['buffer-sz'].split(',')
+        framesizes = self.get_case_cfg()["buffer-sz"].split(",")
         running_case = self.running_case
         dut = self.dut.crb["IP"]
         dut_index = self._suite_result.internals.index(dut)
-        target_index = self._suite_result.internals[dut_index+1].index(self.target)
-        suite_index = self._suite_result.internals[dut_index+1][target_index+2].index(self.suite_name)
-        case_index = self._suite_result.internals[dut_index+1][target_index+2][suite_index+1].index(running_case)
-        self._suite_result.internals[dut_index+1][target_index+2][suite_index+1].pop(case_index+1)
-        self._suite_result.internals[dut_index+1][target_index+2][suite_index+1].pop(case_index)
+        target_index = self._suite_result.internals[dut_index + 1].index(self.target)
+        suite_index = self._suite_result.internals[dut_index + 1][
+            target_index + 2
+        ].index(self.suite_name)
+        case_index = self._suite_result.internals[dut_index + 1][target_index + 2][
+            suite_index + 1
+        ].index(running_case)
+        self._suite_result.internals[dut_index + 1][target_index + 2][
+            suite_index + 1
+        ].pop(case_index + 1)
+        self._suite_result.internals[dut_index + 1][target_index + 2][
+            suite_index + 1
+        ].pop(case_index)
 
         for buf_size in framesizes:
             buf_size = int(buf_size)
             status = "PASS"
-            self._suite_result.test_case = '_'.join([running_case,
-                str(buf_size), "{}C{}T".format(self.c_num, self.t_num)])
+            self._suite_result.test_case = "_".join(
+                [running_case, str(buf_size), "{}C{}T".format(self.c_num, self.t_num)]
+            )
             if buf_size in stats_results.keys():
                 try:
                     values = stats_results[buf_size]
                     perf_info = self.format_json(buf_size, values, status)
                     json_result.append(perf_info)
 
-                    if perf_info['status'] == "PASS":
+                    if perf_info["status"] == "PASS":
                         self._suite_result.test_case_passed()
                     else:
                         status = "FAIL"
@@ -432,72 +470,59 @@ class PerfTestsCryptodev(TestCase):
     def format_json(self, buf_size, values, status="PASS"):
         status, delta = "PASS", 0
         # delta, status
-        if 'accepted_tolerance' in self.get_suite_cfg():
-            self.accepted_gap = self.get_suite_cfg()['accepted_tolerance']
-            if self.running_case in self.get_suite_cfg()['expected_throughput']:
-                self.expected_throughput =\
-                        self.get_suite_cfg()['expected_throughput'][self.running_case][buf_size]
-                delta = (values["gbps"] - self.expected_throughput)/self.expected_throughput
+        if "accepted_tolerance" in self.get_suite_cfg():
+            self.accepted_gap = self.get_suite_cfg()["accepted_tolerance"]
+            if self.running_case in self.get_suite_cfg()["expected_throughput"]:
+                self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+                    self.running_case
+                ][buf_size]
+                delta = (
+                    values["gbps"] - self.expected_throughput
+                ) / self.expected_throughput
                 delta = round(delta, 4)
             if abs(delta) > self.accepted_gap:
-                self.logger.warning("Failed, buf_size: {}, delta: {}, > accepted tolerance {}"\
-                        .format(buf_size, delta, self.accepted_gap))
+                self.logger.warning(
+                    "Failed, buf_size: {}, delta: {}, > accepted tolerance {}".format(
+                        buf_size, delta, self.accepted_gap
+                    )
+                )
                 status = "FAIL"
 
-        perf_info={
-                "status": status,
-                "performance":
-                [
-                    {
-                        "name": "throughput",
-                        "value": values["gbps"],
-                        "unit": "Gbps",
-                        "delta": delta
-                    },
-                    {
-                        "name":"failed_enq",
-                        "unit": "ops",
-                        "value": values["enqueue_failures"]
-                    },
-                    {
-                        "name":"failed_deq",
-                        "unit": "ops",
-                        "value": values["dequeue_failures"]
-                    },
-                    {
-                        "name":"throughput_mops",
-                        "unit": "Mops",
-                        "value": values["mops"]
-                    },
-                    {
-                        "name":"cycle_buf",
-                        "unit": "Cycles",
-                        "value": values["cycle_buf"]/values["nr"]
-                    },
-                ],
-                "parameters":
-                [
-                    {
-                        "name": "core_num/thread_num",
-                        "unit": "C/T",
-                        "value": "{}/{}".format(self.c_num, self.t_num)
-                    },
-                    {
-                        "name":"frame_size",
-                        "unit": "bytes",
-                        "value": buf_size
-                    },
-                    {
-                        "name":"burst_size",
-                        "unit": "bytes",
-                        "value": values["burst_size"]
-                    },
-                    {
-                        "name":"total_ops",
-                        "unit": "ops",
-                        "value": values["enqueue"]
-                    },
-                    ]
-                }
+        perf_info = {
+            "status": status,
+            "performance": [
+                {
+                    "name": "throughput",
+                    "value": values["gbps"],
+                    "unit": "Gbps",
+                    "delta": delta,
+                },
+                {
+                    "name": "failed_enq",
+                    "unit": "ops",
+                    "value": values["enqueue_failures"],
+                },
+                {
+                    "name": "failed_deq",
+                    "unit": "ops",
+                    "value": values["dequeue_failures"],
+                },
+                {"name": "throughput_mops", "unit": "Mops", "value": values["mops"]},
+                {
+                    "name": "cycle_buf",
+                    "unit": "Cycles",
+                    "value": values["cycle_buf"] / values["nr"],
+                },
+            ],
+            "parameters": [
+                {
+                    "name": "core_num/thread_num",
+                    "unit": "C/T",
+                    "value": "{}/{}".format(self.c_num, self.t_num),
+                },
+                {"name": "frame_size", "unit": "bytes", "value": buf_size},
+                {"name": "burst_size", "unit": "bytes", "value": values["burst_size"]},
+                {"name": "total_ops", "unit": "ops", "value": values["enqueue"]},
+            ],
+        }
         return perf_info
-

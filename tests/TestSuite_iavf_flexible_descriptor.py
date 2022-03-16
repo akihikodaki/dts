@@ -40,7 +40,12 @@ from .flexible_common import FlexibleRxdBase
 
 
 class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
-    supported_nic = ['columbiaville_100g', 'columbiaville_25g', 'columbiaville_25gx2', 'foxville']
+    supported_nic = [
+        "columbiaville_100g",
+        "columbiaville_25g",
+        "columbiaville_25gx2",
+        "foxville",
+    ]
 
     def preset_compilation(self):
         """
@@ -58,7 +63,7 @@ class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
 
     def restore_compilation(self):
         """
-         Resume editing operation.
+        Resume editing operation.
         """
         cmds = [
             "cd " + self.dut.base_dir,
@@ -73,31 +78,35 @@ class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
         # vf relevant content
         dut_index = 0
         used_dut_port = self.dut_ports[dut_index]
-        self.dut.send_expect('modprobe vfio-pci', '#')
+        self.dut.send_expect("modprobe vfio-pci", "#")
         # bind pf to kernel
         for port in self.dut_ports:
-            netdev = self.dut.ports_info[port]['port']
+            netdev = self.dut.ports_info[port]["port"]
             netdev.bind_driver(driver=self.kdriver)
         # set vf assign method and vf driver
-        vf_driver = 'vfio-pci'
-        self.pf0_intf = self.dut.ports_info[self.dut_ports[dut_index]]['intf']
+        vf_driver = "vfio-pci"
+        self.pf0_intf = self.dut.ports_info[self.dut_ports[dut_index]]["intf"]
         # get priv-flags default stats
-        if self.nic.startswith('columbiaville'):
-            self.flag = 'vf-vlan-pruning'
+        if self.nic.startswith("columbiaville"):
+            self.flag = "vf-vlan-pruning"
         else:
-            self.flag = 'vf-vlan-prune-disable'
+            self.flag = "vf-vlan-prune-disable"
         self.default_stats = self.dut.get_priv_flags_state(self.pf0_intf, self.flag)
-        if self.nic.startswith('columbiaville') and self.default_stats:
-            self.dut.send_expect('ethtool --set-priv-flags %s %s off' %(self.pf0_intf, self.flag),'# ')
+        if self.nic.startswith("columbiaville") and self.default_stats:
+            self.dut.send_expect(
+                "ethtool --set-priv-flags %s %s off" % (self.pf0_intf, self.flag), "# "
+            )
         else:
-            self.dut.send_expect('ethtool --set-priv-flags %s %s on' %(self.pf0_intf, self.flag),'# ')
+            self.dut.send_expect(
+                "ethtool --set-priv-flags %s %s on" % (self.pf0_intf, self.flag), "# "
+            )
         # generate 2 VFs on PF
-        self.dut.generate_sriov_vfs_by_port(
-            used_dut_port, 1, driver=self.kdriver)
+        self.dut.generate_sriov_vfs_by_port(used_dut_port, 1, driver=self.kdriver)
         vf_mac = "00:11:22:33:44:55"
         self.dut.send_expect(
-            'ip link set {} vf 0 mac {}'.format(self.pf0_intf, vf_mac), '#')
-        sriov_vf0 = self.dut.ports_info[used_dut_port]['vfs_port'][0]
+            "ip link set {} vf 0 mac {}".format(self.pf0_intf, vf_mac), "#"
+        )
+        sriov_vf0 = self.dut.ports_info[used_dut_port]["vfs_port"][0]
         sriov_vf0.bind_driver(vf_driver)
         return sriov_vf0, vf_mac
 
@@ -105,7 +114,7 @@ class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
         try:
             port_id = 0
             self.dut.destroy_sriov_vfs_by_port(port_id)
-            port_obj = self.dut.ports_info[port_id]['port']
+            port_obj = self.dut.ports_info[port_id]["port"]
             port_obj.bind_driver(self.drivername)
         except Exception as e:
             self.logger.info(traceback.format_exc())
@@ -128,7 +137,11 @@ class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
         self.destroy_vf()
         self.restore_compilation()
         if self.default_stats:
-            self.dut.send_expect('ethtool --set-priv-flags %s %s %s' % (self.pf0_intf, self.flag, self.default_stats), '# ')
+            self.dut.send_expect(
+                "ethtool --set-priv-flags %s %s %s"
+                % (self.pf0_intf, self.flag, self.default_stats),
+                "# ",
+            )
 
     def set_up(self):
         """
@@ -144,77 +157,77 @@ class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
         time.sleep(2)
         self.dut.kill_all()
 
-    @skip_unsupported_pkg('os default')
+    @skip_unsupported_pkg("os default")
     def test_check_single_VLAN_fields_in_RXD_8021Q(self):
         """
         Check single VLAN fields in RXD (802.1Q)
         """
         self.check_single_VLAN_fields_in_RXD_8021Q()
 
-    @skip_unsupported_pkg('os default')
+    @skip_unsupported_pkg("os default")
     def test_check_single_VLAN_fields_in_RXD_8021ad(self):
         """
         Check single VLAN fields in RXD (802.1ad)
         """
         self.check_single_VLAN_fields_in_RXD_8021ad()
 
-    @skip_unsupported_pkg('os default')
+    @skip_unsupported_pkg("os default")
     def test_check_double_VLAN_fields_in_RXD_8021Q_1_VLAN_tag(self):
         """
         Check double VLAN fields in RXD (802.1Q) only 1 VLAN tag
         """
         self.check_double_VLAN_fields_in_RXD_8021Q_1_VLAN_tag()
 
-    @skip_unsupported_pkg('os default')
+    @skip_unsupported_pkg("os default")
     def test_check_double_VLAN_fields_in_RXD_8021Q_2_VLAN_tag(self):
         """
         Check double VLAN fields in RXD (802.1Q) 2 VLAN tags
         """
         self.check_double_VLAN_fields_in_RXD_8021Q_2_VLAN_tag()
 
-    @skip_unsupported_pkg('os default')
+    @skip_unsupported_pkg("os default")
     def test_check_double_VLAN_fields_in_RXD_8021ad(self):
         """
         Check double VLAN fields in RXD (802.1ad)
         """
         self.check_double_VLAN_fields_in_RXD_8021ad()
 
-    @skip_unsupported_pkg('os default')
+    @skip_unsupported_pkg("os default")
     def test_check_IPv4_fields_in_RXD(self):
         """
         Check IPv4 fields in RXD
         """
         self.check_IPv4_fields_in_RXD()
 
-    @skip_unsupported_pkg('os default')
+    @skip_unsupported_pkg("os default")
     def test_check_IPv6_fields_in_RXD(self):
         """
         Check IPv6 fields in RXD
         """
         self.check_IPv6_fields_in_RXD()
 
-    @skip_unsupported_pkg('os default')
+    @skip_unsupported_pkg("os default")
     def test_check_IPv6_flow_field_in_RXD(self):
         """
         Check IPv6 flow field in RXD
         """
         self.check_IPv6_flow_field_in_RXD()
 
-    @skip_unsupported_pkg('os default')
+    @skip_unsupported_pkg("os default")
     def test_check_TCP_fields_in_IPv4_in_RXD(self):
         """
         Check TCP fields in IPv4 in RXD
         """
         self.check_TCP_fields_in_IPv4_in_RXD()
 
-    @skip_unsupported_pkg('os default')
+    @skip_unsupported_pkg("os default")
     def test_check_TCP_fields_in_IPv6_in_RXD(self):
         """
         Check TCP fields in IPv6 in RXD
         """
         self.check_TCP_fields_in_IPv6_in_RXD()
 
-    @skip_unsupported_pkg('os default')
+    @skip_unsupported_pkg("os default")
     def test_check_IPv4_IPv6_TCP_fields_in_RXD_on_specific_queues(self):
         """
         Check IPv4, IPv6, TCP fields in RXD on specific queues

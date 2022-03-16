@@ -54,7 +54,6 @@ MAX_VLAN = 4095
 
 
 class TestVlanEthertypeConfig(TestCase):
-
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -91,18 +90,24 @@ class TestVlanEthertypeConfig(TestCase):
     def start_tcpdump(self, rxItf):
 
         self.tester.alt_session.send_expect(
-            "rm -rf /tmp/getPkgByTcpdump_%s.cap" % rxItf, "#")
+            "rm -rf /tmp/getPkgByTcpdump_%s.cap" % rxItf, "#"
+        )
         self.tester.alt_session.send_expect(
-            "tcpdump -i %s -w /tmp/getPkgByTcpdump_%s.cap" % (rxItf, rxItf), "listening on")
+            "tcpdump -i %s -w /tmp/getPkgByTcpdump_%s.cap" % (rxItf, rxItf),
+            "listening on",
+        )
 
     def get_tcpdump_packet(self, rxItf):
         recv_pattern = self.tester.alt_session.send_expect("^C", "#")
         fmt = '1/1 "%02x"'
         out = self.tester.send_expect(
-            "hexdump -ve '%s' '/tmp/getPkgByTcpdump_%s.cap'" % (fmt, rxItf), "# ")
+            "hexdump -ve '%s' '/tmp/getPkgByTcpdump_%s.cap'" % (fmt, rxItf), "# "
+        )
         return out
 
-    def vlan_send_packet(self, outer_vid, outer_tpid=0x8100, inner_vid=-1, inner_tpid=-1):
+    def vlan_send_packet(
+        self, outer_vid, outer_tpid=0x8100, inner_vid=-1, inner_tpid=-1
+    ):
         """
         if vid is -1, it means send pakcage not include vlan id.
         """
@@ -125,24 +130,35 @@ class TestVlanEthertypeConfig(TestCase):
 
         pkt = []
         if outer_vid < 0 or outer_tpid <= 0:
-            pkt = [
-                Ether(dst="%s" % self.dmac, src="%s" % self.smac) / IP(len=46)]
+            pkt = [Ether(dst="%s" % self.dmac, src="%s" % self.smac) / IP(len=46)]
             wrpcap(self.tpid_new_file, pkt)
         else:
-            pkt = [Ether(dst="%s" % self.dmac, src="%s" %
-                         self.smac) / Dot1Q(vlan=1) / Dot1Q(vlan=2) / IP(len=46)]
+            pkt = [
+                Ether(dst="%s" % self.dmac, src="%s" % self.smac)
+                / Dot1Q(vlan=1)
+                / Dot1Q(vlan=2)
+                / IP(len=46)
+            ]
             wrpcap(self.tpid_ori_file, pkt)
             fmt = '1/1 "%02x"'
             out = self.tester.send_expect(
-                "hexdump -ve '%s' '%s'" % (fmt, self.tpid_ori_file), "# ")
-            if(inner_vid < 0 or inner_tpid <= 0):
+                "hexdump -ve '%s' '%s'" % (fmt, self.tpid_ori_file), "# "
+            )
+            if inner_vid < 0 or inner_tpid <= 0:
                 replace = str("%04x" % outer_tpid) + str("%04x" % outer_vid)
             else:
-                replace = str("%04x" % outer_tpid) + str("%04x" % outer_vid) + str(
-                    "%04x" % inner_tpid) + str("%04x" % inner_vid)
+                replace = (
+                    str("%04x" % outer_tpid)
+                    + str("%04x" % outer_vid)
+                    + str("%04x" % inner_tpid)
+                    + str("%04x" % inner_vid)
+                )
             fmt = '1/1 "%02x"'
-            out = self.tester.send_expect("hexdump -ve '%s' '%s' |sed 's/8100000181000002/%s/' |xxd -r -p > '%s'" % (
-                fmt, self.tpid_ori_file, replace, self.tpid_new_file), "# ")
+            out = self.tester.send_expect(
+                "hexdump -ve '%s' '%s' |sed 's/8100000181000002/%s/' |xxd -r -p > '%s'"
+                % (fmt, self.tpid_ori_file, replace, self.tpid_new_file),
+                "# ",
+            )
 
         self.tester.scapy_foreground()
         self.tester.scapy_append("pkt=rdpcap('%s')" % self.tpid_new_file)
@@ -156,7 +172,7 @@ class TestVlanEthertypeConfig(TestCase):
         out = self.get_tcpdump_packet(self.rxItf)
         tpid_vlan = str("%04x" % tpid) + str("%04x" % vlan)
         print(("tpid_vlan: %s" % tpid_vlan))
-        if(result):
+        if result:
             self.verify(tpid_vlan in out, "Wrong vlan:" + str(out))
         else:
             self.verify(tpid_vlan not in out, "Wrong vlan:" + str(out))
@@ -169,20 +185,20 @@ class TestVlanEthertypeConfig(TestCase):
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
-        self.dut.send_expect(
-            "vlan set filter off %s" % dutRxPortId, "testpmd> ")
-        self.dut.send_expect(
-            "vlan set strip on %s" % dutRxPortId, "testpmd> ", 20)
+        self.dut.send_expect("vlan set filter off %s" % dutRxPortId, "testpmd> ")
+        self.dut.send_expect("vlan set strip on %s" % dutRxPortId, "testpmd> ", 20)
         rx_vlans = [1, random_vlan, MAX_VLAN]
         tpids = [0x8100, 0xA100]
         for tpid in tpids:
-            self.dut.send_expect("vlan set outer tpid 0x%x %s" %
-                                 (tpid, dutRxPortId), "testpmd> ")
+            self.dut.send_expect(
+                "vlan set outer tpid 0x%x %s" % (tpid, dutRxPortId), "testpmd> "
+            )
             for rx_vlan in rx_vlans:
                 self.vlan_send_packet(rx_vlan, tpid)
                 out = self.dut.get_session_output()
                 self.verify(
-                    "RTE_MBUF_F_RX_VLAN" in out, "Vlan recognized error:" + str(out))
+                    "RTE_MBUF_F_RX_VLAN" in out, "Vlan recognized error:" + str(out)
+                )
 
     def test_vlan_filter_on_off(self):
         """
@@ -190,26 +206,28 @@ class TestVlanEthertypeConfig(TestCase):
         """
         random_vlan = random.randint(1, MAX_VLAN - 1)
         self.dut.send_expect("set fwd mac", "testpmd> ")
-        self.dut.send_expect("vlan set strip off %s" %
-                             dutRxPortId, "testpmd> ", 20)
+        self.dut.send_expect("vlan set strip off %s" % dutRxPortId, "testpmd> ", 20)
         rx_vlans = [1, random_vlan, MAX_VLAN]
         # caium_a063 card support only default '0x8100' tpid in rx mode
-        if (self.nic in ["cavium_a063", "cavium_a064"]):
+        if self.nic in ["cavium_a063", "cavium_a064"]:
             tpids = [0x8100]
         else:
             tpids = [0x8100, 0xA100]
         for tpid in tpids:
-            self.dut.send_expect("vlan set outer tpid 0x%x %s" %
-                                 (tpid, dutRxPortId), "testpmd> ")
+            self.dut.send_expect(
+                "vlan set outer tpid 0x%x %s" % (tpid, dutRxPortId), "testpmd> "
+            )
             for rx_vlan in rx_vlans:
                 # test vlan filter on
                 self.dut.send_expect(
-                    "vlan set filter on  %s" % dutRxPortId, "testpmd> ")
+                    "vlan set filter on  %s" % dutRxPortId, "testpmd> "
+                )
                 self.dut.send_expect("start", "testpmd> ")
                 self.check_vlan_packets(rx_vlan, tpid, self.rxItf, False)
                 # test vlan filter off
                 self.dut.send_expect(
-                    "vlan set filter off  %s" % dutRxPortId, "testpmd> ")
+                    "vlan set filter off  %s" % dutRxPortId, "testpmd> "
+                )
                 self.check_vlan_packets(rx_vlan, tpid, self.rxItf)
 
     def test_vlan_add_vlan_tag(self):
@@ -219,27 +237,28 @@ class TestVlanEthertypeConfig(TestCase):
         random_vlan = random.randint(1, MAX_VLAN - 1)
         rx_vlans = [1, random_vlan, MAX_VLAN]
         self.dut.send_expect("set fwd mac", "testpmd> ")
-        self.dut.send_expect(
-            "vlan set filter on  %s" % dutRxPortId, "testpmd> ")
-        self.dut.send_expect("vlan set strip off %s" %
-                             dutRxPortId, "testpmd> ", 20)
+        self.dut.send_expect("vlan set filter on  %s" % dutRxPortId, "testpmd> ")
+        self.dut.send_expect("vlan set strip off %s" % dutRxPortId, "testpmd> ", 20)
         self.dut.send_expect("start", "testpmd> ")
 
         # caium_a063 card support only default '0x8100' tpid in rx mode
-        if (self.nic in ["cavium_a063", "cavium_a064"]):
+        if self.nic in ["cavium_a063", "cavium_a064"]:
             tpids = [0x8100]
         else:
             tpids = [0x8100, 0xA100]
         for tpid in tpids:
-            self.dut.send_expect("vlan set outer tpid 0x%x %s" %
-                                 (tpid, dutRxPortId), "testpmd> ")
+            self.dut.send_expect(
+                "vlan set outer tpid 0x%x %s" % (tpid, dutRxPortId), "testpmd> "
+            )
             for rx_vlan in rx_vlans:
                 self.dut.send_expect(
-                    "rx_vlan add 0x%x %s" % (rx_vlan, dutRxPortId), "testpmd> ")
+                    "rx_vlan add 0x%x %s" % (rx_vlan, dutRxPortId), "testpmd> "
+                )
                 self.check_vlan_packets(rx_vlan, tpid, self.rxItf)
 
-                self.dut.send_expect("rx_vlan rm 0x%x %d" %
-                                     (rx_vlan, dutRxPortId), "testpmd> ", 30)
+                self.dut.send_expect(
+                    "rx_vlan rm 0x%x %d" % (rx_vlan, dutRxPortId), "testpmd> ", 30
+                )
                 self.check_vlan_packets(rx_vlan, tpid, self.rxItf, False)
 
         self.dut.send_expect("stop", "testpmd> ", 30)
@@ -251,26 +270,27 @@ class TestVlanEthertypeConfig(TestCase):
         random_vlan = random.randint(1, MAX_VLAN - 1)
         rx_vlans = [1, random_vlan, MAX_VLAN]
         self.dut.send_expect("set fwd mac", "testpmd> ")
-        self.dut.send_expect(
-            "vlan set filter off %s" % dutRxPortId, "testpmd> ")
-        self.dut.send_expect(
-            "vlan set strip on %s" % dutRxPortId, "testpmd> ", 20)
+        self.dut.send_expect("vlan set filter off %s" % dutRxPortId, "testpmd> ")
+        self.dut.send_expect("vlan set strip on %s" % dutRxPortId, "testpmd> ", 20)
         self.dut.send_expect("start", "testpmd> ", 20)
 
         # caium_a063 card support only default '0x8100' tpid in rx mode
-        if (self.nic in ["cavium_a063", "cavium_a064"]):
+        if self.nic in ["cavium_a063", "cavium_a064"]:
             tpids = [0x8100]
         else:
             tpids = [0x8100, 0xA100]
         for tpid in tpids:
-            self.dut.send_expect("vlan set outer tpid 0x%x %s" %
-                                 (tpid, dutRxPortId), "testpmd> ")
+            self.dut.send_expect(
+                "vlan set outer tpid 0x%x %s" % (tpid, dutRxPortId), "testpmd> "
+            )
             for rx_vlan in rx_vlans:
                 self.dut.send_expect(
-                    "vlan set strip on %s" % dutRxPortId, "testpmd> ", 20)
+                    "vlan set strip on %s" % dutRxPortId, "testpmd> ", 20
+                )
                 self.check_vlan_packets(rx_vlan, tpid, self.rxItf, False)
                 self.dut.send_expect(
-                    "vlan set strip off %s" % dutRxPortId, "testpmd> ", 20)
+                    "vlan set strip off %s" % dutRxPortId, "testpmd> ", 20
+                )
                 self.check_vlan_packets(rx_vlan, tpid, self.rxItf)
 
     def test_vlan_enable_vlan_insertion(self):
@@ -280,25 +300,25 @@ class TestVlanEthertypeConfig(TestCase):
         random_vlan = random.randint(1, MAX_VLAN - 1)
         tx_vlans = [2, random_vlan, MAX_VLAN]
         self.dut.send_expect("set fwd mac", "testpmd> ")
-        self.dut.send_expect(
-            "vlan set filter off %s" % dutRxPortId, "testpmd> ")
-        self.dut.send_expect("vlan set strip off %s" %
-                             dutRxPortId, "testpmd> ", 20)
+        self.dut.send_expect("vlan set filter off %s" % dutRxPortId, "testpmd> ")
+        self.dut.send_expect("vlan set strip off %s" % dutRxPortId, "testpmd> ", 20)
         self.dut.send_expect("start", "testpmd> ")
 
         # caium_a063 card support only default '0x8100' tpid in rx mode
-        if (self.nic in ["cavium_a063", "cavium_a064", "foxville"]):
+        if self.nic in ["cavium_a063", "cavium_a064", "foxville"]:
             tpids = [0x8100]
         else:
             tpids = [0x8100, 0xA100]
         for tpid in tpids:
-            self.dut.send_expect("vlan set outer tpid 0x%x %s" %
-                                 (tpid, dutTxPortId), "testpmd> ")
+            self.dut.send_expect(
+                "vlan set outer tpid 0x%x %s" % (tpid, dutTxPortId), "testpmd> "
+            )
             for tx_vlan in tx_vlans:
                 self.dut.send_expect("stop", "testpmd>")
                 self.dut.send_expect("port stop all", "testpmd> ")
                 self.dut.send_expect(
-                    "tx_vlan set %s 0x%x" % (dutTxPortId, tx_vlan), "testpmd> ")
+                    "tx_vlan set %s 0x%x" % (dutTxPortId, tx_vlan), "testpmd> "
+                )
                 self.dut.send_expect("port start all", "testpmd> ")
                 self.dut.send_expect("start", "testpmd>")
                 self.start_tcpdump(self.rxItf)
@@ -307,12 +327,10 @@ class TestVlanEthertypeConfig(TestCase):
                 vlan_string = str("%04x" % tpid) + str("%04x" % tx_vlan)
                 self.verify(vlan_string in out, "Wrong vlan:" + str(out))
                 self.verify(str("%x" % tpid) in out, "Wrong vlan:" + str(out))
-                self.verify(
-                    str("%x" % tx_vlan) in out, "Vlan not found:" + str(out))
+                self.verify(str("%x" % tx_vlan) in out, "Vlan not found:" + str(out))
                 self.dut.send_expect("stop", "testpmd>")
                 self.dut.send_expect("port stop all", "testpmd> ")
-                self.dut.send_expect(
-                    "tx_vlan reset %s" % dutTxPortId, "testpmd> ", 30)
+                self.dut.send_expect("tx_vlan reset %s" % dutTxPortId, "testpmd> ", 30)
                 self.dut.send_expect("port start all", "testpmd> ")
                 self.dut.send_expect("start", "testpmd>")
                 self.start_tcpdump(self.rxItf)
@@ -327,31 +345,41 @@ class TestVlanEthertypeConfig(TestCase):
         It need be tested in nonvector mode.
         """
         self.verify(
-            self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "carlsville"], "%s NIC not support QinQ " % self.nic)
+            self.nic
+            in [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "carlsville",
+            ],
+            "%s NIC not support QinQ " % self.nic,
+        )
         rx_mode = load_global_setting(DPDK_RXMODE_SETTING)
-        self.verify(rx_mode == 'novector',
-                    "The case must by tested in novector mode")
+        self.verify(rx_mode == "novector", "The case must by tested in novector mode")
 
         random_vlan = random.randint(1, MAX_VLAN - 1)
         rx_vlans = [1, random_vlan, MAX_VLAN]
-        self.dut.send_expect(
-            "vlan set extend on %d" % dutRxPortId, "testpmd> ", 20)
+        self.dut.send_expect("vlan set extend on %d" % dutRxPortId, "testpmd> ", 20)
         self.dut.send_expect("set verbose 1", "testpmd> ")
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
-        self.dut.send_expect(
-            "vlan set filter off  %s" % dutRxPortId, "testpmd> ")
+        self.dut.send_expect("vlan set filter off  %s" % dutRxPortId, "testpmd> ")
         tpids = [0x8100, 0xA100, 0x88A8, 0x9100]
         for outer_tpid in tpids:
             for inner_tpid in tpids:
-                self.dut.send_expect("vlan set outer tpid 0x%x %s" %
-                                     (outer_tpid, dutRxPortId), "testpmd> ")
-                self.dut.send_expect("vlan set inner tpid 0x%x %s" %
-                                     (inner_tpid, dutRxPortId), "testpmd> ")
+                self.dut.send_expect(
+                    "vlan set outer tpid 0x%x %s" % (outer_tpid, dutRxPortId),
+                    "testpmd> ",
+                )
+                self.dut.send_expect(
+                    "vlan set inner tpid 0x%x %s" % (inner_tpid, dutRxPortId),
+                    "testpmd> ",
+                )
             for outer_vlan in rx_vlans:
                 for inner_vlan in rx_vlans:
                     self.vlan_send_packet(
-                        outer_vlan, outer_tpid, inner_vlan, inner_tpid)
+                        outer_vlan, outer_tpid, inner_vlan, inner_tpid
+                    )
                     out = self.dut.get_session_output()
                     self.verify("QinQ VLAN" in out, "Wrong QinQ:" + str(out))
 

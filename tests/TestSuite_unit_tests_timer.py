@@ -63,8 +63,8 @@ class TestUnitTestsTimer(TestCase):
         # default 60 secs
         #
         self.this_timeout = 60
-        if (len(self.cores) > 16) :
-            self.this_timeout = self.this_timeout * len(self.cores)/16
+        if len(self.cores) > 16:
+            self.this_timeout = self.this_timeout * len(self.cores) / 16
 
     def set_up(self):
         """
@@ -83,8 +83,8 @@ class TestUnitTestsTimer(TestCase):
         """
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
         timeout = self.get_nic_timeout()
-        app_name = self.dut.apps_name['test']
-        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", timeout)
+        app_name = self.dut.apps_name["test"]
+        self.dut.send_expect(app_name + eal_params, "R.*T.*E.*>.*>", timeout)
         out = self.dut.send_expect("timer_autotest", "RTE>>", self.this_timeout)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -94,8 +94,8 @@ class TestUnitTestsTimer(TestCase):
         Run timer autotest.
         """
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        app_name = self.dut.apps_name['test']
-        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", 60)
+        app_name = self.dut.apps_name["test"]
+        self.dut.send_expect(app_name + eal_params, "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("timer_perf_autotest", "RTE>>", self.this_timeout)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")

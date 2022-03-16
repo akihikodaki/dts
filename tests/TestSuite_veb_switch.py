@@ -50,7 +50,6 @@ from framework.virt_dut import VirtDut
 
 
 class TestVEBSwitching(TestCase):
-
     def VEB_get_stats(self, vf0_vf1, portid, rx_tx):
         """
         Get packets number from port statistic
@@ -63,12 +62,12 @@ class TestVEBSwitching(TestCase):
             return None
 
         if rx_tx == "rx":
-            return [stats['RX-packets'], stats['RX-errors'], stats['RX-bytes']]
+            return [stats["RX-packets"], stats["RX-errors"], stats["RX-bytes"]]
         elif rx_tx == "tx":
-            return [stats['TX-packets'], stats['TX-errors'], stats['TX-bytes']]
+            return [stats["TX-packets"], stats["TX-errors"], stats["TX-bytes"]]
         else:
             return None
- 
+
     def veb_get_pmd_stats(self, dev, portid, rx_tx):
         stats = {}
         rx_pkts_prefix = "RX-packets:"
@@ -81,9 +80,13 @@ class TestVEBSwitching(TestCase):
         if dev == "first":
             out = self.dut.send_expect("show port stats %d" % portid, "testpmd> ")
         elif dev == "second":
-            out = self.session_secondary.send_expect("show port stats %d" % portid, "testpmd> ")
+            out = self.session_secondary.send_expect(
+                "show port stats %d" % portid, "testpmd> "
+            )
         elif dev == "third":
-            out = self.session_third.send_expect("show port stats %d" % portid, "testpmd> ")
+            out = self.session_third.send_expect(
+                "show port stats %d" % portid, "testpmd> "
+            )
         else:
             return None
 
@@ -95,9 +98,9 @@ class TestVEBSwitching(TestCase):
         stats["TX-bytes"] = self.veb_get_pmd_value(tx_bytes_prefix, out)
 
         if rx_tx == "rx":
-            return [stats['RX-packets'], stats['RX-errors'], stats['RX-bytes']]
+            return [stats["RX-packets"], stats["RX-errors"], stats["RX-bytes"]]
         elif rx_tx == "tx":
-            return [stats['TX-packets'], stats['TX-errors'], stats['TX-bytes']]
+            return [stats["TX-packets"], stats["TX-errors"], stats["TX-bytes"]]
         else:
             return None
 
@@ -117,16 +120,16 @@ class TestVEBSwitching(TestCase):
         mac = self.dut.get_mac_address(0)
 
         if tran_type == "vlan":
-            pkt = Packet(pkt_type='VLAN_UDP')
-            pkt.config_layer('ether', {'dst': vf_mac})
-            pkt.config_layer('vlan', {'vlan': 1})
+            pkt = Packet(pkt_type="VLAN_UDP")
+            pkt.config_layer("ether", {"dst": vf_mac})
+            pkt.config_layer("vlan", {"vlan": 1})
             pkt.send_pkt(self.tester, tx_port=itf)
-            time.sleep(.5)
+            time.sleep(0.5)
         else:
-            pkt = Packet(pkt_type='UDP')
-            pkt.config_layer('ether', {'dst': vf_mac})
+            pkt = Packet(pkt_type="UDP")
+            pkt.config_layer("ether", {"dst": vf_mac})
             pkt.send_pkt(self.tester, tx_port=itf)
-            time.sleep(.5)
+            time.sleep(0.5)
 
     def count_packet(self, out, mac):
         """
@@ -141,14 +144,16 @@ class TestVEBSwitching(TestCase):
             if len(line) != 0 and line.startswith(("src=",)):
                 for item in line.split(" "):
                     item = item.strip()
-                    if(item == ("src=%s" % mac)):
+                    if item == ("src=%s" % mac):
                         cnt = cnt + 1
-                    elif(item == "L4_UDP"):
+                    elif item == "L4_UDP":
                         cnt = cnt + 1
-                if (cnt == 2):
+                if cnt == 2:
                     count_pkt = count_pkt + 1
                 cnt = 0
-        print(utils.GREEN("The number of UDP packets received by pf is %d." % count_pkt))
+        print(
+            utils.GREEN("The number of UDP packets received by pf is %d." % count_pkt)
+        )
         return count_pkt
 
     # Test cases.
@@ -156,10 +161,19 @@ class TestVEBSwitching(TestCase):
         """
         Prerequisite steps for each test suite.
         """
-        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
-                    "fortville_spirit_single", "fortville_25g", "carlsville",
-                                 'columbiaville_100g', 'columbiaville_25g'],
-                    "NIC Unsupported: " + str(self.nic))
+        self.verify(
+            self.nic
+            in [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "carlsville",
+                "columbiaville_100g",
+                "columbiaville_25g",
+            ],
+            "NIC Unsupported: " + str(self.nic),
+        )
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         self.session_secondary = self.dut.new_session()
@@ -174,17 +188,17 @@ class TestVEBSwitching(TestCase):
         self.vf1_mac = "00:11:22:33:44:12"
         self.vf2_mac = "00:11:22:33:44:13"
         self.vf3_mac = "00:11:22:33:44:14"
- 
+
         self.used_dut_port = self.dut_ports[0]
         localPort = self.tester.get_local_port(self.dut_ports[0])
         self.tester_itf = self.tester.get_interface(localPort)
-        self.pf_interface = self.dut.ports_info[self.used_dut_port]['intf']
+        self.pf_interface = self.dut.ports_info[self.used_dut_port]["intf"]
         self.pf_mac_address = self.dut.get_mac_address(0)
-        self.pf_pci = self.dut.ports_info[self.used_dut_port]['pci']
+        self.pf_pci = self.dut.ports_info[self.used_dut_port]["pci"]
 
         self.dut.init_reserved_core()
-        self.cores_vf0 = self.dut.get_reserved_core('2C', 0)
-        self.cores_vf1 = self.dut.get_reserved_core('2C', 0)
+        self.cores_vf0 = self.dut.get_reserved_core("2C", 0)
+        self.cores_vf1 = self.dut.get_reserved_core("2C", 0)
 
     def set_up(self):
         """
@@ -197,21 +211,29 @@ class TestVEBSwitching(TestCase):
         This is to set up 1pf and 2vfs environment, the pf can be bond to
         kernel driver or dpdk driver.
         """
-        if driver == 'default':
+        if driver == "default":
             for port_id in self.dut_ports:
-                port = self.dut.ports_info[port_id]['port']
+                port = self.dut.ports_info[port_id]["port"]
                 port.bind_driver()
         self.dut.generate_sriov_vfs_by_port(self.used_dut_port, 2, driver)
-        self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port]['vfs_port']
-        if driver == 'default':
-            self.dut.send_expect("ip link set %s vf 0 mac %s" % (self.pf_interface, self.vf0_mac), "# ", 3)
-            self.dut.send_expect("ip link set %s vf 1 mac %s" % (self.pf_interface, self.vf1_mac), "# ", 3)
+        self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port]["vfs_port"]
+        if driver == "default":
+            self.dut.send_expect(
+                "ip link set %s vf 0 mac %s" % (self.pf_interface, self.vf0_mac),
+                "# ",
+                3,
+            )
+            self.dut.send_expect(
+                "ip link set %s vf 1 mac %s" % (self.pf_interface, self.vf1_mac),
+                "# ",
+                3,
+            )
 
         try:
 
             for port in self.sriov_vfs_port:
                 port.bind_driver(driver=self.drivername)
-            if driver == 'default':
+            if driver == "default":
                 self.pf_kdriver_flag = 1
             else:
                 self.pf_ddriver_flag = 1
@@ -242,24 +264,34 @@ class TestVEBSwitching(TestCase):
         send traffic from VF1 to VF2, check if VF2 can receive
         the packets. Check Inter VF-VF MAC switch.
         """
-        self.setup_env(driver='default')
-        self.pmdout.start_testpmd(self.cores_vf0, prefix="test1", ports=[self.sriov_vfs_port[0].pci], param="--eth-peer=0,%s" % self.vf1_mac)
+        self.setup_env(driver="default")
+        self.pmdout.start_testpmd(
+            self.cores_vf0,
+            prefix="test1",
+            ports=[self.sriov_vfs_port[0].pci],
+            param="--eth-peer=0,%s" % self.vf1_mac,
+        )
         self.dut.send_expect("set fwd txonly", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
-        self.pmdout_2.start_testpmd(self.cores_vf1, prefix="test2", ports=[self.sriov_vfs_port[1].pci])
+        self.pmdout_2.start_testpmd(
+            self.cores_vf1, prefix="test2", ports=[self.sriov_vfs_port[1].pci]
+        )
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>", 5)
         self.dut.send_expect("start", "testpmd>", 5)
         time.sleep(2)
-    
+
         self.dut.send_expect("stop", "testpmd>", 5)
         self.session_secondary.send_expect("stop", "testpmd>", 5)
 
         vf0_tx_stats = self.veb_get_pmd_stats("first", 0, "tx")
         vf1_rx_stats = self.veb_get_pmd_stats("second", 0, "rx")
         self.verify(vf0_tx_stats[0] != 0, "no packet was sent by VF0")
-        self.verify(vf0_tx_stats[0] * 0.5 < vf1_rx_stats[0], "VF1 failed to receive packets from VF0")
+        self.verify(
+            vf0_tx_stats[0] * 0.5 < vf1_rx_stats[0],
+            "VF1 failed to receive packets from VF0",
+        )
 
     def test_VEB_switching_inter_vfs_mac_fwd(self):
         """
@@ -267,18 +299,25 @@ class TestVEBSwitching(TestCase):
         VF1 with VF1's MAC as packet's DEST MAC, set ether peer address to VF2's MAC.
         Check if VF2 can receive the packets. Check Inter VF-VF MAC switch.
         """
-        self.setup_env(driver='default')
-        self.pmdout.start_testpmd("Default", prefix="test1", ports=[self.sriov_vfs_port[0].pci], param="--eth-peer=0,%s" % self.vf1_mac)
+        self.setup_env(driver="default")
+        self.pmdout.start_testpmd(
+            "Default",
+            prefix="test1",
+            ports=[self.sriov_vfs_port[0].pci],
+            param="--eth-peer=0,%s" % self.vf1_mac,
+        )
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
         time.sleep(2)
-        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[1].pci])
+        self.pmdout_2.start_testpmd(
+            "Default", prefix="test2", ports=[self.sriov_vfs_port[1].pci]
+        )
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
         time.sleep(2)
-  
+
         self.send_packet(self.vf0_mac, self.tester_itf)
 
         self.dut.send_expect("stop", "testpmd>", 2)
@@ -288,8 +327,10 @@ class TestVEBSwitching(TestCase):
         vf1_rx_stats = self.veb_get_pmd_stats("second", 0, "rx")
         vf1_rx_stats[-1] = vf1_rx_stats[-1] + 4
         self.verify(vf0_tx_stats[0] != 0, "no packet was sent by VF0")
-        self.verify(vf0_tx_stats == vf1_rx_stats, "VF1 failed to receive packets from VF0")
-    
+        self.verify(
+            vf0_tx_stats == vf1_rx_stats, "VF1 failed to receive packets from VF0"
+        )
+
     def test_VEB_switching_inter_vfs_vlan(self):
         """
         Kernel PF, then create 2VFs, assign VF1 with VLAN=1 in, VF2 with
@@ -298,16 +339,23 @@ class TestVEBSwitching(TestCase):
         the same VLAN; set VF2 with VLAN=1, then send traffic to VF1 with
         VLAN=1, and VF2 can receive the packets. Check inter VF MAC/VLAN switch.
         """
-        self.setup_env(driver='default')
+        self.setup_env(driver="default")
         # the two vfs belongs to different vlans
         self.dut.send_expect("ip link set %s vf 0 vlan 1" % self.pf_interface, "# ", 1)
         self.dut.send_expect("ip link set %s vf 1 vlan 2" % self.pf_interface, "# ", 1)
-        self.pmdout.start_testpmd("Default", prefix="test1", ports=[self.sriov_vfs_port[0].pci], param="--eth-peer=0,%s" % self.vf1_mac)
+        self.pmdout.start_testpmd(
+            "Default",
+            prefix="test1",
+            ports=[self.sriov_vfs_port[0].pci],
+            param="--eth-peer=0,%s" % self.vf1_mac,
+        )
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
         time.sleep(2)
-        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[1].pci])
+        self.pmdout_2.start_testpmd(
+            "Default", prefix="test2", ports=[self.sriov_vfs_port[1].pci]
+        )
         self.session_secondary.send_expect("set fwd mac", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
@@ -321,20 +369,30 @@ class TestVEBSwitching(TestCase):
         vf0_tx_stats = self.veb_get_pmd_stats("first", 0, "tx")
         vf1_rx_stats = self.veb_get_pmd_stats("second", 0, "rx")
         self.verify(vf0_tx_stats[0] != 0, "no packet was sent by VF0")
-        self.verify((vf0_tx_stats[0] == 1) and (vf1_rx_stats[0] == 0), "VF1 received packets from VF0, the vlan filter doen't work")
+        self.verify(
+            (vf0_tx_stats[0] == 1) and (vf1_rx_stats[0] == 0),
+            "VF1 received packets from VF0, the vlan filter doen't work",
+        )
         self.dut.send_expect("quit", "# ")
         time.sleep(2)
         self.session_secondary.send_expect("quit", "# ")
         time.sleep(2)
-    
+
         # the two vfs belongs to the same vlan
         self.dut.send_expect("ip link set %s vf 1 vlan 1" % self.pf_interface, "# ", 1)
-        self.pmdout.start_testpmd("Default", prefix="test1", ports=[self.sriov_vfs_port[0].pci], param="--eth-peer=0,%s" % self.vf1_mac)
+        self.pmdout.start_testpmd(
+            "Default",
+            prefix="test1",
+            ports=[self.sriov_vfs_port[0].pci],
+            param="--eth-peer=0,%s" % self.vf1_mac,
+        )
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
         time.sleep(2)
-        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[1].pci])
+        self.pmdout_2.start_testpmd(
+            "Default", prefix="test2", ports=[self.sriov_vfs_port[1].pci]
+        )
         self.session_secondary.send_expect("set fwd mac", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
@@ -348,7 +406,10 @@ class TestVEBSwitching(TestCase):
         vf0_tx_stats = self.veb_get_pmd_stats("first", 0, "tx")
         vf1_rx_stats = self.veb_get_pmd_stats("second", 0, "rx")
         self.verify(vf0_tx_stats[0] != 0, "no packet was sent by VF0")
-        self.verify((vf0_tx_stats[0] == 1) and (vf1_rx_stats[0] == 1), "VF1 didn't receive packets from VF0, the vlan filter doen't work")
+        self.verify(
+            (vf0_tx_stats[0] == 1) and (vf1_rx_stats[0] == 1),
+            "VF1 didn't receive packets from VF0, the vlan filter doen't work",
+        )
 
     def test_VEB_switching_inter_vfs_and_pf(self):
         """
@@ -365,8 +426,15 @@ class TestVEBSwitching(TestCase):
         self.dut.send_expect("set promisc all off", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
         time.sleep(2)
-        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[0].pci], param="--eth-peer=0,%s" % self.pf_mac_address)
-        self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf0_mac, "testpmd>")
+        self.pmdout_2.start_testpmd(
+            "Default",
+            prefix="test2",
+            ports=[self.sriov_vfs_port[0].pci],
+            param="--eth-peer=0,%s" % self.pf_mac_address,
+        )
+        self.session_secondary.send_expect(
+            "mac_addr add 0 %s" % self.vf0_mac, "testpmd>"
+        )
         self.session_secondary.send_expect("set fwd txonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
@@ -385,14 +453,23 @@ class TestVEBSwitching(TestCase):
         time.sleep(2)
         self.dut.send_expect("quit", "# ")
         time.sleep(2)
- 
+
         # PF->VF
-        self.pmdout.start_testpmd("Default", prefix="test1", ports=[self.pf_pci], param="--eth-peer=0,%s" % self.vf0_mac)
+        self.pmdout.start_testpmd(
+            "Default",
+            prefix="test1",
+            ports=[self.pf_pci],
+            param="--eth-peer=0,%s" % self.vf0_mac,
+        )
         self.dut.send_expect("set fwd txonly", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
-        
-        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[0].pci])
-        self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf0_mac, "testpmd>")
+
+        self.pmdout_2.start_testpmd(
+            "Default", prefix="test2", ports=[self.sriov_vfs_port[0].pci]
+        )
+        self.session_secondary.send_expect(
+            "mac_addr add 0 %s" % self.vf0_mac, "testpmd>"
+        )
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
@@ -403,7 +480,11 @@ class TestVEBSwitching(TestCase):
         self.session_secondary.send_expect("stop", "testpmd>", 2)
 
         vf0_rx_stats = self.veb_get_pmd_stats("second", 0, "rx")
-        print(utils.GREEN("The number of UDP packets received by vf is %d." % vf0_rx_stats[0]))
+        print(
+            utils.GREEN(
+                "The number of UDP packets received by vf is %d." % vf0_rx_stats[0]
+            )
+        )
         self.verify(vf0_rx_stats[0] > 100, "no packet was received by VF0")
         self.session_secondary.send_expect("quit", "# ")
         time.sleep(2)
@@ -417,8 +498,12 @@ class TestVEBSwitching(TestCase):
         self.dut.send_expect("start", "testpmd>")
         time.sleep(2)
 
-        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[0].pci])
-        self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf0_mac, "testpmd>")
+        self.pmdout_2.start_testpmd(
+            "Default", prefix="test2", ports=[self.sriov_vfs_port[0].pci]
+        )
+        self.session_secondary.send_expect(
+            "mac_addr add 0 %s" % self.vf0_mac, "testpmd>"
+        )
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
@@ -430,8 +515,11 @@ class TestVEBSwitching(TestCase):
         self.session_secondary.send_expect("stop", "testpmd>", 2)
         self.dut.send_expect("stop", "testpmd>", 2)
         vf0_end_rx_stats = self.veb_get_pmd_stats("second", 0, "rx")
-        self.verify(vf0_end_rx_stats[0] - vf0_start_rx_stats[0] == 1, "no packet was received by VF0")
- 
+        self.verify(
+            vf0_end_rx_stats[0] - vf0_start_rx_stats[0] == 1,
+            "no packet was received by VF0",
+        )
+
         self.dut.send_expect("start", "testpmd>")
         time.sleep(2)
         self.session_secondary.send_expect("start", "testpmd>")
@@ -446,9 +534,17 @@ class TestVEBSwitching(TestCase):
         vf0_end_rx_stats = self.veb_get_pmd_stats("second", 0, "rx")
         pf_end_tx_stats = self.veb_get_pmd_stats("first", 0, "tx")
         pf_end_rx_stats = self.veb_get_pmd_stats("first", 0, "rx")
-        self.verify(pf_end_tx_stats[0] - pf_start_tx_stats[0] == 1, "no packet was sent by PF")
-        self.verify(pf_end_rx_stats[0] - pf_start_rx_stats[0] == 1, "no packet was received by PF")
-        self.verify(vf0_end_rx_stats[0] - vf0_start_rx_stats[0] == 0, "VF0 received unexpected packet")
+        self.verify(
+            pf_end_tx_stats[0] - pf_start_tx_stats[0] == 1, "no packet was sent by PF"
+        )
+        self.verify(
+            pf_end_rx_stats[0] - pf_start_rx_stats[0] == 1,
+            "no packet was received by PF",
+        )
+        self.verify(
+            vf0_end_rx_stats[0] - vf0_start_rx_stats[0] == 0,
+            "VF0 received unexpected packet",
+        )
         self.session_secondary.send_expect("quit", "# ")
         time.sleep(2)
         self.dut.send_expect("quit", "# ")
@@ -458,12 +554,19 @@ class TestVEBSwitching(TestCase):
         self.pmdout.start_testpmd("Default", prefix="test1", ports=[self.pf_pci])
         self.dut.send_expect("set promisc all off", "testpmd>")
 
-        self.pmdout_2.start_testpmd(self.cores_vf0, prefix="test2", ports=[self.sriov_vfs_port[0].pci], param="--eth-peer=0,%s" % self.vf1_mac)
+        self.pmdout_2.start_testpmd(
+            self.cores_vf0,
+            prefix="test2",
+            ports=[self.sriov_vfs_port[0].pci],
+            param="--eth-peer=0,%s" % self.vf1_mac,
+        )
         self.session_secondary.send_expect("set fwd txonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         time.sleep(2)
 
-        self.pmdout_3.start_testpmd(self.cores_vf1, prefix="test3", ports=[self.sriov_vfs_port[1].pci])
+        self.pmdout_3.start_testpmd(
+            self.cores_vf1, prefix="test3", ports=[self.sriov_vfs_port[1].pci]
+        )
         self.session_third.send_expect("mac_addr add 0 %s" % self.vf1_mac, "testpmd>")
         self.session_third.send_expect("set fwd rxonly", "testpmd>")
         self.session_third.send_expect("set promisc all off", "testpmd>")
@@ -473,23 +576,26 @@ class TestVEBSwitching(TestCase):
 
         self.session_secondary.send_expect("stop", "testpmd>", 5)
         self.session_third.send_expect("stop", "testpmd>", 5)
-        
+
         vf0_tx_stats = self.veb_get_pmd_stats("second", 0, "tx")
         vf1_rx_stats = self.veb_get_pmd_stats("third", 0, "rx")
         self.verify(vf0_tx_stats[0] != 0, "no packet was sent by VF0")
-        self.verify(vf0_tx_stats[0] * 0.5 < vf1_rx_stats[0], "VF1 failed to receive packets from VF0")
+        self.verify(
+            vf0_tx_stats[0] * 0.5 < vf1_rx_stats[0],
+            "VF1 failed to receive packets from VF0",
+        )
 
     def tear_down(self):
         """
         Run after each test case.
         """
         if self.pf_kdriver_flag == 1:
-            self.destroy_env(driver='default')
+            self.destroy_env(driver="default")
         if self.pf_ddriver_flag == 1:
             self.destroy_env(driver=self.drivername)
 
         self.dut.kill_all()
-    
+
     def tear_down_all(self):
         """
         Run after each test suite.
@@ -499,5 +605,5 @@ class TestVEBSwitching(TestCase):
         self.dut.close_session(self.session_third)
         # Marvin recommended that all the dut ports should be bound to DPDK.
         for port_id in self.dut_ports:
-            port = self.dut.ports_info[port_id]['port']
+            port = self.dut.ports_info[port_id]["port"]
             port.bind_driver(driver=self.drivername)

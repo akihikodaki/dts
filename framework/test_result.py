@@ -99,14 +99,16 @@ class Result(object):
             dut_idx = self.__internals.index(dut)
             return self.__internals[dut_idx + 1][4]
         except:
-            return ''
+            return ""
 
     def __set_dpdk_version(self, dpdk_version):
         if dpdk_version not in self.internals[self.__dut + 1]:
             dpdk_current = self.__get_dpdk_version()
             if dpdk_current:
                 if dpdk_version not in dpdk_current:
-                    self.internals[self.__dut + 1][4] = dpdk_current + '/' + dpdk_version
+                    self.internals[self.__dut + 1][4] = (
+                        dpdk_current + "/" + dpdk_version
+                    )
             else:
                 self.internals[self.__dut + 1].append(dpdk_version)
 
@@ -114,7 +116,7 @@ class Result(object):
         try:
             return self.internals[self.__dut + 1][4]
         except:
-            return ''
+            return ""
 
     def current_kdriver(self, dut):
         """
@@ -124,14 +126,14 @@ class Result(object):
             dut_idx = self.__internals.index(dut)
             return self.__internals[dut_idx + 1][0]
         except:
-            return ''
+            return ""
 
     def __set_kdriver(self, driver):
         if not self.internals[self.__dut + 1]:
             kdriver_current = self.__get_kdriver()
             if kdriver_current:
                 if driver not in kdriver_current:
-                    self.internals[self.__dut + 1][0] = kdriver_current + '/' + driver
+                    self.internals[self.__dut + 1][0] = kdriver_current + "/" + driver
             else:
                 self.internals[self.__dut + 1].append(driver)
 
@@ -139,7 +141,7 @@ class Result(object):
         try:
             return self.internals[self.__dut + 1][0]
         except:
-            return ''
+            return ""
 
     def current_firmware_version(self, dut):
         """
@@ -149,14 +151,16 @@ class Result(object):
             dut_idx = self.__internals.index(dut)
             return self.__internals[dut_idx + 1][1]
         except:
-            return ''
+            return ""
 
     def __set_firmware(self, firmware):
         if firmware not in self.internals[self.__dut + 1]:
             firmware_current = self.__get_firmware()
             if firmware_current:
                 if firmware not in firmware_current:
-                    self.internals[self.__dut + 1][1] = firmware_current + '/' + firmware
+                    self.internals[self.__dut + 1][1] = (
+                        firmware_current + "/" + firmware
+                    )
             else:
                 self.internals[self.__dut + 1].append(firmware)
 
@@ -164,7 +168,7 @@ class Result(object):
         try:
             return self.internals[self.__dut + 1][1]
         except:
-            return ''
+            return ""
 
     def current_package_version(self, dut):
         """
@@ -174,14 +178,14 @@ class Result(object):
             dut_idx = self.__internals.index(dut)
             return self.__internals[dut_idx + 1][2]
         except:
-            return ''
+            return ""
 
     def __set_ddp_package(self, package):
         if package not in self.internals[self.__dut + 1]:
             pkg_current = self.__get_ddp_package()
-            if pkg_current != '':
+            if pkg_current != "":
                 if pkg_current and package not in pkg_current:
-                    self.internals[self.__dut + 1][2] = pkg_current + '/' + package
+                    self.internals[self.__dut + 1][2] = pkg_current + "/" + package
             else:
                 self.internals[self.__dut + 1].append(package)
 
@@ -189,7 +193,7 @@ class Result(object):
         try:
             return self.internals[self.__dut + 1][2]
         except:
-            return ''
+            return ""
 
     def current_driver(self, dut):
         """
@@ -199,14 +203,14 @@ class Result(object):
             dut_idx = self.__internals.index(dut)
             return self.__internals[dut_idx + 1][3]
         except:
-            return ''
+            return ""
 
     def __set_driver(self, driver):
         if driver not in self.internals[self.__dut + 1]:
             driver_current = self.__get_driver()
             if driver_current:
                 if driver not in driver_current:
-                    self.internals[self.__dut + 1][3] = driver_current + '/' + driver
+                    self.internals[self.__dut + 1][3] = driver_current + "/" + driver
             else:
                 self.internals[self.__dut + 1].append(driver)
 
@@ -214,7 +218,7 @@ class Result(object):
         try:
             return self.internals[self.__dut + 1][3]
         except:
-            return ''
+            return ""
 
     def __current_targets(self):
         return self.internals[self.__dut + 1]
@@ -223,7 +227,7 @@ class Result(object):
         targets = self.__current_targets()
         if target not in targets:
             targets.append(target)
-            targets.append('_nic_')
+            targets.append("_nic_")
             targets.append([])
         self.__target = targets.index(target)
 
@@ -289,25 +293,25 @@ class Result(object):
         """
         Set last test case added as PASSED
         """
-        self.__set_test_case_result(result='PASSED', message='')
+        self.__set_test_case_result(result="PASSED", message="")
 
     def test_case_skip(self, message):
         """
         set last test case add as N/A
         """
-        self.__set_test_case_result(result='N/A', message=message)
+        self.__set_test_case_result(result="N/A", message=message)
 
     def test_case_failed(self, message):
         """
         Set last test case added as FAILED
         """
-        self.__set_test_case_result(result='FAILED', message=message)
+        self.__set_test_case_result(result="FAILED", message=message)
 
     def test_case_blocked(self, message):
         """
         Set last test case added as BLOCKED
         """
-        self.__set_test_case_result(result='BLOCKED', message=message)
+        self.__set_test_case_result(result="BLOCKED", message=message)
 
     def all_duts(self):
         """
@@ -354,8 +358,7 @@ class Result(object):
         try:
             dut_idx = self.__internals.index(dut)
             target_idx = self.__internals[dut_idx + 1].index(target)
-            suite_idx = self.__internals[dut_idx + 1][
-                target_idx + 2].index(suite)
+            suite_idx = self.__internals[dut_idx + 1][target_idx + 2].index(suite)
         except:
             return None
         return self.__internals[dut_idx + 1][target_idx + 2][suite_idx + 1][::2]
@@ -368,13 +371,15 @@ class Result(object):
         try:
             dut_idx = self.__internals.index(dut)
             target_idx = self.__internals[dut_idx + 1].index(target)
-            suite_idx = self.__internals[dut_idx + 1][
-                target_idx + 2].index(suite)
-            case_idx = self.__internals[dut_idx + 1][target_idx +
-                                                     2][suite_idx + 1].index(case)
+            suite_idx = self.__internals[dut_idx + 1][target_idx + 2].index(suite)
+            case_idx = self.__internals[dut_idx + 1][target_idx + 2][
+                suite_idx + 1
+            ].index(case)
         except:
             return None
-        return self.__internals[dut_idx + 1][target_idx + 2][suite_idx + 1][case_idx + 1]
+        return self.__internals[dut_idx + 1][target_idx + 2][suite_idx + 1][
+            case_idx + 1
+        ]
 
     def add_failed_dut(self, dut, msg):
         """
@@ -432,7 +437,6 @@ class Result(object):
 
 
 class ResultTable(object):
-
     def __init__(self, header):
         """
         Add the title of result table.
@@ -475,14 +479,15 @@ class ResultTable(object):
 
         out = self.table.draw()
         if self.rst:
-            self.rst.write_text('\n' + out + '\n\n')
+            self.rst.write_text("\n" + out + "\n\n")
         if self.logger:
-            self.logger.info('\n' + out)
+            self.logger.info("\n" + out)
+
 
 ###############################################################################
 ###############################################################################
 if __name__ == "__main__":
-    rt = ResultTable(header=['name', 'age'])
-    rt.add_row(['Jane', '30'])
-    rt.add_row(['Mark', '32'])
+    rt = ResultTable(header=["name", "age"])
+    rt.add_row(["Jane", "30"])
+    rt.add_row(["Mark", "32"])
     rt.table_print()

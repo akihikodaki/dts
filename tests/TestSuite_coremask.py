@@ -65,7 +65,7 @@ class TestCoremask(TestCase):
 
         self.port_mask = utils.create_mask(self.dut.get_ports(self.nic))
         self.mem_channel = self.dut.get_memory_channels()
-        self.app_test_path = self.dut.apps_name['test']
+        self.app_test_path = self.dut.apps_name["test"]
         self.all_cores = self.dut.get_core_list("all")
 
     def set_up(self):
@@ -79,7 +79,7 @@ class TestCoremask(TestCase):
         Check available max lcore according to configuration.
         """
 
-        config_max_lcore = self.dut.get_def_rte_config('CONFIG_RTE_MAX_LCORE')
+        config_max_lcore = self.dut.get_def_rte_config("CONFIG_RTE_MAX_LCORE")
 
         if config_max_lcore:
             available_max_lcore = min(int(config_max_lcore), len(self.all_cores) + 1)
@@ -95,19 +95,21 @@ class TestCoremask(TestCase):
 
         available_max_lcore = self.get_available_max_lcore()
 
-        for core in self.all_cores[:available_max_lcore - 1]:
+        for core in self.all_cores[: available_max_lcore - 1]:
 
             core_mask = utils.create_mask([core])
 
-            command = command_line % (self.app_test_path, core_mask,
-                                      self.mem_channel)
+            command = command_line % (self.app_test_path, core_mask, self.mem_channel)
 
             out = self.dut.send_expect(command, "RTE>>", 10)
-            self.verify("EAL: Detected lcore %s as core" % core in out,
-                        "Core %s not detected" % core)
+            self.verify(
+                "EAL: Detected lcore %s as core" % core in out,
+                "Core %s not detected" % core,
+            )
 
-            self.verify("EAL: Main lcore %s is ready" % core in out,
-                        "Core %s not ready" % core)
+            self.verify(
+                "EAL: Main lcore %s is ready" % core in out, "Core %s not ready" % core
+            )
 
             self.dut.send_expect("quit", "# ", 10)
 
@@ -118,25 +120,32 @@ class TestCoremask(TestCase):
 
         available_max_lcore = self.get_available_max_lcore()
 
-        core_mask = utils.create_mask(self.all_cores[:available_max_lcore - 1])
+        core_mask = utils.create_mask(self.all_cores[: available_max_lcore - 1])
 
-        first_core=self.all_cores[0]
+        first_core = self.all_cores[0]
 
         command = command_line % (self.app_test_path, core_mask, self.mem_channel)
 
         out = self.dut.send_expect(command, "RTE>>", 10)
-        self.verify("EAL: Main lcore %s is ready" % first_core in out,
-                    "Core %s not ready" % first_core )
+        self.verify(
+            "EAL: Main lcore %s is ready" % first_core in out,
+            "Core %s not ready" % first_core,
+        )
 
-        self.verify("EAL: Detected lcore %s as core" % first_core in out,
-                    "Core %s not detected" % first_core )
+        self.verify(
+            "EAL: Detected lcore %s as core" % first_core in out,
+            "Core %s not detected" % first_core,
+        )
 
-        for core in self.all_cores[1:available_max_lcore - 1]:
-            self.verify("EAL: lcore %s is ready" % core in out,
-                        "Core %s not ready" % core)
+        for core in self.all_cores[1 : available_max_lcore - 1]:
+            self.verify(
+                "EAL: lcore %s is ready" % core in out, "Core %s not ready" % core
+            )
 
-            self.verify("EAL: Detected lcore %s as core" % core in out,
-                        "Core %s not detected" % core)
+            self.verify(
+                "EAL: Detected lcore %s as core" % core in out,
+                "Core %s not detected" % core,
+            )
 
         self.dut.send_expect("quit", "# ", 10)
 
@@ -155,16 +164,16 @@ class TestCoremask(TestCase):
         try:
             out = self.dut.send_expect(command, "RTE>>", 10)
         except:
-            self.verify("EAL: invalid coremask" in out,
-                        "Small core mask set")
+            self.verify("EAL: invalid coremask" in out, "Small core mask set")
 
-        self.verify("EAL: Detected lcore 0 as core" in out,
-                    "Core 0 not detected")
+        self.verify("EAL: Detected lcore 0 as core" in out, "Core 0 not detected")
 
-        for core in self.all_cores[1:big_coremask_size - 1]:
+        for core in self.all_cores[1 : big_coremask_size - 1]:
 
-            self.verify("EAL: Detected lcore %s as core" % core in out,
-                        "Core %s not detected" % core)
+            self.verify(
+                "EAL: Detected lcore %s as core" % core in out,
+                "Core %s not detected" % core,
+            )
 
         self.dut.send_expect("quit", "# ", 10)
 
@@ -173,20 +182,39 @@ class TestCoremask(TestCase):
         Check coremask parsing for wrong coremasks.
         """
 
-        wrong_coremasks = ["GARBAGE", "0xJF", "0xFJF", "0xFFJ",
-                           "0xJ11", "0x1J1", "0x11J",
-                           "JF", "FJF", "FFJ",
-                           "J11", "1J1", "11J",
-                           "jf", "fjf", "ffj",
-                           "FF0x", "ff0x", "", "0x", "0"]
+        wrong_coremasks = [
+            "GARBAGE",
+            "0xJF",
+            "0xFJF",
+            "0xFFJ",
+            "0xJ11",
+            "0x1J1",
+            "0x11J",
+            "JF",
+            "FJF",
+            "FFJ",
+            "J11",
+            "1J1",
+            "11J",
+            "jf",
+            "fjf",
+            "ffj",
+            "FF0x",
+            "ff0x",
+            "",
+            "0x",
+            "0",
+        ]
 
         for coremask in wrong_coremasks:
 
             command = command_line % (self.app_test_path, coremask, self.mem_channel)
             try:
                 out = self.dut.send_expect(command, "# ", 5)
-                self.verify("EAL: invalid coremask" in out,
-                            "Wrong core mask (%s) accepted" % coremask)
+                self.verify(
+                    "EAL: invalid coremask" in out,
+                    "Wrong core mask (%s) accepted" % coremask,
+                )
             except:
                 self.dut.send_expect("quit", "# ", 5)
                 raise VerifyFailure("Wrong core mask (%s) accepted" % coremask)
