@@ -112,6 +112,7 @@ class PmdOutput:
         socket=0,
         fixed_prefix=False,
         expected="testpmd> ",
+        timeout=120,
         **config,
     ):
         """
@@ -170,7 +171,6 @@ class PmdOutput:
         command = command.replace("  ", " ")
         if self.session != self.dut:
             self.session.send_expect("cd %s" % self.dut.base_dir, "# ")
-        timeout = config.get("timeout", 120)
         out = self.session.send_expect(command, expected, timeout)
         self.command = command
         # wait 10s to ensure links getting up before test start.
