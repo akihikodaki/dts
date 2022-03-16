@@ -664,53 +664,28 @@ class PerfTestBase(object):
         self.__vf_ports_info = None
 
     def __preset_dpdk_compilation(self):
-        # set compile flag and rebuild to get best perf
-        compile_flags = {}
+        # rebuild to get best perf
         # RX_DESC
-        if self.__compile_rx_desc:
-            rx_desc_flag = "RTE_LIBRTE_{nic_drv}_{bit}BYTE_RX_DESC".format(
-                **{
-                    "nic_drv": self.kdriver.upper(),
-                    "bit": self.__compile_rx_desc or 32,
-                }
+        rx_desc_comlication_flag = self.__get_rx_desc_complication_flag()
+        if rx_desc_comlication_flag:
+            self.dut.build_install_dpdk(
+                self.target, extra_options=rx_desc_comlication_flag
             )
-            if self.__compile_rx_desc == 32:
-                msg = f"{rx_desc_flag} is dpdk default compile flag, ignore this compile flag"
-                self.logger.warning(msg)
-            else:
-                compile_flags[rx_desc_flag] = "y"
-        # AVX flag
-        if self.__bin_type is BIN_TYPE.PMD:
-            if self.__compile_avx:
-                compile_flags[f"RTE_ENABLE_{self.__compile_avx.upper()}"] = "y"
-        if not compile_flags:
-            return
-        self.dut.set_build_options(compile_flags)
-        self.dut.build_install_dpdk(self.target)
 
     def __restore_compilation(self):
-        compile_flags = {}
-        # RX_DESC
+        # restore build
+        rx_desc_comlication_flag = self.__get_rx_desc_complication_flag()
+        if rx_desc_comlication_flag:
+            self.dut.build_install_dpdk(self.target)
+
+    def __get_rx_desc_complication_flag(self):
+        rx_desc_flag = ""
         if self.__compile_rx_desc:
-            rx_desc_flag = "RTE_LIBRTE_{nic_drv}_{bit}BYTE_RX_DESC".format(
-                **{
-                    "nic_drv": self.kdriver.upper(),
-                    "bit": self.__compile_rx_desc or 32,
-                }
-            )
+            rx_desc_flag = f"RTE_LIBRTE_{self.kdriver.upper()}_{self.__compile_rx_desc}BYTE_RX_DESC"
             if self.__compile_rx_desc == 32:
                 msg = f"{rx_desc_flag} is dpdk default compile flag, ignore this compile flag"
                 self.logger.warning(msg)
-            else:
-                compile_flags[rx_desc_flag] = "n"
-        # AVX flag
-        if self.__bin_type is BIN_TYPE.PMD:
-            if self.__compile_avx:
-                compile_flags[f"RTE_ENABLE_{self.__compile_avx.upper()}"] = "n"
-        if not compile_flags:
-            return
-        self.dut.set_build_options(compile_flags)
-        self.dut.build_install_dpdk(self.target)
+        return rx_desc_flag
 
     def __preset_compilation(self):
         # Update compile config file and rebuild to get best perf on different nics

@@ -80,10 +80,6 @@ class DPDKdut(Dut):
 
         self.set_rxtx_mode()
 
-        drivername = load_global_setting(HOST_DRIVER_SETTING)
-
-        self.set_driver_specific_configurations(drivername)
-
         self.apps_name = self.apps_name_conf["meson"]
         # use the dut target directory instead of 'target' string in app name
         for app in self.apps_name:
@@ -566,14 +562,6 @@ class DPDKdut(Dut):
         blocklist = ""
         # No blocklist option in FreeBSD
         return blocklist
-
-    def set_driver_specific_configurations(self, drivername):
-        """
-        Set configurations required for specific drivers before compilation.
-        """
-        # Enable Mellanox drivers
-        if drivername == "mlx5_core" or drivername == "mlx4_core":
-            self.set_build_options({"RTE_LIBRTE_MLX5_PMD": "y"})
 
 
 class DPDKtester(Tester):

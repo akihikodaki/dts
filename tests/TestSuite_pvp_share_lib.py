@@ -99,11 +99,11 @@ class TestPVPShareLib(TestCase):
         self.result_table_create(self.table_header)
 
     def prepare_share_lib_env(self):
-        self.dut.set_build_options({"RTE_BUILD_SHARED_LIB": "y"})
-        self.dut.build_install_dpdk(self.dut.target)
+        self.dut.build_install_dpdk(
+            self.dut.target, extra_options="-Dc_args=-DRTE_BUILD_SHARED_LIB"
+        )
 
     def restore_env(self):
-        self.dut.set_build_options({"RTE_BUILD_SHARED_LIB": "n"})
         self.dut.build_install_dpdk(self.dut.target)
 
     def send_and_verify(self):

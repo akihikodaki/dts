@@ -174,6 +174,5 @@ class TestIeee1588(TestCase):
         """
         self.dut.send_expect("quit", "# ", 30)
 
-        # Restore the config file and recompile the package.
-        self.dut.set_build_options({"RTE_LIBRTE_IEEE1588": "n"})
+        # recompile the package with default options.
         self.dut.build_install_dpdk(self.target)
