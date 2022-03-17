@@ -54,15 +54,6 @@ class TestPmdPcap(TestCase):
 
         self.memory_channel = self.dut.get_memory_channels()
 
-        # Enable PCAP features and rebuild the package
-        self.pcap_config = self.get_pcap_compile_config()
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_LIBRTE_PMD_PCAP=n$/CONFIG_RTE_LIBRTE_PMD_PCAP=y/' config/%s"
-            % self.pcap_config,
-            "# ",
-        )
-        self.dut.build_install_dpdk(self.target)
-
         # make sure there is no interface to bind
         # because if there is any interface bonded to igb_uio,
         # it will result in packet transmitting failed
@@ -71,24 +62,6 @@ class TestPmdPcap(TestCase):
         if os_type == "freebsd":
             self.dut.send_expect("kldload contigmem", "#", 20)
         self.path = self.dut.apps_name["test-pmd"]
-
-    def get_pcap_compile_config(self):
-        config_head = "common_"
-        os_type = self.dut.get_os_type()
-        if os_type == "linux":
-            config_tail = os_type + "app"
-        elif os_type == "freebsd":
-            config_tail = "bsdapp"
-        else:
-            raise Exception(
-                "Unknow os type, please check to make sure pcap can work in OS [ %s ]"
-                % os_type
-            )
-        out = self.dut.send_command("cat config/%s" % (config_head + config_tail))
-        if "CONFIG_RTE_LIBRTE_PMD_PCAP" in out:
-            return config_head + config_tail
-        else:
-            return config_head + "base"
 
     def create_pcap_file(self, filename, number_of_packets):
         flow = []
@@ -220,10 +193,4 @@ class TestPmdPcap(TestCase):
         )
 
     def tear_down_all(self):
-        # Disable PCAP feature and rebuild the package
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_LIBRTE_PMD_PCAP=y$/CONFIG_RTE_LIBRTE_PMD_PCAP=n/' config/%s"
-            % self.pcap_config,
-            "# ",
-        )
         self.dut.set_target(self.target)
