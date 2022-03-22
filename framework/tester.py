@@ -111,6 +111,12 @@ class Tester(Crb):
         session = self.create_session(session_name)
         self.scapy_sessions_li.append(session)
         session.send_expect("scapy", ">>> ")
+
+        # import scapy moudle to scapy APP
+        out = session.session.send_expect(get_scapy_module_impcmd(), ">>> ")
+        if "ImportError" in out:
+            session.logger.warning(f"entering import error: {out}")
+
         return session
 
     def check_scapy_version(self):
