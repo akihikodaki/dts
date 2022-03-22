@@ -68,8 +68,8 @@ Test Case : EEPROM Dump
 
     ethtool -e <interface_name> raw on length <length> >> <file_name>.txt
 
-3. Store the output from testpmd and ethtool into two files, then compare both files.
-   Verify they are the same.
+3. If nic is columbiaville, store the output of the first 1000 lines from testpmd and ethtool into two files,
+   else store the output from testpmd and ethtool into two files. Then compare both files, verify they are the same.
 
 4. Delete all the files created during testing.
 
@@ -86,7 +86,7 @@ Test Case : Module EEPROM Dump
 
     ethtool -m <interface_name> raw on length <length> >> <file_name>.txt
 
-3. Store the output from testpmd and ethtool into two files, then compare both files.
-   Verify they are the same.
+3. If nic is columbiaville, store the output of the first 16 lines from testpmd and ethtool into two files,
+   else store the output from testpmd and ethtool into two files. Then compare both files, verify they are the same.
 
 4. Delete all the files created during testing.
