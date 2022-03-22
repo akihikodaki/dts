@@ -34,6 +34,7 @@
 DPDK Test suite.
 """
 import re
+import time
 
 import framework.utils as utils
 from framework.pmd_output import PmdOutput
@@ -69,18 +70,35 @@ class TestEEPROMDump(TestCase):
 
         self.verify(not result, "Testpmd dumped is not same as linux dumped")
 
-    def dump_to_file(self, regex, get, to):
+    def dump_to_file(self, regex, get, to, testname):
+        # if nic is columbiaville, eeprom_dump get testpmd output of the first 1000 lines,
+        # module_eeprom_dump get testpmd output of the first 16 lines.
+        if self.nic in ["columbiaville_25g", "columbiaville_100g"]:
+            if  testname == "eeprom":
+                count = 1000
+            elif testname == "module_eeprom":
+                count = 16
+            n=0
+            # Get testpmd output to have only hex value
+            for line in re.findall(regex, get):
+                n= n+1
+                if n <= count:
+                    line = line.replace(" ", "").lower()
+                    self.dut.send_expect(f"echo {line} >> {to}", "#")
+
         # Get testpmd output to have only hex value
-        for line in re.findall(regex, get):
-            line = line.replace(" ", "").lower()
-            self.dut.send_expect(f"echo {line} >> {to}", "#")
+        else:
+            for line in re.findall(regex, get):
+                line = line.replace(" ", "").lower()
+                self.dut.send_expect(f"echo {line} >> {to}", "#")
 
     def check_output(self, testname, ethcommand):
         self.pmdout.start_testpmd("Default")
         portsinfo = []
 
         for port in self.ports:
-            pmdout = self.dut.send_expect(f"show port {port} {testname}", "testpmd>")
+            # show port {port} eeprom has 10485760 bytes, and it takes about 13 minutes to show finish.
+            pmdout = self.dut.send_expect(f"show port {port} {testname}", "testpmd>", timeout=800)
             self.verify("Finish --" in pmdout, f"{testname} dump failed")
 
             # get length from testpmd outout
@@ -112,6 +130,7 @@ class TestEEPROMDump(TestCase):
                 r"(?<=: )(.*)(?= \| )",
                 portinfo["pmdout"],
                 f"testpmd_{testname}_{port}.txt",
+                testname,
             )
 
             self.dut.send_expect(
@@ -127,9 +146,10 @@ class TestEEPROMDump(TestCase):
             )
 
             self.dump_to_file(
-                r"(?<=: )(.*)(?=  )",
+                r"(?<=: )(.*?)(?=  )",
                 portinfo["ethout"],
                 f"ethtool_{testname}_{port}.txt",
+                testname,
             )
 
             # Compare the files and delete the files after
