@@ -161,7 +161,6 @@ The following are the test plans for the DPDK DTS automated test system.
     short_live_test_plan
     shutdown_api_test_plan
     speed_capabilities_test_plan
-    sw_hw_thash_consistence_test_plan
     vhost_cbdma_test_plan
     vhost_user_interrupt_test_plan
     sriov_kvm_test_plan
