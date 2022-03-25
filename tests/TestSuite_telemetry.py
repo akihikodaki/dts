@@ -43,9 +43,6 @@ from framework.test_case import TestCase
 
 
 class TestTelemetry(TestCase):
-    def set_compiler_switch(self):
-        self.dut.set_build_options({"RTE_LIBRTE_TELEMETRY": "y"})
-
     def create_query_script(self):
         """
         usertools/dpdk-telemetry-client.py is not user friendly(till 19.05).
@@ -214,10 +211,6 @@ class TestTelemetry(TestCase):
         return outputs
 
     def init_test_binary_files(self):
-        # set_compiler_switch
-        if not self.dut.skip_setup:
-            self.set_compiler_switch()
-            self.dut.build_install_dpdk(self.target)
         # initialize testpmd
         self.testpmd_status = "close"
         self.testpmd = PmdOutput(self.dut)
@@ -605,8 +598,7 @@ class TestTelemetry(TestCase):
         """
         Run after each test suite.
         """
-        self.dut.set_build_options({"RTE_LIBRTE_TELEMETRY": "n"})
-        self.dut.build_install_dpdk(self.target)
+        pass
 
     def test_basic_connection(self):
         """
