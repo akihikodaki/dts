@@ -44,8 +44,7 @@ from pprint import pformat
 from framework.exception import VerifyFailure
 from framework.packet import Packet
 from framework.pktgen import TRANSMIT_CONT
-from framework.qemu_libvirt import LibvirtKvm
-from framework.settings import HEADER_SIZE, HOST_BUILD_TYPE_SETTING, load_global_setting
+from framework.settings import HEADER_SIZE
 from framework.test_case import TestCase
 from framework.utils import create_mask as dts_create_mask
 
@@ -227,27 +226,6 @@ class TestPowerBranchRatio(TestCase):
 
         return result
 
-    @property
-    def compile_switch(self):
-        sw_table = [
-            "CONFIG_RTE_LIBRTE_POWER",
-            "CONFIG_RTE_LIBRTE_POWER_DEBUG",
-        ]
-        return sw_table
-
-    def preset_compilation(self):
-        if "meson" == load_global_setting(HOST_BUILD_TYPE_SETTING):
-            compile_SWs = self.compile_switch + ["CONFIG_RTE_LIBRTE_I40E_PMD"]
-            self.dut.set_build_options(dict([(sw[7:], "y") for sw in compile_SWs]))
-        else:
-            for sw in self.compile_switch:
-                cmd = (
-                    "sed -i -e " "'s/{0}=n$/{0}=y/' " "{1}/config/common_base"
-                ).format(sw, self.target_dir)
-                self.d_a_con(cmd)
-        # re-compile dpdk source code
-        self.dut.build_install_dpdk(self.target)
-
     @contextmanager
     def restore_environment(self):
         try:
@@ -258,19 +236,6 @@ class TestPowerBranchRatio(TestCase):
                 self.restore_port_drv()
             except Exception as e:
                 self.logger.error(traceback.format_exc())
-            # restore compilation
-            if "meson" == load_global_setting(HOST_BUILD_TYPE_SETTING):
-                self.dut.set_build_options(
-                    dict([(sw[7:], "n") for sw in self.compile_switch])
-                )
-            else:
-                for sw in self.compile_switch:
-                    cmd = (
-                        "sed -i -e " "'s/{0}=y$/{0}=n/' " "{1}/config/common_base"
-                    ).format(sw, self.target_dir)
-                    self.d_a_con(cmd)
-            # re-compile dpdk source code
-            self.dut.build_install_dpdk(self.target)
 
     def restore_port_drv(self):
         driver = self.drivername
@@ -532,8 +497,6 @@ class TestPowerBranchRatio(TestCase):
         # modprobe msr module to let the application can get the CPU HW info
         self.d_a_con("modprobe msr")
         self.d_a_con("cpupower frequency-set -g userspace > /dev/null 2>&1")
-        # compile
-        self.preset_compilation()
         # init binary
         self.init_vm_power_mgr()
         self.init_testpmd()

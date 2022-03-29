@@ -45,7 +45,7 @@ from pprint import pformat
 from framework.exception import VerifyFailure
 from framework.packet import Packet
 from framework.pktgen import TRANSMIT_CONT
-from framework.settings import HEADER_SIZE, HOST_BUILD_TYPE_SETTING, load_global_setting
+from framework.settings import HEADER_SIZE
 from framework.test_case import TestCase
 from framework.utils import create_mask as dts_create_mask
 
@@ -124,20 +124,6 @@ class TestPowerTelemetry(TestCase):
         self.logger.debug(pformat(result))
 
         return result
-
-    def preset_compilation(self):
-        if self.dut.skip_setup:
-            return
-        SW = "CONFIG_RTE_LIBRTE_TELEMETRY"
-        if "meson" == load_global_setting(HOST_BUILD_TYPE_SETTING):
-            self.dut.set_build_options({SW[7:]: "y"})
-        else:
-            cmd = "sed -i -e 's/{0}=n$/{0}=y/' {1}/config/common_base".format(
-                SW, self.target_dir
-            )
-            self.d_a_con(cmd)
-        # re-compile dpdk source code
-        self.dut.build_install_dpdk(self.target)
 
     def prepare_binary(self, name):
         example_dir = "examples/" + name
@@ -445,8 +431,6 @@ class TestPowerTelemetry(TestCase):
 
     def preset_test_environment(self):
         self.is_l3fwd_on = None
-        # open compile switch and re-compile target source code
-        self.preset_compilation()
         # init binary
         self.init_l3fwd_power()
         self.init_telemetry()
