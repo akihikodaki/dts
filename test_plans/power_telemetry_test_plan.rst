@@ -53,11 +53,6 @@ Preparation Work for Settings
 
     cpupower frequency-set -g userspace
 
-Compile DPDK with telemetry enabled, enable telemetry lib in configuration file::
-
-    -CONFIG_RTE_LIBRTE_TELEMETRY=n
-    +CONFIG_RTE_LIBRTE_TELEMETRY=y
-
 
 Test Case 1 : Check all 3 type of power related info reported by Telemetry System
 =================================================================================

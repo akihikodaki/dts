@@ -47,9 +47,8 @@ Prepare work
 
     intel_pstate=enable
 
-5. Set CONFIG_RTE_LIBRTE_POWER_DEBUG=y CONFIG_RTE_LIBRTE_POWER=y in /config/common_base file.
-6. modprobe msr module to let the application can get the CPU HW info.
-7. Let user space can control the CPU frequency::
+5. modprobe msr module to let the application can get the CPU HW info.
+6. Let user space can control the CPU frequency::
 
     cpupower frequency-set -g userspace
 
