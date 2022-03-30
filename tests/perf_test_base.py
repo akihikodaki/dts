@@ -44,7 +44,6 @@ from pprint import pformat
 
 import numpy as np
 
-import framework.texttable as texttable
 import framework.utils as utils
 from framework.config import SuiteConf
 from framework.exception import VerifyFailure
@@ -1039,11 +1038,13 @@ class PerfTestBase(object):
         return mode_name
 
     def __display_suite_result(self, data):
+        from texttable import Texttable
+
         values = data.get("values")
         title = data.get("title")
         max_length = sum([len(item) + 5 for item in title])
         self.result_table_create(title)
-        self._result_table.table = texttable.Texttable(max_width=max_length)
+        self._result_table.table = Texttable(max_width=max_length)
         for value in values:
             self.result_table_add(value)
         self.result_table_print()

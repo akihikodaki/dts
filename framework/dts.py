@@ -47,7 +47,6 @@ import framework.debugger as debugger
 import framework.logger as logger
 import framework.rst as rst  # rst file support
 import framework.settings as settings  # dts settings
-import framework.texttable as texttable  # text format
 from framework.asan_test import ASanTestProcess
 
 from .checkCase import CheckCase

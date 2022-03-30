@@ -32,7 +32,6 @@
 """
 Generic result container and reporters
 """
-import framework.texttable as texttable  # text format
 
 
 class Result(object):
@@ -445,9 +444,11 @@ class ResultTable(object):
         rt.add_row(row)
         rt.table_print()
         """
+        from texttable import Texttable
+
         self.results_table_rows = []
         self.results_table_rows.append([])
-        self.table = texttable.Texttable(max_width=150)
+        self.table = Texttable(max_width=150)
         self.results_table_header = header
         self.logger = None
         self.rst = None
