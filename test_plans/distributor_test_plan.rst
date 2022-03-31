@@ -71,10 +71,6 @@ Verify burst distributor API cost much less cycles then normal version
 
 Test case: Distribute with maximum workers
 ==========================================
-In order to make more queue as worker, let a core receive and a core send::
-
-           sed -i -e 's/.*txRings = .*/\\tconst uint16_t rxRings = 1, txRings = 1;/' ./examples/distributor/main.c
-
 Start distributor sample with 63(0xeffffffffffffffff0) workers
 
 Send several packets with ip address increasing

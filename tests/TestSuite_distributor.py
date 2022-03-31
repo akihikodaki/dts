@@ -45,11 +45,6 @@ class TestDistributor(TestCase):
         """
         Run at the start of each test suite.
         """
-        # reduce tx queues for enable many workers
-        self.dut.send_expect(
-            "sed -i -e 's/.*txRings = .*/\\tconst uint16_t rxRings = 1, txRings = 1;/' ./examples/distributor/main.c",
-            "#",
-        )
         out = self.dut.build_dpdk_apps("./examples/distributor")
         self.verify("Error" not in out, "Compilation error")
         self.verify("No such" not in out, "Compilation error")
@@ -301,8 +296,4 @@ class TestDistributor(TestCase):
         """
         Run after each test suite.
         """
-        self.dut.send_expect(
-            "sed -i -e 's/.*txRings = .*/\\tconst uint16_t rxRings = 1, txRings = rte_lcore_count() - 1;/' ./examples/distributor/main.c",
-            "#",
-        )
         pass
