@@ -255,16 +255,6 @@ class Dut(Crb):
         """
         self.destroy_session(session)
 
-    def change_config_option(self, target, parameter, value):
-        """
-        This function change option in the config file
-        """
-        self.send_expect(
-            "sed -i 's/%s=.*$/%s=%s/'  config/defconfig_%s"
-            % (parameter, parameter, value, target),
-            "# ",
-        )
-
     def set_nic_type(self, nic_type):
         """
         Set CRB NICS ready to validated.
@@ -511,20 +501,6 @@ class Dut(Crb):
         except AttributeError:
             self.logger.error("%s is not implemented" % function_name)
 
-    def get_def_rte_config(self, config):
-        """
-        Get RTE configuration from config/defconfig_*.
-        """
-        out = self.send_expect(
-            "cat config/defconfig_%s | sed '/^#/d' | sed '/^\s*$/d'" % self.target, "# "
-        )
-
-        def_rte_config = re.findall(config + "=(\S+)", out)
-        if def_rte_config:
-            return def_rte_config[0]
-        else:
-            return None
-
     def setup_memory_linux(self, hugepages=-1):
         """
         Setup Linux hugepages.
@@ -574,16 +550,8 @@ class Dut(Crb):
                         self.set_huge_pages(arch_huge_pages, numa_nodes[0])
                         self.logger.info("force_socket on %s" % numa_nodes[0])
                     else:
-                        numa_service_num = self.get_def_rte_config(
-                            "CONFIG_RTE_MAX_NUMA_NODES"
-                        )
-                        if numa_service_num is not None:
-                            total_numa_nodes = min(
-                                total_numa_nodes, int(numa_service_num)
-                            )
-
-                        # set huge pages to configured total_numa_nodes
-                        for numa_node in numa_nodes[:total_numa_nodes]:
+                        # set huge pages to all numa_nodes
+                        for numa_node in numa_nodes:
                             self.set_huge_pages(arch_huge_pages, numa_node)
 
         self.mount_huge_pages()

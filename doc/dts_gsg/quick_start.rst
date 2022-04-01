@@ -251,7 +251,6 @@ As we have prepared the zipped dpdk file and configuration file, just type the f
              dut.192.168.1.1: ninja -C x86_64-native-linuxapp-gcc
              dut.192.168.1.1: ls x86_64-native-linuxapp-gcc/examples/dpdk-helloworld
                 TestHelloWorld: Test Case test_hello_world_all_cores Begin
-             dut.192.168.1.1: cat config/defconfig_x86_64-native-linuxapp-gcc | sed '/^#/d' | sed '/^\s*$/d'
              dut.192.168.1.1: ./x86_64-native-linuxapp-gcc/examples/dpdk-helloworld  -l 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71 -n 4   --file-prefix=dpdk_25703_20210311003827
                 TestHelloWorld: Test Case test_hello_world_all_cores Result PASSED:
                 TestHelloWorld: Test Case test_hello_world_single_core Begin

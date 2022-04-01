@@ -82,23 +82,14 @@ class TestHelloWorld(TestCase):
 
         # get the maximum logical core number
         cores = self.dut.get_core_list("all")
-
-        config_max_lcore = self.dut.get_def_rte_config("CONFIG_RTE_MAX_LCORE")
-        if config_max_lcore:
-            available_max_lcore = min(int(config_max_lcore), len(cores) + 1)
-        else:
-            available_max_lcore = len(cores) + 1
-
-        eal_para = self.dut.create_eal_parameters(
-            cores=cores[: available_max_lcore - 1]
-        )
+        eal_para = self.dut.create_eal_parameters(cores)
 
         cmdline = "./%s %s " % (self.app_helloworld_path, eal_para)
         out = self.dut.send_expect(cmdline, "# ", 50)
-        for i in range(available_max_lcore - 1):
+        for core in cores:
             self.verify(
-                "hello from core %s" % cores[i] in out,
-                "EAL not started on core%s" % cores[i],
+                "hello from core %s" % core in out,
+                "EAL not started on core%s" % core,
             )
 
     def tear_down(self):
