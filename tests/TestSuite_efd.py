@@ -159,23 +159,16 @@ class TestEFD(TestCase):
         # perf of different value bit lengths
         for val_bitnum in val_bitnums:
             # change value length and rebuild dpdk
-            self.dut.send_expect(
-                "sed -i -e 's/#define RTE_EFD_VALUE_NUM_BITS .*$/#define RTE_EFD_VALUE_NUM_BITS (%d)/' lib/librte_efd/rte_efd.h"
-                % val_bitnum,
-                "#",
-            )
-            self.dut.build_install_dpdk(self.target)
+            extra_options = "-Dc_args=-DRTE_EFD_VALUE_NUM_BITS=%d" % val_bitnum
+            self.dut.build_install_dpdk(self.target, extra_options=extra_options)
             self.build_server_node_efd()
 
             pps = self._efd_perf_evaluate(2, flow_num)
             self.result_table_add([val_bitnum, 2, "2M", pps])
 
         self.result_table_print()
-        self.dut.send_expect(
-            "sed -i -e 's/#define RTE_EFD_VALUE_NUM_BITS .*$/#define RTE_EFD_VALUE_NUM_BITS (8)/' lib/librte_efd/rte_efd.h",
-            "#",
-        )
-        self.dut.build_install_dpdk(self.target)
+        extra_options = "-Dc_args=-DRTE_EFD_VALUE_NUM_BITS=8"
+        self.dut.build_install_dpdk(self.target, extra_options=extra_options)
         self.build_server_node_efd()
 
     def _efd_perf_evaluate(self, node_num, flow_num):
