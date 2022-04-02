@@ -559,6 +559,8 @@ def run_all(
 
     # prepare ASan test
     ASanTestProcess.test_prepare(asan, output_dir)
+    # register generate ASan report action
+    atexit.register(ASanTestProcess.test_process)
 
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
@@ -675,9 +677,6 @@ def run_all(
         dts_crbs_exit(duts, tester)
 
     save_all_results()
-
-    # process ASan test report
-    ASanTestProcess.test_process()
 
 
 def show_speedup_options_messages(read_cache, skip_setup):
