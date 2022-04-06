@@ -2749,7 +2749,7 @@ Test case 1: l2tpv2_session_id_MAC_IPV4_L2TPV2_CONTROL
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type control session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type control / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -2788,7 +2788,7 @@ Test case 2: eth_l2_src_only_MAC_IPV4_L2TPV2_CONTROL
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type control session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type control / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -2827,7 +2827,7 @@ Test case 3: l2tpv2_session_id_MAC_IPV6_L2TPV2_CONTROL
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type control session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type control / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -2866,7 +2866,7 @@ Test case 4: eth_l2_src_only_MAC_IPV6_L2TPV2_CONTROL
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type control session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type control / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -2905,7 +2905,7 @@ Test case 5: l2tpv2_session_id_MAC_IPV4_L2TPV2_DATA
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -2944,7 +2944,7 @@ Test case 6: eth_l2_src_only_MAC_IPV4_L2TPV2_DATA
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -2983,7 +2983,7 @@ Test case 7: l2tpv2_session_id_MAC_IPV4_L2TPV2_DATA_L
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3022,7 +3022,7 @@ Test case 8: eth_l2_src_only_MAC_IPV4_L2TPV2_DATA_L
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data_l session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3061,7 +3061,7 @@ Test case 9: l2tpv2_session_id_MAC_IPV4_L2TPV2_DATA_S
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3100,7 +3100,7 @@ Test case 10: eth_l2_src_only_MAC_IPV4_L2TPV2_DATA_S
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data_s session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully. 
 
@@ -3139,7 +3139,7 @@ Test case 11: l2tpv2_session_id_MAC_IPV4_L2TPV2_DATA_O
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3178,7 +3178,7 @@ Test case 12: eth_l2_src_only_MAC_IPV4_L2TPV2_DATA_O
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3217,7 +3217,7 @@ Test case 13: l2tpv2_session_id_MAC_IPV4_L2TPV2_DATA_L_S
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3256,7 +3256,7 @@ Test case 14: eth_l2_src_only_MAC_IPV4_L2TPV2_DATA_L_S
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data_l_s session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3295,7 +3295,7 @@ Test case 15: l2tpv2_session_id_MAC_IPV6_L2TPV2_DATA
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3334,7 +3334,7 @@ Test case 16: eth_l2_src_only_MAC_IPV6_L2TPV2_DATA
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3373,7 +3373,7 @@ Test case 17: l2tpv2_session_id_MAC_IPV6_L2TPV2_DATA_L
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3412,7 +3412,7 @@ Test case 18: eth_l2_src_only_MAC_IPV6_L2TPV2_DATA_L
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data_l session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3451,7 +3451,7 @@ Test case 19: l2tpv2_session_id_MAC_IPV6_L2TPV2_DATA_S
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3490,7 +3490,7 @@ Test case 20: eth_l2_src_only_MAC_IPV6_L2TPV2_DATA_S
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data_s session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3529,7 +3529,7 @@ Test case 21: l2tpv2_session_id_MAC_IPV6_L2TPV2_DATA_O
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3568,7 +3568,7 @@ Test case 22: eth_l2_src_only_MAC_IPV6_L2TPV2_DATA_O
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3607,7 +3607,7 @@ Test case 23: l2tpv2_session_id_MAC_IPV6_L2TPV2_DATA_L_S
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3646,7 +3646,7 @@ Test case 24: eth_l2_src_only_MAC_IPV6_L2TPV2_DATA_L_S
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data_l_s session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3685,7 +3685,7 @@ Test case 25: l2tpv2_session_id_MAC_IPV4_PPPoL2TPV2_DATA
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data session_id is 0x1111 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3724,7 +3724,7 @@ Test case 26: eth_l2_src_only_MAC_IPV4_PPPoL2TPV2_DATA
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3763,7 +3763,7 @@ Test case 27: l2tpv2_session_id_MAC_IPV4_PPPoL2TPV2_DATA_L
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l session_id is 0x1111 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3802,7 +3802,7 @@ Test case 28: eth_l2_src_only_MAC_IPV4_PPPoL2TPV2_DATA_L
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data_l session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3841,7 +3841,7 @@ Test case 29: l2tpv2_session_id_MAC_IPV4_PPPoL2TPV2_DATA_S
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s session_id is 0x1111 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3880,7 +3880,7 @@ Test case 30: eth_l2_src_only_MAC_IPV4_PPPoL2TPV2_DATA_S
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data_s session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3919,7 +3919,7 @@ Test case 31: l2tpv2_session_id_MAC_IPV4_PPPoL2TPV2_DATA_O
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3958,7 +3958,7 @@ Test case 32: eth_l2_src_only_MAC_IPV4_PPPoL2TPV2_DATA_O
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -3997,7 +3997,7 @@ Test case 33: l2tpv2_session_id_MAC_IPV4_PPPoL2TPV2_DATA_L_S
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s session_id is 0x1111 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -4036,7 +4036,7 @@ Test case 34: eth_l2_src_only_MAC_IPV4_PPPoL2TPV2_DATA_L_S
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data_l_s session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -4075,7 +4075,7 @@ Test case 35: l2tpv2_session_id_MAC_IPV6_PPPoL2TPV2_DATA
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data session_id is 0x1111 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -4114,7 +4114,7 @@ Test case 36: eth_l2_src_only_MAC_IPV6_PPPoL2TPV2_DATA
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -4153,7 +4153,7 @@ Test case 37: l2tpv2_session_id_MAC_IPV6_PPPoL2TPV2_DATA_L
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l session_id is 0x1111 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -4192,7 +4192,7 @@ Test case 38: eth_l2_src_only_MAC_IPV6_PPPoL2TPV2_DATA_L
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data_l session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -4231,7 +4231,7 @@ Test case 39: l2tpv2_session_id_MAC_IPV6_PPPoL2TPV2_DATA_S
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s session_id is 0x1111 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -4270,7 +4270,7 @@ Test case 40: eth_l2_src_only_MAC_IPV6_PPPoL2TPV2_DATA_S
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data_s session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -4309,7 +4309,7 @@ Test case 41: l2tpv2_session_id_MAC_IPV6_PPPoL2TPV2_DATA_O
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -4348,7 +4348,7 @@ Test case 42: eth_l2_src_only_MAC_IPV6_PPPoL2TPV2_DATA_O
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -4387,7 +4387,7 @@ Test case 43: l2tpv2_session_id_MAC_IPV6_PPPoL2TPV2_DATA_L_S
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s session_id is 0x1111 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
@@ -4426,7 +4426,7 @@ Test case 44: eth_l2_src_only_MAC_IPV6_PPPoL2TPV2_DATA_L_S
 
 2. create a rss rule::
 
-    flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data_l_s session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end
 
    check there is a rss rule listed successfully.
 
