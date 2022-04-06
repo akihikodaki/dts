@@ -157,7 +157,7 @@ Subcase 2: eth_l2_src_only_MAC_IPV4_L2TPV2_CONTROL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth src is <src mac change inputset> / ipv4 / udp / l2tpv2 type control / end actions queue index 5 / end
+    testpmd> flow create 0 ingress pattern eth src is <src mac change inputset> / ipv4 / udp / l2tpv2 type control / end actions drop / end
 
 matched packets::
 
@@ -193,7 +193,7 @@ Subcase 2: eth_l2_src_only_MAC_IPV6_L2TPV2_CONTROL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth src is <src mac change inputset> / ipv6 / udp / l2tpv2 type control / end actions queue index 5 / end
+    testpmd> flow create 0 ingress pattern eth src is <src mac change inputset> / ipv6 / udp / l2tpv2 type control / end actions drop / end
 
 matched packets::
 
@@ -245,7 +245,7 @@ Subcase 3: l2tpv2_session_id_MAC_IPV4_L2TPV2_DATA_L
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l session_id is <session_id> / end actions queue index 2 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l session_id is <session_id> / end actions rss queues 2 3 end / end
 
 matched packets::
 
@@ -277,7 +277,7 @@ Subcase 5: l2tpv2_session_id_MAC_IPV4_L2TPV2_DATA_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s session_id is 0x1111 / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s session_id is 0x1111 / end actions passthru / end
 
 matched packets::
 
@@ -309,7 +309,7 @@ Subcase 7: l2tpv2_session_id_MAC_IPV4_L2TPV2_DATA_O
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o session_id is <session_id> offset_size is <offset> / end actions queue index 3 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o session_id is <session_id> offset_size is <offset> / end actions drop / end
 
 matched packets::
 
@@ -409,7 +409,7 @@ Subcase 3: l2tpv2_session_id_MAC_IPV6_L2TPV2_DATA_L
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l session_id is <session_id> / end actions queue index 2 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l session_id is <session_id> / end actions rss queues 2 3 end / end
 
 matched packets::
 
@@ -441,7 +441,7 @@ Subcase 5: l2tpv2_session_id_MAC_IPV6_L2TPV2_DATA_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s session_id is <session_id> / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s session_id is <session_id> / end actions mark id 1 / end
 
 matched packets::
 
@@ -473,7 +473,7 @@ Subcase 7: l2tpv2_session_id_MAC_IPV6_L2TPV2_DATA_O
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o session_id is <session_id> offset_size is <offset> / end actions queue index 3 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o session_id is <session_id> offset_size is <offset> / end actions drop / end
 
 matched packets::
 
@@ -573,7 +573,7 @@ Subcase 3: l2tpv2_session_id_MAC_IPV4_PPPoL2TPV2_DATA_L
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l session_id is <session_id> / ppp / end actions queue index 2 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l session_id is <session_id> / ppp / end actions rss queues 2 3 end / end
 
 matched packets::
 
@@ -605,7 +605,7 @@ Subcase 5: l2tpv2_session_id_MAC_IPV4_PPPoL2TPV2_DATA_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s session_id is <session_id> / ppp / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s session_id is <session_id> / ppp / end actions passthru / end
 
 matched packets::
 
@@ -637,7 +637,7 @@ Subcase 7: l2tpv2_session_id_MAC_IPV4_PPPoL2TPV2_DATA_O
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o session_id is <session_id> offset_size is <offset> / ppp / end actions queue index 3 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o session_id is <session_id> offset_size is <offset> / ppp / end actions drop / end
 
 matched packets::
 
@@ -737,7 +737,7 @@ Subcase 3: l2tpv2_session_id_MAC_IPV6_PPPoL2TPV2_DATA_L
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l session_id is <session_id> / ppp / end actions queue index 2 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l session_id is <session_id> / ppp / end actions rss queues 2 3 end / end
 
 matched packets::
 
@@ -769,7 +769,7 @@ Subcase 5: l2tpv2_session_id_MAC_IPV6_PPPoL2TPV2_DATA_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s session_id is <session_id> / ppp / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s session_id is <session_id> / ppp / end actions mark id 1 / end
 
 matched packets::
 
@@ -801,7 +801,7 @@ Subcase 7: l2tpv2_session_id_MAC_IPV6_PPPoL2TPV2_DATA_O
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o session_id is <session_id> offset_size is <offset> / ppp / end actions queue index 3 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o session_id is <session_id> offset_size is <offset> / ppp / end actions drop / end
 
 matched packets::
 
@@ -903,7 +903,7 @@ Subcase 3: ipv4_MAC_IPV4_PPPoL2TPV2_IPV4_PAY_DATA_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions queue index 7 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions rss queues 2 3 end / end
 
 matched packets::
 
@@ -937,7 +937,7 @@ Subcase 5: ipv4_MAC_IPV4_PPPoL2TPV2_IPV4_PAY_DATA_L_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions drop / end
 
 matched packets::
 
@@ -992,7 +992,7 @@ Subcase 3: ipv4_udp_MAC_IPV4_PPPoL2TPV2_IPV4_UDP_PAY_DATA_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv4 dst is <ipv4 dst> / udp src is <inner sport> / end actions queue index 7 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv4 dst is <ipv4 dst> / udp src is <inner sport> / end actions rss queues 2 3 end / end
 
 matched packets::
 
@@ -1026,7 +1026,7 @@ Subcase 5: ipv4_udp_MAC_IPV4_PPPoL2TPV2_IPV4_UDP_PAY_DATA_L_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv4 src is <ipv4 src> / udp dst is <inner dport> / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv4 src is <ipv4 src> / udp dst is <inner dport> / end actions drop / end
 
 matched packets::
 
@@ -1081,7 +1081,7 @@ Subcase 3: ipv4_tcp_MAC_IPV4_PPPoL2TPV2_IPV4_TCP_DATA_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv4 dst is <ipv4 dst> / tcp src is <inner sport> / end actions queue index 7 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv4 dst is <ipv4 dst> / tcp src is <inner sport> / end actions rss queues 2 3 end / end
 
 matched packets::
 
@@ -1115,7 +1115,7 @@ Subcase 5: ipv4_tcp_MAC_IPV4_PPPoL2TPV2_IPV4_TCP_DATA_L_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv4 src is <ipv4 src> / tcp dst is <inner dport> / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv4 src is <ipv4 src> / tcp dst is <inner dport> / end actions drop / end
 
 matched packets::
 
@@ -1170,7 +1170,7 @@ Subcase 3: ipv6_MAC_IPV4_PPPoL2TPV2_IPV6_PAY_DATA_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv6 src is <ipv6 src> dst is <ipv6 dst> / end actions queue index 7 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv6 src is <ipv6 src> dst is <ipv6 dst> / end actions rss queues 2 3 end / end
 
 matched packets::
 
@@ -1204,7 +1204,7 @@ Subcase 5: ipv6_MAC_IPV4_PPPoL2TPV2_IPV6_PAY_DATA_L_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv6 src is <ipv6 src> dst is <ipv6 dst> / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv6 src is <ipv6 src> dst is <ipv6 dst> / end actions drop / end
 
 matched packets::
 
@@ -1259,7 +1259,7 @@ Subcase 3: ipv6_udp_MAC_IPV4_PPPoL2TPV2_IPV6_UDP_PAY_DATA_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv6 dst is <ipv6 dst> / udp src is <inner sport> / end actions queue index 7 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv6 dst is <ipv6 dst> / udp src is <inner sport> / end actions rss queues 2 3 end / end
 
 matched packets::
 
@@ -1293,7 +1293,7 @@ Subcase 5: ipv6_udp_MAC_IPV4_PPPoL2TPV2_IPV6_UDP_PAY_DATA_L_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv6 dst is <ipv6 dst> / udp dst is <inner dport> / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv6 dst is <ipv6 dst> / udp dst is <inner dport> / end actions drop / end
 
 matched packets::
 
@@ -1348,7 +1348,7 @@ Subcase 3: ipv6_tcp_MAC_IPV4_PPPoL2TPV2_IPV6_TCP_DATA_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv6 dst is <ipv6 dst> / tcp src is <inner sport> / end actions queue index 7 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv6 dst is <ipv6 dst> / tcp src is <inner sport> / end actions rss queues 2 3 end / end
 
 matched packets::
 
@@ -1382,7 +1382,7 @@ Subcase 5: ipv6_tcp_MAC_IPV4_PPPoL2TPV2_IPV6_TCP_DATA_L_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv6 src is <ipv6 src> / tcp src is <inner sport> / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv6 src is <ipv6 src> / tcp src is <inner sport> / end actions drop / end
 
 matched packets::
 
@@ -1437,7 +1437,7 @@ Subcase 3: ipv4_MAC_IPV6_PPPoL2TPV2_IPV4_PAY_DATA_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions queue index 7 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions rss queues 2 3 end / end
 
 matched packets::
 
@@ -1471,7 +1471,7 @@ Subcase 5: ipv4_MAC_IPV6_PPPoL2TPV2_IPV4_PAY_DATA_L_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions drop / end
 
 matched packets::
 
@@ -1526,7 +1526,7 @@ Subcase 3: ipv4_udp_MAC_IPV6_PPPoL2TPV2_IPV4_UDP_PAY_DATA_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv4 src is <ipv4 src> / udp dst is <inner dport> / end actions queue index 7 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv4 src is <ipv4 src> / udp dst is <inner dport> / end actions rss queues 2 3 end / end
 
 matched packets::
 
@@ -1560,7 +1560,7 @@ Subcase 5: ipv4_udp_MAC_IPV6_PPPoL2TPV2_IPV4_UDP_PAY_DATA_L_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv4 dst is <ipv4 dst> / udp dst is <inner dport> / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv4 dst is <ipv4 dst> / udp dst is <inner dport> / end actions drop / end
 
 matched packets::
 
@@ -1615,7 +1615,7 @@ Subcase 3: ipv4_tcp_MAC_IPV6_PPPoL2TPV2_IPV4_TCP_DATA_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv4 src is <ipv4 src> / tcp dst is <inner dport> / end actions queue index 7 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv4 src is <ipv4 src> / tcp dst is <inner dport> / end actions rss queues 2 3 end / end
 
 matched packets::
 
@@ -1649,7 +1649,7 @@ Subcase 5: ipv4_tcp_MAC_IPV6_PPPoL2TPV2_IPV4_TCP_DATA_L_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv4 dst is <ipv4 dst> / tcp dst is <inner dport> / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv4 dst is <ipv4 dst> / tcp dst is <inner dport> / end actions drop / end
 
 matched packets::
 
@@ -1704,7 +1704,7 @@ Subcase 3: ipv6_MAC_IPV6_PPPoL2TPV2_IPV6_PAY_DATA_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv6 src is <ipv6 src> dst is <ipv6 dst> / end actions queue index 7 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv6 src is <ipv6 src> dst is <ipv6 dst> / end actions rss queues 2 3 end / end
 
 matched packets::
 
@@ -1738,7 +1738,7 @@ Subcase 5: ipv6_MAC_IPV6_PPPoL2TPV2_IPV6_PAY_DATA_L_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv6 src is <ipv6 src> dst is <ipv6 dst> / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv6 src is <ipv6 src> dst is <ipv6 dst> / end actions drop / end
 
 matched packets::
 
@@ -1793,7 +1793,7 @@ Subcase 3: ipv6_udp_MAC_IPV6_PPPoL2TPV2_IPV6_UDP_PAY_DATA_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv6 dst is <ipv6 dst> / udp src is <inner sport> / end actions queue index 7 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv6 dst is <ipv6 dst> / udp src is <inner sport> / end actions rss queues 2 3 end / end
 
 matched packets::
 
@@ -1827,7 +1827,7 @@ Subcase 5: ipv6_udp_MAC_IPV6_PPPoL2TPV2_IPV6_UDP_PAY_DATA_L_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv6 dst is <ipv6 dst> / udp dst is <inner dport> / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv6 dst is <ipv6 dst> / udp dst is <inner dport> / end actions drop / end
 
 matched packets::
 
@@ -1882,7 +1882,7 @@ Subcase 3: ipv6_tcp_MAC_IPV6_PPPoL2TPV2_IPV6_TCP_DATA_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv6 dst is <ipv6 dst> / tcp src is <inner sport> / end actions queue index 7 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv6 dst is <ipv6 dst> / tcp src is <inner sport> / end actions rss queues 2 3 end / end
 
 matched packets::
 
@@ -1916,7 +1916,7 @@ Subcase 5: ipv6_tcp_MAC_IPV6_PPPoL2TPV2_IPV6_TCP_DATA_L_S
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 rules::
 
-    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv6 src is <ipv6 src> / tcp src is <inner sport> / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv6 src is <ipv6 src> / tcp src is <inner sport> / end actions drop / end
 
 matched packets::
 
