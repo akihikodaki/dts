@@ -62,7 +62,7 @@ tv_l2tpv2_seession_id_mac_ipv4_l2tpv2_control = {
 
 tv_eth_l2_src_only_mac_ipv4_l2tpv2_control = {
     "name": "eth_l2_src_only_mac_ipv4_l2tpv2_control",
-    "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type control / end actions queue index 5 / end",
+    "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type control / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="00:00:00:00:00:01")/IP()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)',
@@ -73,7 +73,7 @@ tv_eth_l2_src_only_mac_ipv4_l2tpv2_control = {
             'Ether(src="00:00:00:00:00:01")/IPv6()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 5},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 vectors_mac_ipv4_l2tpv2_control = [
@@ -99,7 +99,7 @@ tv_l2tpv2_seession_id_mac_ipv6_l2tpv2_control = {
 
 tv_eth_l2_src_only_mac_ipv6_l2tpv2_control = {
     "name": "eth_l2_src_only_mac_ipv6_l2tpv2_control",
-    "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type control / end actions queue index 5 / end",
+    "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type control / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="00:00:00:00:00:01")/IPv6()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)',
@@ -110,7 +110,7 @@ tv_eth_l2_src_only_mac_ipv6_l2tpv2_control = {
             'Ether(src="00:00:00:00:00:01")/IP()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 5},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 vectors_mac_ipv6_l2tpv2_control = [tv_l2tpv2_seession_id_mac_ipv6_l2tpv2_control,tv_eth_l2_src_only_mac_ipv6_l2tpv2_control]
@@ -149,7 +149,7 @@ tv_eth_l2_src_only_mac_ipv4_l2tpv2_data = {
 
 tv_l2tpv2_seession_id_mac_ipv4_l2tpv2_data_l = {
     "name": "l2tpv2_seession_id_mac_ipv4_l2tpv2_data_l",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l session_id is 0x1111 / end actions queue index 2 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l session_id is 0x1111 / end actions rss queues 2 3 end / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)',
@@ -160,7 +160,7 @@ tv_l2tpv2_seession_id_mac_ipv4_l2tpv2_data_l = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 2},
+    "check_param": {"port_id": 0, "queue": [2, 3]},
 }
 
 tv_eth_l2_src_only_mac_ipv4_l2tpv2_data_l = {
@@ -181,7 +181,7 @@ tv_eth_l2_src_only_mac_ipv4_l2tpv2_data_l = {
 
 tv_l2tpv2_seession_id_mac_ipv4_l2tpv2_data_s = {
     "name": "l2tpv2_seession_id_mac_ipv4_l2tpv2_data_s",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s session_id is 0x1111 / end actions queue index 4 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s session_id is 0x1111 / end actions passthru / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)',
@@ -192,7 +192,7 @@ tv_l2tpv2_seession_id_mac_ipv4_l2tpv2_data_s = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 4},
+    "check_param": {"port_id": 0, "passthru": 1},
 }
 
 tv_eth_l2_src_only_mac_ipv4_l2tpv2_data_s = {
@@ -213,7 +213,7 @@ tv_eth_l2_src_only_mac_ipv4_l2tpv2_data_s = {
 
 tv_l2tpv2_seession_id_mac_ipv4_l2tpv2_data_o = {
     "name": "l2tpv2_seession_id_mac_ipv4_l2tpv2_data_o",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / end actions queue index 3 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)',
@@ -224,7 +224,7 @@ tv_l2tpv2_seession_id_mac_ipv4_l2tpv2_data_o = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 3},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 tv_eth_l2_src_only_mac_ipv4_l2tpv2_data_o = {
@@ -322,7 +322,7 @@ tv_eth_l2_src_only_mac_ipv6_l2tpv2_data = {
 
 tv_l2tpv2_seession_id_mac_ipv6_l2tpv2_data_l = {
     "name": "l2tpv2_seession_id_mac_ipv6_l2tpv2_data_l",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l session_id is 0x1111 / end actions queue index 2 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l session_id is 0x1111 / end actions rss queues 2 3 end / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)',
@@ -333,7 +333,7 @@ tv_l2tpv2_seession_id_mac_ipv6_l2tpv2_data_l = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 2},
+    "check_param": {"port_id": 0, "queue": [2, 3]},
 }
 
 tv_eth_l2_src_only_mac_ipv6_l2tpv2_data_l = {
@@ -354,7 +354,7 @@ tv_eth_l2_src_only_mac_ipv6_l2tpv2_data_l = {
 
 tv_l2tpv2_seession_id_mac_ipv6_l2tpv2_data_s = {
     "name": "l2tpv2_seession_id_mac_ipv6_l2tpv2_data_s",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s session_id is 0x1111 / end actions queue index 4 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s session_id is 0x1111 / end actions mark id 1 / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)',
@@ -365,7 +365,7 @@ tv_l2tpv2_seession_id_mac_ipv6_l2tpv2_data_s = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 4},
+    "check_param": {"port_id": 0, "mark_id": 1},
 }
 
 tv_eth_l2_src_only_mac_ipv6_l2tpv2_data_s = {
@@ -386,7 +386,7 @@ tv_eth_l2_src_only_mac_ipv6_l2tpv2_data_s = {
 
 tv_l2tpv2_seession_id_mac_ipv6_l2tpv2_data_o = {
     "name": "l2tpv2_seession_id_mac_ipv6_l2tpv2_data_o",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / end actions queue index 3 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)',
@@ -397,7 +397,7 @@ tv_l2tpv2_seession_id_mac_ipv6_l2tpv2_data_o = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 3},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 tv_eth_l2_src_only_mac_ipv6_l2tpv2_data_o = {
@@ -495,7 +495,7 @@ tv_eth_l2_src_only_mac_ipv4_pppol2tpv2_data = {
 
 tv_l2tpv2_seession_id_mac_ipv4_pppol2tpv2_data_l = {
     "name": "l2tpv2_seession_id_mac_ipv4_pppol2tpv2_data_l",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l session_id is 0x1111 / ppp / end actions queue index 2 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l session_id is 0x1111 / ppp / end actions rss queues 2 3 end / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)/HDLC()/Raw(b"\\x00\\x00")',
@@ -506,7 +506,7 @@ tv_l2tpv2_seession_id_mac_ipv4_pppol2tpv2_data_l = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)/HDLC()/Raw(b"\\x00\\x00")',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 2},
+    "check_param": {"port_id": 0, "queue": [2, 3]},
 }
 
 tv_eth_l2_src_only_mac_ipv4_pppol2tpv2_data_l = {
@@ -527,7 +527,7 @@ tv_eth_l2_src_only_mac_ipv4_pppol2tpv2_data_l = {
 
 tv_l2tpv2_seession_id_mac_ipv4_pppol2tpv2_data_s = {
     "name": "l2tpv2_seession_id_mac_ipv4_pppol2tpv2_data_s",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s session_id is 0x1111 / ppp / end actions queue index 4 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s session_id is 0x1111 / ppp / end actions passthru / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b"\\x00\\x00")',
@@ -538,7 +538,7 @@ tv_l2tpv2_seession_id_mac_ipv4_pppol2tpv2_data_s = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b"\\x00\\x00")',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 4},
+    "check_param": {"port_id": 0, "passthru": 1},
 }
 
 tv_eth_l2_src_only_mac_ipv4_pppol2tpv2_data_s = {
@@ -559,7 +559,7 @@ tv_eth_l2_src_only_mac_ipv4_pppol2tpv2_data_s = {
 
 tv_l2tpv2_seession_id_mac_ipv4_pppol2tpv2_data_o = {
     "name": "l2tpv2_seession_id_mac_ipv4_pppol2tpv2_data_o",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / ppp / end actions queue index 3 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / ppp / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b"\\x00\\x00\\x00\\x00")/HDLC()/Raw(b"\\x00\\x00")',
@@ -570,7 +570,7 @@ tv_l2tpv2_seession_id_mac_ipv4_pppol2tpv2_data_o = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b"\\x00\\x00\\x00\\x00")/HDLC()/Raw(b"\\x00\\x00")',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 3},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 tv_eth_l2_src_only_mac_ipv4_pppol2tpv2_data_o = {
@@ -668,7 +668,7 @@ tv_eth_l2_src_only_mac_ipv6_pppol2tpv2_data = {
 
 tv_l2tpv2_seession_id_mac_ipv6_pppol2tpv2_data_l = {
     "name": "l2tpv2_seession_id_mac_ipv6_pppol2tpv2_data_l",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l session_id is 0x1111 / ppp / end actions queue index 2 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l session_id is 0x1111 / ppp / end actions rss queues 2 3 end / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)/HDLC()/Raw(b"\\x00\\x00")',
@@ -679,7 +679,7 @@ tv_l2tpv2_seession_id_mac_ipv6_pppol2tpv2_data_l = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)/HDLC()/Raw(b"\\x00\\x00")',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 2},
+    "check_param": {"port_id": 0, "queue": [2, 3]},
 }
 
 tv_eth_l2_src_only_mac_ipv6_pppol2tpv2_data_l = {
@@ -700,7 +700,7 @@ tv_eth_l2_src_only_mac_ipv6_pppol2tpv2_data_l = {
 
 tv_l2tpv2_seession_id_mac_ipv6_pppol2tpv2_data_s = {
     "name": "l2tpv2_seession_id_mac_ipv6_pppol2tpv2_data_s",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s session_id is 0x1111 / ppp / end actions queue index 4 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s session_id is 0x1111 / ppp / end actions mark id 1 / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b"\\x00\\x00")',
@@ -711,7 +711,7 @@ tv_l2tpv2_seession_id_mac_ipv6_pppol2tpv2_data_s = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b"\\x00\\x00")',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 4},
+    "check_param": {"port_id": 0, "mark_id": 1},
 }
 
 tv_eth_l2_src_only_mac_ipv6_pppol2tpv2_data_s = {
@@ -732,7 +732,7 @@ tv_eth_l2_src_only_mac_ipv6_pppol2tpv2_data_s = {
 
 tv_l2tpv2_seession_id_mac_ipv6_pppol2tpv2_data_o = {
     "name": "l2tpv2_seession_id_mac_ipv6_pppol2tpv2_data_o",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / ppp / end actions queue index 3 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / ppp / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b"\\x00\\x00\\x00\\x00")/HDLC()/Raw(b"\\x00\\x00")',
@@ -743,7 +743,7 @@ tv_l2tpv2_seession_id_mac_ipv6_pppol2tpv2_data_o = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b"\\x00\\x00\\x00\\x00")/HDLC()/Raw(b"\\x00\\x00")',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 3},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 tv_eth_l2_src_only_mac_ipv6_pppol2tpv2_data_o = {
@@ -843,7 +843,7 @@ tv_ipv4_mac_ipv4_pppol2tpv2_ipv4_pay_data_l = {
 
 tv_ipv4_mac_ipv4_pppol2tpv2_ipv4_pay_data_s = {
     "name": "ipv4_mac_ipv4_pppol2tpv2_ipv4_pay_data_s",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv4 src is 10.0.0.11 dst is 10.0.0.22 / end actions queue index 7 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv4 src is 10.0.0.11 dst is 10.0.0.22 / end actions rss queues 2 3 end / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x21")/IP(src="10.0.0.11",dst="10.0.0.22")',
@@ -855,7 +855,7 @@ tv_ipv4_mac_ipv4_pppol2tpv2_ipv4_pay_data_s = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x21")/IP(src="10.0.0.11",dst="10.0.0.22")',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 7},
+    "check_param": {"port_id": 0, "queue": [2, 3]},
 }
 
 tv_ipv4_mac_ipv4_pppol2tpv2_ipv4_pay_data_o = {
@@ -877,7 +877,7 @@ tv_ipv4_mac_ipv4_pppol2tpv2_ipv4_pay_data_o = {
 
 tv_ipv4_mac_ipv4_pppol2tpv2_ipv4_pay_data_l_s = {
     "name": "ipv4_mac_ipv4_pppol2tpv2_ipv4_pay_data_l_s",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv4 src is 10.0.0.11 dst is 10.0.0.22 / end actions queue index 4 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv4 src is 10.0.0.11 dst is 10.0.0.22 / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=36)/HDLC()/Raw(b"\\x00\\x21")/IP(src="10.0.0.11",dst="10.0.0.22")',
@@ -889,7 +889,7 @@ tv_ipv4_mac_ipv4_pppol2tpv2_ipv4_pay_data_l_s = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=36)/HDLC()/Raw(b"\\x00\\x21")/IP(src="10.0.0.11",dst="10.0.0.22")',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 4},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 vectors_mac_ipv4_pppol2tpv2_ipv4_pay = [
@@ -936,7 +936,7 @@ tv_ipv4_udp_mac_ipv4_pppol2tpv2_ipv4_udp_pay_data_l = {
 
 tv_ipv4_udp_mac_ipv4_pppol2tpv2_ipv4_udp_pay_data_s = {
     "name": "ipv4_udp_mac_ipv4_pppol2tpv2_ipv4_udp_pay_data_s",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv4 dst is 10.0.0.22 / udp src is 11 / end actions queue index 7 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv4 dst is 10.0.0.22 / udp src is 11 / end actions rss queues 2 3 end / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x21")/IP(dst="10.0.0.22")/UDP(sport=11)',
@@ -948,7 +948,7 @@ tv_ipv4_udp_mac_ipv4_pppol2tpv2_ipv4_udp_pay_data_s = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x21")/IP(dst="10.0.0.22")/UDP(sport=11)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 7},
+    "check_param": {"port_id": 0, "queue": [2, 3]},
 }
 
 tv_ipv4_udp_mac_ipv4_pppol2tpv2_ipv4_udp_pay_data_o = {
@@ -970,7 +970,7 @@ tv_ipv4_udp_mac_ipv4_pppol2tpv2_ipv4_udp_pay_data_o = {
 
 tv_ipv4_udp_mac_ipv4_pppol2tpv2_ipv4_udp_pay_data_l_s = {
     "name": "ipv4_udp_mac_ipv4_pppol2tpv2_ipv4_udp_pay_data_l_s",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv4 src is 10.0.0.11 / udp dst is 22 / end actions queue index 4 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv4 src is 10.0.0.11 / udp dst is 22 / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=44)/HDLC()/Raw(b"\\x00\\x21")/IP(src="10.0.0.11")/UDP(dport=22)',
@@ -982,7 +982,7 @@ tv_ipv4_udp_mac_ipv4_pppol2tpv2_ipv4_udp_pay_data_l_s = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=44)/HDLC()/Raw(b"\\x00\\x21")/IP(src="10.0.0.11")/UDP(dport=22)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 4},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 vectors_mac_ipv4_pppol2tpv2_ipv4_udp_pay = [
@@ -1029,7 +1029,7 @@ tv_ipv4_tcp_mac_ipv4_pppol2tpv2_ipv4_tcp_data_l = {
 
 tv_ipv4_tcp_mac_ipv4_pppol2tpv2_ipv4_tcp_data_s = {
     "name": "ipv4_tcp_mac_ipv4_pppol2tpv2_ipv4_tcp_data_s",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv4 dst is 10.0.0.22 / tcp src is 11 / end actions queue index 7 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv4 dst is 10.0.0.22 / tcp src is 11 / end actions rss queues 2 3 end / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x21")/IP(dst="10.0.0.22")/TCP(sport=11)',
@@ -1041,7 +1041,7 @@ tv_ipv4_tcp_mac_ipv4_pppol2tpv2_ipv4_tcp_data_s = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x21")/IP(dst="10.0.0.22")/TCP(sport=11)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 7},
+    "check_param": {"port_id": 0, "queue": [2, 3]},
 }
 
 tv_ipv4_tcp_mac_ipv4_pppol2tpv2_ipv4_tcp_data_o = {
@@ -1063,7 +1063,7 @@ tv_ipv4_tcp_mac_ipv4_pppol2tpv2_ipv4_tcp_data_o = {
 
 tv_ipv4_tcp_mac_ipv4_pppol2tpv2_ipv4_tcp_data_l_s = {
     "name": "ipv4_tcp_mac_ipv4_pppol2tpv2_ipv4_tcp_data_l_s",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv4 src is 10.0.0.11 / tcp dst is 22 / end actions queue index 4 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv4 src is 10.0.0.11 / tcp dst is 22 / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=44)/HDLC()/Raw(b"\\x00\\x21")/IP(src="10.0.0.11")/TCP(dport=22)',
@@ -1075,7 +1075,7 @@ tv_ipv4_tcp_mac_ipv4_pppol2tpv2_ipv4_tcp_data_l_s = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=44)/HDLC()/Raw(b"\\x00\\x21")/IP(src="10.0.0.11")/TCP(dport=22)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 4},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 vectors_mac_ipv4_pppol2tpv2_ipv4_tcp = [
@@ -1122,7 +1122,7 @@ tv_ipv6_mac_ipv4_pppol2tpv2_ipv6_pay_data_l = {
 
 tv_ipv6_mac_ipv4_pppol2tpv2_ipv6_pay_data_s = {
     "name": "ipv6_mac_ipv4_pppol2tpv2_ipv6_pay_data_s",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv6 src is ABAB:910B:6666:3457:8295:3333:1800:2929 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 7 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv6 src is ABAB:910B:6666:3457:8295:3333:1800:2929 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss queues 2 3 end / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x57")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")',
@@ -1134,7 +1134,7 @@ tv_ipv6_mac_ipv4_pppol2tpv2_ipv6_pay_data_s = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x57")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 7},
+    "check_param": {"port_id": 0, "queue": [2, 3]},
 }
 
 tv_ipv6_mac_ipv4_pppol2tpv2_ipv6_pay_data_o = {
@@ -1156,7 +1156,7 @@ tv_ipv6_mac_ipv4_pppol2tpv2_ipv6_pay_data_o = {
 
 tv_ipv6_mac_ipv4_pppol2tpv2_ipv6_pay_data_l_s = {
     "name": "ipv6_mac_ipv4_pppol2tpv2_ipv6_pay_data_l_s",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv6 src is ABAB:910B:6666:3457:8295:3333:1800:2929 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 4 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv6 src is ABAB:910B:6666:3457:8295:3333:1800:2929 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=56)/HDLC()/Raw(b"\\x00\\x57")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")',
@@ -1168,7 +1168,7 @@ tv_ipv6_mac_ipv4_pppol2tpv2_ipv6_pay_data_l_s = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=56)/HDLC()/Raw(b"\\x00\\x57")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 4},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 vectors_mac_ipv4_pppol2tpv2_ipv6_pay = [
@@ -1215,7 +1215,7 @@ tv_ipv6_udp_mac_ipv4_pppol2tpv2_ipv6_udp_pay_data_l = {
 
 tv_ipv6_udp_mac_ipv4_pppol2tpv2_ipv6_udp_pay_data_s = {
     "name": "ipv6_udp_mac_ipv4_pppol2tpv2_ipv6_udp_pay_data_s",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 11 / end actions queue index 7 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 11 / end actions rss queues 2 3 end / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x57")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=11)',
@@ -1227,7 +1227,7 @@ tv_ipv6_udp_mac_ipv4_pppol2tpv2_ipv6_udp_pay_data_s = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x57")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=11)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 7},
+    "check_param": {"port_id": 0, "queue": [2, 3]},
 }
 
 tv_ipv6_udp_mac_ipv4_pppol2tpv2_ipv6_udp_pay_data_o = {
@@ -1249,7 +1249,7 @@ tv_ipv6_udp_mac_ipv4_pppol2tpv2_ipv6_udp_pay_data_o = {
 
 tv_ipv6_udp_mac_ipv4_pppol2tpv2_ipv6_udp_pay_data_l_s = {
     "name": "ipv6_udp_mac_ipv4_pppol2tpv2_ipv6_udp_pay_data_l_s",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp dst is 22 / end actions queue index 4 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp dst is 22 / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=64)/HDLC()/Raw(b"\\x00\\x57")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=22)',
@@ -1261,7 +1261,7 @@ tv_ipv6_udp_mac_ipv4_pppol2tpv2_ipv6_udp_pay_data_l_s = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=64)/HDLC()/Raw(b"\\x00\\x57")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=22)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 4},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 vectors_mac_ipv4_pppol2tpv2_ipv6_udp_pay = [
@@ -1308,7 +1308,7 @@ tv_ipv6_tcp_mac_ipv4_pppol2tpv2_ipv6_tcp_data_l = {
 
 tv_ipv6_tcp_mac_ipv4_pppol2tpv2_ipv6_tcp_data_s = {
     "name": "ipv6_tcp_mac_ipv4_pppol2tpv2_ipv6_tcp_data_s",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 11 / end actions queue index 7 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 11 / end actions rss queues 2 3 end / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x57")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=11)',
@@ -1320,7 +1320,7 @@ tv_ipv6_tcp_mac_ipv4_pppol2tpv2_ipv6_tcp_data_s = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x57")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=11)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 7},
+    "check_param": {"port_id": 0, "queue": [2, 3]},
 }
 
 tv_ipv6_tcp_mac_ipv4_pppol2tpv2_ipv6_tcp_data_o = {
@@ -1342,7 +1342,7 @@ tv_ipv6_tcp_mac_ipv4_pppol2tpv2_ipv6_tcp_data_o = {
 
 tv_ipv6_tcp_mac_ipv4_pppol2tpv2_ipv6_tcp_data_l_s = {
     "name": "ipv6_tcp_mac_ipv4_pppol2tpv2_ipv6_tcp_data_l_s",
-    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv6 src is ABAB:910B:6666:3457:8295:3333:1800:2929 / tcp src is 11 / end actions queue index 4 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / ipv6 src is ABAB:910B:6666:3457:8295:3333:1800:2929 / tcp src is 11 / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=76)/HDLC()/Raw(b"\\x00\\x57")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929")/TCP(sport=11)',
@@ -1354,7 +1354,7 @@ tv_ipv6_tcp_mac_ipv4_pppol2tpv2_ipv6_tcp_data_l_s = {
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=76)/HDLC()/Raw(b"\\x00\\x57")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929")/TCP(sport=11)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 4},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 vectors_mac_ipv4_pppol2tpv2_ipv6_tcp = [
@@ -1401,7 +1401,7 @@ tv_ipv4_mac_ipv6_pppol2tpv2_ipv4_pay_data_l = {
 
 tv_ipv4_mac_ipv6_pppol2tpv2_ipv4_pay_data_s = {
     "name": "ipv4_mac_ipv6_pppol2tpv2_ipv4_pay_data_s",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv4 src is 10.0.0.11 dst is 10.0.0.22 / end actions queue index 7 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv4 src is 10.0.0.11 dst is 10.0.0.22 / end actions rss queues 2 3 end / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x21")/IP(src="10.0.0.11",dst="10.0.0.22")',
@@ -1413,7 +1413,7 @@ tv_ipv4_mac_ipv6_pppol2tpv2_ipv4_pay_data_s = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x21")/IP(src="10.0.0.11",dst="10.0.0.22")',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 7},
+    "check_param": {"port_id": 0, "queue": [2, 3]},
 }
 
 tv_ipv4_mac_ipv6_pppol2tpv2_ipv4_pay_data_o = {
@@ -1435,7 +1435,7 @@ tv_ipv4_mac_ipv6_pppol2tpv2_ipv4_pay_data_o = {
 
 tv_ipv4_mac_ipv6_pppol2tpv2_ipv4_pay_data_l_s = {
     "name": "ipv4_mac_ipv6_pppol2tpv2_ipv4_pay_data_l_s",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv4 src is 10.0.0.11 dst is 10.0.0.22 / end actions queue index 4 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv4 src is 10.0.0.11 dst is 10.0.0.22 / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=36)/HDLC()/Raw(b"\\x00\\x21")/IP(src="10.0.0.11",dst="10.0.0.22")',
@@ -1447,7 +1447,7 @@ tv_ipv4_mac_ipv6_pppol2tpv2_ipv4_pay_data_l_s = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=36)/HDLC()/Raw(b"\\x00\\x21")/IP(src="10.0.0.11",dst="10.0.0.22")',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 4},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 vectors_mac_ipv6_pppol2tpv2_ipv4_pay = [
@@ -1494,7 +1494,7 @@ tv_ipv4_udp_mac_ipv6_pppol2tpv2_ipv4_udp_pay_data_l = {
 
 tv_ipv4_udp_mac_ipv6_pppol2tpv2_ipv4_udp_pay_data_s = {
     "name": "ipv4_udp_mac_ipv6_pppol2tpv2_ipv4_udp_pay_data_s",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv4 src is 10.0.0.11 / udp dst is 22 / end actions queue index 7 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv4 src is 10.0.0.11 / udp dst is 22 / end actions rss queues 2 3 end / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x21")/IP(src="10.0.0.11")/UDP(dport=22)',
@@ -1506,7 +1506,7 @@ tv_ipv4_udp_mac_ipv6_pppol2tpv2_ipv4_udp_pay_data_s = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x21")/IP(src="10.0.0.11")/UDP(dport=22)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 7},
+    "check_param": {"port_id": 0, "queue": [2, 3]},
 }
 
 tv_ipv4_udp_mac_ipv6_pppol2tpv2_ipv4_udp_pay_data_o = {
@@ -1528,7 +1528,7 @@ tv_ipv4_udp_mac_ipv6_pppol2tpv2_ipv4_udp_pay_data_o = {
 
 tv_ipv4_udp_mac_ipv6_pppol2tpv2_ipv4_udp_pay_data_l_s = {
     "name": "ipv4_udp_mac_ipv6_pppol2tpv2_ipv4_udp_pay_data_l_s",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv4 dst is 10.0.0.22 / udp dst is 22 / end actions queue index 4 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv4 dst is 10.0.0.22 / udp dst is 22 / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=44)/HDLC()/Raw(b"\\x00\\x21")/IP(dst="10.0.0.22")/UDP(dport=22)',
@@ -1540,7 +1540,7 @@ tv_ipv4_udp_mac_ipv6_pppol2tpv2_ipv4_udp_pay_data_l_s = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=44)/HDLC()/Raw(b"\\x00\\x21")/IP(dst="10.0.0.22")/UDP(dport=22)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 4},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 vectors_mac_ipv6_pppol2tpv2_ipv4_udp_pay = [
@@ -1587,7 +1587,7 @@ tv_ipv4_tcp_mac_ipv6_pppol2tpv2_ipv4_tcp_data_l = {
 
 tv_ipv4_tcp_mac_ipv6_pppol2tpv2_ipv4_tcp_data_s = {
     "name": "ipv4_tcp_mac_ipv6_pppol2tpv2_ipv4_tcp_data_s",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv4 src is 10.0.0.11 / tcp dst is 22 / end actions queue index 7 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv4 src is 10.0.0.11 / tcp dst is 22 / end actions rss queues 2 3 end / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x21")/IP(src="10.0.0.11")/TCP(dport=22)',
@@ -1599,7 +1599,7 @@ tv_ipv4_tcp_mac_ipv6_pppol2tpv2_ipv4_tcp_data_s = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x21")/IP(src="10.0.0.11")/TCP(dport=22)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 7},
+    "check_param": {"port_id": 0, "queue": [2, 3]},
 }
 
 tv_ipv4_tcp_mac_ipv6_pppol2tpv2_ipv4_tcp_data_o = {
@@ -1621,7 +1621,7 @@ tv_ipv4_tcp_mac_ipv6_pppol2tpv2_ipv4_tcp_data_o = {
 
 tv_ipv4_tcp_mac_ipv6_pppol2tpv2_ipv4_tcp_data_l_s = {
     "name": "ipv4_tcp_mac_ipv6_pppol2tpv2_ipv4_tcp_data_l_s",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv4 dst is 10.0.0.22 / tcp dst is 22 / end actions queue index 4 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv4 dst is 10.0.0.22 / tcp dst is 22 / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=56)/HDLC()/Raw(b"\\x00\\x21")/IP(dst="10.0.0.22")/TCP(dport=22)',
@@ -1633,7 +1633,7 @@ tv_ipv4_tcp_mac_ipv6_pppol2tpv2_ipv4_tcp_data_l_s = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=56)/HDLC()/Raw(b"\\x00\\x21")/IP(dst="10.0.0.22")/TCP(dport=22)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 4},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 vectors_mac_ipv6_pppol2tpv2_ipv4_tcp = [
@@ -1680,7 +1680,7 @@ tv_ipv6_mac_ipv6_pppol2tpv2_ipv6_pay_data_l = {
 
 tv_ipv6_mac_ipv6_pppol2tpv2_ipv6_pay_data_s = {
     "name": "ipv6_mac_ipv6_pppol2tpv2_ipv6_pay_data_s",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv6 src is ABAB:910B:6666:3457:8295:3333:1800:2929 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 7 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv6 src is ABAB:910B:6666:3457:8295:3333:1800:2929 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss queues 2 3 end / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x57")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")',
@@ -1692,7 +1692,7 @@ tv_ipv6_mac_ipv6_pppol2tpv2_ipv6_pay_data_s = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x57")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 7},
+    "check_param": {"port_id": 0, "queue": [2, 3]},
 }
 
 tv_ipv6_mac_ipv6_pppol2tpv2_ipv6_pay_data_o = {
@@ -1714,7 +1714,7 @@ tv_ipv6_mac_ipv6_pppol2tpv2_ipv6_pay_data_o = {
 
 tv_ipv6_mac_ipv6_pppol2tpv2_ipv6_pay_data_l_s = {
     "name": "ipv6_mac_ipv6_pppol2tpv2_ipv6_pay_data_l_s",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv6 src is ABAB:910B:6666:3457:8295:3333:1800:2929 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 4 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv6 src is ABAB:910B:6666:3457:8295:3333:1800:2929 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=56)/HDLC()/Raw(b"\\x00\\x57")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")',
@@ -1726,7 +1726,7 @@ tv_ipv6_mac_ipv6_pppol2tpv2_ipv6_pay_data_l_s = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=56)/HDLC()/Raw(b"\\x00\\x57")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 4},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 vectors_mac_ipv6_pppol2tpv2_ipv6_pay = [
@@ -1773,7 +1773,7 @@ tv_ipv6_udp_mac_ipv6_pppol2tpv2_ipv6_udp_pay_data_l = {
 
 tv_ipv6_udp_mac_ipv6_pppol2tpv2_ipv6_udp_pay_data_s = {
     "name": "ipv6_udp_mac_ipv6_pppol2tpv2_ipv6_udp_pay_data_s",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 11 / end actions queue index 7 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 11 / end actions rss queues 2 3 end / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x57")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=11)',
@@ -1785,7 +1785,7 @@ tv_ipv6_udp_mac_ipv6_pppol2tpv2_ipv6_udp_pay_data_s = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x57")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=11)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 7},
+    "check_param": {"port_id": 0, "queue": [2, 3]},
 }
 
 tv_ipv6_udp_mac_ipv6_pppol2tpv2_ipv6_udp_pay_data_o = {
@@ -1807,7 +1807,7 @@ tv_ipv6_udp_mac_ipv6_pppol2tpv2_ipv6_udp_pay_data_o = {
 
 tv_ipv6_udp_mac_ipv6_pppol2tpv2_ipv6_udp_pay_data_l_s = {
     "name": "ipv6_udp_mac_ipv6_pppol2tpv2_ipv6_udp_pay_data_l_s",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp dst is 22 / end actions queue index 4 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp dst is 22 / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=64)/HDLC()/Raw(b"\\x00\\x57")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=22)',
@@ -1819,7 +1819,7 @@ tv_ipv6_udp_mac_ipv6_pppol2tpv2_ipv6_udp_pay_data_l_s = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=64)/HDLC()/Raw(b"\\x00\\x57")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=22)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 4},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 vectors_mac_ipv6_pppol2tpv2_ipv6_udp_pay = [
@@ -1866,7 +1866,7 @@ tv_ipv6_tcp_mac_ipv6_pppol2tpv2_ipv6_tcp_data_l = {
 
 tv_ipv6_tcp_mac_ipv6_pppol2tpv2_ipv6_tcp_data_s = {
     "name": "ipv6_tcp_mac_ipv6_pppol2tpv2_ipv6_tcp_data_s",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 11 / end actions queue index 7 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 11 / end actions rss queues 2 3 end / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x57")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=11)',
@@ -1878,7 +1878,7 @@ tv_ipv6_tcp_mac_ipv6_pppol2tpv2_ipv6_tcp_data_s = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x080)/HDLC()/Raw(b"\\x00\\x57")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=11)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 7},
+    "check_param": {"port_id": 0, "queue": [2, 3]},
 }
 
 tv_ipv6_tcp_mac_ipv6_pppol2tpv2_ipv6_tcp_data_o = {
@@ -1900,7 +1900,7 @@ tv_ipv6_tcp_mac_ipv6_pppol2tpv2_ipv6_tcp_data_o = {
 
 tv_ipv6_tcp_mac_ipv6_pppol2tpv2_ipv6_tcp_data_l_s = {
     "name": "ipv6_tcp_mac_ipv6_pppol2tpv2_ipv6_tcp_data_l_s",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv6 src is ABAB:910B:6666:3457:8295:3333:1800:2929 / tcp src is 11 / end actions queue index 4 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / ipv6 src is ABAB:910B:6666:3457:8295:3333:1800:2929 / tcp src is 11 / end actions drop / end",
     "scapy_str": {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=76)/HDLC()/Raw(b"\\x00\\x57")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929")/TCP(sport=11)',
@@ -1912,7 +1912,7 @@ tv_ipv6_tcp_mac_ipv6_pppol2tpv2_ipv6_tcp_data_l_s = {
             'Ether(src="11:22:33:44:55:77")/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=76)/HDLC()/Raw(b"\\x00\\x57")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929")/TCP(sport=11)',
         ],
     },
-    "check_param": {"port_id": 0, "queue": 4},
+    "check_param": {"port_id": 0, "drop": 1},
 }
 
 vectors_mac_ipv6_pppol2tpv2_ipv6_tcp = [
