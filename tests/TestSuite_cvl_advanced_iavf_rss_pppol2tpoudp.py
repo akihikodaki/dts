@@ -1889,7 +1889,7 @@ vector_case_65 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV4_L2TPV2_CONTROL",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type control session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type control / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)",
@@ -1915,7 +1915,7 @@ vector_case_66 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV4_L2TPV2_CONTROL",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type control session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type control / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)",
@@ -1941,7 +1941,7 @@ vector_case_67 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV6_L2TPV2_CONTROL",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type control session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type control / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)",
@@ -1967,7 +1967,7 @@ vector_case_68 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV6_L2TPV2_CONTROL",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type control session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type control / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)",
@@ -1993,7 +1993,7 @@ vector_case_69 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV4_L2TPV2_DATA",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)",
@@ -2019,7 +2019,7 @@ vector_case_70 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV4_L2TPV2_DATA",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)",
@@ -2045,7 +2045,7 @@ vector_case_71 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV4_L2TPV2_DATA_L",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)",
@@ -2071,7 +2071,7 @@ vector_case_72 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV4_L2TPV2_DATA_L",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data_l session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)",
@@ -2097,7 +2097,7 @@ vector_case_73 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV4_L2TPV2_DATA_S",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)",
@@ -2123,7 +2123,7 @@ vector_case_74 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV4_L2TPV2_DATA_S",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data_s session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)",
@@ -2149,7 +2149,7 @@ vector_case_75 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV4_L2TPV2_DATA_O",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)",
@@ -2175,7 +2175,7 @@ vector_case_76 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV4_L2TPV2_DATA_O",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)",
@@ -2201,7 +2201,7 @@ vector_case_77 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV4_L2TPV2_DATA_L_S",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x1111)",
@@ -2227,7 +2227,7 @@ vector_case_78 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV4_L2TPV2_DATA_L_S",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data_l_s session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x1111)",
@@ -2253,7 +2253,7 @@ vector_case_79 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV6_L2TPV2_DATA",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)",
@@ -2279,7 +2279,7 @@ vector_case_80 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV6_L2TPV2_DATA",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)",
@@ -2305,7 +2305,7 @@ vector_case_81 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV6_L2TPV2_DATA_L",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)",
@@ -2331,7 +2331,7 @@ vector_case_82 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV6_L2TPV2_DATA_L",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data_l session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)",
@@ -2357,7 +2357,7 @@ vector_case_83 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV6_L2TPV2_DATA_S",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)",
@@ -2383,7 +2383,7 @@ vector_case_84 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV6_L2TPV2_DATA_S",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data_s session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)",
@@ -2409,7 +2409,7 @@ vector_case_85 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV6_L2TPV2_DATA_O",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)",
@@ -2435,7 +2435,7 @@ vector_case_86 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV6_L2TPV2_DATA_O",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)",
@@ -2461,7 +2461,7 @@ vector_case_87 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV6_L2TPV2_DATA_L_S",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s session_id is 0x1111 / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x1111)",
@@ -2487,7 +2487,7 @@ vector_case_88 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV6_L2TPV2_DATA_L_S",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data_l_s session_id is 0x1111 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x1111)",
@@ -2513,7 +2513,7 @@ vector_case_89 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV4_PPPoL2TPV2_DATA",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data session_id is 0x1111 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
@@ -2539,7 +2539,7 @@ vector_case_90 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV4_PPPoL2TPV2_DATA",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
@@ -2565,7 +2565,7 @@ vector_case_91 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV4_PPPoL2TPV2_DATA_L",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l session_id is 0x1111 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
@@ -2591,7 +2591,7 @@ vector_case_92 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV4_PPPoL2TPV2_DATA_L",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data_l session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
@@ -2617,7 +2617,7 @@ vector_case_93 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV4_PPPoL2TPV2_DATA_S",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s session_id is 0x1111 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
@@ -2643,7 +2643,7 @@ vector_case_94 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV4_PPPoL2TPV2_DATA_S",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data_s session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_s / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
@@ -2669,7 +2669,7 @@ vector_case_95 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV4_PPPoL2TPV2_DATA_O",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
@@ -2695,7 +2695,7 @@ vector_case_96 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV4_PPPoL2TPV2_DATA_O",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data_o session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_o / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
@@ -2721,7 +2721,7 @@ vector_case_97 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV4_PPPoL2TPV2_DATA_L_S",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s session_id is 0x1111 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
@@ -2747,7 +2747,7 @@ vector_case_98 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV4_PPPoL2TPV2_DATA_L_S",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv4 / udp / l2tpv2 type data_l_s session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv4 / udp / l2tpv2 type data_l_s / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
@@ -2773,7 +2773,7 @@ vector_case_99 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV6_PPPoL2TPV2_DATA",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data session_id is 0x1111 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
@@ -2799,7 +2799,7 @@ vector_case_100 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV6_PPPoL2TPV2_DATA",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
@@ -2825,7 +2825,7 @@ vector_case_101 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV6_PPPoL2TPV2_DATA_L",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l session_id is 0x1111 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
@@ -2851,7 +2851,7 @@ vector_case_102 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV6_PPPoL2TPV2_DATA_L",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data_l session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
@@ -2877,7 +2877,7 @@ vector_case_103 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV6_PPPoL2TPV2_DATA_S",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s session_id is 0x1111 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
@@ -2903,7 +2903,7 @@ vector_case_104 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV6_PPPoL2TPV2_DATA_S",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data_s session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_s / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
@@ -2929,7 +2929,7 @@ vector_case_105 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV6_PPPoL2TPV2_DATA_O",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
@@ -2955,7 +2955,7 @@ vector_case_106 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV6_PPPoL2TPV2_DATA_O",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data_o session_id is 0x1111 offset_size is 6 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_o / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
@@ -2981,7 +2981,7 @@ vector_case_107 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV6_PPPoL2TPV2_DATA_L_S",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s session_id is 0x1111 / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / end actions rss types l2tpv2 end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
@@ -3007,7 +3007,7 @@ vector_case_108 = [
     {
         "sub_casename": "eth_l2_src_only_MAC_IPV6_PPPoL2TPV2_DATA_L_S",
         "port_id": 0,
-        "rule": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 / ipv6 / udp / l2tpv2 type data_l_s session_id is 0x1111 / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+        "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data_l_s / ppp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
