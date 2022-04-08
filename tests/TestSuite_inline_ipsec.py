@@ -118,6 +118,7 @@ class TestInlineIpsec(TestCase):
             "sp ipv4 out esp protect 1005 pri 1 dst 192.168.105.0/24 sport 0:65535 dport 0:65535\n"
             "#SA rules\n"
             "sa out 1005 aead_algo aes-128-gcm aead_key 2b:7e:15:16:28:ae:d2:a6:ab:f7:15:88:09:cf:4f:3d:de:ad:be:ef mode ipv4-tunnel src 172.16.1.5 dst 172.16.2.5 port_id 1 type inline-crypto-offload\n"
+            "sa in 5 aead_algo aes-128-gcm aead_key 2b:7e:15:16:28:ae:d2:a6:ab:f7:15:88:09:cf:4f:3d:de:ad:be:ef mode ipv4-tunnel src 172.16.2.5 dst 172.16.1.5 port_id 1 type inline-crypto-offload\n"
             "#Routing rules\n"
             "rt ipv4 dst 172.16.2.5/32 port 1\n"
         )
@@ -132,6 +133,7 @@ class TestInlineIpsec(TestCase):
             "#SP IPv4 rules\n"
             "sp ipv4 out esp protect 1002 pri 1 dst 192.168.102.0/24 sport 0:65535 dport 0:65535\n"
             "sa out 1002 aead_algo aes-128-gcm aead_key 2b:7e:15:16:28:ae:d2:a6:ab:f7:15:88:09:cf:4f:3d:de:ad:be:ef mode ipv4-tunnel src 172.16.31.35 dst 172.16.32.35 port_id 1 type inline-crypto-offload \n"
+            "sa in 5 aead_algo aes-128-gcm aead_key 2b:7e:15:16:28:ae:d2:a6:ab:f7:15:88:09:cf:4f:3d:de:ad:be:ef mode ipv4-tunnel src 172.16.32.35 dst 172.16.31.35 port_id 1 type inline-crypto-offload \n"
             "#Routing rules\n"
             "rt ipv4 dst 172.16.32.35/32 port 1\n"
         )
