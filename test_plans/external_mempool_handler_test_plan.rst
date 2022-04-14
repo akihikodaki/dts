@@ -42,14 +42,14 @@ systems and software based memory allocators to be used with DPDK.
 Test Case 1: Multiple producers and multiple consumers
 ======================================================
 
-1. Default mempool handler operations is "ring_mp_mc"::
+1. Default mempool handler operations RTE_MBUF_DEFAULT_MEMPOOL_OPS is "ring_mp_mc"::
 
-      cat /root/dpdk/config/rte_config.h |grep MEMPOOL_OPS
-      #define RTE_MBUF_DEFAULT_MEMPOOL_OPS "ring_mp_mc"
+      Launch test app with mempool operation "ring_mp_mc":
+      parameter: --mbuf-pool-ops-name ring_mp_mc
 
 2. Start test app and verify mempool autotest passed::
 
-      ./<build_target>/app/test/dpdk-test -n 4 -c f
+      ./<build_target>/app/test/dpdk-test -n 4 -c f --mbuf-pool-ops-name ring_mp_mc
       RTE>> mempool_autotest
 
 3. Start testpmd with two ports and start forwarding::
@@ -64,13 +64,13 @@ Test Case 1: Multiple producers and multiple consumers
 Test Case 2: Single producer and Single consumer
 ================================================
 
-1. Change default mempool operation to "ring_sp_sc"::
+1. Launch test app with mempool operation "ring_sp_sc"::
 
-      sed -i '$a\#define RTE_MBUF_DEFAULT_MEMPOOL_OPS \"ring_sp_sc\"' config/rte_config.h
+      parameter: --mbuf-pool-ops-name ring_sp_sc
 
 2. Start test app and verify mempool autotest passed::
 
-      ./<build_target>/app/test/dpdk-test -n 4 -c f
+      ./<build_target>/app/test/dpdk-test -n 4 -c f --mbuf-pool-ops-name ring_sp_sc
       RTE>> mempool_autotest
 
 3. Start testpmd with two ports and start forwarding::
@@ -85,13 +85,13 @@ Test Case 2: Single producer and Single consumer
 Test Case 3: Single producer and Multiple consumers
 ===================================================
 
-1. Change default mempool operation to "ring_sp_mc"::
+1. Launch test app with mempool operation "ring_sp_mc"::
 
-      sed -i '$a\#define RTE_MBUF_DEFAULT_MEMPOOL_OPS \"ring_sp_mc\"' config/rte_config.h
+      parameter: --mbuf-pool-ops-name ring_sp_mc
 
 2. Start test app and verify mempool autotest passed::
 
-      ./<build_target>/app/test/dpdk-test -n 4 -c f
+      ./<build_target>/app/test/dpdk-test -n 4 -c f --mbuf-pool-ops-name ring_sp_mc
       RTE>> mempool_autotest
 
 3. Start testpmd with two ports and start forwarding::
@@ -106,13 +106,13 @@ Test Case 3: Single producer and Multiple consumers
 Test Case 4: Multiple producers and single consumer
 ===================================================
 
-1. Change default mempool operation to "ring_mp_sc"::
+1. Launch test app with mempool operation "ring_mp_sc"::
 
-      sed -i '$a\#define RTE_MBUF_DEFAULT_MEMPOOL_OPS \"ring_mp_sc\"' config/rte_config.h
+      parameter: --mbuf-pool-ops-name ring_mp_sc
 
 2. Start test app and verify mempool autotest passed::
 
-      ./<build_target>/app/test/dpdk-test -n 4 -c f
+      ./<build_target>/app/test/dpdk-test -n 4 -c f --mbuf-pool-ops-name ring_mp_sc
       RTE>> mempool_autotest
 
 3. Start testpmd with two ports and start forwarding::
@@ -127,13 +127,13 @@ Test Case 4: Multiple producers and single consumer
 Test Case 4: Stack mempool handler
 ==================================
 
-1. Change default mempool operation to "stack"::
+1. Launch test app with mempool operation "stack"::
 
-      sed -i '$a\#define RTE_MBUF_DEFAULT_MEMPOOL_OPS \"stack\"' config/rte_config.h
+      parameter: --mbuf-pool-ops-name stack
 
 2. Start test app and verify mempool autotest passed::
 
-      ./<build_target>/app/test/dpdk-test -n 4 -c f
+      ./<build_target>/app/test/dpdk-test -n 4 -c f --mbuf-pool-ops-name stack
       RTE>> mempool_autotest
 
 3. Start testpmd with two ports and start forwarding::
