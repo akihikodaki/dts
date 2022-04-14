@@ -57,7 +57,7 @@ used to generate 2VFs and make them in pci-stub modes.::
 
 Start PF driver on the Host and skip the VFs.::
 
-    ./x86_64-default-linuxapp-gcc/app/testpmd -c f \
+    ./x86_64-default-linuxapp-gcc/app/dpdk-testpmd -c f \
        -n 4 -b 0000:08:10.0  -b 0000:08:10.2 --  -i
 
 For VM0 start up command, you can refer to below command.::
@@ -95,11 +95,11 @@ If you want to run all common 2VM cases, please run testpmd on VM0 and VM1 and
 start traffic forward on the VM hosts. Some specific prerequisites need to be
 set up in each case::
 
-    VF0 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  -i
+    VF0 ./x86_64-default-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 --  -i
     VF0 testpmd-> set fwd rxonly
     VF0 testpmd-> start
 
-    VF1 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  -i
+    VF1 ./x86_64-default-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 --  -i
     VF1 testpmd-> set fwd mac
     VF1 testpmd-> start
 
@@ -109,12 +109,12 @@ Test Case: InterVM communication test on 2VMs
 Set the VF0 destination mac address to VF1 mac address, packets send from VF0
 will be forwarded to VF1 and then send out::
 
-    VF1 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  -i
+    VF1 ./x86_64-default-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 --  -i
     VF1 testpmd-> show port info 0
     VF1 testpmd-> set fwd mac
     VF1 testpmd-> start
 
-    VF0 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  --eth-peer=0,"VF1 mac" -i
+    VF0 ./x86_64-default-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 --  --eth-peer=0,"VF1 mac" -i
     VF0 testpmd-> set fwd mac
     VF0 testpmd-> start
 
@@ -255,16 +255,16 @@ driver will has been already attached to VMs::
 
     On PF ./tools/pci_unbind.py --bind=igb_uio 0000:08:00.0
     echo 4 > /sys/bus/pci/devices/0000\:08\:00.0/max_vfs
-    ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 -b 0000:08:10.0 -b 0000:08:10.2 -b 0000:08:10.4 -b 0000:08:10.6 --  -i
+    ./x86_64-default-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 -b 0000:08:10.0 -b 0000:08:10.2 -b 0000:08:10.4 -b 0000:08:10.6 --  -i
 
 If you want to run all common 4VM cases, please run testpmd on VM0, VM1, VM2
 and VM3 and start traffic forward on the VM hosts. Some specific prerequisites
 are set up in each case::
 
-    VF0 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  -i
-    VF1 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  -i
-    VF2 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  -i
-    VF3 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  -i
+    VF0 ./x86_64-default-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 --  -i
+    VF1 ./x86_64-default-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 --  -i
+    VF2 ./x86_64-default-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 --  -i
+    VF3 ./x86_64-default-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 --  -i
 
 Test Case: Scaling InterVM communication on 4VFs
 ==================================================
@@ -272,21 +272,21 @@ Test Case: Scaling InterVM communication on 4VFs
 Set the VF0 destination mac address to VF1 mac address, packets send from VF0
 will be forwarded to VF1 and then send out. Similar for VF2 and VF3::
 
-    VF1 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  -i
+    VF1 ./x86_64-default-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 --  -i
     VF1 testpmd-> show port info 0
     VF1 testpmd-> set fwd mac
     VF1 testpmd-> start
 
-    VF0 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  --eth-peer=0,"VF1 mac" -i
+    VF0 ./x86_64-default-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 --  --eth-peer=0,"VF1 mac" -i
     VF0 testpmd-> set fwd mac
     VF0 testpmd-> start
 
-    VF3 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  -i
+    VF3 ./x86_64-default-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 --  -i
     VF3 testpmd-> show port info 0
     VF3 testpmd-> set fwd mac
     VF3 testpmd-> start
 
-    VF2 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  --eth-peer=0,"VF3 mac" -i
+    VF2 ./x86_64-default-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 --  --eth-peer=0,"VF3 mac" -i
     VF2 testpmd-> set fwd mac
     VF2 testpmd-> start
 

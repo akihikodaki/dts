@@ -246,7 +246,7 @@ Test Case6: VF multi-queue interrupt in VM with vfio-pci on i40e
 
 4.Start l3fwd-power in VM::
 
-    ./build/l3fwd-power -l 0-3 -n 4 -m 2048 -- -P -p 0x1 --config="(0,0,0),(0,1,1),(0,2,2),(0,3,3)"
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -l 0-3 -n 4 -m 2048 -- -P -p 0x1 --config="(0,0,0),(0,1,1),(0,2,2),(0,3,3)"
 
 5. Send UDP packets with random ip and dest mac = vf mac addr::
 
