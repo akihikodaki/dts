@@ -194,7 +194,7 @@ class DTSLOG(BaseLoggerAdapter):
         self.debug_lvl = logging.DEBUG
 
         if log_dir is None:
-            self.log_path = os.getcwd() + "/../" + FOLDERS["Output"]
+            self.log_path = os.getcwd() + "/" + FOLDERS["Output"]
         else:
             self.log_path = (
                 log_dir  # log dir should contain tag/crb global value and mod in dts
