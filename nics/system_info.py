@@ -80,7 +80,7 @@ class SystemInfo(object):
         """
         s_regex = r"(\s+)Size: (\d+) MB"
         s1_regex = r"(\s+)Size: (\d+) GB"
-        l_regex = r"(\s+)Locator: .*_(\w+)"
+        l_regex = r"(\s+)Locator: .*[_\-\s](\w+)"
         speed_regex = r"(\s+)Speed: (.*)"
         size = ""
         locate = ""
