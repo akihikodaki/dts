@@ -82,7 +82,7 @@ class TestHelloWorld(TestCase):
 
         # get the maximum logical core number
         cores = self.dut.get_core_list("all")
-        eal_para = self.dut.create_eal_parameters(cores)
+        eal_para = self.dut.create_eal_parameters(cores=cores)
 
         cmdline = "./%s %s " % (self.app_helloworld_path, eal_para)
         out = self.dut.send_expect(cmdline, "# ", 50)
