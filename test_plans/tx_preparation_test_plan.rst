@@ -72,11 +72,11 @@ Change mtu for large packet::
 
    ifconfig eth1 mtu 9000
 
-Launch the ``testpmd`` with the following arguments, set ``--tx-offloads=0x8fff`` to
+Launch the ``testpmd`` with the following arguments, set ``--tx-offloads=0x8000`` to
 let TX checksum offloads, TSO mode in the “Full Featured” TX path, add
 --max-pkt-len for large packet::
 
-   ./app/dpdk-testpmd -c 0x6 -n 4  -- -i --tx-offloads=0x8fff --port-topology=chained
+   ./app/dpdk-testpmd -c 0x6 -n 4  -- -i --tx-offloads=0x8000 --port-topology=chained
    --max-pkt-len=9000
 
 Set the ``csum`` forwarding mode::

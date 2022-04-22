@@ -81,7 +81,7 @@ Testpmd configuration - 4 RX/TX queues per port
 
 ::
 
-  dpdk-testpmd -c 1f -n 3  -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff
+  dpdk-testpmd -c 1f -n 3  -- -i --rxq=4 --txq=4
 
 Testpmd Configuration Options
 -----------------------------

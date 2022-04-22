@@ -54,7 +54,7 @@ Test Case 1: Multiple producers and multiple consumers
 
 3. Start testpmd with two ports and start forwarding::
 
-      ./<build_target>/app/dpdk-testpmd -c 0x6 -n 4  -- -i --portmask=0x3 --tx-offloads=0x8fff
+      ./<build_target>/app/dpdk-testpmd -c 0x6 -n 4  -- -i --portmask=0x3
       testpmd> set fwd mac
       testpmd> start
 
@@ -75,7 +75,7 @@ Test Case 2: Single producer and Single consumer
 
 3. Start testpmd with two ports and start forwarding::
 
-      ./<build_target>/app/dpdk-testpmd -c 0x6 -n 4  -- -i --portmask=0x3 --tx-offloads=0x8fff
+      ./<build_target>/app/dpdk-testpmd -c 0x6 -n 4  -- -i --portmask=0x3
       testpmd> set fwd mac
       testpmd> start
 
@@ -96,7 +96,7 @@ Test Case 3: Single producer and Multiple consumers
 
 3. Start testpmd with two ports and start forwarding::
 
-      ./<build_target>/app/dpdk-testpmd -c 0x6 -n 4  -- -i --portmask=0x3 --tx-offloads=0x8fff
+      ./<build_target>/app/dpdk-testpmd -c 0x6 -n 4  -- -i --portmask=0x3
       testpmd> set fwd mac
       testpmd> start
 
@@ -117,7 +117,7 @@ Test Case 4: Multiple producers and single consumer
 
 3. Start testpmd with two ports and start forwarding::
 
-      ./<build_target>/app/dpdk-testpmd -c 0x6 -n 4  -- -i --portmask=0x3 --tx-offloads=0x8fff
+      ./<build_target>/app/dpdk-testpmd -c 0x6 -n 4  -- -i --portmask=0x3
       testpmd> set fwd mac
       testpmd> start
 
@@ -138,7 +138,7 @@ Test Case 4: Stack mempool handler
 
 3. Start testpmd with two ports and start forwarding::
 
-      ./<build_target>/app/dpdk-testpmd -c 0x6 -n 4  -- -i --portmask=0x3 --tx-offloads=0x8fff
+      ./<build_target>/app/dpdk-testpmd -c 0x6 -n 4  -- -i --portmask=0x3
       testpmd> set fwd mac
       testpmd> start
 

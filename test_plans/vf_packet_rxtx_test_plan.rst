@@ -97,7 +97,7 @@ Test Case 1: VF_packet_IO_kernel_PF_dpdk_VF
 
       ./usertools/dpdk-devbind.py -s --bind=igb_uio 00:06.0 00:07.0
       ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 \
-                                               -- -i --portmask=0x3 --tx-offloads=0x8fff
+                                               -- -i --portmask=0x3
 
       testpmd> set fwd mac
       testpmd> start

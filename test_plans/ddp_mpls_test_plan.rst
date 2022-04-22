@@ -70,7 +70,7 @@ Prerequisites
    enable multi-queues. In general, PF's max queue is 64, VF's max queue
    is 4::
 
-     ./<build>/app/dpdk-testpmd -c f -n 4 -- -i --port-topology=chained --tx-offloads=0x8fff
+     ./<build>/app/dpdk-testpmd -c f -n 4 -- -i --port-topology=chained
      --txq=4 --rxq=4
 
 
