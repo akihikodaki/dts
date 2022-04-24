@@ -4217,6 +4217,29 @@ tvs_mac_ipv6_tcp_non_pipeline_mode = [
     tv_mac_ipv6_tcp_drop_queue_02,
 ]
 
+drop_any_pkt_list = [
+    "Ether()/IP(dst='192.168.0.1')/UDP()/VXLAN(vni=2)/Ether()/IP(src='192.168.0.2', dst='192.168.0.3')/Raw('x'*80)",
+    "Ether()/IP(dst='192.168.0.1')/NVGRE(TNI=2)/Ether()/IP(src='192.168.1.2', dst='192.168.1.3')/Raw('x'*80)",
+    "Ether()/IP(src='192.168.0.2', dst='192.168.0.3',tos=4,frag=5)/Raw('x'*80)",
+    "Ether()/IP(src='192.168.0.2',dst='192.168.0.3',tos=4,proto=0x06)/Raw('x'*80)",
+    "Ether()/IPv6(src='CDCD:910A:2222:5498:8475:1111:3900:1515',dst='CDCD:910A:2222:5498:8475:1111:3900:2020',tc=3)/IPv6ExtHdrFragment()/Raw('x'*80)",
+    "Ether()/IPv6(src='CDCD:910A:2222:5498:8475:1111:3900:1515',dst='CDCD:910A:2222:5498:8475:1111:3900:2020',tc=3)/Raw('x'*80)",
+    "Ether(dst='00:11:22:33:44:55')/PPPoED()/Raw('x' *80)",
+    "Ether(dst='00:11:22:33:44:55', type=0x8863)/Raw('x' *80)",
+    "Ether(dst='00:11:22:33:44:55', type=0x8864)/PPPoE(sessionid=3)/Raw('x' *80)",
+    "Ether(dst='00:11:22:33:44:55',type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw('x'*80)",
+    "Ether(dst='00:11:22:33:44:55',type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6()/Raw('x' * 80)",
+    "Ether(dst='00:11:22:33:44:55',type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6()/Raw('x' * 80)",
+    "Ether(src='10:22:33:44:55:66', dst='00:11:22:33:44:55',type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src='CDCD:910A:2222:5498:8475:1111:3900:1536', dst='CDCD:910A:2222:5498:8475:1111:3900:2022')/SCTP(sport=25,dport=23)/Raw('x' * 80)",
+    "Ether(dst='00:11:22:33:44:55')/IPv6(src='CDCD:910A:2222:5498:8475:1111:3900:1536', dst='CDCD:910A:2222:5498:8475:1111:3900:2022', nh=51)/AH(spi=11)/Raw('x'*480)",
+    "Ether(dst='00:11:22:33:44:55')/IPv6(src='CDCD:910A:2222:5498:8475:1111:3900:1536', dst='CDCD:910A:2222:5498:8475:1111:3900:2022')/UDP(dport=4500)/ESP(spi=11)/Raw('x'*480)",
+    "Ether(dst='00:11:22:33:44:55')/IPv6(src='CDCD:910A:2222:5498:8475:1111:3900:1536', dst='CDCD:910A:2222:5498:8475:1111:3900:2022', nh=50)/ESP(spi=11)/Raw('x'*480)",
+    "Ether(dst='00:11:22:33:44:54')/IP(src='192.168.0.25',dst='192.168.0.23')/UDP(sport=23,dport=8805)/PFCP(S=1, seid=1)/Raw('x'*80)",
+    "Ether(dst='68:05:CA:BB:26:E0')/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst='192.168.0.1', src='192.168.0.2')/('X'*480)",
+    "Ether(dst='68:05:CA:BB:26:E0')/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst='192.168.1.1', src='192.168.0.2')/ICMP()/('X'*480)",
+    "Ether(dst='68:05:CA:BB:26:E0')/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst='192.168.0.1', src='192.168.0.2')/UDP(sport=22, dport=33)/('X'*480)",
+]
+
 test_results = OrderedDict()
 
 
@@ -5013,6 +5036,374 @@ class CVLSwitchFilterTest(TestCase):
         self.verify(
             result == [],
             "the rule list is not the same. expect %s, result %s" % ([], result),
+        )
+
+    def test_rule_program_into_switch(self):
+        self.launch_testpmd(is_non_pipeline=True)
+        rule_list = [
+            "flow create 0 ingress pattern any / end actions drop / end",
+            "flow create 0 ingress pattern any / end actions queue index 4 / end",
+        ]
+        rule1 = self.create_switch_filter_rule(
+            rte_flow_pattern=rule_list[0], check_stats=False
+        )
+        self.verify(
+            all(rule1), "all rules should create successed, result {}".format(rule1)
+        )
+        result = self.check_switch_filter_rule_list(
+            port_id=self.dut_ports[0], is_need_rss_rule=False, check_stats=False
+        )
+        self.verify(result, "expect rule create successed")
+        self.destroy_switch_filter_rule(
+            port_id=self.dut_ports[0], rule_list=rule1, check_stats=False
+        )
+        rule2 = self.create_switch_filter_rule(
+            rte_flow_pattern=rule_list[1], check_stats=False
+        )
+        self.verify(
+            all(rule2), "all rules should create successed, result {}".format(rule2)
+        )
+        result = self.check_switch_filter_rule_list(
+            port_id=self.dut_ports[0], is_need_rss_rule=False, check_stats=False
+        )
+        self.verify(result, "expect rule create successed")
+
+    def test_drop_any(self):
+        self.launch_testpmd(is_non_pipeline=True)
+        rule_list = [
+            "flow create 0 ingress pattern any / end actions drop / end",
+        ]
+        rule1 = self.create_switch_filter_rule(
+            rte_flow_pattern=rule_list[0], check_stats=False
+        )
+        self.verify(
+            all(rule1), "all rules should create successed, result {}".format(rule1)
+        )
+        result = self.check_switch_filter_rule_list(
+            port_id=self.dut_ports[0], is_need_rss_rule=False, check_stats=False
+        )
+        self.verify(result, "expect rule create successed")
+        matched_dic = {
+            "scapy_str": drop_any_pkt_list,
+            "check_func": {
+                "func": rfc.check_output_log_drop,
+                "param": {"expect_port": 0, "expect_queues": "null"},
+            },
+            "expect_results": {"expect_pkts": 0},
+        }
+        self.pmd.wait_link_status_up(self.dut_ports[0])
+        result_flag, log_msg = self.send_and_check_packets(
+            matched_dic, self.dut_ports[0]
+        )
+        self.verify(
+            result_flag, "expect all pkts can be drop, result {}".format(log_msg)
+        )
+        self.destroy_switch_filter_rule(
+            port_id=self.dut_ports[0], rule_list=rule1, check_stats=False
+        )
+        result = self.check_switch_filter_rule_list(
+            port_id=self.dut_ports[0], is_need_rss_rule=False, check_stats=False
+        )
+        self.verify(not result, "expect rule destroy successed")
+        destroy_rule_dic = {
+            "scapy_str": drop_any_pkt_list,
+            "check_func": {
+                "func": rfc.check_output_log_drop_mismatched,
+                "param": {"expect_port": 0, "expect_queues": "null"},
+            },
+            "expect_results": {"expect_pkts": len(drop_any_pkt_list)},
+        }
+        result_flag, log_msg = self.send_and_check_packets(
+            destroy_rule_dic, self.dut_ports[0]
+        )
+        self.verify(
+            result_flag, "expect all pkts can be received, result {}".format(log_msg)
+        )
+
+    def test_steer_all_to_queue(self):
+        self.launch_testpmd(is_non_pipeline=True)
+        rule_list = [
+            "flow create 0 ingress pattern any / end actions queue index 4 / end",
+        ]
+        rule1 = self.create_switch_filter_rule(
+            rte_flow_pattern=rule_list[0], check_stats=False
+        )
+        self.verify(
+            all(rule1), "all rules should create successed, result {}".format(rule1)
+        )
+        result = self.check_switch_filter_rule_list(
+            port_id=self.dut_ports[0], is_need_rss_rule=False, check_stats=False
+        )
+        self.verify(result, "expect rule create successed")
+        matched_dic = {
+            "scapy_str": drop_any_pkt_list,
+            "check_func": {
+                "func": rfc.check_output_log_in_queue,
+                "param": {"expect_port": 0, "expect_queues": 4},
+            },
+            "expect_results": {"expect_pkts": len(drop_any_pkt_list)},
+        }
+        self.pmd.wait_link_status_up(self.dut_ports[0])
+        result_flag, log_msg = self.send_and_check_packets(
+            matched_dic, self.dut_ports[0]
+        )
+        self.verify(
+            result_flag,
+            "expect all pkts can be received by queue 4, result {}".format(log_msg),
+        )
+        self.destroy_switch_filter_rule(
+            port_id=self.dut_ports[0], rule_list=rule1, check_stats=False
+        )
+        result = self.check_switch_filter_rule_list(
+            port_id=self.dut_ports[0], is_need_rss_rule=False, check_stats=False
+        )
+        self.verify(not result, "expect rule destroy successed")
+        destroy_rule_dic = {
+            "scapy_str": drop_any_pkt_list,
+            "check_func": {
+                "func": rfc.check_output_log_in_queue_mismatched,
+                "param": {"expect_port": 0, "expect_queues": 4},
+            },
+            "expect_results": {"expect_pkts": len(drop_any_pkt_list)},
+        }
+        result_flag, log_msg = self.send_and_check_packets(
+            destroy_rule_dic, self.dut_ports[0]
+        )
+        self.verify(
+            result_flag, "expect all pkts can be receive, result {}".format(log_msg)
+        )
+
+    def test_flow_priority_check(self):
+        self.logger.info("***********subcase 1: non-pipeline mode***********")
+        self.launch_testpmd(is_non_pipeline=True)
+        rule1_list = [
+            "flow create 0 priority 0 ingress pattern any / end actions drop / end",
+            "flow create 0 priority 1 ingress pattern any / end actions queue index 4 / end",
+        ]
+        rule1 = self.create_switch_filter_rule(
+            rte_flow_pattern=rule1_list, check_stats=False
+        )
+        self.verify(
+            all(rule1), "all rules should create successed, result {}".format(rule1)
+        )
+        result = self.check_switch_filter_rule_list(
+            port_id=self.dut_ports[0], is_need_rss_rule=False, check_stats=False
+        )
+        self.verify(result, "expect rule create successed")
+        subcase1_drop_dic = {
+            "scapy_str": drop_any_pkt_list,
+            "check_func": {
+                "func": rfc.check_output_log_drop,
+                "param": {"expect_port": 0, "expect_queues": "null"},
+            },
+            "expect_results": {"expect_pkts": 0},
+        }
+        self.pmd.wait_link_status_up(self.dut_ports[0])
+        result_flag, log_msg = self.send_and_check_packets(
+            subcase1_drop_dic, self.dut_ports[0]
+        )
+        self.verify(
+            result_flag, "expect all pkts can be dropped, result {}".format(log_msg)
+        )
+        self.destroy_switch_filter_rule(
+            port_id=self.dut_ports[0], rule_list=rule1[0], check_stats=False
+        )
+        subcase1_queue_4_dic = {
+            "scapy_str": drop_any_pkt_list,
+            "check_func": {
+                "func": rfc.check_output_log_in_queue,
+                "param": {"expect_port": 0, "expect_queues": 4},
+            },
+            "expect_results": {"expect_pkts": len(drop_any_pkt_list)},
+        }
+        result_flag, log_msg = self.send_and_check_packets(
+            subcase1_queue_4_dic, self.dut_ports[0]
+        )
+        self.verify(
+            result_flag,
+            "expect all pkts can be received by queue 4, result {}".format(log_msg),
+        )
+        self.destroy_switch_filter_rule(
+            port_id=self.dut_ports[0], rule_list=rule1[1], check_stats=False
+        )
+        subcase1_all_receive_dic = {
+            "scapy_str": drop_any_pkt_list,
+            "check_func": {
+                "func": rfc.check_output_log_drop_mismatched,
+                "param": {"expect_port": 0, "expect_queues": "null"},
+            },
+            "expect_results": {"expect_pkts": len(drop_any_pkt_list)},
+        }
+        result_flag, log_msg = self.send_and_check_packets(
+            subcase1_all_receive_dic, self.dut_ports[0]
+        )
+        self.verify(
+            result_flag, "expect all pkts can be received, result {}".format(log_msg)
+        )
+
+        # change the rule priority
+        self.dut.send_expect("flow flush 0", "testpmd> ", 15)
+        rule2_list = [
+            "flow create 0 priority 0 ingress pattern any / end actions queue index 4 / end",
+            "flow create 0 priority 1 ingress pattern any / end actions drop / end",
+        ]
+        rule2 = self.create_switch_filter_rule(
+            rte_flow_pattern=rule2_list, check_stats=False
+        )
+        self.verify(
+            all(rule2), "all rules should create successed, result {}".format(rule2)
+        )
+        result = self.check_switch_filter_rule_list(
+            port_id=self.dut_ports[0], is_need_rss_rule=False, check_stats=False
+        )
+        self.verify(result, "expect rule create successed")
+        self.pmd.wait_link_status_up(self.dut_ports[0])
+        result_flag, log_msg = self.send_and_check_packets(
+            subcase1_drop_dic, self.dut_ports[0]
+        )
+        self.verify(
+            result_flag, "expect all pkts can be dropped, result {}".format(log_msg)
+        )
+        self.destroy_switch_filter_rule(
+            port_id=self.dut_ports[0], rule_list=rule2[0], check_stats=False
+        )
+        result_flag, log_msg = self.send_and_check_packets(
+            subcase1_drop_dic, self.dut_ports[0]
+        )
+        self.verify(
+            result_flag, "expect all pkts can be dropped, result {}".format(log_msg)
+        )
+        self.destroy_switch_filter_rule(
+            port_id=self.dut_ports[0], rule_list=rule2[1], check_stats=False
+        )
+        result_flag, log_msg = self.send_and_check_packets(
+            subcase1_all_receive_dic, self.dut_ports[0]
+        )
+        self.verify(
+            result_flag, "expect all pkts can be received, result {}".format(log_msg)
+        )
+        self.dut.send_expect("flow flush 0", "testpmd> ", 15)
+
+        self.logger.info(
+            "***********subcase 2: non-pipeline mode with other rule***********"
+        )
+        rule3_list = [
+            "flow create 0 priority 1 ingress pattern any / end actions drop / end",
+            "flow create 0 priority 0 ingress pattern eth / ipv4 src is 1.1.1.2 dst is 1.1.1.3 tos is 4 / udp src is 23 dst is 25 / end actions queue index 2 / end",
+        ]
+        pkts = [
+            "Ether()/IP(src='1.1.1.2',dst='1.1.1.3',tos=4)/UDP(sport=23,dport=25)/Raw('x'*80)"
+        ]
+        rule3 = self.create_switch_filter_rule(
+            rte_flow_pattern=rule3_list, check_stats=False
+        )
+        self.verify(
+            all(rule3), "all rules should create successed, result {}".format(rule3)
+        )
+        result = self.check_switch_filter_rule_list(
+            port_id=self.dut_ports[0], is_need_rss_rule=False, check_stats=False
+        )
+        self.verify(result, "expect rule create successed")
+        self.pmd.wait_link_status_up(self.dut_ports[0])
+        subcase2_drop_dic = {
+            "scapy_str": pkts,
+            "check_func": {
+                "func": rfc.check_output_log_drop,
+                "param": {"expect_port": 0, "expect_queues": "null"},
+            },
+            "expect_results": {"expect_pkts": 0},
+        }
+        result_flag, log_msg = self.send_and_check_packets(
+            subcase2_drop_dic, self.dut_ports[0]
+        )
+        self.verify(
+            result_flag, "expect all pkts can be dropped, result {}".format(log_msg)
+        )
+        self.destroy_switch_filter_rule(
+            port_id=self.dut_ports[0], rule_list=rule3[0], check_stats=False
+        )
+        subcase2_queue_2_dic = {
+            "scapy_str": pkts,
+            "check_func": {
+                "func": rfc.check_output_log_in_queue,
+                "param": {"expect_port": 0, "expect_queues": 2},
+            },
+            "expect_results": {"expect_pkts": len(pkts)},
+        }
+        result_flag, log_msg = self.send_and_check_packets(
+            subcase2_queue_2_dic, self.dut_ports[0]
+        )
+        self.verify(
+            result_flag,
+            "expect all pkts can be received by queue 2, result {}".format(log_msg),
+        )
+        self.dut.send_expect("flow flush 0", "testpmd> ", 15)
+        rule4_list = [
+            "flow create 0 priority 1 ingress pattern any / end actions queue index 4 / end",
+            "flow create 0 priority 0 ingress pattern eth / ipv4 src is 1.1.1.2 dst is 1.1.1.3 tos is 4 / udp src is 23 dst is 25 / end actions queue index 2 / end",
+        ]
+        pkts = [
+            "Ether()/IP(src='1.1.1.2',dst='1.1.1.3',tos=4)/UDP(sport=23,dport=25)/Raw('x'*80)"
+        ]
+        rule4 = self.create_switch_filter_rule(
+            rte_flow_pattern=rule4_list, check_stats=False
+        )
+        self.verify(
+            all(rule4), "all rules should create successed, result {}".format(rule4)
+        )
+        result = self.check_switch_filter_rule_list(
+            port_id=self.dut_ports[0], is_need_rss_rule=False, check_stats=False
+        )
+        self.verify(result, "expect rule create successed")
+        self.pmd.wait_link_status_up(self.dut_ports[0])
+        result_flag, log_msg = self.send_and_check_packets(
+            subcase2_queue_2_dic, self.dut_ports[0]
+        )
+        self.verify(
+            result_flag,
+            "expect all pkts can be received by queue 2, result {}".format(log_msg),
+        )
+        self.destroy_switch_filter_rule(
+            port_id=self.dut_ports[0], rule_list=rule4[0], check_stats=False
+        )
+        subcase2_queue_4_dic = {
+            "scapy_str": pkts,
+            "check_func": {
+                "func": rfc.check_output_log_in_queue,
+                "param": {"expect_port": 0, "expect_queues": 2},
+            },
+            "expect_results": {"expect_pkts": len(pkts)},
+        }
+        result_flag, log_msg = self.send_and_check_packets(
+            subcase2_queue_4_dic, self.dut_ports[0]
+        )
+        self.verify(
+            result_flag,
+            "expect all pkts can be received by queue 2, result {}".format(log_msg),
+        )
+        self.dut.send_expect("flow flush 0", "testpmd> ", 15)
+
+        self.logger.info("***********subcase 3: pipeline mode***********")
+        self.dut.send_expect("quit", "#")
+        self.launch_testpmd(is_non_pipeline=False)
+        rule5_list = [
+            "flow create 0 priority 0 ingress pattern any / end actions drop / end",
+            "flow create 0 priority 0 ingress pattern any / end actions queue index 4 / end",
+            "flow create 0 priority 1 ingress pattern any / end actions drop / end",
+            "flow create 0 priority 1 ingress pattern any / end actions queue index 4 / end",
+        ]
+        rule5 = self.create_switch_filter_rule(
+            rte_flow_pattern=rule5_list[0:2], check_stats=False
+        )
+        self.verify(
+            not all(rule5), "all rules should create failed, result {}".format(rule5)
+        )
+        self.dut.send_expect("flow flush 0", "testpmd> ", 15)
+        rule6 = self.create_switch_filter_rule(
+            rte_flow_pattern=rule5_list[2:], check_stats=False
+        )
+        self.verify(
+            not all(rule6), "all rules should create failed, result {}".format(rule6)
         )
 
     def tear_down(self):
