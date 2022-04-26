@@ -386,6 +386,13 @@ class Result(object):
         """
         self.__failed_duts[dut] = msg
 
+    def remove_failed_dut(self, dut):
+        """
+        Remove the given DUT from failed duts collection
+        """
+        if dut in self.__failed_duts:
+            self.__failed_duts.pop(dut)
+
     def is_dut_failed(self, dut):
         """
         True if the given DUT was marked as failing
@@ -403,6 +410,14 @@ class Result(object):
         Sets the given DUT, target as failing due to msg
         """
         self.__failed_targets[dut + target] = msg
+
+    def remove_failed_target(self, dut, target):
+        """
+        Remove the given DUT, target from failed targets collection
+        """
+        key_word = dut + target
+        if key_word in self.__failed_targets:
+            self.__failed_targets.pop(key_word)
 
     def is_target_failed(self, dut, target):
         """

@@ -71,7 +71,7 @@ from .utils import (
 imp.reload(sys)
 
 requested_tests = None
-result = None
+result: Result = None
 excel_report = None
 json_report = None
 stats_report = None
@@ -407,6 +407,8 @@ def dts_run_prerequisties(duts, tester, pkgName, patch, dts_commands, serializer
         serializer.discard_cache()
         settings.report_error("DUT_SETUP_ERR")
         return False
+    else:
+        result.remove_failed_dut(duts[0])
 
 
 def dts_run_target(duts, tester, targets, test_suites, subtitle):
@@ -435,6 +437,8 @@ def dts_run_target(duts, tester, targets, test_suites, subtitle):
             log_handler.error(" !!! DEBUG IT: " + traceback.format_exc())
             result.add_failed_target(result.dut, target, str(ex))
             continue
+        else:
+            result.remove_failed_target(result.dut, target)
 
         dts_run_suite(duts, tester, test_suites, target, subtitle)
 
@@ -674,8 +678,6 @@ def run_all(
         dts_run_target(duts, tester, targets, test_suites, subtitle)
 
         dts_crbs_exit(duts, tester)
-
-    save_all_results()
 
 
 def show_speedup_options_messages(read_cache, skip_setup):
