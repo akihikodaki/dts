@@ -74,14 +74,14 @@ class TestEEPROMDump(TestCase):
         # if nic is columbiaville, eeprom_dump get testpmd output of the first 1000 lines,
         # module_eeprom_dump get testpmd output of the first 16 lines.
         if self.nic in ["columbiaville_25g", "columbiaville_100g"]:
-            if  testname == "eeprom":
+            if testname == "eeprom":
                 count = 1000
             elif testname == "module_eeprom":
                 count = 16
-            n=0
+            n = 0
             # Get testpmd output to have only hex value
             for line in re.findall(regex, get):
-                n= n+1
+                n = n + 1
                 if n <= count:
                     line = line.replace(" ", "").lower()
                     self.dut.send_expect(f"echo {line} >> {to}", "#")
@@ -98,7 +98,9 @@ class TestEEPROMDump(TestCase):
 
         for port in self.ports:
             # show port {port} eeprom has 10485760 bytes, and it takes about 13 minutes to show finish.
-            pmdout = self.dut.send_expect(f"show port {port} {testname}", "testpmd>", timeout=800)
+            pmdout = self.dut.send_expect(
+                f"show port {port} {testname}", "testpmd>", timeout=800
+            )
             self.verify("Finish --" in pmdout, f"{testname} dump failed")
 
             # get length from testpmd outout

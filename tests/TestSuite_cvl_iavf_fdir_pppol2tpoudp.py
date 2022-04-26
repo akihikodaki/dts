@@ -30,18 +30,18 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import re
 import random
+import re
 import time
 from multiprocessing import Manager, Process
 
+import framework.utils as utils
+import tests.rte_flow_common as rfc
 from framework.packet import Packet
 from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
-
-import framework.utils as utils
-import tests.rte_flow_common as rfc
 from framework.utils import GREEN, RED
+
 from .rte_flow_common import CVL_TXQ_RXQ_NUMBER
 
 tv_l2tpv2_seession_id_mac_ipv4_l2tpv2_control = {
@@ -80,7 +80,7 @@ vectors_mac_ipv4_l2tpv2_control = [
     tv_l2tpv2_seession_id_mac_ipv4_l2tpv2_control,
     tv_eth_l2_src_only_mac_ipv4_l2tpv2_control,
 ]
-                        
+
 tv_l2tpv2_seession_id_mac_ipv6_l2tpv2_control = {
     "name": "l2tpv2_seession_id_mac_ipv6_l2tpv2_control",
     "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type control session_id is 0x1111 / end actions queue index 3 / end",
@@ -113,7 +113,10 @@ tv_eth_l2_src_only_mac_ipv6_l2tpv2_control = {
     "check_param": {"port_id": 0, "drop": 1},
 }
 
-vectors_mac_ipv6_l2tpv2_control = [tv_l2tpv2_seession_id_mac_ipv6_l2tpv2_control,tv_eth_l2_src_only_mac_ipv6_l2tpv2_control]
+vectors_mac_ipv6_l2tpv2_control = [
+    tv_l2tpv2_seession_id_mac_ipv6_l2tpv2_control,
+    tv_eth_l2_src_only_mac_ipv6_l2tpv2_control,
+]
 
 tv_l2tpv2_seession_id_mac_ipv4_l2tpv2_data = {
     "name": "l2tpv2_seession_id_mac_ipv4_l2tpv2_data",
@@ -1609,7 +1612,7 @@ tv_ipv4_tcp_mac_ipv6_pppol2tpv2_ipv4_tcp_data_o = {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,offset=6)/Raw(b"\\x00\\x00\\x00\\x00")/HDLC()/Raw(b"\\x00\\x21")/IP(dst="10.0.0.22")/TCP(sport=11)',
             'Ether(src="00:00:00:00:00:01")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,offset=6)/Raw(b"\\x00\\x00\\x00\\x00")/HDLC()/Raw(b"\\x00\\x21")/IP(dst="10.0.0.22")/TCP(sport=11)',
-            ],
+        ],
         "mismatch": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,offset=6)/Raw(b"\\x00\\x00\\x00\\x00")/HDLC()/Raw(b"\\x00\\x21")/IP(dst="10.0.0.22")/TCP(sport=10)',
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,offset=6)/Raw(b"\\x00\\x00\\x00\\x00")/HDLC()/Raw(b"\\x00\\x21")/IP(dst="10.0.0.20")/TCP(sport=11)',
@@ -1744,7 +1747,7 @@ tv_ipv6_udp_mac_ipv6_pppol2tpv2_ipv6_udp_pay_data = {
         "match": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000)/HDLC()/Raw(b"\\x00\\x57")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=11)',
             'Ether(src="00:00:00:00:00:01")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000)/HDLC()/Raw(b"\\x00\\x57")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=11)',
-            ],
+        ],
         "mismatch": [
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000)/HDLC()/Raw(b"\\x00\\x57")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=10)',
             'Ether(src="11:22:33:44:55:77")/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000)/HDLC()/Raw(b"\\x00\\x57")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=11)',
@@ -1829,7 +1832,7 @@ vectors_mac_ipv6_pppol2tpv2_ipv6_udp_pay = [
     tv_ipv6_udp_mac_ipv6_pppol2tpv2_ipv6_udp_pay_data_o,
     tv_ipv6_udp_mac_ipv6_pppol2tpv2_ipv6_udp_pay_data_l_s,
 ]
-         
+
 tv_ipv6_tcp_mac_ipv6_pppol2tpv2_ipv6_tcp_data = {
     "name": "ipv6_tcp_mac_ipv6_pppol2tpv2_ipv6_tcp_data",
     "rule": "flow create 0 ingress pattern eth / ipv6 / udp / l2tpv2 type data / ppp / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 11 / end actions queue index 3 / end",
@@ -1923,8 +1926,8 @@ vectors_mac_ipv6_pppol2tpv2_ipv6_tcp = [
     tv_ipv6_tcp_mac_ipv6_pppol2tpv2_ipv6_tcp_data_l_s,
 ]
 
-class TestCVLIAVFFDIRPPPoL2TPv2oUDP(TestCase):
 
+class TestCVLIAVFFDIRPPPoL2TPv2oUDP(TestCase):
     def rte_flow_process(self, vectors):
         test_results = {}
         for tv in vectors:
@@ -1941,15 +1944,15 @@ class TestCVLIAVFFDIRPPPoL2TPv2oUDP(TestCase):
                 # send and check match packets
                 out1 = self.send_pkts_getouput(pkts=tv["scapy_str"]["match"])
                 rfc.check_iavf_fdir_mark(
-                    out1, 
-                    pkt_num=len(tv["scapy_str"]["match"]), 
+                    out1,
+                    pkt_num=len(tv["scapy_str"]["match"]),
                     check_param=tv["check_param"],
                 )
                 # send and check mismatch packets
                 out2 = self.send_pkts_getouput(pkts=tv["scapy_str"]["mismatch"])
                 rfc.check_iavf_fdir_mark(
-                    out2, 
-                    pkt_num=len(tv["scapy_str"]["mismatch"]), 
+                    out2,
+                    pkt_num=len(tv["scapy_str"]["mismatch"]),
                     check_param=tv["check_param"],
                     stats=False,
                 )
@@ -1960,7 +1963,7 @@ class TestCVLIAVFFDIRPPPoL2TPv2oUDP(TestCase):
                 out3 = self.send_pkts_getouput(pkts=tv["scapy_str"]["match"])
                 rfc.check_iavf_fdir_mark(
                     out3,
-                    pkt_num=len(tv["scapy_str"]["match"]), 
+                    pkt_num=len(tv["scapy_str"]["match"]),
                     check_param=tv["check_param"],
                     stats=False,
                 )
@@ -1992,17 +1995,19 @@ class TestCVLIAVFFDIRPPPoL2TPv2oUDP(TestCase):
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.tester_port0 = self.tester.get_local_port(self.dut_ports[0])
         self.tester_iface0 = self.tester.get_interface(self.tester_port0)
-        self.pci0 = self.dut.ports_info[self.dut_ports[0]]['pci']
-        self.pf0_intf = self.dut.ports_info[self.dut_ports[0]]['intf']
+        self.pci0 = self.dut.ports_info[self.dut_ports[0]]["pci"]
+        self.pf0_intf = self.dut.ports_info[self.dut_ports[0]]["intf"]
 
-        self.vf_driver = self.get_suite_cfg()['vf_driver']
+        self.vf_driver = self.get_suite_cfg()["vf_driver"]
         if self.vf_driver is None:
-            self.vf_driver = 'vfio-pci'
+            self.vf_driver = "vfio-pci"
         self.used_dut_port_0 = self.dut_ports[0]
-        self.dut.generate_sriov_vfs_by_port(self.used_dut_port_0, 1, driver=self.kdriver)
-        self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port_0]['vfs_port']
+        self.dut.generate_sriov_vfs_by_port(
+            self.used_dut_port_0, 1, driver=self.kdriver
+        )
+        self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port_0]["vfs_port"]
         self.dut.send_expect(
-            'ip link set %s vf 0 mac 00:11:22:33:44:55' % self.pf0_intf, '#'
+            "ip link set %s vf 0 mac 00:11:22:33:44:55" % self.pf0_intf, "#"
         )
         self.vf0_pci = self.sriov_vfs_port[0].pci
         for port in self.sriov_vfs_port:
@@ -2029,14 +2034,14 @@ class TestCVLIAVFFDIRPPPoL2TPv2oUDP(TestCase):
         )
         self.pmd_output.execute_cmd("set fwd rxonly")
         self.pmd_output.execute_cmd("set verbose 1")
-        res = self.pmd_output.wait_link_status_up('all', timeout=15)
-        self.verify(res is True, 'there have port link is down')
-   
+        res = self.pmd_output.wait_link_status_up("all", timeout=15)
+        self.verify(res is True, "there have port link is down")
+
     def send_packets(self, packets, pf_id=0, count=1):
         self.pkt.update_pkt(packets)
         tx_port = self.tester_iface0
         self.pkt.send_pkt(crb=self.tester, tx_port=tx_port, count=count)
-   
+
     def send_pkts_getouput(self, pkts, pf_id=0, count=1):
         """
         if pkt_info is True, we need to get packet infomation to check the RSS hash and FDIR.
@@ -2075,13 +2080,15 @@ class TestCVLIAVFFDIRPPPoL2TPv2oUDP(TestCase):
             raise Exception("unsupported rule type, only accept list or str")
         if check_stats:
             self.verify(
-                all(rule_list), "some rules validate failed, result %s" % rule_list,
+                all(rule_list),
+                "some rules validate failed, result %s" % rule_list,
             )
         elif check_stats == False:
             self.verify(
-                not any(rule_list), "all rules should validate failed, result %s" % rule_list,
+                not any(rule_list),
+                "all rules should validate failed, result %s" % rule_list,
             )
- 
+
     def create_fdir_rule(self, rule, check_stats=None):
         p = re.compile(r"Flow rule #(\d+) created")
         rule_list = []
@@ -2104,14 +2111,16 @@ class TestCVLIAVFFDIRPPPoL2TPv2oUDP(TestCase):
             raise Exception("unsupported rule type, only accept list or str")
         if check_stats:
             self.verify(
-                all(rule_list), "some rules create failed, result %s" % rule_list,
+                all(rule_list),
+                "some rules create failed, result %s" % rule_list,
             )
         elif check_stats == False:
             self.verify(
-                not any(rule_list), "all rules should create failed, result %s" % rule_list,
+                not any(rule_list),
+                "all rules should create failed, result %s" % rule_list,
             )
-        return rule_list     
-   
+        return rule_list
+
     def destroy_fdir_rule(self, rule_id, port_id=0):
         if isinstance(rule_id, list):
             for i in rule_id:
@@ -2141,12 +2150,12 @@ class TestCVLIAVFFDIRPPPoL2TPv2oUDP(TestCase):
                 result = [i.group(1) for i in res]
                 self.verify(
                     sorted(result) == sorted(rule_list),
-                    "check rule list failed. expect %s, result %s" 
+                    "check rule list failed. expect %s, result %s"
                     % (rule_list, result),
                 )
         else:
             self.verify(not p.search(out), "flow rule on port %s is existed" % port_id)
-    
+
     def destroy_vf(self):
         self.dut.send_expect("quit", "# ", 60)
         time.sleep(2)
@@ -2154,10 +2163,10 @@ class TestCVLIAVFFDIRPPPoL2TPv2oUDP(TestCase):
 
     def test_mac_ipv4_l2tpv2_control(self):
         self.rte_flow_process(vectors_mac_ipv4_l2tpv2_control)
-    
+
     def test_mac_ipv6_l2tpv2_control(self):
         self.rte_flow_process(vectors_mac_ipv6_l2tpv2_control)
-    
+
     def test_mac_ipv4_l2tpv2(self):
         self.rte_flow_process(vectors_mac_ipv4_l2tpv2)
 
@@ -2172,16 +2181,16 @@ class TestCVLIAVFFDIRPPPoL2TPv2oUDP(TestCase):
 
     def test_mac_ipv4_pppol2tpv2_ipv4_pay(self):
         self.rte_flow_process(vectors_mac_ipv4_pppol2tpv2_ipv4_pay)
-   
+
     def test_mac_ipv4_pppol2tpv2_ipv4_udp_pay(self):
         self.rte_flow_process(vectors_mac_ipv4_pppol2tpv2_ipv4_udp_pay)
-    
+
     def test_mac_ipv4_pppol2tpv2_ipv4_tcp(self):
         self.rte_flow_process(vectors_mac_ipv4_pppol2tpv2_ipv4_tcp)
 
     def test_mac_ipv4_pppol2tpv2_ipv6_pay(self):
         self.rte_flow_process(vectors_mac_ipv4_pppol2tpv2_ipv6_pay)
-    
+
     def test_mac_ipv4_pppol2tpv2_ipv6_udp_pay(self):
         self.rte_flow_process(vectors_mac_ipv4_pppol2tpv2_ipv6_udp_pay)
 
@@ -2215,4 +2224,3 @@ class TestCVLIAVFFDIRPPPoL2TPv2oUDP(TestCase):
     def tear_down_all(self):
         self.destroy_vf()
         self.dut.kill_all()
-

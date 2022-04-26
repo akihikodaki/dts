@@ -1884,7 +1884,7 @@ vector_case_64 = [
     },
 ]
 
-#l2tpv2 control + data
+# l2tpv2 control + data
 vector_case_65 = [
     {
         "sub_casename": "l2tpv2_session_id_MAC_IPV4_L2TPV2_CONTROL",
@@ -1893,21 +1893,21 @@ vector_case_65 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x2222)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -1919,21 +1919,21 @@ vector_case_66 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x2222)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -1945,21 +1945,21 @@ vector_case_67 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x2222)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -1971,21 +1971,21 @@ vector_case_68 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x2222)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0xc80,len=12,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -1997,21 +1997,21 @@ vector_case_69 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x2222)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2023,21 +2023,21 @@ vector_case_70 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x2222)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2049,21 +2049,21 @@ vector_case_71 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x2222)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2075,21 +2075,21 @@ vector_case_72 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x2222)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2101,21 +2101,21 @@ vector_case_73 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x2222)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2127,21 +2127,21 @@ vector_case_74 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x2222)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2153,21 +2153,21 @@ vector_case_75 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x2222,offset=6)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2179,21 +2179,21 @@ vector_case_76 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x2222,offset=6)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2205,21 +2205,21 @@ vector_case_77 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x2222)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x1111)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2231,21 +2231,21 @@ vector_case_78 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x1111)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x2222)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2257,21 +2257,21 @@ vector_case_79 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x2222)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2283,21 +2283,21 @@ vector_case_80 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x2222)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2309,21 +2309,21 @@ vector_case_81 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x2222)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2335,21 +2335,21 @@ vector_case_82 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x2222)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=8,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2361,21 +2361,21 @@ vector_case_83 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x2222)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2387,21 +2387,21 @@ vector_case_84 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x2222)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2413,21 +2413,21 @@ vector_case_85 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x2222,offset=6)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2439,21 +2439,21 @@ vector_case_86 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x2222,offset=6)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2465,21 +2465,21 @@ vector_case_87 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x2222)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x1111)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2491,21 +2491,21 @@ vector_case_88 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x1111)",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x1111)",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x2222)",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=12,session_id=0x1111)",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2517,21 +2517,21 @@ vector_case_89 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x2222)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2543,21 +2543,21 @@ vector_case_90 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x2222)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2569,21 +2569,21 @@ vector_case_91 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x2222)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2595,21 +2595,21 @@ vector_case_92 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x2222)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2621,21 +2621,21 @@ vector_case_93 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x2222)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2647,21 +2647,21 @@ vector_case_94 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x2222)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2673,21 +2673,21 @@ vector_case_95 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x2222,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2699,21 +2699,21 @@ vector_case_96 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x2222,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2725,21 +2725,21 @@ vector_case_97 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x2222)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2751,21 +2751,21 @@ vector_case_98 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x2222)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2777,21 +2777,21 @@ vector_case_99 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x2222)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2803,21 +2803,21 @@ vector_case_100 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x2222)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x000,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2829,21 +2829,21 @@ vector_case_101 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x2222)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2855,21 +2855,21 @@ vector_case_102 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x2222)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x400,len=12,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2881,21 +2881,21 @@ vector_case_103 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x2222)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2907,21 +2907,21 @@ vector_case_104 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x2222)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x080,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2933,21 +2933,21 @@ vector_case_105 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x2222,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2959,21 +2959,21 @@ vector_case_106 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x2222,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x020,session_id=0x1111,offset=6)/Raw(b'\\x00\\x00\\x00\\x00')/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -2985,21 +2985,21 @@ vector_case_107 = [
         "test": [
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x2222)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
 
@@ -3011,23 +3011,24 @@ vector_case_108 = [
         "test": [
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "save_hash"
+                "action": "save_hash",
             },
             {
                 "send_packet": "Ether(src='11:22:33:44:55:77')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_different"
+                "action": "check_hash_different",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IPv6()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x2222)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_hash_same"
+                "action": "check_hash_same",
             },
             {
                 "send_packet": "Ether(src='00:00:00:00:00:01')/IP()/UDP(dport=1701)/L2TP(hdr=0x480,len=16,session_id=0x1111)/HDLC()/Raw(b'\\x00\\x00')",
-                "action": "check_no_hash"
+                "action": "check_no_hash",
             },
-        ]
+        ],
     },
 ]
+
 
 class TestCVLAdvancedIAVFRSSPPPoL2TPv2oUDP(TestCase):
     def set_up_all(self):
@@ -3467,8 +3468,8 @@ class TestCVLAdvancedIAVFRSSPPPoL2TPv2oUDP(TestCase):
     ):
         self.switch_testpmd(symmetric=False)
         self.rssprocess.handle_rss_distribute_cases(cases_info=vector_case_64)
-    
-     #l2tpv2 control + data
+
+    # l2tpv2 control + data
     def test_case_l2tpv2_session_id_MAC_IPV4_L2TPV2_CONTROL(self):
         self.switch_testpmd(symmetric=False)
         self.rssprocess.handle_rss_distribute_cases(cases_info=vector_case_65)

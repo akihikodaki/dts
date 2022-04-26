@@ -57,7 +57,7 @@ import subprocess
 import sys
 from pkgutil import walk_packages
 from types import ModuleType
-from typing import List, Iterable
+from typing import Iterable, List
 
 DTS_MAIN_BRANCH_REF: str = "origin/master"
 
@@ -84,22 +84,26 @@ DTS_CONFIG_PATHS: List[str] = [
 def get_args() -> str:
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description="After a patchset is applied, run this script"
-                    "It will then output a list "
-                    "of applicable test suites to standard output, with 1 "
-                    "test suite per line. All other output, such as warnings,"
-                    " errors or informational messages will be sent to "
-                    "standard error. This script may produce no output at all,"
-                    "in which case it should be assumed that there are no "
-                    "applicable test suites.\n\n "
-                    "Exit Codes:\n"
-                    "value | meaning\n"
-                    "----- | -------\n"
-                    "  0   | OK   \n"
-                    "  1   | Error, check standard error",
+        "It will then output a list "
+        "of applicable test suites to standard output, with 1 "
+        "test suite per line. All other output, such as warnings,"
+        " errors or informational messages will be sent to "
+        "standard error. This script may produce no output at all,"
+        "in which case it should be assumed that there are no "
+        "applicable test suites.\n\n "
+        "Exit Codes:\n"
+        "value | meaning\n"
+        "----- | -------\n"
+        "  0   | OK   \n"
+        "  1   | Error, check standard error",
     )
 
-    dts_directory: str = os.path.dirname(os.path.dirname(os.path.join(os.getcwd(), __file__)))
-    parser.add_argument("-d", "--dts-directory", type=str, default=dts_directory, required=False)
+    dts_directory: str = os.path.dirname(
+        os.path.dirname(os.path.join(os.getcwd(), __file__))
+    )
+    parser.add_argument(
+        "-d", "--dts-directory", type=str, default=dts_directory, required=False
+    )
     args = parser.parse_args()
     if not os.path.isdir(args.dts_directory):
         print(f"{args.dts_directory} is not a directory.", file=sys.stderr)
@@ -109,7 +113,7 @@ def get_args() -> str:
 
 
 def get_modified_files() -> List[str]:
-    cmd = ['git', 'diff', '--name-only', DTS_MAIN_BRANCH_REF, 'HEAD']
+    cmd = ["git", "diff", "--name-only", DTS_MAIN_BRANCH_REF, "HEAD"]
     process: subprocess.CompletedProcess = subprocess.run(cmd, capture_output=True)
     if process.returncode != 0:
         print(f"{' '.join(cmd)} returned {process.returncode}")
@@ -128,16 +132,16 @@ def get_names_of_modified_python_files(files: List[str]) -> List[str]:
             lambda f: str(re.sub("\\.py", "", f)),
             map(
                 lambda f: os.path.basename(f),
-                filter(
-                    lambda f: f.endswith(".py"), files
-                )
-            )
+                filter(lambda f: f.endswith(".py"), files),
+            ),
         )
     )
 
 
 def get_modules() -> List[ModuleType]:
-    return list(map(lambda m: pkgutil.resolve_name(m.name), walk_packages(DTS_MODULE_PATHS)))
+    return list(
+        map(lambda m: pkgutil.resolve_name(m.name), walk_packages(DTS_MODULE_PATHS))
+    )
 
 
 def get_module_imports(mod: ModuleType) -> Iterable[ModuleType]:
@@ -159,9 +163,13 @@ def get_modules_in_tree(mod: ModuleType) -> Iterable[ModuleType]:
 def get_only_test_suites(modules: Iterable[ModuleType]) -> Iterable[ModuleType]:
     test_package_path = os.path.join(os.getcwd(), DTS_TEST_MODULE_PATH)
     mod: ModuleType
-    return filter(lambda mod: mod.__name__.startswith("TestSuite_"),
-                  filter(lambda mod: mod.__file__.startswith(test_package_path),
-                         filter(lambda mod: "__file__" in dir(mod), modules)))
+    return filter(
+        lambda mod: mod.__name__.startswith("TestSuite_"),
+        filter(
+            lambda mod: mod.__file__.startswith(test_package_path),
+            filter(lambda mod: "__file__" in dir(mod), modules),
+        ),
+    )
 
 
 def get_test_suite_names(modules: Iterable[ModuleType]) -> Iterable[str]:
@@ -193,10 +201,15 @@ def get_tests_to_run() -> List[str]:
     for config_file_path in DTS_CONFIG_PATHS:
         for file_name in files:
             if file_name.startswith(config_file_path):
-                print(f"WARNING: {file_name} is a config file and was changed", file=sys.stderr)
+                print(
+                    f"WARNING: {file_name} is a config file and was changed",
+                    file=sys.stderr,
+                )
 
     # Each index is 1 level of the tree
-    module_list: List[ModuleType] = [pkgutil.resolve_name(name) for name in changed_module_name]
+    module_list: List[ModuleType] = [
+        pkgutil.resolve_name(name) for name in changed_module_name
+    ]
     current_index: int = 0
     while current_index < len(module_list) and len(module_list) > 0:
         mod = module_list[current_index]
@@ -204,7 +217,9 @@ def get_tests_to_run() -> List[str]:
             module_list = module_list + list(get_modules_in_tree(mod))
         current_index += 1
 
-    test_suites_to_run: List[str] = list(get_test_suite_names(get_only_test_suites(module_list)))
+    test_suites_to_run: List[str] = list(
+        get_test_suite_names(get_only_test_suites(module_list))
+    )
     test_suites_to_run.sort()
     return test_suites_to_run
 

@@ -3,11 +3,11 @@
 import argparse
 import enum
 import os
+import platform
 import subprocess
+import xml.etree.ElementTree as ET
 from sys import stderr
 from typing import List, Optional, Set, Tuple
-import xml.etree.ElementTree as ET
-import platform
 
 DOCKER_IMAGE_NAME = "dts_vm_builder"
 
