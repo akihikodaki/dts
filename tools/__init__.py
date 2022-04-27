@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 # BSD LICENSE
 #
 # Copyright (c) 2021 PANTHEON.tech s.r.o.

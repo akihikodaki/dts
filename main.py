@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # BSD LICENSE
 #
 # Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
