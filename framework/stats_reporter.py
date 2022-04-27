@@ -70,7 +70,7 @@ class StatsReporter(object):
                 "dpdk_version = {}\n".format(self.result.current_dpdk_version(duts[0]))
             )
         else:
-            for dut in duts():
+            for dut in duts:
                 dpdk_version = self.result.current_dpdk_version(dut)
                 self.stats_file.write(
                     "{}.dpdk_version = {}\n".format(dut, dpdk_version)
