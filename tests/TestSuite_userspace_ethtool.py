@@ -699,6 +699,7 @@ class TestUserspaceEthtool(TestCase):
         """
         Run after each test case.
         """
+        self.dut.bind_interfaces_linux(self.drivername)
         self.dut.kill_all()
         pass
 
