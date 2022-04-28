@@ -126,11 +126,9 @@ between processes, so proper rollback action should be considered.
 Test Case 1: Virtio-pmd primary and secondary process symmetric test
 ====================================================================
 
-1. Bind one port to vfio-pci, launch testpmd by below command::
+1. Launch testpmd by below command::
 
     ./<build_target>/app/dpdk-testpmd -l 1-6 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=2,client=1' --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1'  -- -i --nb-cores=4 --rxq=2 --txq=2 --txd=1024 --rxd=1024
-    testpmd>set fwd txonly
-    testpmd>start
 
 2. Launch VM with two virtio ports, must set queues=2 as app receive packets from special queue which index same with proc-id::
 
@@ -156,7 +154,12 @@ Test Case 1: Virtio-pmd primary and secondary process symmetric test
     ./<build_target>/examples/dpdk-symmetric_mp -l 1 -n 4 --proc-type=auto -- -p 3 --num-procs=2 --proc-id=0
     ./<build_target>/examples/dpdk-symmetric_mp -l 2 -n 4 --proc-type=secondary -- -p 3 --num-procs=2 --proc-id=1
 
-5. Quit all process, check the packets number in rx/tx statistic like below for both primary process and secondary process::
+5. Send packets from vhost testpmd::
+
+    testpmd> set fwd mac
+    testpmd> start tx_first
+
+6. Quit all process, check the packets number in rx/tx statistic like below for both primary process and secondary process::
 
     Port 0: RX - 27511680, TX - 256, Drop - 27499168
     Port 1: RX - 27499424, TX - 256, Drop - 27511424
@@ -191,7 +194,7 @@ Test Case 2: Virtio-pmd primary and secondary process hotplug test
 
 4. Start sample code as primary process::
 
-    ./<build_target>/examples/dpdk-symmetric_mp --proc-type=auto -- -p 3 --num-procs=2 --proc-id=0
+    ./<build_target>/examples/dpdk-hotplug_mp --proc-type=auto -- -p 3 --num-procs=2 --proc-id=0
     example> list
     list all etherdev
     0       0000:00:05.0
@@ -199,7 +202,7 @@ Test Case 2: Virtio-pmd primary and secondary process hotplug test
 
 5. Start sample code as secondary process::
 
-    ./<build_target>/examples/dpdk-symmetric_mp --proc-type=secondary -- -p 3 --num-procs=2 --proc-id=1
+    ./<build_target>/examples/dpdk-hotplug_mp --proc-type=secondary -- -p 3 --num-procs=2 --proc-id=1
     example> list
     list all etherdev
     0       0000:00:05.0
