@@ -64,12 +64,13 @@ Prerequisites
     4 TG 10g ports for 4 NNT10G ports
 
 4. Case config::
-    For FVL40g, if test 16 Byte Descriptor, need to set the "CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y"
-    in ./config/common_base and re-build DPDK.
 
-    For CVL25G, if test 16 Byte Descriptor, need to set the "CONFIG_RTE_LIBRTE_ICE_16BYTE_RX_DESC=y"
-    in ./config/common_base and re-build DPDK.
-    
+    For FVL40g, if test 16 Byte Descriptor, need to be configured with the
+    "-Dc_args=-DRTE_LIBRTE_I40E_16BYTE_RX_DESC" option at compile time.
+
+    For CVL25G, if test 16 Byte Descriptor, need to be configured with the
+    "-Dc_args=-DRTE_LIBRTE_ICE_16BYTE_RX_DESC" option at compile time.
+
 Test Case : Single Core Performance Measurement
 ===============================================
 1) Bind tested ports to igb_uio

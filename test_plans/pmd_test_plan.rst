@@ -81,11 +81,12 @@ If using igb_uio::
    usertools/dpdk-devbind.py --bind=igb_uio device_bus_id
 
 Case config::
-   For FVL40g, if test 16 Byte Descriptor, need to set the "CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y"
-   in ./config/common_base and re-build DPDK.
 
-   For CVL25G, if test 16 Byte Descriptor, need to set the "CONFIG_RTE_LIBRTE_ICE_16BYTE_RX_DESC=y"
-   in ./config/common_base and re-build DPDK.
+   For FVL40g, if test 16 Byte Descriptor, need to be configured with the
+   "-Dc_args=-DRTE_LIBRTE_I40E_16BYTE_RX_DESC" option at compile time.
+
+   For CVL25G, if test 16 Byte Descriptor, need to be configured with the
+   "-Dc_args=-DRTE_LIBRTE_ICE_16BYTE_RX_DESC" option at compile time.
 
 Test Case: Packet Checking
 ==========================
