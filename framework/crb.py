@@ -739,10 +739,11 @@ class Crb(object):
             for core in core_elements:
                 threads = [int(x) for x in core.text.split(",")]
                 for thread in threads:
-                    if thread != 0:
-                        self.cores.append(
-                            {"socket": socket_id, "core": core_id, "thread": thread}
-                        )
+                    if self.crb["bypass core0"] and socket_id == 0 and core_id == 0:
+                        continue
+                    self.cores.append(
+                        {"socket": socket_id, "core": core_id, "thread": thread}
+                    )
                 core_id += 1
             socket_id += 1
         self.number_of_cores = len(self.cores)
