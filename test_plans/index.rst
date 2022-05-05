@@ -302,6 +302,7 @@ The following are the test plans for the DPDK DTS automated test system.
     port_control_test_plan
     port_representor_test_plan
     vm2vm_virtio_user_test_plan
+    vm2vm_virtio_user_cbdma_test_plan
     vmdq_dcb_test_plan
     acl_test_plan
     power_negative_test_plan
