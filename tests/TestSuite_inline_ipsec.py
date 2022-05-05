@@ -522,7 +522,6 @@ class TestInlineIpsec(TestCase):
         """
         Run after each test case.
         """
-        self.tester.send_expect("killall scapy", "#", 5)
         self.tester.send_expect("killall tcpdump", "#", 5)
         self.dut.kill_all()
         time.sleep(2)
