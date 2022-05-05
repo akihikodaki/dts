@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) <2019> Intel Corporation.
+# Copyright(c) <2022> Intel Corporation.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,21 +29,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""
-DPDK Test suite.
-We introduce a new vdev parameter to enable DMA acceleration for Tx
-operations of queues:
- - dmas: This parameter is used to specify the assigned DMA device of
-   a queue.
 
-Here is an example:
- $ ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 \
-   --vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas=[txq0@80:04.0]'
-"""
 import json
 import os
 import re
-import time
 from copy import deepcopy
 
 import framework.rst as rst
@@ -53,23 +42,40 @@ from framework.pmd_output import PmdOutput
 from framework.settings import HEADER_SIZE, UPDATE_EXPECTED, load_global_setting
 from framework.test_case import TestCase
 
+SPLIT_RING_PATH = {
+    "inorder_mergeable_path": "mrg_rxbuf=1,in_order=1",
+    "mergeable_path": "mrg_rxbuf=1,in_order=0",
+    "inorder_non_mergeable_path": "mrg_rxbuf=0,in_order=1",
+    "non_mergeable_path": "mrg_rxbuf=0,in_order=0",
+    "vectorized_path": "mrg_rxbuf=0,in_order=0,vectorized=1",
+}
 
-class TestVirTioVhostCbdma(TestCase):
+PACKED_RING_PATH = {
+    "inorder_mergeable_path": "mrg_rxbuf=1,in_order=1,packed_vq=1",
+    "mergeable_path": "mrg_rxbuf=1,in_order=0,packed_vq=1",
+    "inorder_non_mergeable_path": "mrg_rxbuf=0,in_order=1,packed_vq=1",
+    "non_mergeable_path": "mrg_rxbuf=0,in_order=0,packed_vq=1",
+    "vectorized_path": "mrg_rxbuf=0,in_order=0,vectorized=1,packed_vq=1",
+    "vectorized_path_not_power_of_2": "mrg_rxbuf=0,in_order=0,vectorized=1,packed_vq=1",
+}
+
+
+class TestVhostCbdma(TestCase):
+
     def set_up_all(self):
         self.dut_ports = self.dut.get_ports()
         self.number_of_ports = 1
         self.vhost_user = self.dut.new_session(suite="vhost-user")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
-        self.virtio_user1 = self.dut.new_session(suite="virtio-user1")
-        self.pmdout_vhost_user = PmdOutput(self.dut, self.vhost_user)
-        self.pmdout_virtio_user = PmdOutput(self.dut, self.virtio_user)
+        self.vhost_user_pmd = PmdOutput(self.dut, self.vhost_user)
+        self.virtio_user_pmd = PmdOutput(self.dut, self.virtio_user)
         self.virtio_mac = "00:01:02:03:04:05"
         self.headers_size = HEADER_SIZE["eth"] + HEADER_SIZE["ip"]
         self.pci_info = self.dut.ports_info[0]["pci"]
-        self.socket = self.dut.get_numa_id(self.dut_ports[0])
-        self.cores = self.dut.get_core_list("all", socket=self.socket)
-        self.cbdma_dev_infos = []
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
+        self.cores_list = self.dut.get_core_list(config="all", socket=self.ports_socket)
+        self.vhost_core_list = self.cores_list[0:9]
+        self.virtio_core_list = self.cores_list[9:11]
         self.out_path = "/tmp/%s" % self.suite_name
         out = self.tester.send_expect("ls -d %s" % self.out_path, "# ")
         if "No such file or directory" in out:
@@ -84,11 +90,7 @@ class TestVirTioVhostCbdma(TestCase):
         """
         Run before each test case.
         """
-        self.table_header = ["Frame"]
-        self.table_header.append("Mode/RXD-TXD")
-        self.used_cbdma = []
-        self.table_header.append("Mpps")
-        self.table_header.append("% linerate")
+        self.table_header = ["Frame", "Mode/RXD-TXD", "Mpps", "% linerate"]
         self.result_table_create(self.table_header)
         self.test_parameters = self.get_suite_cfg()["test_parameters"]
         self.test_duration = self.get_suite_cfg()["test_duration"]
@@ -101,10 +103,13 @@ class TestVirTioVhostCbdma(TestCase):
         self.dut.send_expect("rm -rf /tmp/s0", "#")
         self.mode_list = []
 
-    def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num):
+    def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num, allow_diff_socket=False):
         """
-        get all cbdma ports
+        get and bind cbdma ports into DPDK driver
         """
+        self.all_cbdma_list = []
+        self.cbdma_list = []
+        self.cbdma_str = ""
         out = self.dut.send_expect(
             "./usertools/dpdk-devbind.py --status-dev dma", "# ", 30
         )
@@ -119,62 +124,91 @@ class TestVirTioVhostCbdma(TestCase):
                     cur_socket = 1
                 else:
                     cur_socket = 0
-                if self.ports_socket == cur_socket:
-                    self.cbdma_dev_infos.append(pci_info.group(1))
+                if allow_diff_socket:
+                    self.all_cbdma_list.append(pci_info.group(1))
+                else:
+                    if self.ports_socket == cur_socket:
+                        self.all_cbdma_list.append(pci_info.group(1))
         self.verify(
-            len(self.cbdma_dev_infos) >= cbdma_num,
-            "There no enough cbdma device to run this suite",
+            len(self.all_cbdma_list) >= cbdma_num, "There no enough cbdma device"
         )
-        self.used_cbdma = self.cbdma_dev_infos[0:cbdma_num]
-        self.device_str = " ".join(self.used_cbdma)
+        self.cbdma_list = self.all_cbdma_list[0:cbdma_num]
+        self.cbdma_str = " ".join(self.cbdma_list)
         self.dut.send_expect(
             "./usertools/dpdk-devbind.py --force --bind=%s %s"
-            % (self.drivername, self.device_str),
+            % (self.drivername, self.cbdma_str),
             "# ",
             60,
         )
 
+    @staticmethod
+    def generate_dmas_param(queues):
+        das_list = []
+        for i in range(queues):
+            das_list.append("txq{}".format(i))
+        das_param = "[{}]".format(";".join(das_list))
+        return das_param
+
+    @staticmethod
+    def generate_lcore_dma_param(cbdma_list, core_list):
+        group_num = int(len(cbdma_list) / len(core_list))
+        lcore_dma_list = []
+        if len(cbdma_list) == 1:
+            for core in core_list:
+                lcore_dma_list.append("lcore{}@{}".format(core, cbdma_list[0]))
+        elif len(core_list) == 1:
+            for cbdma in cbdma_list:
+                lcore_dma_list.append("lcore{}@{}".format(core_list[0], cbdma))
+        else:
+            for cbdma in cbdma_list:
+                core_list_index = int(cbdma_list.index(cbdma) / group_num)
+                lcore_dma_list.append(
+                    "lcore{}@{}".format(core_list[core_list_index], cbdma)
+                )
+        lcore_dma_param = "[{}]".format(",".join(lcore_dma_list))
+        return lcore_dma_param
+
     def bind_cbdma_device_to_kernel(self):
-        if self.device_str is not None:
-            self.dut.send_expect("modprobe ioatdma", "# ")
-            self.dut.send_expect(
-                "./usertools/dpdk-devbind.py -u %s" % self.device_str, "# ", 30
-            )
-            self.dut.send_expect(
-                "./usertools/dpdk-devbind.py --force --bind=ioatdma  %s"
-                % self.device_str,
-                "# ",
-                60,
-            )
-
-    def check_packets_of_each_queue(self, queue_list):
-        """
-        check each queue has receive packets
-        """
-        out = self.vhost_user.send_expect("stop", "testpmd> ", 60)
-        for queue_index in queue_list:
-            queue = "Queue= %d" % queue_index
-            index = out.find(queue)
-            rx = re.search("RX-packets:\s*(\d*)", out[index:])
-            tx = re.search("TX-packets:\s*(\d*)", out[index:])
-            rx_packets = int(rx.group(1))
-            tx_packets = int(tx.group(1))
-            self.verify(
-                rx_packets > 0 and tx_packets > 0,
-                "The queue %d rx-packets or tx-packets is 0 about " % queue_index
-                + "rx-packets:%d, tx-packets:%d" % (rx_packets, tx_packets),
-            )
-        self.vhost_user.send_expect("clear port stats all", "testpmd> ", 30)
-        self.vhost_user.send_expect("start", "testpmd> ", 30)
-
-    def check_port_stats_result(self, session):
-        out = session.send_expect("show port stats all", "testpmd> ", 30)
-        self.result_first = re.findall(r"RX-packets: (\w+)", out)
-        self.result_secondary = re.findall(r"TX-packets: (\w+)", out)
-        self.verify(
-            int(self.result_first[0]) > 1 and int(self.result_secondary[0]) > 1,
-            "forward packets no correctly",
+        self.dut.send_expect("modprobe ioatdma", "# ")
+        self.dut.send_expect(
+            "./usertools/dpdk-devbind.py -u %s" % self.cbdma_str, "# ", 30
         )
+        self.dut.send_expect(
+            "./usertools/dpdk-devbind.py --force --bind=ioatdma  %s" % self.cbdma_str,
+            "# ",
+            60,
+        )
+
+    def get_vhost_port_num(self):
+        out = self.vhost_user.send_expect("show port summary all", "testpmd> ", 60)
+        port_num = re.search("Number of available ports:\s*(\d*)", out)
+        return int(port_num.group(1))
+
+    def check_each_queue_of_port_packets(self, queues=0):
+        """
+        check each queue of each port has receive packets
+        """
+        out = self.vhost_user_pmd.execute_cmd("stop")
+        port_num = self.get_vhost_port_num()
+        for port in range(port_num):
+            for queue in range(queues):
+                if queues > 0:
+                    reg = "Port= %d/Queue= %d" % (port, queue)
+                else:
+                    reg = "Forward statistics for port {}".format(port)
+                index = out.find(reg)
+                rx = re.search("RX-packets:\s*(\d*)", out[index:])
+                tx = re.search("TX-packets:\s*(\d*)", out[index:])
+                rx_packets = int(rx.group(1))
+                tx_packets = int(tx.group(1))
+                self.verify(
+                    rx_packets > 0 and tx_packets > 0,
+                    "The port {}/queue {} rx-packets or tx-packets is 0 about ".format(
+                        port, queue
+                    )
+                    + "rx-packets: {}, tx-packets: {}".format(rx_packets, tx_packets),
+                )
+        self.vhost_user_pmd.execute_cmd("start")
 
     @property
     def check_2M_env(self):
@@ -183,639 +217,1891 @@ class TestVirTioVhostCbdma(TestCase):
         )
         return True if out == "2048" else False
 
-    def launch_testpmd_as_vhost_user(
-        self,
-        command,
-        cores="Default",
-        dev="",
-        ports="",
-        iova_mode="pa",
-        set_pmd_param=True,
+    def start_vhost_testpmd(
+        self, cores="Default", param="", eal_param="", ports="", iova_mode="va"
     ):
-        if iova_mode:
-            iova_parm = "--iova=" + iova_mode
-        else:
-            iova_parm = ""
-        self.pmdout_vhost_user.start_testpmd(
-            cores=cores,
-            param=command,
-            vdevs=[dev],
-            ports=ports,
-            prefix="vhost",
-            eal_param=iova_parm,
+        eal_param += " --iova=" + iova_mode
+        self.vhost_user_pmd.start_testpmd(
+            cores=cores, param=param, eal_param=eal_param, ports=ports, prefix="vhost"
         )
-        if set_pmd_param:
-            self.vhost_user.send_expect("set fwd mac", "testpmd> ", 30)
-            self.vhost_user.send_expect("start", "testpmd> ", 30)
+        self.vhost_user_pmd.execute_cmd("set fwd mac")
+        self.vhost_user_pmd.execute_cmd("start")
 
-    def launch_testpmd_as_virtio_user(
-        self, command, cores="Default", dev="", set_pmd_param=True, eal_param=""
-    ):
+    def start_virtio_testpmd(self, cores="Default", param="", eal_param=""):
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        self.pmdout_virtio_user.start_testpmd(
-            cores,
-            command,
-            vdevs=[dev],
-            no_pci=True,
-            prefix="virtio",
-            eal_param=eal_param,
+        self.virtio_user_pmd.start_testpmd(
+            cores=cores, param=param, eal_param=eal_param, no_pci=True, prefix="virtio"
         )
-        if set_pmd_param:
-            self.virtio_user.send_expect("set fwd mac", "testpmd> ", 30)
-            self.virtio_user.send_expect("start", "testpmd> ", 30)
-            self.virtio_user.send_expect("show port info all", "testpmd> ", 30)
+        self.virtio_user_pmd.execute_cmd("set fwd mac")
+        self.virtio_user_pmd.execute_cmd("start")
+        self.virtio_user_pmd.execute_cmd("show port info all")
 
-    def diff_param_launch_send_and_verify(
-        self, mode, params, dev, cores, eal_param="", is_quit=True, launch_virtio=True
-    ):
-        if launch_virtio:
-            self.launch_testpmd_as_virtio_user(
-                params, cores, dev=dev, eal_param=eal_param
+    def test_perf_pvp_split_all_path_vhost_txq_1_to_1_cbdma(self):
+        """
+        Test Case 1: PVP split ring all path vhost enqueue operations with 1 to 1 mapping between vrings and CBDMA virtual channels
+        """
+        cbdma_num = 1
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num)
+        dmas = self.generate_dmas_param(1)
+        lcore_dma = self.generate_lcore_dma_param(
+            cbdma_list=self.cbdma_list, core_list=self.vhost_core_list[1:2]
+        )
+        vhost_eal_param = "--vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas={},dma_ring_size=2048'".format(
+            dmas
+        )
+        vhost_param = (
+            "--nb-cores=1 --txq=1 --rxq=1 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
             )
-        self.send_and_verify(mode)
-        if is_quit:
-            self.virtio_user.send_expect("quit", "# ")
-            time.sleep(3)
-
-    def test_perf_pvp_spilt_ring_all_path_vhost_enqueue_operations_with_cbdma(self):
-        """
-        Test Case 1: PVP split ring all path vhost enqueue operations with cbdma
-        """
-        self.test_target = self.running_case
-        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
-            self.test_target
-        ]
-        txd_rxd = 1024
-        vhost_param = " --nb-cores=%d --txd=%d --rxd=%d"
-        nb_cores = 1
-        queues = 1
-        self.get_cbdma_ports_info_and_bind_to_dpdk(1)
-        vhost_vdevs = (
-            f"'net_vhost0,iface=/tmp/s0,queues=%d,dmas=[txq0@{self.device_str}]'"
         )
-        virtio_path_dict = {
-            "inorder_mergeable_path": "mrg_rxbuf=1,in_order=1",
-            "mergeable_path": "mrg_rxbuf=1,in_order=0",
-            "inorder_non_mergeable_path": "mrg_rxbuf=0,in_order=1",
-            "non_mergeable_path": "mrg_rxbuf=0,in_order=0",
-            "vector_rx_path": "mrg_rxbuf=0,in_order=0,vectorized=1",
-        }
+        virtio_param = "--nb-cores=1 --txq=1 --rxq=1 --txd=1024 --rxd=1024"
         allow_pci = [self.dut.ports_info[0]["pci"]]
-        for index in range(1):
-            allow_pci.append(self.cbdma_dev_infos[index])
-        self.launch_testpmd_as_vhost_user(
-            vhost_param % (nb_cores, txd_rxd, txd_rxd),
-            self.cores[0:2],
-            dev=vhost_vdevs % (nb_cores),
+        for i in range(cbdma_num):
+            allow_pci.append(self.cbdma_list[i])
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
             ports=allow_pci,
             iova_mode="va",
         )
-        for key, path_mode in virtio_path_dict.items():
+        for key, path in SPLIT_RING_PATH.items():
+            virtio_eal_param = (
+                "--vdev 'net_virtio_user0,mac={},path=/tmp/s0,{},queues=1'".format(
+                    self.virtio_mac, path
+                )
+            )
             if key == "non_mergeable_path":
-                virtio_param = (
-                    " --enable-hw-vlan-strip --nb-cores=%d --txd=%d --rxd=%d"
-                    % (nb_cores, txd_rxd, txd_rxd)
-                )
+                new_virtio_param = "--enable-hw-vlan-strip  " + virtio_param
             else:
-                virtio_param = " --nb-cores=%d --txd=%d --rxd=%d" % (
-                    nb_cores,
-                    txd_rxd,
-                    txd_rxd,
-                )
-            vdevs = (
-                f"'net_virtio_user0,mac={self.virtio_mac},path=/tmp/s0,{path_mode},queues=%d'"
-                % nb_cores
+                new_virtio_param = virtio_param
+
+            self.logger.info(
+                "Start virtio-user with {} path with {}".format(key, path)
             )
             mode = key + "_VA"
             self.mode_list.append(mode)
-            self.diff_param_launch_send_and_verify(
-                mode,
-                virtio_param,
-                vdevs,
-                self.cores[2:4],
-                is_quit=False,
-                launch_virtio=True,
+            self.start_virtio_testpmd(
+                cores=self.virtio_core_list,
+                param=new_virtio_param,
+                eal_param=virtio_eal_param,
             )
-            self.vhost_user.send_expect("show port stats all", "testpmd> ", 10)
-            self.vhost_user.send_expect("stop", "testpmd> ", 10)
-            self.vhost_user.send_expect("start", "testpmd> ", 10)
-            self.vhost_user.send_expect("show port info all", "testpmd> ", 30)
-            self.vhost_user.send_expect("show port stats all", "testpmd> ", 10)
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets()
+
+            self.logger.info(
+                "Restart vhost with {} path with {}".format(key, path)
+            )
             mode += "_RestartVhost"
-            self.mode_list.append(mode)
-            self.diff_param_launch_send_and_verify(
-                mode,
-                virtio_param,
-                vdevs,
-                self.cores[2:4],
-                is_quit=True,
-                launch_virtio=False,
-            )
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets()
+            self.virtio_user_pmd.quit()
 
         if not self.check_2M_env:
-            self.logger.info("Quit and relaunch vhost testpmd with PA mode")
-            self.vhost_user.send_expect("quit", "# ")
-            self.launch_testpmd_as_vhost_user(
-                vhost_param % (nb_cores, txd_rxd, txd_rxd),
-                self.cores[0:2],
-                dev=vhost_vdevs % (nb_cores),
+            self.vhost_user_pmd.quit()
+            self.start_vhost_testpmd(
+                cores=self.vhost_core_list,
+                param=vhost_param,
+                eal_param=vhost_eal_param,
                 ports=allow_pci,
                 iova_mode="pa",
             )
-            for key, path_mode in virtio_path_dict.items():
+            for key, path in SPLIT_RING_PATH.items():
+                virtio_eal_param = (
+                    "--vdev 'net_virtio_user0,mac={},path=/tmp/s0,{},queues=1'".format(
+                        self.virtio_mac, path
+                    )
+                )
                 if key == "non_mergeable_path":
-                    virtio_param = (
-                        " --enable-hw-vlan-strip --nb-cores=%d --txd=%d --rxd=%d"
-                        % (nb_cores, txd_rxd, txd_rxd)
-                    )
+                    new_virtio_param = "--enable-hw-vlan-strip  " + virtio_param
                 else:
-                    virtio_param = " --nb-cores=%d --txd=%d --rxd=%d" % (
-                        nb_cores,
-                        txd_rxd,
-                        txd_rxd,
-                    )
-                vdevs = (
-                    f"'net_virtio_user0,mac={self.virtio_mac},path=/tmp/s0,{path_mode},queues=%d'"
-                    % queues
+                    new_virtio_param = virtio_param
+
+                self.logger.info(
+                    "Start virtio-user with {} path with {}".format(key, path)
                 )
                 mode = key + "_PA"
                 self.mode_list.append(mode)
-                self.diff_param_launch_send_and_verify(
-                    mode,
-                    virtio_param,
-                    vdevs,
-                    self.cores[2:4],
-                    is_quit=False,
-                    launch_virtio=True,
+                self.start_virtio_testpmd(
+                    cores=self.virtio_core_list,
+                    param=new_virtio_param,
+                    eal_param=virtio_eal_param,
                 )
-                self.vhost_user.send_expect("show port stats all", "testpmd> ", 10)
-                self.vhost_user.send_expect("stop", "testpmd> ", 10)
-                self.vhost_user.send_expect("start", "testpmd> ", 10)
-                self.vhost_user.send_expect("show port info all", "testpmd> ", 30)
-                self.vhost_user.send_expect("show port stats all", "testpmd> ", 10)
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets()
+
+                self.logger.info(
+                    "Restart vhost with {} path with {}".format(key, path)
+                )
                 mode += "_RestartVhost"
+                self.vhost_user_pmd.execute_cmd("start")
                 self.mode_list.append(mode)
-                self.diff_param_launch_send_and_verify(
-                    mode,
-                    virtio_param,
-                    vdevs,
-                    self.cores[2:4],
-                    is_quit=True,
-                    launch_virtio=False,
-                )
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets()
+                self.virtio_user_pmd.quit()
         self.result_table_print()
-        self.handle_expected(mode_list=self.mode_list)
-        self.handle_results(mode_list=self.mode_list)
-
-    def test_perf_pvp_spilt_ring_all_dynamic_queue_number_vhost_enqueue_operations_with_cbdma(
-        self,
-    ):
-        """
-        Test Case2: PVP split ring dynamic queue number vhost enqueue operations with cbdma
-        """
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
             self.test_target
         ]
-        nb_cores = 1
-        txd_rxd = 1024
-        queues = 8
-        virtio_path = "/tmp/s0"
-        path_mode = "mrg_rxbuf=1,in_order=1"
-        self.get_cbdma_ports_info_and_bind_to_dpdk(8)
-        vhost_param = " --nb-cores=%d --txd=%d --rxd=%d --txq=%d --rxq=%d "
-        virtio_param = " --nb-cores=%d --txd=%d --rxd=%d --txq=%d --rxq=%d "
-        vhost_dev = f"'net_vhost0,iface={virtio_path},queues=%d,client=1,%s'"
-        virtio_dev = f"net_virtio_user0,mac={self.virtio_mac},path={virtio_path},{path_mode},queues={queues},server=1"
-        allow_pci = [self.dut.ports_info[0]["pci"]]
-        for index in range(8):
-            allow_pci.append(self.cbdma_dev_infos[index])
-        self.launch_testpmd_as_vhost_user(
-            vhost_param % (nb_cores, txd_rxd, txd_rxd, queues, queues),
-            self.cores[0:2],
-            dev=vhost_dev % (queues, ""),
-            ports=[allow_pci[0]],
-            iova_mode="va",
-        )
-        self.mode_list.append("with_0_cbdma")
-        self.launch_testpmd_as_virtio_user(
-            virtio_param % (nb_cores, txd_rxd, txd_rxd, queues, queues),
-            self.cores[2:4],
-            dev=virtio_dev,
-        )
-        self.send_and_verify("with_0_cbdma", queue_list=range(queues))
+        self.handle_expected(mode_list=self.mode_list)
+        self.handle_results(mode_list=self.mode_list)
+        self.vhost_user_pmd.quit()
 
-        self.vhost_user.send_expect("quit", "#")
-        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]}]"
-        self.launch_testpmd_as_vhost_user(
-            vhost_param % (nb_cores, txd_rxd, txd_rxd, queues, queues),
-            self.cores[0:2],
-            dev=vhost_dev % (queues, vhost_dmas),
-            ports=allow_pci[:5],
-            iova_mode="va",
+    def test_perf_pvp_split_all_path_multi_queues_vhost_txq_1_to_1_cbdma(self):
+        """
+        Test Case 2: PVP split ring all path multi-queues vhost enqueue operations with 1 to 1 mapping between vrings and CBDMA virtual channels
+        """
+        cbdma_num = 8
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num)
+        dmas = self.generate_dmas_param(8)
+        lcore_dma = self.generate_lcore_dma_param(
+            cbdma_list=self.cbdma_list, core_list=self.vhost_core_list[1:]
         )
-        self.mode_list.append("with_4_cbdma")
-        self.send_and_verify("with_4_cbdma", queue_list=range(int(queues / 2)))
-
-        self.vhost_user.send_expect("quit", "#")
-        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]};txq4@{self.used_cbdma[4]};txq5@{self.used_cbdma[5]};txq6@{self.used_cbdma[6]};txq7@{self.used_cbdma[7]}]"
-        self.launch_testpmd_as_vhost_user(
-            vhost_param % (nb_cores, txd_rxd, txd_rxd, queues, queues),
-            self.cores[0:2],
-            dev=vhost_dev % (queues, vhost_dmas),
-            ports=allow_pci,
-            iova_mode="va",
+        vhost_eal_param = "--vdev 'net_vhost0,iface=/tmp/s0,queues=8,dmas={},dma_ring_size=2048'".format(
+            dmas
         )
-        self.mode_list.append("with_8_cbdma")
-        self.send_and_verify("with_8_cbdma", queue_list=range(queues))
-
-        if not self.check_2M_env:
-            self.logger.info("Quit and relaunch vhost testpmd with PA mode")
-            self.vhost_user.send_expect("quit", "#")
-            vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]};txq4@{self.used_cbdma[4]};txq5@{self.used_cbdma[5]}]"
-            self.launch_testpmd_as_vhost_user(
-                vhost_param % (nb_cores, txd_rxd, txd_rxd, queues, queues),
-                self.cores[0:2],
-                dev=vhost_dev % (queues, vhost_dmas),
-                ports=allow_pci,
-                iova_mode="pa",
+        vhost_param = (
+            " --nb-cores=8 --txq=8 --rxq=8 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
             )
-            self.mode_list.append("with_6_cbdma")
-            self.send_and_verify("with_6_cbdma", queue_list=range(queues))
-
-        self.virtio_user.send_expect("quit", "# ")
-        self.vhost_user.send_expect("quit", "# ")
-        self.result_table_print()
-        self.handle_expected(mode_list=self.mode_list)
-        self.handle_results(mode_list=self.mode_list)
-
-    def test_perf_pvp_packed_ring_all_path_vhost_enqueue_operations_with_cbdma(self):
-        """
-        Test Case 3: PVP packed ring all path vhost enqueue operations with cbdma
-        """
-        self.test_target = self.running_case
-        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
-            self.test_target
-        ]
-        txd_rxd = 1024
-        vhost_param = " --nb-cores=%d --txd=%d --rxd=%d"
-        nb_cores = 1
-        queues = 1
-        self.get_cbdma_ports_info_and_bind_to_dpdk(1)
-        vhost_vdevs = (
-            f"'net_vhost0,iface=/tmp/s0,queues=%d,dmas=[txq0@{self.device_str}]'"
         )
-        virtio_path_dict = {
-            "inorder_mergeable_path": "mrg_rxbuf=1,in_order=1,packed_vq=1",
-            "mergeable_path": "mrg_rxbuf=1,in_order=0,packed_vq=1",
-            "inorder_non_mergeable_path": "mrg_rxbuf=0,in_order=1,packed_vq=1",
-            "non_mergeable_path": "mrg_rxbuf=0,in_order=0,packed_vq=1",
-            "vector_rx_path": "mrg_rxbuf=0,in_order=1,vectorized=1,packed_vq=1",
-            "vector_rx_path_not_power_of_2": "mrg_rxbuf=0,in_order=1,vectorized=1,packed_vq=1,queue_size=1025",
-        }
+        virtio_param = " --nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
         allow_pci = [self.dut.ports_info[0]["pci"]]
-        for index in range(1):
-            allow_pci.append(self.cbdma_dev_infos[index])
-        self.launch_testpmd_as_vhost_user(
-            vhost_param % (nb_cores, txd_rxd, txd_rxd),
-            self.cores[0:2],
-            dev=vhost_vdevs % (nb_cores),
+        for i in range(cbdma_num):
+            allow_pci.append(self.cbdma_list[i])
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
             ports=allow_pci,
             iova_mode="va",
         )
-        for key, path_mode in virtio_path_dict.items():
-            if key == "vector_rx_path_not_power_of_2":
-                virtio_param = " --nb-cores=%d --txd=%d --rxd=%d" % (
-                    nb_cores,
-                    (txd_rxd + 1),
-                    (txd_rxd + 1),
+        for key, path in SPLIT_RING_PATH.items():
+            virtio_eal_param = (
+                "--vdev=net_virtio_user0,mac={},path=/tmp/s0,{},queues=8".format(
+                    self.virtio_mac, path
                 )
+            )
+            if key == "non_mergeable_path":
+                new_virtio_param = "--enable-hw-vlan-strip  " + virtio_param
             else:
-                virtio_param = " --nb-cores=%d --txd=%d --rxd=%d" % (
-                    nb_cores,
-                    txd_rxd,
-                    txd_rxd,
-                )
-            if "vector_rx_path" in key:
-                eal_param = "--force-max-simd-bitwidth=512"
-            else:
-                eal_param = ""
-            vdevs = (
-                f"'net_virtio_user0,mac={self.virtio_mac},path=/tmp/s0,{path_mode},queues=%d'"
-                % queues
+                new_virtio_param = virtio_param
+
+            self.logger.info(
+                "Start virtio-user with {} path with {}".format(key, path)
             )
             mode = key + "_VA"
             self.mode_list.append(mode)
-            self.diff_param_launch_send_and_verify(
-                mode,
-                virtio_param,
-                vdevs,
-                self.cores[2:4],
-                eal_param=eal_param,
-                is_quit=False,
-                launch_virtio=True,
+            self.start_virtio_testpmd(
+                cores=self.virtio_core_list,
+                param=new_virtio_param,
+                eal_param=virtio_eal_param,
             )
-            self.vhost_user.send_expect("show port stats all", "testpmd> ", 10)
-            self.vhost_user.send_expect("stop", "testpmd> ", 10)
-            self.vhost_user.send_expect("start", "testpmd> ", 10)
-            self.vhost_user.send_expect("show port info all", "testpmd> ", 30)
-            self.vhost_user.send_expect("show port stats all", "testpmd> ", 10)
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets(queues=8)
+
+            self.logger.info(
+                "Restart host with {} path with {}".format(key, path)
+            )
             mode += "_RestartVhost"
             self.mode_list.append(mode)
-            self.diff_param_launch_send_and_verify(
-                mode,
-                virtio_param,
-                vdevs,
-                self.cores[2:4],
-                is_quit=True,
-                launch_virtio=False,
-            )
+            self.vhost_user_pmd.execute_cmd("start")
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets(queues=8)
+            self.virtio_user_pmd.quit()
+
         if not self.check_2M_env:
-            self.logger.info("Quit and relaunch vhost testpmd with PA mode")
-            self.vhost_user.send_expect("quit", "# ")
-            self.launch_testpmd_as_vhost_user(
-                vhost_param % (queues, txd_rxd, txd_rxd),
-                self.cores[0:2],
-                dev=vhost_vdevs % (queues),
+            self.vhost_user_pmd.quit()
+            self.start_vhost_testpmd(
+                cores=self.vhost_core_list,
+                param=vhost_param,
+                eal_param=vhost_eal_param,
                 ports=allow_pci,
                 iova_mode="pa",
             )
-            for key, path_mode in virtio_path_dict.items():
-                if key == "vector_rx_path_not_power_of_2":
-                    virtio_param = " --nb-cores=%d --txd=%d --rxd=%d" % (
-                        nb_cores,
-                        (txd_rxd + 1),
-                        (txd_rxd + 1),
+            for key, path in SPLIT_RING_PATH.items():
+                if key == "mergeable_path":
+                    virtio_eal_param = "--vdev=net_virtio_user0,mac={},path=/tmp/s0,{},queues=8".format(
+                        self.virtio_mac, path
                     )
-                else:
-                    virtio_param = " --nb-cores=%d --txd=%d --rxd=%d" % (
-                        nb_cores,
-                        txd_rxd,
-                        txd_rxd,
-                    )
-                if "vector_rx_path" in key:
-                    eal_param = "--force-max-simd-bitwidth=512"
-                else:
-                    eal_param = ""
-                vdevs = (
-                    f"'net_virtio_user0,mac={self.virtio_mac},path=/tmp/s0,{path_mode},queues=%d'"
-                    % queues
-                )
-                mode = key + "_PA"
-                self.mode_list.append(mode)
-                self.diff_param_launch_send_and_verify(
-                    mode,
-                    virtio_param,
-                    vdevs,
-                    self.cores[2:4],
-                    eal_param=eal_param,
-                    is_quit=False,
-                    launch_virtio=True,
-                )
 
-                self.vhost_user.send_expect("show port stats all", "testpmd> ", 10)
-                self.vhost_user.send_expect("stop", "testpmd> ", 10)
-                self.vhost_user.send_expect("start", "testpmd> ", 10)
-                self.vhost_user.send_expect("show port info all", "testpmd> ", 30)
-                self.vhost_user.send_expect("show port stats all", "testpmd> ", 10)
-                mode += "_RestartVhost"
-                self.mode_list.append(mode)
-                self.diff_param_launch_send_and_verify(
-                    mode,
-                    virtio_param,
-                    vdevs,
-                    self.cores[2:4],
-                    is_quit=True,
-                    launch_virtio=False,
-                )
+                    mode = key + "_PA"
+                    self.logger.info(
+                        "Start virtio-user with {} path with {}".format(key, path)
+                    )
+                    self.mode_list.append(mode)
+                    self.start_virtio_testpmd(
+                        cores=self.virtio_core_list,
+                        param=virtio_param,
+                        eal_param=virtio_eal_param,
+                    )
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets(queues=8)
+
+                    mode += "_RestartVhost"
+                    self.logger.info(
+                        "Restart host with {} path with {}".format(key, path)
+                    )
+                    self.mode_list.append(mode)
+                    self.vhost_user_pmd.execute_cmd("start")
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets(queues=8)
+                    self.virtio_user_pmd.quit()
 
         self.result_table_print()
-        self.handle_expected(mode_list=self.mode_list)
-        self.handle_results(mode_list=self.mode_list)
-
-    def test_perf_pvp_packed_ring_all_dynamic_queue_number_vhost_enqueue_operations_with_cbdma(
-        self,
-    ):
-        """
-        Test Case 4: PVP packed ring dynamic queue number vhost enqueue operations with cbdma
-        """
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
             self.test_target
         ]
-        nb_cores = 1
-        txd_rxd = 1024
-        queues = 8
-        virtio_path = "/tmp/s0"
-        path_mode = "mrg_rxbuf=1,in_order=1,packed_vq=1"
-        self.get_cbdma_ports_info_and_bind_to_dpdk(8)
-        vhost_param = " --nb-cores=%d --txd=%d --rxd=%d --txq=%d --rxq=%d "
-        virtio_param = " --nb-cores=%d --txd=%d --rxd=%d --txq=%d --rxq=%d "
-        vhost_dev = f"'net_vhost0,iface={virtio_path},queues=%d,client=1,%s'"
-        virtio_dev = f"net_virtio_user0,mac={self.virtio_mac},path={virtio_path},{path_mode},queues={queues},server=1"
-        allow_pci = [self.dut.ports_info[0]["pci"]]
-        for index in range(8):
-            allow_pci.append(self.cbdma_dev_infos[index])
-        self.launch_testpmd_as_vhost_user(
-            vhost_param % (nb_cores, txd_rxd, txd_rxd, queues, queues),
-            self.cores[0:2],
-            dev=vhost_dev % (queues, ""),
-            ports=[allow_pci[0]],
-            iova_mode="va",
-        )
-        self.mode_list.append("with_0_cbdma")
-        self.launch_testpmd_as_virtio_user(
-            virtio_param % (nb_cores, txd_rxd, txd_rxd, queues, queues),
-            self.cores[2:4],
-            dev=virtio_dev,
-        )
-        self.send_and_verify("with_0_cbdma", queue_list=range(queues))
-
-        self.vhost_user.send_expect("quit", "#")
-        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]}]"
-        self.launch_testpmd_as_vhost_user(
-            vhost_param % (nb_cores, txd_rxd, txd_rxd, queues, queues),
-            self.cores[0:2],
-            dev=vhost_dev % (queues, vhost_dmas),
-            ports=allow_pci[:5],
-            iova_mode="va",
-        )
-        self.mode_list.append("with_4_cbdma")
-        self.send_and_verify("with_4_cbdma", queue_list=range(int(queues / 2)))
-
-        self.vhost_user.send_expect("quit", "#")
-        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]};txq4@{self.used_cbdma[4]};txq5@{self.used_cbdma[5]};txq6@{self.used_cbdma[6]};txq7@{self.used_cbdma[7]}]"
-        self.launch_testpmd_as_vhost_user(
-            vhost_param % (nb_cores, txd_rxd, txd_rxd, queues, queues),
-            self.cores[0:2],
-            dev=vhost_dev % (queues, vhost_dmas),
-            ports=allow_pci,
-            iova_mode="va",
-        )
-        self.mode_list.append("with_8_cbdma")
-        self.send_and_verify("with_8_cbdma", queue_list=range(queues))
-
-        if not self.check_2M_env:
-            self.logger.info("Quit and relaunch vhost testpmd with PA mode")
-            self.vhost_user.send_expect("quit", "#")
-            vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]};txq4@{self.used_cbdma[4]};txq5@{self.used_cbdma[5]}]"
-            self.launch_testpmd_as_vhost_user(
-                vhost_param % (nb_cores, txd_rxd, txd_rxd, queues, queues),
-                self.cores[0:2],
-                dev=vhost_dev % (queues, vhost_dmas),
-                ports=allow_pci,
-                iova_mode="pa",
-            )
-            self.mode_list.append("with_6_cbdma")
-            self.send_and_verify("with_6_cbdma", queue_list=range(queues))
-
-        self.virtio_user.send_expect("quit", "# ")
-        self.vhost_user.send_expect("quit", "# ")
-        self.result_table_print()
         self.handle_expected(mode_list=self.mode_list)
         self.handle_results(mode_list=self.mode_list)
+        self.vhost_user_pmd.quit()
 
-    def send_chain_packets_and_verify(self):
-        self.pmdout_virtio_user.execute_cmd("clear port stats all")
-        self.pmdout_virtio_user.execute_cmd("start")
-        self.pmdout_vhost_user.execute_cmd("vhost enable tx all")
-        self.pmdout_vhost_user.execute_cmd("set txpkts 65535,65535,65535,65535,65535")
-        self.pmdout_vhost_user.execute_cmd("start tx_first 32")
-        self.pmdout_vhost_user.execute_cmd("show port stats all")
-        out = self.pmdout_virtio_user.execute_cmd("show port stats all")
-        rx_pkts = int(re.search("RX-packets: (\d+)", out).group(1))
-        self.verify(rx_pkts > 0, "virtio-user can not received packets")
-
-    def test_loopback_split_ring_large_chain_packets_stress_test_with_cbdma_enqueue(
-        self,
-    ):
+    def test_perf_pvp_split_all_path_multi_queues_vhost_txq_M_2_1_cbdma(self):
         """
-        Test Case5: loopback split ring large chain packets stress test with cbdma enqueue
+        Test Case 3: PVP split ring all path multi-queues vhost enqueue operations with M to 1 mapping between vrings and CBDMA virtual channels
         """
-        nb_cores = 1
-        queues = 1
-        txd_rxd = 2048
-        txq_rxq = 1
-        virtio_path = "/tmp/s0"
-        path_mode = "mrg_rxbuf=1,in_order=0,vectorized=1,queue_size=2048"
-        self.get_cbdma_ports_info_and_bind_to_dpdk(1)
-        vhost_param = " --nb-cores=%d --mbuf-size=65535"
-        virtio_param = " --nb-cores=%d --txd=%d --rxd=%d --txq=%d --rxq=%d "
-        virtio_dev = f"net_virtio_user0,mac={self.virtio_mac},path={virtio_path},{path_mode},queues=%d"
-        vhost_vdevs = (
-            f"'net_vhost0,iface=/tmp/s0,queues=%d,dmas=[txq0@{self.device_str}]'"
+        cbdma_num = 1
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num)
+        dmas = self.generate_dmas_param(8)
+        lcore_dma = self.generate_lcore_dma_param(
+            cbdma_list=self.cbdma_list, core_list=self.vhost_core_list[1:2]
         )
-        allow_pci = []
-        for index in range(1):
-            allow_pci.append(self.cbdma_dev_infos[index])
-        self.launch_testpmd_as_vhost_user(
-            vhost_param % (nb_cores),
-            self.cores[0:2],
-            dev=vhost_vdevs % (queues),
+        vhost_eal_param = "--vdev 'net_vhost0,iface=/tmp/s0,queues=8,dmas={},dma_ring_size=2048'".format(
+            dmas
+        )
+        vhost_param = (
+            " --nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+        virtio_param = " --nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
+        allow_pci = [self.dut.ports_info[0]["pci"]]
+        for i in range(cbdma_num):
+            allow_pci.append(self.cbdma_list[i])
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
             ports=allow_pci,
             iova_mode="va",
-            set_pmd_param=False,
         )
-        self.launch_testpmd_as_virtio_user(
-            virtio_param % (nb_cores, txd_rxd, txd_rxd, txq_rxq, txq_rxq),
-            self.cores[2:4],
-            dev=virtio_dev % (queues),
-            set_pmd_param=False,
-        )
-        self.send_chain_packets_and_verify()
-
-        if not self.check_2M_env:
-            self.logger.info("Quit and relaunch vhost testpmd with PA mode")
-            self.pmdout_virtio_user.execute_cmd("quit", "#")
-            self.pmdout_vhost_user.execute_cmd("quit", "#")
-            self.launch_testpmd_as_vhost_user(
-                vhost_param % (nb_cores),
-                self.cores[0:2],
-                dev=vhost_vdevs % (queues),
-                ports=allow_pci,
-                iova_mode="pa",
-                set_pmd_param=False,
+        for key, path in SPLIT_RING_PATH.items():
+            virtio_eal_param = (
+                "--vdev=net_virtio_user0,mac={},path=/tmp/s0,{},queues=8".format(
+                    self.virtio_mac, path
+                )
             )
-            self.launch_testpmd_as_virtio_user(
-                virtio_param % (nb_cores, txd_rxd, txd_rxd, txq_rxq, txq_rxq),
-                self.cores[2:4],
-                dev=virtio_dev % (queues),
-                set_pmd_param=False,
-            )
-        self.send_chain_packets_and_verify()
+            if key == "non_mergeable_path":
+                new_virtio_param = "--enable-hw-vlan-strip  " + virtio_param
+            else:
+                new_virtio_param = virtio_param
 
-    def test_loopback_packed_ring_large_chain_packets_stress_test_with_cbdma_enqueue(
-        self,
-    ):
-        """
-        Test Case6: loopback packed ring large chain packets stress test with cbdma enqueue
-        """
-        nb_cores = 1
-        queues = 1
-        txd_rxd = 2048
-        txq_rxq = 1
-        virtio_path = "/tmp/s0"
-        path_mode = "mrg_rxbuf=1,in_order=0,vectorized=1,packed_vq=1,queue_size=2048"
-        self.get_cbdma_ports_info_and_bind_to_dpdk(1)
-        vhost_param = " --nb-cores=%d --mbuf-size=65535"
-        virtio_param = " --nb-cores=%d --txd=%d --rxd=%d --txq=%d --rxq=%d "
-        virtio_dev = f"net_virtio_user0,mac={self.virtio_mac},path={virtio_path},{path_mode},queues=%d"
-        vhost_vdevs = (
-            f"'net_vhost0,iface=/tmp/s0,queues=%d,dmas=[txq0@{self.device_str}]'"
+            mode = key + "_VA" + "_1_lcore"
+            self.mode_list.append(mode)
+            self.logger.info(
+                "Start virtio-user with {} path with {}".format(key, path)
+            )
+            self.start_virtio_testpmd(
+                cores=self.virtio_core_list,
+                param=new_virtio_param,
+                eal_param=virtio_eal_param,
+            )
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets(queues=8)
+
+            mode += "_RestartVhost"
+            self.mode_list.append(mode)
+            self.logger.info(
+                "Restart host with {} path with {}".format(key, path)
+            )
+            self.vhost_user_pmd.execute_cmd("start")
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets(queues=8)
+            self.virtio_user_pmd.quit()
+
+        self.vhost_user_pmd.quit()
+        lcore_dma = self.generate_lcore_dma_param(
+            cbdma_list=self.cbdma_list, core_list=self.vhost_core_list[1:4]
         )
-        allow_pci = []
-        for index in range(1):
-            allow_pci.append(self.cbdma_dev_infos[index])
-        self.launch_testpmd_as_vhost_user(
-            vhost_param % (nb_cores),
-            self.cores[0:2],
-            dev=vhost_vdevs % (queues),
+        vhost_param = (
+            " --nb-cores=3 --txq=8 --rxq=8 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
             ports=allow_pci,
             iova_mode="va",
-            set_pmd_param=False,
         )
-        self.launch_testpmd_as_virtio_user(
-            virtio_param % (nb_cores, txd_rxd, txd_rxd, txq_rxq, txq_rxq),
-            self.cores[2:4],
-            dev=virtio_dev % (queues),
-            set_pmd_param=False,
+        for key, path in SPLIT_RING_PATH.items():
+            if key == "inorder_mergeable_path":
+                virtio_eal_param = (
+                    "--vdev=net_virtio_user0,mac={},path=/tmp/s0,{},queues=8".format(
+                        self.virtio_mac, path
+                    )
+                )
+
+                mode = key + "_VA" + "_3_lcore"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Start virtio-user with {} path with {}".format(key, path)
+                )
+                self.start_virtio_testpmd(
+                    cores=self.virtio_core_list,
+                    param=virtio_param,
+                    eal_param=virtio_eal_param,
+                )
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+
+                mode += "_RestartVhost"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Restart host with {} path with {}".format(key, path)
+                )
+                self.vhost_user_pmd.execute_cmd("start")
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+                self.virtio_user_pmd.quit()
+
+        self.vhost_user_pmd.quit()
+        lcore_dma = self.generate_lcore_dma_param(
+            cbdma_list=self.cbdma_list, core_list=self.vhost_core_list[1:9]
         )
-        self.send_chain_packets_and_verify()
+        vhost_param = (
+            " --nb-cores=8 --txq=8 --rxq=8 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci,
+            iova_mode="va",
+        )
+        for key, path in SPLIT_RING_PATH.items():
+            if key == "mergeable_path":
+                virtio_eal_param = (
+                    "--vdev=net_virtio_user0,mac={},path=/tmp/s0,{},queues=8".format(
+                        self.virtio_mac, path
+                    )
+                )
+                mode = key + "_VA" + "_8_lcore"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Start virtio-user with {} path with {}".format(key, path)
+                )
+                self.start_virtio_testpmd(
+                    cores=self.virtio_core_list,
+                    param=virtio_param,
+                    eal_param=virtio_eal_param,
+                )
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Restart host with {} path with {}".format(key, path)
+                )
+                self.vhost_user_pmd.execute_cmd("start")
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+                self.virtio_user_pmd.quit()
 
         if not self.check_2M_env:
-            self.logger.info("Quit and relaunch vhost testpmd with PA mode")
-            self.pmdout_virtio_user.execute_cmd("quit", "#")
-            self.pmdout_vhost_user.execute_cmd("quit", "#")
-            self.launch_testpmd_as_vhost_user(
-                vhost_param % (nb_cores),
-                self.cores[0:2],
-                dev=vhost_vdevs % (queues),
+            self.vhost_user_pmd.quit()
+            self.start_vhost_testpmd(
+                cores=self.vhost_core_list,
+                param=vhost_param,
+                eal_param=vhost_eal_param,
                 ports=allow_pci,
                 iova_mode="pa",
-                set_pmd_param=False,
             )
-            self.launch_testpmd_as_virtio_user(
-                virtio_param % (nb_cores, txd_rxd, txd_rxd, txq_rxq, txq_rxq),
-                self.cores[2:4],
-                dev=virtio_dev % (queues),
-                set_pmd_param=False,
-            )
-            self.send_chain_packets_and_verify()
+            for key, path in SPLIT_RING_PATH.items():
+                if key == "inorder_non_mergeable_path":
+                    virtio_eal_param = "--vdev=net_virtio_user0,mac={},path=/tmp/s0,{},queues=8".format(
+                        self.virtio_mac, path
+                    )
 
-    def send_imix_and_verify(self, mode, multiple_queue=True, queue_list=[]):
+                    mode = key + "_PA" + "_8_lcore"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Start virtio-user with {} path with {}".format(key, path)
+                    )
+                    self.start_virtio_testpmd(
+                        cores=self.virtio_core_list,
+                        param=virtio_param,
+                        eal_param=virtio_eal_param,
+                    )
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets(queues=8)
+
+                    mode += "_RestartVhost"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Restart host with {} path with {}".format(key, path)
+                    )
+                    self.vhost_user_pmd.execute_cmd("start")
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets(queues=8)
+                    self.virtio_user_pmd.quit()
+
+        self.result_table_print()
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.handle_expected(mode_list=self.mode_list)
+        self.handle_results(mode_list=self.mode_list)
+        self.vhost_user_pmd.quit()
+
+    def test_perf_pvp_split_all_path_vhost_txq_1_to_N_cbdma(self):
+        """
+        Test Case 4: PVP split ring all path vhost enqueue operations with 1 to N mapping between vrings and CBDMA virtual channels
+        """
+        cbdma_num = 8
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num)
+        dmas = self.generate_dmas_param(1)
+        lcore_dma = self.generate_lcore_dma_param(
+            cbdma_list=self.cbdma_list, core_list=self.vhost_core_list[1:2]
+        )
+        vhost_eal_param = "--vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas={},dma_ring_size=2048'".format(
+            dmas
+        )
+        vhost_param = (
+            " --nb-cores=1 --txq=1 --rxq=1 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+        virtio_param = " --nb-cores=1 --txq=1 --rxq=1 --txd=1024 --rxd=1024"
+        allow_pci = [self.dut.ports_info[0]["pci"]]
+        for i in range(cbdma_num):
+            allow_pci.append(self.cbdma_list[i])
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci,
+            iova_mode="va",
+        )
+        for key, path in SPLIT_RING_PATH.items():
+            virtio_eal_param = (
+                "--vdev=net_virtio_user0,mac={},path=/tmp/s0,{},queues=1".format(
+                    self.virtio_mac, path
+                )
+            )
+            if key == "non_mergeable_path":
+                new_virtio_param = "--enable-hw-vlan-strip  " + virtio_param
+            else:
+                new_virtio_param = virtio_param
+
+            mode = key + "_VA"
+            self.mode_list.append(mode)
+            self.logger.info(
+                "Start virtio-user with {} path with {}".format(key, path)
+            )
+            self.start_virtio_testpmd(
+                cores=self.virtio_core_list,
+                param=new_virtio_param,
+                eal_param=virtio_eal_param,
+            )
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets()
+
+            mode += "_RestartVhost"
+            self.mode_list.append(mode)
+            self.logger.info(
+                "Restart host with {} path with {}".format(key, path)
+            )
+            self.vhost_user_pmd.execute_cmd("start")
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets()
+            self.virtio_user_pmd.quit()
+
+        if not self.check_2M_env:
+            self.vhost_user_pmd.quit()
+            self.start_vhost_testpmd(
+                cores=self.vhost_core_list,
+                param=vhost_param,
+                eal_param=vhost_eal_param,
+                ports=allow_pci,
+                iova_mode="pa",
+            )
+            for key, path in SPLIT_RING_PATH.items():
+                if key == "non_mergeable_path":
+                    virtio_eal_param = "--vdev=net_virtio_user0,mac={},path=/tmp/s0,{},queues=1".format(
+                        self.virtio_mac, path
+                    )
+
+                    mode = key + "_PA"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Start virtio-user with {} path with {}".format(key, path)
+                    )
+                    self.start_virtio_testpmd(
+                        cores=self.virtio_core_list,
+                        param=virtio_param,
+                        eal_param=virtio_eal_param,
+                    )
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets()
+
+                    mode += "_RestartVhost"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Restart host with {} path with {}".format(key, path)
+                    )
+                    self.vhost_user_pmd.execute_cmd("start")
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets()
+                    self.virtio_user_pmd.quit()
+
+        self.result_table_print()
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.handle_expected(mode_list=self.mode_list)
+        self.handle_results(mode_list=self.mode_list)
+        self.vhost_user_pmd.quit()
+
+    def test_perf_pvp_split_all_path_multi_queues_vhost_txq_M_to_N_cbdma(self):
+        """
+        Test Case 5: PVP split ring all path multi-queues vhost enqueue operations with M to N mapping between vrings and CBDMA virtual channels
+        """
+        cbdma_num = 8
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num)
+        dmas = self.generate_dmas_param(3)
+        lcore_dma = self.generate_lcore_dma_param(
+            cbdma_list=self.cbdma_list, core_list=self.vhost_core_list[1:2]
+        )
+        vhost_eal_param = "--vdev 'net_vhost0,iface=/tmp/s0,queues=8,dmas={},dma_ring_size=2048'".format(
+            dmas
+        )
+        vhost_param = (
+            " --nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+        virtio_param = "--nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
+        allow_pci = [self.dut.ports_info[0]["pci"]]
+        for i in range(cbdma_num):
+            allow_pci.append(self.cbdma_list[i])
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci,
+            iova_mode="va",
+        )
+        for key, path in SPLIT_RING_PATH.items():
+            virtio_eal_param = (
+                "--vdev=net_virtio_user0,mac={},path=/tmp/s0,{},queues=8".format(
+                    self.virtio_mac, path
+                )
+            )
+            if key == "non_mergeable_path":
+                virtio_param = "--enable-hw-vlan-strip  " + virtio_param
+
+            mode = key + "_VA" + "_3dmas"
+            self.mode_list.append(mode)
+            self.logger.info(
+                "Start virtio-user with {} path with {}".format(key, path)
+            )
+            self.start_virtio_testpmd(
+                cores=self.virtio_core_list,
+                param=virtio_param,
+                eal_param=virtio_eal_param,
+            )
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets(queues=8)
+
+            mode += "_RestartVhost"
+            self.mode_list.append(mode)
+            self.logger.info(
+                "Restart host with {} path with {}".format(key, path)
+            )
+            self.vhost_user_pmd.execute_cmd("start")
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets(queues=8)
+            self.virtio_user_pmd.quit()
+
+        self.vhost_user_pmd.quit()
+        dmas = self.generate_dmas_param(8)
+        vhost_eal_param = "--vdev 'net_vhost0,iface=/tmp/s0,queues=8,dmas={},dma_ring_size=2048'".format(
+            dmas
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci,
+            iova_mode="va",
+        )
+        for key, path in SPLIT_RING_PATH.items():
+            if key == "inorder_non_mergeable_path":
+                virtio_eal_param = (
+                    "--vdev=net_virtio_user0,mac={},path=/tmp/s0,{},queues=8".format(
+                        self.virtio_mac, path
+                    )
+                )
+
+                mode = key + "_VA" + "_8dmas"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Start virtio-user with {} path with {}".format(key, path)
+                )
+                self.start_virtio_testpmd(
+                    cores=self.virtio_core_list,
+                    param=virtio_param,
+                    eal_param=virtio_eal_param,
+                )
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+
+                mode += "_RestartVhost"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Restart host with {} path with {}".format(key, path)
+                )
+                self.vhost_user_pmd.execute_cmd("start")
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+                self.virtio_user_pmd.quit()
+
+        if not self.check_2M_env:
+            self.vhost_user_pmd.quit()
+            self.start_vhost_testpmd(
+                cores=self.vhost_core_list,
+                param=vhost_param,
+                eal_param=vhost_eal_param,
+                ports=allow_pci,
+                iova_mode="pa",
+            )
+            for key, path in SPLIT_RING_PATH.items():
+                if key == "vectorized_path":
+                    virtio_eal_param = "--vdev=net_virtio_user0,mac={},path=/tmp/s0,{},queues=8".format(
+                        self.virtio_mac, path
+                    )
+
+                    mode = key + "_PA" + "_8dmas"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Start virtio-user with {} path with {}".format(key, path)
+                    )
+                    self.start_virtio_testpmd(
+                        cores=self.virtio_core_list,
+                        param=virtio_param,
+                        eal_param=virtio_eal_param,
+                    )
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets(queues=8)
+
+                    mode += "_RestartVhost"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Restart host with {} path with {}".format(key, path)
+                    )
+                    self.vhost_user_pmd.execute_cmd("start")
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets(queues=8)
+                    self.virtio_user_pmd.quit()
+
+        self.result_table_print()
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.handle_expected(mode_list=self.mode_list)
+        self.handle_results(mode_list=self.mode_list)
+        self.vhost_user_pmd.quit()
+
+    def test_perf_pvp_split_dynamic_queues_vhost_txq_M_to_N_cbdma(self):
+        """
+        Test Case 6: PVP split ring dynamic queue number vhost enqueue operations with M to N mapping between vrings and CBDMA virtual channels
+        """
+        cbdma_num = 8
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num)
+        vhost_eal_param = "--vdev 'net_vhost0,iface=/tmp/s0,queues=1,client=1'"
+        vhost_param = " --nb-cores=1 --txq=1 --rxq=1 --txd=1024 --rxd=1024"
+        virtio_param = " --nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
+        allow_pci = [self.dut.ports_info[0]["pci"]]
+        for i in range(cbdma_num):
+            allow_pci.append(self.cbdma_list[i])
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci[0:1],
+            iova_mode="va",
+        )
+        for key, path in SPLIT_RING_PATH.items():
+            if key == "inorder_mergeable_path":
+                virtio_eal_param = "--vdev=net_virtio_user0,mac={},path=/tmp/s0,{},queues=8,server=1".format(
+                    self.virtio_mac, path
+                )
+
+                mode = key + "_VA" + "_without_cbdma"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Start virtio-user with {} path with {}".format(key, path)
+                )
+                self.start_virtio_testpmd(
+                    cores=self.virtio_core_list,
+                    param=virtio_param,
+                    eal_param=virtio_eal_param,
+                )
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets()
+
+                mode += "_RestartVhost"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Restart host with {} path with {}".format(key, path)
+                )
+                self.vhost_user_pmd.execute_cmd("start")
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets()
+
+        self.vhost_user_pmd.quit()
+        dmas = self.generate_dmas_param(4)
+        lcore_dma = self.generate_lcore_dma_param(
+            cbdma_list=self.cbdma_list[0:4], core_list=self.vhost_core_list[1:5]
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=/tmp/s0,queues=4,client=1,dmas={}'".format(dmas)
+        )
+        vhost_param = (
+            " --nb-cores=4 --txq=4 --rxq=4 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci[0:5],
+            iova_mode="va",
+        )
+
+        for key, path in SPLIT_RING_PATH.items():
+            if key == "inorder_mergeable_path":
+
+                mode = key + "_VA" + "_1:1"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Start virtio-user with {} path with {}".format(key, path)
+                )
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=4)
+
+                mode += "_RestartVhost"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Start virtio-user with {} path with {}".format(key, path)
+                )
+                self.vhost_user_pmd.execute_cmd("start")
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=4)
+
+        self.vhost_user_pmd.quit()
+        dmas = self.generate_dmas_param(queues=8)
+        core1 = self.vhost_core_list[1]
+        core2 = self.vhost_core_list[2]
+        core3 = self.vhost_core_list[3]
+        core4 = self.vhost_core_list[4]
+        core5 = self.vhost_core_list[5]
+        cbdma0 = self.cbdma_list[0]
+        cbdma1 = self.cbdma_list[1]
+        cbdma2 = self.cbdma_list[2]
+        cbdma3 = self.cbdma_list[3]
+        cbdma4 = self.cbdma_list[4]
+        cbdma5 = self.cbdma_list[5]
+        cbdma6 = self.cbdma_list[6]
+        cbdma7 = self.cbdma_list[7]
+        lcore_dma = (
+            f"[lcore{core1}@{cbdma0},lcore{core1}@{cbdma7},"
+            + f"lcore{core2}@{cbdma1},lcore{core2}@{cbdma2},lcore{core2}@{cbdma3},"
+            + f"lcore{core3}@{cbdma2},lcore{core3}@{cbdma3},lcore{core3}@{cbdma4},"
+            f"lcore{core4}@{cbdma2},lcore{core4}@{cbdma3},lcore{core4}@{cbdma4},lcore{core4}@{cbdma5},"
+            f"lcore{core5}@{cbdma0},lcore{core5}@{cbdma1},lcore{core5}@{cbdma2},lcore{core5}@{cbdma3},"
+            f"lcore{core5}@{cbdma4},lcore{core5}@{cbdma5},lcore{core5}@{cbdma6},lcore{core5}@{cbdma7}]"
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=/tmp/s0,queues=8,client=1,dmas={}'".format(dmas)
+        )
+        vhost_param = (
+            " --nb-cores=5 --txq=8 --rxq=8 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci[0:9],
+            iova_mode="va",
+        )
+
+        for key, path in SPLIT_RING_PATH.items():
+            if key == "inorder_mergeable_path":
+
+                mode = key + "_VA" + "_M<N"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Start virtio-user with {} path with {}".format(key, path)
+                )
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+
+                mode += "_RestartVhost"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Restart host with {} path with {}".format(key, path)
+                )
+                self.vhost_user_pmd.execute_cmd("start")
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+
+        self.vhost_user_pmd.quit()
+        dmas = self.generate_dmas_param(7)
+        lcore_dma = (
+            f"[lcore{core1}@{cbdma0},lcore{core2}@{cbdma0},lcore{core3}@{cbdma1},lcore{core3}@{cbdma2},"
+            f"lcore{core4}@{cbdma1},lcore{core4}@{cbdma2},lcore{core5}@{cbdma1},lcore{core5}@{cbdma2}]"
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=/tmp/s0,queues=8,client=1,dmas={}'".format(dmas)
+        )
+        vhost_param = (
+            " --nb-cores=5 --txq=8 --rxq=8 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci[0:5],
+            iova_mode="va",
+        )
+
+        for key, path in SPLIT_RING_PATH.items():
+            if key == "inorder_mergeable_path":
+
+                mode = key + "_VA" + "_M>N"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Start virtio-user with {} path with {}".format(key, path)
+                )
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+
+                mode += "_RestartVhost"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Restart host with {} path with {}".format(key, path)
+                )
+                self.vhost_user_pmd.execute_cmd("start")
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+
+        if not self.check_2M_env:
+            self.vhost_user_pmd.quit()
+            dmas = self.generate_dmas_param(queues=8)
+
+            vhost_eal_param = (
+                "--vdev 'net_vhost0,iface=/tmp/s0,queues=8,client=1,dmas={}'".format(
+                    dmas
+                )
+            )
+            vhost_param = " --nb-cores=5 --txq=8 --rxq=8 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+            self.start_vhost_testpmd(
+                cores=self.vhost_core_list,
+                param=vhost_param,
+                eal_param=vhost_eal_param,
+                ports=allow_pci[0:5],
+                iova_mode="pa",
+            )
+
+            for key, path in SPLIT_RING_PATH.items():
+                if key == "inorder_mergeable_path":
+
+                    mode = key + "_PA" + "_M>N"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Start virtio-user with {} path with {}".format(key, path)
+                    )
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets(queues=8)
+
+                    mode += "_RestartVhost"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "ReLaunch host with {} path with {}".format(key, path)
+                    )
+                    self.vhost_user_pmd.execute_cmd("start")
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets(queues=8)
+
+        self.result_table_print()
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.handle_expected(mode_list=self.mode_list)
+        self.handle_results(mode_list=self.mode_list)
+        self.virtio_user_pmd.quit()
+        self.vhost_user_pmd.quit()
+
+    def test_perf_pvp_packed_all_path_vhost_txq_1_to_1_cbdma(self):
+        """
+        Test Case 7: PVP packed ring all path vhost enqueue operations with 1 to 1 mapping between vrings and CBDMA virtual channels
+        """
+        cbdma_num = 1
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num)
+        dmas = self.generate_dmas_param(1)
+        lcore_dma = self.generate_lcore_dma_param(
+            cbdma_list=self.cbdma_list, core_list=self.vhost_core_list[1:2]
+        )
+        vhost_eal_param = "--vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas={},dma_ring_size=2048'".format(
+            dmas
+        )
+        vhost_param = (
+            " --nb-cores=1 --txq=1 --rxq=1 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+        allow_pci = [self.dut.ports_info[0]["pci"]]
+        for i in range(cbdma_num):
+            allow_pci.append(self.cbdma_list[i])
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci,
+            iova_mode="va",
+        )
+        for key, path in PACKED_RING_PATH.items():
+            virtio_eal_param = (
+                " --vdev 'net_virtio_user0,mac={},path=/tmp/s0,{},queues=1'".format(
+                    self.virtio_mac, path
+                )
+            )
+            virtio_param = " --nb-cores=1 --txq=1 --rxq=1 --txd=1024 --rxd=1024"
+            if key == "vectorized_path_not_power_of_2":
+                virtio_eal_param += ",queue_size=1025"
+                virtio_param = " --nb-cores=1 --txq=1 --rxq=1 --txd=1025 --rxd=1025"
+            if "vectorized" in key:
+                virtio_eal_param += "  --force-max-simd-bitwidth=512"
+
+            mode = key + "_VA"
+            self.mode_list.append(mode)
+            self.logger.info(
+                "Start virtio-user with {} path with {}".format(key, path)
+            )
+            self.start_virtio_testpmd(
+                cores=self.virtio_core_list,
+                param=virtio_param,
+                eal_param=virtio_eal_param,
+            )
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets()
+
+            mode += "_RestartVhost"
+            self.mode_list.append(mode)
+            self.logger.info(
+                "Restart host with {} path with {}".format(key, path)
+            )
+            self.vhost_user_pmd.execute_cmd("start")
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets()
+            self.virtio_user_pmd.quit()
+
+        if not self.check_2M_env:
+            self.vhost_user_pmd.quit()
+            self.start_vhost_testpmd(
+                cores=self.vhost_core_list,
+                param=vhost_param,
+                eal_param=vhost_eal_param,
+                ports=allow_pci,
+                iova_mode="pa",
+            )
+            for key, path in PACKED_RING_PATH.items():
+                if key == "inorder_mergeable_path":
+                    virtio_eal_param = " --vdev 'net_virtio_user0,mac={},path=/tmp/s0,{},queues=1'".format(
+                        self.virtio_mac, path
+                    )
+                    virtio_param = " --nb-cores=1 --txq=1 --rxq=1 --txd=1024 --rxd=1024"
+
+                    mode = key + "_PA"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Start virtio-user with {} path with {}".format(key, path)
+                    )
+                    self.start_virtio_testpmd(
+                        cores=self.virtio_core_list,
+                        param=virtio_param,
+                        eal_param=virtio_eal_param,
+                    )
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets()
+
+                    mode += "_RestartVhost"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Restart host with {} path with {}".format(key, path)
+                    )
+                    self.vhost_user_pmd.execute_cmd("start")
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets()
+                    self.virtio_user_pmd.quit()
+
+        self.result_table_print()
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.handle_expected(mode_list=self.mode_list)
+        self.handle_results(mode_list=self.mode_list)
+        self.vhost_user_pmd.quit()
+
+    def test_perf_pvp_packed_all_path_multi_queues_vhost_txq_1_to_1_cbdma(self):
+        """
+        Test Case 8: PVP packed ring all path multi-queues vhost enqueue operations with 1 to 1 mapping between vrings and CBDMA virtual channels
+        """
+        cbdma_num = 8
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num)
+        dmas = self.generate_dmas_param(8)
+        lcore_dma = self.generate_lcore_dma_param(
+            cbdma_list=self.cbdma_list, core_list=self.vhost_core_list[1:]
+        )
+        vhost_eal_param = "--vdev 'net_vhost0,iface=/tmp/s0,queues=8,dmas={},dma_ring_size=2048'".format(
+            dmas
+        )
+        vhost_param = (
+            " --nb-cores=8 --txq=8 --rxq=8 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+        allow_pci = [self.dut.ports_info[0]["pci"]]
+        for i in range(cbdma_num):
+            allow_pci.append(self.cbdma_list[i])
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci,
+            iova_mode="va",
+        )
+        for key, path in PACKED_RING_PATH.items():
+            virtio_eal_param = (
+                " --vdev 'net_virtio_user0,mac={},path=/tmp/s0,{},queues=8'".format(
+                    self.virtio_mac, path
+                )
+            )
+            virtio_param = " --nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
+            if key == "vectorized_path_not_power_of_2":
+                virtio_eal_param += ",queue_size=1025"
+                virtio_param = " --nb-cores=1 --txq=8 --rxq=8 --txd=1025 --rxd=1025"
+            if "vectorized" in key:
+                virtio_eal_param += "  --force-max-simd-bitwidth=512"
+
+            mode = key + "_VA"
+            self.mode_list.append(mode)
+            self.logger.info(
+                "Start virtio-user with {} path with {}".format(key, path)
+            )
+            self.start_virtio_testpmd(
+                cores=self.virtio_core_list,
+                param=virtio_param,
+                eal_param=virtio_eal_param,
+            )
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets(queues=8)
+
+            mode += "_RestartVhost"
+            self.mode_list.append(mode)
+            self.logger.info(
+                "Restart host with {} path with {}".format(key, path)
+            )
+            self.vhost_user_pmd.execute_cmd("start")
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets(queues=8)
+            self.virtio_user_pmd.quit()
+
+        if not self.check_2M_env:
+            self.vhost_user_pmd.quit()
+            self.start_vhost_testpmd(
+                cores=self.vhost_core_list,
+                param=vhost_param,
+                eal_param=vhost_eal_param,
+                ports=allow_pci,
+                iova_mode="pa",
+            )
+            for key, path in PACKED_RING_PATH.items():
+                if key == "mergeable_path":
+                    virtio_param = (
+                        " --nb-cores=1  --txq=8 --rxq=8 --txd=1024 --rxd=1024"
+                    )
+                    virtio_eal_param = "--vdev=net_virtio_user0,mac={},path=/tmp/s0,{},queues=8".format(
+                        self.virtio_mac, path
+                    )
+
+                    mode = key + "_PA"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Start virtio-user with {} path with {}".format(key, path)
+                    )
+                    self.start_virtio_testpmd(
+                        cores=self.virtio_core_list,
+                        param=virtio_param,
+                        eal_param=virtio_eal_param,
+                    )
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets(queues=8)
+
+                    mode += "_RestartVhost"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Restart host with {} path with {}".format(key, path)
+                    )
+                    self.vhost_user_pmd.execute_cmd("start")
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets(queues=8)
+                    self.virtio_user_pmd.quit()
+
+        self.result_table_print()
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.handle_expected(mode_list=self.mode_list)
+        self.handle_results(mode_list=self.mode_list)
+        self.vhost_user_pmd.quit()
+
+    def test_perf_pvp_packed_all_path_multi_queues_vhost_txq_M_to_1_cbdma(self):
+        """
+        Test Case 9: PVP packed ring all path multi-queues vhost enqueue operations with M to 1 mapping between vrings and CBDMA virtual channels
+        """
+        cbdma_num = 1
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num)
+        dmas = self.generate_dmas_param(8)
+        lcore_dma = self.generate_lcore_dma_param(
+            cbdma_list=self.cbdma_list, core_list=self.vhost_core_list[1:2]
+        )
+        vhost_eal_param = "--vdev 'net_vhost0,iface=/tmp/s0,queues=8,dmas={},dma_ring_size=2048'".format(
+            dmas
+        )
+        vhost_param = (
+            " --nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+        allow_pci = [self.dut.ports_info[0]["pci"]]
+        for i in range(cbdma_num):
+            allow_pci.append(self.cbdma_list[i])
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci,
+            iova_mode="va",
+        )
+        for key, path in PACKED_RING_PATH.items():
+            virtio_eal_param = (
+                " --vdev 'net_virtio_user0,mac={},path=/tmp/s0,{},queues=8'".format(
+                    self.virtio_mac, path
+                )
+            )
+            virtio_param = " --nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
+            if key == "vectorized_path_not_power_of_2":
+                virtio_eal_param += ",queue_size=1025"
+                virtio_param = " --nb-cores=1 --txq=8 --rxq=8 --txd=1025 --rxd=1025"
+
+            mode = key + "_VA" + "_1_lcore"
+            self.mode_list.append(mode)
+            self.logger.info(
+                "Start virtio-user with {} path with {}".format(key, path)
+            )
+            self.start_virtio_testpmd(
+                cores=self.virtio_core_list,
+                param=virtio_param,
+                eal_param=virtio_eal_param,
+            )
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets(queues=8)
+
+            mode += "_RestartVhost"
+            self.mode_list.append(mode)
+            self.logger.info(
+                "Restart host with {} path with {}".format(key, path)
+            )
+            self.vhost_user_pmd.execute_cmd("start")
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets(queues=8)
+            self.virtio_user_pmd.quit()
+
+        self.vhost_user_pmd.quit()
+        lcore_dma = self.generate_lcore_dma_param(
+            cbdma_list=self.cbdma_list, core_list=self.vhost_core_list[1:4]
+        )
+        vhost_param = (
+            " --nb-cores=3 --txq=8 --rxq=8 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci,
+            iova_mode="va",
+        )
+        for key, path in PACKED_RING_PATH.items():
+            if key == "inorder_mergeable_path":
+                virtio_eal_param = (
+                    " --vdev 'net_virtio_user0,mac={},path=/tmp/s0,{},queues=8'".format(
+                        self.virtio_mac, path
+                    )
+                )
+                virtio_param = " --nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
+
+                mode = key + "_VA" + "_3_lcore"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Start virtio-user with {} path with {}".format(key, path)
+                )
+                self.start_virtio_testpmd(
+                    cores=self.virtio_core_list,
+                    param=virtio_param,
+                    eal_param=virtio_eal_param,
+                )
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+
+                mode += "_RestartVhost"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Restart host with {} path with {}".format(key, path)
+                )
+                self.vhost_user_pmd.execute_cmd("start")
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+                self.virtio_user_pmd.quit()
+
+        self.vhost_user_pmd.quit()
+        lcore_dma = self.generate_lcore_dma_param(
+            cbdma_list=self.cbdma_list, core_list=self.vhost_core_list[1:9]
+        )
+        vhost_param = (
+            " --nb-cores=8 --txq=8 --rxq=8 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci,
+            iova_mode="va",
+        )
+        for key, path in PACKED_RING_PATH.items():
+            if key == "mergeable_path":
+                virtio_eal_param = (
+                    " --vdev 'net_virtio_user0,mac={},path=/tmp/s0,{},queues=8'".format(
+                        self.virtio_mac, path
+                    )
+                )
+                virtio_param = " --nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
+
+                mode = key + "_VA" + "_8_lcore"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Start virtio-user with {} path with {}".format(key, path)
+                )
+                self.start_virtio_testpmd(
+                    cores=self.virtio_core_list,
+                    param=virtio_param,
+                    eal_param=virtio_eal_param,
+                )
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Restart host with {} path with {}".format(key, path)
+                )
+                self.vhost_user_pmd.execute_cmd("start")
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+                self.virtio_user_pmd.quit()
+
+        if not self.check_2M_env:
+            self.vhost_user_pmd.quit()
+            self.start_vhost_testpmd(
+                cores=self.vhost_core_list,
+                param=vhost_param,
+                eal_param=vhost_eal_param,
+                ports=allow_pci,
+                iova_mode="pa",
+            )
+            for key, path in PACKED_RING_PATH.items():
+                if key == "inorder_non_mergeable_path":
+                    virtio_eal_param = " --vdev 'net_virtio_user0,mac={},path=/tmp/s0,{},queues=8'".format(
+                        self.virtio_mac, path
+                    )
+                    virtio_param = " --nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
+
+                    mode = key + "_PA" + "_8_lcore"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Start virtio-user with {} path with {}".format(key, path)
+                    )
+                    self.start_virtio_testpmd(
+                        cores=self.virtio_core_list,
+                        param=virtio_param,
+                        eal_param=virtio_eal_param,
+                    )
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets(queues=8)
+
+                    mode += "_RestartVhost"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Restart host with {} path with {}".format(key, path)
+                    )
+                    self.vhost_user_pmd.execute_cmd("start")
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets(queues=8)
+                    self.virtio_user_pmd.quit()
+
+        self.result_table_print()
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.handle_expected(mode_list=self.mode_list)
+        self.handle_results(mode_list=self.mode_list)
+        self.vhost_user_pmd.quit()
+
+    def test_perf_pvp_packed_all_path_vhost_txq_1_to_N_cbdma(self):
+        """
+        Test Case 10: PVP packed ring all path vhost enqueue operations with 1 to N mapping between vrings and CBDMA virtual channels
+        """
+        cbdma_num = 8
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num)
+        dmas = self.generate_dmas_param(1)
+        lcore_dma = self.generate_lcore_dma_param(
+            cbdma_list=self.cbdma_list, core_list=self.vhost_core_list[1:2]
+        )
+        vhost_eal_param = "--vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas={},dma_ring_size=2048'".format(
+            dmas
+        )
+        vhost_param = (
+            " --nb-cores=1 --txq=1 --rxq=1--txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+        allow_pci = [self.dut.ports_info[0]["pci"]]
+        for i in range(cbdma_num):
+            allow_pci.append(self.cbdma_list[i])
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci,
+            iova_mode="va",
+        )
+        for key, path in PACKED_RING_PATH.items():
+            virtio_eal_param = (
+                " --vdev 'net_virtio_user0,mac={},path=/tmp/s0,{},queues=1'".format(
+                    self.virtio_mac, path
+                )
+            )
+            virtio_param = " --nb-cores=1 --txq=1 --rxq=1 --txd=1024 --rxd=1024"
+            if key == "vectorized_path_not_power_of_2":
+                virtio_eal_param += ",queue_size=1025"
+                virtio_param = " --nb-cores=1 --txq=1 --rxq=1 --txd=1025 --rxd=1025"
+
+            mode = key + "_VA"
+            self.mode_list.append(mode)
+            self.logger.info(
+                "Start virtio-user with {} path with {}".format(key, path)
+            )
+            self.start_virtio_testpmd(
+                cores=self.virtio_core_list,
+                param=virtio_param,
+                eal_param=virtio_eal_param,
+            )
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets()
+
+            mode += "_RestartVhost"
+            self.mode_list.append(mode)
+            self.logger.info(
+                "Restart host with {} path with {}".format(key, path)
+            )
+            self.vhost_user_pmd.execute_cmd("start")
+            self.send_imix_packets(mode=mode)
+            self.check_each_queue_of_port_packets()
+            self.virtio_user_pmd.quit()
+
+        if not self.check_2M_env:
+            self.vhost_user_pmd.quit()
+            self.start_vhost_testpmd(
+                cores=self.vhost_core_list,
+                param=vhost_param,
+                eal_param=vhost_eal_param,
+                ports=allow_pci,
+                iova_mode="pa",
+            )
+            for key, path in PACKED_RING_PATH.items():
+                if key == "non_mergeable_path":
+                    virtio_eal_param = " --vdev 'net_virtio_user0,mac={},path=/tmp/s0,{},queues=1'".format(
+                        self.virtio_mac, path
+                    )
+                    virtio_param = " --nb-cores=1 --txq=1 --rxq=1 --txd=1024 --rxd=1024"
+
+                    mode = key + "_PA"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Start virtio-user with {} path with {}".format(key, path)
+                    )
+                    self.start_virtio_testpmd(
+                        cores=self.virtio_core_list,
+                        param=virtio_param,
+                        eal_param=virtio_eal_param,
+                    )
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets()
+
+                    mode += "_RestartVhost"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Restart host with {} path with {}".format(key, path)
+                    )
+                    self.vhost_user_pmd.execute_cmd("start")
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets()
+                    self.virtio_user_pmd.quit()
+
+        self.result_table_print()
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.handle_expected(mode_list=self.mode_list)
+        self.handle_results(mode_list=self.mode_list)
+        self.vhost_user_pmd.quit()
+
+    def test_perf_pvp_packed_all_path_multi_queues_vhost_txq_M_to_N_cbdma(self):
+        """
+        Test Case 11: PVP packed ring all path vhost enqueue operations with M to N mapping between vrings and CBDMA virtual channels
+        """
+        cbdma_num = 8
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num)
+        dmas = self.generate_dmas_param(3)
+        lcore_dma = self.generate_lcore_dma_param(
+            cbdma_list=self.cbdma_list, core_list=self.vhost_core_list[1:2]
+        )
+        vhost_eal_param = "--vdev 'net_vhost0,iface=/tmp/s0,queues=8,dmas={},dma_ring_size=2048'".format(
+            dmas
+        )
+        vhost_param = (
+            " --nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+        allow_pci = [self.dut.ports_info[0]["pci"]]
+        for i in range(cbdma_num):
+            allow_pci.append(self.cbdma_list[i])
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci,
+            iova_mode="va",
+        )
+        for key, path in PACKED_RING_PATH.items():
+            virtio_eal_param = (
+                " --vdev 'net_virtio_user0,mac={},path=/tmp/s0,{},queues=8'".format(
+                    self.virtio_mac, path
+                )
+            )
+            virtio_param = " --nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
+            if key == "vectorized_path_not_power_of_2":
+                virtio_eal_param += ",queue_size=1025"
+                virtio_param = " --nb-cores=1 --txq=8 --rxq=8 --txd=1025 --rxd=1025"
+
+            mode = key + "_VA" + "_3dmas"
+            self.mode_list.append(mode)
+            self.start_virtio_testpmd(
+                cores=self.virtio_core_list,
+                param=virtio_param,
+                eal_param=virtio_eal_param,
+            )
+            self.send_imix_packets(mode=mode)
+            self.logger.info(
+                "Start virtio-user with {} path with {}".format(key, path)
+            )
+            self.check_each_queue_of_port_packets(queues=8)
+
+            mode += "_RestartVhost"
+            self.mode_list.append(mode)
+            self.vhost_user_pmd.execute_cmd("start")
+            self.send_imix_packets(mode=mode)
+            self.logger.info(
+                "Restart host with {} path with {}".format(key, path)
+            )
+            self.check_each_queue_of_port_packets(queues=8)
+            self.virtio_user_pmd.quit()
+
+        self.vhost_user_pmd.quit()
+        dmas = self.generate_dmas_param(queues=8)
+        vhost_eal_param = "--vdev 'net_vhost0,iface=/tmp/s0,queues=8,dmas={},dma_ring_size=2048'".format(
+            dmas
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci,
+            iova_mode="va",
+        )
+        for key, path in PACKED_RING_PATH.items():
+            if key == "inorder_non_mergeable_path":
+                virtio_eal_param = (
+                    " --vdev 'net_virtio_user0,mac={},path=/tmp/s0,{},queues=8'".format(
+                        self.virtio_mac, path
+                    )
+                )
+                virtio_param = " --nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
+
+                mode = key + "_VA" + "_8dmas"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Start virtio-user with {} path with {}".format(key, path)
+                )
+                self.start_virtio_testpmd(
+                    cores=self.virtio_core_list,
+                    param=virtio_param,
+                    eal_param=virtio_eal_param,
+                )
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+
+                mode += "_RestartVhost"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Restart host with {} path with {}".format(key, path)
+                )
+                self.vhost_user_pmd.execute_cmd("start")
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+                self.virtio_user_pmd.quit()
+
+        if not self.check_2M_env:
+            self.vhost_user_pmd.quit()
+            self.start_vhost_testpmd(
+                cores=self.vhost_core_list,
+                param=vhost_param,
+                eal_param=vhost_eal_param,
+                ports=allow_pci,
+                iova_mode="pa",
+            )
+            for key, path in PACKED_RING_PATH.items():
+                if key == "vectorized_path":
+                    virtio_eal_param = " --force-max-simd-bitwidth=512 --vdev 'net_virtio_user0,mac={},path=/tmp/s0,{},queues=8'".format(
+                        self.virtio_mac, path
+                    )
+                    virtio_param = " --nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
+
+                    mode = key + "_PA" + "_8dmas"
+                    self.mode_list.append(mode)
+                    self.start_virtio_testpmd(
+                        cores=self.virtio_core_list,
+                        param=virtio_param,
+                        eal_param=virtio_eal_param,
+                    )
+                    self.send_imix_packets(mode=mode)
+                    self.logger.info(
+                        "Start virtio-user with {} path with {}".format(key, path)
+                    )
+                    self.check_each_queue_of_port_packets(queues=8)
+
+                    mode += "_RestartVhost"
+                    self.mode_list.append(mode)
+                    self.vhost_user_pmd.execute_cmd("start")
+                    self.send_imix_packets(mode=mode)
+                    self.logger.info(
+                        "Restart host with {} path with {}".format(key, path)
+                    )
+                    self.check_each_queue_of_port_packets(queues=8)
+                    self.virtio_user_pmd.quit()
+
+        self.result_table_print()
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.handle_expected(mode_list=self.mode_list)
+        self.handle_results(mode_list=self.mode_list)
+        self.vhost_user_pmd.quit()
+
+    def test_perf_pvp_packed_dynamic_queues_vhost_txq_M_to_N_cbdma(self):
+        """
+        Test Case 12: PVP packed ring dynamic queue number vhost enqueue operations with M to N mapping between vrings and CBDMA virtual channels
+        """
+        cbdma_num = 8
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num)
+        vhost_eal_param = "--vdev 'net_vhost0,iface=/tmp/s0,queues=1,client=1'"
+        vhost_param = " --nb-cores=1 --txq=1 --rxq=1 --txd=1024 --rxd=1024"
+        virtio_param = " --nb-cores=1 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
+        allow_pci = [self.dut.ports_info[0]["pci"]]
+        for i in range(cbdma_num):
+            allow_pci.append(self.cbdma_list[i])
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci[0:1],
+            iova_mode="va",
+        )
+        for key, path in PACKED_RING_PATH.items():
+            if key == "inorder_mergeable_path":
+                virtio_eal_param = "--vdev=net_virtio_user0,mac={},path=/tmp/s0,{},queues=8,server=1".format(
+                    self.virtio_mac, path
+                )
+
+                mode = key + "_VA" + "_without_cbdma"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Start virtio-user with {} path with {}".format(key, path)
+                )
+                self.start_virtio_testpmd(
+                    cores=self.virtio_core_list,
+                    param=virtio_param,
+                    eal_param=virtio_eal_param,
+                )
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets()
+
+                mode += "_RestartVhost"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Restart host with {} path with {}".format(key, path)
+                )
+                self.vhost_user_pmd.execute_cmd("start")
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets()
+
+        self.vhost_user_pmd.quit()
+        dmas = self.generate_dmas_param(4)
+        lcore_dma = self.generate_lcore_dma_param(
+            cbdma_list=self.cbdma_list[0:4], core_list=self.vhost_core_list[1:5]
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=/tmp/s0,queues=4,client=1,dmas={}'".format(dmas)
+        )
+        vhost_param = (
+            " --nb-cores=4 --txq=4 --rxq=4 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci[0:5],
+            iova_mode="va",
+        )
+        for key, path in PACKED_RING_PATH.items():
+            if key == "inorder_mergeable_path":
+
+                mode = key + "_VA" + "_1:1"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Start virtio-user with {} path with {}".format(key, path)
+                )
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=4)
+
+                mode += "_RestartVhost"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Restart host with {} path with {}".format(key, path)
+                )
+                self.vhost_user_pmd.execute_cmd("start")
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=4)
+
+        self.vhost_user_pmd.quit()
+        dmas = self.generate_dmas_param(8)
+        core1 = self.vhost_core_list[1]
+        core2 = self.vhost_core_list[2]
+        core3 = self.vhost_core_list[3]
+        core4 = self.vhost_core_list[4]
+        core5 = self.vhost_core_list[5]
+        cbdma0 = self.cbdma_list[0]
+        cbdma1 = self.cbdma_list[1]
+        cbdma2 = self.cbdma_list[2]
+        cbdma3 = self.cbdma_list[3]
+        cbdma4 = self.cbdma_list[4]
+        cbdma5 = self.cbdma_list[5]
+        cbdma6 = self.cbdma_list[6]
+        cbdma7 = self.cbdma_list[7]
+        lcore_dma = (
+            f"[lcore{core1}@{cbdma0},lcore{core1}@{cbdma7},"
+            + f"lcore{core2}@{cbdma1},lcore{core2}@{cbdma2},lcore{core2}@{cbdma3},"
+            + f"lcore{core3}@{cbdma2},lcore{core3}@{cbdma3},lcore{core3}@{cbdma4},"
+            f"lcore{core4}@{cbdma2},lcore{core4}@{cbdma3},lcore{core4}@{cbdma4},lcore{core4}@{cbdma5},"
+            f"lcore{core5}@{cbdma0},lcore{core5}@{cbdma1},lcore{core5}@{cbdma2},lcore{core5}@{cbdma3},"
+            f"lcore{core5}@{cbdma4},lcore{core5}@{cbdma5},lcore{core5}@{cbdma6},lcore{core5}@{cbdma7}]"
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=/tmp/s0,queues=8,client=1,dmas={}'".format(dmas)
+        )
+        vhost_param = (
+            " --nb-cores=5 --txq=8 --rxq=8 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci[0:9],
+            iova_mode="va",
+        )
+
+        for key, path in PACKED_RING_PATH.items():
+            if key == "inorder_mergeable_path":
+
+                mode = key + "_VA" + "_M<N"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Start virtio-user with {} path with {}".format(key, path)
+                )
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+
+                mode += "_RestartVhost"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Restart host with {} path with {}".format(key, path)
+                )
+                self.vhost_user_pmd.execute_cmd("start")
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+
+        self.vhost_user_pmd.quit()
+        dmas = self.generate_dmas_param(7)
+        lcore_dma = (
+            f"[lcore{core1}@{cbdma0},lcore{core2}@{cbdma0},lcore{core3}@{cbdma1},lcore{core3}@{cbdma2},"
+            f"lcore{core4}@{cbdma1},lcore{core4}@{cbdma2},lcore{core5}@{cbdma1},lcore{core5}@{cbdma2}]"
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=/tmp/s0,queues=8,client=1,dmas={}'".format(dmas)
+        )
+        vhost_param = (
+            " --nb-cores=5 --txq=8 --rxq=8 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+        )
+
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            param=vhost_param,
+            eal_param=vhost_eal_param,
+            ports=allow_pci[0:5],
+            iova_mode="va",
+        )
+
+        for key, path in PACKED_RING_PATH.items():
+            if key == "inorder_mergeable_path":
+
+                mode = key + "_VA" + "_M>N"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Start virtio-user with {} path with {}".format(key, path)
+                )
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+
+                mode += "_RestartVhost"
+                self.mode_list.append(mode)
+                self.logger.info(
+                    "Restart host with {} path with {}".format(key, path)
+                )
+                self.vhost_user_pmd.execute_cmd("start")
+                self.send_imix_packets(mode=mode)
+                self.check_each_queue_of_port_packets(queues=8)
+
+        if not self.check_2M_env:
+            self.vhost_user_pmd.quit()
+            dmas = self.generate_dmas_param(8)
+            vhost_eal_param = (
+                "--vdev 'net_vhost0,iface=/tmp/s0,queues=8,client=1,dmas={}'".format(
+                    dmas
+                )
+            )
+            vhost_param = " --nb-cores=5 --txq=8 --rxq=8 --txd=1024 --rxd=1024 --lcore-dma={}".format(
+                lcore_dma
+            )
+            self.start_vhost_testpmd(
+                cores=self.vhost_core_list,
+                param=vhost_param,
+                eal_param=vhost_eal_param,
+                ports=allow_pci[0:5],
+                iova_mode="pa",
+            )
+
+            for key, path in PACKED_RING_PATH.items():
+                if key == "inorder_mergeable_path":
+
+                    mode = key + "_PA" + "_M>N"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Start virtio-user with {} path with {}".format(key, path)
+                    )
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets(queues=8)
+
+                    mode += "_RestartVhost"
+                    self.mode_list.append(mode)
+                    self.logger.info(
+                        "Restart host with {} path with {}".format(key, path)
+                    )
+                    self.vhost_user_pmd.execute_cmd("start")
+                    self.send_imix_packets(mode=mode)
+                    self.check_each_queue_of_port_packets(queues=8)
+
+        self.result_table_print()
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.handle_expected(mode_list=self.mode_list)
+        self.handle_results(mode_list=self.mode_list)
+        self.vhost_user_pmd.quit()
+        self.virtio_user_pmd.quit()
+
+    def send_imix_packets(self, mode):
         """
         Send imix packet with packet generator and verify
         """
-        frame_sizes = [
-            64,
-            128,
-            256,
-            512,
-            1024,
-            1280,
-            1518,
-        ]
+        frame_sizes = [64, 128, 256, 512, 1024, 1518]
         tgenInput = []
         for frame_size in frame_sizes:
             payload_size = frame_size - self.headers_size
@@ -825,8 +2111,6 @@ class TestVirTioVhostCbdma(TestCase):
                     "src": {"action": "random"},
                 },
             }
-            if not multiple_queue:
-                fields_config = None
             pkt = Packet()
             pkt.assign_layers(["ether", "ipv4", "raw"])
             pkt.config_layers(
@@ -874,84 +2158,10 @@ class TestVirTioVhostCbdma(TestCase):
         results_row.append(Mpps)
         results_row.append(throughput)
         self.result_table_add(results_row)
-        if queue_list:
-            self.check_packets_of_each_queue(queue_list=queue_list)
-
-    def send_and_verify(
-        self,
-        mode,
-        multiple_queue=True,
-        queue_list=[],
-        frame_sizes=None,
-        pkt_length_mode="imix",
-    ):
-        """
-        Send packet with packet generator and verify
-        """
-        if pkt_length_mode == "imix":
-            self.send_imix_and_verify(mode, multiple_queue, queue_list)
-            return
-
-        self.throughput[mode] = dict()
-        for frame_size in frame_sizes:
-            self.throughput[mode][frame_size] = dict()
-            payload_size = frame_size - self.headers_size
-            tgenInput = []
-            port = self.tester.get_local_port(self.dut_ports[0])
-            fields_config = {
-                "ip": {
-                    "src": {"action": "random"},
-                },
-            }
-            if not multiple_queue:
-                fields_config = None
-            pkt1 = Packet()
-            pkt1.assign_layers(["ether", "ipv4", "raw"])
-            pkt1.config_layers(
-                [
-                    ("ether", {"dst": "%s" % self.virtio_mac}),
-                    ("ipv4", {"src": "1.1.1.1"}),
-                    ("raw", {"payload": ["01"] * int("%d" % payload_size)}),
-                ]
-            )
-            pkt1.save_pcapfile(
-                self.tester,
-                "%s/multiqueuerandomip_%s.pcap" % (self.out_path, frame_size),
-            )
-            tgenInput.append(
-                (
-                    port,
-                    port,
-                    "%s/multiqueuerandomip_%s.pcap" % (self.out_path, frame_size),
-                )
-            )
-            self.tester.pktgen.clear_streams()
-            streams = self.pktgen_helper.prepare_stream_from_tginput(
-                tgenInput, 100, fields_config, self.tester.pktgen
-            )
-            trans_options = {"delay": 5, "duration": 20}
-            _, pps = self.tester.pktgen.measure_throughput(
-                stream_ids=streams, options=trans_options
-            )
-            Mpps = pps / 1000000.0
-            self.verify(
-                Mpps > 0,
-                "%s can not receive packets of frame size %d"
-                % (self.running_case, frame_size),
-            )
-            throughput = Mpps * 100 / float(self.wirespeed(self.nic, frame_size, 1))
-            self.throughput[mode][frame_size][self.nb_desc] = Mpps
-            results_row = [frame_size]
-            results_row.append(mode)
-            results_row.append(Mpps)
-            results_row.append(throughput)
-            self.result_table_add(results_row)
-        if queue_list:
-            self.check_packets_of_each_queue(queue_list=queue_list)
 
     def handle_expected(self, mode_list):
         """
-        Update expected numbers to configurate file: $DTS_CFG_FOLDER/$suite_name.cfg
+        Update expected numbers to configurate file: conf/$suite_name.cfg
         """
         if load_global_setting(UPDATE_EXPECTED) == "yes":
             for mode in mode_list:
@@ -1026,7 +2236,6 @@ class TestVirTioVhostCbdma(TestCase):
                         )
                         ret_datas[nb_desc] = deepcopy(ret_data)
                 self.test_result[mode][frame_size] = deepcopy(ret_datas)
-        # Create test results table
         self.result_table_create(header)
         for mode in mode_list:
             for frame_size in self.test_parameters.keys():
@@ -1037,9 +2246,7 @@ class TestVirTioVhostCbdma(TestCase):
                             self.test_result[mode][frame_size][nb_desc][header[i]]
                         )
                     self.result_table_add(table_row)
-        # present test results to screen
         self.result_table_print()
-        # save test results as a file
         if self.save_result_flag:
             self.save_result(self.test_result, mode_list)
 
