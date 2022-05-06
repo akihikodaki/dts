@@ -65,6 +65,7 @@ class VirtDut(DPDKdut):
         )
         self.vm_name = vm_name
         self.hyper = hyper
+        self.host_dut = hyper.host_dut
         self.cpu_topo = cpu_topo
         self.migration_vm = False
 
