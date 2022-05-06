@@ -41,6 +41,7 @@ This document provides the plan for testing switch filter feature of CVL, includ
 
 * Enable switch filter for IPv4/IPv6 + TCP/UDP in non-pipeline/pipeline mode (comm #1 package)
 * Enable switch filter for tunnel : VXLAN / NVGRE in non-pipeline/pipeline mode (comm #1 package)
+* Enable "drop any" and "steering all to queue" action, any pattern packets will hit rule if these rules be created
 
 In pipeline mode, a flow can be set at one specific stage by setting parameter ``priority``. Currently,
 we support two stages: priority = 0 or !0. Flows with priority 0 located at the first pipeline stage
@@ -5596,4 +5597,174 @@ Tester::
    Check the rule not exists in the list.
    Send matched packets in step 4, check the action is not right.
 
+Pattern Any Test Case
+=====================
 
+Test case 1: check rule is programmed to switch
+-----------------------------------------------
+
+1. launch testpmd with --log-level="ice,7" create a rule::
+
+    testpmd> flow create 0 ingress pattern any / end actions drop / end
+    ice_flow_create(): Succeeded to create (2) flow
+    Flow rule #0 created
+
+2. destroy drop any rule::
+
+    testpmd> flow destroy 0 rule 0
+
+3. create to queue rule::
+
+    testpmd> flow create 0 ingress pattern any / end actions queue index 4 / end
+    ice_flow_create(): Succeeded to create (2) flow
+    Flow rule #0 created
+
+Test case 2: drop any rule
+--------------------------
+1. create a rule::
+
+    testpmd> flow create 0 ingress pattern any / end actions drop / end
+    testpmd> flow list 0
+
+    check the rule exists in the list.
+
+2. send matched packets::
+
+    >>> sendp([Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/Raw("x"*80)],iface="ens786f0",count=1)
+    >>> sendp([Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)],iface="ens786f0",count=1)
+    >>> sendp([Ether()/IP(src="192.168.0.2", dst="192.168.0.3",tos=4,frag=5)/Raw("x"*80)],iface="ens786f0",count=1)
+    >>> sendp([Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4,proto=0x06)/Raw("x"*80)],iface="ens786f0",count=1)
+    >>> sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0",count=1)
+    >>> sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/Raw("x"*80)],iface="ens786f0",count=1)
+    >>> sendp([Ether(dst="00:11:22:33:44:55")/PPPoED()/Raw("x" *80)],iface="ens786f0",count=1)
+    >>> sendp([Ether(dst="00:11:22:33:44:55", type=0x8863)/Raw("x" *80)],iface="ens786f0",count=1)
+    >>> sendp([Ether(dst="00:11:22:33:44:55", type=0x8864)/PPPoE(sessionid=3)/Raw("x" *80)],iface="ens786f0",count=1)
+    >>> sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x"*80)],iface="ens786f0",count=1)
+    >>> sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6()/Raw("x" * 80)],iface="ens786f0",count=1)
+    >>> sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6()/Raw("x" * 80)],iface="ens786f0",count=1)
+    >>> sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/SCTP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+    >>> sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022", nh=51)/AH(spi=11)/Raw("x"*480)], iface="ens786f0")
+    >>> sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(dport=4500)/ESP(spi=11)/Raw("x"*480)], iface="ens786f0")
+    >>> sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022", nh=50)/ESP(spi=11)/Raw("x"*480)], iface="ens786f0")
+    >>> sendp([Ether(dst="00:11:22:33:44:54")/IP(src="192.168.0.25",dst="192.168.0.23")/UDP(sport=23,dport=8805)/PFCP(Sfield=1, SEID=1)/Raw("x"*80)],iface="ens786f0")
+    >>> sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="ens786f0")
+    >>> sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="ens786f0")
+    >>> sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="ens786f0")
+
+    check port 0 can't receive these packets.
+
+3. verify rules can be destroyed::
+
+    testpmd> flow destroy 0 rule 0
+    testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets in step 2, check the packets are received by port 0.
+
+Test case 3: any to queue rule
+------------------------------
+1. create a rule::
+
+    testpmd> flow create 0 ingress pattern any / end actions queue index 4 / end
+    testpmd> flow list 0
+
+    check the rule exists in the list.
+
+2. send matched packets, same with test case 2 step 2, check port 0 receive these packets by queue 4.
+
+3. verify rules can be destroyed::
+
+    testpmd> flow destroy 0 rule 0
+    testpmd> flow list 0
+
+    check the rule not exists in the list.
+    send matched packets in step 2, check the packets are received by queue 0.
+
+Test case 4: pattern any priority check
+---------------------------------------
+
+subcase 1: non-pipeline mode
+............................
+
+1. create drop any rule with priority 0, to queue rule with priority 1::
+
+    testpmd> flow create 0 priority 0 ingress pattern any / end actions drop / end
+    ice_flow_create(): Succeeded to create (2) flow
+    Flow rule #0 created
+
+    testpmd> flow create 0 priority 1 ingress pattern any / end actions queue index 4 / end
+    ice_flow_create(): Succeeded to create (2) flow
+    Flow rule #1 created
+
+    testpmd> flow list 0
+    ID      Group   Prio    Attr    Rule
+    0       0       0       i--     ANY => DROP
+    1       0       1       i--     ANY => QUEUE
+
+2. send matched packets, same with test case 2 step 2, check all the packets are dropped.
+
+3. destroy rule 0, send matched packets, check all the packets received by queue 4.
+
+4. destroy rule 1, send matched packets, check all the packets received by rss.
+
+5. change the rule priority, repeat step 2-4, check the result is same.
+
+subcase 2: non-pipeline mode with other rule
+............................................
+
+1. create 2 rules::
+
+    testpmd> flow create 0 priority 1 ingress pattern any / end actions drop / end
+    testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is 1.1.1.2 dst is 1.1.1.3 tos is 4 / udp src is 23 dst is 25 / end actions queue index 2 / end
+
+2. send packet which match 2 rules, check the packet is dropped::
+
+    >>> sendp([Ether()/IP(src="1.1.1.2",dst="1.1.1.3",tos=4)/UDP(sport=23,dport=25)/Raw("x"*80)],iface="ens786f0",count=1)
+
+3. destroy rule 0, repeat step 2, check the packet is received by queue 2::
+
+    testpmd> flow destroy 0 rule 0
+
+4. create 2 rules::
+
+    testpmd> flow create 0 priority 1 ingress pattern any / end actions queue index 4 / end
+    testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is 1.1.1.2 dst is 1.1.1.3 tos is 4 / udp src is 23 dst is 25 / end actions queue index 2 / end
+
+5. send packet which match 2 rules, check the packet is received by queue 2::
+
+    >>> sendp([Ether()/IP(src="1.1.1.2",dst="1.1.1.3",tos=4)/UDP(sport=23,dport=25)/Raw("x"*80)],iface="ens786f0",count=1)
+
+6. destroy rule 1, repeat step 5, check the packet is received by queue 4::
+
+    testpmd> flow destroy 0 rule 1
+
+subcase 3: pipeline mode
+........................
+
+1. launch testpmd with pipeline mode, create rule, check the rule can be created::
+
+    testpmd> flow create 0 priority 0 ingress pattern any / end actions drop / end
+
+2. destroy the rule::
+
+    testpmd> flow flush 0
+
+3. create rule, check the rule can be created::
+
+    testpmd> flow create 0 priority 0 ingress pattern any / end actions queue index 4 / end
+
+4. destroy the rule::
+
+    testpmd> flow flush 0
+
+5. create rule, check the rule can not be created::
+
+    testpmd> flow create 0 priority 1 ingress pattern any / end actions drop / end
+
+6. destroy the rule::
+
+    testpmd> flow flush 0
+
+7. create rule, check the rule can not be created::
+
+    testpmd> flow create 0 priority 1 ingress pattern any / end actions queue index 4 / end
