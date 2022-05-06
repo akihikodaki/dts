@@ -45,9 +45,9 @@ import re
 import time
 
 import framework.utils as utils
+from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 from framework.virt_common import VM
-from framework.pmd_output import PmdOutput
 
 
 class TestVdevPrimarySecondary(TestCase):
@@ -110,7 +110,14 @@ class TestVdevPrimarySecondary(TestCase):
         """
         launch testpmd
         """
-        self.vhost_user_pmd.start_testpmd(cores=self.vhost_cores, param=param, eal_param=eal_param, prefix='vhost', fixed_prefix=True, no_pci=True)
+        self.vhost_user_pmd.start_testpmd(
+            cores=self.vhost_cores,
+            param=param,
+            eal_param=eal_param,
+            prefix="vhost",
+            fixed_prefix=True,
+            no_pci=True,
+        )
 
     def launch_symmetric_mp(self):
         example_cmd_primary = (
@@ -210,7 +217,7 @@ class TestVdevPrimarySecondary(TestCase):
         self.launch_hotplug_mp()
         vm_ports = []
         for pci_info in self.vm_dut.ports_info:
-            vm_ports.append(pci_info['pci'])
+            vm_ports.append(pci_info["pci"])
         self.check_etherdev(dev_list=vm_ports)
         detach_pci = vm_ports[0]
         for _ in range(2):

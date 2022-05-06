@@ -64,7 +64,7 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         self.vhost_user_pmd = PmdOutput(self.dut, self.vhost_user)
         self.virtio_user0_pmd = PmdOutput(self.dut, self.virtio_user0)
         self.virtio_user1_pmd = PmdOutput(self.dut, self.virtio_user1)
-        self.testpmd_name = self.dut.apps_name['test-pmd'].split("/")[-1]
+        self.testpmd_name = self.dut.apps_name["test-pmd"].split("/")[-1]
 
     def set_up(self):
         """

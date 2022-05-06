@@ -61,7 +61,6 @@ PACKED_RING_PATH = {
 
 
 class TestVhostCbdma(TestCase):
-
     def set_up_all(self):
         self.dut_ports = self.dut.get_ports()
         self.number_of_ports = 1
@@ -277,9 +276,7 @@ class TestVhostCbdma(TestCase):
             else:
                 new_virtio_param = virtio_param
 
-            self.logger.info(
-                "Start virtio-user with {} path with {}".format(key, path)
-            )
+            self.logger.info("Start virtio-user with {} path with {}".format(key, path))
             mode = key + "_VA"
             self.mode_list.append(mode)
             self.start_virtio_testpmd(
@@ -290,9 +287,7 @@ class TestVhostCbdma(TestCase):
             self.send_imix_packets(mode=mode)
             self.check_each_queue_of_port_packets()
 
-            self.logger.info(
-                "Restart vhost with {} path with {}".format(key, path)
-            )
+            self.logger.info("Restart vhost with {} path with {}".format(key, path))
             mode += "_RestartVhost"
             self.send_imix_packets(mode=mode)
             self.check_each_queue_of_port_packets()
@@ -331,9 +326,7 @@ class TestVhostCbdma(TestCase):
                 self.send_imix_packets(mode=mode)
                 self.check_each_queue_of_port_packets()
 
-                self.logger.info(
-                    "Restart vhost with {} path with {}".format(key, path)
-                )
+                self.logger.info("Restart vhost with {} path with {}".format(key, path))
                 mode += "_RestartVhost"
                 self.vhost_user_pmd.execute_cmd("start")
                 self.mode_list.append(mode)
@@ -389,9 +382,7 @@ class TestVhostCbdma(TestCase):
             else:
                 new_virtio_param = virtio_param
 
-            self.logger.info(
-                "Start virtio-user with {} path with {}".format(key, path)
-            )
+            self.logger.info("Start virtio-user with {} path with {}".format(key, path))
             mode = key + "_VA"
             self.mode_list.append(mode)
             self.start_virtio_testpmd(
@@ -402,9 +393,7 @@ class TestVhostCbdma(TestCase):
             self.send_imix_packets(mode=mode)
             self.check_each_queue_of_port_packets(queues=8)
 
-            self.logger.info(
-                "Restart host with {} path with {}".format(key, path)
-            )
+            self.logger.info("Restart host with {} path with {}".format(key, path))
             mode += "_RestartVhost"
             self.mode_list.append(mode)
             self.vhost_user_pmd.execute_cmd("start")
@@ -501,9 +490,7 @@ class TestVhostCbdma(TestCase):
 
             mode = key + "_VA" + "_1_lcore"
             self.mode_list.append(mode)
-            self.logger.info(
-                "Start virtio-user with {} path with {}".format(key, path)
-            )
+            self.logger.info("Start virtio-user with {} path with {}".format(key, path))
             self.start_virtio_testpmd(
                 cores=self.virtio_core_list,
                 param=new_virtio_param,
@@ -514,9 +501,7 @@ class TestVhostCbdma(TestCase):
 
             mode += "_RestartVhost"
             self.mode_list.append(mode)
-            self.logger.info(
-                "Restart host with {} path with {}".format(key, path)
-            )
+            self.logger.info("Restart host with {} path with {}".format(key, path))
             self.vhost_user_pmd.execute_cmd("start")
             self.send_imix_packets(mode=mode)
             self.check_each_queue_of_port_packets(queues=8)
@@ -561,9 +546,7 @@ class TestVhostCbdma(TestCase):
 
                 mode += "_RestartVhost"
                 self.mode_list.append(mode)
-                self.logger.info(
-                    "Restart host with {} path with {}".format(key, path)
-                )
+                self.logger.info("Restart host with {} path with {}".format(key, path))
                 self.vhost_user_pmd.execute_cmd("start")
                 self.send_imix_packets(mode=mode)
                 self.check_each_queue_of_port_packets(queues=8)
@@ -606,9 +589,7 @@ class TestVhostCbdma(TestCase):
                 self.check_each_queue_of_port_packets(queues=8)
 
                 self.mode_list.append(mode)
-                self.logger.info(
-                    "Restart host with {} path with {}".format(key, path)
-                )
+                self.logger.info("Restart host with {} path with {}".format(key, path))
                 self.vhost_user_pmd.execute_cmd("start")
                 self.send_imix_packets(mode=mode)
                 self.check_each_queue_of_port_packets(queues=8)
@@ -703,9 +684,7 @@ class TestVhostCbdma(TestCase):
 
             mode = key + "_VA"
             self.mode_list.append(mode)
-            self.logger.info(
-                "Start virtio-user with {} path with {}".format(key, path)
-            )
+            self.logger.info("Start virtio-user with {} path with {}".format(key, path))
             self.start_virtio_testpmd(
                 cores=self.virtio_core_list,
                 param=new_virtio_param,
@@ -716,9 +695,7 @@ class TestVhostCbdma(TestCase):
 
             mode += "_RestartVhost"
             self.mode_list.append(mode)
-            self.logger.info(
-                "Restart host with {} path with {}".format(key, path)
-            )
+            self.logger.info("Restart host with {} path with {}".format(key, path))
             self.vhost_user_pmd.execute_cmd("start")
             self.send_imix_packets(mode=mode)
             self.check_each_queue_of_port_packets()
@@ -811,9 +788,7 @@ class TestVhostCbdma(TestCase):
 
             mode = key + "_VA" + "_3dmas"
             self.mode_list.append(mode)
-            self.logger.info(
-                "Start virtio-user with {} path with {}".format(key, path)
-            )
+            self.logger.info("Start virtio-user with {} path with {}".format(key, path))
             self.start_virtio_testpmd(
                 cores=self.virtio_core_list,
                 param=virtio_param,
@@ -824,9 +799,7 @@ class TestVhostCbdma(TestCase):
 
             mode += "_RestartVhost"
             self.mode_list.append(mode)
-            self.logger.info(
-                "Restart host with {} path with {}".format(key, path)
-            )
+            self.logger.info("Restart host with {} path with {}".format(key, path))
             self.vhost_user_pmd.execute_cmd("start")
             self.send_imix_packets(mode=mode)
             self.check_each_queue_of_port_packets(queues=8)
@@ -867,9 +840,7 @@ class TestVhostCbdma(TestCase):
 
                 mode += "_RestartVhost"
                 self.mode_list.append(mode)
-                self.logger.info(
-                    "Restart host with {} path with {}".format(key, path)
-                )
+                self.logger.info("Restart host with {} path with {}".format(key, path))
                 self.vhost_user_pmd.execute_cmd("start")
                 self.send_imix_packets(mode=mode)
                 self.check_each_queue_of_port_packets(queues=8)
@@ -962,9 +933,7 @@ class TestVhostCbdma(TestCase):
 
                 mode += "_RestartVhost"
                 self.mode_list.append(mode)
-                self.logger.info(
-                    "Restart host with {} path with {}".format(key, path)
-                )
+                self.logger.info("Restart host with {} path with {}".format(key, path))
                 self.vhost_user_pmd.execute_cmd("start")
                 self.send_imix_packets(mode=mode)
                 self.check_each_queue_of_port_packets()
@@ -1063,9 +1032,7 @@ class TestVhostCbdma(TestCase):
 
                 mode += "_RestartVhost"
                 self.mode_list.append(mode)
-                self.logger.info(
-                    "Restart host with {} path with {}".format(key, path)
-                )
+                self.logger.info("Restart host with {} path with {}".format(key, path))
                 self.vhost_user_pmd.execute_cmd("start")
                 self.send_imix_packets(mode=mode)
                 self.check_each_queue_of_port_packets(queues=8)
@@ -1106,9 +1073,7 @@ class TestVhostCbdma(TestCase):
 
                 mode += "_RestartVhost"
                 self.mode_list.append(mode)
-                self.logger.info(
-                    "Restart host with {} path with {}".format(key, path)
-                )
+                self.logger.info("Restart host with {} path with {}".format(key, path))
                 self.vhost_user_pmd.execute_cmd("start")
                 self.send_imix_packets(mode=mode)
                 self.check_each_queue_of_port_packets(queues=8)
@@ -1206,9 +1171,7 @@ class TestVhostCbdma(TestCase):
 
             mode = key + "_VA"
             self.mode_list.append(mode)
-            self.logger.info(
-                "Start virtio-user with {} path with {}".format(key, path)
-            )
+            self.logger.info("Start virtio-user with {} path with {}".format(key, path))
             self.start_virtio_testpmd(
                 cores=self.virtio_core_list,
                 param=virtio_param,
@@ -1219,9 +1182,7 @@ class TestVhostCbdma(TestCase):
 
             mode += "_RestartVhost"
             self.mode_list.append(mode)
-            self.logger.info(
-                "Restart host with {} path with {}".format(key, path)
-            )
+            self.logger.info("Restart host with {} path with {}".format(key, path))
             self.vhost_user_pmd.execute_cmd("start")
             self.send_imix_packets(mode=mode)
             self.check_each_queue_of_port_packets()
@@ -1318,9 +1279,7 @@ class TestVhostCbdma(TestCase):
 
             mode = key + "_VA"
             self.mode_list.append(mode)
-            self.logger.info(
-                "Start virtio-user with {} path with {}".format(key, path)
-            )
+            self.logger.info("Start virtio-user with {} path with {}".format(key, path))
             self.start_virtio_testpmd(
                 cores=self.virtio_core_list,
                 param=virtio_param,
@@ -1331,9 +1290,7 @@ class TestVhostCbdma(TestCase):
 
             mode += "_RestartVhost"
             self.mode_list.append(mode)
-            self.logger.info(
-                "Restart host with {} path with {}".format(key, path)
-            )
+            self.logger.info("Restart host with {} path with {}".format(key, path))
             self.vhost_user_pmd.execute_cmd("start")
             self.send_imix_packets(mode=mode)
             self.check_each_queue_of_port_packets(queues=8)
@@ -1430,9 +1387,7 @@ class TestVhostCbdma(TestCase):
 
             mode = key + "_VA" + "_1_lcore"
             self.mode_list.append(mode)
-            self.logger.info(
-                "Start virtio-user with {} path with {}".format(key, path)
-            )
+            self.logger.info("Start virtio-user with {} path with {}".format(key, path))
             self.start_virtio_testpmd(
                 cores=self.virtio_core_list,
                 param=virtio_param,
@@ -1443,9 +1398,7 @@ class TestVhostCbdma(TestCase):
 
             mode += "_RestartVhost"
             self.mode_list.append(mode)
-            self.logger.info(
-                "Restart host with {} path with {}".format(key, path)
-            )
+            self.logger.info("Restart host with {} path with {}".format(key, path))
             self.vhost_user_pmd.execute_cmd("start")
             self.send_imix_packets(mode=mode)
             self.check_each_queue_of_port_packets(queues=8)
@@ -1491,9 +1444,7 @@ class TestVhostCbdma(TestCase):
 
                 mode += "_RestartVhost"
                 self.mode_list.append(mode)
-                self.logger.info(
-                    "Restart host with {} path with {}".format(key, path)
-                )
+                self.logger.info("Restart host with {} path with {}".format(key, path))
                 self.vhost_user_pmd.execute_cmd("start")
                 self.send_imix_packets(mode=mode)
                 self.check_each_queue_of_port_packets(queues=8)
@@ -1538,9 +1489,7 @@ class TestVhostCbdma(TestCase):
                 self.check_each_queue_of_port_packets(queues=8)
 
                 self.mode_list.append(mode)
-                self.logger.info(
-                    "Restart host with {} path with {}".format(key, path)
-                )
+                self.logger.info("Restart host with {} path with {}".format(key, path))
                 self.vhost_user_pmd.execute_cmd("start")
                 self.send_imix_packets(mode=mode)
                 self.check_each_queue_of_port_packets(queues=8)
@@ -1635,9 +1584,7 @@ class TestVhostCbdma(TestCase):
 
             mode = key + "_VA"
             self.mode_list.append(mode)
-            self.logger.info(
-                "Start virtio-user with {} path with {}".format(key, path)
-            )
+            self.logger.info("Start virtio-user with {} path with {}".format(key, path))
             self.start_virtio_testpmd(
                 cores=self.virtio_core_list,
                 param=virtio_param,
@@ -1648,9 +1595,7 @@ class TestVhostCbdma(TestCase):
 
             mode += "_RestartVhost"
             self.mode_list.append(mode)
-            self.logger.info(
-                "Restart host with {} path with {}".format(key, path)
-            )
+            self.logger.info("Restart host with {} path with {}".format(key, path))
             self.vhost_user_pmd.execute_cmd("start")
             self.send_imix_packets(mode=mode)
             self.check_each_queue_of_port_packets()
@@ -1751,18 +1696,14 @@ class TestVhostCbdma(TestCase):
                 eal_param=virtio_eal_param,
             )
             self.send_imix_packets(mode=mode)
-            self.logger.info(
-                "Start virtio-user with {} path with {}".format(key, path)
-            )
+            self.logger.info("Start virtio-user with {} path with {}".format(key, path))
             self.check_each_queue_of_port_packets(queues=8)
 
             mode += "_RestartVhost"
             self.mode_list.append(mode)
             self.vhost_user_pmd.execute_cmd("start")
             self.send_imix_packets(mode=mode)
-            self.logger.info(
-                "Restart host with {} path with {}".format(key, path)
-            )
+            self.logger.info("Restart host with {} path with {}".format(key, path))
             self.check_each_queue_of_port_packets(queues=8)
             self.virtio_user_pmd.quit()
 
@@ -1802,9 +1743,7 @@ class TestVhostCbdma(TestCase):
 
                 mode += "_RestartVhost"
                 self.mode_list.append(mode)
-                self.logger.info(
-                    "Restart host with {} path with {}".format(key, path)
-                )
+                self.logger.info("Restart host with {} path with {}".format(key, path))
                 self.vhost_user_pmd.execute_cmd("start")
                 self.send_imix_packets(mode=mode)
                 self.check_each_queue_of_port_packets(queues=8)
@@ -1898,9 +1837,7 @@ class TestVhostCbdma(TestCase):
 
                 mode += "_RestartVhost"
                 self.mode_list.append(mode)
-                self.logger.info(
-                    "Restart host with {} path with {}".format(key, path)
-                )
+                self.logger.info("Restart host with {} path with {}".format(key, path))
                 self.vhost_user_pmd.execute_cmd("start")
                 self.send_imix_packets(mode=mode)
                 self.check_each_queue_of_port_packets()
@@ -1939,9 +1876,7 @@ class TestVhostCbdma(TestCase):
 
                 mode += "_RestartVhost"
                 self.mode_list.append(mode)
-                self.logger.info(
-                    "Restart host with {} path with {}".format(key, path)
-                )
+                self.logger.info("Restart host with {} path with {}".format(key, path))
                 self.vhost_user_pmd.execute_cmd("start")
                 self.send_imix_packets(mode=mode)
                 self.check_each_queue_of_port_packets(queues=4)
@@ -1998,9 +1933,7 @@ class TestVhostCbdma(TestCase):
 
                 mode += "_RestartVhost"
                 self.mode_list.append(mode)
-                self.logger.info(
-                    "Restart host with {} path with {}".format(key, path)
-                )
+                self.logger.info("Restart host with {} path with {}".format(key, path))
                 self.vhost_user_pmd.execute_cmd("start")
                 self.send_imix_packets(mode=mode)
                 self.check_each_queue_of_port_packets(queues=8)
@@ -2041,9 +1974,7 @@ class TestVhostCbdma(TestCase):
 
                 mode += "_RestartVhost"
                 self.mode_list.append(mode)
-                self.logger.info(
-                    "Restart host with {} path with {}".format(key, path)
-                )
+                self.logger.info("Restart host with {} path with {}".format(key, path))
                 self.vhost_user_pmd.execute_cmd("start")
                 self.send_imix_packets(mode=mode)
                 self.check_each_queue_of_port_packets(queues=8)
