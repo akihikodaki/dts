@@ -41,6 +41,7 @@ The following are the test plans for the DPDK DTS automated test system.
     asan_smoke_test_plan
     blocklist_test_plan
     basic_4k_pages_cbdma_test_plan
+    basic_4k_pages_dsa_test_plan
     checksum_offload_test_plan
     coremask_test_plan
     ice_advanced_rss_test_plan
@@ -124,6 +125,7 @@ The following are the test plans for the DPDK DTS automated test system.
     loopback_multi_paths_port_restart_test_plan
     loopback_virtio_user_server_mode_test_plan
     loopback_virtio_user_server_mode_cbdma_test_plan
+    loopback_virtio_user_server_mode_dsa_test_plan
     mac_filter_test_plan
     macsec_for_ixgbe_test_plan
     metering_and_policing_test_plan
@@ -235,12 +237,14 @@ The following are the test plans for the DPDK DTS automated test system.
     virtio_smoke_test_plan
     vm2vm_virtio_net_perf_test_plan
     vm2vm_virtio_net_perf_cbdma_test_plan
+    vm2vm_virtio_net_dsa_test_plan
     vm2vm_virtio_pmd_test_plan
     vm2vm_virtio_pmd_cbdma_test_plan
     dpdk_gro_lib_test_plan
     dpdk_gso_lib_test_plan
     vswitch_sample_cbdma_test_plan
     vswitch_pvp_multi_paths_performance_with_cbdma_test_plan
+    vswitch_sample_dsa_test_plan
     vxlan_gpe_support_in_i40e_test_plan
     pvp_diff_qemu_version_test_plan
     pvp_share_lib_test_plan
@@ -251,6 +255,7 @@ The following are the test plans for the DPDK DTS automated test system.
     eventdev_pipeline_perf_test_plan
     pvp_qemu_multi_paths_port_restart_test_plan
     pvp_vhost_user_reconnect_test_plan
+    pvp_vhost_dsa_test_plan
     pvp_virtio_bonding_test_plan
     pvp_virtio_user_4k_pages_test_plan
     vdev_primary_secondary_test_plan
@@ -306,6 +311,7 @@ The following are the test plans for the DPDK DTS automated test system.
     port_representor_test_plan
     vm2vm_virtio_user_test_plan
     vm2vm_virtio_user_cbdma_test_plan
+    vm2vm_virtio_user_dsa_test_plan
     vmdq_dcb_test_plan
     acl_test_plan
     power_negative_test_plan
