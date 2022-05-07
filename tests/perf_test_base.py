@@ -680,7 +680,7 @@ class PerfTestBase(object):
     def __get_rx_desc_complication_flag(self):
         rx_desc_flag = ""
         if self.__compile_rx_desc:
-            rx_desc_flag = f"RTE_LIBRTE_{self.kdriver.upper()}_{self.__compile_rx_desc}BYTE_RX_DESC"
+            rx_desc_flag = f"-Dc_args=-DRTE_LIBRTE_{self.kdriver.upper()}_{self.__compile_rx_desc}BYTE_RX_DESC"
             if self.__compile_rx_desc == 32:
                 msg = f"{rx_desc_flag} is dpdk default compile flag, ignore this compile flag"
                 self.logger.warning(msg)
