@@ -60,20 +60,8 @@ class TestMultiprocess(TestCase):
         self.verify(len(self.dut.get_all_cores()) >= 4, "Not enough Cores")
         self.dut_ports = self.dut.get_ports()
         self.socket = self.dut.get_numa_id(self.dut_ports[0])
-
-        out = self.dut.build_dpdk_apps(
-            "./examples/multi_process/client_server_mp/mp_client"
-        )
-        self.verify("Error" not in out, "Compilation mp_client failed")
-        out = self.dut.build_dpdk_apps(
-            "./examples/multi_process/client_server_mp/mp_server"
-        )
-        self.verify("Error" not in out, "Compilation mp_server failed")
-        out = self.dut.build_dpdk_apps("./examples/multi_process/simple_mp")
-        self.verify("Error" not in out, "Compilation simple_mp failed")
-        out = self.dut.build_dpdk_apps("./examples/multi_process/symmetric_mp")
-        self.verify("Error" not in out, "Compilation symmetric_mp failed")
-
+        extra_option = "-Dexamples='multi_process/client_server_mp/mp_server,multi_process/client_server_mp/mp_client,multi_process/simple_mp,multi_process/symmetric_mp'"
+        self.dut.build_install_dpdk(target=self.target, extra_options=extra_option)
         self.app_mp_client = self.dut.apps_name["mp_client"]
         self.app_mp_server = self.dut.apps_name["mp_server"]
         self.app_simple_mp = self.dut.apps_name["simple_mp"]
