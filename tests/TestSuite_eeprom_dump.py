@@ -144,7 +144,7 @@ class TestEEPROMDump(TestCase):
                 "#",
             )
             portinfo["ethout"] = self.dut.send_expect(
-                f"cat ethtool_{testname}_hex_{port}.txt", "#"
+                f"cat ethtool_{testname}_hex_{port}.txt", "# ", trim_whitespace=False
             )
 
             self.dump_to_file(
@@ -171,6 +171,7 @@ class TestEEPROMDump(TestCase):
         Run after each test case.
         """
         self.dut.kill_all()
+        self.dut.bind_interfaces_linux(self.drivername)
 
     def tear_down_all(self):
         """
