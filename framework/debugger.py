@@ -40,17 +40,17 @@ AliveCase = None  # global case name for run command
 
 
 def help_command():
-    console.push("print 'Help on debug module'")
-    console.push("print 'DESCRIPTION'")
-    console.push("print 'DTS debug module support few debug commands'")
-    console.push("print '  - help(): help messages'")
-    console.push("print '  - list(): list all connections'")
-    console.push("print '  - connect(): bind to specified connection'")
-    console.push("print '  -        : connect(\"dut\")'")
-    console.push("print '  - quit(): quit debug module'")
-    console.push("print '  - exit(): exit processing procedure'")
-    console.push("print '  - debug(): call python debug module for further debug'")
-    console.push("print '  - rerun(): re-run the interrupted test case'")
+    console.push("print('Help on debug module')")
+    console.push("print('DESCRIPTION')")
+    console.push("print('DTS debug module support few debug commands')")
+    console.push("print('  - help(): help messages')")
+    console.push("print('  - list(): list all connections')")
+    console.push("print('  - connect(): bind to specified connection')")
+    console.push("print('  -        : connect(\"dut\")')")
+    console.push("print('  - quit(): quit debug module')")
+    console.push("print('  - exit(): exit processing procedure')")
+    console.push("print('  - debug(): call python debug module for further debug')")
+    console.push("print('  - rerun(): re-run the interrupted test case')")
 
 
 def list_command():
@@ -62,7 +62,7 @@ def list_command():
 
     for connection in CONNECTIONS:
         for name, session in list(connection.items()):
-            console.push("print 'connect %d: %10s'" % (index, name))
+            console.push("print('connect %d: %10s')" % (index, name))
             index += 1
 
 
