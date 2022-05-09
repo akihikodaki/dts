@@ -941,14 +941,14 @@ def get_pci_id(crb, domain_id, bus_id, devfun_id):
         bus_id,
         devfun_id,
     )
-    out = crb.send_expect(command, "# ")
+    out = crb.send_expect(command, "# ").strip()
     vendor = out[2:]
     command = "cat /sys/bus/pci/devices/%s\:%s\:%s/device" % (
         domain_id,
         bus_id,
         devfun_id,
     )
-    out = crb.send_expect(command, "# ")
+    out = crb.send_expect(command, "# ").strip()
     device = out[2:]
     return "%s:%s" % (vendor, device)
 
