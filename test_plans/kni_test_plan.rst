@@ -121,7 +121,7 @@ system to another)::
 
 Case config::
 
-   For enable KNI features, need to set the "CONFIG_RTE_KNI_KMOD=y" in ./config/common_base and re-build DPDK.
+   For enable KNI features, need build DPDK with '-Denable_kmods=True'.
 
 Test Case: ifconfig testing
 ===========================

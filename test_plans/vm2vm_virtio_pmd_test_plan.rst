@@ -296,60 +296,47 @@ Test Case 5: VM2VM vhost-user/virtio-pmd mergeable path with payload valid check
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=true,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :12
 
-3. On VM1, enable pcap lib in dpdk code and recompile::
-
-    diff --git a/config/common_base b/config/common_base
-    index 6b96e0e80..0f7d22f22 100644
-    --- a/config/common_base
-    +++ b/config/common_base
-    @@ -492,7 +492,7 @@ CONFIG_RTE_LIBRTE_PMD_NULL=y
-     #
-     # Compile software PMD backed by PCAP files
-     #
-    -CONFIG_RTE_LIBRTE_PMD_PCAP=n
-    +CONFIG_RTE_LIBRTE_PMD_PCAP=y
-
-4. Bind virtio with vfio-pci driver,then run testpmd, set rxonly mode for virtio-pmd on VM1::
+3. Bind virtio with vfio-pci driver,then run testpmd, set rxonly mode for virtio-pmd on VM1::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd rxonly
     testpmd>start
 
-5. Bootup pdump in VM1::
+4. Bootup pdump in VM1::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=test -- --pdump  'port=0,queue=*,rx-dev=/root/pdump-rx.pcap,mbuf-size=8000'
 
-6. On VM2, bind virtio with vfio-pci driver,then run testpmd, config tx_packets to 8k length with chain mode::
+5. On VM2, bind virtio with vfio-pci driver,then run testpmd, config tx_packets to 8k length with chain mode::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd mac
     testpmd>set txpkts 2000,2000,2000,2000
 
-7. Send ten packets with 8k length from virtio-pmd on VM2::
+6. Send ten packets with 8k length from virtio-pmd on VM2::
 
     testpmd>set burst 1
     testpmd>start tx_first 10
 
-8. Check payload is correct in each dumped packets.
+7. Check payload is correct in each dumped packets.
 
-9. Relaunch testpmd in VM1::
+8. Relaunch testpmd in VM1::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
-10. Bootup pdump in VM1::
+9. Bootup pdump in VM1::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=test -- --pdump  'port=0,queue=*,rx-dev=/root/pdump-rx-small.pcap,mbuf-size=8000'
 
-11. Relaunch testpmd on VM2, send ten 64B packets from virtio-pmd on VM2::
+10. Relaunch testpmd on VM2, send ten 64B packets from virtio-pmd on VM2::
 
      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024
      testpmd>set fwd mac
      testpmd>set burst 1
      testpmd>start tx_first 10
 
-12. Check payload is correct in each dumped packets.
+11. Check payload is correct in each dumped packets.
 
 Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid check
 ===================================================================================
@@ -384,60 +371,47 @@ Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid ch
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :12
 
-3. On VM1, enable pcap lib in dpdk code and recompile::
-
-    diff --git a/config/common_base b/config/common_base
-    index 6b96e0e80..0f7d22f22 100644
-    --- a/config/common_base
-    +++ b/config/common_base
-    @@ -492,7 +492,7 @@ CONFIG_RTE_LIBRTE_PMD_NULL=y
-     #
-     # Compile software PMD backed by PCAP files
-     #
-    -CONFIG_RTE_LIBRTE_PMD_PCAP=n
-    +CONFIG_RTE_LIBRTE_PMD_PCAP=y
-
-4. Bind virtio with vfio-pci driver,then run testpmd, set rxonly mode for virtio-pmd on VM1::
+3. Bind virtio with vfio-pci driver,then run testpmd, set rxonly mode for virtio-pmd on VM1::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd rxonly
     testpmd>start
 
-5. Bootup pdump in VM1::
+4. Bootup pdump in VM1::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=test -- --pdump  'port=0,queue=*,rx-dev=/root/pdump-rx.pcap,mbuf-size=8000'
 
-6. On VM2, bind virtio with vfio-pci driver,then run testpmd, config tx_packets to 8k length with chain mode::
+5. On VM2, bind virtio with vfio-pci driver,then run testpmd, config tx_packets to 8k length with chain mode::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd mac
     testpmd>set txpkts 2000,2000,2000,2000
 
-7. Send ten packets from virtio-pmd on VM2::
+6. Send ten packets from virtio-pmd on VM2::
 
     testpmd>set burst 1
     testpmd>start tx_first 10
 
-8. Check payload is correct in each dumped packets.
+7. Check payload is correct in each dumped packets.
 
-9. Relaunch testpmd in VM1::
+8. Relaunch testpmd in VM1::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
-10. Bootup pdump in VM1::
+9. Bootup pdump in VM1::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=test -- --pdump  'port=0,queue=*,rx-dev=/root/pdump-rx-small.pcap'
 
-11. Relaunch testpmd On VM2, send ten 64B packets from virtio-pmd on VM2::
+10. Relaunch testpmd On VM2, send ten 64B packets from virtio-pmd on VM2::
 
      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
      testpmd>set fwd mac
      testpmd>set burst 1
      testpmd>start tx_first 10
 
-12. Check payload is correct in each dumped packets.
+11. Check payload is correct in each dumped packets.
 
 Test Case 7: VM2VM vhost-user/virtio1.1-pmd mergeable path with payload valid check
 ===================================================================================
@@ -472,60 +446,47 @@ Test Case 7: VM2VM vhost-user/virtio1.1-pmd mergeable path with payload valid ch
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
 
-3. On VM1, enable pcap lib in dpdk code and recompile::
-
-    diff --git a/config/common_base b/config/common_base
-    index 6b96e0e80..0f7d22f22 100644
-    --- a/config/common_base
-    +++ b/config/common_base
-    @@ -492,7 +492,7 @@ CONFIG_RTE_LIBRTE_PMD_NULL=y
-     #
-     # Compile software PMD backed by PCAP files
-     #
-    -CONFIG_RTE_LIBRTE_PMD_PCAP=n
-    +CONFIG_RTE_LIBRTE_PMD_PCAP=y
-
-4. Bind virtio with vfio-pci driver,then run testpmd, set rxonly mode for virtio-pmd on VM1::
+3. Bind virtio with vfio-pci driver,then run testpmd, set rxonly mode for virtio-pmd on VM1::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd rxonly
     testpmd>start
 
-5. Bootup pdump in VM1::
+4. Bootup pdump in VM1::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=test -- --pdump  'port=0,queue=*,rx-dev=/root/pdump-rx.pcap,mbuf-size=8000'
 
-6. On VM2, bind virtio with vfio-pci driver,then run testpmd, config tx_packets to 8k length with chain mode::
+5. On VM2, bind virtio with vfio-pci driver,then run testpmd, config tx_packets to 8k length with chain mode::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
     testpmd>set fwd mac
     testpmd>set txpkts 2000,2000,2000,2000
 
-7. Send ten packets from virtio-pmd on VM2::
+6. Send ten packets from virtio-pmd on VM2::
 
     testpmd>set burst 1
     testpmd>start tx_first 10
 
-8. Check payload is correct in each dumped packets.
+7. Check payload is correct in each dumped packets.
 
-9. Relaunch testpmd in VM1::
+8. Relaunch testpmd in VM1::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 --file-prefix=test -- -i --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
-10. Bootup pdump in VM1::
+9. Bootup pdump in VM1::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=test -- --pdump  'port=0,queue=*,rx-dev=/root/pdump-rx-small.pcap'
 
-11. Relaunch testpmd On VM2, send ten 64B packets from virtio-pmd on VM2::
+10. Relaunch testpmd On VM2, send ten 64B packets from virtio-pmd on VM2::
 
      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600 --rx-offloads=0x00002000
      testpmd>set fwd mac
      testpmd>set burst 1
      testpmd>start tx_first 10
 
-12. Check payload is correct in each dumped packets.
+11. Check payload is correct in each dumped packets.
 
 Test Case 8: VM2VM vhost-user/virtio1.1-pmd with normal path
 ============================================================

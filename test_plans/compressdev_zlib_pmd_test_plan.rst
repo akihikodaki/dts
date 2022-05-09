@@ -49,14 +49,6 @@ http://doc.dpdk.org/guides/compressdevs/zlib.html
 
 Prerequisites
 ----------------------
-In order to enable this virtual compression PMD, user must:
-
-    Set CONFIG_RTE_LIBRTE_PMD_ZLIB=y in config/common_base.
-
-and enable compressdev unit test:
-
-    Set CONFIG_RTE_COMPRESSDEV_TEST=y in config/common_base.
-
 A compress performance test app is added into DPDK to test CompressDev.
 RTE_COMPRESS_ZLIB and RTE_LIB_COMPRESSDEV is enabled by default in meson  build.
 Calgary corpus is a collection of text and binary data files, commonly used

@@ -457,9 +457,7 @@ Test Case: VF performance
 Test Case: vector vf performance
 ---------------------------------
 
-1. config vector=y in config/common_base, and rebuild dpdk
-
-2. start testpmd for PF::
+1. start testpmd for PF::
 
      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x6 -n 4 --socket-mem=1024,1024 --file-prefix=pf \
        -a 08:00.0 -a 08:00.1 -- -i
@@ -467,7 +465,7 @@ Test Case: vector vf performance
        testpmd>set vf mac addr 0 0 00:12:34:56:78:01
        testpmd>set vf mac addr 1 0 00:12:34:56:78:02
 
-3. start testpmd for VF::
+2. start testpmd for VF::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0f8 -n 4 --master-lcore=3 --socket-mem=1024,1024 --file-prefix=vf \
         -a 09:0a.0 -a 09:02.0 -- -i --txq=2 --rxq=2 --rxd=512 --txd=512 --nb-cores=4 --rss-ip
@@ -476,10 +474,9 @@ Test Case: vector vf performance
      testpmd>set fwd mac
      testpmd>start
 
-4. send traffic and verify throughput
+3. send traffic and verify throughput
 
 Test Case: scalar/bulk vf performance
 -------------------------------------
 
-1. change CONFIG_RTE_LIBRTE_IAVF_INC_VECTOR=n in config/common_base, and rebuild dpdk.
-2. repeat test steps 2-4 in above test case: vector vf performance.
+1. repeat above test case: vector vf performance, by launch dpdk-testpmd with '--force-max-simd-bitwidth=64'.

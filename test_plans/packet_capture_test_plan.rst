@@ -86,16 +86,6 @@ note: portB0/portB1 are the binded ports.
 Prerequisites
 =============
 
-Enable pcap lib in dpdk code and recompile::
-
-    --- a/config/common_base
-    +++ b/config/common_base
-    @@ -492,7 +492,7 @@ CONFIG_RTE_LIBRTE_PMD_NULL=y
-     #
-     # Compile software PMD backed by PCAP files
-     #
-    -CONFIG_RTE_LIBRTE_PMD_PCAP=n
-    +CONFIG_RTE_LIBRTE_PMD_PCAP=y
 
 Test cases
 ==========

@@ -93,15 +93,6 @@ Prerequisites
    measure the overhead added by the framework.
    2) Turbo_sw is a sw-only driver wrapper for FlexRAN SDK optimized Turbo
    coding libraries.
-   It can be enabled by setting
-
-   ``CONFIG_RTE_LIBRTE_PMD_BBDEV_TURBO_SW=y``
-
-   The offload cases can be enabled by setting
-
-   ``CONFIG_RTE_BBDEV_OFFLOAD_COST=y``
-
-   They are both located in the build configuration file ``common_base``.
 
 4. Test tool
 

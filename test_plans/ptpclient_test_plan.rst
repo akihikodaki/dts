@@ -46,10 +46,7 @@ has been installed on the tester.
 
 Case Config::
 
-    Meson: For support IEEE1588, need to execute "sed -i '$a\#define RTE_LIBRTE_IEEE1588 1' config/rte_config.h",
-           and re-build DPDK.
-           $ CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static <build_target>
-           $ ninja -C <build_target>
+    Meson: For support IEEE1588, build DPDK with '-Dc_args=-DRTE_LIBRTE_IEEE1588'
 
 The sample should be validated on Forville, Niantic and i350 Nics. 
 

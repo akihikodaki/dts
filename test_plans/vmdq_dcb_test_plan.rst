@@ -91,7 +91,7 @@ Expected Result:
 Test Case 2: Verify VMDQ & DCB with 16 Pools and 8 TCs
 ======================================================
 
-1. change CONFIG_RTE_LIBRTE_I40E_QUEUE_NUM_PER_VM to 8 in "./config/common_linuxapp", rebuild DPDK.
+1. change RTE_LIBRTE_I40E_QUEUE_NUM_PER_VM to 8 in "./config/rte_config.h", rebuild DPDK.
     meson: change "#define RTE_LIBRTE_I40E_QUEUE_NUM_PER_VM 4" to 8 in config/rte_config.h, rebuild DPDK.
 
 2. Repeat Test Case 1, with `--nb-pools 16` and `--nb-tcs 8` of the sample application::

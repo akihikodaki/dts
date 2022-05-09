@@ -106,7 +106,7 @@ Sample command::
       -P -p 0x2 --config "(1,0,1)" --maxflows=4096 --flowttl=10s
 
 Modifies the sample app source code to enable up to 7 fragments per packet,
-and it need set the "CONFIG_RTE_LIBRTE_IP_FRAG_MAX_FRAG=7" in ./config/common_base and re-build DPDK.
+and it need set the "RTE_LIBRTE_IP_FRAG_MAX_FRAG=7" in ./config/rte_config.h and re-build DPDK.
 
 Sends 4K packets split in 7 fragments each with a ``maxflows`` of 4K.
 

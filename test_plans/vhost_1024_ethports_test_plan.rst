@@ -41,19 +41,13 @@ So when vhost-user ports number > 1023, it will report an error "failed to add l
 Test Case1:  Basic test for launch vhost with 1023 ethports
 ===========================================================
 
-1. SW preparation: change "CONFIG_RTE_MAX_ETHPORTS" to 1023 in DPDK configure file::
-
-    vi ./config/common_base
-    -CONFIG_RTE_MAX_ETHPORTS=32
-    +CONFIG_RTE_MAX_ETHPORTS=1023
+1. SW preparation::
+    build dpdk with '-Dmax_ethports=1024'
 
 2. Launch vhost with 1023 vdev::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3000 -n 4 --file-prefix=vhost --vdev 'eth_vhost0,iface=vhost-net,queues=1' \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' ... -- -i # only list two vdev, here ommit other 1021 vdevs, from eth_vhost2 to eth_vhost1022
 
-3. Change "CONFIG_RTE_MAX_ETHPORTS" back to 32 in DPDK configure file::
-
-    vi ./config/common_base
-    +CONFIG_RTE_MAX_ETHPORTS=32
-    -CONFIG_RTE_MAX_ETHPORTS=1023
+3. restore dpdk::
+    build dpdk with '-Dmax_ethports=32'
