@@ -97,7 +97,12 @@ class TestVfMacFilter(TestCase):
             if driver == "igb_uio":
                 # start testpmd without the two VFs on the host
                 self.host_testpmd = PmdOutput(self.dut)
-                if self.nic in ["niantic", "sageville", "sagepond", "twinpond"]:
+                if self.nic in [
+                    "IXGBE_10G-82599_SFP",
+                    "IXGBE_10G-X550T",
+                    "IXGBE_10G-X550EM_X_10G_T",
+                    "IXGBE_10G-X540T",
+                ]:
                     self.host_testpmd.start_testpmd("1S/9C/1T", "--txq=4 --rxq=4 ")
                 else:
                     self.host_testpmd.start_testpmd("1S/2C/2T")
@@ -236,14 +241,14 @@ class TestVfMacFilter(TestCase):
         What's more, send packets with a wrong MAC address to the VF, check
         the VF will not RX packets.
         """
-        if "niantic" == self.nic:
+        if "IXGBE_10G-82599_SFP" == self.nic:
             self.verify(
-                self.nic.startswith("niantic") == True,
+                self.nic.startswith("IXGBE_10G-82599_SFP") == True,
                 "NIC is [%s], skip this case" % self.nic,
             )
         else:
             self.verify(
-                self.nic.startswith("fortville") == True,
+                self.is_eth_series_nic(700),
                 "NIC is [%s], skip this case" % self.nic,
             )
         self.setup_2pf_2vf_1vm_env(False, driver="igb_uio")

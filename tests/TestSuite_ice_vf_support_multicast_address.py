@@ -42,7 +42,7 @@ mul_mac_1 = "33:33:00:40:10:01"
 vf0_wrong_mac = "00:11:22:33:44:56"
 
 
-class TestCvlVfSupportMulticastAdress(TestCase):
+class TestICEVfSupportMulticastAdress(TestCase):
     def set_up_all(self):
         """
         Prerequisite steps for each test suite.

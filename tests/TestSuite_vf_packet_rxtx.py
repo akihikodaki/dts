@@ -92,7 +92,12 @@ class TestVfPacketRxtx(TestCase):
             if driver == "igb_uio":
                 # start testpmd without the two VFs on the host
                 self.host_testpmd = PmdOutput(self.dut)
-                if self.nic in ["niantic", "sageville", "sagepond", "twinpond"]:
+                if self.nic in [
+                    "IXGBE_10G-82599_SFP",
+                    "IXGBE_10G-X550T",
+                    "IXGBE_10G-X550EM_X_10G_T",
+                    "IXGBE_10G-X540T",
+                ]:
                     self.host_testpmd.start_testpmd("1S/9C/1T", "--txq=4 --rxq=4 ")
                 else:
                     self.host_testpmd.start_testpmd("1S/5C/1T")
@@ -215,7 +220,12 @@ class TestVfPacketRxtx(TestCase):
 
             if driver == "igb_uio":
                 self.host_testpmd = PmdOutput(self.dut)
-                if self.nic in ["niantic", "sageville", "sagepond", "twinpond"]:
+                if self.nic in [
+                    "IXGBE_10G-82599_SFP",
+                    "IXGBE_10G-X550T",
+                    "IXGBE_10G-X550EM_X_10G_T",
+                    "IXGBE_10G-X540T",
+                ]:
                     self.host_testpmd.start_testpmd("1S/9C/1T", "--txq=4 --rxq=4 ")
                 else:
                     self.host_testpmd.start_testpmd("1S/2C/2T")

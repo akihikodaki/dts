@@ -218,9 +218,9 @@ class TestSoftnic(TestCase):
                     % (self.eal_param, "nat_firmware.cli"),
                 )
                 if self.nic in [
-                    "columbiaville_100g",
-                    "columbiaville_25g",
-                    "columbiaville_25gx2",
+                    "ICE_100G-E810C_QSFP",
+                    "ICE_25G-E810C_SFP",
+                    "ICE_25G-E810_XXV_SFP",
                 ]:
                     self.dut.send_expect("set fwd mac", "testpmd>")
                 self.dut.send_expect("start", "testpmd>")

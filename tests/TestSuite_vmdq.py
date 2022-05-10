@@ -71,12 +71,12 @@ class TestVmdq(TestCase):
         self.core_configs.append({"cores": "1S/4C/1T", "mpps": {}})
 
         # Put different number of pools: in the case of 10G 82599 Nic is 64, in the case
-        # of FVL spirit is 63,in case of FVL eagle is 34.
-        if self.nic in ("niantic", "springfountain"):
+        # of XL710 is 63,in case of X710 is 34.
+        if self.nic in ("IXGBE_10G-82599_SFP", "IXGBE_10G-82599_SFP_SF_QP"):
             self.pools = 64
-        elif self.nic in ("fortville_spirit", "fortville_spirit_single"):
+        elif self.nic in ("I40E_40G-QSFP_A", "I40E_40G-QSFP_B"):
             self.pools = 63
-        elif self.nic in ("fortville_eagle"):
+        elif self.nic in ("I40E_10G-SFP_XL710"):
             self.pools = 34
         else:
             self.pools = 8

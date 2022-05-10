@@ -180,7 +180,7 @@ tv_over_ip_udp = [
 ]
 
 
-class TestCVLEcpri(TestCase):
+class TestICEEcpri(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

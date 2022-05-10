@@ -892,7 +892,7 @@ vectors_ipv4_sctp_2ports = [
 ]
 
 
-class CVLDCFACLFilterTest(TestCase):
+class ICEDCFACLFilterTest(TestCase):
     def bind_nics_driver(self, ports, driver=""):
         # modprobe vfio driver
         if driver == "vfio-pci":
@@ -923,7 +923,8 @@ class CVLDCFACLFilterTest(TestCase):
         Run at the start of each test suite.
         """
         self.verify(
-            self.nic in ["columbiaville_25g", "columbiaville_100g"], "nic is not CVL"
+            self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"],
+            "nic is not Intel® Ethernet 800 Series",
         )
         self.dut_ports = self.dut.get_ports(self.nic)
         # Verify that enough ports are available
@@ -1210,25 +1211,25 @@ class CVLDCFACLFilterTest(TestCase):
         self.verify(all(test_results.values()), "{} failed.".format(failed_cases))
 
     def test_mac_ipv4(self):
-        if self.nic == "columbiaville_25g":
+        if self.nic == "ICE_25G-E810C_SFP":
             self.common_process(vectors_ipv4_pay_4ports)
         else:
             self.common_process(vectors_ipv4_pay_2ports)
 
     def test_mac_ipv4_tcp(self):
-        if self.nic == "columbiaville_25g":
+        if self.nic == "ICE_25G-E810C_SFP":
             self.common_process(vectors_ipv4_tcp_4ports)
         else:
             self.common_process(vectors_ipv4_tcp_2ports)
 
     def test_mac_ipv4_udp(self):
-        if self.nic == "columbiaville_25g":
+        if self.nic == "ICE_25G-E810C_SFP":
             self.common_process(vectors_ipv4_udp_4ports)
         else:
             self.common_process(vectors_ipv4_udp_2ports)
 
     def test_mac_ipv4_sctp(self):
-        if self.nic == "columbiaville_25g":
+        if self.nic == "ICE_25G-E810C_SFP":
             self.common_process(vectors_ipv4_sctp_4ports)
         else:
             self.common_process(vectors_ipv4_sctp_2ports)

@@ -47,11 +47,11 @@ class TestPmdPerf(TestCase, PerfTestBase):
     @property
     def supported_nics(self):
         return [
-            "niantic",
-            "fortville_25g",
-            "fortville_spirit",
-            "columbiaville_100g",
-            "columbiaville_25g",
+            "IXGBE_10G-82599_SFP",
+            "I40E_25G-25G_SFP28",
+            "I40E_40G-QSFP_A",
+            "ICE_100G-E810C_QSFP",
+            "ICE_25G-E810C_SFP",
             "ConnectX5_MT4121",
             "ConnectX4_LX_MT4117",
         ]

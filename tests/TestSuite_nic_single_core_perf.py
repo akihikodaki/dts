@@ -57,14 +57,14 @@ class TestNicSingleCorePerf(TestCase):
         self.verify(
             self.nic
             in [
-                "niantic",
-                "fortville_25g",
-                "fortville_spirit",
+                "IXGBE_10G-82599_SFP",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
                 "ConnectX5_MT4121",
                 "ConnectX4_LX_MT4117",
-                "columbiaville_100g",
-                "columbiaville_25g",
-                "columbiaville_25gx2",
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E810C_SFP",
+                "ICE_25G-E810_XXV_SFP",
                 "brcm_57414",
                 "brcm_P2100G",
             ],
@@ -79,13 +79,13 @@ class TestNicSingleCorePerf(TestCase):
         self.verify(self.rx_desc_size == 16 or self.rx_desc_size == 32, err_msg)
         if self.rx_desc_size == 16:
             extra_options = ""
-            # rebuild to get best perf on fortville
-            if self.nic in ["fortville_25g", "fortville_spirit"]:
+            # rebuild to get best perf on Intel® Ethernet 700 Series
+            if self.nic in ["I40E_25G-25G_SFP28", "I40E_40G-QSFP_A"]:
                 extra_options = "-Dc_args=-DRTE_LIBRTE_I40E_16BYTE_RX_DESC"
             elif self.nic in [
-                "columbiaville_100g",
-                "columbiaville_25g",
-                "columbiaville_25gx2",
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E810C_SFP",
+                "ICE_25G-E810_XXV_SFP",
             ]:
                 extra_options = "-Dc_args=-DRTE_LIBRTE_ICE_16BYTE_RX_DESC"
             self.dut.build_install_dpdk(self.target, extra_options=extra_options)
@@ -292,14 +292,14 @@ class TestNicSingleCorePerf(TestCase):
 
             nb_cores = thread_num
 
-            # fortville has to use 2 queues at least to get the best performance
-            if self.nic in ["fortville_25g", "fortville_spirit"] or thread_num == 2:
+            # Intel® Ethernet 700 Series has to use 2 queues at least to get the best performance
+            if self.nic in ["I40E_25G-25G_SFP28", "I40E_40G-QSFP_A"] or thread_num == 2:
                 param += " --rxq=2 --txq=2"
-            # columbiaville use one queue per port for best performance.
+            # Intel® Ethernet 810 Series use one queue per port for best performance.
             elif self.nic in [
-                "columbiaville_100g",
-                "columbiaville_25g",
-                "columbiaville_25gx2",
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E810C_SFP",
+                "ICE_25G-E810_XXV_SFP",
             ]:
                 param += " --rxq=1 --txq=1"
                 # workaround for that testpmd can't forward packets in io forward mode

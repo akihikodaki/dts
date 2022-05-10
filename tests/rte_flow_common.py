@@ -36,7 +36,7 @@ import time
 from framework.packet import Packet
 from framework.utils import GREEN, RED
 
-CVL_TXQ_RXQ_NUMBER = 16
+TXQ_RXQ_NUMBER = 16
 
 # switch filter common functions
 def get_suite_config(test_case):
@@ -502,7 +502,7 @@ def check_mark(out, pkt_num, check_param, stats=True):
                 raise Exception("got wrong output, not match pattern %s" % p.pattern)
             if mark_id is not None:
                 mark_list = set(
-                    int(i, CVL_TXQ_RXQ_NUMBER) for i in fdir_scanner.findall(out)
+                    int(i, TXQ_RXQ_NUMBER) for i in fdir_scanner.findall(out)
                 )
                 verify(
                     all([i == check_param["mark_id"] for i in mark_list]) and mark_list,
@@ -529,12 +529,12 @@ def check_mark(out, pkt_num, check_param, stats=True):
 def verify_directed_by_rss(out, rxq=64, stats=True):
     p = re.compile("RSS\shash=(\w+)\s-\sRSS\squeue=(\w+)")
     pkt_info = p.findall(out)
-    pkt_queue = set([int(i[1], CVL_TXQ_RXQ_NUMBER) for i in pkt_info])
+    pkt_queue = set([int(i[1], TXQ_RXQ_NUMBER) for i in pkt_info])
     if stats:
         verify(
             all(
                 [
-                    int(i[0], CVL_TXQ_RXQ_NUMBER) % rxq == int(i[1], CVL_TXQ_RXQ_NUMBER)
+                    int(i[0], TXQ_RXQ_NUMBER) % rxq == int(i[1], TXQ_RXQ_NUMBER)
                     for i in pkt_info
                 ]
             ),
@@ -544,7 +544,7 @@ def verify_directed_by_rss(out, rxq=64, stats=True):
         verify(
             not any(
                 [
-                    int(i[0], CVL_TXQ_RXQ_NUMBER) % rxq == int(i[1], CVL_TXQ_RXQ_NUMBER)
+                    int(i[0], TXQ_RXQ_NUMBER) % rxq == int(i[1], TXQ_RXQ_NUMBER)
                     for i in pkt_info
                 ]
             ),
@@ -590,14 +590,10 @@ def check_iavf_fdir_queue(out, pkt_num, check_param, stats=True):
                 raise Exception("wrong queue value, expect int or list")
         else:
             if isinstance(queue, int):
-                verify_iavf_fdir_directed_by_rss(
-                    out, rxq=CVL_TXQ_RXQ_NUMBER, stats=True
-                )
+                verify_iavf_fdir_directed_by_rss(out, rxq=TXQ_RXQ_NUMBER, stats=True)
                 print((GREEN("pass: queue id %s not matched" % res_queue)))
             elif isinstance(queue, list):
-                verify_iavf_fdir_directed_by_rss(
-                    out, rxq=CVL_TXQ_RXQ_NUMBER, stats=True
-                )
+                verify_iavf_fdir_directed_by_rss(out, rxq=TXQ_RXQ_NUMBER, stats=True)
                 print((GREEN("pass: queue id %s not matched" % res_queue)))
             else:
                 raise Exception("wrong action value, expect queue_index or queue_group")
@@ -605,13 +601,13 @@ def check_iavf_fdir_queue(out, pkt_num, check_param, stats=True):
         raise Exception("got wrong output, not match pattern %s" % p.pattern)
 
 
-def verify_iavf_fdir_directed_by_rss(out, rxq=CVL_TXQ_RXQ_NUMBER, stats=True):
+def verify_iavf_fdir_directed_by_rss(out, rxq=TXQ_RXQ_NUMBER, stats=True):
     p = re.compile("RSS hash=(0x\w+) - RSS queue=(0x\w+)")
     pkt_info = p.findall(out)
     if stats:
         for i in pkt_info:
             verify(
-                (int(i[0], CVL_TXQ_RXQ_NUMBER) % rxq == int(i[1], CVL_TXQ_RXQ_NUMBER)),
+                (int(i[0], TXQ_RXQ_NUMBER) % rxq == int(i[1], TXQ_RXQ_NUMBER)),
                 "some packets are not directed by RSS",
             )
             print(
@@ -623,7 +619,7 @@ def verify_iavf_fdir_directed_by_rss(out, rxq=CVL_TXQ_RXQ_NUMBER, stats=True):
     else:
         for i in pkt_info:
             verify(
-                (int(i[0], CVL_TXQ_RXQ_NUMBER) % rxq != int(i[1], CVL_TXQ_RXQ_NUMBER)),
+                (int(i[0], TXQ_RXQ_NUMBER) % rxq != int(i[1], TXQ_RXQ_NUMBER)),
                 "some packets are not directed by RSS",
             )
 
@@ -645,7 +641,7 @@ def check_iavf_fdir_passthru(out, pkt_num, check_param, stats=True):
         "fail: got wrong number of passthru packets, expect passthru packet number %s, got %s."
         % (pkt_num, len(pkt_hash)),
     )
-    verify_iavf_fdir_directed_by_rss(out, rxq=CVL_TXQ_RXQ_NUMBER, stats=True)
+    verify_iavf_fdir_directed_by_rss(out, rxq=TXQ_RXQ_NUMBER, stats=True)
 
 
 def check_iavf_fdir_mark(out, pkt_num, check_param, stats=True):
@@ -662,7 +658,7 @@ def check_iavf_fdir_mark(out, pkt_num, check_param, stats=True):
             verify(len(res) == pkt_num, "get wrong number of packet with mark_id")
             if isinstance(check_param.get("mark_id"), list):
                 result = [
-                    int(m, CVL_TXQ_RXQ_NUMBER) in check_param.get("mark_id")
+                    int(m, TXQ_RXQ_NUMBER) in check_param.get("mark_id")
                     for m in mark_list
                 ]
                 verify(
@@ -672,10 +668,7 @@ def check_iavf_fdir_mark(out, pkt_num, check_param, stats=True):
             elif isinstance(check_param.get("mark_id"), int):
                 verify(
                     all(
-                        [
-                            int(i, CVL_TXQ_RXQ_NUMBER) == check_param["mark_id"]
-                            for i in res
-                        ]
+                        [int(i, TXQ_RXQ_NUMBER) == check_param["mark_id"] for i in res]
                     ),
                     "failed: some packet mark id of %s not match" % mark_list,
                 )
@@ -818,7 +811,7 @@ def check_iavf_packets_rss_queue(out, count, rss_match=True):
                 packet_sumnum = packet_sumnum + int(packet_num)
 
     if rss_match:
-        if queue_flag == CVL_TXQ_RXQ_NUMBER and packet_sumnum == count:
+        if queue_flag == TXQ_RXQ_NUMBER and packet_sumnum == count:
             log_msg = "Packets has send to %s queues" % queue_flag
             return True, log_msg
         else:

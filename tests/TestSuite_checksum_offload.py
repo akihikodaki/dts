@@ -508,8 +508,8 @@ class TestChecksumOffload(TestCase):
                     packet[VXLAN][Ether], "VXLAN", inner_flag=True
                 ):
                     error_messages.append(vxlan_error_message % self.count)
-                # fortville not support outer udp checksum
-                if "fortville" in self.nic:
+                # Intel® Ethernet 700 Series not support outer udp checksum
+                if self.is_eth_series_nic(700):
                     continue
                 if self.validate_checksum(packet, "VXLAN"):
                     error_messages.append(vxlan_error_message % self.count)
@@ -962,8 +962,8 @@ class TestChecksumOffload(TestCase):
                             if flag == "RTE_MBUF_F_RX_L4_CKSUM_":
                                 should_pass = inner_arg == ""
                             else:  # flag == RTE_MBUF_F_RX_OUTER_L4_CKSUM_
-                                # fortville not support outer checksum
-                                if "fortville" in self.nic:
+                                # Intel® Ethernet 700 Series not support outer checksum
+                                if self.is_eth_series_nic(700):
                                     continue
                                 should_pass = outer_arg == ""
                             vf = self.send_pkt_expect_good_bad_from_flag_catch_failure(

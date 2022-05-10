@@ -215,7 +215,7 @@ class TestMeteringAndPolicing(TestCase):
             eal_param="-s %s --vdev 'net_softnic0,firmware=%s'"
             % (Servicecorelist, filename),
         )
-        if self.nic in ["columbiaville_25g", "columbiaville_100g"]:
+        if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
             self.dut.send_expect("set fwd mac", "testpmd>")
 
     def add_port_meter_profile(self, profile_id, cbs=400, pbs=500):

@@ -29,8 +29,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-DPDK Test suite cvl_dcf_qos
-CVL configure QoS for vf/vsi in DCF
+DPDK Test suite ICE_dcf_qos
+Intel® Ethernet 800 Series configure QoS for vf/vsi in DCF
 Support ETS-based QoS configuration, including Arbiters configuration (strict priority, WFQ)
 and BW Allocation and limitation.
 """
@@ -50,7 +50,7 @@ from framework.settings import HEADER_SIZE, NICS, get_nic_name
 from framework.test_case import TestCase
 
 
-class TestCvlDcfQos(TestCase):
+class TestICEDcfQos(TestCase):
     def d_con(self, cmd):
         _cmd = [cmd, "# ", 15] if isinstance(cmd, str) else cmd
         return self.dut.send_expect(*_cmd)
@@ -231,13 +231,13 @@ class TestCvlDcfQos(TestCase):
     def pf_preset(self, num=None):
         self.nic_100g, self.nic100G_intf, self.nic100g_pci = self.get_custom_nic_port(
             [
-                "columbiaville_100g",
+                "ICE_100G-E810C_QSFP",
             ],
             num=num,
         )
         self.nic_25g, self.nic25G_intf, self.nic25g_pci = self.get_custom_nic_port(
             [
-                "columbiaville_25gx2",
+                "ICE_25G-E810_XXV_SFP",
             ]
         )
         msg = "not enough nics for testing"

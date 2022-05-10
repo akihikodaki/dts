@@ -41,10 +41,10 @@ from .flexible_common import FlexibleRxdBase
 
 class TestFlexibleRxd(TestCase, FlexibleRxdBase):
     supported_nic = [
-        "columbiaville_100g",
-        "columbiaville_25g",
-        "columbiaville_25gx2",
-        "foxville",
+        "ICE_100G-E810C_QSFP",
+        "ICE_25G-E810C_SFP",
+        "ICE_25G-E810_XXV_SFP",
+        "IGC-I225_LM",
     ]
 
     def preset_compilation(self):

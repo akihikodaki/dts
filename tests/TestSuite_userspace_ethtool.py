@@ -294,10 +294,7 @@ class TestUserspaceEthtool(TestCase):
         # only detect physical link disconnect status
         verify_pass = True
         verify_msg = ""
-        if (
-            self.nic.startswith("fortville") == False
-            and self.nic.startswith("columbiaville") == False
-        ):
+        if not (self.is_eth_series_nic(700) or self.is_eth_series_nic(800)):
             # check link status dump function
             for port in self.ports:
                 tester_port = self.tester.get_local_port(port)
@@ -542,14 +539,18 @@ class TestUserspaceEthtool(TestCase):
         for index in range(len(self.ports)):
             port = self.ports[index]
             ori_rx_pkts, _ = self.strip_portstats(index)
-            # add sleep time for update link status with fortville nic
+            # add sleep time for update link status with Intel® Ethernet 700 Series nic
             time.sleep(10)
             # stop port
             self.dut.send_expect("stop %d" % index, "EthApp>")
-            # about columbiaville_25g(8086:1593),there have a kernel driver link status issue
-            # about Sageville(8086:1563),driver do not write register to set link-down
+            # about ICE_25G-E810C_SFP(8086:1593),there have a kernel driver link status issue
+            # about IXGBE_10G-X550T(8086:1563),driver do not write register to set link-down
             # so skip this step of verify status
-            if self.nic not in ["columbiaville_25g", "sageville", "columbiaville_100g"]:
+            if self.nic not in [
+                "ICE_25G-E810C_SFP",
+                "IXGBE_10G-X550T",
+                "ICE_100G-E810C_QSFP",
+            ]:
                 self.verify(
                     self.ethapp_check_link_status(index, "Down") == True,
                     "Fail to stop port{}".format(index),
@@ -584,11 +585,11 @@ class TestUserspaceEthtool(TestCase):
         mtus = [1519, 2048]
         mtu_threshold = 2022
         offset = 0
-        if self.nic in ["powerville", "springville", "foxville"]:
+        if self.nic in ["IGB_1G-I350_COPPER", "IGB_1G-I210_COPPER", "IGC-I225_LM"]:
             mtu_threshold = 2026
             offset = 4
         # RTE_ETHER_HDR_LEN + RTE_ETHER_CRC_LEN + ICE_VLAN_TAG_SIZE * 2
-        if self.nic in ["columbiaville_25g", "columbiaville_100g"]:
+        if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
             offset = 8
         for index in range(len(self.ports)):
             port = self.ports[index]
@@ -598,20 +599,24 @@ class TestUserspaceEthtool(TestCase):
             ori_mtu = self.strip_mtu(intf)
             self.tester.send_expect("ifconfig %s mtu 9000" % (intf), "# ")
             for mtu in mtus:
-                # cvl should stop port before set mtu
-                if self.nic in ["columbiaville_25g", "columbiaville_100g"]:
+                # Intel® Ethernet 800 Series should stop port before set mtu
+                if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
                     self.dut.send_expect("stop %s" % index, "EthApp>")
 
                 # The mtu threshold is 2022,When it is greater than 2022, the open/stop port is required.
                 if mtu > mtu_threshold:
-                    if self.nic in ["powerville", "springville", "foxville"]:
+                    if self.nic in [
+                        "IGB_1G-I350_COPPER",
+                        "IGB_1G-I210_COPPER",
+                        "IGC-I225_LM",
+                    ]:
                         mtu = mtu_threshold
                     self.dut.send_expect("stop %s" % index, "EthApp>")
                     self.dut.send_expect("mtu %d %d" % (index, mtu), "EthApp>")
                     self.dut.send_expect("open %s" % index, "EthApp>")
                 self.dut.send_expect("mtu %d %d" % (index, mtu), "EthApp>")
 
-                if self.nic in ["columbiaville_25g", "columbiaville_100g"]:
+                if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
                     self.dut.send_expect("open %s" % index, "EthApp>")
 
                 time.sleep(5)

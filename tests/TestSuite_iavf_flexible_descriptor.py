@@ -41,10 +41,10 @@ from .flexible_common import FlexibleRxdBase
 
 class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
     supported_nic = [
-        "columbiaville_100g",
-        "columbiaville_25g",
-        "columbiaville_25gx2",
-        "foxville",
+        "ICE_100G-E810C_QSFP",
+        "ICE_25G-E810C_SFP",
+        "ICE_25G-E810_XXV_SFP",
+        "IGC-I225_LM",
     ]
 
     def preset_compilation(self):
@@ -87,12 +87,12 @@ class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
         vf_driver = "vfio-pci"
         self.pf0_intf = self.dut.ports_info[self.dut_ports[dut_index]]["intf"]
         # get priv-flags default stats
-        if self.nic.startswith("columbiaville"):
+        if self.is_eth_series_nic(800):
             self.flag = "vf-vlan-pruning"
         else:
             self.flag = "vf-vlan-prune-disable"
         self.default_stats = self.dut.get_priv_flags_state(self.pf0_intf, self.flag)
-        if self.nic.startswith("columbiaville") and self.default_stats:
+        if self.is_eth_series_nic(800) and self.default_stats:
             self.dut.send_expect(
                 "ethtool --set-priv-flags %s %s off" % (self.pf0_intf, self.flag), "# "
             )

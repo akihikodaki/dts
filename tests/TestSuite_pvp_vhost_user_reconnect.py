@@ -283,7 +283,7 @@ class TestPVPVhostUserReconnect(TestCase):
             cinfo = tinfo
         self.result_table_add(["vm2vm iperf", iperfdata[-1], cinfo])
         data_li = iperfdata[-1].strip().split()
-        if self.nic in ["fortville_spirit"]:
+        if self.nic in ["I40E_40G-QSFP_A"]:
             self.verify(data_li[1] == "Gbits/sec", "data unit not correct")
         return float(data_li[0])
 
@@ -453,7 +453,8 @@ class TestPVPVhostUserReconnect(TestCase):
         self.config_vm_intf()
         self.start_iperf()
         self.before_data = self.iperf_result_verify(vm_cycle, "before reconnet")
-        # Because of repeat iperf test on FVL-40g nic, the result is unstable, so use 15Gb/s as check value.
+        # Because of repeat iperf test on Intel® Ethernet Converged Network Adapter XL710-QDA2 nic,
+        # the result is unstable, so use 15Gb/s as check value.
         self.check_data = 15.000
 
         vm_cycle = 1
@@ -582,7 +583,8 @@ class TestPVPVhostUserReconnect(TestCase):
         self.config_vm_intf()
         self.start_iperf()
         self.before_data = self.iperf_result_verify(vm_cycle, "before reconnet")
-        # Because of repeat iperf test on FVL-40g nic, the result is unstable, so use 15Gb/s as check value.
+        # Because of repeat iperf test on Intel® Ethernet Converged Network Adapter XL710-QDA2 nic,
+        # the result is unstable, so use 15Gb/s as check value.
         self.check_data = 15.000
 
         vm_cycle = 1

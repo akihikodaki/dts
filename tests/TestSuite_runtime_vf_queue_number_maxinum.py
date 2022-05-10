@@ -51,13 +51,13 @@ class TestRuntimeVfQnMaxinum(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
             ],
-            "Only supported by Fortville",
+            "Only supported by Intel® Ethernet 700 Series",
         )
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
@@ -77,16 +77,16 @@ class TestRuntimeVfQnMaxinum(TestCase):
 
     def setup_test_env(self, driver="default"):
         """
-        Bind fortville nic to DPDK PF, and create 32/64 vfs on it.
+        Bind Intel® Ethernet 700 Series nic to DPDK PF, and create 32/64 vfs on it.
         Start testpmd based on the created vfs.
         """
-        if self.nic in ["fortville_eagle"]:
+        if self.nic in ["I40E_10G-SFP_XL710"]:
             self.dut.generate_sriov_vfs_by_port(self.used_dut_port, 32, driver=driver)
         elif self.nic in [
-            "fortville_25g",
-            "fortville_spirit",
-            "fortpark_TLV",
-            "fortpark_BASE-T",
+            "I40E_25G-25G_SFP28",
+            "I40E_40G-QSFP_A",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_X722",
         ]:
             self.dut.generate_sriov_vfs_by_port(self.used_dut_port, 64, driver=driver)
 
@@ -158,8 +158,8 @@ class TestRuntimeVfQnMaxinum(TestCase):
     def test_vf_consume_max_queues_on_one_pf(self):
         """
         Test case 1: VF consume max queue number on one PF port.
-        For four port fortville nic, each port has 384 queues,
-        and for two port fortville nic, each port has 768 queues.
+        For four port Intel® Ethernet 700 Series nic, each port has 384 queues,
+        and for two port Intel® Ethernet 700 Series nic, each port has 768 queues.
         PF will use 65 queues on each port, the firmware will reserve 4 queues
         for each vf, when requested queues exceed 4 queues, it need to realloc queues
         in the left queues, the reserved queues generally can't be reused.
@@ -175,15 +175,15 @@ class TestRuntimeVfQnMaxinum(TestCase):
         vf2_queue_number = 0
         vf3_allow_index = 0
         vf3_allow_list = ""
-        if self.nic in ["fortville_eagle"]:
+        if self.nic in ["I40E_10G-SFP_XL710"]:
             left_queues = 384 - 65 - 32 * 4
             vf1_allow_index = left_queues / 16
             vf2_queue_number = left_queues % 16
         elif self.nic in [
-            "fortville_25g",
-            "fortville_spirit",
-            "fortpark_TLV",
-            "fortpark_BASE-T",
+            "I40E_25G-25G_SFP28",
+            "I40E_40G-QSFP_A",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_X722",
         ]:
             left_queues = 768 - 65 - 64 * 4
             vf1_allow_index = left_queues / 16

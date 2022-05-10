@@ -32,7 +32,7 @@
 """
 DPDK Test suite.
 
-Test DPDK1.8 feature: Fortville RSS full support - configuring hash functions.
+Test DPDK1.8 feature: Intel® Ethernet 700 Series RSS full support - configuring hash functions.
 It can select Toeplitz or simple XOR hash function and it can configure symmetric hash functions.
 Support 4*10G, 1*40G and 2*40G NICs.
 """
@@ -509,7 +509,12 @@ class TestPmdrssHash(TestCase):
         self.verify(sum(result) == 0, "the symmetric RSS hash function failed!")
 
     @skip_unsupported_nic(
-        ["columbiaville_25g", "columbiaville_100g", "niantic", "foxville"]
+        [
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
+            "IXGBE_10G-82599_SFP",
+            "IGC-I225_LM",
+        ]
     )
     def set_up_all(self):
         """
@@ -521,13 +526,13 @@ class TestPmdrssHash(TestCase):
         global queue
 
         if self.nic in [
-            "fortville_eagle",
-            "fortville_spirit",
-            "fortville_spirit_single",
-            "fortpark_TLV",
-            "fortpark_BASE-T",
-            "fortville_25g",
-            "carlsville",
+            "I40E_10G-SFP_XL710",
+            "I40E_40G-QSFP_A",
+            "I40E_40G-QSFP_B",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_X722",
+            "I40E_25G-25G_SFP28",
+            "I40E_10G-10G_BASE_T_BC",
         ]:
             reta_num = 512
         else:

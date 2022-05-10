@@ -5713,7 +5713,7 @@ exclusive = [
 ]
 
 
-class TestCVLAdvancedIAVFRSSGTPoGRE(TestCase):
+class TestICEAdvancedIAVFRSSGTPoGRE(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

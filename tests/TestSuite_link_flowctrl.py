@@ -192,7 +192,7 @@ class TestLinkFlowctrl(TestCase):
         self.tester.scapy_execute()
         # The following sleep is needed to allow all the packets to arrive.
         # 1s works for Crown Pass (FC18) DUT, Lizard Head Pass (FC14) tester
-        # using Niantic. Increase it in case of packet loosing.
+        # using 82599. Increase it in case of packet loosing.
         sleep(1)
 
         self.dut.send_expect("stop", "testpmd> ")
@@ -496,7 +496,7 @@ class TestLinkFlowctrl(TestCase):
         )
 
         self.logger.info("Packet loss: %.3f" % result)
-        if self.nic == "niantic":
+        if self.nic == "IXGBE_10G-82599_SFP":
             self.verify(
                 result >= 0.3,
                 "Link flow control fail, the loss percent is less than 30%",
@@ -517,7 +517,7 @@ class TestLinkFlowctrl(TestCase):
         )
 
         self.logger.info("Packet loss: %.3f" % result)
-        if self.nic == "niantic":
+        if self.nic == "IXGBE_10G-82599_SFP":
             self.verify(
                 result >= 0.3,
                 "Link flow control fail, the loss percent is less than 30%",
@@ -538,7 +538,7 @@ class TestLinkFlowctrl(TestCase):
         )
 
         self.logger.info("Packet loss: %.3f" % result)
-        if self.nic == "niantic":
+        if self.nic == "IXGBE_10G-82599_SFP":
             self.verify(
                 result >= 0.3,
                 "Link flow control fail, the loss percent is less than 30%",
@@ -599,7 +599,7 @@ class TestLinkFlowctrl(TestCase):
         )
         result = self.start_traffic(tgenInput)
         self.logger.info("Packet loss: %.3f" % result)
-        if self.nic == "niantic":
+        if self.nic == "IXGBE_10G-82599_SFP":
             self.verify(
                 result >= 0.3,
                 "Link flow control fail, the loss percent is less than 30%",
@@ -617,7 +617,7 @@ class TestLinkFlowctrl(TestCase):
         self.pmdout.wait_link_status_up(self.dutPorts[0])
         result = self.start_traffic(tgenInput)
         self.logger.info("Packet loss: %.3f" % result)
-        if self.nic == "niantic":
+        if self.nic == "IXGBE_10G-82599_SFP":
             self.verify(
                 result >= 0.3,
                 "Link flow control fail, the loss percent is less than 30%",

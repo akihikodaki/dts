@@ -110,7 +110,7 @@ class TestMacFilter(TestCase):
         # send one packet with the portid MAC address
         self.allowlist_send_packet(portid, self.dest)
 
-        # Niantic and FVL have different packet statistics when using the
+        # 82599 and Intel® Ethernet 700 Series have different packet statistics when using the
         # "show port stats" command. Packets number is stripped from log.
         out = self.dut.get_session_output()
         cur_rxpkt = utils.regexp(out, "received ([0-9]+) packets")

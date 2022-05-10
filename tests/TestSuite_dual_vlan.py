@@ -133,13 +133,13 @@ class TestDualVlan(TestCase):
         )
 
         if self.nic in [
-            "fortville_eagle",
-            "fortville_spirit",
-            "fortville_spirit_single",
-            "fortville_25g",
-            "fortpark_TLV",
-            "carlsville",
-            "fortpark_BASE-T",
+            "I40E_10G-SFP_XL710",
+            "I40E_40G-QSFP_A",
+            "I40E_40G-QSFP_B",
+            "I40E_25G-25G_SFP28",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_BC",
+            "I40E_10G-10G_BASE_T_X722",
         ]:
             self.dut.send_expect("vlan set filter on all", "testpmd> ")
             self.dut.send_expect("set promisc all off", "testpmd> ")
@@ -191,15 +191,15 @@ class TestDualVlan(TestCase):
 
         for mode in modeName:
             if self.nic in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "fortpark_TLV",
-                "carlsville",
-                "fortpark_BASE-T",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_10G-10G_BASE_T_X722",
             ]:
-                # fortville NIC vlan filter can't close, if want close need remove rx_vlan
+                # Intel® Ethernet 700 Series NIC vlan filter can't close, if want close need remove rx_vlan
                 if mode == "filter":
                     if modeName[mode] == "off":
                         self.dut.send_expect(
@@ -226,15 +226,15 @@ class TestDualVlan(TestCase):
         out = self.dut.send_expect("show port info %s" % dutRxPortId, "testpmd> ")
         for mode in modeName:
             if self.nic in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "fortpark_TLV",
-                "carlsville",
-                "fortpark_BASE-T",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_10G-10G_BASE_T_X722",
             ]:
-                # fortville NIC vlan filter can't close, if want close need remove rx_vlan
+                # Intel® Ethernet 700 Series NIC vlan filter can't close, if want close need remove rx_vlan
                 if mode == "filter":
                     if modeName[mode] == "off":
                         self.dut.send_expect(
@@ -376,15 +376,15 @@ class TestDualVlan(TestCase):
         )
 
         if self.nic not in [
-            "columbiaville_25g",
-            "columbiaville_100g",
-            "fortville_eagle",
-            "fortville_spirit",
-            "fortville_spirit_single",
-            "fortville_25g",
-            "fortpark_TLV",
-            "carlsville",
-            "fortpark_BASE-T",
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
+            "I40E_10G-SFP_XL710",
+            "I40E_40G-QSFP_A",
+            "I40E_40G-QSFP_B",
+            "I40E_25G-25G_SFP28",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_BC",
+            "I40E_10G-10G_BASE_T_X722",
         ]:
             self.mode_config(filter="off")
             self.vlan_send_packet(outvlan)
@@ -434,15 +434,15 @@ class TestDualVlan(TestCase):
         self.mode_config(extend="off")
         self.mode_config(strip="on")
         if self.nic in [
-            "columbiaville_25g",
-            "columbiaville_100g",
-            "fortville_eagle",
-            "fortville_spirit",
-            "fortville_spirit_single",
-            "fortville_25g",
-            "fortpark_TLV",
-            "carlsville",
-            "fortpark_BASE-T",
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
+            "I40E_10G-SFP_XL710",
+            "I40E_40G-QSFP_A",
+            "I40E_40G-QSFP_B",
+            "I40E_25G-25G_SFP28",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_BC",
+            "I40E_10G-10G_BASE_T_X722",
         ]:
             self.dut.send_expect(
                 "rx_vlan add %s %s" % (outvlan, dutRxPortId), "testpmd> "
@@ -456,15 +456,15 @@ class TestDualVlan(TestCase):
         out = self.get_tcpdump_package()
         self.verify("vlan %s" % outvlan in out, "Vlan strip disable error: " + out)
         if self.nic in [
-            "columbiaville_25g",
-            "columbiaville_100g",
-            "fortville_eagle",
-            "fortville_spirit",
-            "fortville_spirit_single",
-            "fortville_25g",
-            "fortpark_TLV",
-            "carlsville",
-            "fortpark_BASE-T",
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
+            "I40E_10G-SFP_XL710",
+            "I40E_40G-QSFP_A",
+            "I40E_40G-QSFP_B",
+            "I40E_25G-25G_SFP28",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_BC",
+            "I40E_10G-10G_BASE_T_X722",
         ]:
             self.dut.send_expect(
                 "rx_vlan rm %s %s" % (outvlan, dutRxPortId), "testpmd> "
@@ -483,7 +483,7 @@ class TestDualVlan(TestCase):
         self.verify(
             "vlan %s" % outvlan in out, "vlan strip queue disable error : " + out
         )
-        # if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single"]:
+        # if self.nic in ["I40E_10G-SFP_XL710", "I40E_40G-QSFP_A", "I40E_40G-QSFP_B"]:
         self.mode_config(strip="on")
         self.mode_config(stripq="on")
         self.vlan_send_packet(outvlan)
@@ -504,8 +504,8 @@ class TestDualVlan(TestCase):
         self.mode_config(filter="off")
         self.mode_config(extend="off")
 
-        # hartwell need to set CTRL.VME for vlan insert
-        if self.nic == "hartwell":
+        # IGB_1G-82574L need to set CTRL.VME for vlan insert
+        if self.nic == "IGB_1G-82574L":
             self.dut.send_expect("vlan set strip on %s" % dutTxPortId, "testpmd> ")
 
         self.dut.send_expect("stop", "testpmd> ")
@@ -535,19 +535,19 @@ class TestDualVlan(TestCase):
         self.verify(
             self.nic
             not in [
-                "columbiaville_25g",
-                "columbiaville_100g",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "hartwell",
-                "carlsville",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "IGB_1G-82574L",
+                "I40E_10G-10G_BASE_T_BC",
             ],
             "%s NIC not support tcpid " % self.nic,
         )
 
         self.mode_config(filter="on", strip="on", extend="on")
-        # nic only support inner model, except fortville nic
+        # nic only support inner model, except Intel® Ethernet 700 Series nic
         self.dut.send_expect("vlan set inner tpid 1234 %s" % dutRxPortId, "testpmd> ")
         self.vlan_send_packet(outvlan, invlan)
 
@@ -568,7 +568,7 @@ class TestDualVlan(TestCase):
         VLAN synthetic test.
         """
         self.verify(
-            self.nic != "hartwell", "sorry, dual vlan cannot support this self.nic"
+            self.nic != "IGB_1G-82574L", "sorry, dual vlan cannot support this self.nic"
         )
         for i in range(len(vlanCase)):
             self.multimode_test(i)
@@ -578,7 +578,7 @@ class TestDualVlan(TestCase):
         VLAN random test.
         """
         self.verify(
-            self.nic != "hartwell", "sorry, dual vlan cannot support this self.nic"
+            self.nic != "IGB_1G-82574L", "sorry, dual vlan cannot support this self.nic"
         )
         for _ in range(30):
             rand = random.randint(0, 15)

@@ -3030,7 +3030,7 @@ vector_case_108 = [
 ]
 
 
-class TestCVLAdvancedIAVFRSSPPPoL2TPv2oUDP(TestCase):
+class TestICEAdvancedIAVFRSSPPPoL2TPv2oUDP(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

@@ -56,16 +56,18 @@ class TestQinqFilter(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "foxville",
-                "carlsville",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "IGC-I225_LM",
+                "I40E_10G-10G_BASE_T_BC",
             ],
             "NIC %s not support this test" % self.nic,
         )
-        print("this case only supports fortville with 6.0.0+ firmware and dpdk17.05+")
+        print(
+            "this case only supports Intel® Ethernet 700 Series with 6.0.0+ firmware and dpdk17.05+"
+        )
         ports = self.dut.get_ports()
         # Verify that enough ports are available
         self.verify(len(ports) >= 1, "Insufficient ports")

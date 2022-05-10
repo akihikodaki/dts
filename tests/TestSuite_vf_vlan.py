@@ -89,7 +89,7 @@ class TestVfVlan(TestCase):
         self.host_intf0 = self.dut.ports_info[self.used_dut_port_0]["intf"]
         tester_port = self.tester.get_local_port(self.used_dut_port_0)
         self.tester_intf0 = self.tester.get_interface(tester_port)
-        if self.nic.startswith("columbiaville") and self.default_stats:
+        if self.is_eth_series_nic(800) and self.default_stats:
             self.dut.send_expect(
                 "ethtool --set-priv-flags %s %s on" % (self.host_intf0, self.flag), "# "
             )
@@ -106,7 +106,7 @@ class TestVfVlan(TestCase):
 
         self.used_dut_port_1 = self.dut_ports[1]
         self.host_intf1 = self.dut.ports_info[self.used_dut_port_1]["intf"]
-        if self.nic.startswith("columbiaville") and self.default_stats:
+        if self.is_eth_series_nic(800) and self.default_stats:
             self.dut.send_expect(
                 "ethtool --set-priv-flags %s %s on" % (self.host_intf1, self.flag), "# "
             )
@@ -305,7 +305,7 @@ class TestVfVlan(TestCase):
         self.vm0_testpmd.execute_cmd("set verbose 1")
 
         for tx_vlan in tx_vlans:
-            # for fortville ,
+            # for Intel® Ethernet 700 Series ,
             # if you want insert tx_vlan,
             # please enable rx_vlan at the same time
             if self.kdriver == "i40e" or self.kdriver == "ice":
@@ -442,7 +442,7 @@ class TestVfVlan(TestCase):
 
     def tear_down_all(self):
         self.destroy_vm_env()
-        if self.nic.startswith("columbiaville") and self.default_stats:
+        if self.is_eth_series_nic(800) and self.default_stats:
             self.dut.send_expect(
                 "ethtool --set-priv-flags %s %s %s"
                 % (self.host_intf0, self.flag, self.default_stats),

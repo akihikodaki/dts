@@ -359,10 +359,10 @@ class TestTSO(TestCase):
         )
 
         Nic_list = [
-            "fortville_eagle",
-            "fortville_spirit",
-            "fortville_spirit_single",
-            "fortville_25g",
+            "I40E_10G-SFP_XL710",
+            "I40E_40G-QSFP_A",
+            "I40E_40G-QSFP_B",
+            "I40E_25G-25G_SFP28",
         ]
         save_file = "/tmp/save.pcap"
         dump_pcap = "/tmp/tcpdump_%s.pcap" % rx_interface
@@ -397,7 +397,9 @@ class TestTSO(TestCase):
             "csum set outer-ip hw %d" % self.dut_ports[0], "testpmd> ", 120
         )
         if self.nic in Nic_list:
-            self.logger.warning("Warning: fvl serise not support outer udp.")
+            self.logger.warning(
+                "Warning: Intel® Ethernet 700 Series not support outer udp."
+            )
         else:
             self.dut.send_expect(
                 "csum set outer-udp hw %d" % self.dut_ports[0], "testpmd> ", 120
@@ -416,7 +418,9 @@ class TestTSO(TestCase):
             "csum set outer-ip hw %d" % self.dut_ports[1], "testpmd> ", 120
         )
         if self.nic in Nic_list:
-            self.logger.warning("Warning: fvl serise not support outer udp.")
+            self.logger.warning(
+                "Warning: Intel® Ethernet 700 Series not support outer udp."
+            )
         else:
             self.dut.send_expect(
                 "csum set outer-udp hw %d" % self.dut_ports[1], "testpmd> ", 120

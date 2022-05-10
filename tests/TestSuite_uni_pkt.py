@@ -98,16 +98,16 @@ class TestUniPacket(TestCase):
         """
         self.verify(
             (
-                "fortville" in self.nic
-                or "fortpark_TLV" in self.nic
-                or "carlsville" in self.nic
-                or "columbiaville" in self.nic
-                or "fortpark_BASE-T" in self.nic
+                self.is_eth_series_nic(700)
+                or "I40E_10G-SFP_X722" in self.nic
+                or "I40E_10G-10G_BASE_T_BC" in self.nic
+                or self.is_eth_series_nic(800)
+                or "I40E_10G-10G_BASE_T_X722" in self.nic
             ),
-            "L2 packet detect only support by Fortville",
+            "L2 packet detect only support by Intel® Ethernet 700 Series",
         )
         # Change this code start for DPDK-15109, the share code doest not support TIMESYNC, once /supported then will enable
-        if "columbiaville" in self.nic:
+        if self.is_eth_series_nic(800):
             self.L2_types = {
                 "ARP": "L2_ETHER_ARP",
                 "LLDP": "L2_ETHER_LLDP",
@@ -134,25 +134,24 @@ class TestUniPacket(TestCase):
         checked that whether L3 and L4 packet can be normally detected.
         """
         if (
-            "fortville" in self.nic
-            or "fortpark_TLV" in self.nic
-            or "carlsville" in self.nic
-            or "columbiaville" in self.nic
+            self.is_eth_series_nic(700)
+            or "I40E_10G-SFP_X722" in self.nic
+            or "I40E_10G-10G_BASE_T_BC" in self.nic
+            or self.is_eth_series_nic(800)
             or "x722" in self.nic
-            or "fortpark_BASE-T" in self.nic
+            or "I40E_10G-10G_BASE_T_X722" in self.nic
         ):
             outerL4Type = "L4_NONFRAG"
             ipv4_default_packet_type = ["L2_ETHER", "L3_IPV4_EXT_UNKNOWN"]
         elif (
-            "niantic" in self.nic.lower()
-            or "powerville" in self.nic.lower()
-            or "cavium" in self.nic.lower()
-            or "twinpond" in self.nic.lower()
-            or "twinville" in self.nic.lower()
-            or "sageville" in self.nic.lower()
-            or "sagepond" in self.nic.lower()
-            or "springville" in self.nic.lower()
-            or "foxville" in self.nic.lower()
+            "IXGBE_10G-82599_SFP" in self.nic
+            or "IGB_1G-I350_COPPER" in self.nic
+            or "cavium" in self.nic
+            or "IXGBE_10G-X540T" in self.nic
+            or "IXGBE_10G-X550T" in self.nic
+            or "IXGBE_10G-X550EM_X_10G_T" in self.nic
+            or "IGB_1G-I210_COPPER" in self.nic
+            or "IGC-I225_LM" in self.nic
         ):
             outerL4Type = ""
             ipv4_default_packet_type = ["L2_ETHER", "L3_IPV4"]
@@ -169,24 +168,23 @@ class TestUniPacket(TestCase):
 
         # delete the unsupported packet based on nic type
         if (
-            "fortville" in self.nic
-            or "fortpark_TLV" in self.nic
-            or "carlsville" in self.nic
-            or "columbiaville" in self.nic
+            self.is_eth_series_nic(700)
+            or "I40E_10G-SFP_X722" in self.nic
+            or "I40E_10G-10G_BASE_T_BC" in self.nic
+            or self.is_eth_series_nic(800)
             or "x722" in self.nic
-            or "fortpark_BASE-T" in self.nic
+            or "I40E_10G-10G_BASE_T_X722" in self.nic
         ):
             pktType.pop("MAC_IPihl_PKT")
             pktType.pop("MAC_IPihl_SCTP_PKT")
         elif (
-            "niantic" in self.nic.lower()
-            or "powerville" in self.nic.lower()
-            or "cavium" in self.nic.lower()
-            or "twinpond" in self.nic.lower()
-            or "twinville" in self.nic.lower()
-            or "sageville" in self.nic.lower()
-            or "sagepond" in self.nic.lower()
-            or "springville" in self.nic.lower()
+            "IXGBE_10G-82599_SFP" in self.nic
+            or "IGB_1G-I350_COPPER" in self.nic
+            or "cavium" in self.nic
+            or "IXGBE_10G-X540T" in self.nic
+            or "IXGBE_10G-X550T" in self.nic
+            or "IXGBE_10G-X550EM_X_10G_T" in self.nic
+            or "IGB_1G-I210_COPPER" in self.nic
         ):
             pktType.pop("MAC_IP_ICMP_PKT")
             pktType.pop("MAC_IPFRAG_TCP_PKT")
@@ -198,25 +196,24 @@ class TestUniPacket(TestCase):
         checked that whether IPv6 and L4 packet can be normally detected.
         """
         if (
-            "fortville" in self.nic
-            or "fortpark_TLV" in self.nic
-            or "carlsville" in self.nic
-            or "columbiaville" in self.nic
+            self.is_eth_series_nic(700)
+            or "I40E_10G-SFP_X722" in self.nic
+            or "I40E_10G-10G_BASE_T_BC" in self.nic
+            or self.is_eth_series_nic(800)
             or "x722" in self.nic
-            or "fortpark_BASE-T" in self.nic
+            or "I40E_10G-10G_BASE_T_X722" in self.nic
         ):
             outerL4Type = "L4_NONFRAG"
             ipv6_default_packet_type = ["L2_ETHER", "L3_IPV6_EXT_UNKNOWN"]
         elif (
-            "niantic" in self.nic.lower()
-            or "powerville" in self.nic.lower()
-            or "cavium" in self.nic.lower()
-            or "twinpond" in self.nic.lower()
-            or "twinville" in self.nic.lower()
-            or "sageville" in self.nic.lower()
-            or "sagepond" in self.nic.lower()
-            or "springville" in self.nic.lower()
-            or "foxville" in self.nic.lower()
+            "IXGBE_10G-82599_SFP" in self.nic
+            or "IGB_1G-I350_COPPER" in self.nic
+            or "cavium" in self.nic
+            or "IXGBE_10G-X540T" in self.nic
+            or "IXGBE_10G-X550T" in self.nic
+            or "IXGBE_10G-X550EM_X_10G_T" in self.nic
+            or "IGB_1G-I210_COPPER" in self.nic
+            or "IGC-I225_LM" in self.nic
         ):
             outerL4Type = ""
             ipv6_default_packet_type = ["L2_ETHER", "L3_IPV6"]
@@ -231,23 +228,22 @@ class TestUniPacket(TestCase):
 
         # delete the unsupported packet based on nic type
         if (
-            "fortville" in self.nic
-            or "fortpark_TLV" in self.nic
-            or "carlsville" in self.nic
-            or "columbiaville" in self.nic
+            self.is_eth_series_nic(700)
+            or "I40E_10G-SFP_X722" in self.nic
+            or "I40E_10G-10G_BASE_T_BC" in self.nic
+            or self.is_eth_series_nic(800)
             or "x722" in self.nic
-            or "fortpark_BASE-T" in self.nic
+            or "I40E_10G-10G_BASE_T_X722" in self.nic
         ):
             pktType.pop("MAC_IPv6FRAG_PKT_N")
         elif (
-            "niantic" in self.nic.lower()
-            or "powerville" in self.nic.lower()
-            or "cavium" in self.nic.lower()
-            or "twinpond" in self.nic.lower()
-            or "twinville" in self.nic.lower()
-            or "sageville" in self.nic.lower()
-            or "sagepond" in self.nic.lower()
-            or "springville" in self.nic.lower()
+            "IXGBE_10G-82599_SFP" in self.nic
+            or "IGB_1G-I350_COPPER" in self.nic
+            or "cavium" in self.nic
+            or "IXGBE_10G-X540T" in self.nic
+            or "IXGBE_10G-X550T" in self.nic
+            or "IXGBE_10G-X550EM_X_10G_T" in self.nic
+            or "IGB_1G-I210_COPPER" in self.nic
         ):
             pktType.pop("MAC_IPv6FRAG_PKT_F")
 
@@ -256,17 +252,17 @@ class TestUniPacket(TestCase):
     def test_IP_in_IPv4_tunnel(self):
         """
         checked that whether IP in IPv4 tunnel packet can be normally
-        detected by Fortville.
+        detected by Intel® Ethernet 700 Series.
         """
         self.verify(
             (
-                "fortville" in self.nic
-                or "fortpark_TLV" in self.nic
-                or "carlsville" in self.nic
-                or "columbiaville" in self.nic
-                or "fortpark_BASE-T" in self.nic
+                self.is_eth_series_nic(700)
+                or "I40E_10G-SFP_X722" in self.nic
+                or "I40E_10G-10G_BASE_T_BC" in self.nic
+                or self.is_eth_series_nic(800)
+                or "I40E_10G-10G_BASE_T_X722" in self.nic
             ),
-            "IP in IPv4 tunnel packet type detect only support by Fortville",
+            "IP in IPv4 tunnel packet type detect only support by Intel® Ethernet 700 Series",
         )
         ipv4_in_ipv4_packet_type = [
             "L2_ETHER",
@@ -306,18 +302,18 @@ class TestUniPacket(TestCase):
         self.verify(
             self.nic
             in [
-                "columbiaville_25g",
-                "columbiaville_100g",
-                "niantic",
-                "fortville_eagle",
-                "fortville_spirit",
-                "powerville",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g",
-                "fortville_spirit_single",
-                "carlsville",
-                "foxville",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
+                "IXGBE_10G-82599_SFP",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "IGB_1G-I350_COPPER",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-10G_BASE_T_BC",
+                "IGC-I225_LM",
             ],
             "not support %s" % self.nic,
         )
@@ -363,17 +359,17 @@ class TestUniPacket(TestCase):
     def test_IP_in_IPv6_tunnel(self):
         """
         checked that whether IP in IPv6 tunnel packet can be normally
-        detected by Fortville.
+        detected by Intel® Ethernet 700 Series.
         """
         self.verify(
             (
-                "fortville" in self.nic
-                or "fortpark_TLV" in self.nic
-                or "carlsville" in self.nic
-                or "columbiaville" in self.nic
-                or "fortpark_BASE-T" in self.nic
+                self.is_eth_series_nic(700)
+                or "I40E_10G-SFP_X722" in self.nic
+                or "I40E_10G-10G_BASE_T_BC" in self.nic
+                or self.is_eth_series_nic(800)
+                or "I40E_10G-10G_BASE_T_X722" in self.nic
             ),
-            "IP in IPv6 tunnel packet type detect only support by Fortville",
+            "IP in IPv6 tunnel packet type detect only support by Intel® Ethernet 700 Series",
         )
         ipv4_in_ipv6_packet_type = [
             "L2_ETHER",
@@ -407,17 +403,17 @@ class TestUniPacket(TestCase):
     def test_NVGRE_tunnel(self):
         """
         checked that whether NVGRE tunnel packet can be normally detected
-        by Fortville.
+        by Intel® Ethernet 700 Series.
         """
         self.verify(
             (
-                "fortville" in self.nic
-                or "fortpark_TLV" in self.nic
-                or "carlsville" in self.nic
-                or "columbiaville" in self.nic
-                or "fortpark_BASE-T" in self.nic
+                self.is_eth_series_nic(700)
+                or "I40E_10G-SFP_X722" in self.nic
+                or "I40E_10G-10G_BASE_T_BC" in self.nic
+                or self.is_eth_series_nic(800)
+                or "I40E_10G-10G_BASE_T_X722" in self.nic
             ),
-            "NVGRE tunnel packet type detect only support by Fortville",
+            "NVGRE tunnel packet type detect only support by Intel® Ethernet 700 Series",
         )
         nvgre_base_packet_type = ["L2_ETHER", "L3_IPV4_EXT_UNKNOWN", "TUNNEL_GRENAT"]
         # INNER IPV4 not with vlan
@@ -477,17 +473,17 @@ class TestUniPacket(TestCase):
     def test_NVGRE_in_IPv6_tunnel(self):
         """
         checked that whether NVGRE in IPv6 tunnel packet can be normally
-        detected by Fortville.
+        detected by Intel® Ethernet 700 Series.
         """
         self.verify(
             (
-                "fortville" in self.nic
-                or "fortpark_TLV" in self.nic
-                or "carlsville" in self.nic
-                or "columbiaville" in self.nic
-                or "fortpark_BASE-T" in self.nic
+                self.is_eth_series_nic(700)
+                or "I40E_10G-SFP_X722" in self.nic
+                or "I40E_10G-10G_BASE_T_BC" in self.nic
+                or self.is_eth_series_nic(800)
+                or "I40E_10G-10G_BASE_T_X722" in self.nic
             ),
-            "NVGRE in IPv6 detect only support by Fortville",
+            "NVGRE in IPv6 detect only support by Intel® Ethernet 700 Series",
         )
         nvgre_base_packet_type = ["L2_ETHER", "L3_IPV6_EXT_UNKNOWN", "TUNNEL_GRENAT"]
         # INNER IPV4 not with vlan
@@ -634,17 +630,17 @@ class TestUniPacket(TestCase):
 
     def test_GRE_tunnel(self):
         """
-        checked that whether GRE tunnel packet can be normally detected by Fortville.
+        checked that whether GRE tunnel packet can be normally detected by Intel® Ethernet 700 Series.
         """
         self.verify(
             (
-                "fortville" in self.nic
-                or "fortpark_TLV" in self.nic
-                or "carlsville" in self.nic
-                or "columbiaville" in self.nic
-                or "fortpark_BASE-T" in self.nic
+                self.is_eth_series_nic(700)
+                or "I40E_10G-SFP_X722" in self.nic
+                or "I40E_10G-10G_BASE_T_BC" in self.nic
+                or self.is_eth_series_nic(800)
+                or "I40E_10G-10G_BASE_T_X722" in self.nic
             ),
-            "GRE tunnel packet type detect only support by Fortville",
+            "GRE tunnel packet type detect only support by Intel® Ethernet 700 Series",
         )
         base_packet_type = [" L2_ETHER", " L3_IPV4_EXT_UNKNOWN", "TUNNEL_GRENAT"]
         pktType = {
@@ -666,18 +662,17 @@ class TestUniPacket(TestCase):
 
     def test_Vxlan_tunnel(self):
         """
-        checked that whether Vxlan tunnel packet can be normally detected by
-        Fortville.
+        checked that whether Vxlan tunnel packet can be normally detected by Intel® Ethernet 700 Series.
         """
         self.verify(
             (
-                "fortville" in self.nic
-                or "fortpark_TLV" in self.nic
-                or "carlsville" in self.nic
-                or "columbiaville" in self.nic
-                or "fortpark_BASE-T" in self.nic
+                self.is_eth_series_nic(700)
+                or "I40E_10G-SFP_X722" in self.nic
+                or "I40E_10G-10G_BASE_T_BC" in self.nic
+                or self.is_eth_series_nic(800)
+                or "I40E_10G-10G_BASE_T_X722" in self.nic
             ),
-            "Vxlan tunnel packet type detect only support by Fortville",
+            "Vxlan tunnel packet type detect only support by Intel® Ethernet 700 Series",
         )
 
         self.dut.send_expect("rx_vxlan_port add 4789 0", "testpmd>", 10)
@@ -735,7 +730,7 @@ class TestUniPacket(TestCase):
 
     def test_nsh(self):
         """
-        check if NSH packets can be normally detected by Fortpark and Fortville
+        check if NSH packets can be normally detected by X722 and Intel® Ethernet 700 Series
         """
         self.verify(
             self.kdriver == "i40e",

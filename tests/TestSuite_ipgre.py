@@ -36,7 +36,8 @@ Generic Routing Encapsulation (GRE) is a tunneling protocol developed by
 Cisco Systems that can encapsulate a wide variety of network layer protocols 
 inside virtual point-to-point links over an Internet Protocol network.
 
-Fortville support GRE packet detecting, checksum computing and filtering.
+Intel® Ethernet 700 Series support GRE packet detecting, checksum computing
+and filtering.
 """
 
 import os
@@ -66,17 +67,19 @@ class TestIpgre(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
                 "cavium_a063",
                 "cavium_a064",
             ],
-            "GRE tunnel packet type only support by fortville, carlsville and cavium",
+            "GRE tunnel packet type only support by Intel® Ethernet 700 Series, "
+            "Intel® Ethernet Network Adapter X710-T4L, Intel® Ethernet Network "
+            "Adapter X710-T2L and cavium",
         )
         self.verify(len(ports) >= 1, "Insufficient ports for testing")
         valports = [_ for _ in ports if self.tester.get_local_port(_) != -1]

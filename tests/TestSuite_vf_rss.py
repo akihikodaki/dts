@@ -248,7 +248,7 @@ class TestVfRss(TestCase):
             if (
                 self.kdriver == "i40e"
                 or self.kdriver == "ice"
-                or self.nic in ["sageville", "sagepond"]
+                or self.nic in ["IXGBE_10G-X550T", "IXGBE_10G-X550EM_X_10G_T"]
             ):
                 # compute the hash result of five tuple into the 7 LSBs value.
                 hash_index = int(tmp_reta_line["RSS hash"], 16) % 64
@@ -285,17 +285,17 @@ class TestVfRss(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "sageville",
-                "sagepond",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "IXGBE_10G-X550T",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
             ],
             "NIC Unsupported: " + str(self.nic),
         )
@@ -425,11 +425,14 @@ class TestVfRss(TestCase):
                 if (
                     self.kdriver == "i40e"
                     or self.kdriver == "ice"
-                    or self.nic in ["sageville", "sagepond"]
+                    or self.nic in ["IXGBE_10G-X550T", "IXGBE_10G-X550EM_X_10G_T"]
                 ):
-                    if self.nic in ["sageville", "sagepond"] and rss_type == "sctp":
+                    if (
+                        self.nic in ["IXGBE_10G-X550T", "IXGBE_10G-X550EM_X_10G_T"]
+                        and rss_type == "sctp"
+                    ):
                         self.logger.info(
-                            "sageville and sagepond do not support rsstype sctp"
+                            "IXGBE_10G-X550T and IXGBE_10G-X550EM_X_10G_T do not support rsstype sctp"
                         )
                         continue
                     for i in range(64):
@@ -488,9 +491,12 @@ class TestVfRss(TestCase):
             for iptype, rsstype in list(iptypes.items()):
                 self.vm_dut_0.send_expect("set verbose 8", "testpmd> ")
                 self.vm_dut_0.send_expect("set fwd rxonly", "testpmd> ")
-                if self.nic in ["sageville", "sagepond"] and rsstype == "sctp":
+                if (
+                    self.nic in ["IXGBE_10G-X550T", "IXGBE_10G-X550EM_X_10G_T"]
+                    and rsstype == "sctp"
+                ):
                     self.logger.info(
-                        "sageville and sagepond do not support rsstype sctp"
+                        "IXGBE_10G-X550T and IXGBE_10G-X550EM_X_10G_T do not support rsstype sctp"
                     )
                     continue
                 out = self.vm_dut_0.send_expect(

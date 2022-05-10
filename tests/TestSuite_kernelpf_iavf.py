@@ -124,7 +124,7 @@ class TestKernelpfIavf(TestCase):
         # bind to default driver
         self.bind_nic_driver(self.dut_ports, driver="")
         self.used_dut_port = self.dut_ports[0]
-        if self.nic.startswith("columbiaville") and self.default_stats:
+        if self.is_eth_series_nic(800) and self.default_stats:
             self.dut.send_expect(
                 "ethtool --set-priv-flags %s %s on" % (self.host_intf, self.flag), "# "
             )
@@ -132,7 +132,7 @@ class TestKernelpfIavf(TestCase):
         self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port]["vfs_port"]
         out = self.dut.send_expect("ethtool %s" % self.host_intf, "#")
         self.speed = int(re.findall("Speed: (\d*)", out)[0]) // 1000
-        if self.nic.startswith("columbiaville"):
+        if self.is_eth_series_nic(800):
             self.dut.send_expect(
                 "ip link set %s vf 0 spoofchk off" % (self.host_intf), "# "
             )
@@ -1162,7 +1162,7 @@ class TestKernelpfIavf(TestCase):
         if self.env_done:
             self.destroy_vm_env()
 
-        if self.nic.startswith("columbiaville") and self.default_stats:
+        if self.is_eth_series_nic(800) and self.default_stats:
             self.dut.send_expect(
                 "ethtool --set-priv-flags %s %s %s"
                 % (self.host_intf, self.flag, self.default_stats),

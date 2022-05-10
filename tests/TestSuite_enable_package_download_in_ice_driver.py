@@ -40,7 +40,7 @@ from framework.test_case import TestCase
 class TestEnable_Package_Download_In_Ice_Driver(TestCase):
     def set_up_all(self):
         self.verify(
-            self.nic in ["columbiaville_100g", "columbiaville_25g"],
+            self.nic in ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP"],
             "NIC Unsupported: " + str(self.nic),
         )
         self.dut_ports = self.dut.get_ports(self.nic)
@@ -413,13 +413,14 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
 
     def check_env(self):
         """
-        Check the DUT has two or more CVL NICs. If not, return "the ENV needs at least two CVL NICs"
+        Check the DUT has two or more Intel® Ethernet 800 Series NICs. If not, return
+        "the case needs >=2 Intel® Ethernet 800 Series NICs with different Serial Numbers"
         """
         self.nic_pci = [self.dut.ports_info[0]["pci"], self.dut.ports_info[-1]["pci"]]
         self.nic_sn = [self.get_sn(self.nic_pci[0]), self.get_sn(self.nic_pci[1])]
         self.verify(
             self.nic_sn[0] != self.nic_sn[1],
-            "the case needs >=2 CVL NICs with different Serial Numbers",
+            "the case needs >=2 Intel® Ethernet 800 Series NICs with different Serial Numbers",
         )
 
     def copy_specify_ice_pkg(self, pkg_ver):

@@ -558,10 +558,10 @@ class TestSriovKvm(TestCase):
 
     def test_two_vms_enalbe_or_disable_one_uta_mac_on_vf(self):
         self.verify(
-            self.nic.startswith("fortville") == False,
+            self.is_eth_series_nic(700) == False,
             "NIC is [%s], skip this case" % self.nic,
         )
-        if self.nic.startswith("fortville"):
+        if self.is_eth_series_nic(700):
             self.dut.logger.warning("NIC is [%s], skip this case" % self.nic)
             return
 
@@ -617,10 +617,10 @@ class TestSriovKvm(TestCase):
 
     def test_two_vms_add_multi_uta_mac_on_vf(self):
         self.verify(
-            self.nic.startswith("fortville") == False,
+            not self.is_eth_series_nic(700),
             "NIC is [%s], skip this case" % self.nic,
         )
-        if self.nic.startswith("fortville"):
+        if self.is_eth_series_nic(700):
             self.dut.logger.warning("NIC is [%s], skip this case" % self.nic)
             return
 
@@ -657,10 +657,10 @@ class TestSriovKvm(TestCase):
 
     def test_two_vms_add_or_remove_uta_mac_on_vf(self):
         self.verify(
-            self.nic.startswith("fortville") == False,
+            not self.is_eth_series_nic(700),
             "NIC is [%s], skip this case" % self.nic,
         )
-        if self.nic.startswith("fortville"):
+        if self.is_eth_series_nic(700):
             self.dut.logger.warning("NIC is [%s], skip this case" % self.nic)
             return
 
@@ -715,10 +715,10 @@ class TestSriovKvm(TestCase):
 
     def test_two_vms_pause_rx_queues(self):
         self.verify(
-            self.nic.startswith("fortville") == False,
+            not self.is_eth_series_nic(700),
             "NIC is [%s], skip this case" % self.nic,
         )
-        if self.nic.startswith("fortville"):
+        if self.is_eth_series_nic(700):
             self.dut.logger.warning("NIC is [%s], skip this case" % self.nic)
             return
 
@@ -765,10 +765,10 @@ class TestSriovKvm(TestCase):
 
     def test_two_vms_pause_tx_queuse(self):
         self.verify(
-            self.nic.startswith("fortville") == False,
+            not self.is_eth_series_nic(700),
             "NIC is [%s], skip this case" % self.nic,
         )
-        if self.nic.startswith("fortville"):
+        if self.is_eth_series_nic(700):
             self.dut.logger.warning("NIC is [%s], skip this case" % self.nic)
             return
 
@@ -810,10 +810,10 @@ class TestSriovKvm(TestCase):
 
     def test_two_vms_prevent_rx_broadcast_on_vf(self):
         self.verify(
-            self.nic.startswith("fortville") == False,
+            not self.is_eth_series_nic(700),
             "NIC is [%s], skip this case" % self.nic,
         )
-        if self.nic.startswith("fortville"):
+        if self.is_eth_series_nic(700):
             self.dut.logger.warning("NIC is [%s], skip this case" % self.nic)
             return
 

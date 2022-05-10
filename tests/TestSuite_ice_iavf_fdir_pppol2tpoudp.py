@@ -42,7 +42,7 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 from framework.utils import GREEN, RED
 
-from .rte_flow_common import CVL_TXQ_RXQ_NUMBER
+from .rte_flow_common import TXQ_RXQ_NUMBER
 
 tv_l2tpv2_seession_id_mac_ipv4_l2tpv2_control = {
     "name": "l2tpv2_seession_id_mac_ipv4_l2tpv2_control",
@@ -1927,7 +1927,7 @@ vectors_mac_ipv6_pppol2tpv2_ipv6_tcp = [
 ]
 
 
-class TestCVLIAVFFDIRPPPoL2TPv2oUDP(TestCase):
+class TestICEIAVFFDIRPPPoL2TPv2oUDP(TestCase):
     def rte_flow_process(self, vectors):
         test_results = {}
         for tv in vectors:

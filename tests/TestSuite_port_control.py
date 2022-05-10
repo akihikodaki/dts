@@ -160,7 +160,7 @@ class TestPortControl(TestCase):
         terminal.execute_cmd("stop")
         terminal.execute_cmd("port stop all")
         ret = terminal.get_port_link_status(self.port_id_0)
-        if self.nic.startswith("columbiaville") or (
+        if self.is_eth_series_nic(800) or (
             getattr(self, "vm_testpmd", None) and terminal is self.vm_testpmd
         ):
             self.verify(ret != "", "port status error!")
@@ -170,7 +170,7 @@ class TestPortControl(TestCase):
     def reset_pmd_port(self, terminal):
         terminal.execute_cmd("port reset all")
         ret = terminal.get_port_link_status(self.port_id_0)
-        if self.nic.startswith("columbiaville") or (
+        if self.is_eth_series_nic(800) or (
             getattr(self, "vm_testpmd", None) and terminal is self.vm_testpmd
         ):
             self.verify(ret != "", "port status error!")

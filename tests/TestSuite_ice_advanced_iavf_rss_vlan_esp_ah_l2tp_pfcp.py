@@ -996,7 +996,7 @@ mac_vlan_ipv6_sctp_pay = {
 }
 
 
-class Cvl_advance_iavf_rss_vlan_ah_l2tp_pfcp(TestCase):
+class ICE_advance_iavf_rss_vlan_ah_l2tp_pfcp(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

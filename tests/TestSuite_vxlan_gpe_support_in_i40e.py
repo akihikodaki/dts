@@ -132,13 +132,13 @@ class TestVxlanGpeSupportInI40e(TestCase):
         """
         vxlan Prerequisites
         """
-        # this feature only enable in FVL now
+        # this feature only enable in Intel® Ethernet 700 Series now
         if self.nic not in [
-            "fortville_eagle",
-            "fortville_spirit",
-            "fortville_spirit_single",
-            "fortville_25g",
-            "carlsville",
+            "I40E_10G-SFP_XL710",
+            "I40E_40G-QSFP_A",
+            "I40E_40G-QSFP_B",
+            "I40E_25G-25G_SFP28",
+            "I40E_10G-10G_BASE_T_BC",
         ]:
             self.verify(False, "%s not support this vxlan-gpe" % self.nic)
         # Based on h/w type, choose how many ports to use

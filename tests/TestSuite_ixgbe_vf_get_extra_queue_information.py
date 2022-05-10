@@ -31,7 +31,7 @@
 
 """
 DPDK Test suite.
-Test Niantic ixgbe_get_vf_queue Include Extra Information function.
+Test 82599 ixgbe_get_vf_queue Include Extra Information function.
 """
 import random
 import re
@@ -149,7 +149,9 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.verify(self.nic in ["niantic"], "NIC Unsupported: " + str(self.nic))
+        self.verify(
+            self.nic in ["IXGBE_10G-82599_SFP"], "NIC Unsupported: " + str(self.nic)
+        )
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         self.cores = "1S/8C/1T"

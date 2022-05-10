@@ -5086,8 +5086,8 @@ mac_ipv4_gtpu_eh_ipv6_tcp_without_ul_dl_symmetric = eval(
 )
 
 
-class TestCVLAdvancedRSSGTPU(TestCase):
-    supported_nic = ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]
+class TestICEAdvancedRSSGTPU(TestCase):
+    supported_nic = ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]
 
     @check_supported_nic(supported_nic)
     @skip_unsupported_pkg("os default")

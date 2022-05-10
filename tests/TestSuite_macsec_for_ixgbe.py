@@ -44,7 +44,9 @@ class TestMacsecForIxgbe(TestCase):
         """
         Prerequisite steps for each test suite.
         """
-        self.verify(self.nic in ["niantic"], "NIC Unsupported: " + str(self.nic))
+        self.verify(
+            self.nic in ["IXGBE_10G-82599_SFP"], "NIC Unsupported: " + str(self.nic)
+        )
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
         self.core_list = self.dut.get_core_list("1S/4C/1T")

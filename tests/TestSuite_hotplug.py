@@ -86,7 +86,7 @@ class TestPortHotPlug(TestCase):
         self.verify("is attached" in out, "Failed to attach")
         out = self.dut.send_expect("port start %s" % port, "testpmd>", 120)
         self.verify("Configuring Port" in out, "Failed to start port")
-        # sleep 10 seconds for fortville update link stats
+        # sleep 10 seconds for Intel® Ethernet 700 Series update link stats
         time.sleep(10)
         self.dut.send_expect("show port info %s" % port, "testpmd>", 60)
 
@@ -96,7 +96,7 @@ class TestPortHotPlug(TestCase):
         """
         out = self.dut.send_expect("port stop %s" % port, "testpmd>", 60)
         self.verify("Stopping ports" in out, "Failed to stop port")
-        # sleep 10 seconds for fortville update link stats
+        # sleep 10 seconds for Intel® Ethernet 700 Series update link stats
         time.sleep(10)
         out = self.dut.send_expect("port detach %s" % port, "testpmd>", 60)
         self.verify("is detached" in out, "Failed to detach port")

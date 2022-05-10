@@ -818,8 +818,8 @@ tv_mac_vlan_pppoe_ipcp_pay = {
 }
 
 
-class CVLDCFSwitchFilterPPPOETest(TestCase):
-    supported_nic = ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]
+class ICEDCFSwitchFilterPPPOETest(TestCase):
+    supported_nic = ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]
 
     def bind_nics_driver(self, ports, driver=""):
         # modprobe vfio driver

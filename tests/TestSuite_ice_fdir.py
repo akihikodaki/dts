@@ -2712,7 +2712,7 @@ vectors_mac_ipv6_nat_t_esp = [
 ]
 
 
-class TestCVLFdir(TestCase):
+class TestICEFdir(TestCase):
     def query_count(self, hits_set, hits, port_id=0, rule_id=0):
         out = self.dut.send_command(
             "flow query %s %s count" % (port_id, rule_id), timeout=1
@@ -2890,7 +2890,7 @@ class TestCVLFdir(TestCase):
         self.pmd_output.execute_cmd("port config 0 udp_tunnel_port add vxlan 4789")
         self.pmd_output.execute_cmd("port config 1 udp_tunnel_port add vxlan 4789")
         self.pmd_output.execute_cmd("port config all rss all")
-        # specify a fixed rss-hash-key for cvl ether
+        # specify a fixed rss-hash-key for Intel® Ethernet 800 Series ether
         self.pmd_output.execute_cmd(
             "port config 0 rss-hash-key ipv4 1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd"
         )

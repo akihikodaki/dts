@@ -33,14 +33,14 @@
 DPDK Test suite.
 
 Test DPDK2.3 feature:
-1.Fortville support granularity configuration of RSS.
-By default Fortville uses hash input set preloaded from NVM image which includes all fields
+1.Intel® Ethernet 700 Series support granularity configuration of RSS.
+By default Intel® Ethernet 700 Series uses hash input set preloaded from NVM image which includes all fields
 - IPv4/v6+TCP/UDP port. Potential problem for this is global configuration per device and can
 affect all ports. It is required that hash input set can be configurable,  such as using IPv4
 only or IPv6 only or IPv4/v6+TCP/UDP.
 
-2.Fortville support 32-bit GRE keys.
-By default Fortville extracts only 24 bits of GRE key to FieldVector (NVGRE use case) but
+2.Intel® Ethernet 700 Series support 32-bit GRE keys.
+By default Intel® Ethernet 700 Series extracts only 24 bits of GRE key to FieldVector (NVGRE use case) but
 for Telco use cases full 32-bit GRE key is needed. It is required that both 24-bit and 32-bit
 keys for GRE should be supported. the test plan is to test the API to switch between 24-bit and
 32-bit keys
@@ -69,7 +69,7 @@ from framework.test_case import TestCase
 #
 
 
-class TestFortvilleRssInput(TestCase):
+class TestI40ERssInput(TestCase):
     #
     #
     # Utility methods and other non-test code.
@@ -83,13 +83,13 @@ class TestFortvilleRssInput(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
             ],
             "NIC Unsupported: " + str(self.nic),
         )

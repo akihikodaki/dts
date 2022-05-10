@@ -41,7 +41,7 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase, skip_unsupported_pkg
 from framework.utils import GREEN, RED
 
-from .rte_flow_common import CVL_TXQ_RXQ_NUMBER
+from .rte_flow_common import TXQ_RXQ_NUMBER
 
 MAC_IPV4_PAY = {
     "match": [
@@ -8283,7 +8283,7 @@ vectors_ipv6_gre_ipv6_udp = [
 ]
 
 
-class TestIAVFFdir(TestCase):
+class TestICEIAVFFdir(TestCase):
     def rte_flow_process(self, vectors):
         test_results = {}
         for tv in vectors:
@@ -8428,7 +8428,7 @@ class TestIAVFFdir(TestCase):
 
         self.src_file_dir = "dep/"
         self.dut_file_dir = "/tmp/"
-        self.cvlq_num = CVL_TXQ_RXQ_NUMBER
+        self.q_num = TXQ_RXQ_NUMBER
 
     def set_up(self):
         """
@@ -8532,7 +8532,7 @@ class TestIAVFFdir(TestCase):
         self.pmd_output.execute_cmd("set verbose 1")
         self.pmd_output.execute_cmd("vlan set filter on 0")
         self.pmd_output.execute_cmd("rx_vlan add 1 0")
-        # specify a fixed rss-hash-key for cvl ether
+        # specify a fixed rss-hash-key for Intel® Ethernet 800 Series ether
         self.pmd_output.execute_cmd(
             "port config 0 rss-hash-key ipv4 1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd"
         )
@@ -8546,7 +8546,7 @@ class TestIAVFFdir(TestCase):
     def launch_testpmd(self):
         self.pmd_output.start_testpmd(
             cores="1S/4C/1T",
-            param="--rxq={} --txq={}".format(self.cvlq_num, self.cvlq_num),
+            param="--rxq={} --txq={}".format(self.q_num, self.q_num),
             eal_param="-a %s -a %s"
             % (self.sriov_vfs_pf0[0].pci, self.sriov_vfs_pf0[1].pci),
             socket=self.ports_socket,
@@ -9445,7 +9445,7 @@ class TestIAVFFdir(TestCase):
         command = (
             self.path
             + eal_param
-            + " -- -i --rxq=%s --txq=%s" % (self.cvlq_num, self.cvlq_num)
+            + " -- -i --rxq=%s --txq=%s" % (self.q_num, self.q_num)
         )
         self.dut.send_expect(command, "testpmd> ", 300)
         self.config_testpmd()
@@ -9457,13 +9457,13 @@ class TestIAVFFdir(TestCase):
         command = (
             self.path
             + eal_param
-            + " -- -i --rxq=%s --txq=%s" % (self.cvlq_num, self.cvlq_num)
+            + " -- -i --rxq=%s --txq=%s" % (self.q_num, self.q_num)
         )
         self.session_secondary.send_expect(command, "testpmd> ", 300)
         # self.session_secondary.config_testpmd()
         self.session_secondary.send_expect("set fwd rxonly", "testpmd> ")
         self.session_secondary.send_expect("set verbose 1", "testpmd> ")
-        # specify a fixed rss-hash-key for cvl ether
+        # specify a fixed rss-hash-key for Intel® Ethernet 800 Series ether
         self.session_secondary.send_expect(
             "port config 0 rss-hash-key ipv4 1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd",
             "testpmd> ",
@@ -9687,7 +9687,7 @@ class TestIAVFFdir(TestCase):
         command = (
             self.path
             + eal_param
-            + " -- -i --rxq=%s --txq=%s" % (self.cvlq_num, self.cvlq_num)
+            + " -- -i --rxq=%s --txq=%s" % (self.q_num, self.q_num)
         )
         self.dut.send_expect(command, "testpmd> ", 300)
         self.config_testpmd()
@@ -9699,13 +9699,13 @@ class TestIAVFFdir(TestCase):
         command = (
             self.path
             + eal_param
-            + " -- -i --rxq=%s --txq=%s" % (self.cvlq_num, self.cvlq_num)
+            + " -- -i --rxq=%s --txq=%s" % (self.q_num, self.q_num)
         )
         self.session_secondary.send_expect(command, "testpmd> ", 300)
         # self.session_secondary.config_testpmd()
         self.session_secondary.send_expect("set fwd rxonly", "testpmd> ")
         self.session_secondary.send_expect("set verbose 1", "testpmd> ")
-        # specify a fixed rss-hash-key for cvl ether
+        # specify a fixed rss-hash-key for Intel® Ethernet 800 Series ether
         self.session_secondary.send_expect(
             "port config 0 rss-hash-key ipv4 1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd",
             "testpmd> ",
@@ -9950,7 +9950,7 @@ class TestIAVFFdir(TestCase):
         command = (
             self.path
             + eal_param
-            + " -- -i --rxq=%s --txq=%s" % (self.cvlq_num, self.cvlq_num)
+            + " -- -i --rxq=%s --txq=%s" % (self.q_num, self.q_num)
         )
         self.dut.send_expect(command, "testpmd> ", 300)
         self.config_testpmd()
@@ -9962,13 +9962,13 @@ class TestIAVFFdir(TestCase):
         command = (
             self.path
             + eal_param
-            + " -- -i --rxq=%s --txq=%s" % (self.cvlq_num, self.cvlq_num)
+            + " -- -i --rxq=%s --txq=%s" % (self.q_num, self.q_num)
         )
         self.session_secondary.send_expect(command, "testpmd> ", 300)
         # self.session_secondary.config_testpmd()
         self.session_secondary.send_expect("set fwd rxonly", "testpmd> ")
         self.session_secondary.send_expect("set verbose 1", "testpmd> ")
-        # specify a fixed rss-hash-key for cvl ether
+        # specify a fixed rss-hash-key for Intel® Ethernet 800 Series ether
         self.session_secondary.send_expect(
             "port config 0 rss-hash-key ipv4 1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd",
             "testpmd> ",
@@ -10916,7 +10916,7 @@ class TestIAVFFdir(TestCase):
         self.pmd_output.start_testpmd(
             cores="1S/4C/1T",
             param="--rxq={} --txq={} --enable-rx-cksum --port-topology=loop".format(
-                self.cvlq_num, self.cvlq_num
+                self.q_num, self.q_num
             ),
             eal_param="-a %s" % self.sriov_vfs_pf0[0].pci,
             socket=self.ports_socket,
@@ -11071,7 +11071,7 @@ class TestIAVFFdir(TestCase):
         self.pmd_output.start_testpmd(
             cores="1S/4C/1T",
             param="--rxq={} --txq={} --enable-rx-cksum --port-topology=loop".format(
-                self.cvlq_num, self.cvlq_num
+                self.q_num, self.q_num
             ),
             eal_param="-a %s" % self.sriov_vfs_pf0[0].pci,
             socket=self.ports_socket,
@@ -11219,7 +11219,7 @@ class TestIAVFFdir(TestCase):
         self.pmd_output.start_testpmd(
             cores="1S/4C/1T",
             param="--rxq={} --txq={} --enable-rx-cksum --port-topology=loop".format(
-                self.cvlq_num, self.cvlq_num
+                self.q_num, self.q_num
             ),
             eal_param="-a %s" % self.sriov_vfs_pf0[0].pci,
             socket=self.ports_socket,

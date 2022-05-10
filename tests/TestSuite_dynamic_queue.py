@@ -56,8 +56,8 @@ class TestDynamicQueue(TestCase):
         self.dut_testpmd = PmdOutput(self.dut)
 
     def set_up(self):
-        # Fortville_spirit needs more cores to run properly
-        if self.nic in ["fortville_spirit"]:
+        # Intel® Ethernet Converged Network Adapter XL710-QDA1 needs more cores to run properly
+        if self.nic in ["I40E_40G-QSFP_A"]:
             self.verify(
                 "len(self.dut.cores)>=7", "Less than seven cores can't run testpmd"
             )

@@ -44,7 +44,7 @@ class TestAfXdp(TestCase):
         """
         Run at the start of each test suite.
         """
-        # self.verify(self.nic in ("fortville_spirit"), "the port can not run this suite")
+        # self.verify(self.nic in ("I40E_40G-QSFP_A"), "the port can not run this suite")
 
         self.frame_sizes = [64, 128, 256, 512, 1024, 1518]
         self.dut_ports = self.dut.get_ports()

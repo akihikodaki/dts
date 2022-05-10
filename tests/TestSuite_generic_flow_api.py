@@ -76,9 +76,14 @@ class TestGeneric_flow_api(TestCase):
         Generic filter Prerequistites
         """
         global MAX_QUEUE
-        if self.nic in ["powerville", "bartonhills", "kawela", "kawela_4"]:
+        if self.nic in [
+            "IGB_1G-I350_COPPER",
+            "IGB_1G-82580_COPPER",
+            "IGB_1G-82576_QUAD_COPPER",
+            "IGB_1G-82576_QUAD_COPPER_ET2",
+        ]:
             MAX_QUEUE = 7
-        elif self.nic in ["foxville"]:
+        elif self.nic in ["IGC-I225_LM"]:
             MAX_QUEUE = 3
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports(self.nic)
@@ -350,30 +355,29 @@ class TestGeneric_flow_api(TestCase):
                 or "index %s" % str(MAX_QUEUE + 1) in flow_cmd
             ):
                 if self.nic in [
-                    "fortville_eagle",
-                    "fortville_spirit",
-                    "fortville_spirit_single",
-                    "fortpark_TLV",
-                    "fortpark_BASE-T",
-                    "niantic",
-                    "kawela_4",
-                    "kawela",
-                    "bartonhills",
-                    "twinville",
-                    "sagepond",
-                    "sageville",
-                    "powerville",
-                    "carlsville",
+                    "I40E_10G-SFP_XL710",
+                    "I40E_40G-QSFP_A",
+                    "I40E_40G-QSFP_B",
+                    "I40E_10G-SFP_X722",
+                    "I40E_10G-10G_BASE_T_X722",
+                    "IXGBE_10G-82599_SFP",
+                    "IGB_1G-82576_QUAD_COPPER_ET2",
+                    "IGB_1G-82576_QUAD_COPPER",
+                    "IGB_1G-82580_COPPER",
+                    "IXGBE_10G-X550EM_X_10G_T",
+                    "IXGBE_10G-X550T",
+                    "IGB_1G-I350_COPPER",
+                    "I40E_10G-10G_BASE_T_BC",
                 ]:
                     self.dut.send_expect(flow_cmd, "error")
             elif "type is 0x8100" in flow_cmd:
                 if self.nic in [
-                    "fortville_eagle",
-                    "fortville_spirit",
-                    "fortville_spirit_single",
-                    "fortpark_TLV",
-                    "fortpark_BASE-T",
-                    "carlsville",
+                    "I40E_10G-SFP_XL710",
+                    "I40E_40G-QSFP_A",
+                    "I40E_40G-QSFP_B",
+                    "I40E_10G-SFP_X722",
+                    "I40E_10G-10G_BASE_T_X722",
+                    "I40E_10G-10G_BASE_T_BC",
                 ]:
                     self.dut.send_expect(flow_cmd, "error")
             # vf queue id exceeds max vf queue number.
@@ -394,30 +398,29 @@ class TestGeneric_flow_api(TestCase):
                 or "index %s" % str(MAX_QUEUE + 1) in flow_cmd
             ):
                 if self.nic in [
-                    "fortville_eagle",
-                    "fortville_spirit",
-                    "fortville_spirit_single",
-                    "fortpark_TLV",
-                    "fortpark_BASE-T",
-                    "niantic",
-                    "kawela_4",
-                    "kawela",
-                    "bartonhills",
-                    "twinville",
-                    "sagepond",
-                    "sageville",
-                    "powerville",
-                    "carlsville",
+                    "I40E_10G-SFP_XL710",
+                    "I40E_40G-QSFP_A",
+                    "I40E_40G-QSFP_B",
+                    "I40E_10G-SFP_X722",
+                    "I40E_10G-10G_BASE_T_X722",
+                    "IXGBE_10G-82599_SFP",
+                    "IGB_1G-82576_QUAD_COPPER_ET2",
+                    "IGB_1G-82576_QUAD_COPPER",
+                    "IGB_1G-82580_COPPER",
+                    "IXGBE_10G-X550EM_X_10G_T",
+                    "IXGBE_10G-X550T",
+                    "IGB_1G-I350_COPPER",
+                    "I40E_10G-10G_BASE_T_BC",
                 ]:
                     self.dut.send_expect(flow_cmd, "error")
             elif "type is 0x8100" in flow_cmd:
                 if self.nic in [
-                    "fortville_eagle",
-                    "fortville_spirit",
-                    "fortville_spirit_single",
-                    "fortpark_TLV",
-                    "fortpark_BASE-T",
-                    "carlsville",
+                    "I40E_10G-SFP_XL710",
+                    "I40E_40G-QSFP_A",
+                    "I40E_40G-QSFP_B",
+                    "I40E_10G-SFP_X722",
+                    "I40E_10G-10G_BASE_T_X722",
+                    "I40E_10G-10G_BASE_T_BC",
                 ]:
                     self.dut.send_expect(flow_cmd, "error")
             # vf queue id exceeds max vf queue number.
@@ -937,15 +940,14 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "niantic",
-                "kawela_4",
-                "kawela",
-                "bartonhills",
-                "twinville",
-                "sagepond",
-                "sageville",
-                "powerville",
-                "foxville",
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-82576_QUAD_COPPER",
+                "IGB_1G-82580_COPPER",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "IGB_1G-I350_COPPER",
+                "IGC-I225_LM",
             ],
             "%s nic not support SYN filter" % self.nic,
         )
@@ -990,7 +992,7 @@ class TestGeneric_flow_api(TestCase):
         self.dut.send_expect("flow destroy 0 rule 0", "testpmd> ", 120)
 
         # validate and create the flow rules
-        q_idx = "2" if self.nic == "foxville" else "4"
+        q_idx = "2" if self.nic == "IGC-I225_LM" else "4"
         self.dut.send_expect(
             "flow validate 0 ingress pattern eth / ipv6 / tcp flags spec 0x02 flags mask 0x02 / end actions queue index %s / end"
             % (q_idx),
@@ -1026,7 +1028,13 @@ class TestGeneric_flow_api(TestCase):
         only supported by ixgbe and igb
         """
         self.verify(
-            self.nic in ["niantic", "kawela_4", "kawela", "twinville", "foxville"],
+            self.nic
+            in [
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-82576_QUAD_COPPER",
+                "IGC-I225_LM",
+            ],
             "%s nic not support n-tuple filter" % self.nic,
         )
 
@@ -1127,14 +1135,14 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "bartonhills",
-                "powerville",
-                "foxville",
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "IGB_1G-82580_COPPER",
+                "IGB_1G-I350_COPPER",
+                "IGC-I225_LM",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
             ],
             "%s nic not support 2-tuple filter" % self.nic,
         )
@@ -1151,11 +1159,11 @@ class TestGeneric_flow_api(TestCase):
         # i350 and 82580 only support 2-tuple, and don't support SCTP
         # create the flow rules
         if self.nic in [
-            "fortville_eagle",
-            "fortville_25g",
-            "fortville_spirit",
-            "columbiaville_25g",
-            "columbiaville_100g",
+            "I40E_10G-SFP_XL710",
+            "I40E_25G-25G_SFP28",
+            "I40E_40G-QSFP_A",
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
         ]:
             basic_flow_actions = [
                 {
@@ -1229,26 +1237,25 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "niantic",
-                "columbiaville_25g",
-                "columbiaville_100g",
-                "kawela_4",
-                "kawela",
-                "bartonhills",
-                "twinville",
-                "sagepond",
-                "sageville",
-                "powerville",
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "foxville",
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "IXGBE_10G-82599_SFP",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-82576_QUAD_COPPER",
+                "IGB_1G-82580_COPPER",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "IGB_1G-I350_COPPER",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "IGC-I225_LM",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
             ],
             "%s nic not support ethertype filter" % self.nic,
         )
@@ -1265,14 +1272,14 @@ class TestGeneric_flow_api(TestCase):
 
         # i40e,ixgbe and igb support different packet types.
         if self.nic in [
-            "fortville_eagle",
-            "fortville_spirit",
-            "carlsville",
-            "fortville_spirit_single",
-            "fortpark_TLV",
-            "fortpark_BASE-T",
-            "columbiaville_25g",
-            "columbiaville_100g",
+            "I40E_10G-SFP_XL710",
+            "I40E_40G-QSFP_A",
+            "I40E_10G-10G_BASE_T_BC",
+            "I40E_40G-QSFP_B",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_X722",
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
         ]:
 
             basic_flow_actions = [
@@ -1357,16 +1364,16 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "foxville",
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "IGC-I225_LM",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
             ],
             "%s nic not support fdir L2 payload filter" % self.nic,
         )
@@ -1425,16 +1432,16 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g",
-                "carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
             ],
             "%s nic not support fdir vlan filter" % self.nic,
         )
@@ -1557,16 +1564,16 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g",
-                "carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
             ],
             "%s nic not support fdir vlan filter" % self.nic,
         )
@@ -1691,16 +1698,16 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g",
-                "carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
             ],
             "%s nic not support fdir vlan filter" % self.nic,
         )
@@ -1825,16 +1832,16 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g",
-                "carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
             ],
             "%s nic not support fdir vlan filter" % self.nic,
         )
@@ -1969,16 +1976,16 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g",
-                "carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
             ],
             "%s nic not support fdir vlan filter" % self.nic,
         )
@@ -2061,16 +2068,16 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "foxville",
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "IGC-I225_LM",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
             ],
             "%s nic not support fdir vlan filter" % self.nic,
         )
@@ -2390,35 +2397,34 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "niantic",
-                "columbiaville_25g",
-                "columbiaville_100g",
-                "twinville",
-                "sagepond",
-                "sageville",
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "foxville",
+                "IXGBE_10G-82599_SFP",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "IGC-I225_LM",
             ],
             "%s nic not support fdir ipv4 filter" % self.nic,
         )
         # i40e
         if self.nic in [
-            "fortville_eagle",
-            "fortville_25g",
-            "fortville_spirit",
-            "columbiaville_25g",
-            "columbiaville_100g",
-            "fortville_spirit_single",
-            "fortpark_TLV",
-            "fortpark_BASE-T",
-            "foxville",
-            "carlsville",
+            "I40E_10G-SFP_XL710",
+            "I40E_25G-25G_SFP28",
+            "I40E_40G-QSFP_A",
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
+            "I40E_40G-QSFP_B",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_X722",
+            "IGC-I225_LM",
+            "I40E_10G-10G_BASE_T_BC",
         ]:
             self.setup_env()
             # start testpmd on pf
@@ -2692,7 +2698,7 @@ class TestGeneric_flow_api(TestCase):
             self.dut.send_expect("start", "testpmd> ", 120)
             time.sleep(2)
 
-            if self.nic in ["sagepond", "sageville"]:
+            if self.nic in ["IXGBE_10G-X550EM_X_10G_T", "IXGBE_10G-X550T"]:
                 # create the flow rules
                 basic_flow_actions = [
                     {
@@ -2815,34 +2821,33 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "niantic",
-                "twinville",
-                "sagepond",
-                "sageville",
-                "columbiaville_25g",
-                "columbiaville_100g",
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "foxville",
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "IGC-I225_LM",
             ],
             "%s nic not support fdir ipv6 filter" % self.nic,
         )
         # i40e
         if self.nic in [
-            "fortville_eagle",
-            "fortville_25g",
-            "fortville_spirit",
-            "columbiaville_25g",
-            "columbiaville_100g",
-            "fortville_spirit_single",
-            "fortpark_TLV",
-            "fortpark_BASE-T",
-            "carlsville",
+            "I40E_10G-SFP_XL710",
+            "I40E_25G-25G_SFP28",
+            "I40E_40G-QSFP_A",
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
+            "I40E_40G-QSFP_B",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_X722",
+            "I40E_10G-10G_BASE_T_BC",
         ]:
             self.setup_env()
             self.pmdout.start_testpmd(
@@ -3128,7 +3133,7 @@ class TestGeneric_flow_api(TestCase):
             self.dut.send_expect("set verbose 1", "testpmd> ", 120)
             self.dut.send_expect("start", "testpmd> ", 120)
             time.sleep(2)
-            if self.nic in ["niantic", "twinville"]:
+            if self.nic in ["IXGBE_10G-82599_SFP"]:
                 # create the flow rules
                 basic_flow_actions = [
                     {
@@ -3283,7 +3288,7 @@ class TestGeneric_flow_api(TestCase):
                 )
                 rule_num = extrapkt_rulenum["rulenum"]
                 self.verify_rulenum(rule_num + 1)
-            elif self.nic in ["sagepond", "sageville"]:
+            elif self.nic in ["IXGBE_10G-X550EM_X_10G_T", "IXGBE_10G-X550T"]:
                 # create the flow rules
                 basic_flow_actions = [
                     {
@@ -3458,34 +3463,33 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "niantic",
-                "twinville",
-                "sagepond",
-                "sageville",
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "foxville",
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "IGC-I225_LM",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
             ],
             "%s nic not support fdir flexbytes filter" % self.nic,
         )
         # i40e
         if self.nic in [
-            "fortville_eagle",
-            "fortville_25g",
-            "fortville_spirit",
-            "carlsville",
-            "fortville_spirit_single",
-            "fortpark_TLV",
-            "fortpark_BASE-T",
-            "columbiaville_25g",
-            "columbiaville_100g",
+            "I40E_10G-SFP_XL710",
+            "I40E_25G-25G_SFP28",
+            "I40E_40G-QSFP_A",
+            "I40E_10G-10G_BASE_T_BC",
+            "I40E_40G-QSFP_B",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_X722",
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
         ]:
             self.pmdout.start_testpmd(
                 "%s" % self.pf_cores,
@@ -3774,7 +3778,7 @@ class TestGeneric_flow_api(TestCase):
             time.sleep(2)
 
             # ipv4-sctp-flexbytes
-            if self.nic in ["sagepond", "sageville"]:
+            if self.nic in ["IXGBE_10G-X550EM_X_10G_T", "IXGBE_10G-X550T"]:
                 self.dut.send_expect(
                     "flow validate 0 ingress pattern fuzzy thresh is 6 / eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / sctp src is 24 dst is 25 / raw relative is 0 search is 0 offset is 48 limit is 0 pattern is ab / end actions queue index 3 / end",
                     "validated",
@@ -3810,7 +3814,7 @@ class TestGeneric_flow_api(TestCase):
             )
 
             # ipv6-other-flexbytes
-            if self.nic in ["niantic", "twinville"]:
+            if self.nic in ["IXGBE_10G-82599_SFP"]:
                 self.dut.send_expect("quit", "# ")
                 time.sleep(2)
 
@@ -3852,7 +3856,7 @@ class TestGeneric_flow_api(TestCase):
         The filter structure is different between igb, ixgbe and i40e
         """
         self.verify(
-            self.nic in ["bartonhills", "powerville", "foxville"],
+            self.nic in ["IGB_1G-82580_COPPER", "IGB_1G-I350_COPPER", "IGC-I225_LM"],
             "%s nic not support flexbytes filter" % self.nic,
         )
 
@@ -4064,15 +4068,14 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "twinville",
-                "sagepond",
-                "sageville",
-                "foxville",
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "IGC-I225_LM",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
             ],
             "%s nic not support fdir mac vlan filter" % self.nic,
         )
@@ -4091,11 +4094,11 @@ class TestGeneric_flow_api(TestCase):
 
         # create the flow rules
         if self.nic in [
-            "fortville_eagle",
-            "fortville_25g",
-            "fortville_spirit",
-            "columbiaville_25g",
-            "columbiaville_100g",
+            "I40E_10G-SFP_XL710",
+            "I40E_25G-25G_SFP28",
+            "I40E_40G-QSFP_A",
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
         ]:
             basic_flow_actions = [
                 {"create": "validate", "flows": ["vlan"], "actions": ["queue"]},
@@ -4137,12 +4140,11 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "twinville",
-                "sagepond",
-                "sageville",
-                "columbiaville_25g",
-                "columbiaville_100g",
-                "foxville",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
+                "IGC-I225_LM",
             ],
             "%s nic not support fdir vxlan filter" % self.nic,
         )
@@ -4189,7 +4191,7 @@ class TestGeneric_flow_api(TestCase):
         only supported by ixgbe
         """
         self.verify(
-            self.nic in ["twinville", "sagepond", "sageville", "foxville"],
+            self.nic in ["IXGBE_10G-X550EM_X_10G_T", "IXGBE_10G-X550T", "IGC-I225_LM"],
             "%s nic not support fdir nvgre filter" % self.nic,
         )
 
@@ -4237,16 +4239,16 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "columbiaville_25g",
-                "columbiaville_100g",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "foxville",
-                "carlsville",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "IGC-I225_LM",
+                "I40E_10G-10G_BASE_T_BC",
             ],
             "%s nic not support tunnel vxlan filter" % self.nic,
         )
@@ -4408,16 +4410,16 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "columbiaville_25g",
-                "columbiaville_100g",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "foxville",
-                "carlsville",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "IGC-I225_LM",
+                "I40E_10G-10G_BASE_T_BC",
             ],
             "%s nic not support tunnel nvgre filter" % self.nic,
         )
@@ -4656,13 +4658,13 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "carlsville",
-                "fortpark_BASE-T",
-                "fortpark_TLV",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-SFP_X722",
             ],
             "NIC Unsupported: " + str(self.nic),
         )
@@ -4736,7 +4738,13 @@ class TestGeneric_flow_api(TestCase):
         only supported by ixgbe and igb
         """
         self.verify(
-            self.nic in ["niantic", "kawela_4", "kawela", "twinville", "foxville"],
+            self.nic
+            in [
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-82576_QUAD_COPPER",
+                "IGC-I225_LM",
+            ],
             "%s nic not support n-tuple filter" % self.nic,
         )
         self.pmdout.start_testpmd(
@@ -4862,19 +4870,18 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "niantic",
-                "kawela_4",
-                "kawela",
-                "bartonhills",
-                "twinville",
-                "sagepond",
-                "sageville",
-                "powerville",
-                "foxville",
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-82576_QUAD_COPPER",
+                "IGB_1G-82580_COPPER",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "IGB_1G-I350_COPPER",
+                "IGC-I225_LM",
             ],
             "%s nic not support" % self.nic,
         )
-        if self.nic in ["cavium_a063", "cavium_a064", "foxville"]:
+        if self.nic in ["cavium_a063", "cavium_a064", "IGC-I225_LM"]:
             self.pmdout.start_testpmd(
                 "%s" % self.cores,
                 "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1 --mbcache=200 --mbuf-size=2048 --max-pkt-len=9200"
@@ -5016,7 +5023,7 @@ class TestGeneric_flow_api(TestCase):
         else:
             self.verify(False, "%s not support this test" % self.nic)
 
-    @check_supported_nic(["niantic"])
+    @check_supported_nic(["IXGBE_10G-82599_SFP"])
     def test_fdir_for_match_report(self):
         """
         Test case: IXGBE fdir for Control levels of FDir match reporting

@@ -36,8 +36,8 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase, check_supported_nic
 
 
-class TestCVL1PPS(TestCase):
-    supported_nic = ["columbiaville_100g", "columbiaville_25g"]
+class TestICE1PPS(TestCase):
+    supported_nic = ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP"]
 
     @check_supported_nic(supported_nic)
     def set_up_all(self):

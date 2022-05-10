@@ -58,13 +58,13 @@ from framework.utils import convert_int2ip, convert_ip2int
 
 VF_L3FWD_NIC_SUPPORT = frozenset(
     (
-        "niantic",
-        "fortville_spirit",
-        "fortville_25g",
-        "fortville_eagle",
-        "columbiaville_100g",
-        "columbiaville_25g",
-        "columbiaville_25gx2",
+        "IXGBE_10G-82599_SFP",
+        "I40E_40G-QSFP_A",
+        "I40E_25G-25G_SFP28",
+        "I40E_10G-SFP_XL710",
+        "ICE_100G-E810C_QSFP",
+        "ICE_25G-E810C_SFP",
+        "ICE_25G-E810_XXV_SFP",
     )
 )
 
@@ -367,7 +367,8 @@ class PerfTestBase(object):
             }
         else:
             if self.__bin_type is BIN_TYPE.PMD and self.kdriver == "ice":
-                # testpmd can't use port real mac address to create traffic packet when use CVL nics.
+                # testpmd can't use port real mac address to create traffic
+                # packet when use Intel® Ethernet 800 Series nics.
                 dmacs = [
                     "52:00:00:00:00:00",
                     "52:00:00:00:00:01",
@@ -874,10 +875,10 @@ class PerfTestBase(object):
             }
         )
         suppored_nics = [
-            "niantic",
-            "columbiaville_100g",
-            "columbiaville_25g",
-            "columbiaville_25gx2",
+            "IXGBE_10G-82599_SFP",
+            "ICE_100G-E810C_QSFP",
+            "ICE_25G-E810C_SFP",
+            "ICE_25G-E810_XXV_SFP",
         ]
         if self.__rxtx_queue_size:
             command_line += " --rx-queue-size {rxtx} --tx-queue-size {rxtx}".format(

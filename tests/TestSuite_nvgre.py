@@ -398,23 +398,23 @@ class TestNvgre(TestCase):
         """
         nvgre Prerequisites
         """
-        # this feature only enable in FVL now
+        # this feature only enable in Intel® Ethernet 700 Series now
         if self.nic in [
-            "fortville_eagle",
-            "fortville_spirit",
-            "fortville_spirit_single",
-            "fortville_25g",
-            "fortpark_TLV",
-            "fortpark_BASE-T",
+            "I40E_10G-SFP_XL710",
+            "I40E_40G-QSFP_A",
+            "I40E_40G-QSFP_B",
+            "I40E_25G-25G_SFP28",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_X722",
             "cavium_a063",
             "cavium_a064",
-            "carlsville",
+            "I40E_10G-10G_BASE_T_BC",
         ]:
             self.compile_switch = "CONFIG_RTE_LIBRTE_I40E_INC_VECTOR"
-        elif self.nic in ["sageville", "sagepond"]:
+        elif self.nic in ["IXGBE_10G-X550T", "IXGBE_10G-X550EM_X_10G_T"]:
             self.compile_switch = "CONFIG_RTE_IXGBE_INC_VECTOR"
-        elif self.nic in ["columbiaville_25g", "columbiaville_100g"]:
-            print("CVL support default none VECTOR")
+        elif self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
+            print("Intel® Ethernet 800 Series support default none VECTOR")
         else:
             self.verify(False, "%s not support NVGRE case" % self.nic)
         # Based on h/w type, choose how many ports to use
@@ -751,8 +751,8 @@ class TestNvgre(TestCase):
         verify nvgre packet with ipv6
         """
         # packet type detect must used without VECTOR pmd
-        if self.nic in ["columbiaville_25g", "columbiaville_100g"]:
-            print("CVL support default none VECTOR")
+        if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
+            print("Intel® Ethernet 800 Series support default none VECTOR")
             src_vec_model = "n"
 
         # check no nvgre packet
@@ -843,8 +843,8 @@ class TestNvgre(TestCase):
         verify nvgre packet with ipv4
         """
         # packet type detect must used without VECTOR pmd
-        if self.nic in ["columbiaville_25g", "columbiaville_100g"]:
-            print("CVL support default none VECTOR")
+        if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
+            print("Intel® Ethernet 800 Series support default none VECTOR")
             src_vec_model = "n"
 
         # check no nvgre packet

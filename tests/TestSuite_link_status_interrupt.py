@@ -66,13 +66,13 @@ class TestLinkStatusInterrupt(TestCase):
         # from kernel 4.8+, kernel will not support legacy intr mode.
         # detailed info:https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/commit/drivers/pci/quirks.c?id=8bcf4525c5d43306c5fd07e132bc8650e3491aec
         if self.nic in [
-            "columbiaville_25g",
-            "columbiaville_100g",
-            "fortville_eagle",
-            "fortville_spirit",
-            "fortville_spirt_single",
-            "fortville_25g",
-            "carlsville",
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
+            "I40E_10G-SFP_XL710",
+            "I40E_40G-QSFP_A",
+            "I40E_40G-QSFP_B",
+            "I40E_25G-25G_SFP28",
+            "I40E_10G-10G_BASE_T_BC",
         ]:
             self.basic_intr_mode = ["msix"]
         else:

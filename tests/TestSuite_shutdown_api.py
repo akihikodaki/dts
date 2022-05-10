@@ -222,7 +222,7 @@ class TestShutdownApi(TestCase):
             # vlan strip default is off
             tx_bytes_exp -= 16
 
-        # fortville nic enable send lldp packet function when port setup
+        # Intel® Ethernet 700 Series nic enable send lldp packet function when port setup
         # now the tx-packets size is lldp_size(110) * n + forward packe size
         # so use (tx-packets - forward packet size) % lldp_size, if it is 0, it means forward packet size right
 
@@ -375,7 +375,7 @@ class TestShutdownApi(TestCase):
         self.dut.send_expect("stop", "testpmd> ")
         self.check_forwarding(received=False)
         self.dut.send_expect("port stop all", "testpmd> ", 100)
-        if self.nic in ["columbiaville_25g", "columbiaville_100g"]:
+        if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
             self.check_ports(status=True)
         else:
             self.check_ports(status=False)
@@ -561,10 +561,10 @@ class TestShutdownApi(TestCase):
 
         for config in configs:
             print(config)
-            if self.nic in ["ironpond"]:
+            if self.nic in ["IXGBE_10G-82599_T3_LOM"]:
                 if config[0] != "1000" or "10000":
                     continue
-            elif self.nic in ["sagepond"]:
+            elif self.nic in ["IXGBE_10G-X550EM_X_10G_T"]:
                 if config[0] not in ["1000", "10000"]:
                     continue
             self.dut.send_expect("port stop all", "testpmd> ", 100)
@@ -726,14 +726,14 @@ class TestShutdownApi(TestCase):
             self.dut.send_expect("start", "testpmd> ")
 
             if self.nic in [
-                "magnolia_park",
-                "niantic",
-                "twinpond",
-                "kawela_4",
-                "ironpond",
-                "springfountain",
-                "sageville",
-                "sagepond",
+                "IXGBE_10G-X550EM_A_SFP",
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X540T",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X550T",
+                "IXGBE_10G-X550EM_X_10G_T",
             ]:
                 # nantic vlan length will not be calculated
                 vlan_jumbo_size = jumbo_size + 4
@@ -768,7 +768,7 @@ class TestShutdownApi(TestCase):
         """
         On 1G NICs, when the jubmo frame MTU set as X, the software adjust it to (X + 4).
         """
-        if self.nic in ["kawela_4"]:
+        if self.nic in ["IGB_1G-82576_QUAD_COPPER_ET2"]:
             jumbo_size += 4
         self.check_forwarding(pktSize=jumbo_size - 1)
         self.check_forwarding(pktSize=jumbo_size)
@@ -848,9 +848,9 @@ class TestShutdownApi(TestCase):
     def test_change_thresholds(self):
         """
         Change RX/TX thresholds
-        DPDK-24129:1.CVL and FVL not support tx and rx
+        DPDK-24129:1.Intel® Ethernet 700/800 Series not support tx and rx
                    2.Ixgbe not support rx, only support tx.
-                   3.foxville, powerville and springville not support txfree and txrs
+                   3.IGC-I225_LM, IGB_1G-I350_COPPER and IGB_1G-I210_COPPER not support txfree and txrs
         """
         self.pmdout.start_testpmd(
             "Default",
@@ -860,13 +860,18 @@ class TestShutdownApi(TestCase):
         self.dut.send_expect("set promisc all off", "testpmd>")
 
         self.dut.send_expect("port stop all", "testpmd> ", 100)
-        if self.nic in ["sagepond", "sageville", "twinpond", "niantic"]:
+        if self.nic in [
+            "IXGBE_10G-X550EM_X_10G_T",
+            "IXGBE_10G-X550T",
+            "IXGBE_10G-X540T",
+            "IXGBE_10G-82599_SFP",
+        ]:
             self.dut.send_expect("port config all txfreet 32", "testpmd> ")
             self.dut.send_expect("port config all txrst 32", "testpmd> ")
         self.dut.send_expect("port config all rxfreet 32", "testpmd> ")
         self.dut.send_expect("port config all txpt 64", "testpmd> ")
         self.dut.send_expect("port config all txht 64", "testpmd> ")
-        if self.nic in ["foxville"]:
+        if self.nic in ["IGC-I225_LM"]:
             self.dut.send_expect("port config all txwt 16", "testpmd> ")
         else:
             self.dut.send_expect("port config all txwt 0", "testpmd> ")
@@ -876,7 +881,12 @@ class TestShutdownApi(TestCase):
         self.verify(
             "RX free threshold=32" in out, "RX descriptor not reconfigured properly"
         )
-        if self.nic in ["sagepond", "sageville", "twinpond", "niantic"]:
+        if self.nic in [
+            "IXGBE_10G-X550EM_X_10G_T",
+            "IXGBE_10G-X550T",
+            "IXGBE_10G-X540T",
+            "IXGBE_10G-82599_SFP",
+        ]:
             self.verify(
                 "TX free threshold=32" in out, "TX descriptor not reconfigured properly"
             )
@@ -886,7 +896,7 @@ class TestShutdownApi(TestCase):
             )
         self.verify("pthresh=64" in out, "TX descriptor not reconfigured properly")
         self.verify("hthresh=64" in out, "TX descriptor not reconfigured properly")
-        if self.nic in ["foxville"]:
+        if self.nic in ["IGC-I225_LM"]:
             self.verify("wthresh=16" in out, "TX descriptor not reconfigured properly")
         else:
             self.verify("wthresh=0" in out, "TX descriptor not reconfigured properly")
@@ -964,9 +974,9 @@ class TestShutdownApi(TestCase):
         When tx_descriptor_status is used, status can be “FULL”, “DONE” or “UNAVAILABLE.”
         """
         queue_num = 16
-        if self.nic in ["springville", "foxville"]:
+        if self.nic in ["IGB_1G-I210_COPPER", "IGC-I225_LM"]:
             queue_num = 4
-        if self.nic in ["powerville"]:
+        if self.nic in ["IGB_1G-I350_COPPER"]:
             queue_num = 8
         self.pmdout.start_testpmd(
             "Default",

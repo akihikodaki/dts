@@ -216,7 +216,7 @@ class TestLargeVf(TestCase):
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(
-            self.nic in ["columbiaville_25g", "columbiaville_100g"],
+            self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"],
             "%s nic not support large vf" % self.nic,
         )
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")

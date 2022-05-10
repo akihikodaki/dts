@@ -136,7 +136,7 @@ tv_MAC_IPV6_NAT_T_ESP_vlan = {
 
 
 class L2tpEspCoverage(TestCase):
-    supported_nic = ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]
+    supported_nic = ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]
 
     @check_supported_nic(supported_nic)
     def set_up_all(self):
@@ -181,7 +181,7 @@ class L2tpEspCoverage(TestCase):
         """
         self.dut.kill_all()
         self.destroy_iavf()
-        if self.nic.startswith("columbiaville") and self.default_stats:
+        if self.is_eth_series_nic(800) and self.default_stats:
             self.dut.send_expect(
                 "ethtool --set-priv-flags %s %s %s"
                 % (self.pf_interface, self.flag, self.default_stats),
@@ -197,7 +197,7 @@ class L2tpEspCoverage(TestCase):
             self.default_stats = self.dut.get_priv_flags_state(
                 self.pf_interface, self.flag
             )
-            if self.nic.startswith("columbiaville") and self.default_stats:
+            if self.is_eth_series_nic(800) and self.default_stats:
                 self.dut.send_expect(
                     "ethtool --set-priv-flags %s %s on"
                     % (self.pf_interface, self.flag),

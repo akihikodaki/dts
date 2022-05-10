@@ -163,7 +163,7 @@ class TestVfKernel(TestCase):
             if self.vm1_dut is None:
                 raise Exception("Set up VM1 ENV failed!")
             else:
-                # fortville: PF not up ,vf will not get interface
+                # Intel® Ethernet 700 Series: PF not up ,vf will not get interface
                 self.verify(
                     self.vm1_dut.ports_info[0]["intf"] != "N/A", "Not interface"
                 )
@@ -484,7 +484,7 @@ class TestVfKernel(TestCase):
 
         # Send packet from tester to VF MAC with not-matching vlan id, check
         # the packet can't be received at the vlan device
-        # fortville nic need add -p parameter to disable promisc mode
+        # Intel® Ethernet 700 Series nic need add -p parameter to disable promisc mode
         wrong_vlan = vlan_ids % 4095 + 1
         self.verify(
             self.verify_vm_tcpdump(
@@ -512,7 +512,7 @@ class TestVfKernel(TestCase):
         self.vm0_dut.send_expect("vconfig rem %s.%s" % (self.vm0_intf1, vlan_ids), "#")
         out = self.vm0_dut.send_expect("ls /proc/net/vlan/ ", "#")
         self.verify("%s.%s" % (self.vm0_intf1, vlan_ids) not in out, "vlan error")
-        # behavior is different between niantic and fortville ,because of kernel
+        # behavior is different between 82599 and 700 Series ,because of kernel
         # driver
         self.verify(
             self.verify_vm_tcpdump(
@@ -665,7 +665,9 @@ class TestVfKernel(TestCase):
         """
         verify Enable/disable promisc mode
         """
-        self.verify(self.nic not in ["niantic"], "%s NIC not support" % self.nic)
+        self.verify(
+            self.nic not in ["IXGBE_10G-82599_SFP"], "%s NIC not support" % self.nic
+        )
         wrong_mac = "01:02:03:04:05:06"
         # Set up kernel VF tcpdump with -p parameter, which means disable promisc
         # Start DPDK PF, enable promisc mode, set rxonly forwarding
@@ -755,7 +757,10 @@ class TestVfKernel(TestCase):
         """
         verify kernel VF each queue can receive packets
         """
-        self.verify(self.nic not in ["niantic"], "%s NIC not support tcpid " % self.nic)
+        self.verify(
+            self.nic not in ["IXGBE_10G-82599_SFP"],
+            "%s NIC not support tcpid " % self.nic,
+        )
 
         # Verify kernel VF RSS using ethtool -"l" (lower case L) <devx> that the
         # default RSS setting is equal to the number of CPUs in the system and

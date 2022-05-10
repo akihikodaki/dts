@@ -2851,7 +2851,7 @@ tvs_mac_vlan_pppoe_ipcp_pay = [
 test_results = OrderedDict()
 
 
-class CVLSwitchFilterPPPOETest(TestCase):
+class ICESwitchFilterPPPOETest(TestCase):
     def bind_nics_driver(self, ports, driver=""):
         # modprobe vfio driver
         if driver == "vfio-pci":
@@ -2883,8 +2883,8 @@ class CVLSwitchFilterPPPOETest(TestCase):
         Run at the start of each test suite.
         """
         self.verify(
-            self.nic in ["columbiaville_25g", "columbiaville_100g"],
-            "%s nic not support CVL switch filter" % self.nic,
+            self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"],
+            "%s nic not support Intel® Ethernet 800 Series switch filter" % self.nic,
         )
         self.dut_ports = self.dut.get_ports(self.nic)
         # Verify that enough ports are available

@@ -195,10 +195,10 @@ class TestPVPShareLib(TestCase):
 
     def test_perf_pvp_share_lib_of_niantic(self):
         """
-        Vhost/virtio-user pvp share lib test with niantic
+        Vhost/virtio-user pvp share lib test with 82599
         """
         self.verify(
-            self.nic in ["niantic"],
+            self.nic in ["IXGBE_10G-82599_SFP"],
             "the nic not support this case: %s" % self.running_case,
         )
         self.start_testpmd_as_vhost(driver="ixgbe")
@@ -209,10 +209,10 @@ class TestPVPShareLib(TestCase):
 
     def test_perf_pvp_share_lib_of_fortville(self):
         """
-        Vhost/virtio-user pvp share lib test with fortville
+        Vhost/virtio-user pvp share lib test with Intel® Ethernet 700 Series
         """
         self.verify(
-            self.nic in ["fortville_eagle", "fortville_spirit", "fortville_25g"],
+            self.nic in ["I40E_10G-SFP_XL710", "I40E_40G-QSFP_A", "I40E_25G-25G_SFP28"],
             "the nic not support this case: %s" % self.running_case,
         )
         self.start_testpmd_as_vhost(driver="i40e")

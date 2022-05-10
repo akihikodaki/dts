@@ -54,17 +54,17 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g",
-                "fortville_spirit_single",
-                "fortpark_BASE-T",
-                "fortpark_TLV",
-                "carlsville",
-                "columbiaville_100g",
-                "columbiaville_25g",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_BC",
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E810C_SFP",
             ],
-            "Only supported by Fortville and columbiaville",
+            "Only supported by Intel® Ethernet 700 Series and Intel® Ethernet 800 Series",
         )
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) > 1, "Insufficient ports")

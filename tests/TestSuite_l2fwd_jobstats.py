@@ -51,12 +51,12 @@ class TestL2fwdJobstats(TestCase):
         self.verify(
             self.nic
             not in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
             ],
             "NIC Unsupported: " + str(self.nic),
         )

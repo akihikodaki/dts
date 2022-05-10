@@ -60,7 +60,8 @@ class TestInlineIpsec(TestCase):
         Run at the start of each test suite.
         """
         self.verify(
-            self.nic in ["niantic", "twinpond"], "%s NIC not support" % self.nic
+            self.nic in ["IXGBE_10G-82599_SFP", "IXGBE_10G-X540T"],
+            "%s NIC not support" % self.nic,
         )
         self.verify(
             self.drivername in ["vfio-pci"],

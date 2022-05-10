@@ -305,7 +305,7 @@ class TestVlanEthertypeConfig(TestCase):
         self.dut.send_expect("start", "testpmd> ")
 
         # caium_a063 card support only default '0x8100' tpid in rx mode
-        if self.nic in ["cavium_a063", "cavium_a064", "foxville"]:
+        if self.nic in ["cavium_a063", "cavium_a064", "IGC-I225_LM"]:
             tpids = [0x8100]
         else:
             tpids = [0x8100, 0xA100]
@@ -347,10 +347,10 @@ class TestVlanEthertypeConfig(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "carlsville",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-10G_BASE_T_BC",
             ],
             "%s NIC not support QinQ " % self.nic,
         )

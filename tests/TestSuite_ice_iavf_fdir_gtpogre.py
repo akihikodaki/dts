@@ -2255,7 +2255,7 @@ tvs_outer_mac_ipv6_gre_ipv6_gtpu_dl = [
 ]
 
 
-class TestCvlIavfGTPoGREFDIR(TestCase):
+class TestICEIavfGTPoGREFDIR(TestCase):
     def set_up_all(self):
         self.ports = self.dut.get_ports(self.nic)
 

@@ -274,14 +274,14 @@ class TestVfSingleCorePerf(TestCase):
 
             nb_cores = thread_num
 
-            # fortville has to use 2 queues at least to get the best performance
-            if self.nic in ["fortville_25g", "fortville_spirit"] or thread_num == 2:
+            # Intel® Ethernet 700 Series has to use 2 queues at least to get the best performance
+            if self.nic in ["I40E_25G-25G_SFP28", "I40E_40G-QSFP_A"] or thread_num == 2:
                 param += " --rxq=2 --txq=2"
-            # columbiaville use one queue per port for best performance.
+            # Intel® Ethernet 800 Series use one queue per port for best performance.
             elif self.nic in [
-                "columbiaville_100g",
-                "columbiaville_25g",
-                "columbiaville_25gx2",
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E810C_SFP",
+                "ICE_25G-E810_XXV_SFP",
             ]:
                 param += " --rxq=1 --txq=1"
                 # workaround for that testpmd can't forward packets in io forward mode

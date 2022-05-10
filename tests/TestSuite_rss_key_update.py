@@ -191,37 +191,37 @@ class TestRssKeyUpdate(TestCase):
         self.verify(
             self.nic
             in [
-                "columbiaville_25g",
-                "columbiaville_100g",
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g",
-                "niantic",
-                "carlsville",
-                "foxville",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28",
+                "IXGBE_10G-82599_SFP",
+                "I40E_10G-10G_BASE_T_BC",
+                "IGC-I225_LM",
             ],
             "NIC Unsupported: " + str(self.nic),
         )
         global reta_num
         global iptypes
         global queue
-        if self.nic in ["foxville"]:
+        if self.nic in ["IGC-I225_LM"]:
             queue = 4
 
         if self.nic in [
-            "fortville_eagle",
-            "fortville_spirit",
-            "fortville_spirit_single",
-            "fortpark_TLV",
-            "fortpark_BASE-T",
-            "fortville_25g",
-            "carlsville",
+            "I40E_10G-SFP_XL710",
+            "I40E_40G-QSFP_A",
+            "I40E_40G-QSFP_B",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_X722",
+            "I40E_25G-25G_SFP28",
+            "I40E_10G-10G_BASE_T_BC",
         ]:
             reta_num = 512
-        elif self.nic in ["niantic", "foxville"]:
+        elif self.nic in ["IXGBE_10G-82599_SFP", "IGC-I225_LM"]:
             reta_num = 128
             iptypes = {
                 "ipv4-other": "ip",
@@ -361,24 +361,24 @@ class TestRssKeyUpdate(TestCase):
     def test_set_hash_key_short_long(self):
 
         nic_rss_key_size = {
-            "columbiaville_25g": 52,
-            "columbiaville_100g": 52,
-            "fortville_eagle": 52,
-            "fortville_spirit": 52,
-            "fortville_spirit_single": 52,
-            "fortville_25g": 52,
-            "niantic": 40,
+            "ICE_25G-E810C_SFP": 52,
+            "ICE_100G-E810C_QSFP": 52,
+            "I40E_10G-SFP_XL710": 52,
+            "I40E_40G-QSFP_A": 52,
+            "I40E_40G-QSFP_B": 52,
+            "I40E_25G-25G_SFP28": 52,
+            "IXGBE_10G-82599_SFP": 40,
             "e1000": 40,
-            "fortpark_TLV": 52,
-            "fortpark_BASE-T": 52,
+            "I40E_10G-SFP_X722": 52,
+            "I40E_10G-10G_BASE_T_X722": 52,
             "hi1822": 40,
             "cavium_a063": 48,
             "cavium_a064": 48,
-            "carlsville": 52,
-            "sagepond": 40,
-            "sageville": 40,
-            "foxville": 40,
-            "twinpond": 40,
+            "I40E_10G-10G_BASE_T_BC": 52,
+            "IXGBE_10G-X550EM_X_10G_T": 40,
+            "IXGBE_10G-X550T": 40,
+            "IGC-I225_LM": 40,
+            "IXGBE_10G-X540T": 40,
         }
 
         self.verify(

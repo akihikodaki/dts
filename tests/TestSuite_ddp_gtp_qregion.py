@@ -77,9 +77,9 @@ class TestDdpGtpQregion(TestCase):
 
     def load_profile(self):
         """
-        Load profile to update FVL configuration tables, profile will be
-        stored in binary file and need to be passed to AQ to program FVL
-        during initialization stage.
+        Load profile to update Intel® Ethernet 700 Series configuration tables,
+        profile will be stored in binary file and need to be passed to AQ to
+        program Intel® Ethernet 700 Series during initialization stage.
         """
         self.dut_testpmd.start_testpmd(
             "Default",

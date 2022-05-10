@@ -282,8 +282,8 @@ class TestVfL3fwd(TestCase):
             eal_param += " -a " + self.sriov_vfs_port[i][0].pci
         port_mask = utils.create_mask(self.dut_ports)
 
-        # for fvl40g, fvl25g, use 2c/2q per VF port for performance test ,
-        # for fvl10g, nnt, use 1c/1q per VF port for performance test
+        # for IIntel® Ethernet 700 Series: XL710, XXV710, use 2c/2q per VF port for performance test ,
+        # for IIntel® Ethernet 700 Series: X710, 82599/500 Series, use 1c/1q per VF port for performance test
         core_list = self.cores[-len(valports) * self.queue :]
         core_mask = utils.create_mask(core_list)
         self.logger.info("Executing Test Using cores: %s" % core_list)
@@ -321,7 +321,7 @@ class TestVfL3fwd(TestCase):
         for idx in self.dut_ports:
             self.verify(
                 self.dut.ports_info[idx]["port"].default_driver != "ice",
-                "Columbiaville do not support generate vfs from igb_uio",
+                "Intel® Ethernet 800 Series do not support generate vfs from igb_uio",
             )
 
         self.set_rxtx_descriptor_2048_and_rebuild_l3fwd()
@@ -335,13 +335,14 @@ class TestVfL3fwd(TestCase):
 
     def test_perf_kernel_pf_dpdk_iavf_perf_host_only(self):
         """
-        Need to change dpdk code to test FVL iavf.
-        CVL iavf testing is same as FVL VF, so use dpdk_pf_dpdk_vf_perf_host_only to test CVL iavf
+        Need to change dpdk code to test Intel® Ethernet 700 Series iavf.
+        Intel® Ethernet 800 Series iavf testing is same as Intel® Ethernet 700 Series VF,
+        so use dpdk_pf_dpdk_vf_perf_host_only to test Intel® Ethernet 800 Series iavf
         """
         for idx in self.dut_ports:
             self.verify(
                 self.dut.ports_info[idx]["port"].default_driver == "i40e",
-                "The case is only designed for Fortville",
+                "The case is only designed for Intel® Ethernet 700 Series",
             )
 
         self.set_rxtx_descriptor_2048_and_rebuild_l3fwd()

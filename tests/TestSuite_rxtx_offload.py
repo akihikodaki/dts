@@ -88,22 +88,22 @@ class TestRxTx_Offload(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
-                "niantic",
-                "twinpond",
-                "sagepond",
-                "sageville",
-                "foxville",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X540T",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "IGC-I225_LM",
                 "cavium_a063",
                 "cavium_a064",
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
             ],
             "NIC Unsupported: " + str(self.nic),
         )
@@ -520,7 +520,7 @@ class TestRxTx_Offload(TestCase):
         capabilities = self.check_port_capability("rx")
         for capability in capabilities:
             if (
-                self.nic in ["foxville", "cavium_a063", "cavium_a064"]
+                self.nic in ["IGC-I225_LM", "cavium_a063", "cavium_a064"]
                 and capability == "sctp_cksum"
             ):
                 continue
@@ -543,7 +543,14 @@ class TestRxTx_Offload(TestCase):
         """
         # Only support ixgbe NICs
         self.verify(
-            self.nic in ["niantic", "twinpond", "sagepond", "sageville", "foxville"],
+            self.nic
+            in [
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X540T",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "IGC-I225_LM",
+            ],
             "%s nic not support rx offload setting by queue." % self.nic,
         )
         # Define the vlan packets
@@ -611,17 +618,17 @@ class TestRxTx_Offload(TestCase):
         self.dut.send_expect("set fwd txonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
         if self.nic in [
-            "fortville_eagle",
-            "fortville_spirit",
-            "fortville_25g",
-            "fortville_spirit_single",
-            "fortpark_TLV",
-            "fortpark_BASE-T",
-            "carlsville",
+            "I40E_10G-SFP_XL710",
+            "I40E_40G-QSFP_A",
+            "I40E_25G-25G_SFP28",
+            "I40E_40G-QSFP_B",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_X722",
+            "I40E_10G-10G_BASE_T_BC",
             "cavium_a063",
             "cavium_a064",
-            "columbiaville_100g",
-            "columbiaville_25g",
+            "ICE_100G-E810C_QSFP",
+            "ICE_25G-E810C_SFP",
         ]:
             self.dut.send_expect("port stop 0", "testpmd> ")
             self.dut.send_expect(
@@ -667,15 +674,15 @@ class TestRxTx_Offload(TestCase):
         self.dut.send_expect("set fwd txonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
         if self.nic in [
-            "fortville_eagle",
-            "fortville_spirit",
-            "fortville_25g",
-            "fortville_spirit_single",
-            "fortpark_TLV",
-            "fortpark_BASE-T",
-            "carlsville",
-            "columbiaville_100g",
-            "columbiaville_25g",
+            "I40E_10G-SFP_XL710",
+            "I40E_40G-QSFP_A",
+            "I40E_25G-25G_SFP28",
+            "I40E_40G-QSFP_B",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_X722",
+            "I40E_10G-10G_BASE_T_BC",
+            "ICE_100G-E810C_QSFP",
+            "ICE_25G-E810C_SFP",
         ]:
             self.dut.send_expect("port stop 0", "testpmd> ")
             self.dut.send_expect(
@@ -803,17 +810,17 @@ class TestRxTx_Offload(TestCase):
         """
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4")
         capabilities = self.check_port_capability("tx")
-        # Disable per queue capability first, if it is FVL/Fortpark.
+        # Disable per queue capability first, if it is Intel® Ethernet 700 Series/X722.
         if self.nic in [
-            "fortville_eagle",
-            "fortville_spirit",
-            "fortville_25g",
-            "fortville_spirit_single",
-            "fortpark_TLV",
-            "fortpark_BASE-T",
-            "carlsville",
-            "columbiaville_100g",
-            "columbiaville_25g",
+            "I40E_10G-SFP_XL710",
+            "I40E_40G-QSFP_A",
+            "I40E_25G-25G_SFP28",
+            "I40E_40G-QSFP_B",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_X722",
+            "I40E_10G-10G_BASE_T_BC",
+            "ICE_100G-E810C_QSFP",
+            "ICE_25G-E810C_SFP",
         ]:
             self.dut.send_expect("port stop 0", "testpmd> ")
             self.dut.send_expect(
@@ -841,15 +848,15 @@ class TestRxTx_Offload(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "columbiaville_100g",
-                "columbiaville_25g",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E810C_SFP",
             ],
             "%s nic not support rx offload setting by queue." % self.nic,
         )

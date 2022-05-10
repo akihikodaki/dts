@@ -49,7 +49,7 @@ class TestDdpGtp(TestCase):
 
     def set_up_all(self):
         self.verify(
-            "fortville" in self.nic, "ddp gtp can not support %s nic" % self.nic
+            self.is_eth_series_nic(700), "ddp gtp can not support %s nic" % self.nic
         )
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
@@ -178,9 +178,9 @@ class TestDdpGtp(TestCase):
 
     def load_profile(self):
         """
-        Load profile to update FVL configuration tables, profile will be
-        stored in binary file and need to be passed to AQ to program FVL
-        during initialization stage.
+        Load profile to update Intel® Ethernet 700 Series configuration tables,
+        profile will be stored in binary file and need to be passed to AQ to
+        program Intel® Ethernet 700 Series during initialization stage.
         """
         self.dut_testpmd.start_testpmd(
             "Default",

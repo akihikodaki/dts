@@ -60,7 +60,7 @@ class FlexibleRxdBase(object):
 
     def __get_port_option(self, flex_opt="", queue_num=None):
         nb_core = 2
-        num = 4 if self.nic == "foxville" or self.__is_iavf else 32
+        num = 4 if self.nic == "IGC-I225_LM" or self.__is_iavf else 32
         queue_num = queue_num if queue_num else num
         # port option
         port_option = ("{queue} " "--portmask=0x1 " "--nb-cores={nb_core}").format(

@@ -347,13 +347,13 @@ class TestVfInterruptPmd(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
             ],
             "%s nic port not support vf multi-queues interrupt" % str(self.nic),
         )
@@ -392,13 +392,13 @@ class TestVfInterruptPmd(TestCase):
         self.verify(
             self.nic
             in [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
             ],
             "%s nic port not support vf multi-queues interrupt" % str(self.nic),
         )

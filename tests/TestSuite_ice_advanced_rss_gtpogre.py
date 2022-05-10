@@ -3821,7 +3821,7 @@ mac_ipv4_gtpu_eh_ipv6_tcp_without_ul_dl_symmetric = eval(
 )
 
 
-class TestCVLAdvancedRSSGTPoGRE(TestCase):
+class TestICEAdvancedRSSGTPoGRE(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

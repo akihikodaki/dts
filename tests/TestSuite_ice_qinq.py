@@ -431,9 +431,9 @@ tv_mac_qinq_ipv6_tcp = {
 tvs_mac_l4_qinq_dcf_pipeline_mode = [tv_mac_qinq_ipv6_udp, tv_mac_qinq_ipv6_tcp]
 
 
-class TestCvlQinq(TestCase):
+class TestICEQinq(TestCase):
     @check_supported_nic(
-        ["columbiaville_25g", "columbiaville_100g", "columbiaville_25gx2"]
+        ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP", "ICE_25G-E810_XXV_SFP"]
     )
     def set_up_all(self):
         """
