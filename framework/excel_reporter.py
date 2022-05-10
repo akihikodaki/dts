@@ -45,9 +45,9 @@ Example:
 
 Result:
     execl will be formatted as
-    DUT             Target                      NIC      Test suite Test case Results
-    10.239.128.117  x86_64-native-linuxapp-gcc  niantic
-                                                         SUITE      CASE      PASSED
+    DUT             Target                      NIC                    Test suite Test case Results
+    10.239.128.117  x86_64-native-linuxapp-gcc  IXGBE_10G-82599_SFP
+                                                                       SUITE      CASE      PASSED
 
 
 """

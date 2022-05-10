@@ -500,7 +500,7 @@ class NetDevice(object):
         Enable ipv6 address of specified pci device on linux.
         """
         self.__send_expect("sysctl net.ipv6.conf.%s.disable_ipv6=0" % intf, "# ")
-        # FVL interface need down and up for re-enable ipv6
+        # Intel® Ethernet 700 Series interface need down and up for re-enable ipv6
         if self.default_driver == "i40e":
             self.__send_expect("ifconfig %s down" % intf, "# ")
             self.__send_expect("ifconfig %s up" % intf, "# ")

@@ -48,6 +48,8 @@ from .settings import (
     DEBUG_CASE_SETTING,
     DEBUG_SETTING,
     DRIVERS,
+    ETH_700_SERIES,
+    ETH_800_SERIES,
     FUNC_SETTING,
     HOST_DRIVER_SETTING,
     NICS,
@@ -528,23 +530,23 @@ class TestCase(object):
 
         if driver == "ixgbe":
             bitrate *= 10  # 10 Gb NICs
-        elif nic == "avoton2c5":
+        elif nic == "IGB_2.5G-I354_BACKPLANE_2_5GBPS":
             bitrate *= 2.5  # 2.5 Gb NICs
-        elif nic in ["fortville_spirit", "fortville_spirit_single"]:
+        elif nic in ["I40E_40G-QSFP_A", "I40E_40G-QSFP_B"]:
             bitrate *= 40
-        elif nic == "fortville_eagle":
+        elif nic == "I40E_10G-SFP_XL710":
             bitrate *= 10
-        elif nic == "fortpark_TLV":
+        elif nic == "I40E_10G-SFP_X722":
             bitrate *= 10
         elif driver == "thunder-nicvf":
             bitrate *= 10
-        elif nic == "fortville_25g":
+        elif nic == "I40E_25G-25G_SFP28":
             bitrate *= 25
-        elif nic == "columbiaville_25g":
+        elif nic == "ICE_25G-E810C_SFP":
             bitrate *= 25
-        elif nic == "columbiaville_25gx2":
+        elif nic == "ICE_25G-E810_XXV_SFP":
             bitrate *= 25
-        elif nic == "columbiaville_100g":
+        elif nic == "ICE_100G-E810C_QSFP":
             bitrate *= 100
 
         return bitrate * num_ports / 8 / (frame_size + 20)
@@ -556,6 +558,14 @@ class TestCase(object):
             driver_new = driver if driver else netdev.default_driver
             if driver_new != driver_now:
                 netdev.bind_driver(driver=driver_new)
+
+    def is_eth_series_nic(self, series_num: int):
+        series_nic_tuple = globals().get(f"ETH_{series_num}_SERIES")
+        for series_item in series_nic_tuple:
+            if series_item == self.nic:
+                return True
+        else:
+            return False
 
 
 def skip_unsupported_pkg(pkgs):

@@ -285,7 +285,7 @@ class PmdOutput:
 
     def check_tx_bytes(self, tx_bytes, exp_bytes=0):
         """
-        fortville nic will send lldp packet when nic setup with testpmd.
+        Intel® Ethernet 700 Series nic will send lldp packet when nic setup with testpmd.
         so should used (tx_bytes - exp_bytes) % PROTOCOL_PACKET_SIZE['lldp']
         for check tx_bytes count right
         """

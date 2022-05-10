@@ -11,7 +11,7 @@ crbs_desc = {
         L3 D-cache (shared across physical cores).
       - 8x DDR3 DIMMs @ 1333 MHz of 4GB each. Each of the 4 memory channels of each
         CPU is populated with 2 DIMMs.
-      - 4x Intel 82599 (Niantic) NICs (2x 10GbE full duplex optical ports per NIC)
+      - 4x Intel 82599 NICs (2x 10GbE full duplex optical ports per NIC)
         plugged into the available PCIe Gen2 8-lane slots. To avoid PCIe bandwidth
         bottlenecks at high packet rates, a single optical port from each NIC is
         connected to the traffic  generator.
