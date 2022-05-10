@@ -5,26 +5,26 @@
                 "ALL"
             ],
             "NIC": [
-                "bartonhills",
-                "powerville",
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-		"columbiaville_25g",
-		"columbiaville_100g",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
-                "sagepond",
-                "kawela_4",
+                "IGB_1G-82580_COPPER",
+                "IGB_1G-I350_COPPER",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+		"ICE_25G-E810C_SFP",
+		"ICE_100G-E810C_QSFP",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
                 "cavium_a034",
                 "cavium_a011",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
-		"foxville"
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -39,13 +39,13 @@
                 "ALL"
             ],
             "NIC": [
-                "springville",
-                "ironpond",
-                "springfountain",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
                 "cavium_a034",
                 "cavium_a011",
-                "twinpond",
-                "foxville"
+                "IXGBE_10G-X540T",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -60,19 +60,19 @@
                 "ALL"
             ],
             "NIC": [
-                "bartonhills",
-                "powerville",
-                "fortville_spirit_single",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
+                "IGB_1G-82580_COPPER",
+                "IGB_1G-I350_COPPER",
+                "I40E_40G-QSFP_B",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
                 "cavium_a034",
                 "cavium_a011",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
-		"foxville"
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -87,19 +87,19 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "kawela_4",
-                "fortville_spirit_single",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "I40E_40G-QSFP_B",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
                 "cavium_a034",
                 "cavium_a011",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
-                "foxville"
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -114,19 +114,19 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_25g",
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
                 "cavium_a034",
                 "cavium_a011",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville"
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -141,25 +141,25 @@
                 "ALL"
             ],
             "NIC": [
-                "kawela_4",
-                "bartonhills",
-                "powerville",
-                "fortville_25g",
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-82580_COPPER",
+                "IGB_1G-I350_COPPER",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
                 "cavium_a034",
                 "cavium_a011",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g",
-                "foxville"
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -174,17 +174,17 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "fortville_spirit_single",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
+                "IXGBE_10G-82599_SFP",
+                "I40E_40G-QSFP_B",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
                 "cavium_a034",
                 "cavium_a011",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville"
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -199,17 +199,17 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_spirit_single",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
+                "I40E_40G-QSFP_B",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
                 "cavium_a034",
                 "cavium_a011",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
-                "foxville"
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -224,22 +224,22 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-		"columbiaville_100g",
-		"columbiaville_25g",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+		"ICE_100G-E810C_QSFP",
+		"ICE_25G-E810C_SFP",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
                 "cavium_a034",
                 "cavium_a011",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
-                "foxville"
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -254,19 +254,19 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "kawela_4",
-                "fortville_spirit_single",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "I40E_40G-QSFP_B",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
                 "cavium_a034",
                 "cavium_a011",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
-                "foxville"
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -281,21 +281,21 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "foxville",
-                "powerville",
-                "kawela_4",
-                "springville",
-                "fortville_25g",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "IGC-I225_LM",
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
                 "cavium_a063",
                 "cavium_a064",
-                "carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g"
+                "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP"
             ],
             "Target": [
                 "ALL"
@@ -310,17 +310,17 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
                 "cavium_a063",
                 "cavium_a064",
-                "carlsville",
-                "powerville",
-                "columbiaville_25g",
-                "columbiaville_100g",
-                "springville",
-	        "foxville"
+                "I40E_10G-10G_BASE_T_BC",
+                "IGB_1G-I350_COPPER",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
+                "IGB_1G-I210_COPPER",
+	        "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -335,10 +335,10 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "kawela_4",
-                "bartonhills",
-                "powerville"
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-82580_COPPER",
+                "IGB_1G-I350_COPPER"
             ],
             "Target": [
                 "ALL"
@@ -353,16 +353,16 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_spirit_single",
-                "powerville",
-                "kawela_4",
-                "springville",
-                "sageville",
-                "ironpond",
+                "I40E_40G-QSFP_B",
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-X550T",
+                "IXGBE_10G-82599_T3_LOM",
                 "cavium_a034",
                 "cavium_0011",
                 "cavium_a064",
-		"foxville"
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -377,8 +377,8 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_spirit_single",
-                "ironpond",
+                "I40E_40G-QSFP_B",
+                "IXGBE_10G-82599_T3_LOM",
                 "cavium_a034",
                 "cavium_0011"
             ],
@@ -397,7 +397,7 @@
             "NIC": [
                 "cavium_a034",
                 "cavium_0011",
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
@@ -412,14 +412,14 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
                 "cavium_a034",
                 "cavium_0011",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-		"foxville"
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -432,11 +432,11 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -451,14 +451,14 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
                 "cavium_a034",
                 "cavium_0011",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-		"foxville"
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -471,11 +471,11 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -490,14 +490,14 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
                 "cavium_a034",
                 "cavium_0011",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-		"foxville"
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -510,11 +510,11 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -529,12 +529,12 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
                 "cavium_a034",
                 "cavium_0011",
-		"foxville"
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -549,12 +549,12 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
                 "cavium_a034",
                 "cavium_0011",
-		"foxville"
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -569,14 +569,14 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "sagepond",
-                "sageville",
-                "carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g"
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP"
             ],
             "Target": [
                 "ALL"
@@ -591,14 +591,14 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "sagepond",
-                "sageville",
-                "carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g"
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP"
             ],
             "Target": [
                 "ALL"
@@ -626,12 +626,12 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
                 "cavium_a034",
                 "cavium_a011"
             ],
@@ -661,13 +661,13 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
-                "niantic",
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
+                "IXGBE_10G-82599_SFP",
                 "cavium_a034",
                 "cavium_0011"
             ],
@@ -697,12 +697,12 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
                 "cavium_a034",
                 "cavium_0011"
             ],
@@ -732,15 +732,15 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
                 "cavium_a034",
                 "cavium_0011",
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -768,12 +768,12 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
                 "cavium_a034",
                 "cavium_0011"
             ],
@@ -803,13 +803,13 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
-                "niantic",
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
+                "IXGBE_10G-82599_SFP",
                 "cavium_a034",
                 "cavium_0011"
             ],
@@ -839,12 +839,12 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
                 "cavium_a034",
                 "cavium_0011"
             ],
@@ -874,15 +874,15 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
                 "cavium_a034",
                 "cavium_0011",
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -897,17 +897,17 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
-                "niantic",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-		"foxville"
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
+                "IXGBE_10G-82599_SFP",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -922,11 +922,11 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
-                "ironpond",
-                "springfountain"
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP"
             ],
             "Target": [
                 "ALL"
@@ -955,11 +955,11 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
-                "ironpond",
-                "springfountain",
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
                 "cavium_a034",
                 "cavium_a011"
             ],
@@ -1280,11 +1280,11 @@
                 "ALL"
             ],
             "NIC": [
-                "springville",
+                "IGB_1G-I210_COPPER",
                 "cavium_a034",
                 "cavium_0011",
-                "columbiaville_25g",
-                "columbiaville_100g"
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP"
             ],
             "Target": [
                 "ALL"
@@ -1299,11 +1299,11 @@
                 "ALL"
             ],
             "NIC": [
-                "springfountain",
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g"
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
@@ -1316,10 +1316,10 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
@@ -1363,7 +1363,7 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_spirit_single",
+                "I40E_40G-QSFP_B",
                 "cavium_a064"
             ],
             "Target": [
@@ -1377,7 +1377,7 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "i686-native-linuxapp-gcc",
@@ -1406,7 +1406,7 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_spirit_single",
+                "I40E_40G-QSFP_B",
                 "cavium_a064"
             ],
             "Target": [
@@ -1420,7 +1420,7 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "i686-native-linuxapp-gcc",
@@ -1495,7 +1495,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -1523,7 +1523,7 @@
                 "ALL"
             ],
             "NIC": [
-	        "foxville"
+	        "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -1552,7 +1552,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -1581,7 +1581,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -1702,13 +1702,13 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond",
-                "niantic"
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T",
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
@@ -1723,12 +1723,12 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "kawela_4",
-                "springville",
-                "ironpond",
-                "springfountain",
-                "twinpond"
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-X540T"
             ],
             "Target": [
                 "ALL"
@@ -1743,9 +1743,9 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-		"columbiaville_100g",
-		"columbiaville_25g"
+                "IGB_1G-I350_COPPER",
+		"ICE_100G-E810C_QSFP",
+		"ICE_25G-E810C_SFP"
             ],
             "Target": [
                 "ALL"
@@ -1760,9 +1760,9 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-		"columbiaville_100g",
-		"columbiaville_25g"
+                "IGB_1G-I350_COPPER",
+		"ICE_100G-E810C_QSFP",
+		"ICE_25G-E810C_SFP"
             ],
             "Target": [
                 "ALL"
@@ -1777,9 +1777,9 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-		"columbiaville_100g",
-		"columbiaville_25g"
+                "IGB_1G-I350_COPPER",
+		"ICE_100G-E810C_QSFP",
+		"ICE_25G-E810C_SFP"
             ],
             "Target": [
                 "ALL"
@@ -1794,14 +1794,14 @@
                 "ALL"
             ],
             "NIC": [
-                "columbiaville_100g",
-                "columbiaville_25g"
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E810C_SFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "the case needs >=2 CVL NICs with different Serial Numbers"
+            "Comments": "the case needs >=2 supported NICs with different Serial Numbers"
         }
     ],
     "kernel_2pf_2vf_1vm_mac_add_filter": [
@@ -1810,7 +1810,7 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville"
+                "IGB_1G-I350_COPPER"
             ],
             "Target": [
                 "ALL"
@@ -1825,7 +1825,7 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville"
+                "IGB_1G-I350_COPPER"
             ],
             "Target": [
                 "ALL"
@@ -1980,7 +1980,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "arm64-thunderx-linuxapp-gcc"
@@ -2078,7 +2078,7 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
@@ -2093,7 +2093,7 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
@@ -2108,7 +2108,7 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
@@ -2123,15 +2123,15 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "fortpark",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortpark_TLV_vf",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-X722_A0",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "IAVF_10G-X722_VF",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -2146,7 +2146,7 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
@@ -2161,7 +2161,7 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
@@ -2176,7 +2176,7 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
@@ -2191,7 +2191,7 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
@@ -2206,7 +2206,7 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
@@ -2221,12 +2221,12 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "carlsville",
-		"fortpark_BASE-T"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC",
+		"I40E_10G-10G_BASE_T_X722"
             ],
             "Target": [
                 "ALL"
@@ -2241,7 +2241,7 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
@@ -2256,7 +2256,7 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
@@ -2271,11 +2271,11 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -2290,17 +2290,17 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
                 "cavium_a034",
                 "cavium_a011",
                 "cavium_a063",
-                "fortville_25g",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
                 "cavium_a064",
-                "carlsville"
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -2315,16 +2315,16 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "sagepond",
-                "sageville",
-                "twinpond"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "IXGBE_10G-X540T"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "Niantic not support this case"
+            "Comments": "the nic not support this case"
         }
     ],
     "two_vms_uplink_and_downlink_mirror": [
@@ -2333,7 +2333,7 @@
                 "ALL"
             ],
             "NIC": [
-                "fortpark_BASE-T"
+                "I40E_10G-10G_BASE_T_X722"
             ],
             "Target": [
                 "ALL"
@@ -2348,7 +2348,7 @@
                 "ALL"
             ],
             "NIC": [
-                "fortpark_BASE-T"
+                "I40E_10G-10G_BASE_T_X722"
             ],
             "Target": [
                 "ALL"
@@ -2363,10 +2363,10 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "powerville",
-                "sagepond",
-                "sageville"
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-I350_COPPER",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T"
             ],
             "Target": [
                 "ALL"
@@ -2381,10 +2381,10 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "powerville",
-                "sagepond",
-                "sageville"
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-I350_COPPER",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T"
             ],
             "Target": [
                 "ALL"
@@ -2399,10 +2399,10 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "powerville",
-                "sagepond",
-                "sageville"
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-I350_COPPER",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T"
             ],
             "Target": [
                 "ALL"
@@ -2417,20 +2417,20 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "fortpark",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-X722_A0",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
                 "cavium_a063",
-                "fortpark_TLV_vf",
+                "IAVF_10G-X722_VF",
                 "cavium_a064",
-                "columbiaville_25g",
-                "columbiaville_100g",
-                "carlsville",
-		"foxville"
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
+                "I40E_10G-10G_BASE_T_BC",
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -2445,7 +2445,7 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
@@ -2460,14 +2460,13 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "powerville",
-                "twinpond",
-                "twinville",
-                "sagepond",
-                "sageville",
-		"foxville",
-		"springville"
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-I350_COPPER",
+                "IXGBE_10G-X540T",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+		"IGC-I225_LM",
+		"IGB_1G-I210_COPPER"
             ],
             "Target": [
                 "ALL"
@@ -2532,7 +2531,7 @@
             "NIC": [
                 "cavium_a063",
                 "cavium_a064",
-		"foxville"
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -2562,8 +2561,8 @@
                 "ALL"
             ],
             "NIC": [
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
                 "cavium_a063",
                 "cavium_a064"
             ],
@@ -2580,8 +2579,8 @@
                 "ALL"
             ],
             "NIC": [
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
                 "cavium_a063",
                 "cavium_a064"
             ],
@@ -2598,8 +2597,8 @@
                 "ALL"
             ],
             "NIC": [
-                "columbiaville_25g",
-                "columbiaville_100g",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
                 "cavium_a063",
                 "cavium_a064"
             ],
@@ -2616,10 +2615,10 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "sagepond",
-                "sageville",
-                "twinpond"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "IXGBE_10G-X540T"
             ],
             "Target": [
                 "ALL"
@@ -2636,7 +2635,7 @@
             "NIC": [
                 "cavium_a063",
                 "cavium_a064",
-		"foxville"
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -2795,7 +2794,7 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville"
+                "IGB_1G-I350_COPPER"
             ],
             "Target": [
                 "ALL"
@@ -2810,13 +2809,13 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-		        "sagepond",
-		        "sageville",
-                "twinpond",
-		"columbiaville_25g",
-		"columbiaville_100g",
-                "powerville"
+                "IXGBE_10G-82599_SFP",
+		        "IXGBE_10G-X550EM_X_10G_T",
+		        "IXGBE_10G-X550T",
+                "IXGBE_10G-X540T",
+		"ICE_25G-E810C_SFP",
+		"ICE_100G-E810C_QSFP",
+                "IGB_1G-I350_COPPER"
             ],
             "Target": [
                 "ALL"
@@ -2831,13 +2830,13 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "sagepond",
-                "sageville",
-                "twinpond",
-		"columbiaville_25g",
-		"columbiaville_100g",
-                "powerville"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "IXGBE_10G-X540T",
+		"ICE_25G-E810C_SFP",
+		"ICE_100G-E810C_QSFP",
+                "IGB_1G-I350_COPPER"
             ],
             "Target": [
                 "ALL"
@@ -2852,7 +2851,7 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville"
+                "IGB_1G-I350_COPPER"
             ],
             "Target": [
                 "ALL"
@@ -2867,7 +2866,7 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville"
+                "IGB_1G-I350_COPPER"
             ],
             "Target": [
                 "ALL"
@@ -2882,11 +2881,11 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "springville",
-                "columbiaville_25g",
-                "columbiaville_100g",
-                "foxville"
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-I210_COPPER",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -2901,19 +2900,19 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "springville",
-                "columbiaville_25g",
-                "columbiaville_100g",
-		"foxville",
-                "fortville_eagle",
-                "fortville_spirit",
-	        "fortville_spirit_single",
-	        "fortpark",
-	        "fortpark_TLV",
-                "fortpark_BASE-T",
-	        "fortville_25g",
-	        "carlsville"
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-I210_COPPER",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
+		"IGC-I225_LM",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+	        "I40E_40G-QSFP_B",
+	        "I40E_10G-X722_A0",
+	        "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+	        "I40E_25G-25G_SFP28",
+	        "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -2941,7 +2940,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -2956,7 +2955,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -2971,7 +2970,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -2984,7 +2983,7 @@
                 "freebsd"
             ],
             "NIC": [
-                "fortville_eagle"
+                "I40E_10G-SFP_XL710"
             ],
             "Target": [
                 "ALL"
@@ -2999,7 +2998,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3012,7 +3011,7 @@
                 "freebsd"
             ],
             "NIC": [
-                "fortville_eagle"
+                "I40E_10G-SFP_XL710"
             ],
             "Target": [
                 "ALL"
@@ -3027,7 +3026,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3042,7 +3041,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3057,7 +3056,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3072,7 +3071,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3087,10 +3086,10 @@
                 "ALL"
             ],
             "NIC": [
-                "sagepond",
-                "niantic",
-                "springville",
-                "sageville"
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-X550T"
             ],
             "Target": [
                 "ALL"
@@ -3105,10 +3104,10 @@
                 "ALL"
             ],
             "NIC": [
-                "sagepond",
-                "niantic",
-                "springville",
-                "sageville"
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-X550T"
             ],
             "Target": [
                 "ALL"
@@ -3123,10 +3122,10 @@
                 "ALL"
             ],
             "NIC": [
-                "sagepond",
-                "niantic",
-                "springville",
-                "sageville"
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-X550T"
             ],
             "Target": [
                 "ALL"
@@ -3141,10 +3140,10 @@
                 "ALL"
             ],
             "NIC": [
-                "sagepond",
-                "niantic",
-                "springville",
-                "sageville"
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-X550T"
             ],
             "Target": [
                 "ALL"
@@ -3159,10 +3158,10 @@
                 "ALL"
             ],
             "NIC": [
-                "sagepond",
-                "niantic",
-                "springville",
-                "sageville"
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-X550T"
             ],
             "Target": [
                 "ALL"
@@ -3178,13 +3177,13 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "niantic not support this case"
+            "Comments": "the nic not support this case"
         }
     ],
     "perf_pvp_packed_ring_dequeue_zero_copy": [
@@ -3193,13 +3192,13 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "niantic not support this case"
+            "Comments": "the nic not support this case"
         }
     ],
     "check_double_VLAN_fields_in_RXD_8021ad": [
@@ -3209,13 +3208,13 @@
             ],
             "NIC": [
 
-                "columbiaville_100g"
+                "ICE_100G-E810C_QSFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "CVL_100G kennel not support double VLAN"
+            "Comments": "the nic not support double VLAN"
         }
     ],
     "check_double_VLAN_fields_in_RXD_8021Q_2_VLAN_tag": [
@@ -3224,7 +3223,7 @@
                 "ALL"
             ],
             "NIC": [
-                "columbiaville_100g"
+                "ICE_100G-E810C_QSFP"
             ],
             "Target": [
                 "ALL"
@@ -3239,7 +3238,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3252,7 +3251,7 @@
                 "freebsd"
             ],
             "NIC": [
-                "fortville_eagle"
+                "I40E_10G-SFP_XL710"
             ],
             "Target": [
                 "ALL"
@@ -3267,7 +3266,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3280,7 +3279,7 @@
                 "freebsd"
             ],
             "NIC": [
-                "fortville_eagle"
+                "I40E_10G-SFP_XL710"
             ],
             "Target": [
                 "ALL"
@@ -3295,7 +3294,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3310,7 +3309,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3323,7 +3322,7 @@
                 "freebsd"
             ],
             "NIC": [
-                "fortville_eagle"
+                "I40E_10G-SFP_XL710"
             ],
             "Target": [
                 "ALL"
@@ -3338,7 +3337,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3351,7 +3350,7 @@
                 "freebsd"
             ],
             "NIC": [
-                "fortville_eagle"
+                "I40E_10G-SFP_XL710"
             ],
             "Target": [
                 "ALL"
@@ -3366,7 +3365,7 @@
                 "freebsd"
             ],
             "NIC": [
-                "fortville_eagle"
+                "I40E_10G-SFP_XL710"
             ],
             "Target": [
                 "ALL"
@@ -3381,7 +3380,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3394,7 +3393,7 @@
                 "freebsd"
             ],
             "NIC": [
-                "fortville_eagle"
+                "I40E_10G-SFP_XL710"
             ],
             "Target": [
                 "ALL"
@@ -3409,7 +3408,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3424,7 +3423,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3439,7 +3438,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3454,7 +3453,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3469,7 +3468,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3484,7 +3483,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3499,7 +3498,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3514,8 +3513,8 @@
                 "ALL"
             ],
             "NIC": [
-                "sagepond",
-                "foxville"
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3530,8 +3529,8 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-		"springville"
+                "IGB_1G-I350_COPPER",
+		"IGB_1G-I210_COPPER"
             ],
             "Target": [
                 "ALL"
@@ -3546,14 +3545,14 @@
                 "ALL"
             ],
             "NIC": [
-                "columbiaville_100g",
-                "columbiaville_25g"
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E810C_SFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "DPDK-18754",
-            "Comments": "CVL NIC doesn't support the VLAN in pkg ptype"
+            "Comments": "the NIC doesn't support the VLAN in pkg ptype"
         }
     ],
     "txoffload_port_all": [
@@ -3562,8 +3561,8 @@
                 "ALL"
             ],
             "NIC": [
-                "springville",
-                "sageville"
+                "IGB_1G-I210_COPPER",
+                "IXGBE_10G-X550T"
             ],
             "Target": [
                 "ALL"
@@ -3578,13 +3577,13 @@
                 "ALL"
             ],
             "NIC": [
-                "springville"
+                "IGB_1G-I210_COPPER"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "springville not support this case"
+            "Comments": "Nic not support this case"
         }
     ],
     "txoffload_port_cmdline": [
@@ -3593,13 +3592,13 @@
                 "ALL"
             ],
             "NIC": [
-                "springville"
+                "IGB_1G-I210_COPPER"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "springville not support this case"
+            "Comments": "Nic not support this case"
         }
     ],
     "rxoffload_port_all": [
@@ -3608,7 +3607,7 @@
                 "ALL"
             ],
             "NIC": [
-                "sageville"
+                "IXGBE_10G-X550T"
             ],
             "Target": [
                 "ALL"
@@ -3623,7 +3622,7 @@
                 "ALL"
             ],
             "NIC": [
-                "sageville"
+                "IXGBE_10G-X550T"
             ],
             "Target": [
                 "ALL"
@@ -3654,14 +3653,14 @@
                 "ALL"
             ],
             "NIC": [
-                "columbiaville_100g",
-                "columbiaville_25g"
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E810C_SFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "CVL not support DPDK PF + DPDK VF"
+            "Comments": "the nic not support DPDK PF + DPDK VF"
         }
     ],
     "txoffload_queue": [
@@ -3670,7 +3669,7 @@
                 "ALL"
             ],
             "NIC": [
-                "foxville"
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -3685,20 +3684,20 @@
                 "ALL"
             ],
             "NIC": [
-                "columbiaville_100g",
-                "columbiaville_25g",
-	        "fortville_eagle",
-		"fortville_spirit",
-		"fortpark_TLV",
-		"fortpark_BASE-T",
-		"fortville_25g",
-		"carlsville"
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E810C_SFP",
+	        "I40E_10G-SFP_XL710",
+		"I40E_40G-QSFP_A",
+		"I40E_10G-SFP_X722",
+		"I40E_10G-10G_BASE_T_X722",
+		"I40E_25G-25G_SFP28",
+		"I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "DPDK-24129",
-            "Comments": "CVL and FVL not support this case"
+            "Comments": "the nic not support this case"
         }
     ],
     "mtu_checks_100": [
@@ -3707,13 +3706,13 @@
                  "ALL"
              ],
              "NIC": [
-                 "niantic",
-                 "twinpond",
-                 "sageville",
-                 "sagepond",
-		 "springville",
-		 "powerville",
-                 "foxville"
+                 "IXGBE_10G-82599_SFP",
+                 "IXGBE_10G-X540T",
+                 "IXGBE_10G-X550T",
+                 "IXGBE_10G-X550EM_X_10G_T",
+		 "IGB_1G-I210_COPPER",
+		 "IGB_1G-I350_COPPER",
+                 "IGC-I225_LM"
              ],
              "Target": [
                  "ALL"
@@ -3728,11 +3727,11 @@
                  "ALL"
              ],
              "NIC": [
-                 "sageville",
-                 "sagepond",
-                 "springville",
-                 "powerville",
-                 "foxville"
+                 "IXGBE_10G-X550T",
+                 "IXGBE_10G-X550EM_X_10G_T",
+                 "IGB_1G-I210_COPPER",
+                 "IGB_1G-I350_COPPER",
+                 "IGC-I225_LM"
              ],
              "Target": [
                  "ALL"
@@ -3747,11 +3746,11 @@
                  "ALL"
              ],
              "NIC": [
-                 "sageville",
-                 "sagepond",
-                 "springville",
-                 "powerville",
-                 "foxville"
+                 "IXGBE_10G-X550T",
+                 "IXGBE_10G-X550EM_X_10G_T",
+                 "IGB_1G-I210_COPPER",
+                 "IGB_1G-I350_COPPER",
+                 "IGC-I225_LM"
              ],
              "Target": [
                  "ALL"
@@ -3766,10 +3765,10 @@
                  "ALL"
              ],
              "NIC": [
-                 "niantic",
-                 "foxville",
-		 "columbiaville_100g",
-		 "columbiaville_25g"
+                 "IXGBE_10G-82599_SFP",
+                 "IGC-I225_LM",
+		 "ICE_100G-E810C_QSFP",
+		 "ICE_25G-E810C_SFP"
              ],
              "Target": [
                  "ALL"

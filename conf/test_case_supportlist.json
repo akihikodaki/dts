@@ -5,16 +5,16 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "this case only support on fortville"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "dpdk_2pf_2vf_1vm_mac_add_filter": [
@@ -23,15 +23,15 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-		"fortville_spirit",
-		"fortville_25g"
+                "I40E_10G-SFP_XL710",
+		        "I40E_40G-QSFP_A",
+		        "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "this case only support on fortville"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "two_vms_prevent_rx_broadcast_on_vf": [
@@ -40,13 +40,13 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "this case only support on niantic"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "two_vms_enalbe_or_disable_one_uta_mac_on_vf": [
@@ -55,13 +55,13 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "this case only support on niantic"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "two_vms_pause_tx_queuse": [
@@ -70,13 +70,13 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "this case only support on niantic"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "two_vms_pause_rx_queues": [
@@ -85,13 +85,13 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "this case only support on niantic"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "two_vms_add_multi_uta_mac_on_vf": [
@@ -100,13 +100,13 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "this case only support on niantic"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "two_vms_add_or_remove_uta_mac_on_vf": [
@@ -115,13 +115,13 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "this case only support on niantic"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "l2pkt_detect": [
@@ -131,20 +131,20 @@
             ],
             "NIC": [
                 "forrpark_TLV",
-                "foxville",
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-	        "carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g"
+                "IGC-I225_LM",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+	            "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "l2 packet detect only support on FVL"
+            "Comments": "the nic on the environment not support l2 packet detect"
         }
     ],
     "IP_in_IPv4_tunnel": [
@@ -154,19 +154,19 @@
             ],
             "NIC": [
                 "forrpark_TLV",
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-		"carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+		        "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "IP_in_IPv4 tunnel packet detect only support on FVL"
+            "Comments": "the nic on the environment not support IP_in_IPv4 tunnel packet detect"
         }
     ],
     "IPv6_in_IPv4_tunnel": [
@@ -175,24 +175,24 @@
                 "ALL"
             ],
             "NIC": [
-                "powerville",
-                "niantic",
-                "fortville_25g",
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g",
-                "foxville"
+                "IGB_1G-I350_COPPER",
+                "IXGBE_10G-82599_SFP",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "IPv6_in_IPv4 tunnel packet detect only support on Niantic/FVL/powerville/fortpark_TLV"
+            "Comments": "the nic on the environment not support IPv6_in_IPv4 tunnel packet detect"
         }
     ],
     "IP_in_IPv6_tunnel": [
@@ -202,19 +202,19 @@
             ],
             "NIC": [
                 "forrpark_TLV",
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "IP_in_IPv6 tunnel packet detect only support on FVL"
+            "Comments": "the nic on the environment not support IP_in_IPv6 tunnel packet detect"
         }
     ],
     "NVGRE_tunnel": [
@@ -224,17 +224,17 @@
             ],
             "NIC": [
                 "forrpark_TLV",
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "NVGRE tunnel packet detect only support on FVL"
+            "Comments": "the nic on the environment not support NVGRE tunnel packet detect"
         }
     ],
     "NVGRE_in_IPv6_tunnel": [
@@ -244,17 +244,17 @@
             ],
             "NIC": [
                 "forrpark_TLV",
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "NVGRE in ipv6 tunnel packet detect only support on FVL"
+            "Comments": "the nic on the environment not support NVGRE in ipv6 tunnel packet detect"
         }
     ],
     "GRE_tunnel": [
@@ -264,19 +264,19 @@
             ],
             "NIC": [
                 "forrpark_TLV",
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-		"carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+		"I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "GRE tunnel packet detect only support on FVL"
+            "Comments": "the nic on the environment not support GRE tunnel packet detect"
         }
     ],
     "Vxlan_tunnel": [
@@ -286,19 +286,19 @@
             ],
             "NIC": [
                 "forrpark_TLV",
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-		"carlsville",
-                "columbiaville_25g",
-                "columbiaville_100g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+		"I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+                "ICE_100G-E810C_QSFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "Vxlan  tunnel packet detect only support on FVL"
+            "Comments": "the nic on the environment not support Vxlan tunnel packet detect"
         }
     ],
     "outer_dst_contrl_gtpcq": [
@@ -307,16 +307,16 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "teid_contrl_gtpcq": [
@@ -325,16 +325,16 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "teid_contrl_gtpu_ipv4q": [
@@ -343,16 +343,16 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "sport_contrl_gtpu_ipv4q": [
@@ -361,16 +361,16 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "dport_contrl_gtpu_ipv4q": [
@@ -379,16 +379,16 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "inner_src_contrl_gtpu_ipv4q": [
@@ -397,16 +397,16 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "inner_dst_contrl_gtpu_ipv4q": [
@@ -415,16 +415,16 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "teid_contrl_gtpu_ipv6q": [
@@ -433,16 +433,16 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "sport_contrl_gtpu_ipv6q": [
@@ -451,16 +451,16 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "dport_contrl_gtpu_ipv6q": [
@@ -469,16 +469,16 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "inner_src_contrl_gtpu_ipv6q": [
@@ -487,16 +487,16 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "inner_dst_contrl_gtpu_ipv6q": [
@@ -505,16 +505,16 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
      "fdir_ipv6_tc": [
@@ -523,18 +523,18 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "foxville",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-		"carlsville"
+                "I40E_10G-SFP_XL710",
+                "IGC-I225_LM",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+		"I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "ipv4_tos_proto_ttl": [
@@ -543,18 +543,18 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "foxville",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-		"carlsville"
+                "I40E_10G-SFP_XL710",
+                "IGC-I225_LM",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+		"I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "fdir_ivlan": [
@@ -563,18 +563,18 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "foxville",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-		"carlsville"
+                "I40E_10G-SFP_XL710",
+                "IGC-I225_LM",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+		"I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "nsh": [
@@ -583,22 +583,22 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "fortpark",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortpark_TLV_vf",
-                "fvl10g_vf",
-		"carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-X722_A0",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "IAVF_10G-X722_VF",
+                "IAVF-VF",
+		"I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support i40e driver nic"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "set_key_keylen": [
@@ -607,19 +607,19 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "queue_region_with_rss_rule_api": [
@@ -628,19 +628,19 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
                 "carlsvile"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "queue_region_with_rss_rule_combination": [
@@ -649,19 +649,19 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "queue_region_with_invalid_parameter": [
@@ -670,19 +670,19 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "rxoffload_queue": [
@@ -691,17 +691,17 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "twinpond",
-                "sagepond",
-                "sageville",
-                "foxville"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X540T",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on niantic"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "txoffload_queue": [
@@ -710,23 +710,23 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "foxville",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortville_25g",
-		"columbiaville_100g",
-		"columbiaville_25g",
-                "fortpark",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "IGC-I225_LM",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_25G-25G_SFP28",
+		"ICE_100G-E810C_QSFP",
+		"ICE_25G-E810C_SFP",
+                "I40E_10G-X722_A0",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "tunnel_filter_vxlan": [
@@ -735,20 +735,20 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_25g",
-                "foxville",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "IGC-I225_LM",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "2_tuple_filter": [
@@ -757,20 +757,20 @@
                 "ALL"
             ],
             "NIC": [
-                "bartonhills",
-                "powerville",
-                "fortville_eagle",
-                "fortville_25g",
-		"columbiaville_100g",
-		"columbiaville_25g",
-                "fortville_spirit",
-                "foxville"
+                "IGB_1G-82580_COPPER",
+                "IGB_1G-I350_COPPER",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+		"ICE_100G-E810C_QSFP",
+		"ICE_25G-E810C_SFP",
+                "I40E_40G-QSFP_A",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on bartonhills and powerville"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "fdir_for_nvgre": [
@@ -779,16 +779,15 @@
                 "ALL"
             ],
             "NIC": [
-                "twinville",
-                "sagepond",
-                "sageville",
-                "foxville"
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on twinville, sagepond and sageville"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "fdir_for_mac_vlan": [
@@ -797,21 +796,20 @@
                 "ALL"
             ],
             "NIC": [
-                "twinville",
-                "fortville_eagle",
-                "fortville_25g",
-		"columbiaville_25g",
-		"columbiaville_100g",
-                "fortville_spirit",
-                "sagepond",
-                "sageville",
-                "foxville"
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+		        "ICE_25G-E810C_SFP",
+		        "ICE_100G-E810C_QSFP",
+                "I40E_40G-QSFP_A",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on twinville,sagepond and sageville"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "n_tuple_filter": [
@@ -820,17 +818,16 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "kawela_4",
-                "kawela",
-                "twinville",
-                "foxville"
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-82576_QUAD_COPPER",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on twinville,niantic,kawela_4 and kawela"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "fdir_for_ipv4": [
@@ -839,24 +836,23 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "foxville",
-                "twinville",
-                "sagepond",
-                "sageville",
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville"
+                "IXGBE_10G-82599_SFP",
+                "IGC-I225_LM",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on niantic,twinville,sagepond,sageville and FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "fdir_for_L2_payload": [
@@ -865,20 +861,20 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
-		"foxville"
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "fdir_for_ipv6": [
@@ -887,24 +883,23 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "twinville",
-                "sagepond",
-                "sageville",
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "foxville",
-                "carlsville"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "IGC-I225_LM",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on niantic,twinville,sagepond,sageville and FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "fdir_for_vxlan": [
@@ -913,16 +908,15 @@
                 "ALL"
             ],
             "NIC": [
-                "twinville",
-                "sagepond",
-                "sageville",
-                "foxville"
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on twinville,sagepond and sageville"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "fdir_for_vlan": [
@@ -931,20 +925,20 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
-		"foxville"
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "ethertype_filter": [
@@ -953,28 +947,27 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "kawela_4",
-                "kawela",
-                "bartonhills",
-                "twinville",
-                "sagepond",
-                "sageville",
-                "powerville",
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
-                "foxville"
+                "IXGBE_10G-82599_SFP",
+                "IGB_1G-82576_QUAD_COPPER_ET2",
+                "IGB_1G-82576_QUAD_COPPER",
+                "IGB_1G-82580_COPPER",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "IGB_1G-I350_COPPER",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on niantic,kawela_4,kawela,bartonhills,twinville,sagepond,sageville,powerville and FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "flexbytes_filter": [
@@ -983,15 +976,15 @@
                 "ALL"
             ],
             "NIC": [
-                "bartonhills",
-                "powerville",
-                "foxville"
+                "IGB_1G-82580_COPPER",
+                "IGB_1G-I350_COPPER",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on bartonhills and powerville"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "L2_tunnel_filter": [
@@ -1000,15 +993,15 @@
                 "ALL"
             ],
             "NIC": [
-                "sagepond",
-                "sageville",
-                "foxville"
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on sagepond and sageville"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "fdir_for_flexbytes": [
@@ -1017,24 +1010,23 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "twinville",
-                "sagepond",
-                "sageville",
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
-		"foxville"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on niantic,twinville,sagepond,sageville and FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "tunnel_filter_nvgre": [
@@ -1043,20 +1035,20 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "carlsville",
-		"foxville"
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_10G-10G_BASE_T_BC",
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support on FVL"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_1ports_atq_atomic_performance": [
@@ -1072,7 +1064,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_1ports_atq_parallel_performance": [
@@ -1088,7 +1080,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_1ports_atq_order_performance": [
@@ -1104,7 +1096,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_1ports_queue_atomic_performance": [
@@ -1120,7 +1112,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_1ports_queue_parallel_performance": [
@@ -1136,7 +1128,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_1ports_queue_order_performance": [
@@ -1152,7 +1144,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_2ports_atq_atomic_performance": [
@@ -1168,7 +1160,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_2ports_atq_parallel_performance": [
@@ -1184,7 +1176,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_2ports_atq_order_performance": [
@@ -1200,7 +1192,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_2ports_queue_atomic_performance": [
@@ -1216,7 +1208,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_2ports_queue_parallel_performance": [
@@ -1232,7 +1224,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_2ports_queue_order_performance": [
@@ -1248,7 +1240,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_4ports_atq_atomic_performance": [
@@ -1264,7 +1256,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_4ports_atq_parallel_performance": [
@@ -1280,7 +1272,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_4ports_atq_order_performance": [
@@ -1296,7 +1288,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_4ports_queue_atomic_performance": [
@@ -1312,7 +1304,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_4ports_queue_parallel_performance": [
@@ -1328,7 +1320,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_4ports_queue_order_performance": [
@@ -1344,7 +1336,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_pipeline_1ports_atomic_performance": [
@@ -1360,7 +1352,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_pipeline_1ports_parallel_performance": [
@@ -1376,7 +1368,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_pipeline_1ports_order_performance": [
@@ -1392,7 +1384,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_pipeline_2ports_atomic_performance": [
@@ -1408,7 +1400,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_pipeline_2ports_parallel_performance": [
@@ -1424,7 +1416,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_pipeline_2ports_order_performance": [
@@ -1440,7 +1432,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_pipeline_4ports_atomic_performance": [
@@ -1456,7 +1448,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_pipeline_4ports_parallel_performance": [
@@ -1472,7 +1464,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_eventdev_pipeline_4ports_order_performance": [
@@ -1488,7 +1480,7 @@
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "dcd_4tc_queue_map_i40e": [
@@ -1497,9 +1489,9 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
@@ -1514,9 +1506,9 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
@@ -1531,9 +1523,9 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
@@ -1548,9 +1540,9 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
@@ -1565,9 +1557,9 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
@@ -1582,9 +1574,9 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "sagepond",
-                "sageville"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T"
             ],
             "Target": [
                 "ALL"
@@ -1599,9 +1591,9 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "sagepond",
-                "sageville"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T"
             ],
             "Target": [
                 "ALL"
@@ -1616,9 +1608,9 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "sagepond",
-                "sageville"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T"
             ],
             "Target": [
                 "ALL"
@@ -1633,9 +1625,9 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "sagepond",
-                "sageville"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T"
             ],
             "Target": [
                 "ALL"
@@ -1650,14 +1642,14 @@
                 "ALL"
             ],
             "NIC": [
-                "columbiaville_100g",
-                "columbiaville_25g"
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E810C_SFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for columbiaville"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "download_the_package_failed": [
@@ -1666,14 +1658,14 @@
                 "ALL"
             ],
             "NIC": [
-                "columbiaville_100g",
-                "columbiaville_25g"
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E810C_SFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for columbiaville"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_pvp_share_lib_of_fortville": [
@@ -1682,15 +1674,15 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for fortville_eagle/spirit/25g "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_pvp_share_lib_of_niantic": [
@@ -1699,13 +1691,13 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for niantic "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "packet_checking_scalar_mode": [
@@ -1716,15 +1708,15 @@
             "NIC": [
                 "cavium_a064",
                 "cavium_a063",
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit"
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 and cavium_a064 "
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "dcb_4tc_queue_map_i40e": [
@@ -1733,16 +1725,16 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "this case only support on fortville"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "dcb_8tc_queue_map_i40e": [
@@ -1751,16 +1743,16 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "this case only support on fortville"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "dcb_4tc_queue_map_ixgbe": [
@@ -1769,13 +1761,13 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for niantic"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "dcb_8tc_queue_map_ixgbe": [
@@ -1784,13 +1776,13 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "IXGBE_10G-82599_SFP"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for niantic"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "perf_kernel_pf_dpdk_iavf_perf_host_only": [
@@ -1799,15 +1791,15 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "this case only support on fortville"
+            "Comments": "the nic on the environment not support this case"
         }
     ],
     "ixgbe_vf_jumboframe": [
@@ -1816,8 +1808,8 @@
                 "ALL"
             ],
             "NIC": [
-                "sageville",
-		"twinpond"
+                "IXGBE_10G-X550T",
+		"IXGBE_10G-X540T"
             ],
             "Target": [
                 "ALL"
@@ -1832,14 +1824,14 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -1854,14 +1846,14 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -1876,14 +1868,14 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -1898,14 +1890,14 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -1920,14 +1912,14 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -1942,13 +1934,13 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -1963,13 +1955,13 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g",
-                "carlsville"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28",
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -1984,13 +1976,13 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
@@ -2005,13 +1997,13 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
@@ -2026,13 +2018,13 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
@@ -2047,13 +2039,13 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
@@ -2068,13 +2060,13 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "carlsville",
-                "fortville_spirit_single",
-                "fortpark_TLV",
-                "fortpark_BASE-T",
-                "fortville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "I40E_25G-25G_SFP28"
             ],
             "Target": [
                 "ALL"
@@ -2089,15 +2081,14 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "ironpond",
-                "twinpond",
-                "twinville",
-                "sageville",
-                "sagepond",
-                "springville",
-                "powerville",
-		"foxville"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-X540T",
+                "IXGBE_10G-X550T",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IGB_1G-I210_COPPER",
+                "IGB_1G-I350_COPPER",
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -2112,14 +2103,13 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "ironpond",
-                "twinpond",
-                "twinville",
-                "sageville",
-                "sagepond",
-                "springville",
-                "powerville"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-X540T",
+                "IXGBE_10G-X550T",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IGB_1G-I210_COPPER",
+                "IGB_1G-I350_COPPER"
             ],
             "Target": [
                 "ALL"
@@ -2134,15 +2124,14 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "ironpond",
-                "twinpond",
-                "twinville",
-                "sageville",
-                "sagepond",
-                "springville",
-                "powerville",
-		"foxville"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-X540T",
+                "IXGBE_10G-X550T",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IGB_1G-I210_COPPER",
+                "IGB_1G-I350_COPPER",
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -2157,15 +2146,14 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "ironpond",
-                "twinpond",
-                "twinville",
-                "sageville",
-                "sagepond",
-                "springville",
-                "powerville",
-		"foxville"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-X540T",
+                "IXGBE_10G-X550T",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IGB_1G-I210_COPPER",
+                "IGB_1G-I350_COPPER",
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -2180,15 +2168,14 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "ironpond",
-                "twinpond",
-                "twinville",
-                "sageville",
-                "sagepond",
-                "springville",
-                "powerville",
-		"foxville"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-X540T",
+                "IXGBE_10G-X550T",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IGB_1G-I210_COPPER",
+                "IGB_1G-I350_COPPER",
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -2203,15 +2190,14 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "ironpond",
-                "twinpond",
-                "twinville",
-                "sageville",
-                "sagepond",
-                "springville",
-                "powerville",
-		"foxville"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-X540T",
+                "IXGBE_10G-X550T",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IGB_1G-I210_COPPER",
+                "IGB_1G-I350_COPPER",
+		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -2226,15 +2212,14 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic",
-                "ironpond",
-                "twinpond",
-                "twinville",
-                "sageville",
-                "sagepond",
-                "springville",
-                "powerville",
-                "foxville"
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-X540T",
+                "IXGBE_10G-X550T",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IGB_1G-I210_COPPER",
+                "IGB_1G-I350_COPPER",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -2249,11 +2234,11 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "columbiaville_100g",
-                "columbiaville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E810C_SFP"
             ],
             "Target": [
                 "ALL"
@@ -2268,11 +2253,11 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_25g",
-                "fortville_spirit",
-                "columbiaville_100g",
-                "columbiaville_25g"
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E810C_SFP"
             ],
             "Target": [
                 "ALL"
