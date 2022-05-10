@@ -227,6 +227,7 @@ The following are the test plans for the DPDK DTS automated test system.
     vhost_virtio_pmd_interrupt_test_plan
     vhost_virtio_user_interrupt_test_plan
     virtio_event_idx_interrupt_test_plan
+    virtio_event_idx_interrupt_cbdma_test_plan
     virtio_ipsec_cryptodev_func_test_plan
     virtio_perf_cryptodev_func_test_plan
     virtio_smoke_test_plan
