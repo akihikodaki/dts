@@ -246,7 +246,7 @@ As we have prepared the zipped dpdk file and configuration file, just type the f
              dut.192.168.1.1: CC=gcc meson -Denable_kmods=True -Dlibdir=lib  --default-library=static x86_64-native-linuxapp-gcc
              ...
              dut.192.168.1.1: usertools/dpdk-devbind.py --force --bind=vfio-pci 0000:af:00.0 0000:af:00.1
-                        dts: NIC :        fortville_25g
+                        dts: NIC :        I40E_25G-25G_SFP28
              dut.192.168.1.1: meson configure -Dexamples=helloworld x86_64-native-linuxapp-gcc
              dut.192.168.1.1: ninja -C x86_64-native-linuxapp-gcc
              dut.192.168.1.1: ls x86_64-native-linuxapp-gcc/examples/dpdk-helloworld
@@ -295,7 +295,7 @@ The result files are generated in dts/output.
                 "driver": "vfio-pci",
                 "firmware": "8.00 0x80008c1a 1.2766.0",
                 "kdriver": "i40e-2.13.10",
-                "name": "fortville_25g"
+                "name": "I40E_25G-25G_SFP28"
             },
             "x86_64-native-linuxapp-gcc": {
                 "hello_world/test_hello_world_all_core": "passed"

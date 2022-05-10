@@ -310,11 +310,11 @@ failed for hugepage error.
          EAL: Error - exiting with code: 1
            Cause: Invalid EAL arguments
 
-trex quit when using Niantic
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+trex quit when using 82599
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-when bind dut NNT port to igb_uio, peer port will get a link down status, then
-trex server using NNT nic will quit.
+when bind dut 82599/500 Series port to igb_uio, peer port will get a link down status, then
+trex server using 82599/500 Series nic will quit.
 
 .. code-block:: console
 

@@ -32,7 +32,7 @@ First of all, you must configure execution.cfg as below:
 
   * nic_type: it is the type of the NIC to use. The types are defined in the file settings.py.
     There's a special type named as **cfg**, which mean network information will be loaded from file $DTS_CFG_FOLDER/ports.cfg.
-    If use NIC type such as niantic, fortville_25g, it requires all DUT are the same types and no any same devices connected to Tester,
+    If use NIC type such as 82599, Intel® Ethernet Network Adapter XXV710-DA2 , it requires all DUT are the same types and no any same devices connected to Tester,
     as DTS will test all devices connected to Tester. Therefore, recommend using **cfg**.
   * func=true: run only functional test.
   * perf=true: run only performance test.

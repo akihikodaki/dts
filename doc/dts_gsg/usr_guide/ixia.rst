@@ -100,7 +100,7 @@ You can set the test parameters according to your test needs.
    test_duration = 60
    accepted_tolerance = 1
    expected_throughput = {
-        'fortville_spirit': {
+        'I40E_40G-QSFP_A': {
             '1C/1T': {64: {512: 0.00, 2048: 0.00}},
             '1C/2T': {64: {512: 0.00, 2048: 0.00}}}}
 
@@ -215,7 +215,7 @@ After the Test Suite finished the validation, we can find the result files as be
 
 .. code-block:: console
 
-   fortville_25g_single_core_perf.json  dts.log  TestNicSingleCorePerf.log test_results.json
+   I40E_25G-25G_SFP28_single_core_perf.json  dts.log  TestNicSingleCorePerf.log test_results.json
 
 The performance case will save the data results in the jison file.
 And the pattern is "nic name + suite name.json".
@@ -223,7 +223,7 @@ Below is the json file of nic_single_core:
 
 .. code-block:: console
 
-      vim fortville_25g_single_core_perf.json
+      vim I40E_25G-25G_SFP28_single_core_perf.json
 
       {"test_perf_nic_single_core": [{
                 "performance": [{"name": "Throughput", "value": 69.505, "unit": "Mpps", "delta": 69.505}],

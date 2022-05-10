@@ -51,7 +51,7 @@ Both of them contain case names and results, also the failure reasons.
                 "driver": "vfio-pci",
                 "firmware": "8.00 0x80008c1a 1.2766.0",
                 "kdriver": "i40e-2.13.10",
-                "name": "fortville_25g"
+                "name": "I40E_25G-25G_SFP28"
             },
             "x86_64-native-linuxapp-gcc": {
                 "hello_world/test_hello_world_all_core": "passed"
@@ -76,7 +76,7 @@ Please see example for TestHelloWorld suite log as the following. This log file 
 
    31/12/2020 11:04:00                 INFO:
    TEST SUITE : TestHelloWorld
-   31/12/2020 11:04:00                 INFO: NIC :       fortville_25g
+   31/12/2020 11:04:00                 INFO: NIC :       I40E_25G-25G_SFP28
    31/12/2020 11:04:00        SUITE_DUT_CMD: meson configure -Dexamples=helloworld x86_64-native-linuxapp-gcc
    31/12/2020 11:04:01        SUITE_DUT_CMD: ninja -C x86_64-native-linuxapp-gcc
    31/12/2020 11:04:07     SUITE_DUT_OUTPUT: ninja: Entering directory `x86_64-native-linuxapp-gcc'^M

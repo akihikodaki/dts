@@ -84,7 +84,7 @@ Please see test cases, which are included in the DPDK compliance test suites:
     +---------------------+----------------------------------------------------------------------------------------------------------------------------+
     | jumbo_frame         | Tests jumbo frames features by Poll Mode Drivers                                                                           |
     +---------------------+----------------------------------------------------------------------------------------------------------------------------+
-    | testpmd             | Provides benchmark tests for the Intel Ethernet Controller (Niantic) Poll Mode Driver.                                     |
+    | testpmd             | Provides benchmark tests for the Intel Ethernet Controller (82599) Poll Mode Driver.                                       |
     +---------------------+----------------------------------------------------------------------------------------------------------------------------+
     | L3fwd               | Verifies Layer-3 Forwarding results using ``l3fwd`` application.                                                           |
     +---------------------+----------------------------------------------------------------------------------------------------------------------------+
