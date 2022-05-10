@@ -31,7 +31,7 @@
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==========================================================
-Niantic ixgbe_get_vf_queue Include Extra Information Tests
+82599 ixgbe_get_vf_queue Include Extra Information Tests
 ==========================================================
 
 Description

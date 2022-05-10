@@ -43,15 +43,15 @@ is based upon a simple L2 frame reflector.
 Prerequisites
 =============
 
-notice: On FVL, test case "test_dump_driver_info" need a physical link disconnect,
-this case must do manually at this condition.
+notice: On Intel® Ethernet 700 Series, test case "test_dump_driver_info"
+need a physical link disconnect, this case must do manually at this condition.
 
 Assume port 0 and 1 are connected to the traffic generator, to run the test
 application in linux app environment with 4 lcores, 2 ports::
 
     ethtool -c f -n 4
 
-The sample should be validated on Fortville, Niantic and i350 Nics.
+The sample should be validated on Intel® Ethernet 700 Series, 82599 and i350 Nics.
 
 other requirements:
 
@@ -76,7 +76,7 @@ linux's ethtool, were exactly the same::
     firmware-version: 0x61bf0001
 
 Use "link" command to dump all ports link status.
-Notice:: On FVL, link detect need a physical link disconnect::
+Notice:: On Intel® Ethernet 700 Series, link detect need a physical link disconnect::
 
     EthApp> link
     Port 0: Up
@@ -226,7 +226,7 @@ Test Case: Pause tx/rx test(performance test)
 
 Enable port 0 Rx pause frame and then create two packets flows on IXIA port.
 One flow is 100000 normally packet and the second flow is pause frame.
-Check that dut's port 0 Rx speed dropped status. For example, niantic will drop
+Check that dut's port 0 Rx speed dropped status. For example, 82599 will drop
 from 14.8Mpps to 7.49Mpps::
 
     EthApp> pause 0 rx

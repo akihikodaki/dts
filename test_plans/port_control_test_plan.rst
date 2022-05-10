@@ -40,9 +40,9 @@ Prerequisites
 
 1. Hardware:
 
-   * Fortville
-   * Niantic
-   * Columbiaville
+   * Intel® Ethernet 700 Series NIC
+   * 82599
+   * Intel® Ethernet 810 Series NIC
    * i350 NIC
    * e1000 emulated device
 

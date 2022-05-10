@@ -47,7 +47,8 @@ when priority is not active, flows are created on fdir then switch/ACL.
 when priority is active, flows are identified into 2 category: 
 High priority as permission stage that maps to switch/ACL,
 Low priority as distribution stage that maps to fdir,
-a no destination high priority rule is not acceptable, since it may be overwritten by a low priority rule due to cvl FXP behavior.
+a no destination high priority rule is not acceptable, since it may be overwritten
+by a low priority rule due to Intel® Ethernet 800 Series FXP behavior.
 
 Note: Since these tests are focus on priority, the patterns in tests are examples.
 

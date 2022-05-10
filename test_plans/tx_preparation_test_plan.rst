@@ -171,8 +171,8 @@ Captured packet::
 
 Note:
 Generally TSO only supports TCP packets but doesn't support UDP packets due to
-hardware segmentation limitation, for example packets are sent on niantic
-NIC, but not segmented.
+hardware segmentation limitation, for example packets are sent on 82599 NIC, but
+not segmented.
 
 
 Packet::

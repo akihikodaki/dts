@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=============================================================
-Wireless device for ICX-D (bbdev) for Turbo decoding/encoding
-=============================================================
+===========================================================================
+Wireless device for Xeon SP 83xx/63xx-D (bbdev) for Turbo decoding/encoding
+===========================================================================
 Description
 ===========
 
@@ -50,17 +50,16 @@ Description
    and virtual (software) wireless acceleration functions.
 
    Physical bbdev devices are discovered during the PCI probe/enumeration of
-   the EAL function which is executed at DPDK initialization, based on
-   their PCI device identifier, each unique PCI BDF (bus/bridge, device,
-   function).
+   the EAL function which is executed at DPDK initialization, based on their
+   PCI device identifier, each unique PCI BDF (bus/bridge, device, function).
    Virtual devices can be created by two mechanisms, either using the EAL
    command line options or from within the application using an EAL API
    directly.
-   so it is required to perform validation of the framework divided into
-   2 stages:
+   so it is required to perform validation of the framework divided into 2
+   stages:
    Stage 1: Validation of the SW-only solution (turbo_sw)
-   Stage 2: Validation of the HW-accelerated solution (ICX-D TIP) on an ICX-D
-   platform.
+   Stage 2: Validation of the HW-accelerated solution (Xeon SP 83xx/63xx-D TIP)
+   on an Xeon SP 83xx/63xx-D platform.
    We now only support stage 1.
 
 Prerequisites

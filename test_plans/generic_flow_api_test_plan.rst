@@ -38,7 +38,7 @@ Prerequisites
 =============
 
 1. Hardware:
-   Fortville and Niantic
+   Intel® Ethernet 700 Series and 82599
   
 2. software: 
    dpdk: http://dpdk.org/git/dpdk
@@ -52,8 +52,8 @@ Note: validate the rules first before create it in each case.
 All the rules that can be validated correctly should be created successfully.
 The rules can't be validated correctly shouldn't be created successfully.
 
-Test case: Fortville ethertype
-==============================
+Test case: Intel® Ethernet 700 Series ethertype
+===============================================
 
 1. Launch the app ``testpmd`` with the following arguments::
 
@@ -94,8 +94,8 @@ Test case: Fortville ethertype
     testpmd> flow list 0
 
 
-Test case: Fortville fdir for L2 payload
-========================================
+Test case: Intel® Ethernet 700 Series fdir for L2 payload
+=========================================================
 
 1. Launch the app ``testpmd`` with the following arguments::
 
@@ -128,8 +128,8 @@ Test case: Fortville fdir for L2 payload
     testpmd> flow list 0
 
 
-Test case: Fortville fdir for flexbytes
-=======================================
+Test case: Intel® Ethernet 700 Series fdir for flexbytes
+========================================================
 
 1. Launch the app ``testpmd`` with the following arguments::
 
@@ -205,8 +205,8 @@ Test case: Fortville fdir for flexbytes
     testpmd> flow create 0 ingress pattern eth / ipv4 src is 2.2.2.4 dst is 2.2.2.5 / sctp src is 42 / raw relative is 1 offset is 2 pattern is abcdefghijklmnop / end actions queue index 5 / end
     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / ipv6 src is 2001::1 dst is 2001::2 tc is 3 hop is 30 / tcp src is 32 dst is 33 / raw relative is 1 offset is 0 pattern is hijk / raw relative is 1 offset is 8 pattern is abcdefgh / end actions queue index 6 / end
 
-Test case: Fortville fdir for ipv4
-==================================
+Test case: Intel® Ethernet 700 Series fdir for ipv4
+===================================================
 
    Prerequisites:
    
@@ -310,8 +310,8 @@ Test case: Fortville fdir for ipv4
     testpmd> flow list 0
 
 
-Test case: Fortville fdir for ipv6
-==================================
+Test case: Intel® Ethernet 700 Series fdir for ipv6
+===================================================
 
    Prerequisites:
 
@@ -396,8 +396,8 @@ Test case: Fortville fdir for ipv6
     testpmd> flow list 0
 
 
-Test case: Fortville fdir wrong parameters
-==========================================
+Test case: Intel® Ethernet 700 Series fdir wrong parameters
+===========================================================
 
 1. Launch the app ``testpmd`` with the following arguments::
 
@@ -449,8 +449,8 @@ Note:
 /// not support IP fragment ///
 
 
-Test case: Fortville tunnel vxlan
-=================================
+Test case: Intel® Ethernet 700 Series tunnel vxlan
+==================================================
 
    Prerequisites:
 
@@ -552,8 +552,8 @@ Test case: Fortville tunnel vxlan
     testpmd> flow list 0
 
 
-Test case: Fortville tunnel nvgre
-=================================
+Test case: Intel® Ethernet 700 Series tunnel nvgre
+==================================================
 
    Prerequisites:
 
@@ -1494,8 +1494,8 @@ Test case: igb flexbytes
     testpmd> flow flush 0
     testpmd> flow list 0
 
-Test case: Fortville fdir for l2 mac
-====================================
+Test case: Intel® Ethernet 700 Series fdir for l2 mac
+=====================================================
     Prerequisites:
 
     bind the PF to dpdk driver::
@@ -2007,7 +2007,7 @@ Test case: Dual vlan(QinQ)
 
 1. config testpmd on DUT
 
-   1. set up testpmd with Fortville NICs::
+   1. set up testpmd with Intel® Ethernet 700 Series NICs::
 
          ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x1 --rxq=16 --txq=16
 
@@ -2105,7 +2105,7 @@ Test Case: 10GB Multiple filters
 
 1. config testpmd on DUT
 
-   1. set up testpmd with Fortville NICs::
+   1. set up testpmd with Intel® Ethernet 700 Series NICs::
 
          ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1,2,3,4,5,6,7,8 -n 4 -- -i --disable-rss --rxq=16 --txq=16
 
@@ -2179,7 +2179,7 @@ queue 1.
 Test Case: jumbo framesize filter
 ===================================
 
-This case is designed for NIC (niantic,I350, 82576 and 82580). Since
+This case is designed for NIC (82599, I350, 82576 and 82580). Since
 ``Testpmd`` could transmits packets with jumbo frame size , it also could
 transmit above packets on assigned queue.  Launch the app ``testpmd`` with the
 following arguments::
@@ -2216,7 +2216,7 @@ the packet are not received on the queue 2::
 Test Case: 64 queues
 ========================
 
-This case is designed for NIC(niantic). Default use 64 queues for test
+This case is designed for NIC(82599). Default use 64 queues for test
 
 Launch the app ``testpmd`` with the following arguments::
 
@@ -2230,7 +2230,7 @@ Launch the app ``testpmd`` with the following arguments::
     testpmd>vlan set filter off 1
 
 Create the 5-tuple Filters with different queues (32,63) on port 0 for
-niantic::
+82599::
 
     testpmd> set stat_qmap rx 0 32 1
     testpmd> flow create 0 ingress pattern eth / ipv4 dst is 2.2.2.5 src is 2.2.2.4 / tcp dst is 1 src is 1 / end actions queue index 32 / end

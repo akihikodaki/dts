@@ -71,7 +71,7 @@ Prerequisites
 =============
 
 1. Host PF in DPDK driver. Create 2 VFs from 1 PF with dpdk driver, take
-   Niantic for example::
+   82599 for example::
 
         ./usertools/dpdk-devbind.py -b igb_uio 81:00.0
         echo 2 >/sys/bus/pci/devices/0000:81:00.0/max_vfs

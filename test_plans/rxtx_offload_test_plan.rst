@@ -65,7 +65,7 @@ Prerequisites
 =============
 
 1. Hardware:
-   FVL/NNT
+   Intel® Ethernet 700 Series and 82599/500 Series
 
 2. Software:
    dpdk: http://dpdk.org/git/dpdk
@@ -168,8 +168,8 @@ Test case: Rx offload per-port and per_queue setting
 
    Check the configuration and the port can start normally.
 
-Test case: NNT Rx offload per-queue setting
-===========================================
+Test case: 82599/500 Series Rx offload per-queue setting
+========================================================
 
 1. Start testpmd::
 
@@ -514,8 +514,8 @@ Test case: Tx offload per-queue and per-port setting
 
    Check the configuration and the port can start normally.
 
-Test case: FVL Tx offload per-queue setting
-===========================================
+Test case: Intel® Ethernet 700 Series Tx offload per-queue setting
+==================================================================
 
 1. Start testpmd and get the tx_offload capability and configuration::
 

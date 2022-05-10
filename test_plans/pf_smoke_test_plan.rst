@@ -46,7 +46,7 @@ Prerequisites
 
 1. Hardware:
 
-    niantic/fortville/columbiaville
+    82599/Intel® Ethernet 700 Series/Intel® Ethernet 800 Series
 
 2. Software:
 

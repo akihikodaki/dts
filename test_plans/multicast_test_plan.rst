@@ -70,7 +70,7 @@ Prerequisites
 
 - Board is populated with 2x 10GbE ports. Special PCIe restrictions may
   be required for performance. For example, the following requirements should be
-  met for Intel 82599 (Niantic) NICs:
+  met for 82599 NICs:
 
 	- NICs are plugged into PCIe Gen2 or Gen3 slots
 	- For PCIe Gen2 slots, the number of lanes should be 8x or higher

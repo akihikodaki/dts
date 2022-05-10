@@ -60,7 +60,7 @@ Test flow: TG-->nic-->vswitch-->virtio-user-->vswitch-->nic-->TG
 
 Hardware
 --------
-Supportted NICs: all except columbiaville that not support VMDQ
+Supportted NICs: all except Intel® Ethernet 800 Series that not support VMDQ
 
 Software
 --------

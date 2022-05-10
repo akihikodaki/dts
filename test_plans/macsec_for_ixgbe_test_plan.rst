@@ -31,13 +31,13 @@
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ====================================================
-Niantic Media Access Control Security (MACsec) Tests
+82599 Media Access Control Security (MACsec) Tests
 ====================================================
 
 Description
 ===========
 
-This document provides test plan for testing the MACsec function of Niantic:
+This document provides test plan for testing the MACsec function of 82599:
 
 IEEE 802.1AE:  https://en.wikipedia.org/wiki/IEEE_802.1AE
 Media Access Control Security (MACsec) is a Layer 2 security technology
@@ -50,9 +50,9 @@ in the hardware.
 As a hop-to-hop Layer 2 security feature, MACsec can be combined with
 Layer 3 security technologies such as IPsec for end-to-end data security.
 
-MACsec was removed in Fortville since Data Center customers don’t require it.
-MACsec can be used for LAN / VLAN, Campus, Cloud and NFV environments
-(Guest and Overlay) to protect and encrypt data on the wire.
+MACsec was removed in Intel® Ethernet 700 Series since Data Center customers
+don’t require it. MACsec can be used for LAN / VLAN, Campus, Cloud and NFV
+environments (Guest and Overlay) to protect and encrypt data on the wire.
 One benefit of a SW approach to encryption in the cloud is that the payload
 is encrypted by the tenant, not by the tunnel provider, thus the tenant has
 full control over the keys.
@@ -72,7 +72,7 @@ Prerequisites
 
 1. Hardware:
 
-   * 1x Niantic NIC (2x 10G)
+   * 1x 82599 NIC (2x 10G)
      ::
 
        port0:

@@ -30,18 +30,18 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-===============================================
-Fortville Cloud filters for QinQ steering Tests
-===============================================
-This document provides test plan for testing the function of Fortville:
+================================================================
+Intel® Ethernet 700 Series Cloud filters for QinQ steering Tests
+================================================================
+This document provides test plan for testing the function of Intel® Ethernet 700 Series:
 QinQ filter function
 
 Prerequisites
 =============
 1.Hardware:
-   Fortville
+   Intel® Ethernet 700 Series
    HarborChannel_DP_OEMGEN_8MB_J24798-001_0.65_80002DA4 
-   firmware-version: 5.70 0x80002da4 1.3908.0(fortville 25G) or 6.0.0+
+   firmware-version: 5.70 0x80002da4 1.3908.0(Intel® Ethernet Network Adapter XXV710-DA2) or 6.0.0+
    
 2.Software: 
   dpdk: http://dpdk.org/git/dpdk
@@ -53,7 +53,7 @@ Test Case 1: test qinq packet type
 
 Testpmd configuration - 4 RX/TX queues per port
 ------------------------------------------------
-#. set up testpmd with fortville NICs::
+#. set up testpmd with Intel® Ethernet 700 Series NICs::
 
       ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1f -n 4 -- -i --rxq=4 --txq=4 --disable-rss
 
@@ -86,7 +86,7 @@ Test Case 2: qinq packet filter to PF queues
 Testpmd configuration - 4 RX/TX queues per port
 -----------------------------------------------
 
-#. set up testpmd with fortville NICs::
+#. set up testpmd with Intel® Ethernet 700 Series NICs::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1f -n 4 -- -i --rxq=4 --txq=4 --disable-rss
 
@@ -129,7 +129,7 @@ Test Case 3: qinq packet filter to VF queues
 
     linux cmdline: ./usertools/dpdk-devbind.py -b igb_uio 81:02.0 81:02.1
  
-#. set up testpmd with fortville PF NICs::
+#. set up testpmd with Intel® Ethernet 700 Series PF NICs::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1f -n 4 --socket-mem=1024,1024 --file-prefix=pf -a 81:00.0 -- -i --rxq=4 --txq=4
 
@@ -155,7 +155,7 @@ Test Case 3: qinq packet filter to VF queues
     testpmd command: flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 4094 / end actions vf id 1 / queue index 3 / end
     testpmd command: flow create 0 ingress pattern eth / vlan tci is 3 / vlan tci is 4094 / end actions pf / queue index 1 / end
 
-#. set up testpmd with fortville VF0 NICs::
+#. set up testpmd with Intel® Ethernet 700 Series VF0 NICs::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3e0 -n 4 --socket-mem=1024,1024 --file-prefix=vf0 -a 81:02.0 -- -i --rxq=4 --txq=4
 
@@ -171,7 +171,7 @@ Test Case 3: qinq packet filter to VF queues
 
     testpmd command: start
 
-#. set up testpmd with fortville VF1 NICs::
+#. set up testpmd with Intel® Ethernet 700 Series VF1 NICs::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7c0 -n 4 --socket-mem=1024,1024 --file-prefix=vf1 -a 81:02.1 -- -i --rxq=4 --txq=4
 
@@ -206,7 +206,7 @@ Test Case 4: qinq packet filter with different tpid
 
     linux cmdline: ./usertools/dpdk-devbind.py -b igb_uio 81:02.0 81:02.1
  
-#. set up testpmd with fortville PF NICs::
+#. set up testpmd with Intel® Ethernet 700 Series PF NICs::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x1f -n 4 --socket-mem=1024,1024 --file-prefix=pf -a 81:00.0 -- -i --rxq=4 --txq=4
 
@@ -236,7 +236,7 @@ Test Case 4: qinq packet filter with different tpid
     testpmd command: flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 4094 / end actions vf id 1 / queue index 3 / end
     testpmd command: flow create 0 ingress pattern eth / vlan tci is 3 / vlan tci is 4094 / end actions pf / queue index 1 / end
 
-#. set up testpmd with fortville VF0 NICs::
+#. set up testpmd with Intel® Ethernet 700 Series VF0 NICs::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3e0 -n 4 --socket-mem=1024,1024 --file-prefix=vf0 -a 81:02.0 -- -i --rxq=4 --txq=4
 
@@ -252,7 +252,7 @@ Test Case 4: qinq packet filter with different tpid
 
     testpmd command: start
 
-#. set up testpmd with fortville VF1 NICs::
+#. set up testpmd with Intel® Ethernet 700 Series VF1 NICs::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7c0 -n 4 --socket-mem=1024,1024 --file-prefix=vf1 -a 81:02.1 -- -i --rxq=4 --txq=4
 

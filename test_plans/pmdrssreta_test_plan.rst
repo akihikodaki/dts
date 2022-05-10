@@ -31,12 +31,12 @@
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ======================================
-Niantic Reta (Redirection table) Tests
+82599 Reta (Redirection table) Tests
 ======================================
 
 This document provides test plan for benchmarking of Rss reta(Redirection
 table) updating for the Intel® 82599 10 Gigabit Ethernet Controller
-(Niantic) Poll Mode Driver (PMD) in userland runtime configurations.
+(82599) Poll Mode Driver (PMD) in userland runtime configurations.
 The content of Rss Redirection table are not defined following reset
 of the Memory Configuration registers. System software must initialize
 the table prior to enabling multiple receive queues .It can also update
@@ -46,7 +46,7 @@ not synchronized with the arrival time of received packets.
 Prerequisites
 =============
 
-2x Intel® 82599 (Niantic) NICs (2x 10GbE full duplex optical ports per NIC)
+2x Intel® 82599 (82599) NICs (2x 10GbE full duplex optical ports per NIC)
 plugged into the available PCIe Gen2 8-lane slots. To avoid PCIe bandwidth
 bottlenecks at high packet rates, a single optical port from each NIC is
 connected to the traffic  generator.

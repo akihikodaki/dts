@@ -36,15 +36,19 @@ IAVF Flexible Package and driver error handle check
 
 Description
 ===========
-1. The feature is to check the CVL 100G and 25G NIC, when the using old version driver and latest DDP package, 
-   will cause to the RSS rule create fail, because the old version driver vers does not support RSS feature in iavf.
-2. The feature is to check the CVL 100G and 25G NIC, when the using old version ddp package or invalide ddp package and latest version driver,
-   wll cause to the VF start fail, because the old version package or invalid package does not support VF create for the IAVF
+1. The feature is to check the Intel® Ethernet 800 Series 100G and 25G NIC,
+   when the using old version driver and latest DDP package, will cause to
+   the RSS rule create fail, because the old version driver vers does not
+   support RSS feature in iavf.
+2. The feature is to check the Intel® Ethernet 800 Series 100G and 25G NIC,
+   when the using old version ddp package or invalide ddp package and latest
+   version driver, wll cause to the VF start fail, because the old version
+   package or invalid package does not support VF create for the IAVF
 
 Prerequisites
 =============
 1. Hardware:
-   columbiaville_25g/columbiaville_100g
+   Intel® Ethernet 800 Series: E810-XXVDA4/E810-CQ
 
 2. Software:
    dpdk: http://dpdk.org/git/dpdk

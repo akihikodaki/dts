@@ -52,11 +52,11 @@ Requirements
 5. Requirements 1 and 2 should be possible for IPv6 addresses to use 64,
    48 or 32-bit prefixes instead of full address.
 
-FVL supports queue regions configuration for RSS, so different traffic 
-classes or different packet classification types can be separated to 
-different queue regions which includes several queues. Support to set 
-hash input set info for RSS flexible payload, then enable new 
-protocols' RSS.
+Intel® Ethernet 700 Series supports queue regions configuration for RSS,
+so different traffic classes or different packet classification types
+can be separated to different queue regions which includes several queues.
+Support to set hash input set info for RSS flexible payload, then enable
+new protocols' RSS.
 Dynamic flow type feature introduces GTP pctype and flow type, design 
 and add queue region/queue range mapping as below table. For more detailed 
 and relative information, please refer to dynamic flow type and queue 

@@ -38,7 +38,7 @@ Prerequisites
 =============
 
 1. Hardware:
-   Fortville
+   Intel® Ethernet 700 Series
 
 2. software:
    dpdk: http://dpdk.org/git/dpdk

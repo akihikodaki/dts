@@ -34,8 +34,8 @@
 TestPMD PCAP Tests
 ==================
 
-This document provides tests for the userland Intel(R)
-82599 Gigabit Ethernet Controller (Niantic) Poll Mode Driver (PMD) when using
+This document provides tests for the userland Intel(R) 82599
+Gigabit Ethernet Controller Poll Mode Driver (PMD) when using
 pcap files as input and output.
 
 The core configurations description is:

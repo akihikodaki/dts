@@ -713,8 +713,8 @@ Test case: Set queue region in rte_flow with invalid parameter (I40E)
 Test case: Queue region and RSS rule combination (I40E)
 =======================================================
 
-Notes: Queue region is only supported by fortville, so this case only can
-be implemented with fortville.
+Notes: Queue region is only supported by Intel® Ethernet 700 Series, so this case only can
+be implemented with Intel® Ethernet 700 Series.
 
 1. Start the testpmd::
 

@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-========================================================
-Fortville Dynamic Mapping of Flow Types to PCTYPEs Tests
-========================================================
+=========================================================================
+Intel® Ethernet 700 Series Dynamic Mapping of Flow Types to PCTYPEs Tests
+=========================================================================
 
 More protocols can be added dynamically using dynamic device personalization 
 profiles (DDP).
@@ -46,8 +46,8 @@ SW RTE_ETH_FLOW type mapping is proposed.
 
 Dynamic flow type mapping will eliminate usage of number of hard-coded flow 
 types in bulky if-else statements. For instance, when configure hash enable 
-flags for RSS in i40e_config_hena() function and will make partitioning FVL
-in i40e PMD more scalable. 
+flags for RSS in i40e_config_hena() function and will make partitioning
+Intel® Ethernet 700 Series in i40e PMD more scalable.
 
 I40e PCTYPEs are statically mapped to RTE_ETH_FLOW_* types in DPDK, defined in 
 rte_eth_ctrl.h, and flow types used to define ETH_RSS_* offload types in 

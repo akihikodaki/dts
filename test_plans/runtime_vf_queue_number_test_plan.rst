@@ -62,7 +62,7 @@ Prerequisites
 
 1. Hardware:
 
--  Fortville(X710/XXV710/XL710)
+-  Intel® Ethernet 700 Series(X710/XXV710/XL710)
 
 2. Software:
 

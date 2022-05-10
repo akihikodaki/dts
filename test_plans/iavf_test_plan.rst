@@ -37,8 +37,8 @@ DPDK IAVF API Tests
 Intel Adaptive Virtual Function(IAVF)
 
 Hardwares
-=======================
-I40E driver NIC (Fortville XXV710, Fortville Spirit, Fortville Eagle)
+================================================================
+I40E driver NIC (Intel® Ethernet 700 Series XXV710, XL710, X710)
 
 
 Prerequisites

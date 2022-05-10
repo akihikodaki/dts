@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-===================================================================
-Fortville: Support of RX Packet Filtering using VMDQ & DCB Features
-===================================================================
+====================================================================================
+Intel® Ethernet 700 Series: Support of RX Packet Filtering using VMDQ & DCB Features
+====================================================================================
 
 The Intel Network Interface Card(e.g. XL710), supports a number of
 packet filtering functions which can be used to distribute incoming packets

@@ -41,7 +41,7 @@ Prerequisites
 
 1. Hardware:
 
-   * Fortville 4*10G NIC (driver: i40e)
+   * Intel® Ethernet 700 Series 4*10G NIC (driver: i40e)
    * tester: ens3f0
    * dut: ens5f0(pf0), ens5f1(pf1)
    * ens3f0 connect with ens5f0 by cable

@@ -42,24 +42,25 @@ http://www.ieee802.org/802_tutorials/2009-11
 /evb-tutorial-draft-20091116_v09.pdf
 
 Virtual Ethernet Bridge (VEB) - This is an IEEE EVB term. A VEB is a VLAN
-Bridge internal to Fortville that bridges the traffic of multiple VSIs over
-an internal virtual network.
+Bridge internal to Intel® Ethernet 700 Series that bridges the traffic of
+multiple VSIs over an internal virtual network.
 
 Virtual Ethernet Port Aggregator (VEPA) - This is an IEEE EVB term. A VEPA
-multiplexes the traffic of one or more VSIs onto a single Fortville Ethernet
-port. The biggest difference between a VEB and a VEPA is that a VEB can
-switch packets internally between VSIs, whereas a VEPA cannot.
+multiplexes the traffic of one or more VSIs onto a single Intel® Ethernet
+700 Series Ethernet port. The biggest difference between a VEB and a VEPA
+is that a VEB can switch packets internally between VSIs, whereas a VEPA
+cannot.
 
 Virtual Station Interface (VSI) - This is an IEEE EVB term that defines
 the properties of a virtual machine's (or a physical machine's) connection
-to the network. Each downstream v-port on a Fortville VEB or VEPA defines
-a VSI. A standards-based definition of VSI properties enables network
-management tools to perform virtual machine migration and associated network
-re-configuration in a vendor-neutral manner.
+to the network. Each downstream v-port on a Intel® Ethernet 700 Series VEB
+or VEPA defines a VSI. A standards-based definition of VSI properties enables
+network management tools to perform virtual machine migration and associated
+network re-configuration in a vendor-neutral manner.
 
 My understanding of VEB is that it's an in-NIC switch(MAC/VLAN), and it can
 support VF->VF, PF->VF, VF->PF packet forwarding according to the NIC internal
-switch. It's similar as Niantic's SRIOV switch.
+switch. It's similar as 82599's SRIOV switch.
 
 Floating VEB Introduction
 =========================

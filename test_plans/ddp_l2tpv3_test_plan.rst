@@ -35,7 +35,8 @@ DDP L2TPV3
 ==========
 
 DDP profile 0x80000004 adds support for directing L2TPv3 packets based on
-their session ID for FVL NIC. For DDP introduction, please refer to :
+their session ID for Intel® Ethernet 700 Series NIC. For DDP introduction,
+please refer to :
 
  https://software.intel.com/en-us/articles/dynamic-device-personalization-for-intel-ethernet-700-series
 
@@ -62,7 +63,7 @@ Requirements as below
 =====================
 
 Flow API support for flow director rules based on L2TPv3 session ID
-The current scope is limited to FVL NIC
+The current scope is limited to Intel® Ethernet 700 Series NIC
 
 Prerequisites
 =============

@@ -40,7 +40,7 @@ Description
 This document provides the plan for testing the TSO (Transmit Segmentation
 Offload, also called Large Send offload - LSO) feature of
 Intel Ethernet Controller, including Intel 82599 10GbE Ethernet Controller and
-Fortville 40GbE Ethernet Controller. TSO enables the TCP/IP stack to
+Intel® Ethernet Converged Network Adapter XL710-QDA2. TSO enables the TCP/IP stack to
 pass to the network device a larger ULP datagram than the Maximum Transmit
 Unit Size (MTU). NIC divides the large ULP datagram to multiple segments
 according to the MTU size.

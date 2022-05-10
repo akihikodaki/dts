@@ -47,9 +47,9 @@ see runtime_vf_queue_number_test_plan.rst
     The datasheet xl710-10-40-controller-datasheet2017.pdf described in page 10:
     "The 710 series supports up to 1536 LQPs that can be assigned to PFs or VFs as needed".
 
-    For four ports Fortville NIC, each port has 384 queues,
+    For four ports Intel® Ethernet 700 Series NIC, each port has 384 queues,
     the total queues number is 384 * 4 = 1536.
-    For two ports Fortville NIC, each port has 768 queues,
+    For two ports Intel® Ethernet 700 Series NIC, each port has 768 queues,
     the total queues number is 768 * 2 = 1536.
 
 - Queues PF used
@@ -76,7 +76,7 @@ Prerequisites
 
 1. Hardware:
 
-- Fortville(X710/XXV710/XL710)
+- Intel® Ethernet 700 Series(X710/XXV710/XL710)
 
 2. Software:
 
@@ -90,11 +90,11 @@ Set up scenario
 ===============
 
 1. Set up max VFs from one PF with DPDK driver
-   Create 32 vfs on four ports fortville NIC::
+   Create 32 vfs on four ports Intel® Ethernet 700 Series NIC::
 
     echo 32 > /sys/bus/pci/devices/0000\:05\:00.0/max_vfs
 
-   Create 64 vfs on two ports fortville NIC::
+   Create 64 vfs on two ports Intel® Ethernet 700 Series NIC::
 
     echo 64 > /sys/bus/pci/devices/0000\:05\:00.0/max_vfs
 
@@ -152,7 +152,7 @@ Test case 2: set max queue number per vf on one pf port
 ================================================================
 1. Start the PF testpmd with VF max queue number 16::
    As the feature description describe, the max value of queue-num-per-vf is 8
-   for Both two and four ports Fortville NIC::
+   for Both two and four ports Intel® Ethernet 700 Series NIC::
 
     ./<build_target>/app/dpdk-testpmd -c f -n 4 -a 05:00.0,queue-num-per-vf=16 --file-prefix=test1 \
     --socket-mem 1024,1024 -- -i

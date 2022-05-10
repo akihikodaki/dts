@@ -45,7 +45,7 @@ Prerequisites
    - For each CPU socket, each memory channel should be populated with at least 1x DIMM
    - Board is populated with at least 2x 1GbE or 10GbE ports. Special PCIe restrictions may
      be required for performance. For example, the following requirements should be
-     met for Intel 82599 (Niantic) NICs:
+     met for Intel 82599 NICs:
 
        - NICs are plugged into PCIe Gen2 or Gen3 slots
        - For PCIe Gen2 slots, the number of lanes should be 8x or higher

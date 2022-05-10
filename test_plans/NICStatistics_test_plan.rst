@@ -35,10 +35,10 @@ NIC Statistics Tests
 ====================
 
 This document provides benchmark tests for the userland Intel®
-82599 Gigabit Ethernet Controller (Niantic) Poll Mode Driver (PMD).
+82599 Gigabit Ethernet Controller Poll Mode Driver (PMD).
 The userland PMD application runs the ``IO forwarding mode`` test
 described in the PMD test plan document with different parameters for
-the configuration of Niantic NIC ports.
+the configuration of 82599 NIC ports.
 
 The core configuration description is:
 

@@ -128,7 +128,7 @@ The fields checked are RX-packets and TX-packets of each queue stats,
 RX-packets, RX-bytes, TX-packets and TX-bytes of each port stats,
 rx_good_packets and rx_good_bytes of each port xstats,
 tx_good_packets and tx_good_bytes of each port xstats,
-FVL does not support hardware per queue stats,
+Intel® Ethernet 700 Series does not support hardware per queue stats,
 so we won't check rx and tx per queue stats.
 
 Test Case: PF xstatus Checks
@@ -260,7 +260,7 @@ Test Case: PF xstatus Checks
 
 verify rx_good_packets, RX-packets of port 0 and tx_good_packets, TX-packets of port 1 are both 100.
 rx_good_bytes, RX-bytes of port 0 and tx_good_bytes, TX-bytes of port 1 are the same.
-FVL does not support hardware per queue stats,
+Intel® Ethernet 700 Series does not support hardware per queue stats,
 so rx_qx_packets and rx_qx_bytes are both 0.
 tx_qx_packets and tx_qx_bytes are both 0 too.
 

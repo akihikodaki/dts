@@ -80,8 +80,8 @@ Prerequisites for Bonding
 
 * NIC and IXIA ports requirements.
 
-  - Tester: have 4 10Gb (Niantic) ports and 4 1Gb ports.
-  - DUT: have 4 10Gb (Niantic) ports and 4 1Gb ports. All functional tests should be done on both 10G and 1G port.
+  - Tester: have 4 10Gb (82599) ports and 4 1Gb ports.
+  - DUT: have 4 10Gb (82599) ports and 4 1Gb ports. All functional tests should be done on both 10G and 1G port.
   - IXIA: have 4 10G ports and 4 1G ports. IXIA is used for performance test.
 
 * BIOS settings on DUT:

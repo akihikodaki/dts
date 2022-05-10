@@ -43,37 +43,37 @@ The following are the test plans for the DPDK DTS automated test system.
     basic_4k_pages_cbdma_test_plan
     checksum_offload_test_plan
     coremask_test_plan
-    cvl_advanced_rss_test_plan
-    cvl_advanced_rss_gtpu_test_plan
-    cvl_advanced_rss_pppoe_test_plan
-    cvl_advanced_rss_gtpogre_test_plan
-    cvl_advanced_iavf_rss_test_plan
-    cvl_advanced_iavf_rss_gtpu_test_plan
-    cvl_advanced_iavf_rss_gtpogre_test_plan
-    cvl_advanced_iavf_rss_vlan_esp_ah_l2tp_pfcp_test_plan
-    cvl_advanced_iavf_rss_pppol2tpoudp_test_plan
-    cvl_advanced_rss_vlan_esp_ah_l2tp_pfcp_test_plan
-    cvl_dcf_acl_filter_test_plan
-    cvl_dcf_date_path_test_plan
-    cvl_dcf_switch_filter_test_plan
-    cvl_dcf_switch_filter_pppoe_test_plan
-    cvl_dcf_switch_filter_gtpu_test_plan
-    cvl_dcf_flow_priority_test_plan
-    cvl_flow_priority_test_plan
-    cvl_dcf_qos_test_plan
-    cvl_ecpri_test_plan
-    cvl_fdir_test_plan
-    cvl_ip_fragment_rte_flow_test_plan
-    cvl_iavf_ip_fragment_rte_flow_test_plan
-    cvl_iavf_rss_configure_test_plan
-    cvl_iavf_fdir_pppol2tpoudp_test_plan
-    cvl_limit_value_test_test_plan
-    cvl_qinq_test_plan
-    cvl_rss_configure_test_plan
-    cvl_switch_filter_test_plan
-    cvl_switch_filter_pppoe_test_plan
-    cvl_vf_support_multicast_address_test_plan
-    cvl_1pps_signal_test_plan
+    ice_advanced_rss_test_plan
+    ice_advanced_rss_gtpu_test_plan
+    ice_advanced_rss_pppoe_test_plan
+    ice_advanced_rss_gtpogre_test_plan
+    ice_advanced_iavf_rss_test_plan
+    ice_advanced_iavf_rss_gtpu_test_plan
+    ice_advanced_iavf_rss_gtpogre_test_plan
+    ice_advanced_iavf_rss_vlan_esp_ah_l2tp_pfcp_test_plan
+    ice_advanced_iavf_rss_pppol2tpoudp_test_plan
+    ice_advanced_rss_vlan_esp_ah_l2tp_pfcp_test_plan
+    ice_dcf_acl_filter_test_plan
+    ice_dcf_date_path_test_plan
+    ice_dcf_switch_filter_test_plan
+    ice_dcf_switch_filter_pppoe_test_plan
+    ice_dcf_switch_filter_gtpu_test_plan
+    ice_dcf_flow_priority_test_plan
+    ice_flow_priority_test_plan
+    ice_dcf_qos_test_plan
+    ice_ecpri_test_plan
+    ice_fdir_test_plan
+    ice_ip_fragment_rte_flow_test_plan
+    ice_iavf_ip_fragment_rte_flow_test_plan
+    ice_iavf_rss_configure_test_plan
+    ice_iavf_fdir_pppol2tpoudp_test_plan
+    ice_limit_value_test_test_plan
+    ice_qinq_test_plan
+    ice_rss_configure_test_plan
+    ice_switch_filter_test_plan
+    ice_switch_filter_pppoe_test_plan
+    ice_vf_support_multicast_address_test_plan
+    ice_1pps_signal_test_plan
     cloud_filter_with_l4_port_test_plan
     dcf_lifecycle_test_plan
     crypto_perf_cryptodev_perf_test_plan
@@ -92,12 +92,12 @@ The following are the test plans for the DPDK DTS automated test system.
     firmware_version_test_plan
     floating_veb_test_plan
     flow_classify_softnic_test_plan
-    fortville_rss_input_test_plan
+    i40e_rss_input_test_plan
     generic_flow_api_test_plan
     hotplug_mp_test_plan
     hotplug_test_plan
-    iavf_fdir_test_plan
-    iavf_fdir_gtpogre_test_plan
+    ice_iavf_fdir_test_plan
+    ice_iavf_fdir_gtpogre_test_plan
     iavf_flexible_descriptor_test_plan
     iavf_package_driver_error_handle_test_plan
     ieee1588_test_plan

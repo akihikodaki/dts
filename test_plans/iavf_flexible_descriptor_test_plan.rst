@@ -31,7 +31,7 @@
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ============================
-CVL IAVF Flexible Descriptor
+ICE IAVF Flexible Descriptor
 ============================
 
 
@@ -39,15 +39,16 @@ Description
 ===========
 
 To carry more metadata to descriptor and fill them to mbuf to save CPU cost on packet parsing.
-CVL flexible descriptor capability can be used. iavf driver could negotiate descriptor format with PF driver by virtchnl.
-It is implemented in DPDK20.11, and requires ice base driver >= 1.3.0.
+Intel® Ethernet 800 Series flexible descriptor capability can be used. iavf driver could
+negotiate descriptor format with PF driver by virtchnl. It is implemented in DPDK20.11, and
+requires ice base driver >= 1.3.0.
 
 Prerequisites
 =============
 
 1. NIC requires
 
-   - Intel E810 series ethernet cards: columbiaville_25g, columbiaville_100g, etc.
+   - Intel® Ethernet 800 Series ethernet cards: E810-XXVDA4/E810-CQ, etc.
 
 2. Toplogy
 

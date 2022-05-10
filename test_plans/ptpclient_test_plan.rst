@@ -48,7 +48,7 @@ Case Config::
 
     Meson: For support IEEE1588, build DPDK with '-Dc_args=-DRTE_LIBRTE_IEEE1588'
 
-The sample should be validated on Forville, Niantic and i350 Nics. 
+The sample should be validated on Intel® Ethernet 700 Series, 82599 and i350 Nics.
 
 Test case: ptp client
 ======================
@@ -61,7 +61,7 @@ Start ptp client on DUT and wait few seconds::
     ./<build_target>/examples/dpdk-ptpclient -c f -n 3 -- -T 0 -p 0x1
 
 Check that output message contained T1,T2,T3,T4 clock and time difference
-between master and slave time is about 10us in niantic, 20us in Fortville,
+between master and slave time is about 10us in 82599, 20us in Intel® Ethernet 700 Series,
 8us in i350.
    
 Test case: update system
@@ -84,5 +84,5 @@ Start ptp client on DUT and wait few seconds::
 
 Make sure DUT system time has been changed to same as tester.
 Check that output message contained T1,T2,T3,T4 clock and time difference
-between master and slave time is about 10us in niantic, 20us in Fortville,
+between master and slave time is about 10us in 82599, 20us in Intel® Ethernet 700 Series,
 8us in i350.

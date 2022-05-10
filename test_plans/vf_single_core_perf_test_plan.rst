@@ -39,12 +39,14 @@ Prerequisites
 
 1.  Nic single core performance test requirements:
 
-    1.1) FVL25G: two dual port FVL25G nics, all installed on the same socket,
-                 pick one port per nic.
-    1.2) NNT10G: four 82599 nics, all installed on the same socket,
-                 pick one port per nic.
-    1.3) CVL100G: one CVL100G nics, all installed on the same socket,
-                 pick one port per nic.
+    1.1) Intel® Ethernet Network Adapter XXV710-DA2:
+         two dual port Intel® Ethernet Network Adapter XXV710-DA2 nics,all
+         installed on the same socket, pick one port per nic.
+    1.2) 82599/500 Series 10G:
+         four 82599 nics, all installed on the same socket, pick one port per nic.
+    1.3) Intel® Ethernet Network Adapter E810-CQDA2:
+         one Intel® Ethernet Network Adapter E810-CQDA2 nics, all installed on the
+         same socket, pick one port per nic.
 
 2. Software::
 
@@ -62,9 +64,9 @@ Prerequisites
 3. Connect all the selected nic ports to traffic generator(IXIA,TREX,
    PKTGEN) ports(TG ports)::
 
-    2 TG 25g  ports for FVL25G ports
-    4 TG 10g  ports for 4 NNT10G ports
-    1 TG 100g ports for CVL100G port
+    2 TG 25g  ports for Intel® Ethernet Network Adapter XXV710-DA2 ports
+    4 TG 10g  ports for 4 82599/500 Series 10G ports
+    1 TG 100g ports for Intel® Ethernet Network Adapter E810-CQDA2 port
 
 Test Case : Vf Single Core Performance Measurement
 ==================================================

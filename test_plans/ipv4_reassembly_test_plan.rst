@@ -53,7 +53,7 @@ to the device under test::
    modprobe vfio-pci
    usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
 
-1x Intel® 82599 (Niantic) NICs (1x 10GbE full duplex optical ports per NIC)
+1x 82599 NICs (1x 10GbE full duplex optical ports per NIC)
 plugged into the available PCIe Gen2 8-lane slots.
 
 Build dpdk and examples=ip_reassembly:

@@ -36,8 +36,9 @@ test coverage for L2TPv3 and ESP
 
 Description
 ===========
-For each protocol, below is a list of standard features supported by the Columbiaville hardware and the impact on the feature for each protocol.  
-Some features are supported in a limited manner as stated below.
+For each protocol, below is a list of standard features supported by the
+Intel® Ethernet 800 Series hardware and the impact on the feature for
+each protocol.Some features are supported in a limited manner as stated below.
  
 IPSec(ESP):
 L2 Tag offloads 
@@ -67,7 +68,8 @@ DCB
 ----Priority Flow Control - No
 
 this test plan is designed to check above offloads in L2TPv3 and ESP.
-and CVL can't support tx checksum in vector path now, so only test the rx checksum offload.
+and Intel® Ethernet 700 Series can't support tx checksum in vector path
+now, so only test the rx checksum offload.
 
 
 Prerequisites

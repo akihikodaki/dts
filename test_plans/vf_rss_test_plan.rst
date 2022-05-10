@@ -34,7 +34,7 @@
 VF RSS - Configuring Hash Function Tests
 ========================================
 
-This document provides test plan for testing the function of Fortville:
+This document provides test plan for testing the function of Intel® Ethernet 700 Series:
 Support configuring hash functions.
 
 Prerequisites
@@ -53,15 +53,15 @@ handled by a different logical core.
 #. The receive packet is parsed into the header fields used by the hash
    operation (such as IP addresses, TCP port, etc.)
 
-#. A hash calculation is performed. The Fortville supports three hash function:
+#. A hash calculation is performed. The Intel® Ethernet 700 Series supports three hash function:
    Toeplitz, simple XOR and their Symmetric RSS.
 
 #. Hash results are used as an index into a 128/512 entry
    'redirection table'.
 
-#. Niantic VF only supports simple default hash algorithm(simple). Fortville NICs
+#. 82599 VF only supports simple default hash algorithm(simple). Intel® Ethernet 700 Series NICs
    support all hash algorithm only used dpdk driver on host. when used kernel driver on host,
-   fortville NICs only support default hash algorithm(simple).
+   Intel® Ethernet 700 Series NICs only support default hash algorithm(simple).
 
 The RSS RETA update feature is designed to make RSS more flexible by allowing
 users to define the correspondence between the seven LSBs of hash result and

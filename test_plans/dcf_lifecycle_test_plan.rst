@@ -32,7 +32,7 @@
 
 
 ============================
-CVL DCF Lifecycle Test Suite
+ICE DCF Lifecycle Test Suite
 ============================
 
 Description
@@ -1073,7 +1073,7 @@ TC34: ACL DCF mode is active, add ACL filters by way of host based configuration
     Added rule with ID 15871
 
 ===============================
-CVL DCF enable device reset API
+ICE DCF enable device reset API
 ===============================
 
 Description
@@ -1088,7 +1088,7 @@ Prerequisites
 
 Hardware
 --------
-Supportted NICs: columbiaville_25g/columbiaville_100g
+Supportted NICs: Intel® Ethernet Network Adapter E810-XXVDA4/Intel® Ethernet Network Adapter E810-CQDA2
 
 Software
 --------

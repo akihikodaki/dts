@@ -30,24 +30,24 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-===============================================
-Fortville RSS - Configuring Hash Function Tests
-===============================================
+================================================================
+Intel® Ethernet 700 Series RSS - Configuring Hash Function Tests
+================================================================
 
-This document provides test plan for testing the function of Fortville:
+This document provides test plan for testing the function of Intel® Ethernet 700 Series:
 Support configuring hash functions.
 
 
 Prerequisites
 =============
 
-* 2x Intel® 82599 (Niantic) NICs (2x 10GbE full duplex optical ports per NIC)
-* 1x Fortville_eagle NIC (4x 10G)
-* 1x Fortville_spirit NIC (2x 40G)
-* 2x Fortville_spirit_single NIC (1x 40G)
+* 2x 82599 NICs (2x 10GbE full duplex optical ports per NIC)
+* 1x X710 NIC (4x 10G)
+* 1x XL710 NIC (2x 40G)
+* 2x XL710 NIC (1x 40G)
 
-The four ports of the 82599 connect to the Fortville_eagle;
-The two ports of Fortville_spirit connect to Fortville_spirit_single.
+The four ports of the 82599 connect to the X710;
+The two ports of XL710 connect to XL710.
 The three kinds of NICs are the target NICs. the connected NICs can send packets
 to these three NICs using scapy.
 
@@ -61,7 +61,8 @@ handled by a different logical core.
 #. The receive packet is parsed into the header fields used by the hash
    operation (such as IP addresses, TCP port, etc.)
 
-#. A hash calculation is performed. The Fortville supports four hash function:
+#. A hash calculation is performed. The Intel® Ethernet 700 Series supports four
+   hash function:
    Toeplitz, simple XOR and their Symmetric RSS.
 
 #. The seven LSBs of the hash result are used as an index into a 128/512 entry
@@ -75,7 +76,7 @@ Test Case:  test_toeplitz
 Testpmd configuration - 16 RX/TX queues per port
 ------------------------------------------------
 
-#. set up testpmd with fortville NICs::
+#. set up testpmd with Intel® Ethernet 700 Series NICs::
 
       ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c fffff -n %d -- -i --coremask=0xffffe --rxq=16 --txq=16
 

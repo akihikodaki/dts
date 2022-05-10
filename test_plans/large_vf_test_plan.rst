@@ -31,14 +31,14 @@
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ============================
-CVL: Large VF for 256 queues
+ICE: Large VF for 256 queues
 ============================
 
 Prerequisites
 =============
 
 1. Hardware:
-   columbiaville_25g/columbiaville_100g
+   Intel® Ethernet Network Adapter E810-XXVDA4/Intel® Ethernet Network Adapter E810-CQDA2
 
 2. Software:
    DPDK: http://dpdk.org/git/dpdk

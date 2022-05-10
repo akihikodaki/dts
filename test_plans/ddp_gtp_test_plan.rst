@@ -30,15 +30,16 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-===============================
-Fortville DDP GTP-C/GTP-U Tests
-===============================
+================================================
+Intel® Ethernet 700 Series DDP GTP-C/GTP-U Tests
+================================================
 
-FVL6 supports DDP (Dynamic Device Personalization) to program analyzer/parser
-via AdminQ. Profile can be used to update FVL configuration tables via MMIO
-configuration space, not microcode or firmware itself. For microcode/FW
-changes new HW/FW/NVM image must be uploaded to the NIC. Profiles will be
-stored in binary files and need to be passed to AQ to program FVL during
+Intel® Ethernet 700 Series supports DDP (Dynamic Device Personalization) to
+program analyzer/parser via AdminQ. Profile can be used to update Intel®
+Ethernet 700 Series configuration tables via MMIO configuration space, not
+microcode or firmware itself. For microcode/FW changes new HW/FW/NVM image
+must be uploaded to the NIC. Profiles will be stored in binary files and
+need to be passed to AQ to program Intel® Ethernet 700 Series during
 initialization stage.
 
 GPRS Tunneling Protocol (GTP) is a group of IP-based communications 

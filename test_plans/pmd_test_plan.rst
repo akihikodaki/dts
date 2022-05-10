@@ -82,10 +82,12 @@ If using igb_uio::
 
 Case config::
 
-   For FVL40g, if test 16 Byte Descriptor, need to be configured with the
+   For Intel® Ethernet Converged Network Adapter XL710-QDA2, if test 16
+   Byte Descriptor, need to be configured with the
    "-Dc_args=-DRTE_LIBRTE_I40E_16BYTE_RX_DESC" option at compile time.
 
-   For CVL25G, if test 16 Byte Descriptor, need to be configured with the
+   For Intel® Ethernet Network Adapter E810-XXVDA4, if test 16 Byte
+   Descriptor, need to be configured with the
    "-Dc_args=-DRTE_LIBRTE_ICE_16BYTE_RX_DESC" option at compile time.
 
 Test Case: Packet Checking

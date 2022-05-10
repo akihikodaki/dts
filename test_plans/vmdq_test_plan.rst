@@ -34,9 +34,9 @@
 VMDQ Tests
 ==========
 
-The 1G, 10G 82599 and 40G FVL Network Interface Card (NIC), supports a number of packet
-filtering functions which can be used to distribute incoming packets into a
-number of reception (RX) queues. VMDQ is a  filtering
+The 1G, 10G 82599 and 40G Intel® Ethernet 700 Series Network Interface Card (NIC),
+supports a number of packet filtering functions which can be used to distribute
+incoming packets into a number of reception (RX) queues. VMDQ is a  filtering
 functions which operate on VLAN-tagged packets to distribute those packets
 among up to 512 RX queues.
 
@@ -63,14 +63,16 @@ Prerequisites
   reception, the other for transmission
 - The traffic generator being used is configured to send to the application RX
   port a stream of packets with VLAN tags, where the VLAN IDs increment from 0
-  to the pools numbers(e.g: for FVL spirit, it's 63, inclusive) as well as the MAC address from
-  52:54:00:12:[port_index]:00 to 52:54:00:12:[port_index]:3e and the VLAN user priority field increments from 0 to 7
+  to the pools numbers(e.g: for Intel® Ethernet Converged Network Adapter XL710-QDA2,
+  it's 63, inclusive) as well as the MAC address from 52:54:00:12:[port_index]:00 to
+  52:54:00:12:[port_index]:3e and the VLAN user priority field increments from 0 to 7
   (inclusive) for each VLAN ID. In our case port_index = 0 or 1.
 
 Test Case: Measure VMDQ pools queues
 ------------------------------------
 1. Put different number of pools: in the case of 10G 82599 Nic is 64, in the case
-   of FVL spirit is 63,in case of FVL eagle is 34.
+   of Intel® Ethernet Converged Network Adapter XL710-QDA2 is 63,in case of Intel®
+   Ethernet Converged Network Adapter X710-DA4 is 34.
 2. Start traffic transmission using approx 10% of line rate.
 3. After a number of seconds, e.g. 15, stop traffic, and ensure no traffic
    loss (<0.001%) has occurred.

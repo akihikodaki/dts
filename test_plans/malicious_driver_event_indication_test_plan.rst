@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-==========================================================
-Malicious driver event indication process in FVL PF driver
-==========================================================
+=================================================================================
+Malicious driver event indication process in Intel® Ethernet 700 Series PF driver
+=================================================================================
 
 Need modify the testpmd APP to generate invalid packets in tx only mode
 

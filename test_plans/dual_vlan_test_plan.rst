@@ -294,7 +294,7 @@ Check whether the mode is set successfully::
       qinq(extend) on
 
 Set Tag Protocol ID ``0x1234`` on port ``0``.
-Nic only support inner model, except Fortville::
+Nic only support inner model, except Intel® Ethernet 700 Series::
 
     testpmd> vlan set inner tpid 0x1234 0
 

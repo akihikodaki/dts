@@ -38,9 +38,9 @@ All PTYPEs (packet types) in DPDK PMDs before are statically defined
 using static constant map tables. It makes impossible to add a new
 packet type without first defining them statically and then recompiling
 DPDK. New NICs are flexible enough to be reconfigured depending on the
-network environment. In case of FVL new PTYPEs can be added
-dynamically at device initialization time using corresponding AQ
-commands.
+network environment. In case of Intel® Ethernet 700 Series new PTYPEs
+can be added dynamically at device initialization time using corresponding
+AQ commands.
 Note that the packet types of the same packet recognized by different
 hardware may be different, as different hardware may have different
 capabilities of packet type recognition.

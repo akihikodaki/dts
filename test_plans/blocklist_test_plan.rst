@@ -61,19 +61,16 @@ are bound and available::
   EAL: Device bound
   EAL: map PCI resource for device 0000:01:00.0
   EAL: PCI memory mapped at 0x7fe6b68c7000
-  EAL: probe driver: 8086:10fb rte_niantic_pmd
   EAL: unbind kernel driver /sys/bus/pci/devices/0000:01:00.1/driver/unbind
   EAL: bind PCI device 0000:01:00.1 to uio driver
   EAL: Device bound
   EAL: map PCI resource for device 0000:01:00.1
   EAL: PCI memory mapped at 0x7fe6b6847000
-  EAL: probe driver: 8086:10fb rte_niantic_pmd
   EAL: unbind kernel driver /sys/bus/pci/devices/0000:02:00.0/driver/unbind
   EAL: bind PCI device 0000:02:00.0 to uio driver
   EAL: Device bound
   EAL: map PCI resource for device 0000:02:00.0
   EAL: PCI memory mapped at 0x7fe6b6580000
-  EAL: probe driver: 8086:10fb rte_niantic_pmd
   EAL: unbind kernel driver /sys/bus/pci/devices/0000:02:00.1/driver/unbind
   EAL: bind PCI device 0000:02:00.1 to uio driver
   EAL: Device bound
@@ -96,19 +93,16 @@ Select first available port to be blocklisted and specify it with -b option. For
 Check that corresponding device is skipped for binding, and
 only 3 ports are available now:::
 
-  EAL: probe driver: 8086:10fb rte_niantic_pmd
   EAL: unbind kernel driver /sys/bus/pci/devices/0000:01:00.1/driver/unbind
   EAL: bind PCI device 0000:01:00.1 to uio driver
   EAL: Device bound
   EAL: map PCI resource for device 0000:01:00.1
   EAL: PCI memory mapped at 0x7f0037912000
-  EAL: probe driver: 8086:10fb rte_niantic_pmd
   EAL: unbind kernel driver /sys/bus/pci/devices/0000:02:00.0/driver/unbind
   EAL: bind PCI device 0000:02:00.0 to uio driver
   EAL: Device bound
   EAL: map PCI resource for device 0000:02:00.0
   EAL: PCI memory mapped at 0x7f0037892000
-  EAL: probe driver: 8086:10fb rte_niantic_pmd
   EAL: unbind kernel driver /sys/bus/pci/devices/0000:02:00.1/driver/unbind
   EAL: bind PCI device 0000:02:00.1 to uio driver
   EAL: Device bound
@@ -131,7 +125,6 @@ For the example above:::
 Check that 3 corresponding device is skipped for binding, and
 only 1 ports is available now:::
 
-  EAL: probe driver: 8086:10fb rte_niantic_pmd
   EAL: unbind kernel driver /sys/bus/pci/devices/0000:02:00.1/driver/unbind
   EAL: bind PCI device 0000:02:00.1 to uio driver
   EAL: Device bound

@@ -34,8 +34,9 @@
 DDP PPPoE/L2TPv2/PPPoL2TPv2
 ===========================
 
-Fortville supports PPPoE/L2TPv2/PPPoL2TPv2 new protocols after loading profile.
-For DDP introduction, please refer to ddp gtp or ddp mpls test plan.
+Intel® Ethernet 700 Series supports PPPoE/L2TPv2/PPPoL2TPv2 new protocols
+after loading profile.For DDP introduction, please refer to ddp gtp or ddp
+mpls test plan.
 
 Requirements as below::
 
@@ -51,8 +52,8 @@ Requirements as below::
 
 Dynamic flow type mapping eliminates usage of number of hard-coded flow
 types in bulky if-else statements. For instance, when configure hash enable
-flags for RSS in i40e_config_hena() function and will make partitioning FVL
-in i40e PMD more scalable.
+flags for RSS in i40e_config_hena() function and will make partitioning
+Intel® Ethernet 700 Series in i40e PMD more scalable.
 
 I40e PCTYPEs are statically mapped to RTE_ETH_FLOW_* types in DPDK, defined in
 rte_eth_ctrl.h, flow types used to define ETH_RSS_* offload types in

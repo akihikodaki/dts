@@ -72,7 +72,7 @@ Calculates peak and average bit-rate statistics.
 Prerequisites
 =============
 
-2x Intel® 82599 (Niantic) NICs (2x 10GbE full duplex optical ports per NIC)
+2x 82599 NICs (2x 10GbE full duplex optical ports per NIC)
 plugged into the available PCIe Gen2 8-lane slots in two different configurations.
 
 port topology diagram::

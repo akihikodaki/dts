@@ -30,19 +30,20 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-======================================================================
-Benchmark the performance of single core forwarding with FVL25G/NNT10G
-======================================================================
+========================================================================================
+Benchmark the performance of single core forwarding with XXV710 and 82599/500 Series 10G
+========================================================================================
 
 Prerequisites
 =============
 
 1. Hardware:
 
-    1.1) nic_single_core_perf test for FVL25G: two dual port FVL25G nics,
-        all installed on the same socket, pick one port per nic
-    1.2) nic_single_core_perf test for NNT10G: four 82599 nics,
-        all installed on the same socket, pick one port per nic
+    1.1) nic_single_core_perf test for Intel® Ethernet Network Adapter XXV710-DA2 :
+        two dual port Intel® Ethernet Network Adapter XXV710-DA2 nics, all installed
+        on the same socket, pick one port per nic
+    1.2) nic_single_core_perf test for 82599/500 Series 10G: four 82599 nics, all
+        installed on the same socket, pick one port per nic
   
 2. Software::
 
@@ -60,16 +61,19 @@ Prerequisites
 3. Connect all the selected nic ports to traffic generator(IXIA,TREX,
    PKTGEN) ports(TG ports)::
 
-    2 TG 25g ports for FVL25G ports
-    4 TG 10g ports for 4 NNT10G ports
+    2 TG 25g ports for Intel® Ethernet Network Adapter XXV710-DA2 ports
+    4 TG 10g ports for 4 82599/500 Series 10G ports
 
 4. Case config::
 
-    For FVL40g, if test 16 Byte Descriptor, need to be configured with the
+    For Intel® Ethernet Converged Network Adapter XL710-QDA2, if test 16
+    Byte Descriptor, need to be configured with the
     "-Dc_args=-DRTE_LIBRTE_I40E_16BYTE_RX_DESC" option at compile time.
 
-    For CVL25G, if test 16 Byte Descriptor, need to be configured with the
+    For Intel® Ethernet Network Adapter E810-XXVDA4, if test 16 Byte Descriptor,
+    need to be configured with the
     "-Dc_args=-DRTE_LIBRTE_ICE_16BYTE_RX_DESC" option at compile time.
+    
 
 Test Case : Single Core Performance Measurement
 ===============================================
@@ -90,13 +94,13 @@ Test Case : Single Core Performance Measurement
         
 4)  check throughput and compare it with the expected value.
 
-5)  for NNT10G, repeat above step 1-4 for txd=rxd=512,2048 separately.
-    for FVL25G nic, just test txd=rxd=512,2048 following above steps 
-    1-4.
+5)  for 82599/500 Series 10G, repeat above step 1-4 for txd=rxd=512,2048 separately.
+    for Intel® Ethernet Network Adapter XXV710-DA2  nic, just test
+    txd=rxd=512,2048 following above steps 1-4.
 
 6) Result tables for different NICs:
 
-   FVL25G:
+   Intel® Ethernet Network Adapter XXV710-DA2:
 
    +------------+---------+-------------+---------+---------------------+
    | Frame Size | TXD/RXD |  Throughput |   Rate  | Expected Throughput |
@@ -106,7 +110,7 @@ Test Case : Single Core Performance Measurement
    |     64     |   2048  | xxxxxx Mpps |   xxx % |     xxx    Mpps     |
    +------------+---------+-------------+---------+---------------------+
 
-   NNT10G:
+   82599/500 Series 10G:
 
    +------------+---------+-------------+---------+---------------------+
    | Frame Size | TXD/RXD |  Throughput |   Rate  | Expected Throughput |
@@ -120,9 +124,9 @@ Test Case : Single Core Performance Measurement
 
 Note : The values for the expected throughput may vary due to different
        platform and OS, and traffic generator, please correct threshold
-       values accordingly. (the above expected values for FVL 25G and
-       NNT10G  were got from the combination of Purly,Ubuntu 16.04, and
-       traffic generator IXIA) 
+       values accordingly. (the above expected values for XXV710 and
+       82599/500 Series 10G were got from the combination of Purly,
+       Ubuntu 16.04, and traffic generator IXIA)
 
 Case will raise failure if actual throughputs have more than 1Mpps gap
 from expected ones. 

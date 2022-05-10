@@ -64,7 +64,7 @@ Test Case: L2 Packet detect
 ===========================
 
 This case checked that whether Timesync, ARP, LLDP detection supported by
-Fortville.
+Intel® Ethernet 700 Series.
 
 Send time sync packet from tester::
 
@@ -94,12 +94,12 @@ Test Case: IPv4&L4 packet type detect
 =====================================
 
 This case checked that whether L3 and L4 packet can be normally detected.
-Only Fortville can detect icmp packet.
-Only niantic and i350 can detect ipv4 extension packet.
-Fortville did not detect whether packet contain ipv4 header options, so L3
+Only Intel® Ethernet 700 Series can detect icmp packet.
+Only 82599 and i350 can detect ipv4 extension packet.
+Intel® Ethernet 700 Series did not detect whether packet contain ipv4 header options, so L3
 type will be shown as IPV4_EXT_UNKNOWN.
-Fortville will identify all unrecognized L4 packet as L4_NONFRAG.
-Only Fortville can identify L4 fragment packet.
+Intel® Ethernet 700 Series will identify all unrecognized L4 packet as L4_NONFRAG.
+Only Intel® Ethernet 700 Series can identify L4 fragment packet.
 
 Send IP only packet and verify L2/L3/L4 corrected::
 
@@ -127,13 +127,13 @@ Send IP+SCTP packet and verify L2/L3/L4 corrected::
 
     (outer) L4 type: SCTP
 
-Send IP+ICMP packet and verify L2/L3/L4 corrected(Fortville)::
+Send IP+ICMP packet and verify L2/L3/L4 corrected(Intel® Ethernet 700 Series)::
 
     sendp([Ether()/IP()/ICMP()/Raw('\0'*60)], iface=txItf)
 
     (outer) L4 type: ICMP
 
-Send IP fragment+TCP packet and verify L2/L3/L4 corrected(Fortville)::
+Send IP fragment+TCP packet and verify L2/L3/L4 corrected(Intel® Ethernet 700 Series)::
 
     sendp([Ether()/IP(frag=5)/TCP()/Raw('\0'*60)], iface=txItf)
 
@@ -141,14 +141,14 @@ Send IP fragment+TCP packet and verify L2/L3/L4 corrected(Fortville)::
     (outer) L3 type: IPV4_EXT_UNKNOWN
     (outer) L4 type: L4_FRAG
 
-Send IP extension packet and verify L2/L3 corrected(Niantic,i350)::
+Send IP extension packet and verify L2/L3 corrected(82599,i350)::
 
     sendp([Ether()/IP(ihl=10)/Raw('\0'*40)],iface=txItf)
 
     (outer) L3 type: IPV4_EXT
     (outer) L4 type: Unknown
 
-Send IP extension+SCTP packet and verify L2/L3/L4 corrected(Niantic,i350)::
+Send IP extension+SCTP packet and verify L2/L3/L4 corrected(82599,i350)::
 
     sendp([Ether()/IP(ihl=10)/SCTP()/Raw('\0'*40)],iface=txItf)
 
@@ -159,10 +159,10 @@ Test Case: IPv6&L4 packet type detect
 =====================================
 
 This case checked that whether IPv6 and L4 packet can be normally detected.
-Fortville did not detect whether packet contain ipv6 extension options, so L3
-type will be shown as IPV6_EXT_UNKNOWN.
-Fortville will identify all unrecognized L4 packet as L4_NONFRAG.
-Only Fortville can identify L4 fragment packet.
+Intel® Ethernet 700 Series did not detect whether packet contain ipv6 extension
+options, so L3 type will be shown as IPV6_EXT_UNKNOWN.
+Intel® Ethernet 700 Series will identify all unrecognized L4 packet as L4_NONFRAG.
+Only Intel® Ethernet 700 Series can identify L4 fragment packet.
 
 Send IPv6 only packet and verify L2/L3/L4 corrected::
 
@@ -184,14 +184,14 @@ Send IPv6+TCP packet and verify L2/L3/L4 corrected::
 
     (outer) L4 type: TCP
 
-Send IPv6 fragment packet and verify L2/L3/L4 corrected(Fortville)::
+Send IPv6 fragment packet and verify L2/L3/L4 corrected(Intel® Ethernet 700 Series)::
 
     sendp([Ether()/IPv6()/IPv6ExtHdrFragment()/Raw('\0'*60)],iface=txItf)
 
     (outer) L3 type: IPV6_EXT_UNKNOWN
     (outer) L4 type: L4_FRAG
 
-Send IPv6 fragment packet and verify L2/L3/L4 corrected(Niantic,i350)::
+Send IPv6 fragment packet and verify L2/L3/L4 corrected(82599,i350)::
 
     sendp([Ether()/IPv6()/IPv6ExtHdrFragment()/Raw('\0'*60)],iface=txItf)
 
@@ -202,7 +202,7 @@ Test Case: IP in IPv4 tunnel packet type detect
 ===============================================
 
 This case checked that whether IP in IPv4 tunnel packet can be normally
-detected by Fortville.
+detected by Intel® Ethernet 700 Series.
 
 Send IPv4+IPv4 fragment packet and verify inner and outer L2/L3/L4 corrected::
 
@@ -283,11 +283,11 @@ Send IPv4+IPv6+ICMP packet and verify inner and outer L2/L3/L4 corrected::
 
     Inner L4 type: ICMP
 
-Test Case: IPv6 in IPv4 tunnel packet type detect by niantic and i350
-=====================================================================
+Test Case: IPv6 in IPv4 tunnel packet type detect by 82599 and i350
+===================================================================
 
 This case checked that whether IPv4 in IPv6 tunnel packet can be normally
-detected by Niantic and i350.
+detected by 82599 and i350.
 
 Send IPv4+IPv6 packet and verify inner and outer L2/L3/L4 corrected::
 
@@ -340,7 +340,7 @@ Test Case: IP in IPv6 tunnel packet type detect
 ===============================================
 
 This case checked that whether IP in IPv6 tunnel packet can be normally
-detected by Fortville.
+detected by Intel® Ethernet 700 Series.
 
 Send IPv4+IPv4 fragment packet and verify inner and outer L2/L3/L4 corrected::
 
@@ -427,9 +427,9 @@ Test Case: NVGRE tunnel packet type detect
 ==========================================
 
 This case checked that whether NVGRE tunnel packet can be normally detected
-by Fortville.
-Fortville did not distinguish GRE/Teredo/Vxlan packets, all those types will
-be displayed as GRENAT.
+by Intel® Ethernet 700 Series.
+Intel® Ethernet 700 Series did not distinguish GRE/Teredo/Vxlan packets, all
+those types will be displayed as GRENAT.
 
 Send IPv4+NVGRE fragment packet and verify inner and outer L2/L3/L4
 corrected::
@@ -560,9 +560,9 @@ Test Case: NVGRE in IPv6 tunnel packet type detect
 ==================================================
 
 This case checked that whether NVGRE in IPv6 tunnel packet can be normally
-detected by Fortville.
-Fortville did not distinguish GRE/Teredo/Vxlan packets, all those types will
-be displayed as GRENAT.
+detected by Intel® Ethernet 700 Series.
+Intel® Ethernet 700 Series did not distinguish GRE/Teredo/Vxlan packets, all
+those types will be displayed as GRENAT.
 
 Send IPV6+NVGRE+MAC packet and verify inner and outer L2/L3/L4 corrected::
 
@@ -777,9 +777,9 @@ Test Case: GRE tunnel packet type detect
 ========================================
 
 This case checked that whether GRE tunnel packet can be normally detected by
-Fortville.
-Fortville did not distinguish GRE/Teredo/Vxlan packets, all those types will
-be displayed as GRENAT.
+Intel® Ethernet 700 Series.
+Intel® Ethernet 700 Series did not distinguish GRE/Teredo/Vxlan packets, all
+those types will be displayed as GRENAT.
 
 Send IPv4+GRE+IPv4 fragment packet and verify inner and outer L2/L3/L4
 corrected::
@@ -835,9 +835,9 @@ Test Case: Vxlan tunnel packet type detect
 ==========================================
 
 This case checked that whether Vxlan tunnel packet can be normally detected by
-Fortville.
-Fortville did not distinguish GRE/Teredo/Vxlan packets, all those types
-will be displayed as GRENAT.
+Intel® Ethernet 700 Series.
+Intel® Ethernet 700 Series did not distinguish GRE/Teredo/Vxlan packets, all
+those types will be displayed as GRENAT.
 
 Add vxlan tunnel port filter on receive port::
 

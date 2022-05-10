@@ -35,13 +35,19 @@
 Generic Routing Encapsulation (GRE) Tests
 =========================================
 
-Generic Routing Encapsulation (GRE) is a tunneling protocol developed by Cisco Systems that can encapsulate a wide variety of network layer protocols inside virtual point-to-point links over an Internet Protocol network.
-Fortville support GRE packet detecting, checksum computing and filtering.
+Generic Routing Encapsulation (GRE) is a tunneling protocol developed by
+Cisco Systems that can encapsulate a wide variety of network layer
+protocols inside virtual point-to-point links over an Internet Protocol
+network. Intel® Ethernet 700 Series support GRE packet detecting, checksum
+computing and filtering.
 
 Prerequisites
 =============
 
-Fortville/carlsville/columbiaville nic should be on the DUT.
+Intel® Ethernet 700 Series/
+Intel® Ethernet Network Adapter X710-T4L/
+Intel® Ethernet Network Adapter X710-T2L/
+Intel® Ethernet 800 Series nic should be on the DUT.
 
 Test Case 1: GRE ipv4 packet detect
 ===================================

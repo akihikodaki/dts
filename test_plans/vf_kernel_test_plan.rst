@@ -48,7 +48,7 @@ below features.
 Test Case 1: Set up environment and load driver
 ===============================================
 1. Get the pci device id of DUT, load ixgbe driver to required version, 
-   take Niantic for example::
+   take 82599 for example::
 
     rmmod ixgbe
     insmod ixgbe.ko
@@ -305,7 +305,7 @@ Steps:
    can be received by DPDK PF
 
 Note: 
-Niantic NIC un-supports this case.
+82599 NIC un-supports this case.
 
 
 Test Case 10: RSS
@@ -330,7 +330,7 @@ Steps:
 4. Check kernel VF each queue can receive packets
 
 Note: 
-Niantic NIC un-supports this case.
+82599 NIC un-supports this case.
 
 
 Test Case 11: DPDK PF + kernel VF + DPDK VF

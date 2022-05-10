@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-==========================================================
-Flexible pipeline package processing on CPK NIC mode Tests
-==========================================================
+===========================================================
+Flexible pipeline package processing on E822 NIC mode Tests
+===========================================================
 
 Description
 ===========

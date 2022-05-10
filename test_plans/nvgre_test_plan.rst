@@ -30,31 +30,30 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=====================
-Fortville NVGRE Tests
-=====================
+======================================
+Intel® Ethernet 700 Series NVGRE Tests
+======================================
 
 Cloud providers build virtual network overlays over existing network
 infrastructure that provide tenant isolation and scaling. Tunneling
 layers added to the packets carry the virtual networking frames over
 existing Layer 2 and IP networks. Conceptually, this is similar to
-creating virtual private networks over the Internet. Fortville will
-process these tunneling layers by the hardware.
+creating virtual private networks over the Internet. Intel® Ethernet
+700 Series will process these tunneling layers by the hardware.
 
-This document provides test plan for Fortville NVGRE packet detecting,
-checksum computing and filtering.
+This document provides test plan for Intel® Ethernet 700 Series NVGRE
+packet detecting, checksum computing and filtering.
 
 Prerequisites
 =============
 
-1x Intel X710 (Fortville) NICs (2x 40GbE full duplex optical ports per NIC)
+1x X710 NICs (2x 40GbE full duplex optical ports per NIC)
 plugged into the available PCIe Gen3 8-lane slot.
 
-1x Intel XL710-DA4 (Eagle Fountain) (1x 10GbE full duplex optical ports per NIC)
+1x XL710-DA4 (1x 10GbE full duplex optical ports per NIC)
 plugged into the available PCIe Gen3 8-lane slot.
 
 DUT board must be two sockets system and each cpu have more than 8 lcores.
-
 
 Test Case: NVGRE ipv4 packet detect
 ===================================

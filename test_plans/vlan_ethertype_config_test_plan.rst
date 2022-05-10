@@ -46,7 +46,7 @@ Prerequisites
 =============
 
 1. Hardware:
-   one Fortville NIC (4x 10G or 2x10G or 2x40G or 1x10G)
+   one Intel® Ethernet 700 Series NIC (4x 10G or 2x10G or 2x40G or 1x10G)
 
 2. Software:
 

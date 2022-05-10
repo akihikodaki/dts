@@ -30,18 +30,19 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-===========================================
-Fortville Configure RSS Queue Regions Tests
-===========================================
+============================================================
+Intel® Ethernet 700 Series Configure RSS Queue Regions Tests
+============================================================
 Description
 ===========
 
-FVL/FPK and future CVL/CPK NICs support queue regions configuration for
-RSS in PF/VF, so different traffic classes or different packet
-classification types can be separated to different queue regions which
-includes several queues, but traffic classes and packet classification
-cannot co-existing with the support of queue region functionality.
-Different PCtype packets take rss algorithm in different queue regions.
+Intel® Ethernet 700 Series/X722 series and future Intel® Ethernet 800
+Series/E822 NICs support queue regions configuration for RSS in PF/VF,
+so different traffic classes or different packet classification types
+can be separated to different queue regions which includes several
+queues, but traffic classes and packet classification cannot co-existing
+with the support of queue region functionality. Different PCtype packets
+take rss algorithm in different queue regions.
 
 Examples:
 
@@ -58,14 +59,14 @@ Examples:
 • different traffic classes defined in VLAN PCP bits distributed to
   different queue regions
 
-For FVL see chapter 7.1.7 of the latest datasheet.
-For FPK/CPK see corresponding EAS sections.
+For Intel® Ethernet 700 Series see chapter 7.1.7 of the latest datasheet.
+For X722 series/E822 see corresponding EAS sections.
 
 Prerequisites
 =============
 
 1. Hardware:
-   Fortville
+   Intel® Ethernet 700 Series
 
 2. software:
    dpdk: http://dpdk.org/git/dpdk
@@ -139,8 +140,8 @@ Test case 1: different pctype packet can enter the expected queue region
    Send the pkt1-pkt9, the packets can't enter the same queue which defined in queue region rule.
    They are distributed to queues according RSS rule.
 
-Notes: fortville can't parse the TCP SYN type packet, fortpark can parse it.
-So if fortville, pkt2 to queue 6 or queue 7.
+Notes: Intel® Ethernet 700 Series can't parse the TCP SYN type packet, X722 series can parse it.
+So if Intel® Ethernet 700 Series, pkt2 to queue 6 or queue 7.
 
 Test case 2: different user priority packet can enter the expected queue region
 ===============================================================================

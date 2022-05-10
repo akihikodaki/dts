@@ -31,7 +31,7 @@
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==========================
-Niantic Inline IPsec Tests
+82599 Inline IPsec Tests
 ==========================
 
 This test plan describe the method of validation inline hardware acceleration

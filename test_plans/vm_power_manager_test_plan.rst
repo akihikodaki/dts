@@ -64,7 +64,7 @@ Prerequisites
 1. Hardware:
 
     - CPU: Haswell, IVB(CrownPass)
-    - NIC: Niantic 82599
+    - NIC: 82599
 
 2. BIOS:
 
