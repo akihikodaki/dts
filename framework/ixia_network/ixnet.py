@@ -70,7 +70,6 @@ class IxnetTrafficGenerator(object):
         # initialize ixNetwork
         self.new_blank_config()
         self.tg_vports = self.assign_ports(self.tg_ports)
-        self.OUTPUT_DIR = None
 
     def get_session_id(self, api_server):
         url = "{server}/api/v1/sessions".format(server=api_server)
@@ -746,7 +745,10 @@ class IxnetTrafficGenerator(object):
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         copy_to_path = os.sep.join(
-            [self.OUTPUT_DIR, "ixnet" + datetime.now().strftime("%Y%m%d_%H%M%S")]
+            [
+                getattr(self, "OUTPUT_DIR"),
+                "ixnet" + datetime.now().strftime("%Y%m%d_%H%M%S"),
+            ]
         )
         if not os.path.exists(copy_to_path):
             os.makedirs(copy_to_path)
