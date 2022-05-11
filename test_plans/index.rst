@@ -178,7 +178,6 @@ The following are the test plans for the DPDK DTS automated test system.
     vlan_ethertype_config_test_plan
     vlan_test_plan
     vxlan_test_plan
-    af_xdp_test_plan
     l2fwd_jobstats_test_plan
     loopback_multi_queues_test_plan
     telemetry_test_plan
