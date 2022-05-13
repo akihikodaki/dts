@@ -42,6 +42,7 @@ from .smoke_base import (
 )
 
 VF_MAC_ADDR = "00:11:22:33:44:55"
+ETHER_JUMBO_FRAME_MTU = 9000
 
 
 class TestVfSmoke(TestCase):
@@ -71,9 +72,13 @@ class TestVfSmoke(TestCase):
 
         # init pkt
         self.pkt = Packet()
+        self.port = self.smoke_dut_ports[0]
+        self.dutobj = self.dut.ports_info[self.port]["port"]
 
         # generate vf
         self.dut.bind_interfaces_linux(self.kdriver)
+        # The MTU of ixgbe driver can only be set through pf setting
+        self.dutobj.enable_jumbo(framesize=ETHER_JUMBO_FRAME_MTU)
         self.dut.generate_sriov_vfs_by_port(self.smoke_dut_ports[0], 1, self.kdriver)
         self.vf_ports = self.dut.ports_info[self.smoke_dut_ports[0]]["vfs_port"]
         self.verify(len(self.vf_ports) != 0, "VF create failed")
@@ -137,7 +142,7 @@ class TestVfSmoke(TestCase):
         self.dut.send_expect("set fwd mac", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
         self.pmd_out.wait_link_status_up(self.smoke_dut_ports[0])
-        result = self.test_func.check_jumbo_frames()
+        result = self.test_func.check_jumbo_frames(self.kdriver)
         self.verify(result, "enable disable jumbo frames failed")
 
     def test_vf_rss(self):
