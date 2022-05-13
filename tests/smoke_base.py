@@ -51,12 +51,28 @@ class SmokeTest(object):
             setattr(self, name, kwargs[name])
 
     def send_pkg_return_stats(
-        self, pkt_size=COMMON_PKT_LEN, l3_src=IPV4_SRC, l3_dst=IPV4_DST, rss=False
+        self,
+        pkt_size=COMMON_PKT_LEN,
+        l3_src=IPV4_SRC,
+        l3_dst=IPV4_DST,
+        rss=False,
+        driver=None,
     ):
         self.test_case.dut.send_expect("clear port stats all", "testpmd> ")
         l3_len = pkt_size - HEADER_SIZE["eth"]
         payload = pkt_size - HEADER_SIZE["eth"] - HEADER_SIZE["ip"]
         hash_flag = False
+        # For ixgbe, jumbo frame is not supported. MTU is determined by pf.
+        # so, testpmd max-pkt-len=9000 don't work.
+        # Although the user can set the MTU separately on PF and VF ports,
+        # the ixgbe NIC only supports one global MTU per physical port.
+        # So when the user sets different MTUs on PF and VF ports in one physical port,
+        # the real MTU for all these PF and VF ports is the largest value set.
+        # This behavior is based on the kernel driver behavior.
+        # The packet sent is greater than PF MTU 9000, the payload equal to 8083,
+        # PF received packet MTU = payload + IP, 8083 + 20 = 9001
+        if driver == "ixgbe":
+            payload = pkt_size - HEADER_SIZE["eth"]
         if rss:
             pkt = []
             # generate PACKAGE_COUNT count package, the IP dst is random.
@@ -113,14 +129,14 @@ class SmokeTest(object):
             return queues[0], stats
         return None, stats
 
-    def check_jumbo_frames(self):
+    def check_jumbo_frames(self, kdriver=None):
         """
         The packet total size include ethernet header, ip header, and payload.
         ethernet header length is 18 bytes, ip standard header length is 20 bytes.
         The packet forwarded failed.
         """
         pkg_size = JUMBO_FRAME_LENGTH + 1
-        queues, stats = self.send_pkg_return_stats(pkg_size)
+        queues, stats = self.send_pkg_return_stats(pkg_size, driver=kdriver)
         if 1 != stats["RX-errors"] and 0 != stats["TX-packets"]:
             self.test_case.logger.info(
                 "jumbo frame: The RX[{}] or TX[{}] packet error".format(
