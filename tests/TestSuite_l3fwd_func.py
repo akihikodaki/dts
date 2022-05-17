@@ -49,7 +49,8 @@ class TestL3fwdFunc(TestCase):
         self.app_path = self.dut.build_dpdk_apps("examples/l3fwd")
         self.pkt = Packet()
         self.dport_info0 = self.dut.ports_info[self.dut_ports[0]]
-        self.tport_info0 = self.tester.ports_info[self.dut_ports[0]]
+        tport = self.tester.get_local_port(self.dut_ports[0])
+        self.tport_info0 = self.tester.ports_info[tport]
         self.tport_intf0 = self.tport_info0["intf"]
         # judgment is added to avoid errors caused by the absence of port 1
         if len(self.dut_ports) >= 2:
@@ -132,7 +133,7 @@ class TestL3fwdFunc(TestCase):
         :return:
         """
         out = self.tester.send_expect(
-            "tcpdump -r /tmp/tester/sniff_%s.pcap" % (self.tport_intf0),
+            "tcpdump -n -r /tmp/tester/sniff_%s.pcap" % (self.tport_intf0),
             "# ",
             timeout=30,
         )
