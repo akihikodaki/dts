@@ -469,10 +469,14 @@ class TestICEQinq(TestCase):
         self.pkt = Packet()
         self.pmd_output = PmdOutput(self.dut)
 
+    def reload_ice(self):
+        self.dut.send_expect('rmmod ice && modprobe ice', '# ')
+
     def set_up(self):
         """
         Run before each test case.
         """
+        self.reload_ice()
         self.pci_list = []
         if self.default_stats:
             self.dut.send_expect(
