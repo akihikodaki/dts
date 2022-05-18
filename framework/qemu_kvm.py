@@ -1115,7 +1115,7 @@ class QEMUKvm(VirtBase):
         if connected failed will return None
         """
         shell_reg = r"(.*)# "
-        scan_cmd = "lsof -i:%d | grep telnet | awk '{print $2}'" % self.serial_port
+        scan_cmd = "lsof -n -i:%d | grep telnet | awk '{print $2}'" % self.serial_port
 
         try:
             # assume serial is not connect
@@ -1910,7 +1910,7 @@ class QEMUKvm(VirtBase):
                 pass
             self.host_dut.send_expect("", "# ")
         elif self.control_type == "telnet":
-            scan_cmd = "lsof -i:%d | grep telnet | awk '{print $2}'" % self.serial_port
+            scan_cmd = "lsof -n -i:%d | grep telnet | awk '{print $2}'" % self.serial_port
             proc_info = self.host_dut.send_expect(scan_cmd, "#")
             try:
                 pid = int(proc_info)

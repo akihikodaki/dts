@@ -1345,7 +1345,7 @@ class Dut(Crb):
                 port.enable_ipv6()
 
     def check_port_occupied(self, port):
-        out = self.alt_session.send_expect("lsof -i:%d" % port, "# ")
+        out = self.alt_session.send_expect("lsof -n -i:%d" % port, "# ")
         if out == "":
             return False
         else:
