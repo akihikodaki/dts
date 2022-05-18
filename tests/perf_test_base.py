@@ -145,7 +145,6 @@ class PerfTestBase(object):
     def __init__(self, valports, socket, mode=None, bin_type=None):
         self.__bin_type = bin_type or BIN_TYPE.L3FWD
         self.__compile_rx_desc = None
-        self.__compile_avx = None
         self.__rxtx_queue_size = None
         self.__mode = mode or SUITE_TYPE.PF
         self.__suite = None
@@ -378,6 +377,7 @@ class PerfTestBase(object):
                 layer = {
                     "ether": {
                         "dst": dmacs[self.__valports.index(port_id)],
+                        "src": "02:00:00:00:00:0%d" % port_id,
                     },
                 }
             else:
@@ -385,6 +385,7 @@ class PerfTestBase(object):
                 layer = {
                     "ether": {
                         "dst": dmac,
+                        "src": "02:00:00:00:00:0%d" % port_id,
                     },
                 }
         return layer
@@ -694,8 +695,7 @@ class PerfTestBase(object):
             # init testpmd
             if self.__pf_driver is not NIC_DRV.PCI_STUB:
                 self.__init_host_testpmd()
-        self.__l3fwd_em = self.__l3fwd_init(MATCH_MODE.EM)
-        self.__l3fwd_lpm = self.__l3fwd_init(MATCH_MODE.LPM)
+        self.__l3fwd_init()
 
     def __init_host_testpmd(self):
         """
@@ -767,7 +767,7 @@ class PerfTestBase(object):
         )
         return "loop" if port_num == 1 else "chained"
 
-    def __testpmd_start(self, mode, core_mask, config, frame_size):
+    def __testpmd_start(self, mode, eal_para, config, frame_size):
         # use test pmd
         bin = os.path.join(self.__target_dir, self.dut.apps_name["test-pmd"])
         fwd_mode, _config = config
@@ -775,21 +775,16 @@ class PerfTestBase(object):
         command_line = (
             "{bin} "
             "-v "
-            "-c {cores} "
-            "-n {channel} "
-            "{allowlist}"
+            "{eal_para}"
             "-- -i "
+            "--portmask {port_mask} "
             "{config} "
             "{port_topo} "
             ""
         ).format(
             **{
                 "bin": bin,
-                "cores": core_mask,
-                "channel": self.dut.get_memory_channels(),
-                "allowlist": self.__bin_ps_allow_list
-                if self.__bin_ps_allow_list
-                else "",
+                "eal_para": eal_para,
                 "port_mask": utils.create_mask(self.__valports),
                 "config": _config,
                 "port_topo": port_topo,
@@ -823,53 +818,30 @@ class PerfTestBase(object):
         self.dut.send_expect("quit", "# ")
         self.__is_bin_ps_on = False
 
-    def __l3fwd_init(self, mode, rename=True):
+    def __l3fwd_init(self):
         """
-        Prepare long prefix match table, __replace P(x) port pattern
+        compile l3fwd
         """
         self.app_name = self.dut.apps_name["l3fwd"].replace(" ", "")
-        l3fwd_method = "".join(["_", mode.value])
-        flg = 1 if mode is MATCH_MODE.LPM else 0
-        _opt = (
-            "USER_FLAGS=-DAPP_LOOKUP_METHOD={}".format(flg)
-            if self.__mode is SUITE_TYPE.PF
-            else ""
-        )
-        out = self.dut.build_dpdk_apps("./examples/l3fwd", _opt)
+        out = self.dut.build_dpdk_apps("./examples/l3fwd")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
-        if not rename:
-            return "./" + self.app_name
-        # rename binary file
-        self.d_con(
-            ("mv -f  " + self.app_name + " " + self.app_name + "{}").format(
-                l3fwd_method
-            )
-        )
-        l3fwd_bin = os.path.join("./" + self.app_name + l3fwd_method)
-        return l3fwd_bin
+        self.__l3fwd_bin = os.path.join("./" + self.app_name)
 
-    def __l3fwd_start(self, mode, core_mask, config, frame_size):
-        bin = self.__l3fwd_em if mode is MATCH_MODE.EM else self.__l3fwd_lpm
+    def __l3fwd_start(self, mode, eal_para, config, frame_size):
         # Start L3fwd application
         command_line = (
             "{bin} "
             "-v "
-            "-c {cores} "
-            "-n {channel} "
-            "{allowlist}"
+            "{eal_para}"
             "-- "
             "-p {port_mask} "
             "--config '{config}'"
             ""
         ).format(
             **{
-                "bin": bin,
-                "cores": core_mask,
-                "channel": self.dut.get_memory_channels(),
-                "allowlist": self.__bin_ps_allow_list
-                if self.__bin_ps_allow_list
-                else "",
+                "bin": self.__l3fwd_bin,
+                "eal_para": eal_para,
                 "port_mask": utils.create_mask(self.__valports),
                 "config": config,
             }
@@ -886,6 +858,9 @@ class PerfTestBase(object):
             )
         if self.nic in suppored_nics or self.__mode is SUITE_TYPE.VF:
             command_line += " --parse-ptype"
+        if mode == MATCH_MODE.EM:
+            # use exact mode
+            command_line += " -E"
         if frame_size > 1518:
             command_line += " --enable-jumbo --max-pkt-len %d" % frame_size
         # ignore duplicate start binary with the same option
@@ -909,13 +884,18 @@ class PerfTestBase(object):
         self.d_con(["^C", "# ", 25])
         self.__is_bin_ps_on = False
 
-    def __bin_ps_start(self, mode, core_mask, config, frame_size):
+    def __bin_ps_start(self, mode, core_list, config, frame_size):
+        eal_para = self.dut.create_eal_parameters(
+            cores=core_list,
+            ports=self.__bin_ps_allow_list,
+            socket=self.__socket,
+        )
         bin_methods = {
             BIN_TYPE.PMD: self.__testpmd_start,
             BIN_TYPE.L3FWD: self.__l3fwd_start,
         }
         start_func = bin_methods.get(self.__bin_type)
-        start_func(mode, core_mask, config, frame_size)
+        start_func(mode, eal_para, config, frame_size)
 
     def __bin_ps_close(self):
         bin_methods = {
@@ -1210,7 +1190,7 @@ class PerfTestBase(object):
         try:
             test_content = self.__test_content.get("port_configs")
             results = []
-            for config, core_mask, port_conf, frame_size in test_content:
+            for config, core_list, port_conf, frame_size in test_content:
                 # Start application binary process
                 self.logger.info(
                     (
@@ -1224,7 +1204,7 @@ class PerfTestBase(object):
                         self.__bin_type.value,
                     )
                 )
-                self.__bin_ps_start(mode, core_mask, port_conf, frame_size)
+                self.__bin_ps_start(mode, core_list, port_conf, frame_size)
                 result = self.__throughput(l3_proto, mode, frame_size)
                 # Stop binary process
                 self.__bin_ps_close()
@@ -1249,7 +1229,7 @@ class PerfTestBase(object):
         try:
             test_content = self.__test_content.get("port_configs")
             results = []
-            for config, core_mask, port_conf, frame_size in test_content:
+            for config, core_list, port_conf, frame_size in test_content:
                 # Start application binary process
                 self.logger.info(
                     (
@@ -1263,7 +1243,7 @@ class PerfTestBase(object):
                         self.__bin_type.value,
                     )
                 )
-                self.__bin_ps_start(mode, core_mask, port_conf, frame_size)
+                self.__bin_ps_start(mode, core_list, port_conf, frame_size)
                 result = self.__rfc2544(config, l3_proto, mode, frame_size)
                 # Stop binary process
                 self.__bin_ps_close()
@@ -1365,12 +1345,12 @@ class PerfTestBase(object):
 
             if self.__bin_type == BIN_TYPE.PMD:
                 # keep only one logic core of the main core
-                cores_mask = utils.create_mask(corelist[thread_num - 1 :])
+                _corelist = corelist[thread_num - 1 :]
                 [
                     configs.append(
                         [
                             test_item,
-                            cores_mask,
+                            _corelist,
                             [
                                 fixed_config[0],
                                 fixed_config[1]
@@ -1384,7 +1364,6 @@ class PerfTestBase(object):
                 ]
             # (port,queue,lcore)
             else:
-                cores_mask = utils.create_mask(corelist)
                 total = len(grp)
                 # ignore first 2 cores
                 _corelist = (corelist * (total // len(corelist) + 1))[:total]
@@ -1393,7 +1372,7 @@ class PerfTestBase(object):
                     configs.append(
                         [
                             test_item,
-                            cores_mask,
+                            _corelist,
                             ",".join(
                                 [
                                     "({0},{1},{2})".format(port, queue, core)
@@ -1509,7 +1488,6 @@ class PerfTestBase(object):
         cores_for_all = test_content.get("cores_for_all", False)
         self.__compile_rx_desc = test_content.get("compile_rx_desc")
         if self.__bin_type == BIN_TYPE.PMD:
-            self.__compile_avx = test_content.get("compile_avx")
             forwarding_mode = test_content.get("forwarding_mode") or "io"
             descriptor_numbers = test_content.get("descriptor_numbers") or {
                 "txd": 2048,
@@ -1536,7 +1514,7 @@ class PerfTestBase(object):
         return test_content
 
     def __get_bin_ps_allowlist(self, port_list=None):
-        allowlist = ""
+        allowlist = []
         if self.__mode is SUITE_TYPE.PF:
             if not port_list:
                 return None
@@ -1544,15 +1522,11 @@ class PerfTestBase(object):
                 pci = self.dut.ports_info[port_index].get("pci")
                 if not pci:
                     continue
-                allowlist += "-a {} ".format(pci)
+                allowlist.append(pci)
         else:
-            allowlist = "".join(
-                [
-                    "-a {} ".format(pci)
-                    for _, info in self.__vf_ports_info.items()
-                    for pci in info.get("vfs_pci")
-                ]
-            )
+            for _, info in self.__vf_ports_info.items():
+                for pci in info.get("vfs_pci"):
+                    allowlist.append(pci)
 
         return allowlist
 
