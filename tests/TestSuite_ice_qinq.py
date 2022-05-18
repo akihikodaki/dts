@@ -470,7 +470,7 @@ class TestICEQinq(TestCase):
         self.pmd_output = PmdOutput(self.dut)
 
     def reload_ice(self):
-        self.dut.send_expect('rmmod ice && modprobe ice', '# ')
+        self.dut.send_expect("rmmod ice && modprobe ice", "# ")
 
     def set_up(self):
         """

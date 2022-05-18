@@ -831,13 +831,7 @@ class PerfTestBase(object):
     def __l3fwd_start(self, mode, eal_para, config, frame_size):
         # Start L3fwd application
         command_line = (
-            "{bin} "
-            "-v "
-            "{eal_para}"
-            "-- "
-            "-p {port_mask} "
-            "--config '{config}'"
-            ""
+            "{bin} " "-v " "{eal_para}" "-- " "-p {port_mask} " "--config '{config}'" ""
         ).format(
             **{
                 "bin": self.__l3fwd_bin,
