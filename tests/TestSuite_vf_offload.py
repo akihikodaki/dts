@@ -448,7 +448,7 @@ class TestVfOffload(TestCase):
         """
         Get the length of loading_sizes
         """
-        scanner = 'tcpdump  -vv -r tcpdump_{iface}.pcap 2>/dev/null | grep "seq"  | grep "length"'
+        scanner = 'tcpdump  -n -vv -r tcpdump_{iface}.pcap 2>/dev/null | grep "seq"  | grep "length"'
         return self.tcpdump_scanner(scanner.format(**locals()))
 
     def test_tso(self):
