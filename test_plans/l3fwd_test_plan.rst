@@ -76,16 +76,6 @@ Prerequisites
 
 4. Software application requirements
 
-  - Configuration for mode
-
-      -The following Settings are required when using exact mode::
-
-        sed -i '/^APP\>/a\\CFLAGS += -DAPP_LOOKUP_METHOD=APP_LOOKUP_EXACT_MATCH' examples/l3fwd/Makefile
-
-      -The following Settings are required when using LPM mode::
-
-        sed -i '/^APP\>/a\\CFLAGS += -DAPP_LOOKUP_METHOD=APP_LOOKUP_LPM' examples/l3fwd/Makefile
-
   - Routing table for IPv4 packets
       - In LPM mode, the LPM table used for packet routing is:
 
