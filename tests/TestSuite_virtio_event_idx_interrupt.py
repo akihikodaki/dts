@@ -89,46 +89,6 @@ class TestVirtioIdxInterrupt(TestCase):
         )
         self.core_list = self.dut.get_core_list(self.core_config)
 
-    def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num):
-        """
-        get all cbdma ports
-        """
-        out = self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --status-dev dma", "# ", 30
-        )
-        cbdma_dev_infos = re.findall("\s*(0000:\S+:\d+.\d+)", out)
-        self.verify(
-            len(cbdma_dev_infos) >= cbdma_num,
-            "There no enough cbdma device to run this suite",
-        )
-        used_cbdma = cbdma_dev_infos[0:cbdma_num]
-        dmas_info = ""
-        for dmas in used_cbdma:
-            number = used_cbdma.index(dmas)
-            dmas = "txq{}@{};".format(number, dmas)
-            dmas_info += dmas
-        self.dmas_info = dmas_info[:-1]
-        self.device_str = " ".join(used_cbdma)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=%s %s"
-            % (self.drivername, self.device_str),
-            "# ",
-            60,
-        )
-
-    def bind_cbdma_device_to_kernel(self):
-        if self.device_str is not None:
-            self.dut.send_expect("modprobe ioatdma", "# ")
-            self.dut.send_expect(
-                "./usertools/dpdk-devbind.py -u %s" % self.device_str, "# ", 30
-            )
-            self.dut.send_expect(
-                "./usertools/dpdk-devbind.py --force --bind=ioatdma  %s"
-                % self.device_str,
-                "# ",
-                60,
-            )
-
     def start_vhost_testpmd(self, dmas=None, mode=False):
         """
         start the testpmd on vhost side
@@ -136,29 +96,12 @@ class TestVirtioIdxInterrupt(TestCase):
         # get the core mask depend on the nb_cores number
         self.get_core_mask()
         testcmd = self.app_testpmd_path + " "
-        if dmas:
-            device_str = self.device_str.split(" ")
-            device_str.append(self.pf_pci)
-            if mode:
-                vdev = [
-                    "'net_vhost,iface=%s/vhost-net,queues=%d,%s=1,dmas=[%s]'"
-                    % (self.base_dir, self.queues, mode, dmas)
-                ]
-            else:
-                vdev = [
-                    "net_vhost,iface=%s/vhost-net,queues=%d,dmas=[%s]"
-                    % (self.base_dir, self.queues, dmas)
-                ]
-            eal_params = self.dut.create_eal_parameters(
-                cores=self.core_list, prefix="vhost", ports=device_str, vdevs=vdev
-            )
-        else:
-            vdev = [
-                "net_vhost,iface=%s/vhost-net,queues=%d " % (self.base_dir, self.queues)
-            ]
-            eal_params = self.dut.create_eal_parameters(
-                cores=self.core_list, prefix="vhost", ports=[self.pf_pci], vdevs=vdev
-            )
+        vdev = [
+            "net_vhost,iface=%s/vhost-net,queues=%d " % (self.base_dir, self.queues)
+        ]
+        eal_params = self.dut.create_eal_parameters(
+            cores=self.core_list, prefix="vhost", ports=[self.pf_pci], vdevs=vdev
+        )
         para = " -- -i --nb-cores=%d --txd=1024 --rxd=1024 --rxq=%d --txq=%d" % (
             self.nb_cores,
             self.queues,
@@ -319,7 +262,7 @@ class TestVirtioIdxInterrupt(TestCase):
         self.start_vhost_testpmd()
         self.start_vms()
         self.config_virito_net_in_vm()
-        res = self.check_packets_after_reload_virtio_device(reload_times=30)
+        res = self.check_packets_after_reload_virtio_device(reload_times=100)
         self.verify(res is True, "Should increase the wait times of ixia")
         self.stop_all_apps()
 
@@ -347,7 +290,7 @@ class TestVirtioIdxInterrupt(TestCase):
         self.start_vhost_testpmd()
         self.start_vms(packed=True)
         self.config_virito_net_in_vm()
-        res = self.check_packets_after_reload_virtio_device(reload_times=30)
+        res = self.check_packets_after_reload_virtio_device(reload_times=100)
         self.verify(res is True, "Should increase the wait times of ixia")
         self.stop_all_apps()
 
@@ -366,70 +309,6 @@ class TestVirtioIdxInterrupt(TestCase):
         self.check_each_queue_has_packets_info_on_vhost()
         self.stop_all_apps()
 
-    def test_perf_split_ring_virito_pci_driver_reload_with_cbdma_enabled(self):
-        """
-        Test Case 7: Split ring virtio-pci driver reload test with CBDMA enabled
-        """
-        self.queues = 1
-        self.nb_cores = 1
-        used_cbdma_num = 1
-        self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
-        self.start_vhost_testpmd(dmas=self.dmas_info)
-        self.start_vms()
-        self.config_virito_net_in_vm()
-        res = self.check_packets_after_reload_virtio_device(reload_times=30)
-        self.verify(res is True, "Should increase the wait times of ixia")
-        self.stop_all_apps()
-
-    def test_perf_wake_up_split_ring_virtio_net_cores_with_event_idx_interrupt_mode_and_cbdma_enabled_16queue(
-        self,
-    ):
-        """
-        Test Case 8: Wake up split ring virtio-net cores with event idx interrupt mode and cbdma enabled 16 queues test
-        """
-        self.queues = 16
-        self.nb_cores = 16
-        used_cbdma_num = 16
-        self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
-        self.start_vhost_testpmd(dmas=self.dmas_info, mode="client")
-        self.start_vms(mode="server")
-        self.config_virito_net_in_vm()
-        self.start_to_send_packets(delay=15)
-        self.check_each_queue_has_packets_info_on_vhost()
-        self.stop_all_apps()
-
-    def test_perf_packed_ring_virito_pci_driver_reload_with_cbdma_enabled(self):
-        """
-        Test Case 9: Packed ring virtio-pci driver reload test with CBDMA enabled
-        """
-        self.queues = 1
-        self.nb_cores = 1
-        used_cbdma_num = 1
-        self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
-        self.start_vhost_testpmd(dmas=self.dmas_info)
-        self.start_vms(packed=True)
-        self.config_virito_net_in_vm()
-        res = self.check_packets_after_reload_virtio_device(reload_times=30)
-        self.verify(res is True, "Should increase the wait times of ixia")
-        self.stop_all_apps()
-
-    def test_perf_wake_up_packed_ring_virtio_net_cores_with_event_idx_interrupt_mode_and_cbdma_enabled_16queue(
-        self,
-    ):
-        """
-        Test Case 10: Wake up packed ring virtio-net cores with event idx interrupt mode and cbdma enabled 16 queues test
-        """
-        self.queues = 16
-        self.nb_cores = 16
-        used_cbdma_num = 16
-        self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
-        self.start_vhost_testpmd(dmas=self.dmas_info, mode="client")
-        self.start_vms(packed=True, mode="server")
-        self.config_virito_net_in_vm()
-        self.start_to_send_packets(delay=15)
-        self.check_each_queue_has_packets_info_on_vhost()
-        self.stop_all_apps()
-
     def tear_down(self):
         """
         Run after each test case.
@@ -437,7 +316,6 @@ class TestVirtioIdxInterrupt(TestCase):
         self.dut.close_session(self.vhost)
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
         """
