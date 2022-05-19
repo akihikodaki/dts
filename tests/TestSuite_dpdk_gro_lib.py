@@ -105,10 +105,6 @@ class TestDPDKGROLib(TestCase):
         self.prepare_dpdk()
         self.base_dir = self.dut.base_dir.replace("~", "/root")
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
-        # get cbdma device
-        self.cbdma_dev_infos = []
-        self.dmas_info = None
-        self.device_str = None
 
     def set_up(self):
         #
@@ -119,59 +115,6 @@ class TestDPDKGROLib(TestCase):
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
 
-    def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num):
-        """
-        get all cbdma ports
-        """
-        out = self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --status-dev dma", "# ", 30
-        )
-        device_info = out.split("\n")
-        for device in device_info:
-            pci_info = re.search("\s*(0000:\S*:\d*.\d*)", device)
-            if pci_info is not None:
-                dev_info = pci_info.group(1)
-                # the numa id of ioat dev, only add the device which
-                # on same socket with nic dev
-                bus = int(dev_info[5:7], base=16)
-                if bus >= 128:
-                    cur_socket = 1
-                else:
-                    cur_socket = 0
-                if self.ports_socket == cur_socket:
-                    self.cbdma_dev_infos.append(pci_info.group(1))
-        self.verify(
-            len(self.cbdma_dev_infos) >= cbdma_num,
-            "There no enough cbdma device to run this suite",
-        )
-        used_cbdma = self.cbdma_dev_infos[0:cbdma_num]
-        dmas_info = ""
-        for dmas in used_cbdma:
-            number = used_cbdma.index(dmas)
-            dmas = "txq{}@{};".format(number, dmas)
-            dmas_info += dmas
-        self.dmas_info = dmas_info[:-1]
-        self.device_str = " ".join(self.cbdma_dev_infos)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=%s %s"
-            % (self.drivername, self.device_str),
-            "# ",
-            60,
-        )
-
-    def bind_cbdma_device_to_kernel(self):
-        if self.device_str is not None:
-            self.dut.send_expect("modprobe ioatdma", "# ")
-            self.dut.send_expect(
-                "./usertools/dpdk-devbind.py -u %s" % self.device_str, "# ", 30
-            )
-            self.dut.send_expect(
-                "./usertools/dpdk-devbind.py --force --bind=ioatdma  %s"
-                % self.device_str,
-                "# ",
-                60,
-            )
-
     def launch_testpmd_gro_on(self, mode=1, queue=1):
         #
         # Launch the vhost sample with different parameters
@@ -179,37 +122,19 @@ class TestDPDKGROLib(TestCase):
         # mode 2 : tcp traffic heavy mode
         # mode 3 : vxlan traffic light mode
         # mode 4 : tcp traffic flush 4
-        # mode 5 : tcp traffice light mode with cdbma enable
-        if mode == 5:
-            self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
-            eal_param = self.dut.create_eal_parameters(
-                cores=self.vhost_list,
-                vdevs=[
-                    "'net_vhost0,iface=%s/vhost-net,queues=%s,dmas=[%s]'"
-                    % (self.base_dir, queue, self.dmas_info)
-                ],
-            )
-            self.testcmd_start = (
-                self.path + eal_param + " -- -i --txd=1024 --rxd=1024 --txq=2 --rxq=2"
-            )
-            self.vhost_user = self.dut.new_session(suite="user")
-            self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)
-        else:
-            eal_param = self.dut.create_eal_parameters(
-                cores=self.vhost_list,
-                vdevs=[
-                    "net_vhost0,iface=%s/vhost-net,queues=%s" % (self.base_dir, queue)
-                ],
-                ports=[self.pci],
-            )
-            self.testcmd_start = (
-                self.path
-                + eal_param
-                + " -- -i  --enable-hw-vlan-strip --tx-offloads=0x00 --txd=1024 --rxd=1024"
-            )
-            self.vhost_user = self.dut.new_session(suite="user")
-            self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)
-            self.set_testpmd_params()
+        eal_param = self.dut.create_eal_parameters(
+            cores=self.vhost_list,
+            vdevs=["net_vhost0,iface=%s/vhost-net,queues=%s" % (self.base_dir, queue)],
+            ports=[self.pci],
+        )
+        self.testcmd_start = (
+            self.path
+            + eal_param
+            + " -- -i  --enable-hw-vlan-strip --tx-offloads=0x00 --txd=1024 --rxd=1024"
+        )
+        self.vhost_user = self.dut.new_session(suite="user")
+        self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)
+        self.set_testpmd_params()
 
     def set_testpmd_params(self, mode=1):
         # set testpmd params
@@ -513,53 +438,6 @@ class TestDPDKGROLib(TestCase):
         self.quit_testpmd()
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
 
-    def test_vhost_gro_tcp_ipv4_with_cbdma_enable(self):
-        self.config_kernel_nic_host(0)
-        self.heavymode = 5
-        self.launch_testpmd_gro_on(self.heavymode, queue=2)
-        self.start_vm(mode=5, queue=2)
-        time.sleep(5)
-        self.dut.get_session_output(timeout=2)
-        # Get the virtio-net device name
-        for port in self.vm1_dut.ports_info:
-            self.vm1_intf = port["intf"]
-        # Start the Iperf test
-        self.vm1_dut.send_expect("ifconfig -a", "#", 30)
-        self.vm1_dut.send_expect(
-            "ifconfig %s %s up" % (self.vm1_intf, self.virtio_ip1), "#", 10
-        )
-        self.vm1_dut.send_expect("ethtool -L %s combined 2" % self.vm1_intf, "#", 10)
-        self.vm1_dut.send_expect("ethtool -K %s gro off" % (self.vm1_intf), "#", 10)
-        self.set_testpmd_params()
-        self.vm1_dut.send_expect("iperf -s", "", 10)
-        self.dut.send_expect("rm /root/iperf_client.log", "#", 10)
-        out = self.dut.send_expect(
-            "ip netns exec ns1 iperf -c %s -i 1 -t 60 -m -P 2 > /root/iperf_client.log &"
-            % (self.virtio_ip1),
-            "",
-            180,
-        )
-        time.sleep(30)
-        print(out)
-        perfdata = self.iperf_result_verify("GRO lib")
-        print(("the GRO lib %s " % (self.output_result)))
-        # self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
-        self.quit_testpmd()
-        self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        exp_perfdata = self.dut.send_expect(
-            "cat /root/dpdk_gro_lib_on_iperf_tc5.log", "#"
-        )
-        self.verify(
-            "No such file or directory" not in exp_perfdata,
-            "Cannot find dpdk_gro_lib_on_iperf_tc5.log, please run test_vhost_gro_with_2queues_tcp_lightmode firstly",
-        )
-        if exp_perfdata:
-            self.verify(
-                float(perfdata) > float(exp_perfdata),
-                "TestFailed: W/cbdma iperf data is %s Kbits/sec, W/O cbdma iperf data is %s Kbits/sec"
-                % (perfdata, exp_perfdata),
-            )
-
     def test_vhost_gro_with_2queues_tcp_lightmode(self):
         """
         Test Case5: DPDK GRO test with 2 queues using tcp/ipv4 traffic
@@ -626,7 +504,6 @@ class TestDPDKGROLib(TestCase):
             "# ",
             30,
         )
-        self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
         """
