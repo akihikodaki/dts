@@ -66,9 +66,7 @@ class TestVM2VMVirtioPMD(TestCase):
         self.app_pdump = self.dut.apps_name["pdump"]
         self.testpmd_name = self.app_testpmd_path.split("/")[-1]
         self.pmd_vhost = PmdOutput(self.dut, self.vhost_user)
-        self.cbdma_dev_infos = []
         self.vm_config = "vhost_sample"
-        self.device_str = " "
 
     def set_up(self):
         """
@@ -502,232 +500,6 @@ class TestVM2VMVirtioPMD(TestCase):
         # check the packet in vm0
         self.check_packet_payload_valid(self.vm_dut[0])
 
-    def test_vhost_vm2vm_virtio_split_ring_with_mergeable_path_cbdma_enable(self):
-        """
-        Test Case 9: VM2VM virtio-pmd split ring mergeable path 8 queues CBDMA enable with server mode stable test
-        """
-        self.nb_cores = 4
-        path_mode = "mergeable"
-        extern_param = "--max-pkt-len=9600 --txq=8 --rxq=8"
-        self.get_core_list(self.nb_cores + 1)
-        self.get_cbdma_ports_info_and_bind_to_dpdk(
-            cbdma_num=16, queue_num=8, allow_diff_socket=True
-        )
-        self.logger.info("Launch vhost-testpmd with CBDMA and used 8 queue")
-        setting_args = "disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on"
-        self.prepare_test_env(
-            cbdma=True,
-            no_pci=False,
-            client_mode=True,
-            enable_queues=8,
-            nb_cores=4,
-            setting_args=setting_args,
-            server_mode=True,
-            opt_queue=8,
-            rxq_txq=8,
-        )
-        self.logger.info("Launch testpmd in VM1")
-        self.start_vm_testpmd(self.vm_dut[0], path_mode, extern_param)
-        self.vm_dut[0].send_expect("set fwd mac", "testpmd> ", 30)
-        self.vm_dut[0].send_expect("start", "testpmd> ", 30)
-        self.logger.info("Launch testpmd in VM2, sent imix pkts from VM2")
-        self.start_vm_testpmd(self.vm_dut[1], path_mode, extern_param)
-        self.vm_dut[1].send_expect("set fwd mac", "testpmd> ", 30)
-        self.vm_dut[1].send_expect(
-            "set txpkts 64,256,512,1024,2000,64,256,512,1024,2000", "testpmd> ", 30
-        )
-        self.vm_dut[1].send_expect("start tx_first 1", "testpmd> ", 30)
-        self.logger.info("Check imix packets")
-        self.check_port_stats_result(self.vm_dut[0], queue_num=8)
-        self.check_port_stats_result(self.vm_dut[1], queue_num=8)
-        self.logger.info("Relaunch vhost side testpmd and Check imix packets 10 times")
-        for _ in range(10):
-            self.pmd_vhost.execute_cmd("quit", "#")
-            self.start_vhost_testpmd_cbdma(
-                cbdma=True,
-                no_pci=False,
-                client_mode=True,
-                enable_queues=8,
-                nb_cores=4,
-                rxq_txq=8,
-            )
-            self.vm_dut[1].send_expect("stop", "testpmd> ", 30)
-            self.vm_dut[1].send_expect("start tx_first 32", "testpmd> ", 30)
-            self.check_port_stats_result(self.vm_dut[0], queue_num=8)
-            self.check_port_stats_result(self.vm_dut[1], queue_num=8)
-
-    def test_vhost_vm2vm_split_ring_with_mergeable_path_and_server_mode_cbdma_enable(
-        self,
-    ):
-        """
-        Test Case 10: VM2VM virtio-pmd split ring mergeable path dynamic queue size CBDMA enable with server mode test
-        """
-        self.nb_cores = 4
-        path_mode = "mergeable"
-        extern_param = "--max-pkt-len=9600 --txq=8 --rxq=8"
-        self.get_core_list(self.nb_cores + 1)
-        self.get_cbdma_ports_info_and_bind_to_dpdk(
-            cbdma_num=16, queue_num=8, allow_diff_socket=True
-        )
-        self.logger.info("Launch vhost-testpmd with CBDMA and used 4 queue")
-        setting_args = "disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on"
-        self.prepare_test_env(
-            cbdma=True,
-            no_pci=False,
-            client_mode=True,
-            enable_queues=8,
-            nb_cores=4,
-            setting_args=setting_args,
-            server_mode=True,
-            opt_queue=8,
-            rxq_txq=4,
-        )
-        self.logger.info("Launch testpmd in VM1")
-        self.start_vm_testpmd(self.vm_dut[0], path_mode, extern_param)
-        self.vm_dut[0].send_expect("set fwd mac", "testpmd> ", 30)
-        self.vm_dut[0].send_expect("start", "testpmd> ", 30)
-        self.logger.info("Launch testpmd in VM2 and send imix pkts")
-        self.start_vm_testpmd(self.vm_dut[1], path_mode, extern_param)
-        self.vm_dut[1].send_expect("set fwd mac", "testpmd> ", 30)
-        self.vm_dut[1].send_expect(
-            "set txpkts 64,256,512,1024,2000,64,256,512,1024,2000", "testpmd> ", 30
-        )
-        self.vm_dut[1].send_expect("start tx_first 32", "testpmd> ", 30)
-        self.logger.info("Check imix packets")
-        self.check_port_stats_result(self.vm_dut[0], queue_num=4)
-        self.check_port_stats_result(self.vm_dut[1], queue_num=4)
-        self.logger.info("Relaunch vhost side testpmd and Check imix packets 10 times")
-        for _ in range(10):
-            self.pmd_vhost.execute_cmd("quit", "#")
-            self.start_vhost_testpmd_cbdma(
-                cbdma=True,
-                no_pci=False,
-                client_mode=True,
-                enable_queues=8,
-                nb_cores=4,
-                rxq_txq=8,
-            )
-            self.vm_dut[1].send_expect("stop", "testpmd> ", 30)
-            self.vm_dut[1].send_expect("start tx_first 32", "testpmd> ", 30)
-            self.check_port_stats_result(self.vm_dut[0], queue_num=8)
-            self.check_port_stats_result(self.vm_dut[1], queue_num=8)
-
-    def test_vhost_vm2vm_packed_ring_with_mergeable_path_and_8queues_cbdma_enable(self):
-        """
-        Test Case 11: VM2VM virtio-pmd packed ring mergeable path 8 queues CBDMA enable test
-        """
-        self.nb_cores = 4
-        path_mode = "mergeable"
-        extern_param = "--max-pkt-len=9600 --txq=8 --rxq=8"
-        self.get_core_list(self.nb_cores + 1)
-        self.get_cbdma_ports_info_and_bind_to_dpdk(
-            cbdma_num=16, queue_num=8, allow_diff_socket=True
-        )
-        setting_args = "disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on"
-        self.prepare_test_env(
-            cbdma=True,
-            no_pci=False,
-            client_mode=False,
-            enable_queues=8,
-            nb_cores=4,
-            setting_args=setting_args,
-            server_mode=False,
-            opt_queue=8,
-            rxq_txq=8,
-        )
-        self.logger.info("Launch testpmd in VM1")
-        self.start_vm_testpmd(self.vm_dut[0], path_mode, extern_param)
-        self.logger.info("Launch testpmd in VM2 and send imix pkts")
-        self.start_vm_testpmd(self.vm_dut[1], path_mode, extern_param)
-        self.vm_dut[0].send_expect("set fwd mac", "testpmd> ", 30)
-        self.vm_dut[0].send_expect("start", "testpmd> ", 30)
-        self.vm_dut[1].send_expect("set fwd mac", "testpmd> ", 30)
-        self.vm_dut[1].send_expect(
-            "set txpkts 64,256,512,1024,20000,64,256,512,1024,20000", "testpmd> ", 30
-        )
-        self.vm_dut[1].send_expect("start tx_first 32", "testpmd> ", 30)
-        self.logger.info("Check imix packets")
-        self.check_port_stats_result(self.vm_dut[0])
-        self.check_port_stats_result(self.vm_dut[1])
-        self.logger.info("Quit VM2 and relaunch VM2 with split ring")
-        self.vm_dut[1].send_expect("quit", "#", 20)
-        self.vm[1].stop()
-        time.sleep(5)
-        try:
-            self.vm_dut[1].send_expect("poweroff", "", 20)
-        except Exception as e:
-            self.logger.info(e)
-        time.sleep(10)
-        self.start_one_vms(
-            mode=1, server_mode=False, opt_queue=8, vm_config=self.vm_config
-        )
-        self.start_vm_testpmd(self.vm_dut[1], path_mode, extern_param)
-        self.vm_dut[0].send_expect("start", "testpmd> ", 30)
-        self.vm_dut[1].send_expect("set fwd mac", "testpmd> ", 30)
-        self.vm_dut[1].send_expect(
-            "set txpkts 64,256,512,1024,20000,64,256,512,1024,20000", "testpmd> ", 30
-        )
-        self.vm_dut[1].send_expect("start tx_first 32", "testpmd> ", 30)
-        self.check_port_stats_result(self.vm_dut[0], queue_num=8)
-        self.check_port_stats_result(self.vm_dut[1], queue_num=8)
-
-    def start_one_vms(
-        self,
-        mode=0,
-        mergeable=True,
-        server_mode=False,
-        opt_queue=None,
-        vm_config="",
-        vm_index=1,
-    ):
-        """
-        start two VM, each VM has one virtio device
-        """
-        # for virtio 0.95, start vm with "disable-modern=true"
-        # for virito 1.0, start vm with "disable-modern=false"
-        if mode == 0:
-            setting_args = "disable-modern=true"
-        elif mode == 1:
-            setting_args = "disable-modern=false"
-        elif mode == 2:
-            setting_args = "disable-modern=false,packed=on"
-        if mergeable is True:
-            setting_args += "," + "mrg_rxbuf=on"
-        else:
-            setting_args += "," + "mrg_rxbuf=off"
-        vm_params = {}
-        if opt_queue > 1:
-            setting_args += ",csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on"
-            vm_params["opt_queue"] = opt_queue
-            setting_args = setting_args + ",mq=on,vectors=40"
-        else:
-            setting_args += (
-                ",csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
-            )
-
-        vm_dut = None
-        vm_info = VM(self.dut, "vm%d" % vm_index, vm_config)
-        vm_params["driver"] = "vhost-user"
-        if not server_mode:
-            vm_params["opt_path"] = self.base_dir + "/vhost-net%d" % vm_index
-        else:
-            vm_params["opt_path"] = (
-                self.base_dir + "/vhost-net%d" % vm_index + ",server"
-            )
-        vm_params["opt_mac"] = "52:54:00:00:00:0%d" % (vm_index + 1)
-        vm_params["opt_settings"] = setting_args
-        vm_info.set_vm_device(**vm_params)
-        time.sleep(3)
-        try:
-            vm_dut = vm_info.start()
-            if vm_dut is None:
-                raise Exception("Set up VM ENV failed")
-        except Exception as e:
-            print((utils.RED("Failure for %s" % str(e))))
-            raise e
-        self.vm_dut[-1] = vm_dut
-        self.vm[-1] = vm_info
-
     def check_port_stats_result(self, vm_dut, queue_num=0):
         out = vm_dut.send_expect("show port stats all", "testpmd> ", 30)
         rx_packets = re.findall(r"RX-packets: (\w+)", out)
@@ -775,13 +547,11 @@ class TestVM2VMVirtioPMD(TestCase):
         start vhost testpmd and qemu, and config the vm env
         """
         self.start_vhost_testpmd_cbdma(
-            cbdma=cbdma,
             no_pci=no_pci,
             client_mode=client_mode,
             enable_queues=enable_queues,
             nb_cores=nb_cores,
             rxq_txq=rxq_txq,
-            iova_mode=iova_mode,
         )
         self.start_vms(
             setting_args=setting_args,
@@ -792,54 +562,33 @@ class TestVM2VMVirtioPMD(TestCase):
 
     def start_vhost_testpmd_cbdma(
         self,
-        cbdma=False,
         no_pci=True,
         client_mode=False,
         enable_queues=1,
         nb_cores=2,
         rxq_txq=None,
-        iova_mode=False,
     ):
         """
         launch the testpmd with different parameters
         """
-
-        if cbdma is True:
-            dmas_info_list = self.dmas_info.split(",")
-            cbdma_arg_0_list = []
-            cbdma_arg_1_list = []
-            for item in dmas_info_list:
-                if dmas_info_list.index(item) < int(len(dmas_info_list) / 2):
-                    cbdma_arg_0_list.append(item)
-                else:
-                    cbdma_arg_1_list.append(item)
-            cbdma_arg_0 = ",dmas=[{}]".format(";".join(cbdma_arg_0_list))
-            cbdma_arg_1 = ",dmas=[{}]".format(";".join(cbdma_arg_1_list))
-        else:
-            cbdma_arg_0 = ""
-            cbdma_arg_1 = ""
         testcmd = self.app_testpmd_path + " "
         if not client_mode:
-            vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=%d%s' " % (
+            vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=%d' " % (
                 self.base_dir,
                 enable_queues,
-                cbdma_arg_0,
             )
-            vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=%d%s' " % (
+            vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=%d' " % (
                 self.base_dir,
                 enable_queues,
-                cbdma_arg_1,
             )
         else:
-            vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,client=1,queues=%d%s' " % (
+            vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,client=1,queues=%d' " % (
                 self.base_dir,
                 enable_queues,
-                cbdma_arg_0,
             )
-            vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,client=1,queues=%d%s' " % (
+            vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,client=1,queues=%d' " % (
                 self.base_dir,
                 enable_queues,
-                cbdma_arg_1,
             )
         eal_params = self.dut.create_eal_parameters(
             cores=self.cores_list, prefix="vhost", no_pci=no_pci
@@ -852,88 +601,10 @@ class TestVM2VMVirtioPMD(TestCase):
                 rxq_txq,
                 rxq_txq,
             )
-        if iova_mode:
-            append_str = "--iova-mode=va "
-        else:
-            append_str = ""
-        self.command_line = testcmd + append_str + eal_params + vdev1 + vdev2 + params
+        self.command_line = testcmd + eal_params + vdev1 + vdev2 + params
         self.pmd_vhost.execute_cmd(self.command_line, timeout=30)
         self.pmd_vhost.execute_cmd("vhost enable tx all", timeout=30)
         self.pmd_vhost.execute_cmd("start", timeout=30)
-
-    def get_cbdma_ports_info_and_bind_to_dpdk(
-        self, cbdma_num=2, queue_num=4, allow_diff_socket=False
-    ):
-        """
-        get all cbdma ports
-        """
-        out = self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --status-dev dma", "# ", 30
-        )
-        device_info = out.split("\n")
-        for device in device_info:
-            pci_info = re.search("\s*(0000:\S*:\d*.\d*)", device)
-            if pci_info is not None:
-                dev_info = pci_info.group(1)
-                # the numa id of ioat dev, only add the device which on same socket with nic dev
-                bus = int(dev_info[5:7], base=16)
-                if bus >= 128:
-                    cur_socket = 1
-                else:
-                    cur_socket = 0
-                if allow_diff_socket:
-                    self.cbdma_dev_infos.append(pci_info.group(1))
-                else:
-                    if self.ports_socket == cur_socket:
-                        self.cbdma_dev_infos.append(pci_info.group(1))
-        self.verify(
-            len(self.cbdma_dev_infos) >= cbdma_num,
-            "There no enough cbdma device to run this suite",
-        )
-        used_cbdma = self.cbdma_dev_infos[0:cbdma_num]
-        dmas_info = ""
-        for dmas in used_cbdma[0 : int(cbdma_num / 2)]:
-            number = used_cbdma[0 : int(cbdma_num / 2)].index(dmas)
-            if queue_num == 8:
-                dmas = "txq{}@{},".format(number % 8, dmas)
-            if queue_num == 4:
-                if number < int(cbdma_num / 4):
-                    dmas = "txq{}@{},".format(number % 4, dmas)
-                else:
-                    dmas = "rxq{}@{},".format(number % 4, dmas)
-            dmas_info += dmas
-        for dmas in used_cbdma[int(cbdma_num / 2) :]:
-            number = used_cbdma[int(cbdma_num / 2) :].index(dmas)
-            if queue_num == 8:
-                dmas = "txq{}@{},".format(number % 8, dmas)
-            if queue_num == 4:
-                if number < int(cbdma_num / 4):
-                    dmas = "txq{}@{},".format(number % 4, dmas)
-                else:
-                    dmas = "rxq{}@{},".format(number % 4, dmas)
-
-            dmas_info += dmas
-        self.dmas_info = dmas_info[:-1]
-        self.device_str = " ".join(used_cbdma)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=%s %s"
-            % (self.drivername, self.device_str),
-            "# ",
-            60,
-        )
-
-    def bind_cbdma_device_to_kernel(self):
-        if self.device_str is not None:
-            self.dut.send_expect("modprobe ioatdma", "# ")
-            self.dut.send_expect(
-                "./usertools/dpdk-devbind.py -u %s" % self.device_str, "# ", 30
-            )
-            self.dut.send_expect(
-                "./usertools/dpdk-devbind.py --force --bind=ioatdma  %s"
-                % self.device_str,
-                "# ",
-                60,
-            )
 
     def tear_down(self):
         #
@@ -941,7 +612,6 @@ class TestVM2VMVirtioPMD(TestCase):
         #
         self.stop_all_apps()
         self.dut.kill_all()
-        self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
         """
