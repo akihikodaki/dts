@@ -75,7 +75,6 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         self.app_testpmd_path = self.dut.apps_name["test-pmd"]
         self.testpmd_name = self.app_testpmd_path.split("/")[-1]
         self.l3fwdpower_name = self.app_l3fwd_power_path.split("/")[-1]
-        self.device_str = None
 
     def set_up(self):
         """
@@ -110,30 +109,19 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         self.vm_dut.send_expect("modprobe vfio-pci", "#")
         self.vm_dut.ports_info[0]["port"].bind_driver("vfio-pci")
 
-    def start_testpmd_on_vhost(self, dmas=None):
+    def start_testpmd_on_vhost(self):
         """
         start testpmd on vhost side
         """
         # get the core list depend on current nb_cores number
         self.get_core_list()
         testcmd = self.app_testpmd_path + " "
-        if dmas:
-            device_str = self.device_str.split(" ")
-            device_str.append(self.pci_info)
-            vdev = [
-                "'net_vhost0,iface=%s/vhost-net,queues=%d,dmas=[%s]'"
-                % (self.base_dir, self.queues, dmas)
-            ]
-            eal_params = self.dut.create_eal_parameters(
-                cores=self.core_list, ports=device_str, vdevs=vdev
-            )
-        else:
-            vdev = [
-                "net_vhost0,iface=%s/vhost-net,queues=%d" % (self.base_dir, self.queues)
-            ]
-            eal_params = self.dut.create_eal_parameters(
-                cores=self.core_list, ports=[self.pci_info], vdevs=vdev
-            )
+        vdev = [
+            "net_vhost0,iface=%s/vhost-net,queues=%d" % (self.base_dir, self.queues)
+        ]
+        eal_params = self.dut.create_eal_parameters(
+            cores=self.core_list, ports=[self.pci_info], vdevs=vdev
+        )
         para = " -- -i --nb-cores=%d --rxq=%d --txq=%d --rss-ip" % (
             self.nb_cores,
             self.queues,
@@ -307,47 +295,6 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         self.check_related_cores_status_in_l3fwd(out, "waked up", fix_ip=True)
         self.check_related_cores_status_in_l3fwd(out, "sleeps", fix_ip=True)
 
-    def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num):
-        """
-        get all cbdma ports
-        """
-        out = self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --status-dev dma", "# ", 30
-        )
-        cbdma_dev_infos = re.findall("\s*(0000:\S+:\d+.\d+)", out)
-        self.verify(
-            len(cbdma_dev_infos) >= cbdma_num,
-            "There no enough cbdma device to run this suite",
-        )
-
-        used_cbdma = cbdma_dev_infos[0:cbdma_num]
-        dmas_info = ""
-        for dmas in used_cbdma:
-            number = used_cbdma.index(dmas)
-            dmas = "txq{}@{};".format(number, dmas)
-            dmas_info += dmas
-        self.dmas_info = dmas_info[:-1]
-        self.device_str = " ".join(used_cbdma)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=%s %s"
-            % (self.drivername, self.device_str),
-            "# ",
-            60,
-        )
-
-    def bind_cbdma_device_to_kernel(self):
-        if self.device_str is not None:
-            self.dut.send_expect("modprobe ioatdma", "# ")
-            self.dut.send_expect(
-                "./usertools/dpdk-devbind.py -u %s" % self.device_str, "# ", 30
-            )
-            self.dut.send_expect(
-                "./usertools/dpdk-devbind.py --force --bind=ioatdma  %s"
-                % self.device_str,
-                "# ",
-                60,
-            )
-
     def stop_all_apps(self):
         """
         close all vms
@@ -355,7 +302,6 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         if self.vm_dut is not None:
             vm_dut2 = self.vm_dut.create_session(name="vm_dut2")
             vm_dut2.send_expect("killall %s" % self.l3fwdpower_name, "# ", 10)
-            # self.vm_dut.send_expect("killall l3fwd-power", "# ", 60, alt_session=True)
             self.vm_dut.send_expect("cp /tmp/main.c ./examples/l3fwd-power/", "#", 15)
             out = self.vm_dut.build_dpdk_apps("examples/l3fwd-power")
             self.vm.stop()
@@ -411,48 +357,6 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         self.launch_l3fwd_power_in_vm()
         self.send_and_verify()
 
-    def test_perf_virtio_interrupt_with_16_queues_and_cbdma_enabled(self):
-        """
-        Test Case 5: Basic virtio interrupt test with 16 queues and cbdma enabled
-        """
-        used_cbdma_num = 16
-        self.queues = 16
-        self.nb_cores = 16
-        self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
-        self.start_testpmd_on_vhost(self.dmas_info)
-        self.start_vms(mode=0)
-        self.prepare_vm_env()
-        self.launch_l3fwd_power_in_vm()
-        self.send_and_verify()
-
-    def test_perf_virtio10_interrupt_with_4_queues_and_cbdma_enabled(self):
-        """
-        Test Case 6: Basic virtio-1.0 interrupt test with 4 queues and cbdma enabled
-        """
-        used_cbdma_num = 4
-        self.queues = 4
-        self.nb_cores = 4
-        self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
-        self.start_testpmd_on_vhost(self.dmas_info)
-        self.start_vms(mode=1)
-        self.prepare_vm_env()
-        self.launch_l3fwd_power_in_vm()
-        self.send_and_verify()
-
-    def test_perf_packed_ring_virtio_interrupt_with_16_queues_and_cbdma_enabled(self):
-        """
-        Test Case 7: Packed ring virtio interrupt test with 16 queues and cbdma enabled
-        """
-        used_cbdma_num = 16
-        self.queues = 16
-        self.nb_cores = 16
-        self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
-        self.start_testpmd_on_vhost(self.dmas_info)
-        self.start_vms(mode=0, packed=True)
-        self.prepare_vm_env()
-        self.launch_l3fwd_power_in_vm()
-        self.send_and_verify()
-
     def tear_down(self):
         """
         Run after each test case.
@@ -461,7 +365,6 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         self.dut.kill_all()
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
         """
