@@ -118,6 +118,11 @@ take 'MAC_IPV4_FRAG fdir queue index' for fdir example
       flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 1 / mark / end
       Flow rule #0 created
 
+.. note::
+
+   For ipfragment rule, it's a fixed combination for parser to know that a fragment pkt.
+   dpdk care about the bit 12-13 of fragment offset, so the valid range is 0x2000-0x1fff, the spec is 0x2000 and mask is 0x2000.
+
 2. send matched pkts and check two pkts distributed to queue 1, `RSS hash=0x261a7deb - RSS queue=0x1` in output::
 
       scapy:
@@ -136,17 +141,16 @@ take 'MAC_IPV4_FRAG fdir queue index' for fdir example
 3. send mismatched pkts and check fdir id is none::
 
       scapy:
-      p = Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)
-      pkts=fragment6(p, 500)
-      sendp(pkts, iface="enp1s0")
+      Ether()/IP()/Raw('X'*666)
+      Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)
+      sendp(p, iface="enp1s0")
 
-      Sent 2 packets.
-            dut.10.240.183.133: port 0/queue 3: received 1 packets
-      src=00:00:00:00:00:00 - dst=FF:FF:FF:FF:FF:FF - type=0x86dd - length=494 - nb_segs=1 - RSS hash=0xe5ae2d03 - RSS queue=0x3 - hw ptype: L2_ETHER L3_IPV6_EXT_UNKNOWN L4_FRAG  - sw ptype: L2_ETHER L3_IPV6_EXT L4_FRAG  - l2_len=14 - l3_len=48 - l4_len=0 - Receive queue=0x3
-      ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_GOOD
-      port 0/queue 3: received 1 packets
-      src=00:00:00:00:00:00 - dst=FF:FF:FF:FF:FF:FF - type=0x86dd - length=296 - nb_segs=1 - RSS hash=0xe5ae2d03 - RSS queue=0x3 - hw ptype: L2_ETHER L3_IPV6_EXT_UNKNOWN L4_FRAG  - sw ptype: L2_ETHER L3_IPV6_EXT L4_FRAG  - l2_len=14 - l3_len=48 - l4_len=0 - Receive queue=0x3
-      ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_GOOD
+      port 0/queue 11: received 1 packets
+        src=00:00:00:00:00:00 - dst=FF:FF:FF:FF:FF:FF - type=0x0800 - length=700 - nb_segs=1 - RSS hash=0x7bd13a5b - RSS queue=0xb - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0xb
+        ol_flags: RTE_MBUF_F_RX_RSS_HASH RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_GOOD
+      port 0/queue 0: received 1 packets
+        src=00:00:00:00:00:00 - dst=FF:FF:FF:FF:FF:FF - type=0x86dd - length=728 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV6_EXT_UNKNOWN L4_FRAG  - sw ptype: L2_ETHER L3_IPV6_EXT L4_FRAG  - l2_len=14 - l3_len=48 - l4_len=0 - Receive queue=0x0
+        ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_GOOD
 
 4. destroy rule re-send step 2 pkts and check fdir id is none::
 
@@ -255,7 +259,8 @@ Subcase 1: MAC_IPV4_FRAG fdir queue index
 
 3. unmatched packets::
 
-     p=Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666); pkt=fragment6(p, 500)
+     Ether()/IP()/Raw('X'*666)
+     Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)
 
 Subcase 2: MAC_IPV4_FRAG fdir rss queues
 -----------------------------------------
@@ -270,7 +275,8 @@ Subcase 2: MAC_IPV4_FRAG fdir rss queues
 
 3. unmatched packets::
 
-     p=Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666); pkt=fragment6(p, 500)
+     Ether()/IP()/Raw('X'*666)
+     Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)
 
 Subcase 3: MAC_IPV4_FRAG fdir passthru
 --------------------------------------
@@ -285,7 +291,8 @@ Subcase 3: MAC_IPV4_FRAG fdir passthru
 
 3. unmatched packets::
 
-     p=Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666); pkt=fragment6(p, 500)
+     Ether()/IP()/Raw('X'*666)
+     Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)
 
 Subcase 4: MAC_IPV4_FRAG fdir drop
 ----------------------------------
@@ -300,7 +307,8 @@ Subcase 4: MAC_IPV4_FRAG fdir drop
 
 3. unmatched packets::
 
-     p=Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666); pkt=fragment6(p, 500)
+     Ether()/IP()/Raw('X'*666)
+     Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)
 
 Subcase 5: MAC_IPV4_FRAG fdir mark+rss
 --------------------------------------
@@ -315,7 +323,8 @@ Subcase 5: MAC_IPV4_FRAG fdir mark+rss
 
 3. unmatched packets::
 
-     p=Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666); pkt=fragment6(p, 500)
+     Ether()/IP()/Raw('X'*666)
+     Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)
 
 Subcase 6: MAC_IPV4_FRAG fdir mark
 ----------------------------------
@@ -330,7 +339,8 @@ Subcase 6: MAC_IPV4_FRAG fdir mark
 
 3. unmatched packets::
 
-     p=Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666); pkt=fragment6(p, 500)
+     Ether()/IP()/Raw('X'*666)
+     Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)
 
 Test case: MAC_IPV6_FRAG pattern fdir fragment
 ==============================================
@@ -348,7 +358,8 @@ Subcase 1: MAC_IPV6_FRAG fdir queue index
 
 3. unmatched packets::
 
-     p=Ether()/IP(id=47750)/Raw('X'*666); pkts=fragment(p, 500)
+     Ether()/IPv6()/Raw('X'*666)
+     Ether()/IP(id=47750)/Raw('X'*666)
 
 Subcase 2: MAC_IPV6_FRAG fdir rss queues
 ----------------------------------------
@@ -363,7 +374,8 @@ Subcase 2: MAC_IPV6_FRAG fdir rss queues
 
 3. unmatched packets::
 
-     p=Ether()/IP(id=47750)/Raw('X'*666); pkts=fragment(p, 500)
+     Ether()/IPv6()/Raw('X'*666)
+     Ether()/IP(id=47750)/Raw('X'*666)
 
 Subcase 3: MAC_IPV6_FRAG fdir passthru
 --------------------------------------
@@ -378,7 +390,8 @@ Subcase 3: MAC_IPV6_FRAG fdir passthru
 
 3. unmatched packets::
 
-     p=Ether()/IP(id=47750)/Raw('X'*666); pkts=fragment(p, 500)
+     Ether()/IPv6()/Raw('X'*666)
+     Ether()/IP(id=47750)/Raw('X'*666)
 
 Subcase 4: MAC_IPV6_FRAG fdir drop
 ----------------------------------
@@ -393,7 +406,8 @@ Subcase 4: MAC_IPV6_FRAG fdir drop
 
 3. unmatched packets::
 
-     p=Ether()/IP(id=47750)/Raw('X'*666); pkts=fragment(p, 500)
+     Ether()/IPv6()/Raw('X'*666)
+     Ether()/IP(id=47750)/Raw('X'*666)
 
 Subcase 5: MAC_IPV6_FRAG fdir mark+rss
 --------------------------------------
@@ -408,7 +422,8 @@ Subcase 5: MAC_IPV6_FRAG fdir mark+rss
 
 3. unmatched packets::
 
-     p=Ether()/IP(id=47750)/Raw('X'*666); pkts=fragment(p, 500)
+     Ether()/IPv6()/Raw('X'*666)
+     Ether()/IP(id=47750)/Raw('X'*666)
 
 Subcase 6: MAC_IPV6_FRAG fdir mark
 ----------------------------------
@@ -423,7 +438,8 @@ Subcase 6: MAC_IPV6_FRAG fdir mark
 
 3. unmatched packets::
 
-     p=Ether()/IP(id=47750)/Raw('X'*666); pkts=fragment(p, 500)
+     Ether()/IPv6()/Raw('X'*666)
+     Ether()/IP(id=47750)/Raw('X'*666)
 
 Test case: MAC_IPV4_FRAG_fdir_with_l2
 =====================================
@@ -444,7 +460,8 @@ take 'mac_ipv4_frag_l2dst_fdir_queue_index' example::
 
    3.unmatched packets:
 
-      p=Ether(dst='00:00:00:00:00:01')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666); pkts=fragment6(p, 500)
+      Ether(dst='00:00:00:00:00:01')/IP()/Raw('X'*666)
+      Ether(dst='00:00:00:00:00:01')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)
 
 .. note::
 
@@ -469,7 +486,8 @@ take 'mac_ipv6_frag_l2dst_fdir_queue_index' example::
 
    3.unmatched packets:
 
-      p=Ether(dst='00:00:00:00:00:01')/IP(id=47750)/Raw('X'*666); pkts=fragment(p, fragsize=500)
+      Ether(dst='00:00:00:00:00:01')/IPv6()/Raw('X'*666)
+      Ether(dst='00:00:00:00:00:01')/IP(id=47750)/Raw('X'*666)
 
 .. note::
 
@@ -495,7 +513,8 @@ take 'mac_ipv4_frag_l3src_fdir_queue_index' example::
 
    3.unmatched packets:
 
-      p=Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666); pkts=fragment6(p, 500)
+      Ether()/IP(src='192.168.1.1')/Raw('X'*666)
+      Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)
 
 subcase 1: MAC_IPV4_FRAG_fdir_with_l3dst
 ----------------------------------------
@@ -522,7 +541,8 @@ take 'mac_ipv6_frag_l3src_fdir_queue_index' example::
 
    3.unmatched packets:
 
-      p=Ether()/IP(id=47750, src='192.168.1.1')/Raw('X'*666); pkts=fragment(p, fragsize=500)
+      Ether()/IPv6(src='2001::1')/Raw('X'*666)
+      Ether()/IP(id=47750)/Raw('X'*666)
 
 subcase 1: MAC_IPV6_FRAG_fdir_with_l3dst
 ----------------------------------------
