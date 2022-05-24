@@ -49,7 +49,8 @@ tv_mac_ipv4_frag_fdir_queue_index = {
     "scapy_str": {
         "matched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
         "unmatched": [
-            "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"
+            "Ether(dst='00:11:22:33:55:66')/IP()/Raw('X'*666)",
+            "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)",
         ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "queue": 1, "mark_id": 0},
@@ -63,7 +64,8 @@ tv_mac_ipv4_frag_fdir_rss_queues = {
     "scapy_str": {
         "matched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
         "unmatched": [
-            "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"
+            "Ether(dst='00:11:22:33:55:66')/IP()/Raw('X'*666)",
+            "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)",
         ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "queue": [2, 3], "mark_id": 0},
@@ -75,7 +77,8 @@ tv_mac_ipv4_frag_fdir_passthru = {
     "scapy_str": {
         "matched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
         "unmatched": [
-            "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"
+            "Ether(dst='00:11:22:33:55:66')/IP()/Raw('X'*666)",
+            "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)",
         ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "mark_id": 0, "rss": True},
@@ -87,7 +90,8 @@ tv_mac_ipv4_frag_fdir_drop = {
     "scapy_str": {
         "matched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
         "unmatched": [
-            "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"
+            "Ether(dst='00:11:22:33:55:66')/IP()/Raw('X'*666)",
+            "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)",
         ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "drop": True},
@@ -99,7 +103,8 @@ tv_mac_ipv4_frag_fdir_mark_rss = {
     "scapy_str": {
         "matched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
         "unmatched": [
-            "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"
+            "Ether(dst='00:11:22:33:55:66')/IP()/Raw('X'*666)",
+            "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)",
         ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "mark_id": 0, "rss": True},
@@ -111,7 +116,8 @@ tv_mac_ipv4_frag_fdir_mark = {
     "scapy_str": {
         "matched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
         "unmatched": [
-            "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"
+            "Ether(dst='00:11:22:33:55:66')/IP()/Raw('X'*666)",
+            "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)",
         ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "mark_id": 1},
@@ -157,7 +163,10 @@ tv_mac_ipv6_frag_fdir_queue_index = {
         "matched": [
             "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"
         ],
-        "unmatched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether(dst='00:11:22:33:55:66')/IPv6()/Raw('X'*666)",
+            "Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "queue": 1, "mark_id": 0},
 }
@@ -171,7 +180,10 @@ tv_mac_ipv6_frag_fdir_rss_queues = {
         "matched": [
             "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"
         ],
-        "unmatched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether(dst='00:11:22:33:55:66')/IPv6()/Raw('X'*666)",
+            "Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "queue": [2, 3], "mark_id": 0},
 }
@@ -183,7 +195,10 @@ tv_mac_ipv6_frag_fdir_passthru = {
         "matched": [
             "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"
         ],
-        "unmatched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether(dst='00:11:22:33:55:66')/IPv6()/Raw('X'*666)",
+            "Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "mark_id": 0, "rss": True},
 }
@@ -195,7 +210,10 @@ tv_mac_ipv6_frag_fdir_drop = {
         "matched": [
             "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"
         ],
-        "unmatched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether(dst='00:11:22:33:55:66')/IPv6()/Raw('X'*666)",
+            "Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "drop": True},
 }
@@ -207,7 +225,10 @@ tv_mac_ipv6_frag_fdir_mark_rss = {
         "matched": [
             "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"
         ],
-        "unmatched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether(dst='00:11:22:33:55:66')/IPv6()/Raw('X'*666)",
+            "Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "mark_id": 0, "rss": True},
 }
@@ -219,7 +240,10 @@ tv_mac_ipv6_frag_fdir_mark = {
         "matched": [
             "Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"
         ],
-        "unmatched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether(dst='00:11:22:33:55:66')/IPv6()/Raw('X'*666)",
+            "Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "mark_id": 1},
 }
