@@ -48,7 +48,10 @@ tv_mac_ipv4_frag_fdir_queue_index = {
     "rule": "flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 1 / mark / end",
     "scapy_str": {
         "matched": ["Ether()/IP(id=47750)/Raw('X'*666)"],
-        "unmatched": ["Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether()/IP()/Raw('X'*666)",
+            "Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "queue": 1, "mark_id": 0},
 }
@@ -60,7 +63,10 @@ tv_mac_ipv4_frag_fdir_rss_queues = {
     ],
     "scapy_str": {
         "matched": ["Ether()/IP(id=47750)/Raw('X'*666)"],
-        "unmatched": ["Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether()/IP()/Raw('X'*666)",
+            "Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "queue": [2, 3], "mark_id": 0},
 }
@@ -70,7 +76,10 @@ tv_mac_ipv4_frag_fdir_passthru = {
     "rule": "flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions passthru / mark / end",
     "scapy_str": {
         "matched": ["Ether()/IP(id=47750)/Raw('X'*666)"],
-        "unmatched": ["Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether()/IP()/Raw('X'*666)",
+            "Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "mark_id": 0, "rss": True},
 }
@@ -80,7 +89,10 @@ tv_mac_ipv4_frag_fdir_drop = {
     "rule": "flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions drop / mark / end",
     "scapy_str": {
         "matched": ["Ether()/IP(id=47750)/Raw('X'*666)"],
-        "unmatched": ["Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether()/IP()/Raw('X'*666)",
+            "Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "drop": True},
 }
@@ -90,7 +102,10 @@ tv_mac_ipv4_frag_fdir_mark_rss = {
     "rule": "flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions mark / rss / end",
     "scapy_str": {
         "matched": ["Ether()/IP(id=47750)/Raw('X'*666)"],
-        "unmatched": ["Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether()/IP()/Raw('X'*666)",
+            "Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "mark_id": 0, "rss": True},
 }
@@ -100,7 +115,10 @@ tv_mac_ipv4_frag_fdir_mark = {
     "rule": "flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions mark id 1 / end",
     "scapy_str": {
         "matched": ["Ether()/IP(id=47750)/Raw('X'*666)"],
-        "unmatched": ["Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether()/IP()/Raw('X'*666)",
+            "Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "mark_id": 1},
 }
@@ -158,7 +176,10 @@ tv_mac_ipv6_frag_fdir_queue_index = {
     "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions queue index 1 / mark / end",
     "scapy_str": {
         "matched": ["Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
-        "unmatched": ["Ether()/IP(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether()/IPv6()/Raw('X'*666)",
+            "Ether()/IP(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "queue": 1, "mark_id": 0},
 }
@@ -170,7 +191,10 @@ tv_mac_ipv6_frag_fdir_rss_queues = {
     ],
     "scapy_str": {
         "matched": ["Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
-        "unmatched": ["Ether()/IP(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether()/IPv6()/Raw('X'*666)",
+            "Ether()/IP(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "queue": [2, 3], "mark_id": 0},
 }
@@ -180,7 +204,10 @@ tv_mac_ipv6_frag_fdir_passthru = {
     "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions passthru / mark / end",
     "scapy_str": {
         "matched": ["Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
-        "unmatched": ["Ether()/IP(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether()/IPv6()/Raw('X'*666)",
+            "Ether()/IP(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "mark_id": 0, "rss": True},
 }
@@ -190,7 +217,10 @@ tv_mac_ipv6_frag_fdir_drop = {
     "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions drop / mark / end",
     "scapy_str": {
         "matched": ["Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
-        "unmatched": ["Ether()/IP(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether()/IPv6()/Raw('X'*666)",
+            "Ether()/IP(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "drop": True},
 }
@@ -200,7 +230,10 @@ tv_mac_ipv6_frag_fdir_mark_rss = {
     "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions mark / rss / end",
     "scapy_str": {
         "matched": ["Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
-        "unmatched": ["Ether()/IP(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether()/IPv6()/Raw('X'*666)",
+            "Ether()/IP(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "mark_id": 0, "rss": True},
 }
@@ -210,7 +243,10 @@ tv_mac_ipv6_frag_fdir_mark = {
     "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions mark id 1 / end",
     "scapy_str": {
         "matched": ["Ether()/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
-        "unmatched": ["Ether()/IP(id=47750)/Raw('X'*666)"],
+        "unmatched": [
+            "Ether()/IPv6()/Raw('X'*666)",
+            "Ether()/IP(id=47750)/Raw('X'*666)",
+        ],
     },
     "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "mark_id": 1},
 }
