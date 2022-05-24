@@ -1389,14 +1389,17 @@ class FdirProcessing(object):
         self.verify = self.test_case.verify
         self.ipfrag_flag = ipfrag_flag
 
-    def send_pkt_get_output(self, pkts, port_id=0, count=1, interval=0, drop=False):
+    def send_pkt_get_output(
+        self, pkts, port_id=0, count=1, interval=0, drop=False, **kwargs
+    ):
         tx_port = self.tester_ifaces[0] if port_id == 0 else self.tester_ifaces[1]
         self.logger.info("----------send packet-------------")
         self.logger.info("{}".format(pkts))
+        mismatch_flag = kwargs.get("mismatch")
         if drop:
             self.pmd_output.execute_cmd("clear port stats all")
             time.sleep(1)
-            if self.ipfrag_flag == True:
+            if self.ipfrag_flag == True and not mismatch_flag:
                 send_ipfragment_pkt(self.test_case, pkts, tx_port)
             else:
                 self.pkt.update_pkt(pkts)
@@ -1410,7 +1413,7 @@ class FdirProcessing(object):
             self.pmd_output.execute_cmd("start")
             return out
         else:
-            if self.ipfrag_flag == True:
+            if self.ipfrag_flag == True and not mismatch_flag:
                 count = 2
                 send_ipfragment_pkt(self.test_case, pkts, tx_port)
             else:
@@ -1623,11 +1626,14 @@ class FdirProcessing(object):
 
                 # send and check unmatched packets
                 out2 = self.send_pkt_get_output(
-                    pkts=tv["scapy_str"]["unmatched"], port_id=port_id, drop=drop
+                    pkts=tv["scapy_str"]["unmatched"],
+                    port_id=port_id,
+                    drop=drop,
+                    mismatch=True,
                 )
                 check_mark(
                     out2,
-                    pkt_num=len(tv["scapy_str"]["unmatched"]) * 2
+                    pkt_num=len(tv["scapy_str"]["unmatched"])
                     if self.ipfrag_flag
                     else len(tv["scapy_str"]["unmatched"]),
                     check_param=tv["check_param"],
