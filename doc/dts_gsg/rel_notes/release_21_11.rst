@@ -1,5 +1,5 @@
 .. SPDX-License-Identifier: BSD-3-Clause
-   Copyright 2022 The DTS contributors
+   Copyright(c) 2022 The DTS contributors
 
 DTS Release 21.11
 =================
