@@ -1,11 +1,9 @@
 #!/usr/bin/python
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright(c) 2012 Ryota Ozaki <ozaki.ryota@gmail.com>
+#
 
 # QEMU Guest Agent Client
-#
-# Copyright (C) 2012 Ryota Ozaki <ozaki.ryota@gmail.com>
-#
-# This work is licensed under the terms of the GNU GPL, version 2.  See
-# the COPYING file in the top-level directory.
 #
 # Usage:
 #

@@ -1,12 +1,11 @@
-# QEMU Monitor Protocol Python class
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright(c) 2009-2010 Red Hat Inc.
 #
-# Copyright (C) 2009, 2010 Red Hat Inc.
+
+# QEMU Monitor Protocol Python class
 #
 # Authors:
 #  Luiz Capitulino <lcapitulino@redhat.com>
-#
-# This work is licensed under the terms of the GNU GPL, version 2.  See
-# the COPYING file in the top-level directory.
 
 import errno
 import json
