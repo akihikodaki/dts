@@ -365,12 +365,10 @@ class TestVfRss(TestCase):
         self.vm0_ports_socket = self.vm_dut_0.get_numa_id(vm0dutPorts[0])
         iptypes = {
             "ipv4-other": "ip",
-            "ipv4-frag": "ip",
             "ipv4-udp": "udp",
             "ipv4-tcp": "tcp",
             "ipv4-sctp": "sctp",
             "ipv6-other": "ip",
-            "ipv6-frag": "ip",
             "ipv6-udp": "udp",
             "ipv6-tcp": "tcp",
             "ipv6-sctp": "sctp",
