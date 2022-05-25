@@ -3059,7 +3059,10 @@ mac_ipv4_frag_pipeline_mode_scapy_str = {
 
 tv_mac_ipv4_frag_pipeline_mode_in_queue_01 = {
     "name": "tv_mac_ipv4_frag_pipeline_mode_in_queue_01",
-    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions queue index 3 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4-frag end key_len 0 queues end / end",
+        "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions queue index 3 / end",
+    ],
     "configuration": {"is_non_pipeline": False, "is_need_rss_rule": False},
     "matched": {
         "scapy_str": mac_ipv4_frag_pipeline_mode_scapy_str["matched"],
@@ -3081,7 +3084,10 @@ tv_mac_ipv4_frag_pipeline_mode_in_queue_01 = {
 
 tv_mac_ipv4_frag_pipeline_mode_queue_region_02 = {
     "name": "tv_mac_ipv4_frag_pipeline_mode_queue_region_02",
-    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions rss queues 2 3 end / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4-frag end key_len 0 queues end / end",
+        "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions rss queues 2 3 end / end",
+    ],
     "configuration": {"is_non_pipeline": False, "is_need_rss_rule": False},
     "matched": {
         "scapy_str": mac_ipv4_frag_pipeline_mode_scapy_str["matched"],
@@ -3497,7 +3503,10 @@ mac_ipv6_src_ipv6_dst_ipv6_pipeline_mode_scapy_str = {
 
 tv_mac_ipv6_src_ipv6_dst_ipv6_pipeline_mode_in_queue_01 = {
     "name": "tv_mac_ipv6_src_ipv6_dst_ipv6_pipeline_mode_in_queue_01",
-    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1515 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 5 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext / end actions rss types ipv6-frag end key_len 0 queues end / end",
+        "flow create 0 priority 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1515 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 5 / end",
+    ],
     "configuration": {"is_non_pipeline": False, "is_need_rss_rule": False},
     "matched": {
         "scapy_str": mac_ipv6_src_ipv6_dst_ipv6_pipeline_mode_scapy_str["matched"],
@@ -3519,7 +3528,10 @@ tv_mac_ipv6_src_ipv6_dst_ipv6_pipeline_mode_in_queue_01 = {
 
 tv_mac_ipv6_src_ipv6_dst_ipv6_pipeline_mode_queue_region_02 = {
     "name": "tv_mac_ipv6_src_ipv6_dst_ipv6_pipeline_mode_queue_region_02",
-    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1515 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss queues 2 3 end / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext / end actions rss types ipv6-frag end key_len 0 queues end / end",
+        "flow create 0 priority 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1515 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss queues 2 3 end / end",
+    ],
     "configuration": {"is_non_pipeline": False, "is_need_rss_rule": False},
     "matched": {
         "scapy_str": mac_ipv6_src_ipv6_dst_ipv6_pipeline_mode_scapy_str["matched"],
@@ -3583,7 +3595,10 @@ mac_ipv6_dst_ipv6_tc_pipeline_mode_scapy_str = {
 
 tv_mac_ipv6_dst_ipv6_tc_pipeline_mode_in_queue_01 = {
     "name": "tv_mac_ipv6_dst_ipv6_tc_pipeline_mode_in_queue_01",
-    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions queue index 3 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext / end actions rss types ipv6-frag end key_len 0 queues end / end",
+        "flow create 0 priority 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions queue index 3 / end",
+    ],
     "configuration": {"is_non_pipeline": False, "is_need_rss_rule": False},
     "matched": {
         "scapy_str": mac_ipv6_dst_ipv6_tc_pipeline_mode_scapy_str["matched"],
@@ -3605,7 +3620,10 @@ tv_mac_ipv6_dst_ipv6_tc_pipeline_mode_in_queue_01 = {
 
 tv_mac_ipv6_dst_ipv6_tc_pipeline_mode_queue_region_02 = {
     "name": "tv_mac_ipv6_dst_ipv6_tc_pipeline_mode_queue_region_02",
-    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions rss queues 2 3 end / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext / end actions rss types ipv6-frag end key_len 0 queues end / end",
+        "flow create 0 priority 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions rss queues 2 3 end / end",
+    ],
     "configuration": {"is_non_pipeline": False, "is_need_rss_rule": False},
     "matched": {
         "scapy_str": mac_ipv6_dst_ipv6_tc_pipeline_mode_scapy_str["matched"],
@@ -4417,7 +4435,7 @@ class ICESwitchFilterTest(TestCase):
         if isinstance(rte_flow_pattern, list):
             for rule in rte_flow_pattern:
                 out = self.dut.send_expect(rule, "testpmd> ")  # create a rule
-                if s not in out:
+                if s not in out and "frag" not in rule:
                     rule_list.append(False)
                 else:
                     m = p.search(out)

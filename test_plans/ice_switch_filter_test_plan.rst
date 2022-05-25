@@ -2737,6 +2737,10 @@ to queue action
 
    check the rule not exists in the list.
 
+   create rss rule to switch on ipfrag rss function::
+
+     flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4-frag end key_len 0 queues end / end
+
 2. create a rule::
 
      testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions queue index 3 / end
@@ -2778,6 +2782,10 @@ to queue group action
      testpmd> flow list 0
 
    check the rule not exists in the list.
+
+   create rss rule to switch on ipfrag rss function::
+
+     flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4-frag end key_len 0 queues end / end
 
 2. create a rule::
 
@@ -3499,6 +3507,10 @@ to queue group action
 
    check the rule not exists in the list.
 
+   create rss rule to switch on ipfrag rss function::
+
+     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext / end actions rss types ipv6-frag end key_len 0 queues end / end
+
 2. create a rule::
 
      testpmd> flow create 0 priority 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1515 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss queues 2 3 end / end
@@ -3598,6 +3610,10 @@ to queue action
 
    check the rule not exists in the list.
 
+   create rss rule to switch on ipfrag rss function::
+
+     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext / end actions rss types ipv6-frag end key_len 0 queues end / end
+
 2. create a rule::
 
      testpmd> flow create 0 priority 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions queue index 3 / end
@@ -3639,6 +3655,10 @@ to queue group action
      testpmd> flow list 0
 
    check the rule not exists in the list.
+
+   create rss rule to switch on ipfrag rss function::
+
+     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext / end actions rss types ipv6-frag end key_len 0 queues end / end
 
 2. create a rule::
 
