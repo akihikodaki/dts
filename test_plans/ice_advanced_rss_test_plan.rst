@@ -356,10 +356,6 @@ ipv4-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="ens786f0")
 
-ipv4-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="ens786f0")
-
 ipv4-icmp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="ens786f0")
@@ -387,10 +383,6 @@ ipv4-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="ens786f0")
 
-ipv4-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="ens786f0")
-
 ipv4-icmp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="ens786f0")
@@ -403,10 +395,6 @@ ipv4-tcp packets::
 ipv4-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.3", src="192.168.0.5")/("X"*480)],iface="ens786f0")
-
-ipv4-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.3", src="192.168.0.5",frag=7)/("X"*480)],iface="ens786f0")
 
 ipv4-icmp packets::
 
@@ -427,10 +415,6 @@ ipv4-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="ens786f0")
 
-ipv4-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="ens786f0")
-
 ipv4-icmp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="ens786f0")
@@ -443,10 +427,6 @@ ipv4-tcp packets::
 ipv4-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.3", src="192.168.0.5")/("X"*480)],iface="ens786f0")
-
-ipv4-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.3", src="192.168.0.5",frag=7)/("X"*480)],iface="ens786f0")
 
 ipv4-icmp packets::
 
@@ -469,12 +449,6 @@ ipv4-nonfrag packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="ens786f0")
 
-ipv4-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="ens786f0")
-
 ipv4-icmp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="ens786f0")
@@ -491,10 +465,6 @@ ipv4-tcp packets::
 ipv4-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.3", src="192.168.0.5")/("X"*480)],iface="ens786f0")
-
-ipv4-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.3", src="192.168.0.5",frag=7)/("X"*480)],iface="ens786f0")
 
 ipv4-icmp packets::
 
@@ -515,10 +485,6 @@ ipv4-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="ens786f0")
 
-ipv4-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2",frag=6)/("X"*480)],iface="ens786f0")
-
 ipv4-icmp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/ICMP()/("X"*480)],iface="ens786f0")
@@ -531,10 +497,6 @@ ipv4-tcp packets::
 ipv4-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="ens786f0")
-
-ipv4-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.1.1", src="192.168.0.2",frag=6)/("X"*480)],iface="ens786f0")
 
 ipv4-icmp packets::
 
@@ -555,10 +517,6 @@ ipv4-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="ens786f0")
 
-ipv4-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.1.1", src="192.168.0.2",frag=6)/("X"*480)],iface="ens786f0")
-
 ipv4-icmp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="ens786f0")
@@ -575,10 +533,6 @@ ipv4-udp-vxlan packet::
 ipv4-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="ens786f0")
-
-ipv4-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.1.2",frag=6)/("X"*480)],iface="ens786f0")
 
 ipv4-icmp packets::
 
@@ -600,11 +554,6 @@ ipv4-nonfrag packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="ens786f0")
 
-ipv4-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.1.1", src="192.168.0.2",frag=6)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2",frag=6)/("X"*480)],iface="ens786f0")
-
 ipv4-icmp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="ens786f0")
@@ -619,10 +568,6 @@ ipv4-tcp packets::
 ipv4-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="ens786f0")
-
-ipv4-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="ens786f0")
 
 ipv4-icmp packets::
 
@@ -983,10 +928,6 @@ ipv6-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="ens786f0")
 
-ipv6-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
-
 ipv6-icmp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/("X"*480)],iface="ens786f0")
@@ -1014,10 +955,6 @@ ipv6-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="ens786f0")
 
-ipv6-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
-
 ipv6-icmp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/("X"*480)],iface="ens786f0")
@@ -1030,10 +967,6 @@ ipv6-udp packets::
 ipv6-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/("X"*480)],iface="ens786f0")
-
-ipv6-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
 
 ipv6-icmp packets::
 
@@ -1054,10 +987,6 @@ ipv6-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="ens786f0")
 
-ipv6-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
-
 ipv6-icmp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/("X"*480)],iface="ens786f0")
@@ -1070,10 +999,6 @@ ipv6-udp packets::
 ipv6-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/("X"*480)],iface="ens786f0")
-
-ipv6-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2027")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
 
 ipv6-icmp packets::
 
@@ -1096,12 +1021,6 @@ ipv6-nonfrag packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="ens786f0")
 
-ipv6-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
-
 ipv6-icmp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/("X"*480)],iface="ens786f0")
@@ -1118,10 +1037,6 @@ ipv6-udp packets::
 ipv6-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/("X"*480)],iface="ens786f0")
-
-ipv6-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
 
 ipv6-icmp packets::
 
@@ -1142,10 +1057,6 @@ ipv6-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="ens786f0")
 
-ipv6-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
-
 ipv6-icmp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/("X"*480)],iface="ens786f0")
@@ -1158,10 +1069,6 @@ ipv6-udp packets::
 ipv6-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)],iface="ens786f0")
-
-ipv6-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
 
 ipv6-icmp packets::
 
@@ -1182,10 +1089,6 @@ ipv6-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)],iface="ens786f0")
 
-ipv6-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
-
 ipv6-icmp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/ICMP()/("X"*480)],iface="ens786f0")
@@ -1198,10 +1101,6 @@ ipv6-udp packets::
 ipv6-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="ens786f0")
-
-ipv6-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
 
 ipv6-icmp packets::
 
@@ -1223,11 +1122,6 @@ ipv6-nonfrag packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="ens786f0")
 
-ipv6-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
-
 ipv6-icmp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/ICMP()/("X"*480)],iface="ens786f0")
@@ -1242,10 +1136,6 @@ ipv6-udp packets::
 ipv6-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="ens786f0")
-
-ipv6-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
 
 ipv6-icmp packets::
 
@@ -1631,11 +1521,6 @@ ipv4-nonfrag packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/("X"*480)],iface="ens786f0")
 
-ipv4-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1",frag=6)/("X"*480)],iface="ens786f0")
-
 ipv4-icmp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="ens786f0")
@@ -1725,11 +1610,6 @@ ipv6-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="ens786f0")
-
-ipv6-frag packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)],iface="ens786f0")
 
 ipv6-icmp packets::
 

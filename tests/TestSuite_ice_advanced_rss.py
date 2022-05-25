@@ -16,9 +16,6 @@ mac_ipv4_toeplitz_basic_pkt = {
     "ipv4-nonfrag": [
         'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)',
     ],
-    "ipv4-frag": [
-        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2", frag=6)/("X"*480)',
-    ],
     "ipv4-icmp": [
         'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)',
     ],
@@ -78,9 +75,6 @@ mac_ipv4_sctp_toeplitz_non_basic_pkt = [
 mac_ipv6_toeplitz_basic_pkt = {
     "ipv6-nonfrag": [
         'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
-    ],
-    "ipv6-frag": [
-        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
     ],
     "ipv6-icmp": [
         'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/("X"*480)',
@@ -146,9 +140,6 @@ mac_ipv4_l2src_changed = {
     "ipv4-nonfrag": [
         'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)',
     ],
-    "ipv4-frag": [
-        'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2", frag=6)/("X"*480)',
-    ],
     "ipv4-icmp": [
         'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)',
     ],
@@ -163,9 +154,6 @@ mac_ipv4_l2src_changed = {
 mac_ipv4_l2dst_changed = {
     "ipv4-nonfrag": [
         'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)',
-    ],
-    "ipv4-frag": [
-        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2", frag=6)/("X"*480)',
     ],
     "ipv4-icmp": [
         'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)',
@@ -182,9 +170,6 @@ mac_ipv4_l3src_changed = {
     "ipv4-nonfrag": [
         'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)',
     ],
-    "ipv4-frag": [
-        'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2", frag=6)/("X"*480)',
-    ],
     "ipv4-icmp": [
         'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/ICMP()/("X"*480)',
     ],
@@ -199,9 +184,6 @@ mac_ipv4_l3src_changed = {
 mac_ipv4_l3dst_changed = {
     "ipv4-nonfrag": [
         'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)',
-    ],
-    "ipv4-frag": [
-        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.1.1", src="192.168.0.2", frag=6)/("X"*480)',
     ],
     "ipv4-icmp": [
         'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/ICMP()/("X"*480)',
@@ -218,9 +200,6 @@ mac_ipv6_l2src_changed = {
     "ipv6-nonfrag": [
         'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
     ],
-    "ipv6-frag": [
-        'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-    ],
     "ipv6-icmp": [
         'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/("X"*480)',
     ],
@@ -232,9 +211,6 @@ mac_ipv6_l2src_changed = {
 mac_ipv6_l2dst_changed = {
     "ipv6-nonfrag": [
         'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/("X"*480)',
-    ],
-    "ipv6-frag": [
-        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrFragment()/("X"*480)',
     ],
     "ipv6-icmp": [
         'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/ICMP()/("X"*480)',
@@ -263,18 +239,6 @@ mac_ipv4_l2_src = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": mac_ipv4_toeplitz_basic_pkt["ipv4-frag"],
-            "action": {"save_hash": "ipv4-frag"},
-        },
-        {
-            "send_packet": mac_ipv4_l2src_changed["ipv4-frag"],
-            "action": {"check_hash_different": "ipv4-frag"},
-        },
-        {
-            "send_packet": mac_ipv4_l2dst_changed["ipv4-frag"],
-            "action": {"check_hash_same": "ipv4-frag"},
-        },
-        {
             "send_packet": mac_ipv4_toeplitz_basic_pkt["ipv4-icmp"],
             "action": {"save_hash": "ipv4-icmp"},
         },
@@ -303,7 +267,6 @@ mac_ipv4_l2_src = {
         {
             "send_packet": [
                 mac_ipv4_toeplitz_basic_pkt["ipv4-nonfrag"][0],
-                mac_ipv4_toeplitz_basic_pkt["ipv4-frag"][0],
                 mac_ipv4_toeplitz_basic_pkt["ipv4-icmp"][0],
                 mac_ipv4_toeplitz_basic_pkt["ipv4-udp-vxlan"][0],
             ],
@@ -330,18 +293,6 @@ mac_ipv4_l2_dst = {
             "action": {"check_hash_same": "ipv4-nonfrag"},
         },
         {
-            "send_packet": mac_ipv4_toeplitz_basic_pkt["ipv4-frag"],
-            "action": {"save_hash": "ipv4-frag"},
-        },
-        {
-            "send_packet": mac_ipv4_l2dst_changed["ipv4-frag"],
-            "action": {"check_hash_different": "ipv4-frag"},
-        },
-        {
-            "send_packet": mac_ipv4_l2src_changed["ipv4-frag"],
-            "action": {"check_hash_same": "ipv4-frag"},
-        },
-        {
             "send_packet": mac_ipv4_toeplitz_basic_pkt["ipv4-icmp"],
             "action": {"save_hash": "ipv4-icmp"},
         },
@@ -370,7 +321,6 @@ mac_ipv4_l2_dst = {
         {
             "send_packet": [
                 mac_ipv4_toeplitz_basic_pkt["ipv4-nonfrag"][0],
-                mac_ipv4_toeplitz_basic_pkt["ipv4-frag"][0],
                 mac_ipv4_toeplitz_basic_pkt["ipv4-icmp"][0],
                 mac_ipv4_toeplitz_basic_pkt["ipv4-udp-vxlan"][0],
             ],
@@ -403,26 +353,6 @@ mac_ipv4_l2src_l2dst = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.3", src="192.168.0.5")/("X"*480)',
             "action": {"check_hash_same": "ipv4-nonfrag"},
-        },
-        {
-            "send_packet": mac_ipv4_toeplitz_basic_pkt["ipv4-frag"],
-            "action": {"save_hash": "ipv4-frag"},
-        },
-        {
-            "send_packet": mac_ipv4_l2dst_changed["ipv4-frag"],
-            "action": {"check_hash_different": "ipv4-frag"},
-        },
-        {
-            "send_packet": mac_ipv4_l2src_changed["ipv4-frag"],
-            "action": {"check_hash_different": "ipv4-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)',
-            "action": {"check_hash_different": "ipv4-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.3", src="192.168.0.5",frag=7)/("X"*480)',
-            "action": {"check_hash_same": "ipv4-frag"},
         },
         {
             "send_packet": mac_ipv4_toeplitz_basic_pkt["ipv4-icmp"],
@@ -469,7 +399,6 @@ mac_ipv4_l2src_l2dst = {
         {
             "send_packet": [
                 mac_ipv4_toeplitz_basic_pkt["ipv4-nonfrag"][0],
-                mac_ipv4_toeplitz_basic_pkt["ipv4-frag"][0],
                 mac_ipv4_toeplitz_basic_pkt["ipv4-icmp"][0],
                 mac_ipv4_toeplitz_basic_pkt["ipv4-udp-vxlan"][0],
             ],
@@ -496,18 +425,6 @@ mac_ipv4_l3_src = {
             "action": {"check_hash_same": "ipv4-nonfrag"},
         },
         {
-            "send_packet": mac_ipv4_toeplitz_basic_pkt["ipv4-frag"],
-            "action": {"save_hash": "ipv4-frag"},
-        },
-        {
-            "send_packet": mac_ipv4_l3src_changed["ipv4-frag"],
-            "action": {"check_hash_different": "ipv4-frag"},
-        },
-        {
-            "send_packet": mac_ipv4_l3dst_changed["ipv4-frag"],
-            "action": {"check_hash_same": "ipv4-frag"},
-        },
-        {
             "send_packet": mac_ipv4_toeplitz_basic_pkt["ipv4-icmp"],
             "action": {"save_hash": "ipv4-icmp"},
         },
@@ -524,7 +441,6 @@ mac_ipv4_l3_src = {
         {
             "send_packet": [
                 mac_ipv4_toeplitz_basic_pkt["ipv4-nonfrag"][0],
-                mac_ipv4_toeplitz_basic_pkt["ipv4-frag"][0],
                 mac_ipv4_toeplitz_basic_pkt["ipv4-icmp"][0],
                 mac_ipv4_toeplitz_basic_pkt["ipv4-udp-vxlan"][0],
             ],
@@ -551,18 +467,6 @@ mac_ipv4_l3_dst = {
             "action": {"check_hash_same": "ipv4-nonfrag"},
         },
         {
-            "send_packet": mac_ipv4_toeplitz_basic_pkt["ipv4-frag"],
-            "action": {"save_hash": "ipv4-frag"},
-        },
-        {
-            "send_packet": mac_ipv4_l3dst_changed["ipv4-frag"],
-            "action": {"check_hash_different": "ipv4-frag"},
-        },
-        {
-            "send_packet": mac_ipv4_l3src_changed["ipv4-frag"],
-            "action": {"check_hash_same": "ipv4-frag"},
-        },
-        {
             "send_packet": mac_ipv4_toeplitz_basic_pkt["ipv4-icmp"],
             "action": {"save_hash": "ipv4-icmp"},
         },
@@ -579,7 +483,6 @@ mac_ipv4_l3_dst = {
         {
             "send_packet": [
                 mac_ipv4_toeplitz_basic_pkt["ipv4-nonfrag"][0],
-                mac_ipv4_toeplitz_basic_pkt["ipv4-frag"][0],
                 mac_ipv4_toeplitz_basic_pkt["ipv4-icmp"][0],
                 mac_ipv4_toeplitz_basic_pkt["ipv4-udp-vxlan"][0],
             ],
@@ -610,22 +513,6 @@ mac_ipv4_all = {
             "action": {"check_hash_same": "ipv4-nonfrag"},
         },
         {
-            "send_packet": mac_ipv4_toeplitz_basic_pkt["ipv4-frag"],
-            "action": {"save_hash": "ipv4-frag"},
-        },
-        {
-            "send_packet": mac_ipv4_l3dst_changed["ipv4-frag"],
-            "action": {"check_hash_different": "ipv4-frag"},
-        },
-        {
-            "send_packet": mac_ipv4_l3src_changed["ipv4-frag"],
-            "action": {"check_hash_different": "ipv4-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)',
-            "action": {"check_hash_same": "ipv4-frag"},
-        },
-        {
             "send_packet": mac_ipv4_toeplitz_basic_pkt["ipv4-icmp"],
             "action": {"save_hash": "ipv4-icmp"},
         },
@@ -646,7 +533,6 @@ mac_ipv4_all = {
         {
             "send_packet": [
                 mac_ipv4_toeplitz_basic_pkt["ipv4-nonfrag"][0],
-                mac_ipv4_toeplitz_basic_pkt["ipv4-frag"][0],
                 mac_ipv4_toeplitz_basic_pkt["ipv4-icmp"][0],
                 mac_ipv4_toeplitz_basic_pkt["ipv4-udp-vxlan"][0],
             ],
@@ -2231,18 +2117,6 @@ mac_ipv6_l2_src = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6-frag"],
-            "action": {"save_hash": "ipv6-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_different": "ipv6-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_same": "ipv6-frag"},
-        },
-        {
             "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6-icmp"],
             "action": {"save_hash": "ipv6-icmp"},
         },
@@ -2275,7 +2149,6 @@ mac_ipv6_l2_src = {
         {
             "send_packet": [
                 mac_ipv6_toeplitz_basic_pkt["ipv6-nonfrag"][0],
-                mac_ipv6_toeplitz_basic_pkt["ipv6-frag"][0],
                 mac_ipv6_toeplitz_basic_pkt["ipv6-icmp"][0],
                 mac_ipv6_toeplitz_basic_pkt["ipv6-udp"][0],
             ],
@@ -2300,18 +2173,6 @@ mac_ipv6_l2_dst = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/("X"*480)',
             "action": {"check_hash_same": "ipv6-nonfrag"},
-        },
-        {
-            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6-frag"],
-            "action": {"save_hash": "ipv6-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_different": "ipv6-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2027")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_same": "ipv6-frag"},
         },
         {
             "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6-icmp"],
@@ -2346,7 +2207,6 @@ mac_ipv6_l2_dst = {
         {
             "send_packet": [
                 mac_ipv6_toeplitz_basic_pkt["ipv6-nonfrag"][0],
-                mac_ipv6_toeplitz_basic_pkt["ipv6-frag"][0],
                 mac_ipv6_toeplitz_basic_pkt["ipv6-icmp"][0],
                 mac_ipv6_toeplitz_basic_pkt["ipv6-udp"][0],
             ],
@@ -2379,26 +2239,6 @@ mac_ipv6_l2src_l2dst = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/("X"*480)',
             "action": {"check_hash_same": "ipv6-nonfrag"},
-        },
-        {
-            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6-frag"],
-            "action": {"save_hash": "ipv6-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_different": "ipv6-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_different": "ipv6-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_different": "ipv6-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_same": "ipv6-frag"},
         },
         {
             "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6-icmp"],
@@ -2449,7 +2289,6 @@ mac_ipv6_l2src_l2dst = {
         {
             "send_packet": [
                 mac_ipv6_toeplitz_basic_pkt["ipv6-nonfrag"][0],
-                mac_ipv6_toeplitz_basic_pkt["ipv6-frag"][0],
                 mac_ipv6_toeplitz_basic_pkt["ipv6-icmp"][0],
                 mac_ipv6_toeplitz_basic_pkt["ipv6-udp"][0],
             ],
@@ -2474,18 +2313,6 @@ mac_ipv6_l3_src = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)',
             "action": {"check_hash_same": "ipv6-nonfrag"},
-        },
-        {
-            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6-frag"],
-            "action": {"save_hash": "ipv6-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_different": "ipv6-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_same": "ipv6-frag"},
         },
         {
             "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6-icmp"],
@@ -2520,7 +2347,6 @@ mac_ipv6_l3_src = {
         {
             "send_packet": [
                 mac_ipv6_toeplitz_basic_pkt["ipv6-nonfrag"][0],
-                mac_ipv6_toeplitz_basic_pkt["ipv6-frag"][0],
                 mac_ipv6_toeplitz_basic_pkt["ipv6-icmp"][0],
                 mac_ipv6_toeplitz_basic_pkt["ipv6-udp"][0],
                 mac_ipv6_toeplitz_basic_pkt["nvgre"][0],
@@ -2546,18 +2372,6 @@ mac_ipv6_l3_dst = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
             "action": {"check_hash_same": "ipv6-nonfrag"},
-        },
-        {
-            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6-frag"],
-            "action": {"save_hash": "ipv6-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_different": "ipv6-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_same": "ipv6-frag"},
         },
         {
             "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6-icmp"],
@@ -2592,7 +2406,6 @@ mac_ipv6_l3_dst = {
         {
             "send_packet": [
                 mac_ipv6_toeplitz_basic_pkt["ipv6-nonfrag"][0],
-                mac_ipv6_toeplitz_basic_pkt["ipv6-frag"][0],
                 mac_ipv6_toeplitz_basic_pkt["ipv6-icmp"][0],
                 mac_ipv6_toeplitz_basic_pkt["ipv6-udp"][0],
                 mac_ipv6_toeplitz_basic_pkt["nvgre"][0],
@@ -2622,22 +2435,6 @@ mac_ipv6_all = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
             "action": {"check_hash_same": "ipv6-nonfrag"},
-        },
-        {
-            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6-frag"],
-            "action": {"save_hash": "ipv6-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_different": "ipv6-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_different": "ipv6-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_same": "ipv6-frag"},
         },
         {
             "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6-icmp"],
@@ -2680,7 +2477,6 @@ mac_ipv6_all = {
         {
             "send_packet": [
                 mac_ipv6_toeplitz_basic_pkt["ipv6-nonfrag"][0],
-                mac_ipv6_toeplitz_basic_pkt["ipv6-frag"][0],
                 mac_ipv6_toeplitz_basic_pkt["ipv6-icmp"][0],
                 mac_ipv6_toeplitz_basic_pkt["ipv6-udp"][0],
                 mac_ipv6_toeplitz_basic_pkt["nvgre"][0],
@@ -4226,14 +4022,6 @@ mac_ipv4_symmetric = {
             "action": {"check_hash_different": "ipv4-nonfrag-pre"},
         },
         {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)',
-            "action": {"save_hash": "ipv4-frag-pre"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1",frag=6)/("X"*480)',
-            "action": {"check_hash_different": "ipv4-frag-pre"},
-        },
-        {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)',
             "action": {"save_hash": "ipv4-icmp-pre"},
         },
@@ -4258,14 +4046,6 @@ mac_ipv4_symmetric = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/("X"*480)',
             "action": {"check_hash_same": "ipv4-nonfrag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)',
-            "action": {"save_hash": "ipv4-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1",frag=6)/("X"*480)',
-            "action": {"check_hash_same": "ipv4-frag"},
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)',
@@ -4300,14 +4080,6 @@ mac_ipv4_symmetric = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/("X"*480)',
             "action": {"check_no_hash_or_different": "ipv4-nonfrag-post"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)',
-            "action": {"save_or_no_hash": "ipv4-frag-post"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1",frag=6)/("X"*480)',
-            "action": {"check_no_hash_or_different": "ipv4-frag-post"},
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)',
@@ -4534,14 +4306,6 @@ mac_ipv6_symmetric = {
             "action": {"check_hash_different": "ipv6-nonfrag-pre"},
         },
         {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"save_hash": "ipv6-frag-pre"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_different": "ipv6-frag-pre"},
-        },
-        {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/("X"*480)',
             "action": {"save_hash": "ipv6-icmp-pre"},
         },
@@ -4566,14 +4330,6 @@ mac_ipv6_symmetric = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
             "action": {"check_hash_same": "ipv6-nonfrag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"save_hash": "ipv6-frag"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_hash_same": "ipv6-frag"},
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/("X"*480)',
@@ -4608,14 +4364,6 @@ mac_ipv6_symmetric = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
             "action": {"check_no_hash_or_different": "ipv6-nonfrag-post"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"save_or_no_hash": "ipv6-frag-post"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-            "action": {"check_no_hash_or_different": "ipv6-frag-post"},
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/("X"*480)',
