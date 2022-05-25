@@ -162,7 +162,10 @@ class TestBonding8023AD(TestCase):
         self.bond_inst.d_console([start_fmt(self.bond_port), "", 15])
         time.sleep(5)
         self.bond_inst.d_console(["start", "", 10])
-        self.logger.info("set bond port ready done !!!")
+        self.verify(
+            self.bond_inst.testpmd.wait_link_status_up("all"),
+            "Failed to set bond port ready!!!",
+        )
 
     def run_8023ad_pre(self, slaves, bond_mode):
         bond_port = self.set_8023ad_bonded(slaves, bond_mode)
@@ -173,7 +176,10 @@ class TestBonding8023AD(TestCase):
         time.sleep(2)
         cmds = ["port start all", "", 10]
         self.bond_inst.d_console(cmds)
-        time.sleep(2)
+        self.verify(
+            self.bond_inst.testpmd.wait_link_status_up("all"),
+            "run_8023ad_pre: Failed to start all port",
+        )
         return bond_port
 
     def bonding_8023ad_check_macs_without_slaves(self, bond_port):
@@ -249,14 +255,10 @@ class TestBonding8023AD(TestCase):
         # start bonded device
         cmds = ["port start {0}".format(bond_port), "", 10]
         self.bond_inst.d_console(cmds)
-        status = self.bond_inst.get_port_info(bond_port, "link_status")
-        if status != "up":
-            msg = "bond port {0} fail to set up".format(bond_port)
-            self.logger.error(msg)
-            raise VerifyFailure(msg)
-        else:
-            msg = "bond port {0} set up successful !".format(bond_port)
-            self.logger.info(msg)
+        self.verify(
+            self.bond_inst.testpmd.wait_link_status_up("all", timeout=30),
+            "bond port {0} fail to set up".format(bond_port),
+        )
 
     def check_bonded_device_promisc_mode(self, slaves, bond_port):
         # disable bonded device promiscuous mode
