@@ -358,8 +358,6 @@ mac_pppoe_ipv4_pay_packets = {
     "mismatch": [
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
         'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=5)/Raw("x"*80)',
     ]
 }
 
@@ -369,14 +367,6 @@ mac_pppoe_ipv4_pay = [
     'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:99")/PPPoE(sessionid=4)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.3", dst="192.168.1.5")/Raw("x"*80)',
     'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x"*80)',
     'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.3", dst="192.168.1.5")/Raw("x"*80)',
-]
-
-mac_pppoe_ipv4_frag = [
-    'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)',
-    'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)',
-    'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:99")/PPPoE(sessionid=4)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.3", dst="192.168.1.5", frag=3)/Raw("x"*80)',
-    'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)',
-    'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.3", dst="192.168.1.5", frag=3)/Raw("x"*80)',
 ]
 
 mac_pppoe_ipv4_pay_src_test = [
@@ -391,18 +381,6 @@ mac_pppoe_ipv4_pay_src_test = [
     {
         "send_packet": mac_pppoe_ipv4_pay[2],
         "action": {"check_hash_same", "mac_pppoe_ipv4_pay"},
-    },
-    {
-        "send_packet": mac_pppoe_ipv4_frag[0],
-        "action": {"save_hash": "mac_pppoe_ipv4_frag"},
-    },
-    {
-        "send_packet": mac_pppoe_ipv4_frag[1],
-        "action": {"check_hash_different": "mac_pppoe_ipv4_frag"},
-    },
-    {
-        "send_packet": mac_pppoe_ipv4_frag[2],
-        "action": {"check_hash_same", "mac_pppoe_ipv4_frag"},
     },
     {
         "send_packet": [i for i in mac_pppoe_ipv4_pay_packets["mismatch"]],
@@ -422,18 +400,6 @@ mac_pppoe_ipv4_pay_dst_test = [
     {
         "send_packet": mac_pppoe_ipv4_pay[1],
         "action": {"check_hash_same", "mac_pppoe_ipv4_pay"},
-    },
-    {
-        "send_packet": mac_pppoe_ipv4_frag[0],
-        "action": {"save_hash": "mac_pppoe_ipv4_frag"},
-    },
-    {
-        "send_packet": mac_pppoe_ipv4_frag[2],
-        "action": {"check_hash_different": "mac_pppoe_ipv4_frag"},
-    },
-    {
-        "send_packet": mac_pppoe_ipv4_frag[1],
-        "action": {"check_hash_same", "mac_pppoe_ipv4_frag"},
     },
     {
         "send_packet": [i for i in mac_pppoe_ipv4_pay_packets["mismatch"]],
@@ -463,26 +429,6 @@ mac_pppoe_ipv4_pay_src_dst_test = [
         "action": {"check_hash_same", "mac_pppoe_ipv4_pay"},
     },
     {
-        "send_packet": mac_pppoe_ipv4_frag[0],
-        "action": {"save_hash": "mac_pppoe_ipv4_frag"},
-    },
-    {
-        "send_packet": mac_pppoe_ipv4_frag[1],
-        "action": {"check_hash_different": "mac_pppoe_ipv4_frag"},
-    },
-    {
-        "send_packet": mac_pppoe_ipv4_frag[2],
-        "action": {"check_hash_different": "mac_pppoe_ipv4_frag"},
-    },
-    {
-        "send_packet": mac_pppoe_ipv4_frag[3],
-        "action": {"check_hash_different": "mac_pppoe_ipv4_frag"},
-    },
-    {
-        "send_packet": mac_pppoe_ipv4_frag[-1],
-        "action": {"check_hash_same", "mac_pppoe_ipv4_frag"},
-    },
-    {
         "send_packet": [i for i in mac_pppoe_ipv4_pay_packets["mismatch"]],
         "action": "check_no_hash",
     },
@@ -491,7 +437,7 @@ mac_pppoe_ipv4_pay_src_dst_test = [
 mac_pppoe_ipv4_pay_post_test = (
     [
         {
-            "send_packet": [item for item in mac_pppoe_ipv4_pay + mac_pppoe_ipv4_frag],
+            "send_packet": [item for item in mac_pppoe_ipv4_pay],
             "action": "check_no_hash",
         },
     ],
@@ -527,11 +473,6 @@ mac_pppoe_ipv4_pay_l3_src_only_packets = {
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.3", dst="192.168.1.2")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:54", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.7")/Raw("x"*80)',
     ],
-    "mac_pppoe_ipv4_frag": [
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.3", dst="192.168.1.2", frag=5)/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:54", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.7", frag=3)/Raw("x"*80)',
-    ],
 }
 
 mac_pppoe_ipv4_pay_l3_src_only = {
@@ -558,32 +499,13 @@ mac_pppoe_ipv4_pay_l3_src_only = {
             "action": {"check_hash_same", "mac_pppoe_ipv4_pay"},
         },
         {
-            "send_packet": mac_pppoe_ipv4_pay_l3_src_only_packets[
-                "mac_pppoe_ipv4_frag"
-            ][0],
-            "action": {"save_hash": "mac_pppoe_ipv4_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv4_pay_l3_src_only_packets[
-                "mac_pppoe_ipv4_frag"
-            ][1],
-            "action": {"check_hash_different": "mac_pppoe_ipv4_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv4_pay_l3_src_only_packets[
-                "mac_pppoe_ipv4_frag"
-            ][2],
-            "action": {"check_hash_same", "mac_pppoe_ipv4_frag"},
-        },
-        {
             "send_packet": mac_pppoe_ipv4_pay_packets["mismatch"],
             "action": "check_no_hash",
         },
     ],
     "post-test": [
         {
-            "send_packet": mac_pppoe_ipv4_pay_l3_src_only_packets["mac_pppoe_ipv4_pay"]
-            + mac_pppoe_ipv4_pay_l3_src_only_packets["mac_pppoe_ipv4_frag"],
+            "send_packet": mac_pppoe_ipv4_pay_l3_src_only_packets["mac_pppoe_ipv4_pay"],
             "action": "check_no_hash",
         },
     ],
@@ -594,11 +516,6 @@ mac_pppoe_ipv4_pay_l3_dst_only_packets = {
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.3")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.7", dst="192.168.1.2")/Raw("x"*80)',
-    ],
-    "mac_pppoe_ipv4_frag": [
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.3", frag=5)/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.7", dst="192.168.1.2", frag=3)/Raw("x"*80)',
     ],
 }
 
@@ -626,24 +543,6 @@ mac_pppoe_ipv4_pay_l3_dst_only = {
             "action": {"check_hash_same", "mac_pppoe_ipv4_pay"},
         },
         {
-            "send_packet": mac_pppoe_ipv4_pay_l3_dst_only_packets[
-                "mac_pppoe_ipv4_frag"
-            ][0],
-            "action": {"save_hash": "mac_pppoe_ipv4_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv4_pay_l3_dst_only_packets[
-                "mac_pppoe_ipv4_frag"
-            ][1],
-            "action": {"check_hash_different": "mac_pppoe_ipv4_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv4_pay_l3_dst_only_packets[
-                "mac_pppoe_ipv4_frag"
-            ][2],
-            "action": {"check_hash_same", "mac_pppoe_ipv4_frag"},
-        },
-        {
             "send_packet": [i for i in mac_pppoe_ipv4_pay_packets["mismatch"]],
             "action": "check_no_hash",
         },
@@ -651,9 +550,7 @@ mac_pppoe_ipv4_pay_l3_dst_only = {
     "post-test": [
         {
             "send_packet": [
-                i
-                for i in mac_pppoe_ipv4_pay_l3_dst_only_packets["mac_pppoe_ipv4_pay"]
-                + mac_pppoe_ipv4_pay_l3_dst_only_packets["mac_pppoe_ipv4_frag"]
+                i for i in mac_pppoe_ipv4_pay_l3_dst_only_packets["mac_pppoe_ipv4_pay"]
             ],
             "action": "check_no_hash",
         },
@@ -667,13 +564,6 @@ mac_pppoe_ipv4_pay_l3_src_only_l3_dst_only_packets = {
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.7")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.3", dst="192.168.1.7")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x"*80)',
-    ],
-    "mac_pppoe_ipv4_frag": [
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.3", dst="192.168.1.2", frag=5)/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.7", frag=5)/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.3", dst="192.168.1.7", frag=5)/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2", frag=3)/Raw("x"*80)',
     ],
 }
 
@@ -713,36 +603,6 @@ mac_pppoe_ipv4_pay_l3_src_only_l3_dst_only = {
             "action": {"check_hash_same", "mac_pppoe_ipv4_pay"},
         },
         {
-            "send_packet": mac_pppoe_ipv4_pay_l3_src_only_l3_dst_only_packets[
-                "mac_pppoe_ipv4_frag"
-            ][0],
-            "action": {"save_hash": "mac_pppoe_ipv4_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv4_pay_l3_src_only_l3_dst_only_packets[
-                "mac_pppoe_ipv4_frag"
-            ][1],
-            "action": {"check_hash_different": "mac_pppoe_ipv4_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv4_pay_l3_src_only_l3_dst_only_packets[
-                "mac_pppoe_ipv4_frag"
-            ][2],
-            "action": {"check_hash_different": "mac_pppoe_ipv4_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv4_pay_l3_src_only_l3_dst_only_packets[
-                "mac_pppoe_ipv4_frag"
-            ][3],
-            "action": {"check_hash_different": "mac_pppoe_ipv4_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv4_pay_l3_src_only_l3_dst_only_packets[
-                "mac_pppoe_ipv4_frag"
-            ][-1],
-            "action": {"check_hash_same", "mac_pppoe_ipv4_frag"},
-        },
-        {
             "send_packet": [i for i in mac_pppoe_ipv4_pay_packets["mismatch"]],
             "action": "check_no_hash",
         },
@@ -753,9 +613,6 @@ mac_pppoe_ipv4_pay_l3_src_only_l3_dst_only = {
                 i
                 for i in mac_pppoe_ipv4_pay_l3_src_only_l3_dst_only_packets[
                     "mac_pppoe_ipv4_pay"
-                ]
-                + mac_pppoe_ipv4_pay_l3_src_only_l3_dst_only_packets[
-                    "mac_pppoe_ipv4_frag"
                 ]
             ],
             "action": "check_no_hash",
@@ -2268,9 +2125,7 @@ mac_pppoe_ipv4_tcp_pay_ipv4 = {
 mac_pppoe_ipv6_pay_packets = {
     "mismatch": [
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
     ]
 }
 
@@ -2279,11 +2134,6 @@ mac_pppoe_ipv6_pay_l2_src_only_packets = {
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*80)',
-    ],
-    "mac_pppoe_ipv6_frag": [
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/IPv6ExtHdrFragment()/Raw("x"*80)',
     ],
 }
 
@@ -2311,33 +2161,7 @@ mac_pppoe_ipv6_pay_l2_src_only = {
             "action": {"check_hash_same", "mac_pppoe_ipv6_pay"},
         },
         {
-            "send_packet": mac_pppoe_ipv6_pay_l2_src_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][0],
-            "action": {"save_hash": "mac_pppoe_ipv6_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_l2_src_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][1],
-            "action": {"check_hash_different": "mac_pppoe_ipv6_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_l2_src_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][2],
-            "action": {"check_hash_same", "mac_pppoe_ipv6_frag"},
-        },
-        {
             "send_packet": [i for i in mac_pppoe_ipv6_pay_packets["mismatch"]],
-            "action": "check_no_hash",
-        },
-    ],
-    "post-test": [
-        {
-            "send_packet": [
-                i for i in mac_pppoe_ipv6_pay_l2_src_only_packets["mac_pppoe_ipv6_frag"]
-            ],
             "action": "check_no_hash",
         },
     ],
@@ -2348,11 +2172,6 @@ mac_pppoe_ipv6_pay_l2_dst_only_packets = {
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:99")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:66")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*80)',
-    ],
-    "mac_pppoe_ipv6_frag": [
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:99")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:66")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/IPv6ExtHdrFragment()/Raw("x"*80)',
     ],
 }
 
@@ -2380,33 +2199,7 @@ mac_pppoe_ipv6_pay_l2_dst_only = {
             "action": {"check_hash_same", "mac_pppoe_ipv6_pay"},
         },
         {
-            "send_packet": mac_pppoe_ipv6_pay_l2_dst_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][0],
-            "action": {"save_hash": "mac_pppoe_ipv6_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_l2_dst_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][1],
-            "action": {"check_hash_different": "mac_pppoe_ipv6_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_l2_dst_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][2],
-            "action": {"check_hash_same", "mac_pppoe_ipv6_frag"},
-        },
-        {
             "send_packet": [i for i in mac_pppoe_ipv6_pay_packets["mismatch"]],
-            "action": "check_no_hash",
-        },
-    ],
-    "post-test": [
-        {
-            "send_packet": [
-                i for i in mac_pppoe_ipv6_pay_l2_dst_only_packets["mac_pppoe_ipv6_frag"]
-            ],
             "action": "check_no_hash",
         },
     ],
@@ -2419,13 +2212,6 @@ mac_pppoe_ipv6_pay_l2_src_only_l2_dst_only_packets = {
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:99")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*80)',
-    ],
-    "mac_pppoe_ipv6_frag": [
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:99")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/IPv6ExtHdrFragment()/Raw("x"*80)',
     ],
 }
 
@@ -2465,48 +2251,7 @@ mac_pppoe_ipv6_pay_l2_src_only_l2_dst_only = {
             "action": {"check_hash_same", "mac_pppoe_ipv6_pay"},
         },
         {
-            "send_packet": mac_pppoe_ipv6_pay_l2_src_only_l2_dst_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][0],
-            "action": {"save_hash": "mac_pppoe_ipv6_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_l2_src_only_l2_dst_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][1],
-            "action": {"check_hash_different": "mac_pppoe_ipv6_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_l2_src_only_l2_dst_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][2],
-            "action": {"check_hash_different": "mac_pppoe_ipv6_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_l2_src_only_l2_dst_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][3],
-            "action": {"check_hash_different": "mac_pppoe_ipv6_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_l2_src_only_l2_dst_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][-1],
-            "action": {"check_hash_same", "mac_pppoe_ipv6_frag"},
-        },
-        {
             "send_packet": [i for i in mac_pppoe_ipv6_pay_packets["mismatch"]],
-            "action": "check_no_hash",
-        },
-    ],
-    "post-test": [
-        {
-            "send_packet": [
-                i
-                for i in mac_pppoe_ipv6_pay_l2_src_only_l2_dst_only_packets[
-                    "mac_pppoe_ipv6_frag"
-                ]
-            ],
             "action": "check_no_hash",
         },
     ],
@@ -2517,11 +2262,6 @@ mac_pppoe_ipv6_pay_l3_src_only_packets = {
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:54", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*80)',
-    ],
-    "mac_pppoe_ipv6_frag": [
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:54", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/IPv6ExtHdrFragment()/Raw("x"*80)',
     ],
 }
 
@@ -2549,33 +2289,7 @@ mac_pppoe_ipv6_pay_l3_src_only = {
             "action": {"check_hash_same", "mac_pppoe_ipv6_pay"},
         },
         {
-            "send_packet": mac_pppoe_ipv6_pay_l3_src_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][0],
-            "action": {"save_hash": "mac_pppoe_ipv6_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_l3_src_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][1:-1],
-            "action": {"check_hash_different": "mac_pppoe_ipv6_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_l3_src_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][-1],
-            "action": {"check_hash_same", "mac_pppoe_ipv6_frag"},
-        },
-        {
             "send_packet": [i for i in mac_pppoe_ipv6_pay_packets["mismatch"]],
-            "action": "check_no_hash",
-        },
-    ],
-    "post-test": [
-        {
-            "send_packet": [
-                i for i in mac_pppoe_ipv6_pay_l3_src_only_packets["mac_pppoe_ipv6_frag"]
-            ],
             "action": "check_no_hash",
         },
     ],
@@ -2586,11 +2300,6 @@ mac_pppoe_ipv6_pay_l3_dst_only_packets = {
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
-    ],
-    "mac_pppoe_ipv6_frag": [
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
     ],
 }
 
@@ -2618,33 +2327,7 @@ mac_pppoe_ipv6_pay_l3_dst_only = {
             "action": {"check_hash_same", "mac_pppoe_ipv6_pay"},
         },
         {
-            "send_packet": mac_pppoe_ipv6_pay_l3_dst_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][0],
-            "action": {"save_hash": "mac_pppoe_ipv6_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_l3_dst_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][1:-1],
-            "action": {"check_hash_different": "mac_pppoe_ipv6_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_l3_dst_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][-1],
-            "action": {"check_hash_same", "mac_pppoe_ipv6_frag"},
-        },
-        {
             "send_packet": [i for i in mac_pppoe_ipv6_pay_packets["mismatch"]],
-            "action": "check_no_hash",
-        },
-    ],
-    "post-test": [
-        {
-            "send_packet": [
-                i for i in mac_pppoe_ipv6_pay_l3_dst_only_packets["mac_pppoe_ipv6_frag"]
-            ],
             "action": "check_no_hash",
         },
     ],
@@ -2657,13 +2340,6 @@ mac_pppoe_ipv6_pay_l3_src_only_l3_dst_only_packets = {
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/Raw("x"*80)',
         'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
-    ],
-    "mac_pppoe_ipv6_frag": [
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
     ],
 }
 
@@ -2703,48 +2379,7 @@ mac_pppoe_ipv6_pay_l3_src_only_l3_dst_only = {
             "action": {"check_hash_same", "mac_pppoe_ipv6_pay"},
         },
         {
-            "send_packet": mac_pppoe_ipv6_pay_l3_src_only_l3_dst_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][0],
-            "action": {"save_hash": "mac_pppoe_ipv6_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_l3_src_only_l3_dst_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][1],
-            "action": {"check_hash_different": "mac_pppoe_ipv6_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_l3_src_only_l3_dst_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][2],
-            "action": {"check_hash_different": "mac_pppoe_ipv6_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_l3_src_only_l3_dst_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][3],
-            "action": {"check_hash_different": "mac_pppoe_ipv6_frag"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_l3_src_only_l3_dst_only_packets[
-                "mac_pppoe_ipv6_frag"
-            ][-1],
-            "action": {"check_hash_same", "mac_pppoe_ipv6_frag"},
-        },
-        {
             "send_packet": [i for i in mac_pppoe_ipv6_pay_packets["mismatch"]],
-            "action": "check_no_hash",
-        },
-    ],
-    "post-test": [
-        {
-            "send_packet": [
-                i
-                for i in mac_pppoe_ipv6_pay_l3_src_only_l3_dst_only_packets[
-                    "mac_pppoe_ipv6_frag"
-                ]
-            ],
             "action": "check_no_hash",
         },
     ],
@@ -4599,27 +4234,15 @@ mac_pppoe_ipv6_pay_symmetric_packets = {
             'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
             'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2022", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/Raw("x"*80)',
         ],
-        "mac_pppoe_ipv6_frag": [
-            'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-            'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2022", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        ],
     },
     "mismatch": {
         "mac_pppoe_ipv4_pay": [
             'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.2", dst="192.168.1.1")/Raw("x"*80)',
             'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x"*80)',
         ],
-        "mac_pppoe_ipv4_frag": [
-            'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)',
-            'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.2", dst="192.168.1.1", frag=5)/Raw("x"*80)',
-        ],
         "mac_ipv6_pay": [
             'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
             'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2022", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/Raw("x"*80)',
-        ],
-        "mac_ipv6_frag": [
-            'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-            'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2022", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/IPv6ExtHdrFragment()/Raw("x"*80)',
         ],
     },
 }
@@ -4642,18 +4265,6 @@ mac_pppoe_ipv6_pay_symmetric = {
             "action": {"check_hash_same": "mac_pppoe_ipv6_pay_match"},
         },
         {
-            "send_packet": mac_pppoe_ipv6_pay_symmetric_packets["match"][
-                "mac_pppoe_ipv6_frag"
-            ][0],
-            "action": {"save_hash": "mac_pppoe_ipv6_frag_match"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_symmetric_packets["match"][
-                "mac_pppoe_ipv6_frag"
-            ][1:],
-            "action": {"check_hash_same": "mac_pppoe_ipv6_frag_match"},
-        },
-        {
             "send_packet": mac_pppoe_ipv6_pay_symmetric_packets["mismatch"][
                 "mac_pppoe_ipv4_pay"
             ][0],
@@ -4667,18 +4278,6 @@ mac_pppoe_ipv6_pay_symmetric = {
         },
         {
             "send_packet": mac_pppoe_ipv6_pay_symmetric_packets["mismatch"][
-                "mac_pppoe_ipv4_frag"
-            ][0],
-            "action": {"save_hash": "mac_pppoe_ipv4_frag_mismatch"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_symmetric_packets["mismatch"][
-                "mac_pppoe_ipv4_frag"
-            ][1:],
-            "action": {"check_hash_different": "mac_pppoe_ipv4_frag_mismatch"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_symmetric_packets["mismatch"][
                 "mac_ipv6_pay"
             ][0],
             "action": {"save_hash": "mac_ipv6_pay_mismatch"},
@@ -4688,18 +4287,6 @@ mac_pppoe_ipv6_pay_symmetric = {
                 "mac_ipv6_pay"
             ][1:],
             "action": {"check_hash_different": "mac_ipv6_pay_mismatch"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_symmetric_packets["mismatch"][
-                "mac_ipv6_frag"
-            ][0],
-            "action": {"save_hash": "mac_ipv6_frag_mismatch"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv6_pay_symmetric_packets["mismatch"][
-                "mac_ipv6_frag"
-            ][1:],
-            "action": {"check_hash_different": "mac_ipv6_frag_mismatch"},
         },
     ],
     "post-test": [
@@ -4718,27 +4305,15 @@ mac_pppoe_ipv4_pay_symmetric_packets = {
             'Ether(src="00:11:22:33:44:55",dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x"*80)',
             'Ether(src="00:11:22:33:44:55",dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.2", dst="192.168.1.1")/Raw("x"*80)',
         ],
-        "mac_pppoe_ipv4_frag": [
-            'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)',
-            'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.2", dst="192.168.1.1", frag=5)/Raw("x"*80)',
-        ],
     },
     "mismatch": {
         "mac_pppoe_ipv6_pay": [
             'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
             'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2022", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/Raw("x"*80)',
         ],
-        "mac_pppoe_ipv6_frag": [
-            'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)',
-            'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2022", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/IPv6ExtHdrFragment()/Raw("x"*80)',
-        ],
         "mac_ipv4_pay": [
             'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/Raw("x"*80)',
             'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.21",dst="192.168.0.20")/Raw("x"*80)',
-        ],
-        "mac_ipv4_frag": [
-            'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=5)/Raw("x"*80)',
-            'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.21",dst="192.168.0.20", frag=5)/Raw("x"*80)',
         ],
     },
 }
@@ -4761,18 +4336,6 @@ mac_pppoe_ipv4_pay_symmetric = {
             "action": {"check_hash_same": "mac_pppoe_ipv4_pay_match"},
         },
         {
-            "send_packet": mac_pppoe_ipv4_pay_symmetric_packets["match"][
-                "mac_pppoe_ipv4_frag"
-            ][0],
-            "action": {"save_hash": "mac_pppoe_ipv4_frag_match"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv4_pay_symmetric_packets["match"][
-                "mac_pppoe_ipv4_frag"
-            ][1],
-            "action": {"check_hash_same": "mac_pppoe_ipv4_frag_match"},
-        },
-        {
             "send_packet": mac_pppoe_ipv4_pay_symmetric_packets["mismatch"][
                 "mac_pppoe_ipv6_pay"
             ][0],
@@ -4786,18 +4349,6 @@ mac_pppoe_ipv4_pay_symmetric = {
         },
         {
             "send_packet": mac_pppoe_ipv4_pay_symmetric_packets["mismatch"][
-                "mac_pppoe_ipv6_frag"
-            ][0],
-            "action": {"save_hash": "mac_pppoe_ipv6_frag_mismatch"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv4_pay_symmetric_packets["mismatch"][
-                "mac_pppoe_ipv6_frag"
-            ][1],
-            "action": {"check_hash_different": "mac_pppoe_ipv6_frag_mismatch"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv4_pay_symmetric_packets["mismatch"][
                 "mac_ipv4_pay"
             ][0],
             "action": {"save_hash": "mac_ipv4_pay_mismatch"},
@@ -4807,18 +4358,6 @@ mac_pppoe_ipv4_pay_symmetric = {
                 "mac_ipv4_pay"
             ][1],
             "action": {"check_hash_different": "mac_ipv4_pay_mismatch"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv4_pay_symmetric_packets["mismatch"][
-                "mac_ipv4_frag"
-            ][0],
-            "action": {"save_hash": "mac_ipv4_frag_mismatch"},
-        },
-        {
-            "send_packet": mac_pppoe_ipv4_pay_symmetric_packets["mismatch"][
-                "mac_ipv4_frag"
-            ][1],
-            "action": {"check_hash_different": "mac_ipv4_frag_mismatch"},
         },
     ],
     "post-test": [

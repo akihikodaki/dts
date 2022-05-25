@@ -458,8 +458,6 @@ packets mismatched the pattern::
 
   sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)],iface="ens786f0")
   sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/Raw("x"*80)],iface="ens786f0")
-  sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-  sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=5)/Raw("x"*80)],iface="ens786f0")
 
 Subcase 1: MAC_PPPOE_IPV4_PAY_L2_SRC_ONLY
 -----------------------------------------
@@ -499,21 +497,6 @@ Subcase 1: MAC_PPPOE_IPV4_PAY_L2_SRC_ONLY
      change other fields, send packets::
 
        sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:99")/PPPoE(sessionid=4)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.5")/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are the same as the first packet.
-
-   * MAC_PPPOE_IPV4_FRAG packet::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)],iface="ens786f0")
-
-     change the field [Source MAC], send packets::
-
-       sendp([Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are different from the first packet.
-     change other fields, send packets::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:99")/PPPoE(sessionid=4)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.5", frag=3)/Raw("x"*80)],iface="ens786f0")
 
      check the hash values are the same as the first packet.
 
@@ -565,21 +548,6 @@ Subcase 2: MAC_PPPOE_IPV4_PAY_L2_DST_ONLY
      change other fields, send packets::
 
        sendp([Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:66")/PPPoE(sessionid=4)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.5")/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are the same as the first packet.
-
-   * MAC_PPPOE_IPV4_FRAG packet::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)],iface="ens786f0")
-
-     change the field [Dest MAC], send packets::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:99")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are different from the first packet.
-     change other fields, send packets::
-
-       sendp([Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:66")/PPPoE(sessionid=4)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.5", frag=3)/Raw("x"*80)],iface="ens786f0")
 
      check the hash values are the same as the first packet.
 
@@ -636,23 +604,6 @@ Subcase 3: MAC_PPPOE_IPV4_PAY_L2_SRC_ONLY_L2_DST_ONLY
 
      check the hash values are the same as the first packet.
 
-   * MAC_PPPOE_IPV4_FRAG packet::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)],iface="ens786f0")
-
-     change the fields [Source MAC][Dest MAC], send packets::
-
-       sendp([Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)],iface="ens786f0")
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:99")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)],iface="ens786f0")
-       sendp([Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are different from the first packet.
-     change other fields, send packets::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=7)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.5", frag=3)/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are the same as the first packet.
-
 4. send packets mismatched the pattern, check the hash values not exist.
 
 5. destroy the rule::
@@ -701,21 +652,6 @@ Subcase 4: MAC_PPPOE_IPV4_PAY_L3_SRC_ONLY
      change other fields, send packets::
 
        sendp([Ether(src="00:11:22:33:44:54", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.7")/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are the same as the first packet.
-
-   * MAC_PPPOE_IPV4_FRAG packet::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)],iface="ens786f0")
-
-     change the field [Source IP], send packets::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2", frag=5)/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are different from the first packet.
-     change other fields, send packets::
-
-       sendp([Ether(src="00:11:22:33:44:54", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.7", frag=3)/Raw("x"*80)],iface="ens786f0")
 
      check the hash values are the same as the first packet.
 
@@ -770,21 +706,6 @@ Subcase 5: MAC_PPPOE_IPV4_PAY_L3_DST_ONLY
 
      check the hash values are the same as the first packet.
 
-   * MAC_PPPOE_IPV4_FRAG packet::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)],iface="ens786f0")
-
-     change the field [Dest IP], send packets::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.3", frag=5)/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are different from the first packet.
-     change other fields, send packets::
-
-       sendp([Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(proto=0x0021)/IP(src="192.168.1.7", dst="192.168.1.2", frag=3)/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are the same as the first packet.
-
 4. send packets mismatched the pattern, check the hash values not exist.
 
 5. destroy the rule::
@@ -835,23 +756,6 @@ Subcase 6: MAC_PPPOE_IPV4_PAY_L3_SRC_ONLY_L3_DST_ONLY
      change other fields, send packets::
 
        sendp([Ether(src="00:11:22:33:44:53",dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are the same as the first packet.
-
-   * MAC_PPPOE_IPV4_FRAG packet::
-
-       sendp([Ether(src="00:11:22:33:44:55",dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)],iface="ens786f0")
-
-     change the fields [Source IP][Dest IP], send packets::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2", frag=5)/Raw("x"*80)],iface="ens786f0")
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.7", frag=5)/Raw("x"*80)],iface="ens786f0")
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.7", frag=5)/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are different from the first packet.
-     change other fields, send packets::
-
-       sendp([Ether(src="00:11:22:33:44:53",dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2", frag=3)/Raw("x"*80)],iface="ens786f0")
 
      check the hash values are the same as the first packet.
 
@@ -2194,9 +2098,7 @@ Test case: MAC_PPPOE_IPV6_PAY
 packets mismatched the pattern::
 
   sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x"*80)],iface="ens786f0")
-  sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)],iface="ens786f0")
   sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)],iface="ens786f0")
-  sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
 
 Subcase 1: MAC_PPPOE_IPV6_PAY_L2_SRC_ONLY
 -----------------------------------------
@@ -2236,21 +2138,6 @@ Subcase 1: MAC_PPPOE_IPV6_PAY_L2_SRC_ONLY
      change other fields, send packets::
 
        sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are the same as the first packet.
-
-   * MAC_PPPOE_IPV6_FRAG packet::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     change the field [Source MAC], send packets::
-
-       sendp([Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     check the hash value is different from the first packet.
-     change other fields, send packets::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
 
      check the hash values are the same as the first packet.
 
@@ -2302,21 +2189,6 @@ Subcase 2: MAC_PPPOE_IPV6_PAY_L2_DST_ONLY
      change other fields, send packets::
 
        sendp([Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:66")/PPPoE(sessionid=7)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are the same as the first packet.
-
-   * MAC_PPPOE_IPV6_FRAG packet::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     change the field [Dest MAC], send packets::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:99")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     check the hash value is different from the first packet.
-     change other fields, send packets::
-
-       sendp([Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:66")/PPPoE(sessionid=7)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
 
      check the hash values are the same as the first packet.
 
@@ -2373,23 +2245,6 @@ Subcase 3: MAC_PPPOE_IPV6_PAY_L2_SRC_ONLY_L2_DST_ONLY
 
      check the hash values are the same as the first packet.
 
-   * MAC_PPPOE_IPV6_FRAG packet::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     change the field [Source MAC][Dest MAC], send packets::
-
-       sendp([Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:99")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-       sendp([Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     check the hash value is different from the first packet.
-     change other fields, send packets::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=7)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are the same as the first packet.
-
 4. send packets mismatched the pattern, check the hash values not exist.
 
 5. destroy the rule::
@@ -2438,21 +2293,6 @@ Subcase 4: MAC_PPPOE_IPV6_PAY_L3_SRC_ONLY
      change other fields, send packets::
 
        sendp([Ether(src="00:11:22:33:44:54", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are the same as the first packet.
-
-   * MAC_PPPOE_IPV6_FRAG packet::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     change the field [Source IP], send packets::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     check the hash value is different from the first packet.
-     change other fields, send packets::
-
-       sendp([Ether(src="00:11:22:33:44:54", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
 
      check the hash values are the same as the first packet.
 
@@ -2507,21 +2347,6 @@ Subcase 5: MAC_PPPOE_IPV6_PAY_L3_DST_ONLY
 
      check the hash values are the same as the first packet.
 
-   * MAC_PPPOE_IPV6_FRAG packet::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     change the field [Dest IP], send packets::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are different from the first packet.
-     change other fields, send packets::
-
-       sendp([Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are the same as the first packet.
-
 4. send packets mismatched the pattern, check the hash values not exist.
 
 5. destroy the rule::
@@ -2572,23 +2397,6 @@ Subcase 6: MAC_PPPOE_IPV6_PAY_L3_SRC_ONLY_L3_DST_ONLY
      change other fields, send packets::
 
        sendp([Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are the same as the first packet.
-
-   * MAC_PPPOE_IPV6_FRAG packet::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     change the fields [Source IP][Dest IP], send packets::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values are different from the first packet.
-     change other fields, send packets::
-
-       sendp([Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
 
      check the hash values are the same as the first packet.
 
@@ -4121,16 +3929,6 @@ Test case: MAC_PPPOE_IPV4_PAY_symmetric
 
      check the hash value is not changed.
 
-  * MAC_PPPOE_IPV4_FRAG packet::
-
-      sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)],iface="ens786f0")
-
-    swap the values of [Source IP] and [Dest IP], send the packet::
-
-      sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.2", dst="192.168.1.1", frag=5)/Raw("x"*80)],iface="ens786f0")
-
-    check the hash value is not changed.
-
 4. send packets mismatched the rule, and swap the [Source IP] and [Dest IP]
 
    * MAC_PPPOE_IPV6_PAY packet::
@@ -4140,24 +3938,10 @@ Test case: MAC_PPPOE_IPV4_PAY_symmetric
 
      check the hash values of the two packets are different.
 
-   * MAC_PPPOE_IPV6_FRAG packet::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2022", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values of the two packets are different.
-
    * MAC_IPV4_PAY packet::
 
        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/Raw("x"*80)],iface="ens786f0")
        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.21",dst="192.168.0.20")/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values of the two packets are different.
-
-   * MAC_IPV4_FRAG packet::
-
-       sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=5)/Raw("x"*80)],iface="ens786f0")
-       sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.21",dst="192.168.0.20", frag=5)/Raw("x"*80)],iface="ens786f0")
 
      check the hash values of the two packets are different.
 
@@ -4375,16 +4159,6 @@ Test case: MAC_PPPOE_IPV6_PAY_symmetric
 
      check the hash value is not changed.
 
-   * MAC_PPPOE_IPV6_FRAG packet::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     swap the values of [Source IP] and [Dest IP], send the packet::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2022", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-
-     check the hash value is not changed.
-
 4. send packets mismatched the rule, and swap the values of [Source IP] and [Dest IP]
 
    * MAC_PPPOE_IPV4_PAY packet::
@@ -4394,24 +4168,10 @@ Test case: MAC_PPPOE_IPV6_PAY_symmetric
 
      check the hash values of the two packets are different.
 
-   * MAC_PPPOE_IPV4_FRAG packet::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2", frag=5)/Raw("x"*80)],iface="ens786f0")
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.2", dst="192.168.1.1", frag=5)/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values of the two packets are different.
-
    * MAC_IPV6_PAY packet::
 
        sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)],iface="ens786f0")
        sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2022", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/Raw("x"*80)],iface="ens786f0")
-
-     check the hash values of the two packets are different.
-
-   * MAC_IPV6_FRAG packet::
-
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
-       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2022", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/IPv6ExtHdrFragment()/Raw("x"*80)],iface="ens786f0")
 
      check the hash values of the two packets are different.
 
