@@ -17,7 +17,6 @@ from framework.utils import GREEN, RED
 MAC_IPV4_PAY = {
     "match": [
         'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=255, ttl=2, tos=4) / Raw("x" * 80)',
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=1, proto=255, ttl=2, tos=4)/Raw("x" * 80)',
     ],
     "unmatched": [
         'Ether(dst="00:11:22:33:44:56")/IP(src="192.168.0.20",dst="192.168.0.22", proto=255, ttl=2, tos=4) / Raw("x" * 80)',
@@ -3121,11 +3120,11 @@ class TestICEFdir(TestCase):
         ]
         rule_li = self.create_fdir_rule(rules, check_stats=True)
         pkt1 = 'Ether(dst="00:11:22:33:44:55") / IP(src="192.168.0.20", dst="192.168.0.21", proto=1) / Raw("x" * 80)'
-        pkt2 = 'Ether(dst="00:11:22:33:44:55") / IP(src="192.168.0.20", dst="192.168.0.21", frag=1, proto=1) / Raw("x" * 80)'
+        pkt2 = 'Ether(dst="00:11:22:33:44:55") / IP(src="192.168.0.19", dst="192.168.0.21", proto=1)/Raw("x" * 80)'
         pkt3 = 'Ether(dst="00:11:22:33:44:55") / IP(src="192.168.0.20", dst="192.168.0.21", ttl=2, tos=4) / UDP(sport=22, dport=23) / Raw("x" * 80)'
-        pkt4 = 'Ether(dst="00:11:22:33:44:55") / IP(src="192.168.0.20", dst="192.168.0.21", frag=1, ttl=2, tos=4) / UDP(sport=22, dport=23) / Raw("x" * 80)'
+        pkt4 = 'Ether(dst="00:11:22:33:44:55") / IP(src="192.168.0.20", dst="192.168.0.21", proto=17)/TCP(sport=22, dport=23)/Raw("x" * 80)'
         pkt5 = 'Ether(dst="00:11:22:33:44:55") / IP(src="192.168.0.20", dst="192.168.0.21", proto=17, ttl=2, tos=4) / Raw("x" * 80)'
-        pkt6 = 'Ether(dst="00:11:22:33:44:55") / IP(src="192.168.0.20", dst="192.168.0.21", frag=1, proto=17, ttl=2, tos=4) / Raw("x" * 80)'
+        pkt6 = 'Ether(dst="00:11:22:33:44:55") / IP(src="192.168.0.19", dst="192.168.0.21", proto=17, ttl=2, tos=4)/UDP(sport=22,dport=23)/TCP(sport=22, dport=23)/Raw("x" * 80)'
 
         out = self.send_pkts_getouput([pkt1, pkt2])
         port_id = 0
@@ -3162,7 +3161,7 @@ class TestICEFdir(TestCase):
         pkt7 = 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.22", proto=1) / Raw("x" * 80)'
         pkt8 = 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=6) / Raw("x" * 80)'
         pkt9 = 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/TCP(sport=22,dport=23)/ Raw("x" * 80)'
-        pkt10 = 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=1)/TCP(sport=22,dport=23)/ Raw("x" * 80)'
+        pkt10 = 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/TCP(sport=22,dport=23)/UDP(sport=22,dport=23)/Raw("x" * 80)'
 
         out3 = self.send_pkts_getouput([pkt7, pkt8, pkt9, pkt10])
         fdir_scanner = re.compile("FDIR matched ID=(0x\w+)")
@@ -3192,14 +3191,14 @@ class TestICEFdir(TestCase):
 
     def test_mac_ipv6_pay_protocal(self):
         rules = [
-            "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 proto is 44 / end actions rss queues 5 6 end / mark id 1 / end",
+            "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 proto is 17 / end actions rss queues 5 6 end / mark id 1 / end",
             "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 proto is 6 / end actions mark id 2 / rss / end",
         ]
         rule_li = self.create_fdir_rule(rules, check_stats=True)
-        pkt1 = 'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010", nh=44, tc=1, hlim=2)/("X"*480)'
-        pkt2 = 'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/IPv6ExtHdrFragment(b"1000")/("X"*480)'
-        pkt3 = 'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010", nh=44)/TCP(sport=22,dport=23)/("X"*480)'
-        pkt4 = 'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/IPv6ExtHdrFragment(b"1000")/TCP(sport=22,dport=23)/("X"*480)'
+        pkt1 = 'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010", nh=17, tc=1, hlim=2)/("X"*480)'
+        pkt2 = 'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=17)/("X"*480)'
+        pkt3 = 'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010", nh=17)/TCP(sport=22,dport=23)/("X"*480)'
+        pkt4 = 'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", tc=1, hlim=2)/UDP(sport=22,dport=23)/TCP(sport=22,dport=23)/("X"*480)'
         pkt5 = 'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/("X"*480)'
         pkt6 = 'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)'
 
@@ -3235,8 +3234,8 @@ class TestICEFdir(TestCase):
             "wrong received mark id %s, expect 0x2" % pkt_mark_id,
         )
 
-        pkt8 = 'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)'
-        pkt9 = 'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=17)/("X"*480)'
+        pkt8 = 'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", nh=17)/("X"*480)'
+        pkt9 = 'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=1)/("X"*480)'
 
         out3 = self.send_pkts_getouput([pkt8, pkt9])
         fdir_scanner = re.compile("FDIR matched ID=(0x\w+)")
@@ -3509,8 +3508,8 @@ class TestICEFdir(TestCase):
             check_param={"port_id": 1, "rss": True},
             stats=False,
         )
-        self.query_count(1, 2, 0, 0)
-        self.query_count(1, 2, 1, 0)
+        self.query_count(1, 1, 0, 0)
+        self.query_count(1, 1, 1, 0)
         self.check_fdir_rule(port_id=0, stats=True, rule_list=["0"])
         self.check_fdir_rule(port_id=1, stats=True, rule_list=["0"])
         self.destroy_fdir_rule(0, ["0"])
