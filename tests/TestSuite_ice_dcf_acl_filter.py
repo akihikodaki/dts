@@ -22,8 +22,6 @@ MAC_IPV4_PAY_SRC_MAC = {
     "match": [
         'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw(load="x"*30)'
         % vf1_mac,
-        'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2", frag=1)/Raw(load="x"*30)'
-        % vf1_mac,
         'Ether(src="01:11:22:33:44:55", dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/UDP()/Raw(load="x"*30)'
         % vf1_mac,
         'Ether(src="02:11:22:33:44:55", dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP()/Raw(load="x"*30)'
@@ -35,8 +33,6 @@ MAC_IPV4_PAY_SRC_MAC = {
     ],
     "unmatch": [
         'Ether(src="00:11:22:33:66:55", dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw(load="x"*30)'
-        % vf1_mac,
-        'Ether(src="00:11:22:33:44:66", dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2", frag=1)/Raw(load="x"*30)'
         % vf1_mac,
         'Ether(src="00:66:22:33:44:55", dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/UDP()/Raw(load="x"*30)'
         % vf1_mac,
@@ -65,8 +61,6 @@ MAC_IPV4_PAY_SRC_IP = {
     "match": [
         'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.0", dst="192.168.0.2")/Raw(load="x"*30)'
         % vf1_mac,
-        'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2",frag=1)/Raw(load="x"*30)'
-        % vf1_mac,
         'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.158", dst="192.168.0.2")/UDP()/Raw(load="x"*30)'
         % vf1_mac,
         'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.255", dst="192.168.0.2")/TCP()/Raw(load="x"*30)'
@@ -78,8 +72,6 @@ MAC_IPV4_PAY_SRC_IP = {
     ],
     "unmatch": [
         'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.1.1", dst="192.168.0.2")/Raw(load="x"*30)'
-        % vf1_mac,
-        'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.1.1", dst="192.168.0.2",frag=1)/Raw(load="x"*30)'
         % vf1_mac,
         'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.1.1", dst="192.168.0.2")/UDP()/Raw(load="x"*30)'
         % vf1_mac,
@@ -96,8 +88,6 @@ MAC_IPV4_PAY_DST_IP = {
     "match": [
         'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.1", dst="192.168.0.0")/Raw(load="x"*30)'
         % vf1_mac,
-        'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.1", dst="192.168.0.0",frag=1)/Raw(load="x"*30)'
-        % vf1_mac,
         'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.1", dst="192.168.0.158")/UDP()/Raw(load="x"*30)'
         % vf1_mac,
         'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.1", dst="192.168.0.255")/TCP()/Raw(load="x"*30)'
@@ -109,8 +99,6 @@ MAC_IPV4_PAY_DST_IP = {
     ],
     "unmatch": [
         'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.1", dst="192.168.1.2")/Raw(load="x"*30)'
-        % vf1_mac,
-        'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.1", dst="192.168.1.2",frag=1)/Raw(load="x"*30)'
         % vf1_mac,
         'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.1", dst="192.168.1.2")/UDP()/Raw(load="x"*30)'
         % vf1_mac,
@@ -127,8 +115,6 @@ MAC_IPV4_PAY_SRC_DST_IP = {
     "match": [
         'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.255", dst="192.168.0.2")/Raw(load="x"*30)'
         % vf1_mac,
-        'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.255", dst="192.168.0.2",frag=1)/Raw(load="x"*30)'
-        % vf1_mac,
         'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.158", dst="192.168.255.2")/UDP()/Raw(load="x"*30)'
         % vf1_mac,
         'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.0", dst="192.168.1.2")/TCP()/Raw(load="x"*30)'
@@ -140,8 +126,6 @@ MAC_IPV4_PAY_SRC_DST_IP = {
     ],
     "unmatch": [
         'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.1.1", dst="192.168.0.2")/Raw(load="x"*30)'
-        % vf1_mac,
-        'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.1.1", dst="192.168.0.2",frag=1)/Raw(load="x"*30)'
         % vf1_mac,
         'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.1.1", dst="192.168.0.2")/UDP()/Raw(load="x"*30)'
         % vf1_mac,
@@ -157,7 +141,6 @@ MAC_IPV4_PAY_SRC_DST_IP = {
 MAC_IPV4_PAY_SRC_DST_MAC_SRC_DST_IP = {
     "match": [
         'Ether(src="00:11:22:33:44:1b", dst="33:00:00:00:00:02")/IP(src="192.168.0.255", dst="192.168.0.2")/Raw(load="x"*30)',
-        'Ether(src="00:11:22:33:44:1b", dst="33:00:00:00:00:02")/IP(src="192.168.0.255", dst="192.168.0.2",frag=1)/Raw(load="x"*30)',
         'Ether(src="00:11:22:33:44:00", dst="33:00:00:00:00:03")/IP(src="192.168.0.158", dst="192.168.255.2")/UDP()/Raw(load="x"*30)',
         'Ether(src="00:11:22:33:44:ff", dst="33:00:00:00:00:02")/IP(src="192.168.0.0", dst="192.168.1.2")/TCP()/Raw(load="x"*30)',
         'Ether(src="00:11:22:33:44:ff", dst="33:00:00:00:00:02")/IP(src="192.168.0.0", dst="192.168.1.2")/SCTP()/Raw(load="x"*30)',
@@ -165,8 +148,6 @@ MAC_IPV4_PAY_SRC_DST_MAC_SRC_DST_IP = {
     ],
     "unmatch": [
         'Ether(src="00:11:22:33:66:55", dst="33:00:00:00:00:02")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw(load="x"*30)',
-        'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2",frag=1)/Raw(load="x"*30)'
-        % vf1_mac,
         'Ether(src="00:11:22:33:44:55", dst="33:00:00:00:00:01")/IP(src="192.168.0.1", dst="192.168.0.2")/UDP()/Raw(load="x"*30)',
         'Ether(src="00:11:22:33:44:55", dst="33:00:00:00:00:02")/IP(src="192.168.1.1", dst="192.168.0.2")/TCP()/Raw(load="x"*30)',
         'Ether(src="00:11:22:33:44:55", dst="33:00:00:00:00:02")/IP(src="192.168.0.1", dst="192.168.0.3")/SCTP()/Raw(load="x"*30)',

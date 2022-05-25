@@ -112,7 +112,6 @@ Subcase 1: src mac(only 2ports NIC support)
 2. matched packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw(load='X'*30)], iface="enp134s0f1")
-    sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.2", frag=1)/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="01:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.2")/UDP()/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="02:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP()/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="ff:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.2")/SCTP()/Raw(load='X'*30)], iface="enp134s0f1")
@@ -121,7 +120,6 @@ Subcase 1: src mac(only 2ports NIC support)
 3. unmatched packets::
 
     sendp([Ether(src="00:11:22:33:66:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw(load='X'*30)], iface="enp134s0f1")
-    sendp([Ether(src="00:11:22:33:44:66", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.2", frag=1)/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:66:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.2")/UDP()/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:66", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP()/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:32:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.2")/SCTP()/Raw(load='X'*30)], iface="enp134s0f1")
@@ -164,7 +162,6 @@ Subcase 3: src ipv4
 2. matched packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.0", dst="192.168.0.2")/Raw(load='X'*30)], iface="enp134s0f1")
-    sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.2",frag=1)/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.158", dst="192.168.0.2")/UDP()/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.255", dst="192.168.0.2")/TCP()/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.255", dst="192.168.0.2")/SCTP()/Raw(load='X'*30)], iface="enp134s0f1")
@@ -173,7 +170,6 @@ Subcase 3: src ipv4
 3. unmatched packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.1.1", dst="192.168.0.2")/Raw(load='X'*30)], iface="enp134s0f1")
-    sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.1.1", dst="192.168.0.2",frag=1)/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.1.1", dst="192.168.0.2")/UDP()/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.1.1", dst="192.168.0.2")/TCP()/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.1.1", dst="192.168.0.2")/SCTP()/Raw(load='X'*30)], iface="enp134s0f1")
@@ -188,7 +184,6 @@ Subcase 4: dst ipv4
 2. matched packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.0")/Raw(load='X'*30)], iface="enp134s0f1")
-    sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.0",frag=1)/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.158")/UDP()/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.255")/TCP()/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.255")/SCTP()/Raw(load='X'*30)], iface="enp134s0f1")
@@ -197,7 +192,6 @@ Subcase 4: dst ipv4
 3. unmatched packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.1.2")/Raw(load='X'*30)], iface="enp134s0f1")
-    sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.1.2",frag=1)/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.1.2")/UDP()/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.1.2")/TCP()/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.1.2")/SCTP()/Raw(load='X'*30)], iface="enp134s0f1")
@@ -212,7 +206,6 @@ Subcase 5: src ipv4 + dst ipv4
 2. matched packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.255", dst="192.168.0.2")/Raw(load='X'*30)], iface="enp216s0f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.255", dst="192.168.0.2",frag=1)/Raw(load='X'*30)], iface="enp216s0f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.158", dst="192.168.255.2")/UDP()/Raw(load='X'*30)], iface="enp216s0f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.0", dst="192.168.1.2")/TCP()/Raw(load='X'*30)], iface="enp216s0f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.0", dst="192.168.1.2")/SCTP()/Raw(load='X'*30)], iface="enp216s0f0")
@@ -221,7 +214,6 @@ Subcase 5: src ipv4 + dst ipv4
 3. unmatched packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.1.1", dst="192.168.0.2")/Raw(load='X'*30)], iface="enp216s0f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.1.1", dst="192.168.0.2",frag=1)/Raw(load='X'*30)], iface="enp216s0f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.1.1", dst="192.168.0.2")/UDP()/Raw(load='X'*30)], iface="enp216s0f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.3")/TCP()/Raw(load='X'*30)], iface="enp216s0f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.3")/SCTP()/Raw(load='X'*30)], iface="enp216s0f0")
@@ -240,7 +232,6 @@ Subcase 6: src mac + dst mac + src ipv4 + dst ipv4(only 2port NIC support)
 2. matched packets::
 
     sendp([Ether(src="00:11:22:33:44:1b", dst="33:00:00:00:00:02")/IP(src="192.168.0.255", dst="192.168.0.2")/Raw(load='X'*30)], iface="enp134s0f1")
-    sendp([Ether(src="00:11:22:33:44:1b", dst="33:00:00:00:00:02")/IP(src="192.168.0.255", dst="192.168.0.2",frag=1)/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:00", dst="33:00:00:00:00:03")/IP(src="192.168.0.158", dst="192.168.255.2")/UDP()/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:ff", dst="33:00:00:00:00:02")/IP(src="192.168.0.0", dst="192.168.1.2")/TCP()/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:ff", dst="33:00:00:00:00:02")/IP(src="192.168.0.0", dst="192.168.1.2")/SCTP()/Raw(load='X'*30)], iface="enp134s0f1")
@@ -249,7 +240,6 @@ Subcase 6: src mac + dst mac + src ipv4 + dst ipv4(only 2port NIC support)
 3. unmatched packets::
 
     sendp([Ether(src="00:11:22:33:66:55", dst="33:00:00:00:00:02")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw(load='X'*30)], iface="enp134s0f1")
-    sendp([Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.2",frag=1)/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:55", dst="33:00:00:00:00:01")/IP(src="192.168.0.1", dst="192.168.0.2")/UDP()/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:55", dst="33:00:00:00:00:02")/IP(src="192.168.1.1", dst="192.168.0.2")/TCP()/Raw(load='X'*30)], iface="enp134s0f1")
     sendp([Ether(src="00:11:22:33:44:55", dst="33:00:00:00:00:02")/IP(src="192.168.0.1", dst="192.168.0.3")/SCTP()/Raw(load='X'*30)], iface="enp134s0f1")
