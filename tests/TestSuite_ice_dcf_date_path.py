@@ -255,6 +255,7 @@ class DcfDatePathTest(TestCase):
         )
 
         self.pmd_output.execute_cmd("set fwd rxonly")
+        self.pmd_output.execute_cmd("set promisc all off")
         self.pmd_output.execute_cmd("set verbose 1")
         self.pmd_output.execute_cmd("start")
         out = self.send_pkts_getouput(pkt, self.tester_intf0, status=True)

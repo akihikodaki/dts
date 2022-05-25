@@ -171,6 +171,7 @@ Execute **common steps** to prepare DCF test environment
 Set rxonly forward mode ::
 
     set fwd rxonly
+    set promisc all off
     set verbose 1
     start
 
