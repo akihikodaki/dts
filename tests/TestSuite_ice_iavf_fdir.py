@@ -18,7 +18,6 @@ from .rte_flow_common import TXQ_RXQ_NUMBER
 MAC_IPV4_PAY = {
     "match": [
         'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=255, ttl=2, tos=4) / Raw("x" * 80)',
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=1, proto=255, ttl=2, tos=4)/Raw("x" * 80)',
         'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=255, ttl=2, tos=4)/UDP(sport=22,dport=23)/Raw("x" * 80)',
     ],
     "mismatch": [
@@ -33,17 +32,17 @@ MAC_IPV4_PAY = {
 MAC_IPV4_PAY_protocol = {
     "match": [
         'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=1)/Raw("x" * 80)',
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=1, proto=1)/Raw("x" * 80)',
+        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.19",dst="192.168.0.21", proto=1)/Raw("x" * 80)',
         'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", ttl=2, tos=4)/UDP(sport=22,dport=23)/Raw("x" * 80)',
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=1, ttl=2, tos=4)/UDP(sport=22,dport=23)/Raw("x" * 80)',
+        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=17)/TCP(sport=22,dport=23)/Raw("x" * 80)',
         'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=17, ttl=2, tos=4)/Raw("x" * 80)',
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=1, proto=17, ttl=2, tos=4)/Raw("x" * 80)',
+        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=17)/Raw("x" * 80)',
     ],
     "mismatch": [
         'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.22", proto=1)/Raw("x" * 80)',
         'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=6)/UDP(sport=22,dport=23)/Raw("x" * 80)',
         'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/TCP(sport=22,dport=23)/Raw("x" * 80)',
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=1)/TCP(sport=22,dport=23)/Raw("x" * 80)',
+        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", ttl=2, tos=4)/SCTP()/Raw("x" * 80)',
     ],
 }
 
@@ -108,17 +107,17 @@ MAC_IPV6_PAY = {
 
 MAC_IPV6_PAY_protocol = {
     "match": [
-        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=44, tc=1, hlim=2)/("X"*480)',
-        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=44)/TCP(sport=22,dport=23)/("X"*480)',
-        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/TCP(sport=22,dport=23)/("X"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=17, tc=1, hlim=2)/("X"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=17)/TCP(sport=22,dport=23)/("X"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/TCP(sport=22,dport=23)/("X"*480)',
         'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/("X"*480)',
         'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)',
     ],
     "mismatch": [
-        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", nh=44)/("X"*480)',
-        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)',
-        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=17)/TCP(sport=22,dport=23)/("X"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", nh=1)/("X"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP()/("X"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=1)/TCP(sport=22,dport=23)/("X"*480)',
     ],
 }
 
@@ -8787,7 +8786,7 @@ class TestICEIAVFFdir(TestCase):
 
     def test_mac_ipv6_protocol(self):
         rules = [
-            "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 proto is 44 / end actions rss queues 5 6 end / mark id 0 / end",
+            "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 proto is 17 / end actions rss queues 5 6 end / mark id 0 / end",
             "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 proto is 6 / end actions mark id 2 / rss / end",
         ]
 
@@ -9369,6 +9368,7 @@ class TestICEIAVFFdir(TestCase):
         """
         create same rules on pf and vf, no conflict
         """
+        self.pmd_output.quit()
         self.session_secondary = self.dut.new_session()
         self.session_third = self.dut.new_session()
 
@@ -9609,6 +9609,7 @@ class TestICEIAVFFdir(TestCase):
         """
         create same input set but different action rules on pf and vf, no conflict.
         """
+        self.pmd_output.quit()
         self.session_secondary = self.dut.new_session()
         self.session_third = self.dut.new_session()
 
@@ -9872,6 +9873,7 @@ class TestICEIAVFFdir(TestCase):
         """
         create different rules on pf and vf
         """
+        self.pmd_output.quit()
         self.session_secondary = self.dut.new_session()
         self.session_third = self.dut.new_session()
 
