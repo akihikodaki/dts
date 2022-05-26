@@ -1335,6 +1335,7 @@ class PerfTestBase(object):
                 # ignore first 2 cores
                 _corelist = (corelist * (total // len(corelist) + 1))[:total]
                 [grp[index].append(core) for index, core in enumerate(_corelist)]
+                _corelist = list(set(_corelist))
                 [
                     configs.append(
                         [
