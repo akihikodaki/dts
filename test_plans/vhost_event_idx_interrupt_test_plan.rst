@@ -27,7 +27,7 @@ Test Case 1: wake up split ring vhost-user core with event idx interrupt mode
     ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -l 1 \
     -n 4 --no-pci\
     --log-level=9 \
-    --vdev 'eth_vhost0,iface=/vhost-net0,queues=1,client=1' \
+    --vdev 'eth_vhost0,iface=./vhost-net0,queues=1,client=1' \
     -- -p 0x1 \
     --parse-ptype 1 \
     --config "(0,0,1)"
@@ -41,7 +41,7 @@ Test Case 1: wake up split ring vhost-user core with event idx interrupt mode
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
-    -chardev socket,id=char0,path=./vhost-net0 \
+    -chardev socket,id=char0,path=./vhost-net0,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :12
 
@@ -50,7 +50,7 @@ Test Case 1: wake up split ring vhost-user core with event idx interrupt mode
     ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power  -l 1 \
     -n 4 --no-pci\
     --log-level=9 \
-    --vdev 'eth_vhost0,iface=/vhost-net0,queues=1,client=1' \
+    --vdev 'eth_vhost0,iface=./vhost-net0,queues=1,client=1' \
     -- -p 0x1 \
     --parse-ptype 1 \
     --config "(0,0,1)"
@@ -72,7 +72,7 @@ Test Case 2: wake up split ring vhost-user cores with event idx interrupt mode 1
     ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power  -l 1-16 \
     -n 4 --no-pci\
     --log-level=9 \
-    --vdev 'eth_vhost0,iface=/vhost-net0,queues=16,client=1' \
+    --vdev 'eth_vhost0,iface=./vhost-net0,queues=16,client=1' \
     -- -p 0x1 \
     --parse-ptype 1 \
     --config "(0,0,1),(0,1,2),(0,2,3),(0,3,4),(0,4,5),(0,5,6),(0,6,7),(0,7,8),(0,8,9),(0,9,10),(0,10,11),(0,11,12),(0,12,13),(0,13,14),(0,14,15),(0,15,16)"
@@ -86,7 +86,7 @@ Test Case 2: wake up split ring vhost-user cores with event idx interrupt mode 1
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
-    -chardev socket,id=char0,path=./vhost-net0 \
+    -chardev socket,id=char0,path=./vhost-net0,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=16 \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,mq=on,vectors=40 -vnc :12
 
@@ -95,7 +95,7 @@ Test Case 2: wake up split ring vhost-user cores with event idx interrupt mode 1
     ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power  -l 1-16 \
     -n 4 --no-pci\
     --log-level=9 \
-    --vdev 'eth_vhost0,iface=/vhost-net0,queues=16,client=1' \
+    --vdev 'eth_vhost0,iface=./vhost-net0,queues=16,client=1' \
     -- -p 0x1 \
     --parse-ptype 1 \
     --config "(0,0,1),(0,1,2),(0,2,3),(0,3,4),(0,4,5),(0,5,6),(0,6,7),(0,7,8),(0,8,9),(0,9,10),(0,10,11),(0,11,12),(0,12,13),(0,13,14),(0,14,15),(0,15,16)"
@@ -139,8 +139,8 @@ Test Case 3: wake up split ring vhost-user cores by multi virtio-net in VMs with
     ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power  -l 1-2 \
     -n 4 --no-pci\
     --log-level=9 \
-    --vdev 'eth_vhost0,iface=/vhost-net0,queues=1,client=1' \
-    --vdev 'eth_vhost1,iface=/vhost-net1,queues=1,client=1' \
+    --vdev 'eth_vhost0,iface=./vhost-net0,queues=1,client=1' \
+    --vdev 'eth_vhost1,iface=./vhost-net1,queues=1,client=1' \
     -- -p 0x3 \
     --parse-ptype 1 \
     --config "(0,0,1),(1,0,2)"
@@ -153,7 +153,7 @@ Test Case 3: wake up split ring vhost-user cores by multi virtio-net in VMs with
      -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu1910.img  \
      -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
      -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
-     -chardev socket,server,id=char0,path=/vhost-net0 \
+     -chardev socket,server,id=char0,path=./vhost-net0,server \
      -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,csum=on -vnc :10 -daemonize
 
@@ -163,7 +163,7 @@ Test Case 3: wake up split ring vhost-user cores by multi virtio-net in VMs with
      -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu1910-2.img  \
      -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
      -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6004-:22 \
-     -chardev socket,server,id=char0,path=/vhost-net1 \
+     -chardev socket,server,id=char0,path=./vhost-net1 \
      -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
      -device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet1,csum=on -vnc :11 -daemonize
 
@@ -172,8 +172,8 @@ Test Case 3: wake up split ring vhost-user cores by multi virtio-net in VMs with
     ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power  -l 1-2 \
     -n 4 --no-pci\
     --log-level=9 \
-    --vdev 'eth_vhost0,iface=/vhost-net0,queues=1,client=1' \
-    --vdev 'eth_vhost1,iface=/vhost-net1,queues=1,client=1' \
+    --vdev 'eth_vhost0,iface=./vhost-net0,queues=1,client=1' \
+    --vdev 'eth_vhost1,iface=./vhost-net1,queues=1,client=1' \
     -- -p 0x3 \
     --parse-ptype 1 \
     --config "(0,0,1),(1,0,2)"
@@ -202,7 +202,7 @@ Test Case 4: wake up packed ring vhost-user core with event idx interrupt mode
     ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power  -l 1 \
     -n 4 --no-pci\
     --log-level=9 \
-    --vdev 'eth_vhost0,iface=/vhost-net0,queues=1,client=1' \
+    --vdev 'eth_vhost0,iface=./vhost-net0,queues=1,client=1' \
     -- -p 0x1 \
     --parse-ptype 1 \
     --config "(0,0,1)"
@@ -215,7 +215,7 @@ Test Case 4: wake up packed ring vhost-user core with event idx interrupt mode
      -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu1910.img  \
      -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
      -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6004-:22 \
-     -chardev socket,server,id=char0,path=/vhost-net0 \
+     -chardev socket,server,id=char0,path=./vhost-net0,server \
      -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,csum=on,packed=on -vnc :10 -daemonize
 
@@ -224,7 +224,7 @@ Test Case 4: wake up packed ring vhost-user core with event idx interrupt mode
     ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power  -l 1 \
     -n 4 --no-pci\
     --log-level=9 \
-    --vdev 'eth_vhost0,iface=/vhost-net0,queues=1,client=1' \
+    --vdev 'eth_vhost0,iface=./vhost-net0,queues=1,client=1' \
     -- -p 0x1 \
     --parse-ptype 1 \
     --config "(0,0,1)"
@@ -246,7 +246,7 @@ Test Case 5: wake up packed ring vhost-user cores with event idx interrupt mode 
     ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power  -l 1-16 \
     -n 4 --no-pci\
     --log-level=9 \
-    --vdev 'eth_vhost0,iface=/vhost-net0,queues=16,client=1' \
+    --vdev 'eth_vhost0,iface=./vhost-net0,queues=16,client=1' \
     -- -p 0x1 \
     --parse-ptype 1 \
     --config "(0,0,1),(0,1,2),(0,2,3),(0,3,4),(0,4,5),(0,5,6),(0,6,7),(0,7,8),(0,8,9),(0,9,10),(0,10,11),(0,11,12),(0,12,13),(0,13,14),(0,14,15),(0,15,16)"
@@ -259,7 +259,7 @@ Test Case 5: wake up packed ring vhost-user cores with event idx interrupt mode 
      -smp cores=16,sockets=1 -drive file=/home/osimg/ubuntu1910.img  \
      -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
      -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6004-:22 \
-     -chardev socket,server,id=char0,path=/vhost-net0 \
+     -chardev socket,server,id=char0,path=./vhost-net0,server \
      -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce,queues=16 \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,csum=on,mq=on,packed=on,vectors=40 -vnc :10 -daemonize
 
@@ -268,7 +268,7 @@ Test Case 5: wake up packed ring vhost-user cores with event idx interrupt mode 
     ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power  -l 1-16 \
     -n 4 --no-pci\
     --log-level=9 \
-    --vdev 'eth_vhost0,iface=/vhost-net0,queues=16,client=1' \
+    --vdev 'eth_vhost0,iface=./vhost-net0,queues=16,client=1' \
     -- -p 0x1 \
     --parse-ptype 1 \
     --config "(0,0,1),(0,1,2),(0,2,3),(0,3,4),(0,4,5),(0,5,6),(0,6,7),(0,7,8),(0,8,9),(0,9,10),(0,10,11),(0,11,12),(0,12,13),(0,13,14),(0,14,15),(0,15,16)"
@@ -312,8 +312,8 @@ Test Case 6: wake up packed ring vhost-user cores by multi virtio-net in VMs wit
     ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power  -l 1-2 \
     -n 4 --no-pci\
     --log-level=9 \
-    --vdev 'eth_vhost0,iface=/vhost-net0,queues=1,client=1' \
-    --vdev 'eth_vhost1,iface=/vhost-net1,queues=1,client=1' \
+    --vdev 'eth_vhost0,iface=./vhost-net0,queues=1,client=1' \
+    --vdev 'eth_vhost1,iface=./vhost-net1,queues=1,client=1' \
     -- -p 0x3 \
     --parse-ptype 1 \
     --config "(0,0,1),(1,0,2)"
@@ -326,7 +326,7 @@ Test Case 6: wake up packed ring vhost-user cores by multi virtio-net in VMs wit
      -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu1910.img  \
      -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
      -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6004-:22 \
-     -chardev socket,server,id=char0,path=/vhost-net0 \
+     -chardev socket,server,id=char0,path=./vhost-net0,server \
      -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,csum=on,packed=on -vnc :10 -daemonize
 
@@ -336,7 +336,7 @@ Test Case 6: wake up packed ring vhost-user cores by multi virtio-net in VMs wit
      -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu1910-2.img  \
      -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
      -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6004-:22 \
-     -chardev socket,server,id=char0,path=/vhost-net1 \
+     -chardev socket,server,id=char0,path=./vhost-net1,server \
      -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
      -device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet1,csum=on,packed=on -vnc :11 -daemonize
 
@@ -345,8 +345,8 @@ Test Case 6: wake up packed ring vhost-user cores by multi virtio-net in VMs wit
     ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power  -l 1-2 \
     -n 4 --no-pci\
     --log-level=9 \
-    --vdev 'eth_vhost0,iface=/vhost-net0,queues=1,client=1' \
-    --vdev 'eth_vhost1,iface=/vhost-net1,queues=1,client=1' \
+    --vdev 'eth_vhost0,iface=./vhost-net0,queues=1,client=1' \
+    --vdev 'eth_vhost1,iface=./vhost-net1,queues=1,client=1' \
     -- -p 0x3 \
     --parse-ptype 1 \
     --config "(0,0,1),(1,0,2)"
