@@ -256,6 +256,7 @@ The following are the test plans for the DPDK DTS automated test system.
     unit_tests_ringpmd_test_plan
     unit_tests_ring_test_plan
     unit_tests_timer_test_plan
+    meson_tests_test_plan
 
     cmdline_test_plan
     hello_world_test_plan
