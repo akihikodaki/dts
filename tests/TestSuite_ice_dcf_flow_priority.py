@@ -1868,7 +1868,6 @@ class ICEDCFFlowPriorityTest(TestCase):
         localPort = self.tester.get_local_port(self.dut_ports[0])
         self.__tx_iface = self.tester.get_interface(localPort)
         self.pkt = Packet()
-        self.testpmd_status = "close"
         # bind pf to kernel
         self.bind_nics_driver(self.dut_ports, driver="ice")
         # get PF interface name
@@ -1906,8 +1905,7 @@ class ICEDCFFlowPriorityTest(TestCase):
         Run before each test case.
         """
         # Switch's recpri resource cannot be released,so need to reload ice driver to release it, this is a known issue of ND
-        self.dut.send_expect("rmmod ice", "#", 30)
-        self.dut.send_expect("modprobe ice", "#", 30)
+        self.dut.send_expect("rmmod ice && modprobe ice", "# ", 60)
 
     def create_testpmd_command(self):
         """
@@ -1931,9 +1929,7 @@ class ICEDCFFlowPriorityTest(TestCase):
         launch testpmd with the command
         """
         command = self.create_testpmd_command()
-        out = self.dut.send_expect(command, "testpmd> ", 15)
-        self.testpmd_status = "running"
-        # self.dut.send_expect("set portlist 1", "testpmd> ", 15)
+        out = self.dut.send_expect(command, "testpmd> ", 60)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
         self.dut.send_expect("set verbose 1", "testpmd> ", 15)
 
@@ -2581,19 +2577,11 @@ class ICEDCFFlowPriorityTest(TestCase):
         """
         Run after each test case.
         """
-        if self.testpmd_status != "close":
-            # destroy all flow rules on DCF
-            self.dut.send_expect("flow flush 0", "testpmd> ", 15)
-            self.dut.send_expect("clear port stats all", "testpmd> ", 15)
-            self.dut.send_expect("quit", "#", 15)
-            # kill all DPDK application
-            self.dut.kill_all()
-            # destroy vfs
-            for port_id in self.dut_ports:
-                self.dut.destroy_sriov_vfs_by_port(port_id)
-        self.testpmd_status = "close"
-        if getattr(self, "session_secondary", None):
-            self.dut.close_session(self.session_secondary)
+        self.dut.send_expect("quit", "# ")
+        self.dut.kill_all()
+        # destroy vfs
+        for port_id in self.dut_ports:
+            self.dut.destroy_sriov_vfs_by_port(port_id)
 
     def tear_down_all(self):
         """
