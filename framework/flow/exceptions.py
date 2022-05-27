@@ -3,6 +3,7 @@
 # Copyright(c) 2018-2019 The University of New Hampshire
 #
 
+
 class CompositionException(Exception):
     def __init__(self):
         self.message = "There was an unexpected error in composition"
