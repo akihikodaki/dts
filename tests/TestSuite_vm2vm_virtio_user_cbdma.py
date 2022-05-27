@@ -269,7 +269,7 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         if dump the virtio-testpmd, the virtio-testpmd should started before launch pdump
         """
         eal_params = self.dut.create_eal_parameters(
-            cores="Default", prefix="virtio-user1", fixed_prefix=True
+            cores="Default", prefix="virtio-user1", fixed_prefix=True, ports=[]
         )
         command_line = (
             self.app_pdump
