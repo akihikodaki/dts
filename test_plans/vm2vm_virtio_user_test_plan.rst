@@ -763,3 +763,43 @@ Test Case 11: packed virtqueue vm2vm vectorized path test with ring size is not 
     testpmd>start tx_first 7
 
 9. Quit pdump,vhost received packets in pdump-vhost-rx.pcap,check headers and payload of all packets in pdump-virtio-rx.pcap and pdump-vhost-rx.pcap and ensure the content are same.
+
+Test Case 12: packed virtqueue vm2vm vectorized-tx path multi-queues test indirect descriptor
+=============================================================================================
+
+1. Launch vhost by below command::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd/app/dpdk-testpmd -l 1-2 -n 4 --no-pci \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=1' --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
+    -i --nb-cores=1 --no-flush-rx
+
+2. Launch virtio-user1 by below command::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd/app/dpdk-testpmd -n 4 -l 7-8 --no-pci --file-prefix=virtio1 --force-max-simd-bitwidth=512 \
+    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=1,vectorized=1,queue_size=256 \
+    -- -i --nb-cores=1 --txd=256 --rxd=256
+    testpmd>set fwd rxonly
+    testpmd>start
+
+3. Attach pdump secondary process to primary process by same file-prefix::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=virtio1 -- --pdump 'device_id=net_virtio_user1,queue=*,rx-dev=./pdump-virtio-rx.pcap,mbuf-size=8000'
+
+4. Launch virtio-user0 and send 8k length packets::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 --force-max-simd-bitwidth=512 --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=1,vectorized=1,queue_size=256 \
+    -- -i --nb-cores=1 --txd=256 --rxd=256
+
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 1
+    testpmd>stop
+
+5. Start vhost, then quit pdump and three testpmd, about packed virtqueue vectorized-tx path, it use the indirect descriptors, the 8k length pkt will just occupies one ring.
+So check 256 packets and 56064 bytes received by virtio-user1 and 251 packets with 64 length and 5 packets with 8K length in pdump-virtio-rx.pcap.
