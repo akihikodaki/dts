@@ -2300,7 +2300,8 @@
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
                 "cavium_a064",
-                "I40E_10G-10G_BASE_T_BC"
+                "I40E_10G-10G_BASE_T_BC",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
