@@ -1643,6 +1643,7 @@
             ],
             "NIC": [
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E810_XXV_SFP",
                 "ICE_25G-E810C_SFP"
             ],
             "Target": [
