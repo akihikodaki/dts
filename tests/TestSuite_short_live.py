@@ -39,6 +39,7 @@ class TestShortLiveApp(TestCase):
         self.app_l2fwd_path = self.dut.apps_name["l2fwd"]
         self.app_l3fwd_path = self.dut.apps_name["l3fwd"]
         self.app_testpmd = self.dut.apps_name["test-pmd"]
+        self.core_config = "1S/2C/1T"
         self.eal_para = self.dut.create_eal_parameters
 
     def set_up(self):
@@ -158,10 +159,12 @@ class TestShortLiveApp(TestCase):
         Using linux time to get start up time
         """
         time = []
-        regex = re.compile(".* (\d+:\d{2}\.\d{2}).*")
+        regex = re.compile(".*real (\d+\.\d{2}).*")
         eal_para = self.dut.create_eal_parameters(no_pci=True)
         out = self.dut.send_expect(
-            "echo quit | time ./%s %s -- -i" % (self.app_testpmd, eal_para), "# ", 120
+            "echo quit | time -p ./%s %s -- -i" % (self.app_testpmd, eal_para),
+            "# ",
+            120,
         )
         time = regex.findall(out)
 
@@ -221,12 +224,15 @@ class TestShortLiveApp(TestCase):
     def test_clean_up_with_signal_l3fwd(self):
         repeat_time = 5
         self.compile_examples("l3fwd")
+        core_list = self.dut.get_core_list(self.core_config)
+        eal_parmas = self.eal_para(cores=core_list)
+
         for i in range(repeat_time):
             # dpdk start
             print("clean_up_with_signal_l3fwd round %d" % (i + 1))
             self.dut.send_expect(
-                "%s %s -- -p 0x3 --config='(0,0,1),(1,0,2)' &"
-                % (self.app_l3fwd_path, self.eal_para()),
+                "%s %s -- -p 0x3 --config='(0,0,%s),(1,0,%s)' &"
+                % (self.app_l3fwd_path, eal_parmas, core_list[0], core_list[1]),
                 "L3FWD: entering main loop",
                 120,
             )
