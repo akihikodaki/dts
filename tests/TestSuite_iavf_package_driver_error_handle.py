@@ -15,7 +15,8 @@ from framework.test_case import TestCase
 class Testiavf_package_and_driver_check(TestCase):
     def set_up_all(self):
         self.verify(
-            self.nic in ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP"],
+            self.nic
+            in ["ICE_100G-E810C_QSFP", "ICE_25G-E810_XXV_SFP", "ICE_25G-E810C_SFP"],
             "NIC Unsupported: " + str(self.nic),
         )
         self.dut_ports = self.dut.get_ports(self.nic)

@@ -300,7 +300,8 @@ class RSSConfigureTest(TestCase):
         self.pf_mac = self.dut.get_mac_address(0)
         self.pf_pci = self.dut.ports_info[self.dut_ports[0]]["pci"]
         self.verify(
-            self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"],
+            self.nic
+            in ["ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP", "ICE_100G-E810C_QSFP"],
             "%s nic not support ethertype filter" % self.nic,
         )
         self.rsspro = RssProcessing(self, self.pmdout, [self.__tx_iface], rxq=16)

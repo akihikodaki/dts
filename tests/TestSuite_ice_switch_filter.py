@@ -4264,7 +4264,8 @@ class ICESwitchFilterTest(TestCase):
         Run at the start of each test suite.
         """
         self.verify(
-            self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"],
+            self.nic
+            in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP", "ICE_25G-E810_XXV_SFP"],
             "%s nic not support Intel® Ethernet 800 Series switch filter" % self.nic,
         )
         self.dut_ports = self.dut.get_ports(self.nic)

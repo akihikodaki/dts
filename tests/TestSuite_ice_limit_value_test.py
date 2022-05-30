@@ -660,7 +660,7 @@ class TestICELimitValue(TestCase):
             num = 4
             if self.is_chapman:
                 num = 8
-        if self.nic in ["ICE_25G-E810C_SFP"]:
+        if self.nic in ["ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]:
             num = 2
         for i in range(num):
             for j in range(256):
@@ -855,7 +855,7 @@ class TestICELimitValue(TestCase):
                 count == num * 256,
                 "failed to create %s fdir rules on pf." % (num * 256),
             )
-        elif self.nic in ["ICE_25G-E810C_SFP"]:
+        elif self.nic in ["ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]:
             for i in range(58):
                 for j in range(256):
                     flows.write(

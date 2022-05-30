@@ -9,7 +9,7 @@ from framework.test_case import TestCase, check_supported_nic
 
 
 class TestICE1PPS(TestCase):
-    supported_nic = ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP"]
+    supported_nic = ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]
 
     @check_supported_nic(supported_nic)
     def set_up_all(self):
