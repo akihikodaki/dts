@@ -1507,34 +1507,6 @@
             "Comments": "nic not support this case"
         }
     ],
-    "simple_symmetric": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "DPDK-8410",
-            "Comments": "DPDK-8410, won't fix; skip this case"
-        },
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-	        "IGC-I225_LM"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
     "toeplitz": [
         {
             "OS": [
