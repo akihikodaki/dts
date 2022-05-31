@@ -681,49 +681,6 @@ class TestPmdrssHash(TestCase):
 
         self.dut.send_expect("quit", "# ", 30)
 
-    def test_simple_symmetric(self):
-
-        dutPorts = self.dut.get_ports(self.nic)
-        localPort = self.tester.get_local_port(dutPorts[0])
-        itf = self.tester.get_interface(localPort)
-        global reta_num
-        global iptypes
-        self.dut.kill_all()
-
-        # test with different rss queues
-        self.dut.send_expect(
-            "%s %s -- -i --rxq=%d --txq=%d" % (self.path, self.eal_para, queue, queue),
-            "testpmd> ",
-            120,
-        )
-
-        for iptype, rsstype in list(iptypes.items()):
-            self.dut.send_expect("set verbose 8", "testpmd> ")
-            self.dut.send_expect("set fwd rxonly", "testpmd> ")
-            self.dut.send_expect("set promisc all off", "testpmd> ")
-            self.dut.send_expect("set nbcore %d" % (queue + 1), "testpmd> ")
-
-            self.dut.send_expect("port stop all", "testpmd> ")
-            self.dut.send_expect(
-                "set_hash_global_config 0 simple_xor %s enable" % iptype, "testpmd> "
-            )
-            self.dut.send_expect("set_sym_hash_ena_per_port 0 enable", "testpmd> ")
-            self.dut.send_expect("port start all", "testpmd> ")
-
-            out = self.dut.send_expect("port config all rss %s" % rsstype, "testpmd> ")
-            self.verify(
-                "error" not in out, "Configuration of RSS hash failed: Invalid argument"
-            )
-            # configure the reta with specific mappings.
-            for i in range(reta_num):
-                reta_entries.insert(i, random.randint(0, queue - 1))
-                self.dut.send_expect(
-                    "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> "
-                )
-            self.send_packet_symmetric(itf, iptype)
-
-        self.dut.send_expect("quit", "# ", 30)
-
     def tear_down(self):
         """
         Run after each test case.

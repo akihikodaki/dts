@@ -150,8 +150,3 @@ The same as the above test case "test_toeplitz". Just pay attention to set the h
          flow create <port_id> ingress pattern eth / ipv6 / tcp / end actions rss types ipv6-tcp end queues end func simple_xor queues end / end
          flow create <port_id> ingress pattern eth / ipv6 / end actions rss types ipv6-frag end queues end func simple_xor queues end / end
 
-Test Case:  test_simple_symmetric
-=================================
-
-The same as the above test case "test_toeplitz_symmetric". Just pay attention to set the hash function to "simple xor"
-
