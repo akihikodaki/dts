@@ -253,7 +253,7 @@ class TestInlineIpsec(TestCase):
             session_receive2 = self.tester.create_session(
                 name="receive_encryption_package2"
             )
-            session_receive2.send_expect("tcpdump -Xvvvi %s -c 1" % rxItf, "", 10)
+            session_receive2.send_expect("tcpdump -nn -Xvvvi %s -c 1" % rxItf, "", 10)
             send_package = self.send_encryption_package(
                 txItf, paysize, do_encrypt, send_spi, count, inner_dst, sa_src, sa_dst
             )
@@ -468,7 +468,7 @@ class TestInlineIpsec(TestCase):
         session_receive3 = self.tester.create_session(
             "check_forward_encryption_package"
         )
-        session_receive3.send_expect("tcpdump -Xvvvi %s -c 1" % self.rxItf, "", 30)
+        session_receive3.send_expect("tcpdump -nn -Xvvvi %s -c 1" % self.rxItf, "", 30)
         time.sleep(2)
         sendp(eth_e1, iface=self.rxItf, count=2)
         sendp(eth_e2, iface=self.txItf, count=1)
