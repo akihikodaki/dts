@@ -29,9 +29,6 @@ class TestVhostPmdXstats(TestCase):
         Run at the start of each test suite.
         """
         self.dut_ports = self.dut.get_ports(self.nic)
-        self.unbind_ports = copy.deepcopy(self.dut_ports)
-        self.unbind_ports.remove(0)
-        self.dut.unbind_interfaces_linux(self.unbind_ports)
         txport = self.tester.get_local_port(self.dut_ports[0])
         self.txItf = self.tester.get_interface(txport)
         self.scapy_num = 0
