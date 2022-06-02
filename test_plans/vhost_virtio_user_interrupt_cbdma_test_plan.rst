@@ -50,7 +50,7 @@ flow: TG --> NIC --> Vhost --> Virtio
 2. Start l3fwd-power with a virtio-user device::
 
     ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
-    --vdev=virtio_user0,path=./vhost-net -- -p 1 -P --config="(0,0,14)" --parse-ptype
+    --vdev=virtio_user0,path=./vhost-net -- -p 1 --config="(0,0,14)" --parse-ptype
 
 3. Send packets with packet generator, check the virtio-user related core can be wakeup status.
 
@@ -98,7 +98,7 @@ flow: TG --> NIC --> Vhost --> Virtio
 2. Start l3fwd-power with a virtio-user device::
 
     ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
-    --vdev=virtio_user0,path=./vhost-net,packed_vq=1 -- -p 1 -P --config="(0,0,14)" --parse-ptype
+    --vdev=virtio_user0,path=./vhost-net,packed_vq=1 -- -p 1 --config="(0,0,14)" --parse-ptype
 
 3. Send packets with packet generator, check the virtio-user related core can be wakeup status.
 
