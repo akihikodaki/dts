@@ -63,7 +63,7 @@ class TestBlockList(TestCase):
                     "Not blocklisted port is being blocklisted",
                 )
 
-    def test_bl_noblocklisted(self):
+    def test_bl_no_blocklisted(self):
         """
         Run testpmd with no blocklisted device.
         """
@@ -73,7 +73,7 @@ class TestBlockList(TestCase):
 
         self.check_blocklisted_ports(out, self.ports)
 
-    def test_bl_oneportblocklisted(self):
+    def test_bl_one_port_blocklisted(self):
         """
         Run testpmd with one port blocklisted.
         """
@@ -83,7 +83,7 @@ class TestBlockList(TestCase):
         )
         self.check_blocklisted_ports(out, self.ports[1:])
 
-    def test_bl_allbutoneportblocklisted(self):
+    def test_bl_all_but_one_port_blocklisted(self):
         """
         Run testpmd with all but one port blocklisted.
         """
