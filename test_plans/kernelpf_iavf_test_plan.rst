@@ -306,45 +306,6 @@ Send packets with vlan tag::
 Check that out from VF contains the vlan tag.
 
 
-Test case: VF without jumboframe
-================================
-
-Ensure tester's port supports sending jumboframe::
-
-    ifconfig 'tester interface' mtu 9000
-
-Launch testpmd for VF port without enabling jumboframe option::
-
-    ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i
-
-    testpmd> set fwd mac
-    testpmd> start
-
-Check packet less than the standard maximum frame (1518) can be received.
-
-Check packet more than the standard maximum frame (1518) can not be received.
-
-Test case: VF with jumboframe
-=============================
-
-Ensure tester's port supports sending jumboframe::
-
-    ifconfig 'tester interface' mtu 9000
-
-Launch testpmd for VF port with jumboframe option::
-
-    ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i --max-pkt-len=3000
-
-    testpmd> set fwd mac
-    testpmd> start
-
-Check that packet length larger than the standard maximum frame (1518) and
-lower or equal to the maximum frame length can be received.
-
-Check that packet length larger than the configured maximum packet can not
-be received.
-
-
 Test case: VF RSS
 =================
 
