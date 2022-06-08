@@ -155,7 +155,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
         self.vm0_testpmd.execute_cmd("quit", "# ")
         time.sleep(3)
 
-    def test_set_valid_vf_queue_num(self):
+    def test_set_valid_vf_queue_num_command_line(self):
         """
         set valid VF queue number in testpmd command-line options
         """
@@ -237,7 +237,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
                     "queue number is too big",
                 )
 
-    def test_set_valid_vf_queue_num_with_function(self):
+    def test_set_valid_vf_queue_num_with_testpmd_command(self):
         random_queue = random.randint(2, 15)
         queue_nums = [1, random_queue, self.max_queue]
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
