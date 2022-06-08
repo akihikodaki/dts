@@ -28,7 +28,7 @@ class TestUserspaceEthtool(TestCase):
         """
         self.ports = self.dut.get_ports()
         self.verify(len(self.ports) >= 2, "No ports found for " + self.nic)
-
+        self.other_700_nic = ["I40E_10G-10G_BASE_T_X722", "I40E_10G-10G_BASE_T_BC"]
         # build sample app
         out = self.dut.build_dpdk_apps("examples/ethtool")
         self.verify("Error" not in out, "compilation error 1")
@@ -263,18 +263,25 @@ class TestUserspaceEthtool(TestCase):
             portinfo["net_dev"].bind_driver(portinfo["ori_driver"])
 
         self.dut.send_expect(self.cmd, "EthApp>", 60)
+        for port in self.ports:
+            tester_port = self.tester.get_local_port(port)
+            intf = self.tester.get_interface(tester_port)
+            self.tester.is_interface_up(intf)
         # ethtool doesn't support port disconnect by tools of linux
         # only detect physical link disconnect status
         verify_pass = True
         verify_msg = ""
-        if not (self.is_eth_series_nic(700) or self.is_eth_series_nic(800)):
+        if not (
+            self.is_eth_series_nic(700)
+            or self.other_700_nic
+            or self.is_eth_series_nic(800)
+        ):
             # check link status dump function
             for port in self.ports:
                 tester_port = self.tester.get_local_port(port)
                 intf = self.tester.get_interface(tester_port)
                 self.tester.send_expect("ip link set dev %s down" % intf, "# ")
-            # wait for link stable
-            time.sleep(5)
+                self.tester.is_interface_down(intf)
 
             out = self.dut.send_expect("link", "EthApp>", 60)
             link_pattern = r"Port (\d+): (.*)"
@@ -299,8 +306,7 @@ class TestUserspaceEthtool(TestCase):
                 tester_port = self.tester.get_local_port(port)
                 intf = self.tester.get_interface(tester_port)
                 self.tester.send_expect("ip link set dev %s up" % intf, "# ")
-            # wait for link stable
-            time.sleep(5)
+                self.tester.is_interface_up(intf)
 
         # check port stats function
         pkt = Packet(pkt_type="UDP")
@@ -447,12 +453,13 @@ class TestUserspaceEthtool(TestCase):
             )
             pkt = Packet(pkt_type="UDP")
             tester_port = self.tester.get_local_port(port)
+            intf = self.tester.get_interface(tester_port)
+            self.tester.is_interface_up(intf)
             self.verify(
                 self.ethapp_check_link_status(index, "Up") == True,
                 "Fail to Open port{}".format(index),
             )
-
-            intf = self.tester.get_interface(tester_port)
+            time.sleep(1)
             pkt.send_pkt(self.tester, tx_port=intf, count=4)
             rx_pkts, tx_pkts = self.strip_portstats(index)
             self.verify(
@@ -512,8 +519,14 @@ class TestUserspaceEthtool(TestCase):
         for index in range(len(self.ports)):
             port = self.ports[index]
             ori_rx_pkts, _ = self.strip_portstats(index)
-            # add sleep time for update link status with Intel® Ethernet 700 Series nic
-            time.sleep(10)
+            # check port link status is up
+            tester_port = self.tester.get_local_port(port)
+            intf = self.tester.get_interface(tester_port)
+            self.tester.is_interface_up(intf)
+            self.verify(
+                self.ethapp_check_link_status(index, "Up") == True,
+                "Fail to Open port{}".format(index),
+            )
             # stop port
             self.dut.send_expect("stop %d" % index, "EthApp>")
             # about ICE_25G-E810C_SFP(8086:1593),there have a kernel driver link status issue
@@ -530,13 +543,12 @@ class TestUserspaceEthtool(TestCase):
                 )
             # check packet not forwarded when port is stop
             pkt = Packet(pkt_type="UDP")
-            tester_port = self.tester.get_local_port(port)
-            intf = self.tester.get_interface(tester_port)
             pkt.send_pkt(self.tester, tx_port=intf, count=4)
             rx_pkts, tx_pkts = self.strip_portstats(index)
             self.verify(rx_pkts == ori_rx_pkts, "Failed to stop port")
             # restart port and check packet can normally forwarded
             self.dut.send_expect("open %d" % index, "EthApp>")
+            self.tester.is_interface_up(intf)
             self.verify(
                 self.ethapp_check_link_status(index, "Up") == True,
                 "Fail to Open port{}".format(index),
@@ -575,7 +587,6 @@ class TestUserspaceEthtool(TestCase):
                 # Intel® Ethernet 800 Series should stop port before set mtu
                 if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
                     self.dut.send_expect("stop %s" % index, "EthApp>")
-
                 # The mtu threshold is 2022,When it is greater than 2022, the open/stop port is required.
                 if mtu > mtu_threshold:
                     if self.nic in [
@@ -592,7 +603,11 @@ class TestUserspaceEthtool(TestCase):
                 if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
                     self.dut.send_expect("open %s" % index, "EthApp>")
 
-                time.sleep(5)
+                self.tester.is_interface_up(intf)
+                self.verify(
+                    self.ethapp_check_link_status(index, "Up") == True,
+                    "Fail to Open port{}".format(index),
+                )
                 ori_rx_pkts, _ = self.strip_portstats(index)
                 pkt_size = mtu + HEADER_SIZE["eth"] + offset
                 pkt = Packet(pkt_type="UDP", pkt_len=pkt_size)
@@ -677,9 +692,8 @@ class TestUserspaceEthtool(TestCase):
         """
         Run after each test case.
         """
-        self.dut.bind_interfaces_linux(self.drivername)
         self.dut.kill_all()
-        pass
+        self.dut.bind_interfaces_linux(self.drivername)
 
     def tear_down_all(self):
         """

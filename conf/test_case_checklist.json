@@ -2134,13 +2134,14 @@
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
                 "IAVF_10G-X722_VF",
-                "I40E_10G-10G_BASE_T_BC"
+                "I40E_10G-10G_BASE_T_BC",
+                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
-            "Bug ID": "",
-            "Comments": "Know dpdk issue, DPDK-2513"
+            "Bug ID": "DPDK-2513, DPDK-30123",
+            "Comments": "the driver not suport this case"
         }
     ],
     "multicast_mode": [
