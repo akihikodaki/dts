@@ -21,7 +21,7 @@ mac_ipv6_tcp_basic_pkt = 'Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::2", dst
 mac_ipv4_udp_basic_pkt = 'Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=1026, dport=1027)/("X"*480)'
 mac_ipv6_udp_basic_pkt = 'Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::2", dst="2001::3")/UDP(sport=1026, dport=1027)/("X"*480)'
 mac_ipv4_sctp_basic_pkt = 'Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2", dst="192.168.0.3")/SCTP(sport=1026, dport=1027)/("X"*480)'
-mac_ipv6_sctp_basic_pkt = 'Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::2", dst="2001::3")/TCP(sport=1026, dport=1027)/("X"*480)'
+mac_ipv6_sctp_basic_pkt = 'Ether(dst="00:00:00:00:01:00")/IPv6(src="2001::2", dst="2001::3")/SCTP(sport=1026, dport=1027)/("X"*480)'
 
 mac_ipv4_changed_pkt = [
     'Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2", dst="192.168.0.5")/("X"*480)',
