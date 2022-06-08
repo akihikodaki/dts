@@ -260,6 +260,9 @@ class TestStatsChecks(TestCase):
         Run after each test case.
         """
         self.dut.kill_all()
+        if self._suite_result.test_case == "test_xstats_check_vf":
+            self.dut.destroy_sriov_vfs_by_port(self.dut_ports[0])
+            self.dut.bind_interfaces_linux(self.drivername)
 
     def tear_down_all(self):
         """
