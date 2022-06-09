@@ -122,7 +122,7 @@ class TestPowerPbf(TestCase):
         self.create_powermonitor_folder()
         # open debug SW when build dpdk
         self.dut.build_install_dpdk(
-            self.target, extra_param="-Dc_args=-DRTE_LIBRTE_POWER_DEBUG"
+            self.target, extra_options="-Dc_args=-DRTE_LIBRTE_POWER_DEBUG"
         )
         # set up vm power management binary process setting
         self.vm_power_mgr = self.prepare_binary("vm_power_manager")
