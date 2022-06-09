@@ -350,64 +350,6 @@ class TestKernelpfIavf(TestCase):
             "vf receive pkt fail with broadcast mac",
         )
 
-    def test_vf_add_pvid(self):
-        """
-        vf can receive packet with right vlan id, can't receive wrong vlan id packet
-        """
-        random_vlan = random.randint(1, MAX_VLAN)
-        self.dut.send_expect(
-            "ip link set %s vf 0 vlan %s" % (self.host_intf, random_vlan), "# "
-        )
-        out = self.dut.send_expect("ip link show %s" % self.host_intf, "# ")
-        self.verify("vlan %d" % random_vlan in out, "Failed to add pvid on VF0")
-
-        self.vm_testpmd.start_testpmd("all")
-        self.vm_testpmd.execute_cmd("set fwd mac")
-        self.vm_testpmd.execute_cmd("set verbose 1")
-        self.vm_testpmd.execute_cmd("start")
-        self.start_tcpdump(self.tester_intf)
-        out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
-        tcpdump_out = self.get_tcpdump_package()
-        self.verify(self.vf_mac in out, "testpmd can't receive packet")
-        receive_pkt = re.findall("vlan %s" % random_vlan, tcpdump_out)
-        self.verify(len(receive_pkt) == 2, "Failed to received vlan packet!!!")
-        wrong_vlan = (random_vlan + 1) % 4096
-        self.start_tcpdump(self.tester_intf)
-        out = self.send_and_getout(vlan=wrong_vlan, pkt_type="VLAN_UDP")
-        tcpdump_out = self.get_tcpdump_package()
-        self.verify(self.vf_mac not in out, "received wrong vlan packet!!!")
-        receive_pkt = re.findall("vlan %s" % wrong_vlan, tcpdump_out)
-        self.verify(len(receive_pkt) == 1, "tester received wrong vlan packet!!!")
-
-        # remove vlan
-        self.vm_testpmd.execute_cmd("stop")
-        self.vm_testpmd.execute_cmd("port stop all")
-        self.dut.send_expect("ip link set %s vf 0 vlan 0" % self.host_intf, "# ")
-        out = self.dut.send_expect("ip link show %s" % self.host_intf, "# ")
-        self.verify("vlan %d" % random_vlan not in out, "Failed to remove pvid on VF0")
-        # send packet without vlan
-        self.vm_testpmd.execute_cmd("port reset 0")
-        self.vm_testpmd.execute_cmd("port start all")
-        self.vm_testpmd.execute_cmd("start")
-        out = self.send_and_getout(vlan=0, pkt_type="UDP")
-        self.verify(self.vf_mac in out, "Not received packet without vlan!!!")
-
-        # send packet with vlan 0
-        out = self.send_and_getout(vlan=0, pkt_type="VLAN_UDP")
-        self.verify(self.vf_mac in out, "Not recevied packet with vlan 0!!!")
-
-        # send random vlan packet
-        self.start_tcpdump(self.tester_intf)
-        out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
-        tcpdump_out = self.get_tcpdump_package()
-        receive_pkt = re.findall("vlan %s" % random_vlan, tcpdump_out)
-        if self.kdriver == "i40e" and self.driver_version < "2.13.10":
-            self.verify(len(receive_pkt) == 2, "fail to tester received vlan packet!!!")
-            self.verify(self.vf_mac in out, "Failed to received vlan packet!!!")
-        else:
-            self.verify(len(receive_pkt) == 1, "fail to tester received vlan packet!!!")
-            self.verify(self.vf_mac not in out, "Received vlan packet!!!")
-
     def send_and_getout(self, vlan=0, pkt_type="UDP"):
 
         if pkt_type == "UDP":
@@ -422,58 +364,6 @@ class TestKernelpfIavf(TestCase):
         out = self.vm_dut.get_session_output(timeout=2)
 
         return out
-
-    def test_vf_vlan_rx(self):
-        self.vm_testpmd.start_testpmd("all")
-        self.vm_testpmd.execute_cmd("set fwd rxonly")
-        self.vm_testpmd.execute_cmd("set verbose 1")
-        self.vm_testpmd.execute_cmd("vlan set filter on 0")
-        self.vm_testpmd.execute_cmd("vlan set strip on 0")
-        self.vm_testpmd.execute_cmd("start")
-        # send packet without vlan, vf can receive packet
-        out = self.send_and_getout(pkt_type="UDP")
-        self.verify(self.vf_mac in out, "Failed to received without vlan packet!!!")
-
-        # send packet vlan 0, vf can receive packet
-        out = self.send_and_getout(vlan=0, pkt_type="VLAN_UDP")
-        self.verify(self.vf_mac in out, "Failed to received vlan 0 packet!!!")
-
-        self.vm_testpmd.execute_cmd("rx_vlan add 1 0")
-
-        # send packet vlan 1, vf can receive packet
-        self.start_tcpdump(self.tester_intf)
-        out = self.send_and_getout(vlan=1, pkt_type="VLAN_UDP")
-        tcpdump_out = self.get_tcpdump_package()
-        receive_pkt = re.findall("vlan 1", tcpdump_out)
-        self.verify(len(receive_pkt) == 1, "Failed to received vlan packet!!!")
-        self.verify(self.vf_mac in out, "Failed to received vlan 1 packet!!!")
-
-        # send random vlan packet, vf can not receive packet
-        random_vlan = random.randint(1, MAX_VLAN)
-        out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
-        self.verify(self.vf_mac not in out, "fail to vf receive pkt")
-
-        # send max vlan 4095, vf can not receive packet
-        out = self.send_and_getout(vlan=MAX_VLAN, pkt_type="VLAN_UDP")
-        self.verify(self.vf_mac not in out, "received max vlan packet!!!")
-
-        # remove vlan
-        self.vm_testpmd.execute_cmd("rx_vlan rm 1 0")
-
-        # send packet without vlan, vf can receive packet
-        out = self.send_and_getout(pkt_type="UDP")
-        self.verify(self.vf_mac in out, "Failed to received without vlan packet!!!")
-
-        # send packet vlan 0, vf can receive packet
-        out = self.send_and_getout(vlan=0, pkt_type="VLAN_UDP")
-        self.verify(self.vf_mac in out, "Failed to received vlan 0 packet!!!")
-
-        # send vlan 1 packet, vf can receive packet
-        out = self.send_and_getout(vlan=1, pkt_type="VLAN_UDP")
-        if self.kdriver == "i40e" and self.driver_version < "2.13.10":
-            self.verify(self.vf_mac in out, "received vlan 1 packet!!!")
-        else:
-            self.verify(self.vf_mac not in out, "Received vlan 1 packet!!!")
 
     def test_vf_vlan_insertion(self):
         self.vm_testpmd.start_testpmd("all")
@@ -744,21 +634,6 @@ class TestKernelpfIavf(TestCase):
         bad_l4csum = self.vm_testpmd.get_pmd_value("Bad-l4csum:", out)
         self.verify(bad_ipcsum == 1, "Bad-ipcsum check error")
         self.verify(bad_l4csum == 2, "Bad-ipcsum check error")
-
-    def test_vf_hw_checksum_offload(self):
-        self.vm_testpmd.start_testpmd("all")
-        self.enable_hw_checksum()
-        self.vm_testpmd.execute_cmd("port start all")
-        self.vm_testpmd.execute_cmd("set verbose 1")
-        self.vm_testpmd.execute_cmd("start")
-        self.checksum_verify()
-
-    def test_vf_sw_checksum_offload(self):
-        self.vm_testpmd.start_testpmd("all")
-        self.enable_sw_checksum()
-        self.vm_testpmd.execute_cmd("port start all")
-        self.vm_testpmd.execute_cmd("start")
-        self.checksum_verify()
 
     def test_vf_tso(self):
         self.tester.send_expect(
@@ -1050,8 +925,6 @@ class TestKernelpfIavf(TestCase):
             time.sleep(1)
         if self.running_case == "test_vf_mac_filter":
             self.destroy_vm_env()
-        if self.running_case == "test_vf_add_pvid":
-            self.dut.send_expect("ip link set %s vf 0 vlan 0" % self.host_intf, "# ")
         self.dut.send_expect("ip link set dev %s vf 0 trust off" % self.host_intf, "# ")
 
     def tear_down_all(self):
