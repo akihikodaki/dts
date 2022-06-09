@@ -188,73 +188,6 @@ Disable VF promisc mode::
 Send packet with broadcast address ff:ff:ff:ff:ff:ff, and check VF can
 receive the packet
 
-
-Test case: add port based vlan on VF
-====================================
-Add pvid on VF0 from PF device::
-
-    ip link set $PF_INTF vf 0 vlan 2
-
-Send packet with same vlan id and check VF can receive
-
-Send packet with wrong vlan id and check VF can't receive
-
-Check PF device shows correct pvid setting::
-
-    ip link show $PF_INTF
-    ...
-    vf 0 MAC 00:01:23:45:67:89, vlan 2, spoof checking on, link-state auto
-
-
-Test case: remove port based vlan on VF
-=======================================
-Remove added vlan from PF device::
-
-    ip link set $PF_INTF vf 0 vlan 0
-
-Start testpmd and send packet without vlan and check VF can receive
-
-Set packet with vlan id 0 and check VF can receive
-
-Set packet with random id 1-4095 and check VF can receive
-
-Check PF device doesn't show pvid setting::
-
-    ip link show $PF_INTF
-
-Test case: VF tagged vlan RX
-============================
-
-Make sure port based vlan disabled on VF0
-
-Start testpmd with rxonly mode::
-
-     testpmd> set fwd rxonly
-     testpmd> set verbose 1
-     testpmd> start
-
-Send packet without vlan and check VF can receive
-
-Send packet with vlan 0 and check VF can receive
-
-Add vlan from VF driver::
-
-     testpmd> rx_vlan add 1 0
-
-Send packet with vlan 1 and check VF can receive
-
-Rerun above with random vlan and max vlan 4095, check VF can't receive
-
-Remove vlan on VF0::
-
-     testpmd> rx_vlan rm 1 0
-
-Send packet with vlan 0 and check VF can receive
-
-Send packet without vlan and check VF can receive
-
-Send packet with vlan 1 and check VF can receive
-
 Test case: VF vlan insertion
 ============================
 
@@ -386,55 +319,6 @@ Show port rss hash key, check the key is same to configured key::
 Send ipv4 packets, check RSS hash value is different::
 
     p=Ether(dst="56:0A:EC:50:A4:28")/IP(src="1.2.3.4")/Raw(load='X'*30)
-
-
-Test case: VF HW checksum offload
-=================================
-
-Enable HW checksum, set csum forward::
-
-    testpmd> port stop all
-    testpmd> csum set ip hw 0
-    testpmd> csum set udp hw 0
-    testpmd> csum set tcp hw 0
-    testpmd> csum set sctp hw 0
-    testpmd> set fwd csum
-    testpmd> set verbose 1
-    testpmd> port start all
-    testpmd> start
-
-Send packets with incorrect checksum to vf port, verify that the packets
-can be received by VF port and checksum error reported,
-the packets forwarded by VF port have the correct checksum value::
-
-    p=Ether()/IP(chksum=0x1234)/UDP()/Raw(load='X'*20)
-    p=Ether()/IP()/TCP(chksum=0x1234)/Raw(load='X'*20)
-    p=Ether()/IP()/UDP(chksum=0x1234)/Raw(load='X'*20)
-
-
-Test case: VF SW checksum offload
-=================================
-
-Enable SW checksum, set csum forward::
-
-    testpmd> port stop all
-    testpmd> csum set ip sw 0
-    testpmd> csum set udp sw 0
-    testpmd> csum set tcp sw 0
-    testpmd> csum set sctp sw 0
-    testpmd> set fwd csum
-    testpmd> set verbose 1
-    testpmd> port start all
-    testpmd> start
-
-Send packets with incorrect checksum to vf port, verify that the packets
-can be received by VF port and checksum error reported, the packets
-forwarded by VF port have the correct checksum value::
-
-    p=Ether()/IP(chksum=0x1234)/UDP()/Raw(load='X'*20)
-    p=Ether()/IP()/TCP(chksum=0x1234)/Raw(load='X'*20)
-    p=Ether()/IP()/UDP(chksum=0x1234)/Raw(load='X'*20)
-
 
 Test case: VF TSO
 =================
