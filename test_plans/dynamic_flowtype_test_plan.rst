@@ -59,41 +59,28 @@ Prerequisites
    enable multi-queues. In general, PF's max queue is 64::
 
     ./<build>/app/dpdk-testpmd -c f -n 4 -- -i --port-topology=chained --txq=64 --rxq=64
-	 
-3. Set rxonly forwarding and enable output
 
-4. Scapy vesrion >= 2.3
-
-
-Test Case: Load dynamic device personalization 
-================================================
-
-1. Stop testpmd port before loading profile::
+3. Load profile gtp.pkgo which is a binary file::
 
     testpmd > port stop all
-
-2. Load profile gtp.pkgo which is a binary file::
-
     testpmd > ddp add (port_id) (profile_path)
-	
-3. Start testpmd port::
-
     testpmd > port start all
 
-Note:
-	
-1. Gtp.pkgo profile is not released by ND yet, only have engineer version for
-   internal use so far. Plan to keep public reference profiles at Intel
-   Developer Zone, release versions of profiles and supply link later.
-	
-2. Loading DDP profile is the prerequisite for below dynamic mapping relative 
-   cases, operate global reset or lanconf tool to recover original setting. 
-   Global reset trigger reg is 0xb8190, first cmd is core reset, second cmd 
-   is global reset::
-    
-    testpmd> write reg 0 0xb8190 1
-    testpmd> write reg 0 0xb8190 2
-	  
+ .. note::
+
+   1. Gtp.pkgo profile is not released by ND yet, only have engineer version for
+      internal use so far. Plan to keep public reference profiles at Intel
+      Developer Zone, release versions of profiles and supply link later.
+
+   2. Loading DDP profile is the prerequisite for below dynamic mapping relative
+      cases, operate global reset or lanconf tool to recover original setting.
+      Global reset trigger reg is 0xb8190, cmd is global reset:
+
+        testpmd > write reg 0 0xb8190 2
+
+4. Set rxonly forwarding and enable output
+
+5. Scapy vesrion >= 2.3
 
 Test Case: Check profile info correctness
 =========================================
