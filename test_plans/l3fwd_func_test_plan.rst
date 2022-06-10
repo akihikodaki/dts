@@ -130,7 +130,7 @@ Test Case 1: 1 port 1 queue with default setting
 
    *  The lookup method is lpm and use default table. DUT mac address is 40:A6:B7:7B:3F:00, the egress packets dst mac is 02:00:00:00:00:00::
 
-         Neither LPM, EM, or FIB selected, defaulting to LPM
+         Neither ACL, LPM, EM, or FIB selected, defaulting to LPM
          L3FWD: Missing 1 or more rule files, using default instead
 
    *  Every port creates 1 rx queue and 1 tx queue::

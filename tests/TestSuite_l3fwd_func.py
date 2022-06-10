@@ -139,7 +139,7 @@ class TestL3fwdFunc(TestCase):
         params = '-p 0x1 --config="(0,0,1)" --eth-dest=0,b4:96:91:9f:64:b9'
         out = self.launch_l3fwd(eal_params, params)
         mesg_list = [
-            "Neither LPM, EM, or FIB selected, defaulting to LPM",
+            "Neither ACL, LPM, EM, or FIB selected, defaulting to LPM",
             "L3FWD: Missing 1 or more rule files, using default instead",
         ]
         self.check_l3fwd_message(out, mesg_list)
