@@ -4887,6 +4887,7 @@ class TestGeneric_flow_api(TestCase):
             "created",
         )
 
+        self.pmdout.wait_link_status_up(0)
         self.sendpkt(
             pktstr='Ether(dst="%s")/IP(src="2.2.2.5",dst="2.2.2.4")/TCP(dport=80,flags="S")/Raw(load="\x50"*8962)'
             % self.pf_mac
