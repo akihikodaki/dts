@@ -355,7 +355,7 @@ class TestL3fwdacl(TestCase):
             extra_args = '--alg="scalar"'
 
         cmdline = (
-            '%s %s -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" %s'
+            '%s %s -- -p %s --lookup acl --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" %s --parse-ptype'
             % (
                 self.app_l3fwd_acl_path,
                 self.eal_para,
@@ -447,6 +447,9 @@ class TestL3fwdacl(TestCase):
         """
         tx_interface = self.tester.get_interface(tx_port)
         rx_interface = self.tester.get_interface(rx_port)
+        # wait tester's interface up
+        for intfx in [tx_interface, rx_interface]:
+            self.tester.is_interface_up(intf=intfx)
         if rule["sIpAddr"] != "ALL":
             rule["sIpAddr"] = self.create_ipv4_ip_not_match(rule["sIpAddr"])
         if rule["dIpAddr"] != "ALL":
@@ -478,6 +481,9 @@ class TestL3fwdacl(TestCase):
         """
         tx_interface = self.tester.get_interface(tx_port)
         rx_interface = self.tester.get_interface(rx_port)
+        # wait tester's interface up
+        for intfx in [tx_interface, rx_interface]:
+            self.tester.is_interface_up(intf=intfx)
         if rule["sIpAddr"] != "ALL":
             rule["sIpAddr"] = self.create_ipv6_ip_not_match(rule["sIpAddr"])
         if rule["dIpAddr"] != "ALL":
@@ -499,7 +505,6 @@ class TestL3fwdacl(TestCase):
         pkt = packet.Packet()
         pkt.append_pkt(ethernet_str)
         pkt.send_pkt(crb=self.tester, tx_port=tx_interface, timeout=30)
-
         out = self.remove_dhcp_from_revpackets(inst)
         return len(out)
 
@@ -509,6 +514,9 @@ class TestL3fwdacl(TestCase):
         """
         tx_interface = self.tester.get_interface(tx_port)
         rx_interface = self.tester.get_interface(rx_port)
+        # wait tester's interface up
+        for intfx in [tx_interface, rx_interface]:
+            self.tester.is_interface_up(intf=intfx)
         etherStr = self.create_ipv4_rule_string(rule, "Ether")
 
         dst_filter = {"layer": "ether", "config": {"dst": "not ff:ff:ff:ff:ff:ff"}}
@@ -526,6 +534,9 @@ class TestL3fwdacl(TestCase):
         """
         tx_interface = self.tester.get_interface(tx_port)
         rx_interface = self.tester.get_interface(rx_port)
+        # wait tester's interface up
+        for intfx in [tx_interface, rx_interface]:
+            self.tester.is_interface_up(intf=intfx)
         etherStr = self.create_ipv6_rule_string(rule, "Ether")
 
         fil = [{"layer": "ether", "config": {"dst": "not ff:ff:ff:ff:ff:ff"}}]
@@ -533,7 +544,6 @@ class TestL3fwdacl(TestCase):
         pkt = packet.Packet()
         pkt.append_pkt(etherStr)
         pkt.send_pkt(crb=self.tester, tx_port=tx_interface, timeout=30)
-
         out = self.remove_dhcp_from_revpackets(inst)
         return len(out)
 
@@ -807,7 +817,7 @@ class TestL3fwdacl(TestCase):
         self.create_acl_ipv4_db(rule_list)
 
         cmdline = (
-            '%s %s -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s"'
+            '%s %s -- -p %s --lookup acl --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" --parse-ptype'
             % (
                 self.app_l3fwd_acl_path,
                 self.eal_para,
@@ -834,7 +844,7 @@ class TestL3fwdacl(TestCase):
         self.create_acl_ipv6_db(rule_list)
 
         cmdline = (
-            '%s %s -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s"'
+            '%s %s -- -p %s --lookup acl --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" --parse-ptype'
             % (
                 self.app_l3fwd_acl_path,
                 self.eal_para,
@@ -867,14 +877,17 @@ class TestL3fwdacl(TestCase):
         cores = self.get_core_list()
         self.verify(cores is not None, "Insufficient cores for speed testing")
 
-        self.eal_para = self.dut.create_eal_parameters(
-            cores=self.get_core_list(), other_eal_param="force-max-simd-bitwidth"
-        )
+        self.eal_para = self.dut.create_eal_parameters(cores=self.get_core_list())
         self.core_mask = utils.create_mask(cores)
         print("Core mask: %s" % self.core_mask)
-
-        if self.dut.dpdk_version >= "20.11.0":
-            self.eal_para += " --force-max-simd-bitwidth=0"
+        # When execution.cfg set rx_mode=xxx, it should have priority.
+        print("eal_para = {}".format(self.eal_para))
+        if "force-max-simd-bitwidth" in self.eal_para:
+            pass
+        else:
+            # DTS commit 68bb1b92("tests/l3fwdacl: try to use highest available method") when dpdk > 20.11.0 by konstantin.ananyev@intel.com
+            if self.dut.dpdk_version >= "20.11.0":
+                self.eal_para += " --force-max-simd-bitwidth=0"
 
         valid_ports = [port for port in ports if self.tester.get_local_port(port) != -1]
         self.verify(
@@ -889,11 +902,8 @@ class TestL3fwdacl(TestCase):
 
         TestL3fwdacl.default_rule["Port"] = self.dut_ports[1]
 
-        # compile l3fwd-acl
-        out = self.dut.build_dpdk_apps("examples/l3fwd-acl")
-        self.app_l3fwd_acl_path = self.dut.apps_name["l3fwd-acl"]
-        self.verify("Error" not in out, "compilation error 1")
-        self.verify("No such file" not in out, "compilation error 2")
+        # dpdk22.07-rc1 commit 6de0ea50("examples/l3fwd: merge l3fwd-acl example"), compile l3fwd example.
+        self.app_l3fwd_acl_path = self.dut.build_dpdk_apps("examples/l3fwd")
 
     def test_l3fwdacl_acl_rule(self):
         """
@@ -1025,8 +1035,7 @@ class TestL3fwdacl(TestCase):
             TestL3fwdacl.lpm_rule_list_ipv6[1], tx_port, rx_port
         )
 
-        self.dut.send_expect("^C", "#", 20)
-
+        self.dut.send_expect("^C", "#", 30)
         self.verify(out1 >= 1, "Rx port0 not receive expected packet")
         self.verify(out2 >= 1, "Rx port1 not receive expected packet")
 
@@ -1103,7 +1112,7 @@ class TestL3fwdacl(TestCase):
         self.create_acl_ipv4_db(rule_list_ipv4)
 
         cmdline = (
-            '%s %s -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" --alg="scalar"'
+            '%s %s -- -p %s --lookup acl --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" --alg="scalar" --parse-ptype'
             % (
                 self.app_l3fwd_acl_path,
                 self.eal_para,
@@ -1123,7 +1132,7 @@ class TestL3fwdacl(TestCase):
         self.create_acl_ipv6_db(rule_list_ipv6)
 
         cmdline = (
-            '%s %s -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" --alg="scalar"'
+            '%s %s -- -p %s --lookup acl --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" --alg="scalar" --parse-ptype'
             % (
                 self.app_l3fwd_acl_path,
                 self.eal_para,
