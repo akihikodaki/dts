@@ -356,7 +356,7 @@ class TestShutdownApi(TestCase):
         self.dut.send_expect("start", "testpmd> ")
         self.check_forwarding()
 
-    def test_set_promiscuousmode(self):
+    def test_set_promiscuous_mode(self):
         """
         Promiscuous mode.
         """
@@ -397,7 +397,7 @@ class TestShutdownApi(TestCase):
         self.dut.send_expect("start", "testpmd> ")
         self.dut.send_expect("quit", "# ", 30)
 
-    def test_set_allmulticast(self):
+    def test_set_allmulticast_mode(self):
         """
         Allmulticast mode.
         """
@@ -676,7 +676,7 @@ class TestShutdownApi(TestCase):
                 "Wrong VF link type reported by the self.tester.",
             )
 
-    def test_enable_disablejumbo(self):
+    def test_enable_disable_jumbo(self):
         """
         Enable/Disable Jumbo Frames.
         """
@@ -747,7 +747,7 @@ class TestShutdownApi(TestCase):
         self.check_forwarding(pktSize=jumbo_size)
         self.check_forwarding(pktSize=jumbo_size + 1, received=False)
 
-    def test_enable_disablerss(self):
+    def test_enable_disable_rss(self):
         """
         Enable/Disable RSS.
         """
@@ -765,7 +765,7 @@ class TestShutdownApi(TestCase):
         self.dut.send_expect("start", "testpmd> ")
         self.check_forwarding()
 
-    def test_change_numberrxdtxd(self):
+    def test_change_number_rxd_txd(self):
         """
         Change numbers of rxd and txd.
         """
@@ -787,7 +787,7 @@ class TestShutdownApi(TestCase):
         self.dut.send_expect("start", "testpmd> ")
         self.check_forwarding()
 
-    def test_change_numberrxdtxdaftercycle(self):
+    def test_change_number_rxd_txd_after_cycle(self):
         """
         Change the Number of rxd/txd.
         """
