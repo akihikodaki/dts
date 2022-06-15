@@ -5,6 +5,8 @@
 Shutdown API Feature Tests
 ==========================
 
+Description
+===========
 This tests for Shutdown API feature can be run on linux userspace. It
 will check if NIC port can be stopped and restarted without exiting the
 application process. Furthermore, it will check if it can reconfigure
@@ -18,15 +20,15 @@ and still be set at the command line when launching the application in
 order to be compatible with previous test framework.
 
 Prerequisites
--------------
+=============
 
 If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
 using vfio, use the following commands to load the vfio driver and bind it
 to the device under test::
 
-   modprobe vfio
-   modprobe vfio-pci
-   usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
+    modprobe vfio
+    modprobe vfio-pci
+    usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
 
 Assume port A and B are connected to the remote ports, e.g. packet generator.
 To run the testpmd application in linuxapp environment with 4 lcores,
@@ -34,8 +36,11 @@ To run the testpmd application in linuxapp environment with 4 lcores,
 
     $ ./app/dpdk-testpmd -c 0xf -n 4 -- -i
 
-Test Case: Stop and Restart
----------------------------
+Test Case
+=========
+
+Test Case 1: Stop and restart
+-----------------------------
 
 1. If the testpmd application is not launched, run it as above command. Follow
    below steps to check if it works well after re-configuring all ports without
@@ -51,8 +56,8 @@ Test Case: Stop and Restart
    transmit and receive packets, and check if testpmd is able to receive and
    forward packets successfully.
 
-Test Case: Reset RX/TX Queues
------------------------------
+Test Case 2: Reset RX/TX queues
+-------------------------------
 
 1. If the testpmd application is not launched, run it as above command. Follow
    below steps to check if it works well after reconfiguring all ports without
@@ -66,8 +71,8 @@ Test Case: Reset RX/TX Queues
    and receive packets, and check if testpmd is able to receive and forward packets
    successfully.
 
-Test Case: Set promiscuous mode
--------------------------------
+Test Case 3: Set promiscuous mode
+---------------------------------
 
 1. If the testpmd application is not launched, run it as above command. Follow
    below steps to check if promiscuous mode setting works well after reconfiguring
@@ -85,8 +90,8 @@ Test Case: Set promiscuous mode
    and receive packets, and check that testpmd is able to receive and forward packets
    successfully.
 
-Test Case: Set allmulticast mode
---------------------------------
+Test Case 4: Set allmulticast mode
+----------------------------------
 
 1. If the testpmd application is not launched, run it as above command. Follow
    below steps to check if allmulticast mode setting works well after reconfiguring
@@ -109,8 +114,8 @@ Test Case: Set allmulticast mode
 17. Send packets with unicast dst not same to port address.
 18. Check that testpmd is able to receive and forward packets successfully.
 
-Test Case: Reconfigure All Ports With The Same Configurations (CRC)
--------------------------------------------------------------------
+Test Case 5: Reconfigure all ports with the same configurations (CRC)
+---------------------------------------------------------------------
 
 1. If the testpmd application is not launched, run it as above command. Follow
    below steps to check if it works well after reconfiguring all ports without
@@ -124,8 +129,8 @@ Test Case: Reconfigure All Ports With The Same Configurations (CRC)
    forward packets successfully. Check that the packet received is 4 bytes
    smaller than the packet sent.
 
-Test Case: Change Link Speed
-----------------------------
+Test Case 6: Change link speed
+------------------------------
 
 1. If the testpmd application is not launched, run it as above command. Follow
    below steps to check if it works well after reconfiguring all ports without
@@ -139,8 +144,8 @@ Test Case: Change Link Speed
    successfully.
 7. Repeat this process for every compatible speed depending on the NIC driver.
 
-Test Case: Change Link Speed VF
--------------------------------
+Test Case 7: Change link speed VF
+---------------------------------
 This case support all the nic with driver i40e and ixgbe.
 
 1. bind a PF to DPDK::
@@ -160,8 +165,8 @@ This case support all the nic with driver i40e and ixgbe.
    successfully.
 8. Repeat this process for every compatible speed depending on the NIC driver.
 
-Test Case: Enable/Disable Jumbo Frame
--------------------------------------
+Test Case 8: Enable/Disable jumbo frame
+---------------------------------------
 
 1. If the testpmd application is not launched, run it as above command. Follow
    below steps to check if it works well after reconfiguring all ports without
@@ -173,8 +178,8 @@ Test Case: Enable/Disable Jumbo Frame
    and receive packets, and check if testpmd is able to receive and forward packets
    successfully. Check this with the following packet sizes: 2047, 2048 & 2049. Only the third one should fail.
 
-Test Case: Enable/Disable RSS
------------------------------
+Test Case 9: Enable/Disable RSS
+-------------------------------
 
 1. If the testpmd application is not launched, run it as above command. Follow
    below steps to check if it works well after reconfiguring all ports without
@@ -186,8 +191,8 @@ Test Case: Enable/Disable RSS
    and receive packets, and check if testpmd is able to receive and forward packets
    successfully.
 
-Test Case: Change the Number of rxd/txd
----------------------------------------
+Test Case 10: Change the number of rxd/txd
+------------------------------------------
 
 1. If the testpmd application is not launched, run it as above command. Follow
    below steps to check if it works well after reconfiguring all ports without
@@ -201,8 +206,66 @@ Test Case: Change the Number of rxd/txd
    and receive packets, and check if testpmd is able to receive and forward packets
    successfully.
 
-Test Case: link stats
----------------------
+Test Case 11: Change the number of rxd/txd after cycle
+------------------------------------------------------
+
+1. If the testpmd application is not launched, run it as above command. Follow
+   below steps to check if it works well after reconfiguring all ports without
+   changing any configurations.
+2. Run ``port stop all`` to stop all ports.
+3. Run ``port config all rxd 1024`` to change the rx descriptors.
+4. Run ``port config all txd 1024`` to change the tx descriptors.
+5. Run ``port start all`` to restart all ports.
+6. Check with ``show config rxtx`` that the descriptors were actually changed.
+7. Run ``start`` again to restart the forwarding, then start packet generator to transmit
+   and receive packets, and check if testpmd is able to receive and forward packets
+   successfully.
+8. Run ``stop`` to stop the forwarding.
+9. Run ``port stop all`` to stop all ports.
+10. Run ``port start all`` to restart all ports.
+11. Check again with ``show config rxtx`` that the descriptors were actually changed.
+12. Run ``start`` again to restart the forwarding, then start packet generator to transmit
+    and receive packets, and check if testpmd is able to receive and forward packets
+    successfully.
+
+Test Case 12: Change thresholds
+-------------------------------
+
+1. If the testpmd application is not launched, run it as above command. Follow
+   below steps to check if it works well after reconfiguring all ports without
+   changing any configurations.
+2. Run ``port stop all`` to stop all ports.
+3. If NIC is IXGBE_10G-X550EM_X_10G_T, IXGBE_10G-X550T, IXGBE_10G-X540T, IXGBE_10G-82599_SFP,
+   Run ``port config all rxd 1024`` to change the rx descriptors,
+   Run ``port config all txd 1024`` to change the tx descriptors.
+4. Run ``port config all rxfreet 32`` to change the rx descriptors.
+5. Run ``port config all txpt 64`` to change the tx descriptors.
+6. Run ``port config all txht 64`` to change the tx descriptors.
+7. If NIC is IGC-I225_LM, Run ``port config all txwt 16`` to change the tx descriptors.
+   Else, Run ``port config all txwt 0`` to change the tx descriptors.
+8. Run ``port start all`` to restart all ports.
+9. Check with ``show config rxtx`` that the descriptors were actually changed.
+10. Run ``start`` again to restart the forwarding, then start packet generator to transmit
+    and receive packets, and check if testpmd is able to receive and forward packets
+    successfully.
+
+Test Case 13: Stress test
+-------------------------
+
+1. If the testpmd application is not launched, run it as above command. Follow
+   below steps to check if it works well after reconfiguring all ports without
+   changing any configurations.
+2. Run ``port stop all`` to stop all ports.
+3. Run ``port start all`` to restart all ports.
+4. Check with ``show config rxtx`` that the descriptors were actually changed.
+5. Run ``start`` again to restart the forwarding, then start packet generator to transmit
+   and receive packets, and check if testpmd is able to receive and forward packets
+   successfully.
+6. Run ``stop`` to stop the forwarding.
+7. Repeat step 2~6 for 10 times stress test.
+
+Test Case 14: link stats
+------------------------
 
 1. If the testpmd application is not launched, run it as above command. Follow
    below steps to check if it works well after reconfiguring all ports without
@@ -217,8 +280,8 @@ Test Case: link stats
 8. Start packet generator to transmit and receive packets
    successfully.
 
-Test Case: RX/TX descriptor status
-----------------------------------
+Test Case 15: RX/TX descriptor status
+-------------------------------------
 
 1. Lauch testpmd with rx/tx queue number ``--txq=16 --rxq=16`` and rx/tx descriptor size ``--txd=4096 --rxd=4096``
 2. Run ``show port 0 rxq * desc * status`` to check rx descriptor status.
