@@ -136,19 +136,6 @@ test steps
 
 2.Following test case 1 step 2 and step 3.
 
-.. warning::
-
-   `The bug <https://bugs.dpdk.org/show_bug.cgi?id=1002>_` impacts the following cases::
-
-      DPDK:debug-tests/dump_struct_sizes
-      DPDK:debug-tests/dump_mempool
-      DPDK:debug-tests/dump_malloc_stats
-      DPDK:debug-tests/dump_devargs
-      DPDK:debug-tests/dump_log_types
-      DPDK:debug-tests/dump_ring
-      DPDK:debug-tests/dump_physmem
-      DPDK:debug-tests/dump_memzone
-
 Test case 4: test_extra
 -------------------------------
 This section explains how to run the meson tests for extra-tests.
