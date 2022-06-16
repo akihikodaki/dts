@@ -103,6 +103,8 @@ class TestIPPipeline(TestCase):
 
         self.tcpdump_start_sniff(rx_interface, filters)
 
+        # check that the link status of the port sending the packet is up
+        self.tester.is_interface_up(tx_interface)
         # Prepare the pkts to be sent
         self.tester.scapy_foreground()
         self.tester.scapy_append('pkt = rdpcap("%s")' % (pcap_file))
@@ -1036,7 +1038,8 @@ class TestIPPipeline(TestCase):
         """
         Run after each test case.
         """
-        pass
+        # close app
+        self.dut.send_expect("^C", "# ")
 
     def tear_down_all(self):
         """
