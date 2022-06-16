@@ -611,6 +611,7 @@ class TestVxlan(TestCase):
         config.outer_mac_dst = self.dut_port_mac
         config.create_pcap()
 
+        self.pmdout.wait_link_status_up(self.dut_port)
         # save the capture packet into pcap format
         inst = self.tester.tcpdump_sniff_packets(self.recv_iface)
         config.send_pcap(self.tester_iface)
@@ -869,7 +870,6 @@ class TestVxlan(TestCase):
 
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
-        self.pmdout.wait_link_status_up(self.dut_port)
         # check normal ipv6 packet
         self.send_and_check(
             outer_ip6_src="FE80:0:0:0:0:0:0:0", outer_ip6_dst="FE80:0:0:0:0:0:0:1"
