@@ -62,7 +62,6 @@ class TestPipeline(TestCase):
             for line in input:
                 time = TIMESTAMP.match(line)
                 if time:
-                    # print("time match")
                     if flag_line_completed == 1:
                         flag_line_completed = 0
                         output.write("\n# Packet {}\n".format(i))
@@ -72,14 +71,11 @@ class TestPipeline(TestCase):
                     continue
                 payload = PAYLOAD.match(line)
                 if payload:
-                    # print("payload match")
                     address = payload.group(1)
                     hex_data = payload.group(2).replace(" ", "")
                     hex_data = " ".join(
                         "".join(part) for part in self.pair_hex_digits(hex_data, 2, " ")
                     )
-                    # print('{}  {}'.format(address, hex_data))
-                    # print(len(hex_data))
                     if len(hex_data) < 47:
                         output.write("{:0>6}  {:<47}\n".format(address, hex_data))
                         output.write("\n")
@@ -443,7 +439,6 @@ class TestPipeline(TestCase):
                 sleep(1)
                 msg = s.recv(BUFFER_SIZE)
                 response = msg.decode()
-                # print('Rxd: ' + response)
                 if "pipeline>" not in response:
                     s.close()
                     self.dut.send_expect("^C", "# ", 20)
@@ -465,7 +460,6 @@ class TestPipeline(TestCase):
         sleep(0.1)
         msg = socket.recv(BUFFER_SIZE)
         response = msg.decode()
-        # print('Rxd: ' + response)
         if expected_rsp not in response:
             socket.close()
             self.dut.send_expect("^C", "# ", 20)
@@ -638,6 +632,58 @@ class TestPipeline(TestCase):
         in_pcap = ["pipeline/extract_emit_009/pcap_files/in_1.txt"] * 4
         out_pcap = ["pipeline/extract_emit_009/pcap_files/out_1.txt"] * 4
         filters = ["tcp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_extract_emit_010(self):
+
+        cli_file = "/tmp/pipeline/extract_emit_010/extract_emit_010.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/extract_emit_010/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/extract_emit_010/pcap_files/out_1.txt"] * 4
+        filters = ["less 120"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_extract_emit_011(self):
+
+        cli_file = "/tmp/pipeline/extract_emit_011/extract_emit_011.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/extract_emit_011/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/extract_emit_011/pcap_files/out_1.txt"] * 4
+        filters = ["less 120"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_extract_emit_012(self):
+
+        cli_file = "/tmp/pipeline/extract_emit_012/extract_emit_012.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/extract_emit_012/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/extract_emit_012/pcap_files/out_1.txt"] * 4
+        filters = ["less 120"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_extract_emit_013(self):
+
+        cli_file = "/tmp/pipeline/extract_emit_013/extract_emit_013.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/extract_emit_013/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/extract_emit_013/pcap_files/out_1.txt"] * 4
+        filters = ["udp and less 160"] * 4
         tx_port = [0, 1, 2, 3]
         rx_port = [0, 1, 2, 3]
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
@@ -2668,6 +2714,82 @@ class TestPipeline(TestCase):
         tx_port = [0, 1, 2, 3]
         rx_port = [0, 1, 2, 3]
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_005(self):
+
+        cli_file = "/tmp/pipeline/table_005/table_005.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/table_005/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_005/pcap_files/out_1.txt"] * 4
+        filters = ["tcp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_006(self):
+
+        cli_file = "/tmp/pipeline/table_006/table_006.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/table_006/pcap_files/in_1.txt"]
+        out_pcap = [
+            "pipeline/table_006/pcap_files/out_0.txt",
+            "pipeline/table_006/pcap_files/out_1.txt",
+        ]
+        filters = ["udp port 4789 and less 120", "tcp"]
+        tx_port = [1]
+        rx_port = [0, 1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_007(self):
+
+        cli_file = "/tmp/pipeline/table_007/table_007.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/table_007/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_007/pcap_files/out_1.txt"] * 4
+        filters = ["tcp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_008(self):
+
+        cli_file = "/tmp/pipeline/table_008/table_008.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(1)
+        s = self.connect_cli_server()
+
+        in_pcap = ["pipeline/table_008/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_008/pcap_files/out_1.txt"] * 4
+        filters = ["tcp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 table table_008_table default "
+            "/tmp/pipeline/table_008/cmd_files/cmd_2.txt\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/table_008/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_008/pcap_files/out_2.txt"] * 4
+        filters = ["tcp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+
+        sleep(2)
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
         self.dut.send_expect("^C", "# ", 20)
 
     def test_reg_001(self):
@@ -5171,6 +5293,446 @@ class TestPipeline(TestCase):
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
         self.dut.send_expect("^C", "# ", 20)
 
+    def test_learner_003(self):
+
+        cli_file = "/tmp/pipeline/learner_003/learner_003.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/learner_003/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/learner_003/pcap_files/out_1.txt"]
+        filters = ["tcp"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        in_pcap = ["pipeline/learner_003/pcap_files/in_2.txt"]
+        out_pcap = ["pipeline/learner_003/pcap_files/out_2.txt"]
+        filters = ["tcp"]
+        tx_port = [1]
+        rx_port = [1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        in_pcap = ["pipeline/learner_003/pcap_files/in_3.txt"]
+        out_pcap = ["pipeline/learner_003/pcap_files/out_3.txt"]
+        filters = ["tcp"]
+        tx_port = [2]
+        rx_port = [2]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        in_pcap = ["pipeline/learner_003/pcap_files/in_4.txt"]
+        out_pcap = ["pipeline/learner_003/pcap_files/out_4.txt"]
+        filters = ["tcp"]
+        tx_port = [3]
+        rx_port = [3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_004(self):
+
+        cli_file = "/tmp/pipeline/learner_004/learner_004.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/learner_004/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/learner_004/pcap_files/out_1.txt"]
+        out_pcap.append("pipeline/learner_004/pcap_files/out_2.txt")
+        filters = ["udp port 4789 and less 120", "tcp"]
+        tx_port = [1]
+        rx_port = [0, 1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_005(self):
+
+        cli_file = "/tmp/pipeline/learner_005/learner_005.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(1)
+        s = self.connect_cli_server()
+
+        in_pcap = ["pipeline/learner_005/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/learner_005/pcap_files/out_1.txt"]
+        out_pcap.append("pipeline/learner_005/pcap_files/out_2.txt")
+        filters = ["udp port 4789 and less 120", "tcp"]
+        tx_port = [1]
+        rx_port = [0, 1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 learner learn_005 default "
+            "/tmp/pipeline/learner_005/cmd_files/cmd_1.txt\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/learner_005/pcap_files/in_2.txt"]
+        out_pcap = ["pipeline/learner_005/pcap_files/out_3.txt"]
+        out_pcap.append("pipeline/learner_005/pcap_files/out_3.txt")
+        filters = ["tcp"] * 2
+        tx_port = [2]
+        rx_port = [2]
+
+        sleep(2)
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_006(self):
+
+        cli_file = "/tmp/pipeline/learner_006/learner_006.cli"
+        self.run_dpdk_app(
+            cli_file, "pipeline PIPELINE0 port out 3 link LINK3 txq 0 bsz 1\n"
+        )
+        sleep(1)
+        s = self.connect_cli_server()
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 build /tmp/pipeline/learner_006/learner_006.spec\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "Error -22 at line 65: Action config error.")
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_007(self):
+
+        cli_file = "/tmp/pipeline/learner_007/learner_007.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/learner_007/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/learner_007/pcap_files/out_1.txt"]
+        filters = ["tcp"] * 4
+
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        tx_port = [0]
+        rx_port = [1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        sleep(30)
+
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_008(self):
+
+        cli_file = "/tmp/pipeline/learner_008/learner_008.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/learner_008/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/learner_008/pcap_files/out_1.txt"]
+        filters = ["tcp"] * 4
+
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        tx_port = [0]
+        rx_port = [1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        sleep(60)
+
+        in_pcap = ["pipeline/learner_008/pcap_files/in_2.txt"]
+        out_pcap_1 = "pipeline/learner_008/pcap_files/out_21.txt"
+        out_pcap_2 = "pipeline/learner_008/pcap_files/out_22.txt"
+
+        out_pcap = [out_pcap_1, out_pcap_2]
+        tx_port = [0]
+        rx_port = [1, 0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_009(self):
+
+        cli_file = "/tmp/pipeline/learner_009/learner_009.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/learner_009/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/learner_009/pcap_files/out_1.txt"]
+        filters = ["tcp"] * 4
+
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        sleep(30)
+
+        tx_port = [0]
+        rx_port = [1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        sleep(40)
+
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_010(self):
+
+        cli_file = "/tmp/pipeline/learner_010/learner_010.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/learner_010/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/learner_010/pcap_files/out_1.txt"]
+        filters = ["tcp"] * 4
+
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        tx_port = [0]
+        rx_port = [1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        sleep(30)
+
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        tx_port = [0]
+        rx_port = [1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_011(self):
+
+        cli_file = "/tmp/pipeline/learner_011/learner_011.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/learner_011/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/learner_011/pcap_files/out_1.txt"]
+        filters = ["tcp"] * 4
+
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        tx_port = [0]
+        rx_port = [1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        sleep(60)
+
+        in_pcap = ["pipeline/learner_011/pcap_files/in_2.txt"]
+        out_pcap_1 = "pipeline/learner_011/pcap_files/out_21.txt"
+        out_pcap_2 = "pipeline/learner_011/pcap_files/out_22.txt"
+        out_pcap = [out_pcap_1, out_pcap_2]
+
+        tx_port = [0]
+        rx_port = [1, 0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_mirror_001(self):
+
+        cli_file = "/tmp/pipeline/mirror_001/mirror_001.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/mirror_001/pcap_files/in_1.txt"]
+        out_pcap_1 = "pipeline/mirror_001/pcap_files/out_11.txt"
+        out_pcap_2 = "pipeline/mirror_001/pcap_files/out_12.txt"
+
+        out_pcap = [out_pcap_1, out_pcap_2]
+
+        filters = ["udp port 5000"] * 4
+        tx_port = [0]
+        rx_port = [0, 1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        tx_port = [1]
+        rx_port = [1, 2]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        tx_port = [2]
+        rx_port = [2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        tx_port = [3]
+        rx_port = [3, 0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_mirror_002(self):
+
+        cli_file = "/tmp/pipeline/mirror_002/mirror_002.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/mirror_002/pcap_files/in_1.txt"]
+        out_pcap_1 = "pipeline/mirror_002/pcap_files/out_11.txt"
+        out_pcap_2 = "pipeline/mirror_002/pcap_files/out_12.txt"
+
+        out_pcap = [out_pcap_1, out_pcap_2]
+
+        filters = ["udp port 5000"] * 4
+        tx_port = [0]
+        rx_port = [0, 1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        tx_port = [1]
+        rx_port = [1, 2]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        tx_port = [2]
+        rx_port = [2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        tx_port = [3]
+        rx_port = [3, 0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_mirror_003(self):
+
+        cli_file = "/tmp/pipeline/mirror_003/mirror_003.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/mirror_003/pcap_files/in_1.txt"]
+        out_pcap_1 = "pipeline/mirror_003/pcap_files/out_11.txt"
+        out_pcap_2 = "pipeline/mirror_003/pcap_files/out_12.txt"
+        out_pcap_3 = "pipeline/mirror_003/pcap_files/out_13.txt"
+        out_pcap_4 = "pipeline/mirror_003/pcap_files/out_14.txt"
+
+        out_pcap = [out_pcap_1, out_pcap_3]
+
+        filters = ["udp port 5000"] * 4
+        tx_port = [0]
+        rx_port = [0, 1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        out_pcap = [out_pcap_1, out_pcap_4]
+        tx_port = [1]
+        rx_port = [1, 2]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        out_pcap = [out_pcap_1, out_pcap_2]
+        tx_port = [2]
+        rx_port = [2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        out_pcap = [out_pcap_1, out_pcap_2]
+        tx_port = [3]
+        rx_port = [3, 0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_mirror_004(self):
+
+        cli_file = "/tmp/pipeline/mirror_004/mirror_004.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/mirror_004/pcap_files/in_1.txt"]
+        out_pcap_1 = "pipeline/mirror_004/pcap_files/out_11.txt"
+        out_pcap_2 = "pipeline/mirror_004/pcap_files/out_12.txt"
+
+        out_pcap = [out_pcap_1, out_pcap_2]
+
+        filters = ["udp port 5000"] * 4
+        tx_port = [0]
+        rx_port = [0, 1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        tx_port = [1]
+        rx_port = [1, 2]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        tx_port = [2]
+        rx_port = [2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        tx_port = [3]
+        rx_port = [3, 0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_mirror_005(self):
+
+        cli_file = "/tmp/pipeline/mirror_005/mirror_005.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/mirror_005/pcap_files/in_1.txt"]
+        out_pcap_1 = "pipeline/mirror_005/pcap_files/out_11.txt"
+        out_pcap_2 = "pipeline/mirror_005/pcap_files/out_12.txt"
+        out_pcap_3 = "pipeline/mirror_005/pcap_files/out_13.txt"
+
+        out_pcap = [out_pcap_1, out_pcap_2, out_pcap_3]
+
+        filters = ["udp port 5000"] * 4
+        tx_port = [0]
+        rx_port = [0, 1, 2]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_mirror_006(self):
+
+        cli_file = "/tmp/pipeline/mirror_006/mirror_006.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/mirror_006/pcap_files/in_1.txt"]
+        out_pcap_1 = "pipeline/mirror_006/pcap_files/out_11.txt"
+        out_pcap_2 = "pipeline/mirror_006/pcap_files/out_12.txt"
+        out_pcap_3 = "pipeline/mirror_006/pcap_files/out_13.txt"
+
+        out_pcap = [out_pcap_1, out_pcap_2, out_pcap_3]
+
+        filters = ["udp port 5000"] * 4
+        tx_port = [0]
+        rx_port = [0, 1, 2]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_mirror_007(self):
+
+        cli_file = "/tmp/pipeline/mirror_007/mirror_007.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/mirror_007/pcap_files/in_1.txt"]
+        out_pcap_1 = "pipeline/mirror_007/pcap_files/out_11.txt"
+        out_pcap_2 = "pipeline/mirror_007/pcap_files/out_12.txt"
+
+        out_pcap = [out_pcap_1, out_pcap_2]
+
+        filters = ["udp port 500"] * 4
+        tx_port = [0]
+        rx_port = [0, 1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_recirculate_001(self):
+
+        cli_file = "/tmp/pipeline/recirculate_001/recirculate_001.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/recirculate_001/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/recirculate_001/pcap_files/out_1.txt"]
+
+        filters = ["udp port 54505"] * 4
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
     def test_annotation_001(self):
 
         cli_file = "/tmp/pipeline/annotation_001/annotation_001.cli"
@@ -5255,6 +5817,35 @@ class TestPipeline(TestCase):
             s, CLI_CMD, "Error -22 at line 62: Table configuration error."
         )
         s.close()
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_direction_001(self):
+
+        cli_file = "/tmp/pipeline/direction_001/direction_001.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/direction_001/pcap_files/in_1.txt"]
+        out_pcap_1 = ["pipeline/direction_001/pcap_files/out_1.txt"]
+        out_pcap_2 = ["pipeline/direction_001/pcap_files/out_2.txt"]
+
+        filters = ["udp port 5000"]
+
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap_1, filters)
+
+        tx_port = [1]
+        rx_port = [1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap_1, filters)
+
+        tx_port = [2]
+        rx_port = [2]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap_2, filters)
+
+        tx_port = [3]
+        rx_port = [3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap_2, filters)
 
         self.dut.send_expect("^C", "# ", 20)
 
