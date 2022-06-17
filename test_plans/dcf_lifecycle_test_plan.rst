@@ -133,7 +133,6 @@ Expected: VF can NOT get DCF mode. testpmd should provide a friendly output ::
 Error message in dmesg ::
 
     ice 0000:18:00.0: VF 1 requested DCF capability, but only VF 0 is allowed to request DCF capability
-    ice 0000:18:00.0: VF 1 failed opcode 3, retval: -5
 
 
 TC04: Check only trusted VF can get DCF mode
@@ -161,7 +160,6 @@ Expected: VF can NOT get DCF mode. testpmd should provide a friendly output ::
 Error message in dmesg ::
 
     ice 0000:18:00.0: VF needs to be trusted to configure DCF capability
-    ice 0000:18:00.0: VF 0 failed opcode 3, retval: -5
 
 
 TC05: DCF graceful exit

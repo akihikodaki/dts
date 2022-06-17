@@ -594,7 +594,6 @@ class TestDcfLifeCycle(TestCase):
         pf1 = self.vf_ports_info[0].get("pf_pci")
         expected_strs = [
             f"ice {pf1}: VF 1 requested DCF capability, but only VF 0 is allowed to request DCF capability",
-            f"ice {pf1}: VF 1 failed opcode 3, retval: -5",
         ]
         msg = "no dmesg output"
         self.verify(dmesg_output, msg)
@@ -637,7 +636,6 @@ class TestDcfLifeCycle(TestCase):
         pf1 = self.vf_ports_info[0].get("pf_pci")
         expected_strs = [
             f"ice {pf1}: VF needs to be trusted to configure DCF capability",
-            f"ice {pf1}: VF 0 failed opcode 3, retval: -5",
         ]
         msg = "no dmesg output"
         self.verify(dmesg_output, msg)
