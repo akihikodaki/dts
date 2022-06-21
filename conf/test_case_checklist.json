@@ -3754,5 +3754,21 @@
              "Bug ID": "",
              "Comments": "NIC not support this case"
          }
+    ],
+    "vlan_tx_restore": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ICE_25G-E810C_SFP",
+		        "ICE_100G-E810C_QSFP"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic on the environment not support this case"
+        }
     ]
 }
