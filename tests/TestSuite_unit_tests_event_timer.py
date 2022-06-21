@@ -39,6 +39,10 @@ class TestUnitTestEventTimer(TestCase):
             self.eventdev_timer_device_bus_id = "0000:0a:01.0"
             self.dut.bind_eventdev_port(port_to_bind=self.eventdev_timer_device_bus_id)
 
+        self.logger.warning(
+            f"Test Suite {self.__name__} is deprecated and will be removed in the next release"
+        )
+
     def set_up(self):
         """
         Run before each test case.

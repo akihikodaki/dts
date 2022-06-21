@@ -39,6 +39,9 @@ class TestUnitTestsDump(TestCase):
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
         self.start_test_time = 60
         self.run_cmd_time = 60
+        self.logger.warning(
+            f"Test Suite {self.__name__} is deprecated and will be removed in the next release"
+        )
 
     def set_up(self):
         """

@@ -13,6 +13,9 @@ class UnitTestsCryptodev(TestCase):
     def set_up_all(self):
         self._app_path = self.dut.apps_name["test"]
         cc.bind_qat_device(self, "vfio-pci")
+        self.logger.warning(
+            f"Test Suite {self.__name__} is deprecated and will be removed in the next release"
+        )
 
     def set_up(self):
         pass
