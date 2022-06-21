@@ -9,7 +9,16 @@ New Features
 
 * **Add new test plans.**
 
+  * cvl_1pps_signal_test_plan.rst
+  * cvl_advanced_iavf_rss_pppol2tpoudp_test_plan.rst
+  * cvl_flow_priority_test_plan.rst
+
 * **Add new test suites.**
+
+  * TestSuite_cvl_1pps_signal.py
+  * TestSuite_cvl_advanced_iavf_rss_pppol2tpoudp.py
+  * TestSuite_cvl_dcf_qos.py
+  * TestSuite_cvl_flow_priority.py
 
 
 Removed Items
@@ -17,11 +26,16 @@ Removed Items
 
 * **Remove test plans.**
 
+  * fdir_test_plan.rst
+  * fortville_rss_granularity_config_test_plan.rst
+  * generic_filter_test_plan.rst
+  * virtio_1.0_test_plan.rst
+
 * **Remove test suites.**
 
-
-Removed Items
--------------
+  * TestSuite_fdir.py
+  * TestSuite_fortville_rss_granularity_config.py
+  * TestSuite_generic_filter.py
 
 **Removed Makefile Builds.**
 
