@@ -104,7 +104,6 @@ The following are the test plans for the DPDK DTS automated test system.
     metering_and_policing_test_plan
     mtu_update_test_plan
     multiple_pthread_test_plan
-    NICStatistics_test_plan
     ntb_test_plan
     nvgre_test_plan
     perf_virtio_user_loopback_test_plan
@@ -144,7 +143,6 @@ The following are the test plans for the DPDK DTS automated test system.
     vhost_user_interrupt_test_plan
     vhost_user_interrupt_cbdma_test_plan
     sriov_kvm_test_plan
-    stability_test_plan
     stats_checks_test_plan
     eventdev_pipeline_test_plan
     tso_test_plan
