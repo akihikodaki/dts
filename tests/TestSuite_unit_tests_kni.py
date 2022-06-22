@@ -38,7 +38,7 @@ class TestUnitTestsKni(TestCase):
         self.verify("Error" not in out, "Error loading KNI module: " + out)
 
         self.logger.warning(
-            f"Test Suite {self.__name__} is deprecated and will be removed in the next release"
+            f"Test Suite {self.suite_name} is deprecated and will be removed in the next release"
         )
 
     #

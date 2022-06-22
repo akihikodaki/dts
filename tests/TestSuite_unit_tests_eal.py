@@ -39,7 +39,7 @@ class TestUnitTestsEal(TestCase):
         app_name = self.dut.apps_name["test"]
         self.test_app_cmdline = app_name + eal_params
         self.logger.warning(
-            f"Test Suite {self.__name__} is deprecated and will be removed in the next release"
+            f"Test Suite {self.suite_name} is deprecated and will be removed in the next release"
         )
 
     def set_up(self):

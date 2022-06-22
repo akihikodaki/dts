@@ -39,7 +39,7 @@ class TestUnitTestsTimer(TestCase):
         if len(self.cores) > 16:
             self.this_timeout = self.this_timeout * len(self.cores) / 16
         self.logger.warning(
-            f"Test Suite {self.__name__} is deprecated and will be removed in the next release"
+            f"Test Suite {self.suite_name} is deprecated and will be removed in the next release"
         )
 
     def set_up(self):

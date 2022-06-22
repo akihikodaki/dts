@@ -40,7 +40,7 @@ class TestUnitTestsDump(TestCase):
         self.start_test_time = 60
         self.run_cmd_time = 60
         self.logger.warning(
-            f"Test Suite {self.__name__} is deprecated and will be removed in the next release"
+            f"Test Suite {self.suite_name} is deprecated and will be removed in the next release"
         )
 
     def set_up(self):

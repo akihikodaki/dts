@@ -56,7 +56,7 @@ class TestUnitTestsLoopback(TestCase):
         self.dut.send_expect("rm -fr %s" % self.tmp_path, "# ")
         self.dut.send_expect("cp app/test/test_pmd_perf.c %s" % self.tmp_path, "# ")
         self.logger.warning(
-            f"Test Suite {self.__name__} is deprecated and will be removed in the next release"
+            f"Test Suite {self.suite_name} is deprecated and will be removed in the next release"
         )
 
     def set_up(self):

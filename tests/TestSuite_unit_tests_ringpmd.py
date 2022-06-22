@@ -33,7 +33,7 @@ class TestUnitTestsRingPmd(TestCase):
         """
         self.cores = self.dut.get_core_list("all")
         self.logger.warning(
-            f"Test Suite {self.__name__} is deprecated and will be removed in the next release"
+            f"Test Suite {self.suite_name} is deprecated and will be removed in the next release"
         )
 
     def set_up(self):

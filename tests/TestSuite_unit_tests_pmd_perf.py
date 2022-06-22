@@ -45,7 +45,7 @@ class TestUnitTestsPmdPerf(TestCase):
         socket_id = self.dut.ports_info[0]["port"].socket
         self.cores = self.dut.get_core_list(config="1S/4C/1T", socket=socket_id)
         self.logger.warning(
-            f"Test Suite {self.__name__} is deprecated and will be removed in the next release"
+            f"Test Suite {self.suite_name} is deprecated and will be removed in the next release"
         )
 
     def set_up(self):
