@@ -242,7 +242,6 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
                     raise Exception("Set up VM ENV failed")
             except Exception as e:
                 self.logger.error("ERROR: Failure for %s" % str(e))
-            vm_dut.restore_interfaces()
             self.vm_dut.append(vm_dut)
             self.vm.append(vm_info)
 
