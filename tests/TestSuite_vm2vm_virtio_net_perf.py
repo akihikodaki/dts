@@ -45,7 +45,6 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.pmd_vhost = PmdOutput(self.dut, self.vhost)
         self.app_testpmd_path = self.dut.apps_name["test-pmd"]
         self.checked_vm = False
-        self.dut.restore_interfaces()
 
     def set_up(self):
         """
@@ -175,7 +174,6 @@ class TestVM2VMVirtioNetPerf(TestCase):
 
     def prepare_test_env(
         self,
-        cbdma=False,
         no_pci=True,
         client_mode=False,
         enable_queues=1,
@@ -184,7 +182,6 @@ class TestVM2VMVirtioNetPerf(TestCase):
         opt_queue=None,
         combined=False,
         rxq_txq=None,
-        iova_mode="",
     ):
         """
         start vhost testpmd and qemu, and config the vm env
