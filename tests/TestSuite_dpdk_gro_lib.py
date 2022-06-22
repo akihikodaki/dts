@@ -273,7 +273,6 @@ class TestDPDKGROLib(TestCase):
                 raise Exception("Set up VM ENV failed")
         except Exception as e:
             print((utils.RED("Failure for %s" % str(e))))
-        self.vm1_dut.restore_interfaces()
 
     def iperf_result_verify(self, run_info):
         """
