@@ -1761,93 +1761,11 @@ class ICEDCFACLFilterTest(TestCase):
             self.dut.kill_all()
         self.testpmd_status = "close"
 
-    def test_mutually_exclusive(self):
-        """
-        DCF mode and any ACL filters (not added by DCF) shall be mutually exclusive
-        """
-        self.dut.kill_all()
-        self.session_secondary = self.dut.new_session()
-
-        # add ACL rule by kernel, reject request for DCF functionality
-        self.add_acl_rule_not_by_dcf(self.pf0_intf, stats=True)
-        out_testpmd = self.launch_testpmd()
-        self.check_dcf_status(out_testpmd, stats=False)
-        self.quit_testpmd()
-        self.delete_acl_rule_not_added_by_dcf()
-        out_testpmd = self.launch_testpmd()
-        self.check_dcf_status(out_testpmd, stats=True)
-        self.quit_testpmd()
-
-        # add ACL rule by kernel, accept request for DCF functionality of another PF
-        self.add_acl_rule_not_by_dcf(self.pf1_intf, stats=True)
-        out_testpmd = self.launch_testpmd()
-        self.check_dcf_status(out_testpmd, stats=True)
-        self.quit_testpmd()
-        self.delete_acl_rule_not_added_by_dcf()
-
-        # ACL DCF mode is active, add ACL filters by way of host based configuration is rejected
-        out_testpmd = self.launch_testpmd()
-        self.check_dcf_status(out_testpmd, stats=True)
-        self.add_acl_rule_not_by_dcf(self.pf0_intf, stats=False)
-        self.quit_testpmd()
-        self.add_acl_rule_not_by_dcf(self.pf0_intf, stats=True)
-        self.delete_acl_rule_not_added_by_dcf()
-
-        # ACL DCF mode is active, add ACL filters by way of host based configuration on another PF successfully
-        out_testpmd = self.launch_testpmd()
-        self.check_dcf_status(out_testpmd, stats=True)
-        self.add_acl_rule_not_by_dcf(self.pf1_intf, stats=True)
-        self.quit_testpmd()
-        self.delete_acl_rule_not_added_by_dcf()
-
-    def add_acl_rule_not_by_dcf(self, pf, stats=True):
-        """
-        use secondary session
-        add acl rule by kernel command
-        """
-        if stats:
-            self.session_secondary.send_expect(
-                "ethtool -N %s flow-type tcp4 src-ip 192.168.10.0 m 0.255.255.255 dst-port 8000 m 0x00ff action -1"
-                % pf,
-                "# ",
-            )
-        else:
-            error_info = "rmgr: Cannot insert RX class rule: No such file or directory"
-            self.session_secondary.send_expect(
-                "ethtool -N %s flow-type tcp4 src-ip 192.168.10.0 m 0.255.255.255 dst-port 8000 m 0x00ff action -1"
-                % pf,
-                error_info,
-            )
-
-    def delete_acl_rule_not_added_by_dcf(self):
-        """
-        delete all the acl rule added not by DCF
-        """
-        out_pf0 = self.dut.send_expect("ethtool -n %s" % (self.pf0_intf), "# ")
-        out_pf1 = self.dut.send_expect("ethtool -n %s" % (self.pf1_intf), "# ")
-
-        p = re.compile(r"Filter: (\d+)")
-        m0 = p.search(out_pf0)
-        m1 = p.search(out_pf1)
-        if m0:
-            self.dut.send_expect(
-                "ethtool -N %s delete %d" % (self.pf0_intf, int(m0.group(1))), "# "
-            )
-            self.dut.send_expect("ethtool -n %s" % (self.pf0_intf), "Total 0 rules")
-        if m1:
-            self.dut.send_expect(
-                "ethtool -N %s delete %d" % (self.pf1_intf, int(m1.group(1))), "# "
-            )
-            self.dut.send_expect("ethtool -n %s" % (self.pf1_intf), "Total 0 rules")
-
     def tear_down(self):
         """
         Run after each test case.
         """
         self.quit_testpmd()
-        if getattr(self, "session_secondary", None):
-            self.dut.close_session(self.session_secondary)
-        self.delete_acl_rule_not_added_by_dcf()
 
     def tear_down_all(self):
         """
