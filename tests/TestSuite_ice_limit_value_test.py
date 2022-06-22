@@ -1015,8 +1015,8 @@ class TestICELimitValue(TestCase):
         """
         dut_file_dir = "/tmp/"
         rules = [
-            "flow create 0 ingress pattern eth / ipv4 src is 192.168.56.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 5 / end",
-            "flow create 1 ingress pattern eth / ipv4 src is 192.168.56.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 5 / end",
+            "flow create 0 ingress pattern eth / ipv4 src is 192.168.56.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 5 / mark id 1 / end",
+            "flow create 1 ingress pattern eth / ipv4 src is 192.168.56.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 5 / mark id 2 / end",
         ]
         pkts = [
             'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.56.0",dst="192.1.0.0", tos=4)/TCP(sport=22,dport=23)/Raw("x" * 80)',
@@ -1057,11 +1057,17 @@ class TestICELimitValue(TestCase):
         self.create_fdir_rule(rules, check_stats=True)
         out_0 = self.send_pkts_getouput(pkts=pkts[0], pf_id=0)
         rfc.check_iavf_fdir_mark(
-            out_0, pkt_num=1, check_param={"port_id": 0, "queue": 5}, stats=True
+            out_0,
+            pkt_num=1,
+            check_param={"port_id": 0, "mark_id": 1, "queue": 5},
+            stats=True,
         )
         out_1 = self.send_pkts_getouput(pkts=pkts[1], pf_id=0)
         rfc.check_iavf_fdir_mark(
-            out_1, pkt_num=1, check_param={"port_id": 1, "queue": 5}, stats=True
+            out_1,
+            pkt_num=1,
+            check_param={"port_id": 1, "mark_id": 2, "queue": 5},
+            stats=True,
         )
 
     def launch_testpmd_with_mark(self, rxq=64, txq=64):
