@@ -359,7 +359,7 @@ Send 1000 matched IPv6 UDP packets with random UDP sport::
 
 Check the IPv6 UDP packets are redirected by RSS to queue [0~3] without FDIR matched ID=0x2.
 
-Subcase 3: negative: fail to test more than 128 VFs
+Subcase 2: negative: fail to test more than 128 VFs
 ---------------------------------------------------
 Success to create 128 max VFs with 4 QPs per PF default::
 
@@ -370,7 +370,7 @@ If create 129 VFs, will report fail::
     echo 129 > /sys/bus/pci/devices/0000\:60\:00.0/sriov_numvfs
     -bash: echo: write error: Numerical result out of range
 
-Subcase 4: negative: fail to setup more than 4 queues when VF number is 128
+Subcase 3: negative: fail to setup more than 4 queues when VF number is 128
 ---------------------------------------------------------------------------
 
 Create 128 max VFs.
