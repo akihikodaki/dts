@@ -4621,11 +4621,13 @@ Subcase 3: two rules, scope smaller created first, and the larger one created la
      testpmd> flow destroy 0 rule 1
      testpmd> flow list 0
 
-   check the rule 1 not exists in the list.
+   check the rule 1 not exists in the list, and repeat step 2
    destroy the rule 0::
 
      testpmd> flow destroy 0 rule 0
      testpmd> flow list 0
+
+   check not rule in the list, and send all pkts have no hash values.
 
 Subcase 4: two rules, scope larger created first, and the smaller one created later
 -----------------------------------------------------------------------------------
@@ -4679,10 +4681,10 @@ Subcase 4: two rules, scope larger created first, and the smaller one created la
      testpmd> flow destroy 0 rule 1
      testpmd> flow list 0
 
-   check the rule 1 not exists in the list.
+   check the rule 1 not exists in the list, and repeat step 2
    destroy the rule 0::
 
      testpmd> flow destroy 0 rule 0
      testpmd> flow list 0
 
-
+   check not rule in the list, and send all pkts have no hash values.
