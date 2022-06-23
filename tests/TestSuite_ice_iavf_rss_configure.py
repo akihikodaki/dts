@@ -227,6 +227,8 @@ tvs_mac_disable_rss = eval(
     .replace("check_hash_different", "check_no_hash")
 )
 
+tvs_mac_default = tvs_mac_all
+
 
 class IAVFRSSConfigureTest(TestCase):
     def set_up_all(self):
@@ -359,6 +361,10 @@ class IAVFRSSConfigureTest(TestCase):
     def test_iavf_rss_configure_to_none(self):
         self.set_rss_configure(rss_type="none")
         self.rssprocess.handle_rss_distribute_cases(cases_info=tvs_mac_disable_rss)
+
+    def test_iavf_rss_configure_to_default(self):
+        self.set_rss_configure(rss_type="default")
+        self.rssprocess.handle_rss_distribute_cases(cases_info=tvs_mac_default)
 
     def test_iavf_rss_command_line_to_ip(self):
         self.restart_testpmd(cmd_line="--rss-ip")

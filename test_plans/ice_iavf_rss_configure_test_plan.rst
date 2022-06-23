@@ -60,7 +60,7 @@ Basic test steps
 
 * testpmd runtime functions::
 
-   port config all rss ip/udp/tcp/sctp/none/all
+   port config all rss ip/udp/tcp/sctp/none/all/default
 
   * The ``none`` option is equivalent to the ``--disable-rss`` command-line option.
   * The `` ip`` option is equivalent to the ``--rss-ip`` command-line option.
@@ -190,6 +190,22 @@ Basic test steps
     |                               +------------------------------+--------------------------+-----------------------------+-------------------------+
     |                               |                              |                          | MAC_IPV6_SCTP               | different hash value    |
     +-------------------------------+------------------------------+--------------------------+-----------------------------+-------------------------+
+    |                               | ALL                          | all                      | MAC_IPV4_PAY                | record hash value       |
+    |                               +------------------------------+--------------------------+-----------------------------+-------------------------+
+    |                               |                              |                          | MAC_IPV4_UDP                | different hash value    |
+    |                               +------------------------------+--------------------------+-----------------------------+-------------------------+
+    |                               |                              |                          | MAC_IPV4_TCP                | different hash value    |
+    |                               +------------------------------+--------------------------+-----------------------------+-------------------------+
+    |                               |                              |                          | MAC_IPV4_SCTP               | different hash value    |
+    |             default           +------------------------------+--------------------------+-----------------------------+-------------------------+
+    |                               |                              |                          | MAC_IPV6_PAY                | record hash value       |
+    |                               +------------------------------+--------------------------+-----------------------------+-------------------------+
+    |                               |                              |                          | MAC_IPV6_UDP                | different hash value    |
+    |                               +------------------------------+--------------------------+-----------------------------+-------------------------+
+    |                               |                              |                          | MAC_IPV6_TCP                | different hash value    |
+    |                               +------------------------------+--------------------------+-----------------------------+-------------------------+
+    |                               |                              |                          | MAC_IPV6_SCTP               | different hash value    |
+    +-------------------------------+------------------------------+--------------------------+-----------------------------+-------------------------+
     |                               |                              |                          | MAC_IPV4_PAY                | no hash value           |
     |                               +------------------------------+--------------------------+-----------------------------+-------------------------+
     |                               |                              |                          | MAC_IPV4_SCTP               | no hash value           |
@@ -272,6 +288,11 @@ Test Case: test_iavf_rss_configure_to_all
 =========================================
 
 Set rss to all with testpmd runtime func, transmit different protocol packets, and check hash results.
+
+Test Case: test_iavf_rss_configure_to_default
+=============================================
+
+Set rss to default with testpmd runtime func, transmit different protocol packets, and check hash results.
 
 Test Case: test_iavf_rss_configure_to_none
 ==========================================
