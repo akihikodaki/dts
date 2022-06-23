@@ -1093,6 +1093,79 @@ ipv6-udp packets::
     sendp([Ether(dst="00:11:22:33:44:55", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)],iface="enp134s0f0")
 
 
+Test case: MAC_IPV6_64BIT_PREFIX
+=================================
+basic hit pattern packets are the same in this test case:
+ipv6-64bit-prefix packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="fe81:1:a6bf:1ff:fe1c::806", dst="fe82:1:a6bf:1ff:fe1c::806")/Raw("x"*64)],iface="enp134s0f0")
+
+Subcase: MAC_IPV6_64BIT_PREFIX_L3SRC
+-------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / end actions rss types ipv6 l3-pre64 l3-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6-64bit-prefix packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="fe83:1:a6bf:2ff:fe1c::806", dst="fe82:1:a6bf:1ff:fe1c::806")/Raw("x"*64)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set:
+ipv6-64bit-prefix packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="fe81:1:a6bf:1ff:ee1c::806", dst="fe82:1:a6bf:1ff:fe1c::806")/Raw("x"*64)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="fe81:1:a6bf:1ff:ee1c::806", dst="fe82:1:a6bf:2ff:fe1c::806")/Raw("x"*64)],iface="enp134s0f0")
+
+4. not hit pattern/not defined input set:
+ipv6-udp packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="fe81:1:a6bf:1ff:fe1c::806", dst="fe82:1:a6bf:1ff:fe1c::806")/UDP(sport=1234, dport=5678)/Raw("x"*64)],iface="enp134s0f0")
+
+Subcase: MAC_IPV6_64BIT_PREFIX_L3DST
+-------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / end actions rss types ipv6 l3-pre64 l3-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6-64bit-prefix packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="fe81:1:a6bf:1ff:fe1c::806", dst="fe83:1:a6bf:2ff:fe1c::806")/Raw("x"*64)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set:
+ipv6-64bit-prefix packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="fe81:1:a6bf:1ff:fe1c::806", dst="fe82:1:a6bf:1ff:ee1c::806")/Raw("x"*64)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="fe83:1:a6bf:1ff:fe1c::806", dst="fe82:1:a6bf:1ff:ee1c::806")/Raw("x"*64)],iface="enp134s0f0")
+
+4. not hit pattern/not defined input set:
+ipv6-udp packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="fe81:1:a6bf:1ff:fe1c::806", dst="fe82:1:a6bf:1ff:fe1c::806")/UDP(sport=1234, dport=5678)/Raw("x"*64)],iface="enp134s0f0")
+
+Subcase: MAC_IPV6_64BIT_PREFIX_L3SRC_DST
+-----------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / end actions rss types ipv6 l3-pre64 l3-src-only l3-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6-64bit-prefix packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="fe81:1:a6bf:2ff:fe1c::806", dst="fe82:1:a6bf:1ff:fe1c::806")/Raw("x"*64)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set:
+ipv6-64bit-prefix packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="fe81:1:a6bf:1ff:fe1c::806", dst="fe82:1:a6bf:2ff:fe1c::806")/Raw("x"*64)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="fe81:1:a6bf:1ff:ee1c::806", dst="fe82:1:a6bf:1ff:ee1c::806")/Raw("x"*64)],iface="enp134s0f0")
+
+4. not hit pattern/not defined input set:
+ipv6-udp packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="fe81:1:a6bf:1ff:fe1c::806", dst="fe82:1:a6bf:1ff:fe1c::806")/UDP(sport=1234, dport=5678)/Raw("x"*64)],iface="enp134s0f0")
+
 Test case: MAC_IPV6_UDP
 =======================
 basic hit pattern packets are the same in this test case:
