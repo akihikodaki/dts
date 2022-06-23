@@ -5716,10 +5716,14 @@ class TestICEAdvancedRSSGTPU(TestCase):
         self.rssprocess.create_rule(rule=rule)
         pkt = 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst=RandIP(),src=RandIP())/UDP(sport=RandShort(),dport=RandShort())/("X"*480)'
         output = self.rssprocess.send_pkt_get_output(pkts=pkt, count=1280)
+        _, queues = self.rssprocess.get_hash_and_queues(output)
         hashes, rss_distribute = self.rssprocess.get_hash_verify_rss_distribute(output)
         self.verify(
             len(hashes) == 1280,
             "all the packets should have hash value and distributed to all queues by RSS.",
+        )
+        self.verify(
+            len(set(queues)) == 64, "all the packets have distributed to all queues"
         )
         self.verify(rss_distribute, "the packet do not distribute by rss")
 
@@ -5948,7 +5952,7 @@ class TestICEAdvancedRSSGTPU(TestCase):
             "packet 6 should has same hash value with packet 4",
         )
 
-    def test_ipv4_gtpu_eh_ipv4_and_ipv4_gtpu_eh_ipv4_udp_tcp(self):
+    def test_ipv4_gtpu_eh_ipv4_and_ipv4_gtpu_eh_ipv4_udp(self):
         self.switch_testpmd(enable_rss=True)
         pkts1 = [
             'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)',
@@ -6036,7 +6040,95 @@ class TestICEAdvancedRSSGTPU(TestCase):
             "packet 12 have same hash value to packet 10",
         )
 
-    def test_ipv6_gtpu_eh_ipv6_and_ipv6_gtpu_eh_ipv6_udp_tcp(self):
+    def test_ipv4_gtpu_eh_ipv4_and_ipv4_gtpu_eh_ipv4_tcp(self):
+        self.switch_testpmd(enable_rss=True)
+        pkts1 = [
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IP(dst="192.168.1.1",src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.1.1",src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)',
+        ]
+
+        rule1 = "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp / end actions rss types ipv4-tcp l4-dst-only end key_len 0 queues end / end"
+        rule_li1 = self.rssprocess.create_rule(rule=rule1)
+        hash_values, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts1)
+        self.verify(
+            hash_values[1] == hash_values[0],
+            "packet 2 should has same hash value with packet 1",
+        )
+        self.verify(
+            hash_values[2] == hash_values[0],
+            "packet 3 should has same hash value with packet 1",
+        )
+        self.verify(
+            hash_values[4] != hash_values[3],
+            "packet 5 should has different hash value with packet 4",
+        )
+        self.verify(
+            hash_values[5] == hash_values[3],
+            "packet 6 should has same hash value with packet 4",
+        )
+        self.verify(
+            hash_values[7] == hash_values[6],
+            "packet 8 should has same hash value to packet 7",
+        )
+        self.verify(
+            hash_values[8] == hash_values[6] and hash_values[8] == hash_values[7],
+            "packet 9 should have same hash value to packet 7 and 8",
+        )
+        self.verify(
+            hash_values[10] == hash_values[9],
+            "packet 11 should has same hash value to packet 10",
+        )
+        self.verify(
+            hash_values[11] == hash_values[9] and hash_values[11] == hash_values[10],
+            "packet 12 have same hash value to packet 10 and 11",
+        )
+        rule2 = "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end"
+        rule_li2 = self.rssprocess.create_rule(rule=rule2)
+        hash_values, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts1)
+        self.verify(
+            hash_values[1] == hash_values[0],
+            "packet 2 should has same hash value with packet 1",
+        )
+        self.verify(
+            hash_values[2] == hash_values[0],
+            "packet 3 should has same hash value with packet 1",
+        )
+        self.verify(
+            hash_values[4] != hash_values[3],
+            "packet 5 should has different hash value with packet 4",
+        )
+        self.verify(
+            hash_values[5] == hash_values[3],
+            "packet 6 should has same hash value with packet 4",
+        )
+        self.verify(
+            hash_values[7] == hash_values[6],
+            "packet 8 should has same hash value to packet 7",
+        )
+        self.verify(
+            hash_values[8] == hash_values[6] and hash_values[8] == hash_values[7],
+            "packet 9 should have same hash value to packet 7 and 8",
+        )
+        self.verify(
+            hash_values[10] != hash_values[9],
+            "packet 11 should has different hash value to packet 10",
+        )
+        self.verify(
+            hash_values[11] == hash_values[9],
+            "packet 12 have same hash value to packet 10",
+        )
+
+    def test_ipv6_gtpu_eh_ipv6_and_ipv6_gtpu_eh_ipv6_tcp(self):
         self.switch_testpmd(enable_rss=True)
         pkts1 = [
             'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)',
@@ -6124,7 +6216,95 @@ class TestICEAdvancedRSSGTPU(TestCase):
             "packet 12 have same hash value to packet 10 and 11",
         )
 
-    def test_ipv4_gtpu_eh_ipv6_and_ipv4_gtpu_eh_ipv6_udp_tcp_without_ul_dl(self):
+    def test_ipv6_gtpu_eh_ipv6_and_ipv6_gtpu_eh_ipv6_udp(self):
+        self.switch_testpmd(enable_rss=True)
+        pkts1 = [
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=33)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=23)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=33)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=23)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)',
+        ]
+
+        rule1 = "flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp / end actions rss types ipv6-udp l4-dst-only end key_len 0 queues end / end"
+        rule_li1 = self.rssprocess.create_rule(rule=rule1)
+        hash_values, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts1)
+        self.verify(
+            hash_values[1] != hash_values[0],
+            "packet 2 should has different hash value with packet 1",
+        )
+        self.verify(
+            hash_values[2] == hash_values[0],
+            "packet 3 should has same hash value with packet 1",
+        )
+        self.verify(
+            hash_values[4] == hash_values[3],
+            "packet 5 should has same hash value with packet 4",
+        )
+        self.verify(
+            hash_values[5] == hash_values[3],
+            "packet 6 should has same hash value with packet 4",
+        )
+        self.verify(
+            hash_values[7] == hash_values[6],
+            "packet 8 should has same hash value to packet 7",
+        )
+        self.verify(
+            hash_values[8] == hash_values[6] and hash_values[8] == hash_values[7],
+            "packet 9 should have different hash value to packet 7 and 8",
+        )
+        self.verify(
+            hash_values[10] == hash_values[9],
+            "packet 11 should has different hash value to packet 10",
+        )
+        self.verify(
+            hash_values[11] == hash_values[9] and hash_values[11] == hash_values[10],
+            "packet 12 have different hash value to packet 10 and 11",
+        )
+        rule2 = "flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / end actions rss types ipv6 l3-dst-only end key_len 0 queues end / end"
+        rule_li2 = self.rssprocess.create_rule(rule=rule2)
+        hash_values, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts1)
+        self.verify(
+            hash_values[1] == hash_values[0],
+            "packet 2 should has same hash value with packet 1",
+        )
+        self.verify(
+            hash_values[2] != hash_values[0],
+            "packet 3 should has same hash value with packet 1",
+        )
+        self.verify(
+            hash_values[4] == hash_values[3],
+            "packet 5 should has same hash value with packet 4",
+        )
+        self.verify(
+            hash_values[5] == hash_values[3],
+            "packet 6 should has same hash value with packet 4",
+        )
+        self.verify(
+            hash_values[7] == hash_values[6],
+            "packet 8 should has same hash value to packet 7",
+        )
+        self.verify(
+            hash_values[8] != hash_values[6],
+            "packet 9 should have different hash value to packet 7",
+        )
+        self.verify(
+            hash_values[10] == hash_values[9],
+            "packet 11 should has same hash value to packet 10",
+        )
+        self.verify(
+            hash_values[11] == hash_values[9] and hash_values[11] == hash_values[10],
+            "packet 12 have same hash value to packet 10 and 11",
+        )
+
+    def test_ipv4_gtpu_eh_ipv6_and_ipv4_gtpu_eh_ipv6_tcp_without_ul_dl(self):
         self.switch_testpmd(enable_rss=True)
         pkts1 = [
             'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)',
@@ -6156,7 +6336,39 @@ class TestICEAdvancedRSSGTPU(TestCase):
             "packet 7 should has differnt hash value to packet 5.",
         )
 
-    def test_ipv6_gtpu_ipv4_and_ipv6_gtpu_ipv4_udp_tcp(self):
+    def test_ipv4_gtpu_eh_ipv6_and_ipv4_gtpu_eh_ipv6_udp_without_ul_dl(self):
+        self.switch_testpmd(enable_rss=True)
+        pkts1 = [
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=33)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=23)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)',
+        ]
+
+        rule1 = "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / end actions rss types ipv6 l3-dst-only end key_len 0 queues end / end"
+        self.rssprocess.create_rule(rule=rule1)
+        hash_values, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts1)
+        self.verify(
+            hash_values[1] == hash_values[0] and hash_values[2] == hash_values[0],
+            "packet 2 should has same hash value with packet 1, packet 3 should has same hash value to packet 1",
+        )
+        self.verify(
+            hash_values[3] != hash_values[0],
+            "packet 4 should have different hash value to packet 1.",
+        )
+        self.verify(
+            hash_values[5] == hash_values[4],
+            "packet 6 should has same hash value to packet 5.",
+        )
+        self.verify(
+            hash_values[6] != hash_values[4],
+            "packet 7 should has differnt hash value to packet 5.",
+        )
+
+    def test_ipv6_gtpu_ipv4_and_ipv6_gtpu_ipv4_udp(self):
         self.switch_testpmd(enable_rss=True)
         pkts1 = [
             'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)',
@@ -6170,6 +6382,59 @@ class TestICEAdvancedRSSGTPU(TestCase):
 
         self.rssprocess.create_rule(
             rule="flow create 0 ingress pattern eth / ipv6 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end"
+        )
+        hash_values, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts1)
+        self.verify(
+            hash_values[1] != hash_values[0],
+            "packet 2 should has defferent hash value with packet 1",
+        )
+        self.verify(
+            hash_values[2] == hash_values[0] and hash_values[3] == hash_values[0],
+            "packet 3 and packet 4 should have same hash value to packet 1.",
+        )
+        self.verify(
+            len({hash_values[4], hash_values[5], hash_values[6]}) == 1,
+            "packet 5 and packet 6 and packet 7 have same hash value.",
+        )
+        self.rssprocess.create_rule(
+            rule="flow create 0 ingress pattern eth / ipv6 / udp / gtpu / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end"
+        )
+        hash_values, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts1)
+        self.verify(
+            hash_values[1] == hash_values[0],
+            "packet 2 should has same hash value with packet 1",
+        )
+        self.verify(
+            hash_values[2] != hash_values[0],
+            "packet 3 should has different hash value to packet 1.",
+        )
+        self.verify(
+            hash_values[3] == hash_values[0],
+            "packet 4 should has same hash value with packet 1",
+        )
+        self.verify(
+            hash_values[5] == hash_values[4],
+            "packet 6 should has same hash value with packet 5",
+        )
+        self.verify(
+            hash_values[6] != hash_values[4],
+            "packet 7 should has different hash value to packet 5.",
+        )
+
+    def test_ipv6_gtpu_ipv4_and_ipv6_gtpu_ipv4_tcp(self):
+        self.switch_testpmd(enable_rss=True)
+        pkts1 = [
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.1.1",src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)',
+            'Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)',
+        ]
+
+        self.rssprocess.create_rule(
+            rule="flow create 0 ingress pattern eth / ipv6 / udp / gtpu / ipv4 / tcp / end actions rss types ipv4-tcp l4-dst-only end key_len 0 queues end / end"
         )
         hash_values, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts1)
         self.verify(
