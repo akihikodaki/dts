@@ -547,7 +547,7 @@ Test case: flow validation
 
 1. validate MAC_IPV4_PAY with queue index action::
 
-    flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / end
+    flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / mark / end
 
    get the message::
 
@@ -690,9 +690,9 @@ Subcase 1: MAC_IPV4_PAY queue index
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / mark / end
 
-2. send matched packets, check the packets are distributed to queue 1 without FDIR matched ID.
+2. send matched packets, check the packets are distributed to queue 1 with FDIR matched ID.
    send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
 
 3. verify rules can be listed and destroyed::
@@ -712,9 +712,9 @@ Subcase 2: MAC_IPV4_PAY rss queues
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 2 3 end / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 2 3 end / mark / end
 
-2. send matched packets, check the packets are distributed to queue 2 or 3 without without FDIR matched ID.
+2. send matched packets, check the packets are distributed to queue 2 or 3 without with FDIR matched ID.
    send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
 
 3. repeat step 3 of subcase 1.
@@ -727,9 +727,9 @@ Subcase 3: MAC_IPV4_PAY passthru
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions passthru / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions passthru / mark / end
 
-2. send matched packets, check the packets are distributed by RSS without FDIR matched ID.
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID.
    send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
 
 3. repeat step 3 of subcase 1.
@@ -984,7 +984,7 @@ Subcase 4: MAC_IPV6_PAY drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 proto is 0 hop is 2 tc is 1 / end actions drop / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 proto is 0 hop is 2 tc is 1 / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped.
    send unmatched packets, check the packets are not dropped.
@@ -1082,9 +1082,9 @@ Subcase 2: MAC_IPV6_UDP rss queues
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / udp src is 22 dst is 23 / end actions rss / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / udp src is 22 dst is 23 / end actions rss / mark / end
 
-2. send matched packets, check the packets is distributed by RSS without FDIR matched ID.
+2. send matched packets, check the packets is distributed by RSS with FDIR matched ID.
    send unmatched packets, check the packets are distributed by RSS without FDIR matched ID too.
 
 3. repeat step 3 of subcase 1.
@@ -1172,9 +1172,9 @@ Subcase 1: MAC_IPV4_TUN_IPV4_PAY queue index
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 1 / mark / end
 
-2. send matched packets, check the packets are distributed to queue 1 without FDIR matched ID.
+2. send matched packets, check the packets are distributed to queue 1 with FDIR matched ID.
    send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
 
 3. verify rules can be listed and destroyed::
@@ -1209,7 +1209,7 @@ Subcase 3: MAC_IPV4_TUN_IPV4_PAY drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / mark / end
 
 2. send matched packets, check the packets dropped.
    send unmatched packets, check the packets are not dropped.
@@ -1290,7 +1290,7 @@ Subcase 3: MAC_IPV4_TUN_IPV4_UDP drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped.
    send unmatched packets, check the packets are received without FDIR matched ID.
@@ -1348,9 +1348,9 @@ Subcase 1: MAC_IPV4_TUN_MAC_IPV4_PAY queue index
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 0 / end
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 0 / mark / end
 
-2. send matched packets, check the packets are distributed to queue 0 without FDIR matched ID.
+2. send matched packets, check the packets are distributed to queue 0 with FDIR matched ID.
    send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
 
 3. verify rules can be listed and destroyed::
@@ -1370,9 +1370,9 @@ Subcase 2: MAC_IPV4_TUN_MAC_IPV4_PAY rss queues
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss queues 0 1 end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss queues 0 1 end / mark / end
 
-2. send matched packets, check the packets are distributed to queue group without FDIR matched ID.
+2. send matched packets, check the packets are distributed to queue group with FDIR matched ID.
    send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
 
 3. repeat step 3 of subcase 1.
@@ -1385,9 +1385,9 @@ Subcase 3: MAC_IPV4_TUN_MAC_IPV4_PAY passthru
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions passthru / end
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions passthru / mark / end
 
-2. send matched packets, check the packets are distributed by RSS without FDIR matched ID.
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID.
    send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
 
 3. repeat step 3 of subcase 1.
@@ -1605,7 +1605,7 @@ Subcase 4: MAC_IPV4_GTPU_EH drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped.
    send unmatched packets, check the packets are not dropped without FDIR matched ID.
@@ -1818,7 +1818,7 @@ Subcase 17: MAC_IPV4_GTPU_EH outer dst ip drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp / gtpu / gtp_psc / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp / gtpu / gtp_psc / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped.
    send unmatched packets, check the packets are not dropped without FDIR matched ID.
@@ -1898,7 +1898,7 @@ Subcase 22: MAC_IPV4_GTPU_EH outer src ip drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / gtpu / gtp_psc / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / gtpu / gtp_psc / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped.
    send unmatched packets, check the packets are not dropped without FDIR matched ID.
@@ -2316,7 +2316,7 @@ Subcase 4: MAC_IPV6_GTPU_EH 4 tuple drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth /  ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions drop / end
+    flow create 0 ingress pattern eth /  ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped.
    send unmatched packets, check the packets are not dropped without FDIR matched ID.
@@ -2396,7 +2396,7 @@ Subcase 9: MAC_IPV6_GTPU_EH outer dst ipv6 drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu / gtp_psc / end actions drop / end
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu / gtp_psc / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped.
    send unmatched packets, check the packets are not dropped without FDIR matched ID.
@@ -2476,7 +2476,7 @@ Subcase 14: MAC_IPV6_GTPU_EH outer src ipv6 drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv6 src is 2001::2 / udp / gtpu / gtp_psc / end actions drop / end
+    flow create 0 ingress pattern eth / ipv6 src is 2001::2 / udp / gtpu / gtp_psc / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped.
    send unmatched packets, check the packets are not dropped without FDIR matched ID.
@@ -2562,7 +2562,7 @@ Subcase 4: MAC_IPV6_GTPU 4 tuple drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth /  ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu teid is 0x12345678 / end actions drop / end
+    flow create 0 ingress pattern eth /  ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu teid is 0x12345678 / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped.
    send unmatched packets, check the packets are not dropped without FDIR matched ID.
@@ -3077,7 +3077,7 @@ Subcase 4: MAC_IPV6_ESP drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv6 src is 2001::1 dst is 2001::2 / esp spi is 7 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv6 src is 2001::1 dst is 2001::2 / esp spi is 7 / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped
    send mismatched packets, check the packets are not dropped.
@@ -3277,7 +3277,7 @@ Subcase 4: MAC_IPV6_NAT-T-ESP drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv6 src is 2001::1 dst is 2001::2 / udp / esp spi is 7 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv6 src is 2001::1 dst is 2001::2 / udp / esp spi is 7 / end actions drop / mark / end
 
 2. send matched packets, check the packets are dropped
    send mismatched packets, check the packets are not dropped.
@@ -3326,7 +3326,7 @@ Subcase 1: invalid parameters of queue index
 
 1. Invalid parameters::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 64 / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 64 / mark / end
 
    Failed to create flow, report message::
 
@@ -3339,9 +3339,9 @@ Subcase 2: invalid parameters of rss queues
 
 1. Invalid number of queues::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 1 2 3 end / end
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 0 end / end
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues end / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 1 2 3 end / mark / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 0 end / mark / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues end / mark / end
 
    Failed to create flow, report message::
 
@@ -3349,7 +3349,7 @@ Subcase 2: invalid parameters of rss queues
 
 2. Discontinuous queues::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 1 2 3 5 end / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 1 2 3 5 end / mark / end
 
    Failed to create flow, report message::
 
@@ -3357,7 +3357,7 @@ Subcase 2: invalid parameters of rss queues
 
 3. invalid queue index::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 63 64 end / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 63 64 end / mark / end
 
    Failed to create flow, report message::
 
@@ -3365,7 +3365,7 @@ Subcase 2: invalid parameters of rss queues
 
 4. "--rxq=7 --txq=7", set queue group 8 queues::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions rss queues 0 1 2 3 4 5 6 7 end / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions rss queues 0 1 2 3 4 5 6 7 end / mark / end
 
    Failed to create flow, report message::
 
@@ -3383,8 +3383,8 @@ Subcase 3: Invalid parameters of input set
 
 1. Invalid value of teid and qfi::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / gtp_psc qfi is 0x5 / end actions queue index 2 / end
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / gtp_psc qfi is 0x5 / end actions queue index 2 / mark / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / end actions queue index 1 / mark / end
 
    Failed to create flow, report message "Bad arguments"
 
@@ -3452,7 +3452,7 @@ Subcase 7: conflicted actions
 
 1. Create a rule with two conflicted actions::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 1 / rss queues 2 3 end / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 1 / rss queues 2 3 end / mark / end
 
    Failed to create flow, report message::
 
@@ -3503,7 +3503,7 @@ Subcase 10: unsupported input set field
 
 1. Create a IPV4_PAY rule with TC input set::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tc is 2 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tc is 2 / end actions queue index 1 / mark / end
 
    Failed to create flow, report message::
 
@@ -3516,7 +3516,7 @@ Subcase 11: invalid port
 
 1. Create a rule on port 2::
 
-    flow create 2 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 1 / end
+    flow create 2 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 1 / mark / end
 
    Failed to create flow, report message::
 
@@ -3532,7 +3532,7 @@ Subcase 12: unsupported pattern
 
 1. Create a GTPU rule with OS default package::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions drop / mark / end
 
    Failed to create flow, report error message.
 
@@ -3591,8 +3591,8 @@ Subcase 1: count for 1 rule
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / count / end
-    flow create 1 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions count / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / count / mark / end
+    flow create 1 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions count / mark / end
 
 2. send matched packets to port0 and port1,
    the packets received by port0 are redirected to queue 1.
@@ -3640,14 +3640,14 @@ Subcase 2: count query identifier share
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions queue index 1 / count identifier 0x1234 / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 / end actions rss queues 2 3 end / count identifier 0x1234 / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.3 / end actions passthru / mark / count identifier 0x1234 / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.4 / end actions mark id 1 / rss / count identifier 0x1234 / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.5 / end actions queue index 5 / count / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.6 / end actions drop / count / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.7 / end actions drop / count identifier 0x1235 / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.8 / end actions rss / count / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions queue index 1 / count identifier 0x1234 / mark / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 / end actions rss queues 2 3 end / count identifier 0x1234 / mark / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.3 / end actions passthru / mark / count identifier 0x1234 / mark / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.4 / end actions mark id 1 / rss / count identifier 0x1234 / mark / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.5 / end actions queue index 5 / count / mark / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.6 / end actions drop / count / mark / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.7 / end actions drop / count identifier 0x1235 / mark / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.8 / end actions rss / count / mark / end
 
 2. send matched packets::
 
@@ -3736,15 +3736,15 @@ Subcase 3: multi patterns mark count query
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark id 0 / count / end
-    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions drop / mark id 1 / count / end
-    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / sctp src is 22 dst is 23 / end actions rss queues 62 63 end / mark id 2 / count / end
-    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 1 / mark id 3 / count / end
-    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 3 / mark id 4 / count / end
-    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 / tcp dst is 23 / end actions queue index 4 / count / mark id 5 / end
-    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / sctp src is 22 dst is 23 / end actions queue index 5 / mark id 6 / count / end
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark id 0 / count / mark / end
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions drop / mark id 1 / count / mark / end
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / sctp src is 22 dst is 23 / end actions rss queues 62 63 end / mark id 2 / count / mark / end
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 1 / mark id 3 / count / mark / end
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 3 / mark id 4 / count / mark / end
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 / tcp dst is 23 / end actions queue index 4 / count / mark id 5 / mark / end
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / sctp src is 22 dst is 23 / end actions queue index 5 / mark id 6 / count / mark / end
     flow create 1 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / end actions rss queues 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 \
-    32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 end / mark id 100 / count / end
+    32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 end / mark id 100 / count / mark / end
 
 2. send matched packets::
 
@@ -3830,12 +3830,12 @@ Subcase 4: max count number
 
 1. create 257 flows with count::
 
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions drop / count / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 / end actions drop / count / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions drop / mark / count / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 / end actions drop / mark / count / end
     ……
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.255 / end actions drop / count / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 / end actions drop / count / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.1.2 / end actions drop / count / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.255 / end actions drop / mark / count / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 / end actions drop / mark / count / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.1.2 / end actions drop / mark / count / end
 
    the last one failed to create, report the error message::
 
@@ -3960,8 +3960,8 @@ Subcase 3: two ports multi patterns count query
     flow create 1 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / sctp src is 22 dst is 23 / end actions rss queues 6 7 end / mark id 2 / count identifier 0x1234 / end
     flow create 1 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / udp src is 22 dst is 23 / end actions rss queues 6 7 end / mark id 1 / count / end
     flow create 1 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / tcp src is 22 dst is 23 / end actions queue index 2 / mark / count / end
-    flow create 1 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / count / end
-    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 tos is 4 / tcp src is 22 dst is 23 / end actions drop / count / end
+    flow create 1 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / mark / count / end
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 tos is 4 / tcp src is 22 dst is 23 / end actions drop / mark / count / end
     flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 1 / mark id 1 / count identifier 0x1234 / end
 
 2. send matched packets::
