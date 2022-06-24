@@ -79,7 +79,6 @@ class TestDPDKGsoLib(TestCase):
         else:
             self.socket_mem = "1024,1024"
 
-        self.prepare_dpdk()
         self.base_dir = self.dut.base_dir.replace("~", "/root")
 
     def set_up(self):
@@ -186,29 +185,6 @@ class TestDPDKGsoLib(TestCase):
             "#",
         )
         self.dut.send_expect("ip netns exec ns1 ifconfig gre100 1.1.1.1/24 up", "#")
-
-    def prepare_dpdk(self):
-        # Changhe the testpmd checksum fwd code for mac change
-        self.dut.send_expect(
-            "cp ./app/test-pmd/csumonly.c ./app/test-pmd/csumonly_backup.c", "#"
-        )
-        self.dut.send_expect(
-            "sed -i '/ether_addr_copy(&peer_eth/i\#if 0' ./app/test-pmd/csumonly.c", "#"
-        )
-        self.dut.send_expect(
-            "sed -i '/parse_ethernet(eth_hdr, &info/i\#endif' ./app/test-pmd/csumonly.c",
-            "#",
-        )
-        self.dut.build_install_dpdk(self.dut.target)
-
-    def unprepare_dpdk(self):
-        # Recovery the DPDK code to original
-        time.sleep(5)
-        self.dut.send_expect(
-            "cp ./app/test-pmd/csumonly_backup.c ./app/test-pmd/csumonly.c ", "#"
-        )
-        self.dut.send_expect("rm -rf ./app/test-pmd/csumonly_backup.c", "#")
-        self.dut.build_install_dpdk(self.dut.target)
 
     def set_vm_cpu_number(self, vm_config):
         # config the vcpu numbers = 1
@@ -516,7 +492,6 @@ class TestDPDKGsoLib(TestCase):
         for i in self.dut_ports:
             port = self.dut.ports_info[i]["port"]
             port.bind_driver(self.def_driver)
-        self.unprepare_dpdk()
         self.dut.send_expect("ip netns del ns1", "#", 30)
         self.dut.send_expect("./usertools/dpdk-devbind.py -u %s" % (self.pci), "# ", 30)
         self.dut.send_expect(
