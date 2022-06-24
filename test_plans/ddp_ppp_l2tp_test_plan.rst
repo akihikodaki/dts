@@ -387,6 +387,58 @@ Test Case: RSS for PPPoE according to source address
      p=Ether(src="3C:FD:FE:A3:A0:01", dst="4C:FD:FE:A3:A0:02")/
      PPPoE(sessionid=0x7)
 
+Test Case: RSS for PPPoL2TP Ipv4 with default input set
+=======================================================
+
+1. Check flow type to pctype mapping::
+
+    testpmd> show port 0 pctype mapping
+
+2. Update PPPoL2TP IPv4 flow type id 23 to pcytpe id 18 mapping item::
+
+    testpmd> port config 0 pctype mapping update 18 23
+
+3. Check flow type to pctype mapping adds 23 this mapping
+
+4. Reset PPPoL2TP IPv4 hash input set configuration::
+
+    testpmd> port config 0 pctype 18 hash_inset clear all
+
+5. Inner source IPv4 words are 15~16 , enable hash input set for them::
+
+    testpmd> port config 0 pctype 18 hash_inset set field 15
+    testpmd> port config 0 pctype 18 hash_inset set field 16
+
+6. Enable flow type id 23's RSS::
+
+    testpmd> port config all rss 23
+
+7. Start testpmd, set fwd rxonly, enable output print
+
+8. Default hash input set are IPv4 SA, IPv4 DA, sport, dport. Send PPPoL2TP
+   IPv4 packet, check RSS could work, print RTE_MBUF_F_RX_RSS_HASH::
+
+    p=Ether()/IP()/UDP(dport=1701, sport=1701)/PPP_L2TP(proto=0x0021, session_id=0x7)/
+    IP(src="1.1.1.1",dst="2.2.2.2")/UDP(sport=4000, dport=8000)/Raw('x' * 20)
+
+9. Send different inner source, destination address, sport, dport PPPoL2TP
+   IPv4 packets, check to receive packet from different queues::
+
+    p=Ether()/IP()/UDP(sport=1701,dport=1701)/PPP_L2TP(proto=0x0021,session_id=0x7)/
+    IP(src="1.1.1.2",dst="2.2.2.2")/UDP(sport=4000, dport=8000)/Raw("X"* 20)
+    p=Ether()/IP()/UDP(sport=1701,dport=1701)/PPP_L2TP(proto=0x0021,session_id=0x7)/
+    IP(src="1.1.1.1",dst="2.2.2.3")/UDP(sport=4000, dport=8000)/Raw("X"* 20)
+    p=Ether()/IP()/UDP(sport=1701,dport=1701)/PPP_L2TP(proto=0x0021,session_id=0x7)/
+    IP(src="1.1.1.1",dst="2.2.2.2")/UDP(sport=4001, dport=8000)/Raw("X"* 20)
+    p=Ether()/IP()/UDP(sport=1701,dport=1701)/PPP_L2TP(proto=0x0021,session_id=0x7)/
+    IP(src="1.1.1.1",dst="2.2.2.2")/UDP(sport=4000, dport=8001)/Raw("X"* 20)
+
+10. Send different sessionid PPP_L2TP IPv4 packet, check to receive packet
+    from same queue::
+    
+        p=Ether()/IP()/UDP(sport=1701,dport=1701)/PPP_L2TP(proto=0x0021, session_id=0x8)/
+        IP(src="1.1.1.1",dst="2.2.2.2")/UDP(sport=4000, dport=8000)/Raw("X"* 20)
+
 Test Case: RSS for PPPoL2TP IPv4 according to inner source IPv4
 ===============================================================
 
