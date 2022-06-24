@@ -44,7 +44,6 @@ class TestVirtioUserAsExceptionalPath(TestCase):
             self.socket_mem = "1024,1024"
         self.pktgen_helper = PacketGeneratorHelper()
         self.peer_pci_setup = False
-        self.prepare_dpdk()
         self.app_testpmd_path = self.dut.apps_name["test-pmd"]
         self.testpmd_name = self.app_testpmd_path.split("/")[-1]
 
@@ -180,30 +179,6 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         self.dut.send_expect(
             "ip netns exec ns1 ethtool -K %s tso on" % self.nic_in_kernel, "#"
         )
-
-    def prepare_dpdk(self):
-        #
-        # Changhe the testpmd checksum fwd code for mac change
-        self.dut.send_expect(
-            "cp ./app/test-pmd/csumonly.c ./app/test-pmd/csumonly_backup.c", "#"
-        )
-        self.dut.send_expect(
-            "sed -i '/ether_addr_copy(&peer_eth/i\#if 0' ./app/test-pmd/csumonly.c", "#"
-        )
-        self.dut.send_expect(
-            "sed -i '/parse_ethernet(eth_hdr, &info/i\#endif' ./app/test-pmd/csumonly.c",
-            "#",
-        )
-        self.dut.build_install_dpdk(self.dut.target)
-        time.sleep(3)
-
-    def unprepare_dpdk(self):
-        # Recovery the DPDK code to original
-        self.dut.send_expect(
-            "cp ./app/test-pmd/csumonly_backup.c ./app/test-pmd/csumonly.c ", "#"
-        )
-        self.dut.send_expect("rm -rf ./app/test-pmd/csumonly_backup.c", "#")
-        self.dut.build_install_dpdk(self.dut.target)
 
     def iperf_result_verify(self, vm_client, direction):
         """
@@ -375,7 +350,6 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         for i in self.dut_ports:
             port = self.dut.ports_info[i]["port"]
             port.bind_driver(self.def_driver)
-        self.unprepare_dpdk()
         if self.peer_pci_setup:
             self.dut.send_expect(
                 "./usertools/dpdk-devbind.py -u %s" % (self.pci), "# ", 30
