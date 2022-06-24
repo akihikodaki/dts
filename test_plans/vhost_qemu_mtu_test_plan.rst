@@ -28,27 +28,20 @@ Test Case: Test the MTU in virtio-net
     Use the qemu_2.9 or qemu 2.10 to start the VM and the VM kernel should
     grand than 4.10, set the mtu value to 9000
 
-    qemu-system-x86_64 \
-    -chardev socket,id=char0,path=./vhost-net \
-    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mrg_rxbuf=on,host_mtu=9000
+    taskset -c 32 qemu-system-x86_64  -name vm0 \
+    -enable-kvm -pidfile /tmp/.vm0.pid -daemonize -monitor unix:/tmp/vm0_monitor.sock,server,nowait \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 -device e1000,netdev=nttsip1  \
+    -chardev socket,id=char0,path=vhost-net -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,host_mtu=9000 -cpu host -smp 8 \
+    -m 8192 -object memory-backend-file,id=mem,size=8192M,mem-path=/mnt/huge,share=on -numa node,memdev=mem \
+    -mem-prealloc -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 -vnc :4 -drive file=/home/image/ubuntu2004.img
 
-3. Check the MTU value in VM::
+3. Use the ifconfig command to check the MTU value of virtio kernel driver is 9000 in VM.
 
-    Use the ifconfig command to check the MTU value of
-    virtio kernel driver is 9000 in VM.
-
-4. Bind the virtio driver to igb_uio, launch testpmd in VM, and verify 
-   the mtu in port info is 9000::
- 
-    ./<build_target>/app/dpdk-testpmd -c 0x03 -n 3 \
-    -- -i --txd=512 --rxd=128 --tx-offloads=0x0 --enable-hw-vlan-strip
-    testpmd> set fwd mac
-    testpmd> start
-    testpmd> show port info 0
-
-5. Check the MTU value of virtio in testpmd on host is 9000::
+4. Check the MTU value of virtio in testpmd on host is 9000::
     testpmd> show port info 1
 
-6. Repeat the step 2 ~ 5, change the mtu value to 68, 65535(the minimal value
+5. Repeat the step 2 ~ 4, change the mtu value to 68, 65535(the minimal value
    and maximum value), verify the value is changed.
+
