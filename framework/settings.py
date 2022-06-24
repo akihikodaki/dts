@@ -83,6 +83,7 @@ NICS = {
     "I40E_10G-10G_BASE_T_BC": "8086:15ff",
     "hi1822": "19e5:1822",
     "IGC-I225_LM": "8086:15f2",
+    "IGC-I226_LM": "8086:125b",
     "brcm_57414": "14e4:16d7",
     "brcm_P2100G": "14e4:1750",
 }
@@ -162,6 +163,7 @@ DRIVERS = {
     "I40E_10G-10G_BASE_T_BC": "i40e",
     "hi1822": "hinic",
     "IGC-I225_LM": "igc",
+    "IGC-I226_LM": "igc",
     "brcm_57414": "bnxt_en",
     "brcm_P2100G": "bnxt_en",
 }
