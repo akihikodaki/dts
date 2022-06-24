@@ -24,6 +24,7 @@
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
                 "I40E_10G-10G_BASE_T_BC",
+                "IGC-I226_LM",
 		"IGC-I225_LM"
             ],
             "Target": [
@@ -44,8 +45,7 @@
                 "IXGBE_10G-82599_SFP_SF_QP",
                 "cavium_a034",
                 "cavium_a011",
-                "IXGBE_10G-X540T",
-                "IGC-I225_LM"
+                "IXGBE_10G-X540T"
             ],
             "Target": [
                 "ALL"
@@ -162,6 +162,7 @@
                 "I40E_10G-10G_BASE_T_BC",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "IGC-I226_LM",
                 "IGC-I225_LM"
             ],
             "Target": [
@@ -241,8 +242,7 @@
                 "cavium_a011",
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
-                "I40E_10G-10G_BASE_T_BC",
-                "IGC-I225_LM"
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
@@ -288,6 +288,7 @@
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
                 "IGB_1G-I350_COPPER",
                 "IGB_1G-82576_QUAD_COPPER_ET2",
                 "IGB_1G-I210_COPPER",
@@ -323,6 +324,7 @@
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
                 "IGB_1G-I210_COPPER",
+                "IGC-I226_LM",
 	        "IGC-I225_LM"
             ],
             "Target": [
@@ -364,8 +366,7 @@
                 "IXGBE_10G-82599_T3_LOM",
                 "cavium_a034",
                 "cavium_0011",
-                "cavium_a064",
-		"IGC-I225_LM"
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
@@ -422,6 +423,7 @@
                 "cavium_0011",
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
+                "IGC-I226_LM",
 		"IGC-I225_LM"
             ],
             "Target": [
@@ -461,6 +463,7 @@
                 "cavium_0011",
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
+                "IGC-I226_LM",
 		"IGC-I225_LM"
             ],
             "Target": [
@@ -500,6 +503,7 @@
                 "cavium_0011",
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
+                "IGC-I226_LM",
 		"IGC-I225_LM"
             ],
             "Target": [
@@ -537,6 +541,7 @@
                 "IGB_1G-I210_COPPER",
                 "cavium_a034",
                 "cavium_0011",
+                "IGC-I226_LM",
 		"IGC-I225_LM"
             ],
             "Target": [
@@ -557,6 +562,7 @@
                 "IGB_1G-I210_COPPER",
                 "cavium_a034",
                 "cavium_0011",
+                "IGC-I226_LM",
 		"IGC-I225_LM"
             ],
             "Target": [
@@ -2108,6 +2114,7 @@
                 "I40E_10G-10G_BASE_T_X722",
                 "IAVF_10G-X722_VF",
                 "I40E_10G-10G_BASE_T_BC",
+                "IGC-I226_LM",
                 "IGC-I225_LM"
             ],
             "Target": [
@@ -2278,6 +2285,7 @@
                 "I40E_10G-10G_BASE_T_X722",
                 "cavium_a064",
                 "I40E_10G-10G_BASE_T_BC",
+                "IGC-I226_LM",
                 "IGC-I225_LM"
             ],
             "Target": [
@@ -2408,6 +2416,7 @@
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
                 "I40E_10G-10G_BASE_T_BC",
+                "IGC-I226_LM",
 		"IGC-I225_LM"
             ],
             "Target": [
@@ -2444,6 +2453,7 @@
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IXGBE_10G-X550T",
 		"IGC-I225_LM",
+                "IGC-I226_LM",
 		"IGB_1G-I210_COPPER"
             ],
             "Target": [
@@ -2509,6 +2519,7 @@
             "NIC": [
                 "cavium_a063",
                 "cavium_a064",
+                "IGC-I226_LM",
 		"IGC-I225_LM"
             ],
             "Target": [
@@ -2613,6 +2624,7 @@
             "NIC": [
                 "cavium_a063",
                 "cavium_a064",
+                "IGC-I226_LM",
 		"IGC-I225_LM"
             ],
             "Target": [
@@ -2863,6 +2875,7 @@
                 "IGB_1G-I210_COPPER",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "IGC-I226_LM",
                 "IGC-I225_LM"
             ],
             "Target": [
@@ -2883,6 +2896,7 @@
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
 		"IGC-I225_LM",
+                "IGC-I226_LM",
                 "I40E_10G-SFP_XL710",
                 "I40E_40G-QSFP_A",
 	        "I40E_40G-QSFP_B",
@@ -2912,22 +2926,7 @@
             "Comments": "freebsd not support create vf"
         }
     ],
-    "hash_readwrite_perf": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IGC-I225_LM"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "NIC not support this case"
-        }
-    ],
-	"ipv6_5tuple_hash_table": [
+    "ipv6_5tuple_hash_table": [
         {
             "OS": [
                 "ALL"
@@ -3431,6 +3430,7 @@
                 "ALL"
             ],
             "NIC": [
+                "IGC-I226_LM",
                 "IGC-I225_LM"
             ],
             "Target": [
@@ -3446,6 +3446,7 @@
                 "ALL"
             ],
             "NIC": [
+                "IGC-I226_LM",
                 "IGC-I225_LM"
             ],
             "Target": [
@@ -3461,6 +3462,7 @@
                 "ALL"
             ],
             "NIC": [
+                "IGC-I226_LM",
                 "IGC-I225_LM"
             ],
             "Target": [
@@ -3492,6 +3494,7 @@
             ],
             "NIC": [
                 "IXGBE_10G-X550EM_X_10G_T",
+                "IGC-I226_LM",
                 "IGC-I225_LM"
             ],
             "Target": [
@@ -3690,6 +3693,7 @@
                  "IXGBE_10G-X550EM_X_10G_T",
 		 "IGB_1G-I210_COPPER",
 		 "IGB_1G-I350_COPPER",
+                 "IGC-I226_LM",
                  "IGC-I225_LM"
              ],
              "Target": [
@@ -3709,6 +3713,7 @@
                  "IXGBE_10G-X550EM_X_10G_T",
                  "IGB_1G-I210_COPPER",
                  "IGB_1G-I350_COPPER",
+                 "IGC-I226_LM",
                  "IGC-I225_LM"
              ],
              "Target": [
@@ -3728,6 +3733,7 @@
                  "IXGBE_10G-X550EM_X_10G_T",
                  "IGB_1G-I210_COPPER",
                  "IGB_1G-I350_COPPER",
+                 "IGC-I226_LM",
                  "IGC-I225_LM"
              ],
              "Target": [
@@ -3737,7 +3743,7 @@
              "Comments": "NIC not support this case"
          }
     ],
-"dual_vlan": [
+    "dual_vlan": [
          {
              "OS": [
                  "ALL"
@@ -3745,6 +3751,7 @@
              "NIC": [
                  "IXGBE_10G-82599_SFP",
                  "IGC-I225_LM",
+                 "IGC-I226_LM",
 		 "ICE_100G-E810C_QSFP",
 		 "ICE_25G-E810C_SFP"
              ],

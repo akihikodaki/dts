@@ -186,6 +186,7 @@
                 "I40E_10G-10G_BASE_T_BC",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "IGC-I226_LM",
                 "IGC-I225_LM"
             ],
             "Target": [
@@ -695,6 +696,7 @@
                 "IXGBE_10G-X540T",
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IXGBE_10G-X550T",
+                "IGC-I226_LM",
                 "IGC-I225_LM"
             ],
             "Target": [
@@ -764,6 +766,7 @@
 		"ICE_100G-E810C_QSFP",
 		"ICE_25G-E810C_SFP",
                 "I40E_40G-QSFP_A",
+                "IGC-I226_LM",
                 "IGC-I225_LM"
             ],
             "Target": [
@@ -892,6 +895,7 @@
                 "I40E_40G-QSFP_B",
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
+                "IGC-I226_LM",
                 "IGC-I225_LM",
                 "I40E_10G-10G_BASE_T_BC"
             ],
@@ -961,6 +965,7 @@
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
                 "I40E_10G-10G_BASE_T_BC",
+                "IGC-I226_LM",
                 "IGC-I225_LM"
             ],
             "Target": [
@@ -2089,13 +2094,14 @@
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IGB_1G-I210_COPPER",
                 "IGB_1G-I350_COPPER",
+                "IGC-I226_LM",
 		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support ixgbe and igb nic "
+            "Comments": "This case only support ixgbe igc and igb nic "
         }
     ],
     "disable_enable_rss_ixgbe_igb": [
@@ -2132,13 +2138,14 @@
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IGB_1G-I210_COPPER",
                 "IGB_1G-I350_COPPER",
+                "IGC-I226_LM",
 		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support ixgbe and igb nic "
+            "Comments": "This case only support ixgbe igc and igb nic "
         }
     ],
     "different_types_ixgbe_igb": [
@@ -2154,13 +2161,14 @@
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IGB_1G-I210_COPPER",
                 "IGB_1G-I350_COPPER",
+                "IGC-I226_LM",
 		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support ixgbe and igb nic "
+            "Comments": "This case only support ixgbe igc and igb nic "
         }
     ],
     "enable_ipv4_udp_rss_ixgbe_igb": [
@@ -2176,13 +2184,14 @@
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IGB_1G-I210_COPPER",
                 "IGB_1G-I350_COPPER",
+                "IGC-I226_LM",
 		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support ixgbe and igb nic "
+            "Comments": "This case only support ixgbe igc and igb nic "
         }
     ],
     "flow_director_rss_rule_combination_ixgbe_igb": [
@@ -2198,13 +2207,14 @@
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IGB_1G-I210_COPPER",
                 "IGB_1G-I350_COPPER",
+                "IGC-I226_LM",
 		"IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support ixgbe and igb nic "
+            "Comments": "This case only support ixgbe igc and igb nic "
         }
     ],
      "multicast_filter": [
@@ -2220,13 +2230,14 @@
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IGB_1G-I210_COPPER",
                 "IGB_1G-I350_COPPER",
+                "IGC-I226_LM",
                 "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case only support ixgbe and igb nic,The feature corresponding task ticket is DPDK-7884."
+            "Comments": "This case only support ixgbe, igc and igb nic,The feature corresponding task ticket is DPDK-7884."
         }
     ],
      "hardware_checksum_check_l4_rx": [
