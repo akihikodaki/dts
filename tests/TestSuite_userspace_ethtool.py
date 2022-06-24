@@ -570,7 +570,12 @@ class TestUserspaceEthtool(TestCase):
         mtus = [1519, 2048]
         mtu_threshold = 2022
         offset = 0
-        if self.nic in ["IGB_1G-I350_COPPER", "IGB_1G-I210_COPPER", "IGC-I225_LM"]:
+        if self.nic in [
+            "IGB_1G-I350_COPPER",
+            "IGB_1G-I210_COPPER",
+            "IGC-I225_LM",
+            "IGC-I226_LM",
+        ]:
             mtu_threshold = 2026
             offset = 4
         # RTE_ETHER_HDR_LEN + RTE_ETHER_CRC_LEN + ICE_VLAN_TAG_SIZE * 2
@@ -593,6 +598,7 @@ class TestUserspaceEthtool(TestCase):
                         "IGB_1G-I350_COPPER",
                         "IGB_1G-I210_COPPER",
                         "IGC-I225_LM",
+                        "IGC-I226_LM",
                     ]:
                         mtu = mtu_threshold
                     self.dut.send_expect("stop %s" % index, "EthApp>")

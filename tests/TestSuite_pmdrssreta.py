@@ -150,7 +150,12 @@ class TestPmdrssreta(TestCase):
                 hash_index = int(tmp_reta_line["RSS hash"], 16) % 64
             elif self.nic in ["hi1822"]:
                 hash_index = int(tmp_reta_line["RSS hash"], 16) % 256
-            elif self.nic in ["IXGBE_10G-82599_SFP", "IGC-I225_LM", "IXGBE_10G-X540T"]:
+            elif self.nic in [
+                "IXGBE_10G-82599_SFP",
+                "IGC-I226_LM",
+                "IGC-I225_LM",
+                "IXGBE_10G-X540T",
+            ]:
                 # compute the hash result of five tuple into the 7 LSBs value.
                 hash_index = int(tmp_reta_line["RSS hash"], 16) % 128
             else:
@@ -212,7 +217,7 @@ class TestPmdrssreta(TestCase):
 
         self.dut.kill_all()
         global testQueues
-        if self.nic == "IGC-I225_LM":
+        if self.nic in ["IGC-I225_LM", "IGC-I226_LM"]:
             testQueues = [2]
         # test with different rss queues
         for queue in testQueues:
@@ -258,7 +263,7 @@ class TestPmdrssreta(TestCase):
                             "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]),
                             "testpmd> ",
                         )
-                elif self.nic in ["IXGBE_10G-82599_SFP", "IGC-I225_LM"]:
+                elif self.nic in ["IXGBE_10G-82599_SFP", "IGC-I225_LM", "IGC-I226_LM"]:
                     for i in range(128):
                         reta_entries.insert(i, random.randint(0, queue - 1))
                         self.dut.send_expect(
@@ -296,6 +301,7 @@ class TestPmdrssreta(TestCase):
             "IXGBE_10G-X550EM_X_10G_T": 40,
             "IXGBE_10G-X550T": 40,
             "IGC-I225_LM": 40,
+            "IGC-I226_LM": 40,
             "IXGBE_10G-X540T": 40,
         }
         self.verify(

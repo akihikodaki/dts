@@ -241,7 +241,7 @@ Test Case 12: Change thresholds
 4. Run ``port config all rxfreet 32`` to change the rx descriptors.
 5. Run ``port config all txpt 64`` to change the tx descriptors.
 6. Run ``port config all txht 64`` to change the tx descriptors.
-7. If NIC is IGC-I225_LM, Run ``port config all txwt 16`` to change the tx descriptors.
+7. If NIC is IGC driver, Run ``port config all txwt 16`` to change the tx descriptors.
    Else, Run ``port config all txwt 0`` to change the tx descriptors.
 8. Run ``port start all`` to restart all ports.
 9. Check with ``show config rxtx`` that the descriptors were actually changed.

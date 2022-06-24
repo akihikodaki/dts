@@ -73,6 +73,7 @@ class TestRxTx_Offload(TestCase):
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IXGBE_10G-X550T",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
                 "cavium_a063",
                 "cavium_a064",
                 "ICE_25G-E810C_SFP",
@@ -493,7 +494,7 @@ class TestRxTx_Offload(TestCase):
         capabilities = self.check_port_capability("rx")
         for capability in capabilities:
             if (
-                self.nic in ["IGC-I225_LM", "cavium_a063", "cavium_a064"]
+                self.nic in ["IGC-I225_LM", "IGC-I226_LM", "cavium_a063", "cavium_a064"]
                 and capability == "sctp_cksum"
             ):
                 continue
@@ -523,6 +524,7 @@ class TestRxTx_Offload(TestCase):
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IXGBE_10G-X550T",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
             ],
             "%s nic not support rx offload setting by queue." % self.nic,
         )

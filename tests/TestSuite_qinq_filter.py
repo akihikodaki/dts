@@ -33,6 +33,7 @@ class TestQinqFilter(TestCase):
                 "I40E_40G-QSFP_B",
                 "I40E_25G-25G_SFP28",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
                 "I40E_10G-10G_BASE_T_BC",
             ],
             "NIC %s not support this test" % self.nic,

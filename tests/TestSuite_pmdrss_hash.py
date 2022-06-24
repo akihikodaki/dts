@@ -487,6 +487,7 @@ class TestPmdrssHash(TestCase):
             "ICE_100G-E810C_QSFP",
             "IXGBE_10G-82599_SFP",
             "IGC-I225_LM",
+            "IGC-I226_LM",
         ]
     )
     def set_up_all(self):

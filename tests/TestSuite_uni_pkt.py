@@ -125,6 +125,7 @@ class TestUniPacket(TestCase):
             or "IXGBE_10G-X550EM_X_10G_T" in self.nic
             or "IGB_1G-I210_COPPER" in self.nic
             or "IGC-I225_LM" in self.nic
+            or "IGC-I226_LM" in self.nic
         ):
             outerL4Type = ""
             ipv4_default_packet_type = ["L2_ETHER", "L3_IPV4"]
@@ -187,6 +188,7 @@ class TestUniPacket(TestCase):
             or "IXGBE_10G-X550EM_X_10G_T" in self.nic
             or "IGB_1G-I210_COPPER" in self.nic
             or "IGC-I225_LM" in self.nic
+            or "IGC-I226_LM" in self.nic
         ):
             outerL4Type = ""
             ipv6_default_packet_type = ["L2_ETHER", "L3_IPV6"]
@@ -287,6 +289,7 @@ class TestUniPacket(TestCase):
                 "I40E_40G-QSFP_B",
                 "I40E_10G-10G_BASE_T_BC",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
             ],
             "not support %s" % self.nic,
         )

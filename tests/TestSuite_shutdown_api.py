@@ -823,7 +823,7 @@ class TestShutdownApi(TestCase):
         Change RX/TX thresholds
         DPDK-24129:1.Intel® Ethernet 700/800 Series not support tx and rx
                    2.Ixgbe not support rx, only support tx.
-                   3.IGC-I225_LM, IGB_1G-I350_COPPER and IGB_1G-I210_COPPER not support txfree and txrs
+                   3.IGC-I225_LM, IGC-I226_LM, IGB_1G-I350_COPPER and IGB_1G-I210_COPPER not support txfree and txrs
         """
         self.pmdout.start_testpmd(
             "Default",
@@ -844,7 +844,7 @@ class TestShutdownApi(TestCase):
         self.dut.send_expect("port config all rxfreet 32", "testpmd> ")
         self.dut.send_expect("port config all txpt 64", "testpmd> ")
         self.dut.send_expect("port config all txht 64", "testpmd> ")
-        if self.nic in ["IGC-I225_LM"]:
+        if self.nic in ["IGC-I225_LM", "IGC-I226_LM"]:
             self.dut.send_expect("port config all txwt 16", "testpmd> ")
         else:
             self.dut.send_expect("port config all txwt 0", "testpmd> ")
@@ -869,7 +869,10 @@ class TestShutdownApi(TestCase):
             )
         self.verify("pthresh=64" in out, "TX descriptor not reconfigured properly")
         self.verify("hthresh=64" in out, "TX descriptor not reconfigured properly")
-        if self.nic in ["IGC-I225_LM"]:
+        if self.nic in [
+            "IGC-I225_LM",
+            "IGC-I226_LM",
+        ]:
             self.verify("wthresh=16" in out, "TX descriptor not reconfigured properly")
         else:
             self.verify("wthresh=0" in out, "TX descriptor not reconfigured properly")
@@ -947,7 +950,7 @@ class TestShutdownApi(TestCase):
         When tx_descriptor_status is used, status can be “FULL”, “DONE” or “UNAVAILABLE.”
         """
         queue_num = 16
-        if self.nic in ["IGB_1G-I210_COPPER", "IGC-I225_LM"]:
+        if self.nic in ["IGB_1G-I210_COPPER", "IGC-I225_LM", "IGC-I226_LM"]:
             queue_num = 4
         if self.nic in ["IGB_1G-I350_COPPER"]:
             queue_num = 8

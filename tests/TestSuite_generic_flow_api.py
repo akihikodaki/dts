@@ -56,7 +56,7 @@ class TestGeneric_flow_api(TestCase):
             "IGB_1G-82576_QUAD_COPPER_ET2",
         ]:
             MAX_QUEUE = 7
-        elif self.nic in ["IGC-I225_LM"]:
+        elif self.nic in ["IGC-I225_LM", "IGC-I226_LM"]:
             MAX_QUEUE = 3
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports(self.nic)
@@ -921,6 +921,7 @@ class TestGeneric_flow_api(TestCase):
                 "IXGBE_10G-X550T",
                 "IGB_1G-I350_COPPER",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
             ],
             "%s nic not support SYN filter" % self.nic,
         )
@@ -965,7 +966,7 @@ class TestGeneric_flow_api(TestCase):
         self.dut.send_expect("flow destroy 0 rule 0", "testpmd> ", 120)
 
         # validate and create the flow rules
-        q_idx = "2" if self.nic == "IGC-I225_LM" else "4"
+        q_idx = "2" if self.nic in ["IGC-I225_LM", "IGC-I226_LM"] else "4"
         self.dut.send_expect(
             "flow validate 0 ingress pattern eth / ipv6 / tcp flags spec 0x02 flags mask 0x02 / end actions queue index %s / end"
             % (q_idx),
@@ -1007,6 +1008,7 @@ class TestGeneric_flow_api(TestCase):
                 "IGB_1G-82576_QUAD_COPPER_ET2",
                 "IGB_1G-82576_QUAD_COPPER",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
             ],
             "%s nic not support n-tuple filter" % self.nic,
         )
@@ -1111,6 +1113,7 @@ class TestGeneric_flow_api(TestCase):
                 "IGB_1G-82580_COPPER",
                 "IGB_1G-I350_COPPER",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
                 "I40E_10G-SFP_XL710",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_A",
@@ -1227,6 +1230,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
             ],
@@ -1345,6 +1349,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
             ],
@@ -2049,6 +2054,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
             ],
@@ -2383,6 +2389,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
             ],
             "%s nic not support fdir ipv4 filter" % self.nic,
         )
@@ -2397,6 +2404,7 @@ class TestGeneric_flow_api(TestCase):
             "I40E_10G-SFP_X722",
             "I40E_10G-10G_BASE_T_X722",
             "IGC-I225_LM",
+            "IGC-I226_LM",
             "I40E_10G-10G_BASE_T_BC",
         ]:
             self.setup_env()
@@ -2807,6 +2815,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
             ],
             "%s nic not support fdir ipv6 filter" % self.nic,
         )
@@ -3447,6 +3456,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
             ],
@@ -3829,7 +3839,13 @@ class TestGeneric_flow_api(TestCase):
         The filter structure is different between igb, ixgbe and i40e
         """
         self.verify(
-            self.nic in ["IGB_1G-82580_COPPER", "IGB_1G-I350_COPPER", "IGC-I225_LM"],
+            self.nic
+            in [
+                "IGB_1G-82580_COPPER",
+                "IGB_1G-I350_COPPER",
+                "IGC-I225_LM",
+                "IGC-I226_LM",
+            ],
             "%s nic not support flexbytes filter" % self.nic,
         )
 
@@ -4044,6 +4060,7 @@ class TestGeneric_flow_api(TestCase):
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IXGBE_10G-X550T",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
                 "I40E_10G-SFP_XL710",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_A",
@@ -4118,6 +4135,7 @@ class TestGeneric_flow_api(TestCase):
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
             ],
             "%s nic not support fdir vxlan filter" % self.nic,
         )
@@ -4164,7 +4182,13 @@ class TestGeneric_flow_api(TestCase):
         only supported by ixgbe
         """
         self.verify(
-            self.nic in ["IXGBE_10G-X550EM_X_10G_T", "IXGBE_10G-X550T", "IGC-I225_LM"],
+            self.nic
+            in [
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "IGC-I225_LM",
+                "IGC-I226_LM",
+            ],
             "%s nic not support fdir nvgre filter" % self.nic,
         )
 
@@ -4221,6 +4245,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
                 "I40E_10G-10G_BASE_T_BC",
             ],
             "%s nic not support tunnel vxlan filter" % self.nic,
@@ -4392,6 +4417,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
                 "I40E_10G-10G_BASE_T_BC",
             ],
             "%s nic not support tunnel nvgre filter" % self.nic,
@@ -4717,6 +4743,7 @@ class TestGeneric_flow_api(TestCase):
                 "IGB_1G-82576_QUAD_COPPER_ET2",
                 "IGB_1G-82576_QUAD_COPPER",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
             ],
             "%s nic not support n-tuple filter" % self.nic,
         )
@@ -4851,10 +4878,11 @@ class TestGeneric_flow_api(TestCase):
                 "IXGBE_10G-X550T",
                 "IGB_1G-I350_COPPER",
                 "IGC-I225_LM",
+                "IGC-I226_LM",
             ],
             "%s nic not support" % self.nic,
         )
-        if self.nic in ["cavium_a063", "cavium_a064", "IGC-I225_LM"]:
+        if self.nic in ["cavium_a063", "cavium_a064", "IGC-I225_LM", "IGC-I226_LM"]:
             self.pmdout.start_testpmd(
                 "%s" % self.cores,
                 "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1 --mbcache=200 --mbuf-size=2048 --max-pkt-len=9200"

@@ -224,7 +224,13 @@ class TestMtuUpdate(TestCase):
         On 1G NICs, when the jubmo frame MTU set > 1500, the software adjust it to MTU+4.
         """
         if (
-            self.nic in ["IGB_1G-I350_COPPER", "IGB_1G-I210_COPPER", "IGC-I225_LM"]
+            self.nic
+            in [
+                "IGB_1G-I350_COPPER",
+                "IGB_1G-I210_COPPER",
+                "IGC-I225_LM",
+                "IGC-I226_LM",
+            ]
             and packet_size > 1500
         ):
             self.send_packet_of_size_to_tx_port(packet_size + 8 - 1, received=True)

@@ -228,6 +228,7 @@ class TestJumboframes(TestCase):
             "IGB_1G-I210_COPPER",
             "IGB_1G-82576_QUAD_COPPER_ET2",
             "IGC-I225_LM",
+            "IGC-I226_LM",
         ]:
             self.jumboframes_send_packet(ETHER_JUMBO_FRAME_MTU + 4 + 1, False)
         else:

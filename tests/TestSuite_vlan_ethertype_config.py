@@ -181,7 +181,7 @@ class TestVlanEthertypeConfig(TestCase):
         self.dut.send_expect("vlan set strip off %s" % dutRxPortId, "testpmd> ", 20)
         rx_vlans = [1, random_vlan, MAX_VLAN]
         # caium_a063 card support only default '0x8100' tpid in rx mode
-        if self.nic in ["cavium_a063", "cavium_a064", "IGC-I225_LM"]:
+        if self.nic in ["cavium_a063", "cavium_a064", "IGC-I226_LM", "IGC-I225_LM"]:
             tpids = [0x8100]
         else:
             tpids = [0x8100, 0xA100]
@@ -214,7 +214,7 @@ class TestVlanEthertypeConfig(TestCase):
         self.dut.send_expect("start", "testpmd> ")
 
         # caium_a063 card support only default '0x8100' tpid in rx mode
-        if self.nic in ["cavium_a063", "cavium_a064", "IGC-I225_LM", "IGC-I225_LM"]:
+        if self.nic in ["cavium_a063", "cavium_a064", "IGC-I226_LM", "IGC-I225_LM"]:
             tpids = [0x8100]
         else:
             tpids = [0x8100, 0xA100]
@@ -247,7 +247,7 @@ class TestVlanEthertypeConfig(TestCase):
         self.dut.send_expect("start", "testpmd> ", 20)
 
         # caium_a063 card support only default '0x8100' tpid in rx mode
-        if self.nic in ["cavium_a063", "cavium_a064", "IGC-I225_LM"]:
+        if self.nic in ["cavium_a063", "cavium_a064", "IGC-I225_LM", "IGC-I226_LM"]:
             tpids = [0x8100]
         else:
             tpids = [0x8100, 0xA100]
@@ -277,7 +277,7 @@ class TestVlanEthertypeConfig(TestCase):
         self.dut.send_expect("start", "testpmd> ")
 
         # caium_a063 card support only default '0x8100' tpid in rx mode
-        if self.nic in ["cavium_a063", "cavium_a064", "IGC-I225_LM"]:
+        if self.nic in ["cavium_a063", "cavium_a064", "IGC-I225_LM", "IGC-I226_LM"]:
             tpids = [0x8100]
         else:
             tpids = [0x8100, 0xA100]
