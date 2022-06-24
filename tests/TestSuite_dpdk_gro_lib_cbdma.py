@@ -55,7 +55,6 @@ class TestDPDKGROLibCbdma(TestCase):
             self.socket_mem = "1024"
         else:
             self.socket_mem = "1024,1024"
-        self.prepare_dpdk()
         self.base_dir = self.dut.base_dir.replace("~", "/root")
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.vhost_user = self.dut.new_session(suite="vhost-user")
@@ -147,62 +146,6 @@ class TestDPDKGROLibCbdma(TestCase):
         self.dut.send_expect(
             "ip netns exec ns1 ethtool -K %s tso on" % self.nic_in_kernel, "#"
         )
-
-    def prepare_dpdk(self):
-        # Changhe the testpmd checksum fwd code for mac change
-        self.dut.send_expect(
-            "cp ./app/test-pmd/csumonly.c ./app/test-pmd/csumonly_backup.c", "#"
-        )
-        self.dut.send_expect(
-            "cp ./drivers/net/vhost/rte_eth_vhost.c ./drivers/net/vhost/rte_eth_vhost-backup.c",
-            "#",
-        )
-        self.dut.send_expect(
-            "sed -i '/ether_addr_copy(&peer_eth/i\#if 0' ./app/test-pmd/csumonly.c", "#"
-        )
-        self.dut.send_expect(
-            "sed -i '/parse_ethernet(eth_hdr, &info/i\#endif' ./app/test-pmd/csumonly.c",
-            "#",
-        )
-        # change offload of vhost
-        tx_offload = (
-            "RTE_ETH_TX_OFFLOAD_VLAN_INSERT | "
-            + "RTE_ETH_TX_OFFLOAD_UDP_CKSUM | "
-            + "RTE_ETH_TX_OFFLOAD_TCP_CKSUM | "
-            + "RTE_ETH_TX_OFFLOAD_IPV4_CKSUM | "
-            + "RTE_ETH_TX_OFFLOAD_TCP_TSO;"
-        )
-        rx_offload = (
-            "RTE_ETH_RX_OFFLOAD_VLAN_STRIP | "
-            + "RTE_ETH_RX_OFFLOAD_TCP_CKSUM | "
-            + "RTE_ETH_RX_OFFLOAD_UDP_CKSUM | "
-            + "RTE_ETH_RX_OFFLOAD_IPV4_CKSUM | "
-            + "RTE_ETH_RX_OFFLOAD_TCP_LRO;"
-        )
-        self.dut.send_expect(
-            "sed -i 's/RTE_ETH_TX_OFFLOAD_VLAN_INSERT;/%s/' drivers/net/vhost/rte_eth_vhost.c"
-            % tx_offload,
-            "#",
-        )
-        self.dut.send_expect(
-            "sed -i 's/RTE_ETH_RX_OFFLOAD_VLAN_STRIP;/%s/' drivers/net/vhost/rte_eth_vhost.c"
-            % rx_offload,
-            "#",
-        )
-        self.dut.build_install_dpdk(self.dut.target)
-
-    def unprepare_dpdk(self):
-        # Recovery the DPDK code to original
-        self.dut.send_expect(
-            "cp ./app/test-pmd/csumonly_backup.c ./app/test-pmd/csumonly.c ", "#"
-        )
-        self.dut.send_expect(
-            "cp ./drivers/net/vhost/rte_eth_vhost-backup.c ./drivers/net/vhost/rte_eth_vhost.c ",
-            "#",
-        )
-        self.dut.send_expect("rm -rf ./app/test-pmd/csumonly_backup.c", "#")
-        self.dut.send_expect("rm -rf ./drivers/net/vhost/rte_eth_vhost-backup.c", "#")
-        self.dut.build_install_dpdk(self.dut.target)
 
     def set_vm_cpu_number(self, vm_config):
         # config the vcpu numbers = 1
@@ -347,7 +290,6 @@ class TestDPDKGROLibCbdma(TestCase):
         """
         Run after each test suite.
         """
-        self.unprepare_dpdk()
         self.dut.send_expect("ip netns del ns1", "# ", 30)
         self.dut.send_expect("./usertools/dpdk-devbind.py -u %s" % (self.pci), "# ", 30)
         self.dut.send_expect(
