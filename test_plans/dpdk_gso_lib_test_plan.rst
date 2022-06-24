@@ -32,29 +32,10 @@ This test plan includes dpdk gso lib test with TCP/UDP/VxLAN/GRE traffic.
 Prerequisites
 =============
 
-Modify the testpmd code as following::
-
-    --- a/app/test-pmd/csumonly.c
-    +++ b/app/test-pmd/csumonly.c
-    @@ -693,10 +693,12 @@ pkt_burst_checksum_forward(struct fwd_stream *fs)
-                     * and inner headers */
-     
-                    eth_hdr = rte_pktmbuf_mtod(m, struct ether_hdr *);
-    +#if 0
-                    ether_addr_copy(&peer_eth_addrs[fs->peer_addr],
-                                    &eth_hdr->d_addr);
-                    ether_addr_copy(&ports[fs->tx_port].eth_addr,
-                                    &eth_hdr->s_addr);
-    +#endif
-                    parse_ethernet(eth_hdr, &info);
-                    l3_hdr = (char *)eth_hdr + info.l2_len;
-
 Test flow
 =========
 
-::
-
-  NIC2(In kernel) <- NIC1(DPDK) <- testpmd(csum fwd) <- Vhost <- Virtio-net
+NIC2(In kernel) <- NIC1(DPDK) <- testpmd(csum fwd) <- Vhost <- Virtio-net
 
 Test Case1: DPDK GSO test with tcp traffic
 ==========================================
@@ -84,17 +65,15 @@ Test Case1: DPDK GSO test with tcp traffic
 
 3.  Set up vm with virto device and using kernel virtio-net driver:
 
-  ::
-
     taskset -c 13 \
     qemu-system-x86_64 -name us-vhost-vm1 \
-       -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
-       -numa node,memdev=mem \
-       -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6001-:22 \
-       -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
-       -chardev socket,id=char0,path=./vhost-net \
-       -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
-       -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on,rx_queue_size=1024,tx_queue_size=1024 -vnc :10 -daemonize
+    -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem \
+    -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6001-:22 \
+    -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
+    -chardev socket,id=char0,path=./vhost-net \
+    -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
+    -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on,rx_queue_size=1024,tx_queue_size=1024 -vnc :10 -daemonize
 
 4. In vm, config the virtio-net device with ip::
 
@@ -146,17 +125,15 @@ Test Case3: DPDK GSO test with vxlan traffic
 
 3.  Set up vm with virto device and using kernel virtio-net driver:
 
-  ::
-
     taskset -c 13 \
     qemu-system-x86_64 -name us-vhost-vm1 \
-       -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
-       -numa node,memdev=mem \
-       -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6001-:22 \
-       -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
-       -chardev socket,id=char0,path=./vhost-net \
-       -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
-       -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on,rx_queue_size=1024,tx_queue_size=1024 -vnc :10 -daemonize
+    -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem \
+    -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6001-:22 \
+    -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
+    -chardev socket,id=char0,path=./vhost-net \
+    -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
+    -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on,rx_queue_size=1024,tx_queue_size=1024 -vnc :10 -daemonize
 
 4. In vm, config the virtio-net device with ip::
 
@@ -200,17 +177,15 @@ Test Case4: DPDK GSO test with gre traffic
 
 3.  Set up vm with virto device and using kernel virtio-net driver:
 
-  ::
-
     taskset -c 13 \
     qemu-system-x86_64 -name us-vhost-vm1 \
-       -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
-       -numa node,memdev=mem \
-       -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6001-:22 \
-       -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
-       -chardev socket,id=char0,path=./vhost-net \
-       -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
-       -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on,rx_queue_size=1024,tx_queue_size=1024 -vnc :10 -daemonize
+    -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem \
+    -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6001-:22 \
+    -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
+    -chardev socket,id=char0,path=./vhost-net \
+    -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
+    -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on,rx_queue_size=1024,tx_queue_size=1024 -vnc :10 -daemonize
 
 4. In vm, config the virtio-net device with ip::
 
