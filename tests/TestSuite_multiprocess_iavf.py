@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
+# Copyright(c) 2022 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,7 @@ from .rte_flow_common import RssProcessing as rssprocess
 executions = []
 
 
-class TestMultiprocess(TestCase):
+class TestMultiprocessIavf(TestCase):
 
     support_nic = ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]
 
@@ -90,11 +90,16 @@ class TestMultiprocess(TestCase):
         executions.append({"nprocs": 4, "cores": "1S/4C/1T", "pps": 0})
         executions.append({"nprocs": 8, "cores": "1S/4C/2T", "pps": 0})
 
-        self.eal_param = ""
-        for i in self.dut_ports:
-            self.eal_param += " -a %s" % self.dut.ports_info[i]["pci"]
+        self.dport_info0 = self.dut.ports_info[self.dut_ports[0]]
+        self.dport_ifaces = self.dport_info0["intf"]
+        self.create_vfs()
+        self.port_pci_list = []
+        for vf_port in self.sriov_vfs_port:
+            self.port_pci_list.append(vf_port.pci)
 
-        self.eal_para = self.dut.create_eal_parameters(cores="1S/2C/1T")
+        self.eal_para = self.dut.create_eal_parameters(
+            cores="1S/2C/1T", ports=self.port_pci_list
+        )
         # start new session to run secondary
         self.session_secondary = self.dut.new_session()
 
@@ -106,8 +111,7 @@ class TestMultiprocess(TestCase):
             self.output_path = os.sep.join([cur_path, self.logger.log_path])
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
-        self.dport_info0 = self.dut.ports_info[self.dut_ports[0]]
-        self.pci0 = self.dport_info0["pci"]
+
         self.tester_ifaces = [
             self.tester.get_interface(self.dut.ports_map[port])
             for port in self.dut_ports
@@ -121,6 +125,29 @@ class TestMultiprocess(TestCase):
         Run before each test case.
         """
         pass
+
+    def create_vfs(self):
+        self.dut.bind_interfaces_linux(self.kdriver)
+        self.dut.generate_sriov_vfs_by_port(self.dut_ports[0], 2)
+        self.sriov_vfs_port = self.dut.ports_info[self.dut_ports[0]]["vfs_port"]
+        try:
+            for port in self.sriov_vfs_port:
+                port.bind_driver(self.drivername)
+            self.dut.send_expect("ifconfig {} up".format(self.dport_ifaces), "# ")
+            self.dut.send_expect(
+                "ip link set {} vf 0 mac {}".format(
+                    self.dport_ifaces, "00:11:22:33:44:55"
+                ),
+                "# ",
+            )
+        except Exception as e:
+            self.destroy_iavf()
+            raise Exception(e)
+
+    def destroy_iavf(self):
+        self.dut.destroy_sriov_vfs_by_port(self.dut_ports[0])
+        for port in self.sriov_vfs_port:
+            port.bind_driver(self.drivername)
 
     def launch_multi_testpmd(self, proc_type, queue_num, process_num, **kwargs):
         self.session_list = [
@@ -140,7 +167,7 @@ class TestMultiprocess(TestCase):
             if i != 0 and proc_type_list:
                 proc_type = proc_type_list[1]
             eal_param = "--proc-type={} -a {} --log-level=ice,7".format(
-                proc_type, self.pci0
+                proc_type, self.sriov_vfs_port[0].pci
             )
             param = "--rxq={0} --txq={0} --num-procs={1} --proc-id={2}".format(
                 queue_num, process_num, i
@@ -962,11 +989,14 @@ class TestMultiprocess(TestCase):
         session_list = [
             self.dut.new_session("process_{}".format(i)) for i in range(proc_num)
         ]
+        port_param = ""
+        for port_pci in self.port_pci_list:
+            port_param += " -a {}".format(port_pci)
         for i in range(proc_num):
             session_list[i].send_expect(
                 self.app_symmetric_mp
                 + " -l {} -n 4 --proc-type=auto {} -- -p {} --num-procs={} --proc-id={}".format(
-                    i + 1, self.eal_param, portMask, proc_num, i
+                    i + 1, port_param, portMask, proc_num, i
                 ),
                 "Finished Process Init",
             )
@@ -1098,7 +1128,9 @@ class TestMultiprocess(TestCase):
         pmd_2 = PmdOutput(self.dut, self.dut.new_session("process_2"))
         self.dut.init_reserved_core()
         cores = self.dut.get_reserved_core("2C", socket=1)
-        eal_param = "--proc-type={} -a {} --log-level=ice,7".format("auto", self.pci0)
+        eal_param = "--proc-type={} -a {} --log-level=ice,7".format(
+            "auto", self.sriov_vfs_port[0].pci
+        )
         param = "--rxq={0} --txq={0} --num-procs={1} --proc-id={2}".format(
             queue_num, process_num, 2
         )
@@ -1188,25 +1220,25 @@ class TestMultiprocess(TestCase):
         }
         mac_ipv4_pay_queue_index = {
             "sub_casename": "mac_ipv4_pay_queue_index",
-            "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 62 / mark id 4 / end",
+            "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 6 / mark id 4 / end",
             "packet": MAC_IPV4_PAY,
-            "check_param": {"port_id": 0, "queue": 62, "mark_id": 4},
+            "check_param": {"port_id": 0, "queue": 6, "mark_id": 4},
         }
         mac_ipv4_pay_drop = {
             "sub_casename": "mac_ipv4_pay_drop",
-            "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions drop / mark / end",
+            "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions drop / mark / end",
             "packet": MAC_IPV4_PAY,
             "check_param": {"port_id": 0, "drop": True},
         }
         mac_ipv4_pay_rss_queues = {
             "sub_casename": "mac_ipv4_pay_rss_queues",
-            "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 31 32 end / mark / end",
+            "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 10 11 end / mark / end",
             "packet": MAC_IPV4_PAY,
-            "check_param": {"port_id": 0, "queue": [31, 32]},
+            "check_param": {"port_id": 0, "queue": [10, 11]},
         }
         mac_ipv4_pay_mark_rss = {
             "sub_casename": "mac_ipv4_pay_mark_rss",
-            "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions mark / rss / end",
+            "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions mark / rss / end",
             "packet": MAC_IPV4_PAY,
             "check_param": {"port_id": 0, "mark_id": 0, "rss": True},
         }
@@ -1228,13 +1260,9 @@ class TestMultiprocess(TestCase):
         }
         mac_ipv4_tcp_toeplitz_basic_pkt = {
             "ipv4-tcp": [
-                'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+                'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
             ],
         }
-        mac_ipv4_tcp_toeplitz_non_basic_pkt = [
-            'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)',
-            'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/Raw("x"*80)',
-        ]
         mac_ipv4_tcp_l2_src = {
             "sub_casename": "mac_ipv4_tcp_l2_src",
             "port_id": 0,
@@ -1245,20 +1273,12 @@ class TestMultiprocess(TestCase):
                     "action": "save_hash",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E1", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.3", src="192.168.0.5")/TCP(sport=25,dport=99)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.3", src="192.168.0.5")/TCP(sport=25,dport=99)/("X"*480)',
                     "action": "check_hash_same",
-                },
-            ],
-            "post-test": [
-                {
-                    "send_packet": [
-                        mac_ipv4_tcp_toeplitz_basic_pkt["ipv4-tcp"][0],
-                    ],
-                    "action": "check_no_hash",
                 },
             ],
         }
@@ -1272,24 +1292,8 @@ class TestMultiprocess(TestCase):
                     "action": "save_hash",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
-                    "action": "check_hash_different",
-                },
-                {
-                    "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.3", src="192.168.0.5")/TCP(sport=25,dport=99)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E1", dst="00:11:22:33:44:55")/IP(dst="192.168.0.3", src="192.168.0.5")/TCP(sport=25,dport=99)/("X"*480)',
                     "action": "check_hash_same",
-                },
-                {
-                    "send_packet": mac_ipv4_tcp_toeplitz_non_basic_pkt,
-                    "action": "check_no_hash",
-                },
-            ],
-            "post-test": [
-                {
-                    "send_packet": [
-                        mac_ipv4_tcp_toeplitz_basic_pkt["ipv4-tcp"][0],
-                    ],
-                    "action": "check_no_hash",
                 },
             ],
         }
@@ -1303,32 +1307,8 @@ class TestMultiprocess(TestCase):
                     "action": "save_hash",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E1", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_different",
-                },
-                {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
-                    "action": "check_hash_different",
-                },
-                {
-                    "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
-                    "action": "check_hash_different",
-                },
-                {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.3", src="192.168.0.5")/TCP(sport=25,dport=99)/("X"*480)',
-                    "action": "check_hash_same",
-                },
-                {
-                    "send_packet": mac_ipv4_tcp_toeplitz_non_basic_pkt,
-                    "action": "check_no_hash",
-                },
-            ],
-            "post-test": [
-                {
-                    "send_packet": [
-                        mac_ipv4_tcp_toeplitz_basic_pkt["ipv4-tcp"][0],
-                    ],
-                    "action": "check_no_hash",
                 },
             ],
         }
@@ -1342,20 +1322,20 @@ class TestMultiprocess(TestCase):
                     "action": "save_hash",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=32,dport=33)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)',
                     "action": "check_hash_same",
                 },
-            ],
-            "post-test": [
                 {
-                    "send_packet": [
-                        mac_ipv4_tcp_toeplitz_basic_pkt["ipv4-tcp"][0],
-                    ],
-                    "action": "check_no_hash",
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
+                    "action": "check_hash_same",
+                },
+                {
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=32,dport=33)/("X"*480)',
+                    "action": "check_hash_same",
                 },
             ],
         }
@@ -1369,20 +1349,24 @@ class TestMultiprocess(TestCase):
                     "action": "save_hash",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="00:11:22:33:44:55")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=32,dport=33)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=32,dport=33)/("X"*480)',
                     "action": "check_hash_same",
                 },
-            ],
-            "post-test": [
                 {
-                    "send_packet": [
-                        mac_ipv4_tcp_toeplitz_basic_pkt["ipv4-tcp"][0],
-                    ],
-                    "action": "check_no_hash",
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)',
+                    "action": "check_hash_same",
+                },
+                {
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
+                    "action": "check_hash_same",
+                },
+                {
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=32,dport=33)/("X"*480)',
+                    "action": "check_hash_same",
                 },
             ],
         }
@@ -1396,24 +1380,28 @@ class TestMultiprocess(TestCase):
                     "action": "save_hash",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)',
+                    "action": "check_hash_different",
+                },
+                {
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_same",
                 },
-            ],
-            "post-test": [
                 {
-                    "send_packet": [
-                        mac_ipv4_tcp_toeplitz_basic_pkt["ipv4-tcp"][0],
-                    ],
-                    "action": "check_no_hash",
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
+                    "action": "check_hash_same",
+                },
+                {
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
+                    "action": "check_hash_same",
                 },
             ],
         }
@@ -1427,24 +1415,28 @@ class TestMultiprocess(TestCase):
                     "action": "save_hash",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=33)/("X"*480)',
+                    "action": "check_hash_different",
+                },
+                {
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_same",
                 },
-            ],
-            "post-test": [
                 {
-                    "send_packet": [
-                        mac_ipv4_tcp_toeplitz_basic_pkt["ipv4-tcp"][0],
-                    ],
-                    "action": "check_no_hash",
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)',
+                    "action": "check_hash_same",
+                },
+                {
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)',
+                    "action": "check_hash_same",
                 },
             ],
         }
@@ -1458,24 +1450,28 @@ class TestMultiprocess(TestCase):
                     "action": "save_hash",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="00:11:22:33:44:55")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=33)/("X"*480)',
+                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="00:11:22:33:44:55")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)',
+                    "action": "check_hash_different",
+                },
+                {
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_same",
                 },
-            ],
-            "post-test": [
                 {
-                    "send_packet": [
-                        mac_ipv4_tcp_toeplitz_basic_pkt["ipv4-tcp"][0],
-                    ],
-                    "action": "check_no_hash",
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
+                    "action": "check_hash_same",
+                },
+                {
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=33)/("X"*480)',
+                    "action": "check_hash_same",
                 },
             ],
         }
@@ -1489,24 +1485,28 @@ class TestMultiprocess(TestCase):
                     "action": "save_hash",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=32,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
+                    "action": "check_hash_different",
+                },
+                {
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_same",
                 },
-            ],
-            "post-test": [
                 {
-                    "send_packet": [
-                        mac_ipv4_tcp_toeplitz_basic_pkt["ipv4-tcp"][0],
-                    ],
-                    "action": "check_no_hash",
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)',
+                    "action": "check_hash_same",
+                },
+                {
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=32,dport=23)/("X"*480)',
+                    "action": "check_hash_same",
                 },
             ],
         }
@@ -1520,20 +1520,12 @@ class TestMultiprocess(TestCase):
                     "action": "save_hash",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.1.1", src="192.168.1.2")/TCP(sport=22,dport=33)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.1.1", src="192.168.1.2")/TCP(sport=22,dport=33)/("X"*480)',
                     "action": "check_hash_same",
-                },
-            ],
-            "post-test": [
-                {
-                    "send_packet": [
-                        mac_ipv4_tcp_toeplitz_basic_pkt["ipv4-tcp"][0],
-                    ],
-                    "action": "check_no_hash",
                 },
             ],
         }
@@ -1547,20 +1539,12 @@ class TestMultiprocess(TestCase):
                     "action": "save_hash",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
+                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.1.1", src="192.168.1.2")/TCP(sport=32,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.1.1", src="192.168.1.2")/TCP(sport=32,dport=23)/("X"*480)',
                     "action": "check_hash_same",
-                },
-            ],
-            "post-test": [
-                {
-                    "send_packet": [
-                        mac_ipv4_tcp_toeplitz_basic_pkt["ipv4-tcp"][0],
-                    ],
-                    "action": "check_no_hash",
                 },
             ],
         }
@@ -1574,32 +1558,24 @@ class TestMultiprocess(TestCase):
                     "action": "save_hash",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
+                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=33)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="00:11:22:33:44:55")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_same",
-                },
-            ],
-            "post-test": [
-                {
-                    "send_packet": [
-                        mac_ipv4_tcp_toeplitz_basic_pkt["ipv4-tcp"][0],
-                    ],
-                    "action": "check_no_hash",
                 },
             ],
         }
@@ -1613,24 +1589,16 @@ class TestMultiprocess(TestCase):
                     "action": "save_hash",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_different",
                 },
                 {
-                    "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+                    "send_packet": 'Ether(src="68:05:CA:BB:26:E0", dst="00:11:22:33:44:55")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
                     "action": "check_hash_same",
-                },
-            ],
-            "post-test": [
-                {
-                    "send_packet": [
-                        mac_ipv4_tcp_toeplitz_basic_pkt["ipv4-tcp"][0],
-                    ],
-                    "action": "check_no_hash",
                 },
             ],
         }
@@ -1655,15 +1623,16 @@ class TestMultiprocess(TestCase):
     @check_supported_nic(support_nic)
     def test_multiprocess_with_rss_symmetric(self):
         pmd_param = {
-            "queue_num": 64,
+            "queue_num": 16,
             "proc_num": 2,
             "proc_type": "auto",
+            "symmetric": True,
         }
         packets = [
             'Ether(dst="00:11:22:33:44:55", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)',
             'Ether(dst="00:11:22:33:44:55", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/("X"*480)',
-            'Ether(dst="00:11:22:33:44:55", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="12.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
-            'Ether(dst="00:11:22:33:44:55", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="12.168.0.1")/TCP(sport=22,dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:55", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+            'Ether(dst="00:11:22:33:44:55", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22,dport=23)/("X"*480)',
         ]
         mac_ipv4_symmetric = {
             "sub_casename": "mac_ipv4_all",
@@ -1708,216 +1677,6 @@ class TestMultiprocess(TestCase):
         }
         self.rte_flow(mac_ipv4_symmetric, self.multiprocess_rss_data, **pmd_param)
 
-    def test_perf_multiprocess_performance(self):
-        """
-        Benchmark Multiprocess performance.
-        #"""
-        packet_count = 16
-        self.dut.send_expect("fg", "# ")
-        txPort = self.tester.get_local_port(self.dut_ports[0])
-        rxPort = self.tester.get_local_port(self.dut_ports[1])
-        mac = self.tester.get_mac(txPort)
-        dmac = self.dut.get_mac_address(self.dut_ports[0])
-        tgenInput = []
-
-        # create mutative src_ip+dst_ip package
-        for i in range(packet_count):
-            package = (
-                r'flows = [Ether(src="%s", dst="%s")/IP(src="192.168.1.%d", dst="192.168.1.%d")/("X"*26)]'
-                % (mac, dmac, i + 1, i + 2)
-            )
-            self.tester.scapy_append(package)
-            pcap = os.sep.join([self.output_path, "test_%d.pcap" % i])
-            self.tester.scapy_append('wrpcap("%s", flows)' % pcap)
-            tgenInput.append([txPort, rxPort, pcap])
-        self.tester.scapy_execute()
-
-        # run multiple symmetric_mp process
-        validExecutions = []
-        for execution in executions:
-            if len(self.dut.get_core_list(execution["cores"])) == execution["nprocs"]:
-                validExecutions.append(execution)
-
-        portMask = utils.create_mask(self.dut_ports)
-
-        for n in range(len(validExecutions)):
-            execution = validExecutions[n]
-            # get coreList form execution['cores']
-            coreList = self.dut.get_core_list(execution["cores"], socket=self.socket)
-            # to run a set of symmetric_mp instances, like test plan
-            dutSessionList = []
-            for index in range(len(coreList)):
-                dut_new_session = self.dut.new_session()
-                dutSessionList.append(dut_new_session)
-                # add -a option when tester and dut in same server
-                dut_new_session.send_expect(
-                    self.app_symmetric_mp
-                    + " -c %s --proc-type=auto %s -- -p %s --num-procs=%d --proc-id=%d"
-                    % (
-                        utils.create_mask([coreList[index]]),
-                        self.eal_param,
-                        portMask,
-                        execution["nprocs"],
-                        index,
-                    ),
-                    "Finished Process Init",
-                )
-
-            # clear streams before add new streams
-            self.tester.pktgen.clear_streams()
-            # run packet generator
-            streams = self.pktgen_helper.prepare_stream_from_tginput(
-                tgenInput, 100, None, self.tester.pktgen
-            )
-            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
-
-            execution["pps"] = pps
-
-            # close all symmetric_mp process
-            self.dut.send_expect("killall symmetric_mp", "# ")
-            # close all dut sessions
-            for dut_session in dutSessionList:
-                self.dut.close_session(dut_session)
-
-        # get rate and mpps data
-        for n in range(len(executions)):
-            self.verify(executions[n]["pps"] is not 0, "No traffic detected")
-        self.result_table_create(
-            [
-                "Num-procs",
-                "Sockets/Cores/Threads",
-                "Num Ports",
-                "Frame Size",
-                "%-age Line Rate",
-                "Packet Rate(mpps)",
-            ]
-        )
-
-        for execution in validExecutions:
-            self.result_table_add(
-                [
-                    execution["nprocs"],
-                    execution["cores"],
-                    2,
-                    64,
-                    execution["pps"] / float(100000000 / (8 * 84)),
-                    execution["pps"] / float(1000000),
-                ]
-            )
-
-        self.result_table_print()
-
-    def test_perf_multiprocess_client_serverperformance(self):
-        """
-        Benchmark Multiprocess client-server performance.
-        """
-        self.dut.kill_all()
-        self.dut.send_expect("fg", "# ")
-        txPort = self.tester.get_local_port(self.dut_ports[0])
-        rxPort = self.tester.get_local_port(self.dut_ports[1])
-        mac = self.tester.get_mac(txPort)
-
-        self.tester.scapy_append(
-            'dmac="%s"' % self.dut.get_mac_address(self.dut_ports[0])
-        )
-        self.tester.scapy_append('smac="%s"' % mac)
-        self.tester.scapy_append(
-            'flows = [Ether(src=smac, dst=dmac)/IP(src="192.168.1.1", dst="192.168.1.1")/("X"*26)]'
-        )
-
-        pcap = os.sep.join([self.output_path, "test.pcap"])
-        self.tester.scapy_append('wrpcap("%s", flows)' % pcap)
-        self.tester.scapy_execute()
-
-        validExecutions = []
-        for execution in executions:
-            if len(self.dut.get_core_list(execution["cores"])) == execution["nprocs"]:
-                validExecutions.append(execution)
-
-        for execution in validExecutions:
-            coreList = self.dut.get_core_list(execution["cores"], socket=self.socket)
-            # get core with socket parameter to specified which core dut used when tester and dut in same server
-            coreMask = utils.create_mask(
-                self.dut.get_core_list("1S/1C/1T", socket=self.socket)
-            )
-            portMask = utils.create_mask(self.dut_ports)
-            # specified mp_server core and add -a option when tester and dut in same server
-            self.dut.send_expect(
-                self.app_mp_server
-                + " -n %d -c %s %s -- -p %s -n %d"
-                % (
-                    self.dut.get_memory_channels(),
-                    coreMask,
-                    self.eal_param,
-                    portMask,
-                    execution["nprocs"],
-                ),
-                "Finished Process Init",
-                20,
-            )
-            self.dut.send_expect("^Z", "\r\n")
-            self.dut.send_expect("bg", "# ")
-
-            for n in range(execution["nprocs"]):
-                time.sleep(5)
-                # use next core as mp_client core, different from mp_server
-                coreMask = utils.create_mask([str(int(coreList[n]) + 1)])
-                self.dut.send_expect(
-                    self.app_mp_client
-                    + " -n %d -c %s --proc-type=secondary %s -- -n %d"
-                    % (self.dut.get_memory_channels(), coreMask, self.eal_param, n),
-                    "Finished Process Init",
-                )
-                self.dut.send_expect("^Z", "\r\n")
-                self.dut.send_expect("bg", "# ")
-
-            tgenInput = []
-            tgenInput.append([txPort, rxPort, pcap])
-
-            # clear streams before add new streams
-            self.tester.pktgen.clear_streams()
-            # run packet generator
-            streams = self.pktgen_helper.prepare_stream_from_tginput(
-                tgenInput, 100, None, self.tester.pktgen
-            )
-            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
-
-            execution["pps"] = pps
-            self.dut.kill_all()
-            time.sleep(5)
-
-        for n in range(len(executions)):
-            self.verify(executions[n]["pps"] is not 0, "No traffic detected")
-
-        self.result_table_create(
-            [
-                "Server threads",
-                "Server Cores/Threads",
-                "Num-procs",
-                "Sockets/Cores/Threads",
-                "Num Ports",
-                "Frame Size",
-                "%-age Line Rate",
-                "Packet Rate(mpps)",
-            ]
-        )
-
-        for execution in validExecutions:
-            self.result_table_add(
-                [
-                    1,
-                    "1S/1C/1T",
-                    execution["nprocs"],
-                    execution["cores"],
-                    2,
-                    64,
-                    execution["pps"] / float(100000000 / (8 * 84)),
-                    execution["pps"] / float(1000000),
-                ]
-            )
-
-        self.result_table_print()
-
     def set_fields(self):
         """set ip protocol field behavior"""
         fields_config = {
@@ -1943,4 +1702,4 @@ class TestMultiprocess(TestCase):
         Run after each test suite.
         """
         self.dut.kill_all()
-        pass
+        self.destroy_iavf()
