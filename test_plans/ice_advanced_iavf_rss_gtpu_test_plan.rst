@@ -4096,6 +4096,21 @@ so the following step don't need to be run.
 
 10. repeat step 5, check the rule without UL/DL can't work now.
 
+rss function when disable rss
+=============================
+1. start testpmd without disable rss::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=16 --txq=16 --rxd=384 --txd=384 --disable-rss
+
+2. create a IPV4_GTPU_EH_IPV4 rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp end key_len 0 queues end / end
+
+3. send 1280 packets of IPV4_GTPU_EH_IPV4 packet type::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst=RandIP(),src=RandIP())/UDP(sport=RandShort(),dport=RandShort())/("X"*480)],iface="enp216s0f0",count=1280)
+
+4. check all the packets have hash value and distributed to all queues by RSS.
 
 stress case
 ===========

@@ -9666,6 +9666,34 @@ class TestICEAdvancedIAVFRSSGTPU(TestCase):
         )
         self.pmd_output.execute_cmd("flow flush 0")
 
+    def test_rss_function_when_disable_rss(self):
+        self.pmd_output.quit()
+        self.pmd_output.start_testpmd(
+            cores="1S/4C/1T",
+            param="--rxq=16 --txq=16 --disable-rss --rxd=384 --txd=384",
+            eal_param=f"-a {self.vf0_pci}",
+            socket=self.ports_socket,
+        )
+        self.pmd_output.execute_cmd("set fwd rxonly")
+        self.pmd_output.execute_cmd("set verbose 1")
+        self.pmd_output.execute_cmd("start")
+        res = self.pmd_output.wait_link_status_up("all", timeout=15)
+        self.verify(res is True, "there have port link is down")
+        rule = "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp end key_len 0 queues end / end"
+        self.rssprocess.create_rule(rule=rule)
+        pkt = 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst=RandIP(),src=RandIP())/UDP(sport=RandShort(),dport=RandShort())/("X"*480)'
+        output = self.rssprocess.send_pkt_get_output(pkts=pkt, count=1280)
+        _, queues = self.rssprocess.get_hash_and_queues(output)
+        hashes, rss_distribute = self.rssprocess.get_hash_verify_rss_distribute(output)
+        self.verify(
+            len(hashes) == 1280,
+            "all the packets should have hash value and distributed to all queues by RSS.",
+        )
+        self.verify(
+            len(set(queues)) == 16, "all the packets have distributed to all queues"
+        )
+        self.verify(rss_distribute, "the packet do not distribute by rss")
+
     # vf rss gtpc gtpu
     def test_mac_ipv4_gtpu(self):
         self.switch_testpmd(symmetric=False)
