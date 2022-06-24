@@ -45,52 +45,6 @@ This test plan includes dpdk gro lib test with TCP/IPv4 traffic with CBDMA.
 Prerequisites
 =============
 
-Modify the testpmd code as following::
-
-    --- a/app/test-pmd/csumonly.c
-    +++ b/app/test-pmd/csumonly.c
-    @@ -693,10 +693,12 @@ pkt_burst_checksum_forward(struct fwd_stream *fs)
-                     * and inner headers */
-     
-                    eth_hdr = rte_pktmbuf_mtod(m, struct ether_hdr *);
-    +#if 0
-                    ether_addr_copy(&peer_eth_addrs[fs->peer_addr],
-                                    &eth_hdr->d_addr);
-                    ether_addr_copy(&ports[fs->tx_port].eth_addr,
-                                    &eth_hdr->s_addr);
-    +#endif
-                    parse_ethernet(eth_hdr, &info);
-                    l3_hdr = (char *)eth_hdr + info.l2_len;
-
-Modify the dpdk code as following::
-
-   diff --git a/drivers/net/vhost/rte_eth_vhost.c b/drivers/net/vhost/rte_eth_vhost.c
-   index b38a4b6b1..573250dbe 100644
-   --- a/drivers/net/vhost/rte_eth_vhost.c
-   +++ b/drivers/net/vhost/rte_eth_vhost.c
-   @@ -1071,8 +1071,14 @@ eth_dev_info(struct rte_eth_dev *dev,
-     dev_info->min_rx_bufsize = 0;
-
-     dev_info->tx_offload_capa = DEV_TX_OFFLOAD_MULTI_SEGS |
-   -       DEV_TX_OFFLOAD_VLAN_INSERT;
-   - dev_info->rx_offload_capa = DEV_RX_OFFLOAD_VLAN_STRIP;
-   +       DEV_TX_OFFLOAD_VLAN_INSERT |
-   +       DEV_TX_OFFLOAD_UDP_CKSUM |
-   +       DEV_TX_OFFLOAD_TCP_CKSUM |
-   +       DEV_TX_OFFLOAD_IPV4_CKSUM |
-   +       DEV_TX_OFFLOAD_TCP_TSO;
-   + dev_info->rx_offload_capa = DEV_RX_OFFLOAD_VLAN_STRIP |
-   +       DEV_RX_OFFLOAD_TCP_CKSUM |
-   +       DEV_RX_OFFLOAD_UDP_CKSUM |
-   +       DEV_RX_OFFLOAD_IPV4_CKSUM |
-   +       DEV_RX_OFFLOAD_TCP_LRO;
-    }
-
-Compile DPDK as following::
-
-   CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib --default-library=static x86_64-native-linuxapp-gcc
-   ninja -C x86_64-native-linuxapp-gcc -j 110
-
 Test flow
 =========
 
@@ -99,10 +53,6 @@ NIC2(In kernel) -> NIC1(DPDK) -> testpmd(csum fwd) -> Vhost -> Virtio-net
 
 Test Case1: DPDK GRO test with two queues and two CBDMA channels using tcp/ipv4 traffic
 =======================================================================================
-
-Test flow
-=========
-
 
 1. Connect two nic port directly, put nic2 into another namesapce and turn on the tso of this nic port by below cmds::
 
