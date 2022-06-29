@@ -164,10 +164,17 @@ class TestMultiprocess(TestCase):
 
     def random_packet(self, pkt_num):
         pkt = Packet()
-        pkt.generate_random_pkts(
-            pktnum=pkt_num,
-            dstmac="00:11:22:33:44:55",
-        )
+        if self.kdriver == "i40e":
+            pkt.generate_random_pkts(
+                pktnum=pkt_num,
+                dstmac="00:11:22:33:44:55",
+                random_type=["IP_RAW", "IPv6_RAW"],
+            )
+        else:
+            pkt.generate_random_pkts(
+                pktnum=pkt_num,
+                dstmac="00:11:22:33:44:55",
+            )
         pkt.send_pkt(crb=self.tester, tx_port=self.tester_ifaces[0], count=1)
 
     def specify_packet(self, que_num):

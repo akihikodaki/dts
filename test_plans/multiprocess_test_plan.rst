@@ -229,6 +229,7 @@ summarize all received packets and check whether it is bigger than or equal to t
 
 2. send some packets,the number of packets is a random value between 20 and 256, packet type including IPV6/4,TCP/UDP,
    refer to Random_Packet
+   Note::I40e only rss for IP and IPv6 packets by default
 
 3. stop all process and check output::
 

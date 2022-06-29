@@ -420,6 +420,7 @@ class Packet(object):
         "ARP": {"layers": ["ether", "arp"], "cfgload": False},
         "LLDP": {"layers": ["ether", "lldp"], "cfgload": False},
         "IP_RAW": {"layers": ["ether", "ipv4", "raw"], "cfgload": True},
+        "IPv6_RAW": {"layers": ["ether", "ipv6", "raw"], "cfgload": True},
         "TCP": {"layers": ["ether", "ipv4", "tcp", "raw"], "cfgload": True},
         "UDP": {"layers": ["ether", "ipv4", "udp", "raw"], "cfgload": True},
         "VLAN_UDP": {
