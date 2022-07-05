@@ -65,9 +65,15 @@ class TestDistributor(TestCase):
         )
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
-        self.verify(
-            cycles_single > cycles_burst * 2, "Burst performance should be much better"
-        )
+        if "force-max-simd-bitwidth=64" in eal_para:
+            self.verify(
+                cycles_single > cycles_burst, "Burst performance should be much better"
+            )
+        else:
+            self.verify(
+                cycles_single > cycles_burst * 2,
+                "Burst performance should be much better",
+            )
 
     def test_perf_distributor(self):
         """

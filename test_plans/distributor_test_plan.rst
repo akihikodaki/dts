@@ -40,6 +40,10 @@ Compared CPU cycles for normal distributor and burst API
 
 Verify burst distributor API cost much less cycles then normal version
 
+The novector path severely limits the performance of the burst mode of the distributor.
+so novector: expect single mode > burst mode
+vector: expect single mode > burst mode * 2
+
 Test case: Distribute with maximum workers
 ==========================================
 Start distributor sample with 63(0xeffffffffffffffff0) workers
