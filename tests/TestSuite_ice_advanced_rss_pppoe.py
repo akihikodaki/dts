@@ -5153,8 +5153,11 @@ class Advanced_rss_pppoe(TestCase):
             func(out, hash_key)
 
     def _two_rules_operation(
-        self, rule_list, pkt_list, action_list1=None, action_list2=None
+        self, rule_list, pkt_list, action_list1=None, action_list2=None, **kwargs
     ):
+        destroy_test = (
+            kwargs.get("destroy_test") if kwargs.get("destroy_test") else False
+        )
         for i in range(0, len(rule_list)):
             self.rsspro.create_rule(rule_list[i])
             self.rsspro.check_rule(rule_list=["{}".format(i)])
@@ -5163,15 +5166,16 @@ class Advanced_rss_pppoe(TestCase):
                 self._send_pkt_action(pkt_list)
             else:
                 self._send_pkt_action(pkt_list)
-        # destory rule 1
-        self.rsspro.destroy_rule(rule_id=1)
-        self.rsspro.check_rule(rule_list=["1"], stats=False)
-        pkt_list[1], pkt_list[2] = pkt_list[2], pkt_list[1]
-        self._send_pkt_action(pkt_list)
-        # destory rule 0
-        self.rsspro.destroy_rule(rule_id=0)
-        self.rsspro.check_rule(rule_list=["0"], stats=False)
-        self._send_pkt_action(pkt_list, action_list=["check_no_hash"] * 3)
+        if destroy_test:
+            # destroy rule 1
+            self.rsspro.destroy_rule(rule_id=1)
+            self.rsspro.check_rule(rule_list=["1"], stats=False)
+            pkt_list[1], pkt_list[2] = pkt_list[2], pkt_list[1]
+            self._send_pkt_action(pkt_list)
+            # destroy rule 0
+            self.rsspro.destroy_rule(rule_id=0)
+            self.rsspro.check_rule(rule_list=["0"], stats=False)
+            self._send_pkt_action(pkt_list, action_list=["check_no_hash"] * 3)
 
     def test_two_rules_smaller_first_larger_later(
         self,
@@ -5190,7 +5194,9 @@ class Advanced_rss_pppoe(TestCase):
             'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=19,dport=23)/Raw("x"*80)',
             'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.3", dst="192.168.1.5")/UDP(sport=25,dport=99)/Raw("x"*80)',
         ]
-        self._two_rules_operation(rule_list, pkt_list, action_list2=["check_no_hash"])
+        self._two_rules_operation(
+            rule_list, pkt_list, action_list2=["check_no_hash"], destroy_test=True
+        )
         self.verify(not self.rsspro.error_msgs, "some subcases failed")
 
     def test_two_rules_larger_first_smaller_later(self):
@@ -5208,4 +5214,6 @@ class Advanced_rss_pppoe(TestCase):
             'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.3", dst="192.168.1.5")/UDP(sport=25,dport=99)/Raw("x"*80)',
             'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=19,dport=23)/Raw("x"*80)',
         ]
-        self._two_rules_operation(rule_list, pkt_list, action_list2=["check_no_hash"])
+        self._two_rules_operation(
+            rule_list, pkt_list, action_list2=["check_no_hash"], destroy_test=True
+        )
