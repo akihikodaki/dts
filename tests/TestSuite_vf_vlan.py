@@ -6,6 +6,7 @@ import random
 import re
 import time
 
+import framework.utils as utils
 from framework.packet import Packet
 from framework.pmd_output import PmdOutput
 from framework.settings import get_nic_name
@@ -62,7 +63,17 @@ class TestVfVlan(TestCase):
         self.host_intf0 = self.dut.ports_info[self.used_dut_port_0]["intf"]
         tester_port = self.tester.get_local_port(self.used_dut_port_0)
         self.tester_intf0 = self.tester.get_interface(tester_port)
-        if self.is_eth_series_nic(800) and self.default_stats:
+        # check driver whether there is flag vf-vlan-pruning.
+        if not self.default_stats:
+            self.logger.warning(
+                utils.RED(
+                    f"{self.kdriver + '_' + self.driver_version} driver does not have vf-vlan-pruning flag."
+                )
+            )
+        if (
+            any([self.is_eth_series_nic(800), self.kdriver == "i40e"])
+            and self.default_stats
+        ):
             self.dut.send_expect(
                 "ethtool --set-priv-flags %s %s on" % (self.host_intf0, self.flag), "# "
             )
@@ -233,7 +244,11 @@ class TestVfVlan(TestCase):
         self.vm0_testpmd.execute_cmd("start")
 
         out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
-        if self.kdriver == "i40e" and self.driver_version < "2.13.10":
+        if (
+            (self.kdriver == "i40e" and self.driver_version < "2.13.10")
+            or (self.kdriver == "i40e" and not self.default_stats)
+            or (self.kdriver == "ice" and not self.default_stats)
+        ):
             self.verify("received" in out, "Failed to received vlan packet!!!")
         else:
             self.verify("received" not in out, "Received vlan packet without pvid!!!")
@@ -354,7 +369,11 @@ class TestVfVlan(TestCase):
 
         # send packet with vlan
         out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
-        if self.kdriver == "i40e" and self.driver_version < "2.13.10":
+        if (
+            (self.kdriver == "i40e" and self.driver_version < "2.13.10")
+            or (self.kdriver == "i40e" and not self.default_stats)
+            or (self.kdriver == "ice" and not self.default_stats)
+        ):
             self.verify(
                 "received 1 packets" in out,
                 "Received mismatched vlan packet while vlan filter on",
@@ -415,7 +434,10 @@ class TestVfVlan(TestCase):
 
     def tear_down_all(self):
         self.destroy_vm_env()
-        if self.is_eth_series_nic(800) and self.default_stats:
+        if (
+            any([self.is_eth_series_nic(800), self.kdriver == "i40e"])
+            and self.default_stats
+        ):
             self.dut.send_expect(
                 "ethtool --set-priv-flags %s %s %s"
                 % (self.host_intf0, self.flag, self.default_stats),
