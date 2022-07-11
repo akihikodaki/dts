@@ -28,6 +28,9 @@ Get the pci device id of DUT, for example::
     0000:18:00.0 'Device 1592' if=enp24s0f0 drv=ice unused=igb_uio
     0000:18:00.1 'Device 1592' if=enp24s0f1 drv=ice unused=igb_uio
 
+If the drive support vf-vlan-pruning flag::
+    ethtool --set-priv-flags $PF_INTF vf-vlan-pruning on
+
 Create 1 VF from 1 kernel PF::
 
     echo 1 > /sys/bus/pci/devices/0000\:18\:00.0/sriov_numvfs
