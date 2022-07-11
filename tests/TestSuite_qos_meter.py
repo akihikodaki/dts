@@ -41,12 +41,15 @@ class TestQosMeter(TestCase):
         """
         pass
 
-    def build_app_and_send_package(self):
+    def build_app_and_send_package(self, payload_size_block):
         """
         Build app and send pkt
         return bps and pps
         """
-        self.dut.send_expect("rm -rf ./examples/qos_meter/build", "#")
+        self.dut.send_expect(
+            "rm -rf ./examples/qos_meter/build",
+            "#",
+        )
         out = self.dut.build_dpdk_apps("./examples/qos_meter")
         self.verify("Error" not in out, "Compilation error")
         self.verify("No such" not in out, "Compilation error")
@@ -56,9 +59,9 @@ class TestQosMeter(TestCase):
         app_name = self.dut.apps_name["qos_meter"]
         cmd = app_name + eal_params + "-- -p 0x3"
         self.dut.send_expect(cmd, "TX = 1")
-        payload_size = 64 - HEADER_SIZE["eth"] - HEADER_SIZE["ip"]
+        payload_size = payload_size_block - HEADER_SIZE["eth"] - HEADER_SIZE["ip"]
         dts_mac = self.dut.get_mac_address(self.dut_ports[self.rx_port])
-        pkt = Packet(pkt_type="IP_RAW")
+        pkt = Packet(pkt_type="IP_RAW", pkt_len=payload_size)
         pkt.save_pcapfile(self.tester, "%s/tester.pcap" % self.tester.tmp_file)
         stream_option = {
             "pcap": "%s/tester.pcap" % self.tester.tmp_file,
@@ -102,7 +105,7 @@ class TestQosMeter(TestCase):
             r"sed -i -e '/^#define APP_MODE /s/APP_MODE_*/APP_MODE_SRTCM_COLOR_BLIND/2' ./examples/qos_meter/main.c",
             "#",
         )
-        bps, pps = self.build_app_and_send_package()
+        bps, pps = self.build_app_and_send_package(64)
         self.verify_throughput(pps, self.aware_pps)
 
     def test_perf_srTCM_blind_GREEN(self):
@@ -117,7 +120,7 @@ class TestQosMeter(TestCase):
             r"sed -i -e '/^#define APP_MODE /s/APP_MODE_*/APP_MODE_SRTCM_COLOR_BLIND/2' ./examples/qos_meter/main.c",
             "#",
         )
-        bps, pps = self.build_app_and_send_package()
+        bps, pps = self.build_app_and_send_package(64)
         self.verify_throughput(pps, self.blind_pps)
 
     def test_perf_srTCM_aware_RED(self):
@@ -132,7 +135,7 @@ class TestQosMeter(TestCase):
             r"sed -i -e '/^#define APP_MODE /s/APP_MODE_*/APP_MODE_SRTCM_COLOR_AWARE/2' ./examples/qos_meter/main.c",
             "#",
         )
-        bps, pps = self.build_app_and_send_package()
+        bps, pps = self.build_app_and_send_package(64)
         self.verify_throughput(pps, self.blind_pps)
 
     def test_perf_trTCM_blind(self):
@@ -147,7 +150,7 @@ class TestQosMeter(TestCase):
             r"sed -i -e '/^#define APP_MODE /s/APP_MODE_*/APP_MODE_TRTCM_COLOR_BLIND/2' ./examples/qos_meter/main.c",
             "#",
         )
-        bps, pps = self.build_app_and_send_package()
+        bps, pps = self.build_app_and_send_package(64)
         self.verify_throughput(pps, self.aware_pps)
 
     def test_perf_trTCM_aware(self):
@@ -162,8 +165,145 @@ class TestQosMeter(TestCase):
             r"sed -i -e '/^#define APP_MODE /s/APP_MODE_*/APP_MODE_TRTCM_COLOR_AWARE/2' ./examples/qos_meter/main.c",
             "#",
         )
-        bps, pps = self.build_app_and_send_package()
+        bps, pps = self.build_app_and_send_package(64)
         self.verify_throughput(pps, self.blind_pps)
+
+    def test_perf_trTCM_blind_changed_CBS_EBS_64B_frame(self):
+        """
+        trTCM blind changed CBS and EBS
+        """
+        self.dut.send_expect(
+            r"sed -i -e '/#define APP_PKT_COLOR_POS/s/[0-9]/5/g' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '/^#define APP_MODE\s/s/APP_MODE_.*/APP_MODE_TRTCM_COLOR_BLIND/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '91 s/cbs = [0-9]*,/cbs = 64,/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '100 s/cbs = [0-9]*,/cbs = 64,/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '92 s/[0-9]*$/512/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        bps, pps = self.build_app_and_send_package(64)
+        self.verify_throughput(pps, self.blind_pps)
+
+    def test_perf_trTCM_blind_changed_CBS_EBS_82B_frame(self):
+        """
+        trTCM blind changed CBS and EBS
+        """
+        self.dut.send_expect(
+            r"sed -i -e '/#define APP_PKT_COLOR_POS/s/[0-9]/5/g' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '/^#define APP_MODE\s/s/APP_MODE_.*/APP_MODE_SRTCM_COLOR_BLIND/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '91 s/cbs = [0-9]*,/cbs = 64,/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '100 s/cbs = [0-9]*,/cbs = 64,/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '92 s/[0-9]*$/512/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        bps, pps = self.build_app_and_send_package(82)
+        self.verify_throughput(pps, self.blind_pps)
+
+    def test_perf_trTCM_blind_changed_CBS_EBS_83B_frame(self):
+        """
+        trTCM blind changed CBS and EBS
+        """
+        self.dut.send_expect(
+            r"sed -i -e '/#define APP_PKT_COLOR_POS/s/[0-9]/5/g' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '/^#define APP_MODE\s/s/APP_MODE_.*/APP_MODE_SRTCM_COLOR_BLIND/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '91 s/cbs = [0-9]*,/cbs = 64,/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '100 s/cbs = [0-9]*,/cbs = 64,/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '92 s/[0-9]*$/512/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        bps, pps = self.build_app_and_send_package(83)
+        self.verify_throughput(pps, self.blind_pps)
+
+    def test_perf_trTCM_blind_changed_CBS_EBS_146B_frame(self):
+        """
+        trTCM blind changed CBS and EBS
+        """
+        tc_pps = 10000000
+        self.dut.send_expect(
+            r"sed -i -e '/#define APP_PKT_COLOR_POS/s/[0-9]/5/g' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '/^#define APP_MODE\s/s/APP_MODE_.*/APP_MODE_SRTCM_COLOR_BLIND/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '91 s/cbs = [0-9]*,/cbs = 64,/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '100 s/cbs = [0-9]*,/cbs = 64,/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '92 s/[0-9]*$/512/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        bps, pps = self.build_app_and_send_package(146)
+        self.verify_throughput(pps, tc_pps)
+
+    def test_perf_trTCM_blind_changed_CBS_EBS_530B_frame(self):
+        """
+        trTCM blind changed CBS and EBS
+        """
+        tc_pps = 2500000
+        self.dut.send_expect(
+            r"sed -i -e '/#define APP_PKT_COLOR_POS/s/[0-9]/5/g' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '/^#define APP_MODE\s/s/APP_MODE_.*/APP_MODE_SRTCM_COLOR_BLIND/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '91 s/cbs = [0-9]*,/cbs = 64,/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '100 s/cbs = [0-9]*,/cbs = 64,/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        self.dut.send_expect(
+            r"sed -i -e '92 s/[0-9]*$/512/' ./examples/qos_meter/main.c",
+            "#",
+        )
+        bps, pps = self.build_app_and_send_package(530)
+        self.verify_throughput(pps, tc_pps)
 
     def tear_down(self):
         """
