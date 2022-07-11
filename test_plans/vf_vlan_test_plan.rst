@@ -21,6 +21,10 @@ Prerequisites
      0000:87:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f0 drv=i40e unused=
      0000:87:00.1 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f1 drv=i40e unused=
 
+     If the drive support vf-vlan-pruning flag:
+     ethtool --set-priv-flags ens259f0 vf-vlan-pruning on
+     ethtool --set-priv-flags ens259f1 vf-vlan-pruning on
+
      echo 1 > /sys/bus/pci/devices/0000\:87\:00.0/sriov_numvfs
      echo 1 > /sys/bus/pci/devices/0000\:87\:00.1/sriov_numvfs
 
