@@ -96,7 +96,17 @@ class TestKernelpfIavf(TestCase):
         # bind to default driver
         self.bind_nic_driver(self.dut_ports, driver="")
         self.used_dut_port = self.dut_ports[0]
-        if self.is_eth_series_nic(800) and self.default_stats:
+        # check driver whether there is flag vf-vlan-pruning.
+        if not self.default_stats:
+            self.logger.warning(
+                utils.RED(
+                    f"{self.kdriver + '_' + self.driver_version} driver does not have vf-vlan-pruning flag."
+                )
+            )
+        if (
+            any([self.is_eth_series_nic(800), self.kdriver == "i40e"])
+            and self.default_stats
+        ):
             self.dut.send_expect(
                 "ethtool --set-priv-flags %s %s on" % (self.host_intf, self.flag), "# "
             )
@@ -119,7 +129,6 @@ class TestKernelpfIavf(TestCase):
             self.dut.send_expect(
                 "ip link set %s vf 0 mac %s" % (self.host_intf, self.vf_mac), "# "
             )
-
         try:
 
             for port in self.sriov_vfs_port:
@@ -453,7 +462,11 @@ class TestKernelpfIavf(TestCase):
         time.sleep(1)
         tcpdump_out = self.get_tcpdump_package()
         receive_pkt = re.findall("vlan %s" % random_vlan, tcpdump_out)
-        if self.kdriver == "i40e" and self.driver_version < "2.13.10":
+        if (
+            (self.kdriver == "i40e" and self.driver_version < "2.13.10")
+            or (self.kdriver == "i40e" and not self.default_stats)
+            or (self.kdriver == "ice" and not self.default_stats)
+        ):
             self.verify(len(receive_pkt) == 2, "Failed to received vlan packet!!!")
         else:
             self.verify(len(receive_pkt) == 1, "Failed to received vlan packet!!!")
@@ -810,7 +823,11 @@ class TestKernelpfIavf(TestCase):
         self.scapy_send_packet(self.vf_mac, self.tester_intf, vlan_flags=True, count=10)
         out = self.vm_dut.get_session_output()
         packets = len(re.findall("received 1 packets", out))
-        if self.kdriver == "i40e" and self.driver_version < "2.13.10":
+        if (
+            (self.kdriver == "i40e" and self.driver_version < "2.13.10")
+            or (self.kdriver == "i40e" and not self.default_stats)
+            or (self.kdriver == "ice" and not self.default_stats)
+        ):
             self.verify(packets == 10, "Not receive expected packet")
         else:
             self.verify(packets == 0, "Receive expected packet")
@@ -892,7 +909,10 @@ class TestKernelpfIavf(TestCase):
         if self.env_done:
             self.destroy_vm_env()
 
-        if self.is_eth_series_nic(800) and self.default_stats:
+        if (
+            any([self.is_eth_series_nic(800), self.kdriver == "i40e"])
+            and self.default_stats
+        ):
             self.dut.send_expect(
                 "ethtool --set-priv-flags %s %s %s"
                 % (self.host_intf, self.flag, self.default_stats),
