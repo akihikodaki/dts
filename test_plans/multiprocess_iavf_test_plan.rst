@@ -939,9 +939,9 @@ Test Case: test_multiprocess_negative_exceed_process_num
 ========================================================
 1. start 3 process exceed the specifed num 2::
 
-   ./dpdk-testpmd -l 1,2 --proc-type=primary -a 0000:05:01.0  --log-level=ice,7 -- -i --rxq=8 --txq=8 --num-procs=2 --proc-id=0
-   ./dpdk-testpmd -l 3,4 --proc-type=primary -a 0000:05:01.0  --log-level=ice,7 -- -i --rxq=8 --txq=8 --num-procs=2 --proc-id=1
-   ./dpdk-testpmd -l 5,6 --proc-type=primary -a 0000:05:01.0  --log-level=ice,7 -- -i --rxq=8 --txq=8 --num-procs=2 --proc-id=2
+   ./dpdk-testpmd -l 1,2 --proc-type=auto -a 0000:05:01.0  --log-level=ice,7 -- -i --rxq=8 --txq=8 --num-procs=2 --proc-id=0
+   ./dpdk-testpmd -l 3,4 --proc-type=auto -a 0000:05:01.0  --log-level=ice,7 -- -i --rxq=8 --txq=8 --num-procs=2 --proc-id=1
+   ./dpdk-testpmd -l 5,6 --proc-type=auto -a 0000:05:01.0  --log-level=ice,7 -- -i --rxq=8 --txq=8 --num-procs=2 --proc-id=2
 
 2. check the ouput of each process::
 
