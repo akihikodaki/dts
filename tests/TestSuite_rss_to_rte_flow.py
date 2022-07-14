@@ -395,10 +395,10 @@ class TestRSS_to_Rteflow(TestCase):
 
         # Show port default RSS functions
         self.dut.send_expect(
-            "show port 0 rss-hash", "ipv4-frag ipv4-other ipv6-frag ipv6-other"
+            "show port 0 rss-hash", "ipv4-frag  ipv4-other  ipv6-frag  ipv6-other"
         )
         self.dut.send_expect(
-            "show port 1 rss-hash", "ipv4-frag ipv4-other ipv6-frag ipv6-other"
+            "show port 1 rss-hash", "ipv4-frag  ipv4-other  ipv6-frag  ipv6-other"
         )
 
         self.send_check_100_packet_queue("ipv4-other", "all", port_id=0)
@@ -465,7 +465,7 @@ class TestRSS_to_Rteflow(TestCase):
 
         self.dut.send_expect(
             "show port 1 rss-hash",
-            "ipv4-frag ipv4-tcp ipv4-udp ipv4-sctp ipv4-other ipv6-frag ipv6-tcp ipv6-udp ipv6-sctp ipv6-other l2-payload sctp",
+            "sctp  ipv4-frag  ipv4-tcp  ipv4-udp  ipv4-sctp  ipv4-other\r\n  ipv6-frag  ipv6-tcp  ipv6-udp  ipv6-sctp  ipv6-other\r\n  l2-payload",
         )
         # send the packets and verify the results
         ptype_list1 = [
@@ -615,7 +615,7 @@ class TestRSS_to_Rteflow(TestCase):
             "created",
         )
         self.dut.send_expect(
-            "show port 0 rss-hash", "ipv4-frag ipv4-other ipv6-frag ipv6-other"
+            "show port 0 rss-hash", "ipv4-frag  ipv4-other  ipv6-frag  ipv6-other"
         )
 
         # send the packets and verify the results
@@ -646,7 +646,7 @@ class TestRSS_to_Rteflow(TestCase):
         # flush rule on port 0
         self.dut.send_expect("flow flush 0", "testpmd> ")
         self.dut.send_expect(
-            "show port 0 rss-hash", "ipv4-frag ipv4-other ipv6-frag ipv6-other"
+            "show port 0 rss-hash", "ipv4-frag  ipv4-other  ipv6-frag  ipv6-other"
         )
         # send the packets and verify the results
         self.send_check_100_packet_queue("ipv4-other", "all", port_id=0)
@@ -1427,7 +1427,7 @@ class TestRSS_to_Rteflow(TestCase):
         time.sleep(2)
 
         # Show port default RSS functions
-        self.dut.send_expect("show port 0 rss-hash", "ipv4 ipv6 ipv6-ex")
+        self.dut.send_expect("show port 0 rss-hash", "ipv4  ipv6  ipv6-ex")
         ptype_list1 = [
             "ipv4-other",
             "ipv4-frag",
@@ -1457,7 +1457,7 @@ class TestRSS_to_Rteflow(TestCase):
         )
         self.dut.send_expect(
             "show port 0 rss-hash",
-            "ipv4 ipv4-tcp ipv4-udp ipv6 ipv6-tcp ipv6-udp ipv6-ex ipv6-tcp-ex ipv6-udp-ex",
+            "udp  tcp  ipv4  ipv4-tcp  ipv4-udp  ipv6  ipv6-tcp  ipv6-udp\r\n  ipv6-ex  ipv6-tcp-ex  ipv6-udp-ex",
         )
         self.send_check_100_packet_queue(ptype_list1, "all", port_id=0)
 
@@ -1489,7 +1489,7 @@ class TestRSS_to_Rteflow(TestCase):
         time.sleep(2)
 
         # Show port default RSS fucntions
-        self.dut.send_expect("show port 0 rss-hash", "ipv4 ipv6 ipv6-ex")
+        self.dut.send_expect("show port 0 rss-hash", "ipv4  ipv6  ipv6-ex")
         # enable ipv4-udp rss function
         self.dut.send_expect(
             "flow create 0 ingress pattern end actions rss types ipv4-udp end / end",
@@ -1664,7 +1664,7 @@ class TestRSS_to_Rteflow(TestCase):
                 "created",
             )
         self.dut.send_expect(
-            "show port 0 rss-hash", "ipv4-tcp ipv4-udp ipv6-udp ipv6-udp-ex"
+            "show port 0 rss-hash", "ipv4-tcp  ipv4-udp  ipv6-udp  ipv6-udp-ex"
         )
         ptype_list1 = ["ipv4-udp", "ipv4-tcp", "ipv6-udp"]
         ptype_list2 = [
@@ -1700,7 +1700,7 @@ class TestRSS_to_Rteflow(TestCase):
                 "flow create 0 ingress pattern end actions rss types ipv4 ipv6 end queues 3 7 end / end",
                 "created",
             )
-        self.dut.send_expect("show port 0 rss-hash", "ipv4 ipv6")
+        self.dut.send_expect("show port 0 rss-hash", "ipv4  ipv6")
         ptype_list3 = [
             "ipv4-other",
             "ipv4-frag",
@@ -1788,7 +1788,7 @@ class TestRSS_to_Rteflow(TestCase):
                 "flow create 0 ingress pattern end actions rss types ipv6-tcp ipv4-udp end queues 5 6 7 end / end",
                 "created",
             )
-        self.dut.send_expect("show port 0 rss-hash", "ipv4-udp ipv6-tcp")
+        self.dut.send_expect("show port 0 rss-hash", "ipv4-udp  ipv6-tcp")
 
         # send the packets and verify the results
         ptype_list2 = ["ipv4-udp", "ipv6-tcp"]
