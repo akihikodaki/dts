@@ -422,7 +422,6 @@ class TestNvgre(TestCase):
         # performance test cycle
         self.test_cycles = [
             {"cores": "1S/1C/1T", "Mpps": {}, "pct": {}},
-            {"cores": "1S/1C/2T", "Mpps": {}, "pct": {}},
             {"cores": "1S/2C/1T", "Mpps": {}, "pct": {}},
         ]
 
