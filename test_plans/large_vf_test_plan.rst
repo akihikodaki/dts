@@ -36,7 +36,7 @@ Note::
      --total-num-mbufs=N, N is mbuf number, usually allocate 512 mbuf for one
      queue, if use 3 VFs, N >= 512*256*3=393216.
 
-Test case: 3 Max VFs + 256 queues
+Test case: multi VFs + 256 queues
 =================================
 
 Subcase 1 : multi fdir for 256 queues of consistent queue group
@@ -308,12 +308,17 @@ or::
 Fail to setup test.
 
 
-Subcase 7: negative: fail to setup 256 queues when more than 3 VFs
+Subcase 7: negative: fail to setup 256 queues when more than 2 VFs
 ------------------------------------------------------------------
-Create 4 VFs.
+Create 3 VFs.
 Bind all VFs to vfio-pci.
 Fail to start testpmd with "--txq=256 --rxq=256".
 
+.. note::
+
+    For SW4.0 + ice-1.9.5, the available queue is 767 in 2 port E810 nic, it support 2 vfs start testpmd with 256 queue
+
+    For SW3.2 + ice-1.8.3, the available queue is 943 in 2 port E810 nic, it support 3 vfs start testpmd with 256 queue
 
 Test case: 128 Max VFs + 4 queues (default)
 ===========================================

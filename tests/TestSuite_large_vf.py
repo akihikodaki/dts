@@ -355,7 +355,9 @@ class TestLargeVf(TestCase):
                 elif subcase_name == "test_more_than_3_vfs_256_queues":
                     self.pmd_output.execute_cmd("quit", "#")
                     # start testpmd use 256 queues
-                    for i in range(self.vf_num + 1):
+                    # for CVL 2 ports, the available queue is 767 for ice-1.9.5(SW4.0)
+                    _vfs_num = self.vf_num - 1
+                    for i in range(_vfs_num + 1):
                         if self.max_vf_num == 64:
                             self.pmdout_list[0].start_testpmd(
                                 param=tv["param"],
@@ -379,7 +381,7 @@ class TestLargeVf(TestCase):
                             self.pmdout_list[0].execute_cmd("quit", "# ")
                             break
                         else:
-                            if i < self.vf_num:
+                            if i < _vfs_num:
                                 self.pmdout_list[i].start_testpmd(
                                     param=tv["param"],
                                     ports=[self.sriov_vfs_port[i].pci],
@@ -406,7 +408,7 @@ class TestLargeVf(TestCase):
                                 self.pmdout_list[0].execute_cmd("quit", "# ")
                                 self.pmdout_list[1].execute_cmd("quit", "# ")
                                 self.pmdout_list[2].execute_cmd("quit", "# ")
-                                if self.vf_num > 3:
+                                if _vfs_num > 3:
                                     self.pmdout_list[3].execute_cmd("quit", "# ")
                                     self.pmdout_list[4].execute_cmd("quit", "# ")
                                     self.pmdout_list[5].execute_cmd("quit", "# ")
@@ -645,7 +647,7 @@ class TestLargeVf(TestCase):
             )
             self.check_txonly_pkts(rxtx_num)
 
-    def test_3_vfs_256_queues(self):
+    def test_multi_vfs_256_queues(self):
         self.create_iavf(self.vf_num + 1)
         self.launch_testpmd("--rxq=256 --txq=256", total=True)
         self.config_testpmd()
