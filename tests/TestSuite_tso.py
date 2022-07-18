@@ -43,7 +43,7 @@ class TestTSO(TestCase):
         self.loading_sizes = [128, 800, 801, 1700, 2500]
         self.rxfreet_values = [0, 8, 16, 32, 64, 128]
 
-        self.test_cycles = [{"cores": "1S/1C/2T", "Mpps": {}, "pct": {}}]
+        self.test_cycles = [{"cores": "", "Mpps": {}, "pct": {}}]
 
         self.table_header = ["Frame Size"]
         for test_cycle in self.test_cycles:
