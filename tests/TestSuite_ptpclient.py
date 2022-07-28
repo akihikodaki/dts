@@ -7,7 +7,9 @@ DPDK Test suite.
 Test support of IEEE1588 Precise Time Protocol.
 """
 
+import os
 import re
+import subprocess
 import time
 
 import framework.utils as utils
@@ -146,11 +148,24 @@ class TestPtpClient(TestCase):
 
         self.verify(tester_out == dut_out, "the DUT time synchronous error")
 
+    def check_process_killed(self, name, timeout=5):
+        for one in range(timeout):
+            processes = subprocess.Popen(
+                ["pgrep", "-i", name], stdout=subprocess.PIPE, shell=False
+            )
+            response = processes.communicate()[0]
+            pids = [int(pid) for pid in response.split()]
+            if pids:
+                time.sleep(1)
+            else:
+                return True
+
     def tear_down(self):
         """
         Run after each test case.
         """
         self.tester.send_expect("killall ptp4l", "# ")
+        self.check_process_killed(name="ptp4l")
 
     def tear_down_all(self):
         """
