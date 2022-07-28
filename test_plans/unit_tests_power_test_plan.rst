@@ -19,6 +19,11 @@ script (launched using ``make test``) that sends commands to
 the application and checks the results. A test report is displayed on
 stdout.
 
+.. Note::
+
+   * In the BIOS, turn on SpeedStep.
+
+
 The steps to run the unit test manually are as follow::
 
 
