@@ -197,6 +197,7 @@ The following are the test plans for the DPDK DTS automated test system.
     power_pmd_test_plan
     power_pstate_test_plan
     power_telemetry_test_plan
+    power_throughput_test_plan
     vmdq_test_plan
     vf_l3fwd_test_plan
     softnic_test_plan
@@ -277,7 +278,6 @@ The following are the test plans for the DPDK DTS automated test system.
     flow_classify_test_plan
     dpdk_hugetlbfs_mount_size_test_plan
     nic_single_core_perf_test_plan
-    power_managerment_throughput_test_plan
     iavf_test_plan
     packet_capture_test_plan
     packet_ordering_test_plan
