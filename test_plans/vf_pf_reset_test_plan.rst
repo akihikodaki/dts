@@ -396,6 +396,10 @@ Test Case 6: vlan rx restore -- create one vf on each pf
 Test Case 7: vlan tx restore
 ============================
 
+.. note::
+
+   ice nic need set dut tx vf port spoofchk off: ip link set dev {pf_interface} vf {tx_vf} spoofchk off
+
 1. Execute the step1-step3 of test case 1
 
 2. Run testpmd::
