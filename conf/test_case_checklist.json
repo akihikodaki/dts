@@ -3768,8 +3768,7 @@
                 "ALL"
             ],
             "NIC": [
-                "ICE_25G-E810C_SFP",
-		        "ICE_100G-E810C_QSFP"
+                ""
             ],
             "Target": [
                 "ALL"

@@ -201,7 +201,8 @@ class TestVfPfReset(TestCase):
         tx_port="",
         vm=False,
     ):
-        inst = self.tester.tcpdump_sniff_packets(tester_intf)
+        filter = [{"layer": "ether", "config": {"dst": "not ff:ff:ff:ff:ff:ff"}}]
+        inst = self.tester.tcpdump_sniff_packets(tester_intf, filters=filter)
         if vlan:
             out = self.send_packet(
                 vf_mac, num=count, vlan_id=vlan, tx_port=tx_port, vm=vm
@@ -946,6 +947,11 @@ class TestVfPfReset(TestCase):
         """
         vlan tx restore
         """
+        # ice nic need set tx vf spoofchk off
+        if self.kdriver == "ice":
+            self.dut.send_expect(
+                "ip link set dev {} vf 1 spoofchk off".format(self.host_intf_0), "# "
+            )
         # Set mac
         self.ip_link_set(
             host_intf=self.host_intf_0,
