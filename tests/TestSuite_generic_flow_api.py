@@ -3438,6 +3438,99 @@ class TestGeneric_flow_api(TestCase):
                 rule_num = extrapkt_rulenum["rulenum"]
                 self.verify_rulenum(rule_num + 1)
 
+    support_nic = [
+        "I40E_10G-SFP_XL710",
+        "I40E_25G-25G_SFP28",
+        "I40E_40G-QSFP_A",
+        "I40E_10G-10G_BASE_T_BC",
+        "I40E_40G-QSFP_B",
+        "I40E_10G-SFP_X722",
+        "I40E_10G-10G_BASE_T_X722",
+    ]
+
+    @check_supported_nic(support_nic)
+    def test_fdir_wrong_parameters(self):
+        """
+        Test case: Intel® Ethernet 700 Series fdir wrong parameters
+        """
+
+        self.pmdout.start_testpmd(
+            "%s" % self.pf_cores,
+            "--disable-rss --rxq=%d --txq=%d --pkt-filter-mode=perfect"
+            % (MAX_QUEUE + 1, MAX_QUEUE + 1),
+            "-a %s --socket-mem 1024,1024 --file-prefix=pf " % self.pf_pci,
+        )
+        self.dut.send_expect("set fwd rxonly", "testpmd> ")
+        self.dut.send_expect("set verbose 1", "testpmd> ")
+        self.dut.send_expect("start", "testpmd> ")
+        time.sleep(2)
+
+        # creat the flow rules
+        # l2-payload exceeds the  max length of raw match is 16bytes
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth type is 0x0807 / raw relative is 1 pattern is abcdefghijklmnopq / end actions queue index 1 / end",
+            "error",
+        )
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth type is 0x0807 / raw relative is 1 pattern is abcdefghijklmnopq / end actions queue index 1 / end",
+            "Exceeds maximal payload limit",
+        )
+
+        # can't set mac_addr when setting fdir filter
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 4095 / ipv6 src is 2001::3 dst is 2001::4 tc is 6 hop is 60 / tcp src is 32 dst is 33 / end actions queue index 2 / end",
+            "error",
+        )
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 4095 / ipv6 src is 2001::3 dst is 2001::4 tc is 6 hop is 60 / tcp src is 32 dst is 33 / end actions queue index 3 / end",
+            "error",
+        )
+
+        # can't change the configuration of the same packet type
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth / vlan tci is 3 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 4 / sctp src is 44 dst is 45 tag is 1 / end actions passthru / flag / end",
+            "created",
+        )
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 4 / sctp src is 34 dst is 35 tag is 1 / end actions passthru / flag / end",
+            "error",
+        )
+
+        # invalid queue ID
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth / ipv6 src is 2001::3 dst is 2001::4 tc is 6 hop is 60 / tcp src is 32 dst is 33 / end actions queue index 16 / end",
+            "error",
+        )
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth / ipv6 src is 2001::3 dst is 2001::4 tc is 6 hop is 60 / tcp src is 32 dst is 33 / end actions queue index 16 / end",
+            "error",
+        )
+        self.dut.send_expect("quit", "# ")
+        time.sleep(2)
+
+        self.dut.generate_sriov_vfs_by_port(self.dut_ports[0], 1, self.kdriver)
+        self.vf_port = self.dut.ports_info[self.dut_ports[0]]["vfs_port"][0]
+        self.vf_port.bind_driver(driver="vfio-pci")
+        self.vf_port_pci = self.dut.ports_info[self.dut_ports[0]]["sriov_vfs_pci"][0]
+        # start testpmd on vf0
+        self.pmdout.start_testpmd(
+            "default",
+            "--rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect",
+            eal_param="-a %s --socket-mem 1024,1024 --file-prefix=vf"
+            % self.vf_port_pci,
+        )
+        self.dut.send_expect("start", "testpmd>")
+        time.sleep(2)
+        # create a rule on vf that has invalid queue ID
+        self.dut.send_expect(
+            "flow validate 0 ingress transfer pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 3 / vf id is 0 / end actions queue index 4 / end",
+            "error",
+        )
+        self.dut.send_expect(
+            "flow create 0 ingress transfer pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 3 / vf id is 0 / end actions queue index 4 / end",
+            "error",
+        )
+
     def test_fdir_for_flexbytes(self):
         """
         The filter structure is different between igb, ixgbe and i40e
@@ -3485,15 +3578,6 @@ class TestGeneric_flow_api(TestCase):
             time.sleep(2)
 
             # creat the flow rules
-            # l2-payload exceeds the  max length of raw match is 16bytes
-            self.dut.send_expect(
-                "flow validate 0 ingress pattern eth type is 0x0807 / raw relative is 1 pattern is abcdefghijklmnopq / end actions queue index 1 / end",
-                "error",
-            )
-            self.dut.send_expect(
-                "flow create 0 ingress pattern eth type is 0x0807 / raw relative is 1 pattern is abcdefghijklmnopq / end actions queue index 1 / end",
-                "Exceeds maximal payload limit",
-            )
             # l2-payload equal the max length of raw match is 16bytes
             self.dut.send_expect(
                 "flow validate 0 ingress pattern eth type is 0x0807 / raw relative is 1 pattern is abcdefghijklmnop / end actions queue index 1 / end",
