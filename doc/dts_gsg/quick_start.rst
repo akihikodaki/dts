@@ -21,7 +21,7 @@ For the DPDK requirements, please consult `Data Plane Development Kit Getting St
 Hardware Recommendation
 -----------------------
 
-Our regression setups uses Intel x86 platforms with mainstream Intel ethernet cards.
+A minimum of two devices are needed in order to run DTS - a tester and DUT. Our regression setups uses Intel x86 platforms with mainstream Intel ethernet cards.
 The following platforms have been tested and are recommended.
 
 .. |reg|    unicode:: U+000AE .. REGISTERED SIGN
@@ -78,7 +78,7 @@ The following platforms have been tested and are recommended.
 Topology Example
 ----------------
 
-2 Teseter interfaces connect to 2 DUT interfaces back to back.
+2 Tester interfaces connected to 2 DUT interfaces back to back.
 
 Dependencies
 ------------
@@ -142,6 +142,9 @@ Get DTS code from remote repo.
    [root@tester ~]#  ls dts
    [root@tester dts]# conf CONTRIBUTING.TXT dep doc dts execution.cfg executions framework nics output requirements.txt test_plans tests tools version.py
 
+.. note::
+   You will need to work off of the `main` branch rather than `master` branch
+   
 Preparing DPDK tarball
 ----------------------
 
@@ -155,7 +158,7 @@ DPDK source code should be packed as "dpdk.tar.gz" and moved into dts/dep:
 Configuring DTS
 ---------------
 
-A few of files should be configured, including execution.cfg, $DTS_CFG_FOLDER/crbs, $DTS_CFG_FOLDER/ports.cfg.
+A few of files need to be configured, including execution.cfg, $DTS_CFG_FOLDER/crbs.cfg, $DTS_CFG_FOLDER/ports.cfg.
 
 execution.cfg
 ~~~~~~~~~~~~~
@@ -190,11 +193,12 @@ $DTS_CFG_FOLDER/crbs.cfg
    channels=4
    bypass_core0=True
 
+* [192.168.1.1]: IP address of the DUT system, same as crbs in execution.cfg
 * dut_ip: IP address of the DUT system, same as crbs in execution.cfg
 * dut_user: User name of DUT linux account
 * dut_passwd: Password of DUT linux account
 * tester_ip: IP address of tester
-* tester_passwd: Password of Tester linux account, user name should same as dut_user
+* tester_passwd: Password of Tester linux account, user name should be the same as dut_user
 
 $DTS_CFG_FOLDER/ports.cfg
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -208,14 +212,14 @@ $DTS_CFG_FOLDER/ports.cfg
 
 * [192.168.1.1]: same as crbs in execution.cfg and dut_ip in $DTS_CFG_FOLDER/crbs.cfg
 * pci: pci address of DUT port
-* peer: pci address of Tester port which connected to the DUT port whose pci is `pci`.
+* peer: pci address of Tester port that is connected to the DUT port, whose pci is `pci`.
 
 The topology for the configuration is:
 
 .. code-block:: console
 
    DUT port0 (0000:06:00.0) --- Tester port0 (0000:81:00.0)
-   DUT port0 (0000:06:00.1) --- Tester port0 (0000:81:00.1)
+   DUT port1 (0000:06:00.1) --- Tester port1 (0000:81:00.1)
 
 Launch DTS
 ----------
@@ -272,7 +276,7 @@ The result files are generated in dts/output.
    [root@tester output]# ls
    rst_report  dts.log  statistics.txt  TestHelloWorld.log  test_results.json  test_results.xls
 
-*   statstics.txt: summary statistics
+*   statistics.txt: summary statistics
 
 .. code-block:: console
 

@@ -25,7 +25,7 @@ DTS environment includes DUT (Device under Test), Tester and Traffic generator. 
 .. note::
 
    * If run with functional testing, DTS uses `Scapy` as traffic generator, recommend installing DTS on Tester.
-   * If run with performance testing, DTS can use `TRex` or IXIA as traffic gengerator based on your deployment and configuration, recommend installing DTS on DUT.
+   * If run with performance testing, DTS can use `TRex` or IXIA as traffic generator based on your deployment and configuration, recommend installing DTS on DUT.
      * If use `TRex`, recommend deploying `TRex` and DUT on the same machine with different sockets.
 
 Please see a functional deployment example in the following figure:

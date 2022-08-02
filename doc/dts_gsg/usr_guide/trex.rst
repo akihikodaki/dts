@@ -29,8 +29,8 @@ Extract the downloaded TREX file to /opt/trex/::
     ...
     v2.88/trex_client_v2.88.tar.gz
 
-Generate Configure File
-~~~~~~~~~~~~~~~~~~~~~~~~
+Generate Configuration File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Identify the performance test ports in tester
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -51,8 +51,8 @@ execute the command like below to list the ports::
     =====================
     <none>
 
-Generate Configure File
-^^^^^^^^^^^^^^^^^^^^^^^
+Generate Configuration File
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Assume that we use 0000:0b:00.0, 0000:0b:00.1 to connect to DUT port.
 And the ports topology as below::
 
@@ -109,8 +109,8 @@ We need to generate the trex config file as below::
 
 We could not modify the DUT mac during the configuration and modify it in the generated file /etc/trex_cfg.yaml.
 
-Modify Configure File
-^^^^^^^^^^^^^^^^^^^^^
+Modify Configuration File
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 Make sure the DUT mac of the generated TREX file is correct, and add prefix and limit_memory is better::
 
     root@tester:/opt/trex/v2.88# cat /etc/trex_cfg.yaml
@@ -137,7 +137,7 @@ Make sure the DUT mac of the generated TREX file is correct, and add prefix and 
 
 Replace system scapy with TREX scapy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-As the know trex issue -- trex scapy lib will be conflict with scapy installed in OS, we need the replace the scapy
+There is a known issue whereby trex scapy lib will conflict with scapy installed in the OS. In order to resolve this, we need to replace the scapy
 in system with trex scapy.
 
 #. backup your scapy::
@@ -227,7 +227,7 @@ The configuration should as below::
     duration=-1
     start_trex=yes
 
-As the trex_lib_path may be different in different versions, you could find the correct path as blow command::
+As the trex_lib_path may be different in different versions, you can find the correct path with the below command::
 
     root@tester:/opt/trex/v2.88# find . -name trex_stl_lib
     ./automation/trex_control_plane/interactive/trex_stl_lib
@@ -358,8 +358,8 @@ trex server using 82599/500 Series nic will quit.
 
    ./t-rex-64: line 80: 25870 Aborted                 (core dumped) ./_$(
 
-other issues
-~~~~~~~~~~~~
+Other issues / notes
+~~~~~~~~~~~~~~~~~~~~~
 
 #. linux kernel version should not be too low.
 

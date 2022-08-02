@@ -22,11 +22,11 @@ First of all, you must configure execution.cfg as below:
        x86_64-native-linuxapp-gcc
    parameters=nic_type=cfg:func=true
 
-* crbs: IP address of the DUT. The detail information is defined in file $DTS_CFG_FOLDER/crbs.cfg.
-* drivername: the driver devices used by DPDK bound to.
+* crbs: IP address of the DUT. The detailed information is defined in file $DTS_CFG_FOLDER/crbs.cfg.
+* drivername: the driver used by DPDK to bind to devices.
 * build_type: the tool for building DPDK, it can be meson.
 * rx_mode: vector instructions used in tests, it can be novector/sse/avx2/avx512. it is optional, if not set, dpdk uses avx2 by default.
-* test_suites: test suites and cases that to be executed. use ``:`` to separate suite and it's cases and use ``\`` to separate different cases.
+* test_suites: test suites and cases that to be executed. use ``:`` to separate suite and its cases, and use ``\`` to separate different cases.
 * targets: DPDK targets to be tested.
 * parameters: multiple keywords as following:
 
@@ -81,7 +81,7 @@ Then please add the detail information about your CRB in $DTS_CFG_FOLDER/crbs.co
 * dut_user: User name of DUT linux account
 * dut_passwd: Password of DUT linux account
 * tester_ip: IP address of tester
-* tester_passwd: Password of Tester linux account, user name should same as dut_user
+* tester_passwd: Password of Tester linux account, user name should be the same as dut_user
 * pktgen_group: traffic generator name, it can be ``trex`` or ``ixia``, it is optional, if not set, DTS can't do performance tests.
 * channels: number of memory channels for DPDK EAL
 * bypass_core0: skip the first core when initialize DPDK
@@ -124,7 +124,7 @@ It supports three patterns, the first one is for functional testing, the second 
   * if pktgen is ``TRex``, the `X` in ``TREX:X`` is port id in TRex configuration file, e.g. /etc/trex_cfg.yaml.
   * if pktgen is ``IXIA``, the `X` is card id ,and the `Y` is port id, which configured in DTS_CFG_FOLDER/pktgen.cfg (./conf/pktgen.cfg by default).
 
-Here are an example for functional testing:
+Here is an example for functional testing:
 
 .. code-block:: console
 
@@ -133,7 +133,7 @@ Here are an example for functional testing:
        pci=0000:06:00.0,peer=0000:81:00.0;
        pci=0000:06:00.1,peer=0000:81:00.1;
 
-Here are an example for IXIA:
+Here is an example for IXIA:
 
 .. code-block:: console
 
@@ -142,7 +142,7 @@ Here are an example for IXIA:
        pci=0000:18:00.0,peer=IXIA:1.1;
        pci=0000:18:00.1,peer=IXIA:1.2;
 
-Here are an example for TRex:
+Here is an example for TRex:
 
 .. code-block:: console
 
@@ -162,7 +162,7 @@ $DTS_CFG_FOLDER/global_suite.cfg is a global suite configure file which is share
     [global]
     vf_driver=vfio-pci
 
-* vf_driver: VF driver that for VF testing, recommend keep the default value ``vfio-pci``.
+* vf_driver: VF driver that for VF testing, recommended to keep the default value ``vfio-pci``.
 
 
 Configure your own suites
@@ -197,7 +197,7 @@ Then configure $DTS_CFG_FOLDER/pktgen.cfg as following:
    trex_lib_path=/opt/trex/v2.84/automation/trex_control_plane/interactive
    config_file=/etc/trex_cfg.yaml
    server=192.168.1.1 # equal to tester IP, TREX should be installed in tester
-   pcap_file=/opt/trex/v2.84/stl/sample.pacp
+   pcap_file=/opt/trex/v2.84/stl/sample.pcap
    core_num=16
    ip_src=16.0.0.1
    ip_dst=10.0.0.1
@@ -216,7 +216,7 @@ Then configure $DTS_CFG_FOLDER/pktgen.cfg as following:
 
 * TREX: section name for TRex.
 * trex_root_path: source code path for TRex
-* trex_lib_path: the director where dts can import Trex API
+* trex_lib_path: the directory where dts can import Trex API
 * start_trex: whether DTS start TRex server, suggest 'yes' for one-time test, and 'no' for CI integration
 
 * IXIA: section name for IXIA.
