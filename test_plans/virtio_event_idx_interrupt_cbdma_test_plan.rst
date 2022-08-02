@@ -2,47 +2,80 @@
    Copyright(c) 2022 Intel Corporation
 
 ====================================================
-virtio event idx interrupt mode with cbdma test plan
+Virtio event idx interrupt mode with cbdma test plan
 ====================================================
 
 Description
 ===========
 
 This feature is to suppress interrupts for performance improvement, need compare
-interrupt times with and without virtio event idx enabled. This test plan test 
-virtio event idx interrupt with cbdma enabled. Also need cover driver reload test.
+interrupt times with and without virtio event idx enabled. This test plan test
+virtio event idx interrupt with cbdma enable. Also need cover driver reload test.
 
 ..Note:
 1.For packed virtqueue virtio-net test, need qemu version > 4.2.0 and VM kernel version > 5.1, and packed ring multi-queues not support reconnect in qemu yet.
 2.For split virtqueue virtio-net with multi-queues server mode test, need qemu version >= 5.2.0, dut to old qemu exist reconnect issue when multi-queues test.
 3.DPDK local patch that about vhost pmd is needed when testing Vhost asynchronous data path with testpmd.
 
-Test flow
+Prerequisites
+=============
+Topology
+--------
+Test flow:TG --> NIC --> Vhost-user --> Virtio-net
+
+Software
+--------
+    Trex:http://trex-tgn.cisco.com/trex/release/v2.26.tar.gz
+
+General set up
+--------------
+1. Compile DPDK::
+
+    # CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static <dpdk build dir>
+    # ninja -C <dpdk build dir> -j 110
+    For example:
+    CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc -j 110
+
+2. Get the PCI device ID and DMA device ID of DUT, for example, 0000:18:00.0 is PCI device ID, 0000:00:04.0, 0000:00:04.1 is DMA device ID::
+
+    <dpdk dir># ./usertools/dpdk-devbind.py -s
+
+    Network devices using kernel driver
+    ===================================
+    0000:18:00.0 'Device 159b' if=ens785f0 drv=ice unused=vfio-pci
+
+    DMA devices using kernel driver
+    ===============================
+    0000:00:04.0 'Sky Lake-E CBDMA Registers 2021' drv=ioatdma unused=vfio-pci
+    0000:00:04.1 'Sky Lake-E CBDMA Registers 2021' drv=ioatdma unused=vfio-pci
+
+Test case
 =========
 
-TG --> NIC --> Vhost-user --> Virtio-net
-
-Test Case1: Split ring virtio-pci driver reload test with CBDMA enabled
-=======================================================================
+Test Case1: Split ring virtio-pci driver reload test with CBDMA enable
+----------------------------------------------------------------------
+This case tests split ring event idx interrupt mode workable after reload virtio-pci driver several times when vhost uses the asynchronous operations with CBDMA channels.
 
 1. Bind one nic port and one cbdma channel to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --file-prefix=vhost \
-    --vdev 'net_vhost,iface=vhost-net,queues=1,dmas=[txq0@00:04.0]' \
-    -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    --vdev 'net_vhost,iface=vhost-net,queues=1,dmas=[txq0;rxq0]' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024 --lcore-dma=[lcore29@0000:00:04.0]
     testpmd> start
 
 2. Launch VM::
 
-    taskset -c 32-33 \
-    qemu-system-x86_64 -name us-vhost-vm1 \
-     -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
-     -smp cores=2,sockets=1 -drive file=/home/osimg/ubuntu2004_2.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6004-:22 \
-     -chardev socket,id=char0,path=./vhost-net -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
-     -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on \
-     -vnc :12 -daemonize
+	taskset -c 32-33 \
+	qemu-system-x86_64 -name us-vhost-vm1 \
+	-cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
+	-smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu2004_1.img \
+	-monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
+	-netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+	-chardev socket,id=char1,path=./vhost-net -netdev type=vhost-user,id=mynet1,chardev=char1,vhostforce \
+	-device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on  \
+	-vnc :11 -daemonize
 
 3. On VM1, set virtio device IP, send 10M packets from packet generator to nic then check virtio device can receive packets::
 
@@ -60,66 +93,72 @@ Test Case1: Split ring virtio-pci driver reload test with CBDMA enabled
     ifconfig [ens3] 1.1.1.2
     tcpdump -i [ens3]
 
-6. Rerun step4 and step5 100 times to check event idx workable after driver reload.
+6. Rerun step4 and step5 10 times to check event idx workable after driver reload.
 
-Test Case2: Wake up split ring virtio-net cores with event idx interrupt mode and cbdma enabled 16 queues test
-==============================================================================================================
+Test Case2: Split ring 16 queues virtio-net event idx interrupt mode test with cbdma enable
+-------------------------------------------------------------------------------------------
+This case tests the split ring virtio-net event idx interrupt with 16 queues and when vhost uses the asynchronous operations with CBDMA channels.
 
 1. Bind one nic port and 16 cbdma channels to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-17 -n 4 --file-prefix=vhost \
-    --vdev 'net_vhost,iface=vhost-net,queues=16,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7]' \
-    -- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
+    --vdev 'net_vhost,iface=vhost-net,queues=16,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;txq8;txq9;txq10;txq11;txq12;txq13;txq14;txq15;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7;rxq8;rxq9;rxq10;rxq11;rxq12;rxq13;rxq14;rxq15]' \
+    -- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16 \
+    --lcore-dma=[lcore2@0000:00:04.0,lcore3@0000:00:04.1,lcore4@0000:00:04.2,lcore5@0000:00:04.3,lcore6@0000:00:04.4,lcore7@0000:00:04.5,lcore8@0000:00:04.6,lcore9@0000:00:04.7,\
+	lcore10@0000:80:04.0,lcore11@0000:80:04.1,lcore12@0000:80:04.2,lcore13@0000:80:04.3,lcore14@0000:80:04.4,lcore15@0000:80:04.5,lcore16@0000:80:04.6,lcore17@0000:80:04.7]
     testpmd> start
 
 2. Launch VM::
 
-    taskset -c 32-33 \
-    qemu-system-x86_64 -name us-vhost-vm1 \
-     -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
-     -smp cores=16,sockets=1 -drive file=/home/osimg/ubuntu2004_2.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6004-:22 \
-     -chardev socket,id=char0,path=./vhost-net,server -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce,queues=16 \
-     -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,mq=on,vectors=40,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on \
-     -vnc :12 -daemonize
+	taskset -c 32-33 \
+	qemu-system-x86_64 -name us-vhost-vm1 \
+	-cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
+	-smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu2004_1.img \
+	-monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
+	-netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+	-chardev socket,id=char1,path=./vhost-net -netdev type=vhost-user,id=mynet1,chardev=char1,vhostforce \
+	-device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on  \
+	-vnc :11 -daemonize
 
-3. On VM1, give virtio device ip addr and enable vitio-net with 16 quques::
+3. On VM1, give virtio device IP and enable vitio-net with 16 quques::
 
     ifconfig [ens3] 1.1.1.2           # [ens3] is the name of virtio-net
     ethtool -L [ens3] combined 16
 
-4. Send 10M different ip addr packets from packet generator to nic, check virtio-net interrupt times by below cmd in VM::
+4. Send 10M different IP packets from packet generator to nic, check virtio-net interrupt times by below cmd in VM::
 
     cat /proc/interrupts
 
-5. After two hours stress test, stop and restart testpmd, check each queue has new packets coming::
+5. Stop testpmd, check each queue has new packets coming, then start testpmd and check each queue has new packets coming::
 
     testpmd> stop
     testpmd> start
     testpmd> stop
 
-Test Case3: Packed ring virtio-pci driver reload test with CBDMA enabled
-========================================================================
+Test Case3: Packed ring virtio-pci driver reload test with CBDMA enable
+-----------------------------------------------------------------------
+This case tests packed ring event idx interrupt mode workable after reload virtio-pci driver several times when uses the asynchronous operations with CBDMA channels.
 
 1. Bind one nic port and one cbdma channel to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --file-prefix=vhost \
-    --vdev 'net_vhost,iface=vhost-net,queues=1,dmas=[txq0@00:04.0]' \
-    -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    --vdev 'net_vhost,iface=vhost-net,queues=1,dmas=[txq0;rxq0]' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024 --lcore-dma=[lcore29@0000:00:04.0]
     testpmd> start
 
 2. Launch VM::
 
-    taskset -c 32-33 \
-    qemu-system-x86_64 -name us-vhost-vm1 \
-     -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
-     -smp cores=2,sockets=1 -drive file=/home/osimg/ubuntu2004_2.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6004-:22 \
-     -chardev socket,id=char0,path=./vhost-net -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
-     -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on \
-     -vnc :12 -daemonize
+	taskset -c 32-33 \
+	qemu-system-x86_64 -name us-vhost-vm1 \
+	-cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
+	-smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu2004_1.img \
+	-monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
+	-netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+	-chardev socket,id=char1,path=./vhost-net -netdev type=vhost-user,id=mynet1,chardev=char1,vhostforce \
+	-device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on  \
+	-vnc :11 -daemonize
 
 3. On VM1, set virtio device IP, send 10M packets from packet generator to nic then check virtio device can receive packets::
 
@@ -137,40 +176,44 @@ Test Case3: Packed ring virtio-pci driver reload test with CBDMA enabled
     ifconfig [ens3] 1.1.1.2
     tcpdump -i [ens3]
 
-6. Rerun step4 and step5 100 times to check event idx workable after driver reload.
+6. Rerun step4 and step5 10 times to check event idx workable after driver reload.
 
-Test Case4: Wake up packed ring virtio-net cores with event idx interrupt mode and cbdma enabled 16 queues test
-===============================================================================================================
+Test Case4: Packed ring 16 queues virtio-net event idx interrupt mode test with cbdma enable
+--------------------------------------------------------------------------------------------
+This case tests the packed ring virtio-net event idx interrupt with 16 queues and when vhost uses the asynchronous operations with CBDMA channels.
 
 1. Bind one nic port and 16 cbdma channels to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-17 -n 4 --file-prefix=vhost \
-    --vdev 'net_vhost,iface=vhost-net,queues=16,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7]' \
-    -- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
+    --vdev 'net_vhost,iface=vhost-net,queues=16,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;txq8;txq9;txq10;txq11;txq12;txq13;txq14;txq15;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7;rxq8;rxq9;rxq10;rxq11;rxq12;rxq13;rxq14;rxq15]' \
+    -- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16 \
+    --lcore-dma=[lcore2@0000:00:04.0,lcore3@0000:00:04.1,lcore4@0000:00:04.2,lcore5@0000:00:04.3,lcore6@0000:00:04.4,lcore7@0000:00:04.5,lcore8@0000:00:04.6,lcore9@0000:00:04.7,\
+	lcore10@0000:80:04.0,lcore11@0000:80:04.1,lcore12@0000:80:04.2,lcore13@0000:80:04.3,lcore14@0000:80:04.4,lcore15@0000:80:04.5,lcore15@0000:80:04.6,lcore15@0000:80:04.7]
     testpmd> start
 
 2. Launch VM::
 
-    taskset -c 32-33 \
-    qemu-system-x86_64 -name us-vhost-vm1 \
-     -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
-     -smp cores=16,sockets=1 -drive file=/home/osimg/ubuntu2004_2.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6004-:22 \
-     -chardev socket,id=char0,path=./vhost-net,server -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce,queues=16 \
-     -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,mq=on,vectors=40,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on \
-     -vnc :12 -daemonize
+	taskset -c 32-33 \
+	qemu-system-x86_64 -name us-vhost-vm1 \
+	-cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
+	-smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu2004_1.img \
+	-monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
+	-netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+	-chardev socket,id=char1,path=./vhost-net -netdev type=vhost-user,id=mynet1,chardev=char1,vhostforce \
+	-device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on  \
+	-vnc :11 -daemonize
 
-3. On VM1, give virtio device ip addr and enable vitio-net with 16 quques::
+3. On VM1, configure virtio device IP and enable vitio-net with 16 quques::
 
     ifconfig [ens3] 1.1.1.2           # [ens3] is the name of virtio-net
     ethtool -L [ens3] combined 16
 
-4. Send 10M different ip addr packets from packet generator to nic, check virtio-net interrupt times by below cmd in VM::
+4. Send 10M different IP packets from packet generator to nic, check virtio-net interrupt times by below cmd in VM::
 
     cat /proc/interrupts
 
-5. After two hours stress test, stop and restart testpmd, check each queue has new packets coming::
+5. Stop testpmd, check each queue has new packets coming, then start testpmd and check each queue has new packets coming::
 
     testpmd> stop
     testpmd> start
