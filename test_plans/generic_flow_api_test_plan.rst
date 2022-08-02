@@ -366,6 +366,144 @@ Test case: Intel® Ethernet 700 Series fdir for ipv6
     testpmd> flow flush 0
     testpmd> flow list 0
 
+Test case: Intel® Ethernet 700 Series fdir for vlan
+===================================================
+
+Prerequisites:
+
+   add 2 vf on dpdk pf, then bind the vf to vfio-pci::
+
+    echo 2 >/sys/bus/pci/devices/0000:05:00.0/max_vfs
+    ./usertools/dpdk-devbind.py -b vfio-pci 05:02.0 05:02.1
+
+1. Launch the app ``testpmd`` with the following arguments::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 --legacy-mem -- -i --rxq=16 --txq=16 --disable-rss
+    testpmd> set fwd rxonly
+    testpmd> set verbose 1
+    testpmd> start
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e0000 -n 4 -a 05:02.0 --file-prefix=vf0 --socket-mem=1024,1024 --legacy-mem -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect
+    testpmd> set fwd rxonly
+    testpmd> set verbose 1
+    testpmd> start
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e00000 -n 4 -a 05:02.1 --file-prefix=vf1 --socket-mem=1024,1024 --legacy-mem -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect
+    testpmd> set fwd rxonly
+    testpmd> set verbose 1
+    testpmd> start
+
+2. validated and create filter rules
+
+   testpmd> flow create 0 ingress pattern eth / vlan tci is 91 / ipv4  / end actions queue index 1 /  end
+   testpmd> flow create 0 ingress pattern eth / vlan tci is 1978 / ipv4 / udp  / end actions queue index 2 /  end
+   testpmd> flow create 0 ingress pattern eth / vlan tci is 2391 / ipv4 / tcp  / end actions queue index 3 /  end
+   testpmd> flow create 0 ingress pattern eth / vlan tci is 4028 / ipv4 / sctp  / end actions queue index 4 /  end
+   testpmd> flow create 0 ingress transfer pattern eth / vlan tci is 1276 / ipv4 / vf id is 0 / end actions queue index 2 /  end
+   testpmd> flow create 0 ingress transfer pattern eth / vlan tci is 2221 / ipv4 / sctp / vf id is 1 / end actions queue index 3 /  end
+   testpmd> flow create 0 ingress pattern eth / vlan tci is 986 / ipv4 / sctp  / end actions drop /  end
+   testpmd> flow create 0 ingress transfer pattern eth / vlan tci is 2446 / ipv4 / udp / vf id is 1 / end actions drop /  end
+
+   testpmd> flow create 0 ingress pattern eth / vlan tci is 2477 / ipv6  / end actions queue index 1 /  end
+   testpmd> flow create 0 ingress pattern eth / vlan tci is 3407 / ipv6 / udp  / end actions queue index 2 /  end
+   testpmd> flow create 0 ingress pattern eth / vlan tci is 2283 / ipv6 / tcp  / end actions queue index 3 /  end
+   testpmd> flow create 0 ingress pattern eth / vlan tci is 2709 / ipv6 / sctp  / end actions queue index 4 /  end
+   testpmd> flow create 0 ingress transfer pattern eth / vlan tci is 2972 / ipv6 / vf id is 0 / end actions queue index 0 /  end
+   testpmd> flow create 0 ingress transfer pattern eth / vlan tci is 942 / ipv6 / tcp / vf id is 1 / end actions queue index 1 /  end
+   testpmd> flow create 0 ingress pattern eth / vlan tci is 3734 / ipv6 / sctp  / end actions drop /  end
+   testpmd> flow create 0 ingress transfer pattern eth / vlan tci is 3455 / ipv6 / tcp / vf id is 1 / end actions drop /  end
+
+   testpmd> flow validate 0 ingress pattern eth / vlan tci is 1967 / ipv4  / end actions queue index 7 /  end
+   testpmd> flow validate 0 ingress pattern eth / vlan tci is 1611 / ipv4 / udp  / end actions queue index 3 /  end
+   testpmd> flow validate 0 ingress pattern eth / vlan tci is 3211 / ipv4 / tcp  / end actions queue index 12 /  end
+   testpmd> flow validate 0 ingress pattern eth / vlan tci is 1198 / ipv4 / sctp  / end actions queue index 7 /  end
+   testpmd> flow validate 0 ingress transfer pattern eth / vlan tci is 144 / ipv4 / vf id is 0 / end actions queue index 2 /  end
+   testpmd> flow validate 0 ingress transfer pattern eth / vlan tci is 2469 / ipv4 / sctp / vf id is 1 / end actions queue index 3 /  end
+   testpmd> flow validate 0 ingress pattern eth / vlan tci is 2615 / ipv4 / sctp  / end actions drop /  end
+   testpmd> flow validate 0 ingress transfer pattern eth / vlan tci is 1048 / ipv4 / udp / vf id is 1 / end actions drop /  end
+
+   testpmd> flow validate 0 ingress pattern eth / vlan tci is 31 / ipv6  / end actions queue index 9 /  end
+   testpmd> flow validate 0 ingress pattern eth / vlan tci is 2220 / ipv6 / udp  / end actions queue index 3 /  end
+   testpmd> flow validate 0 ingress pattern eth / vlan tci is 1772 / ipv6 / tcp  / end actions queue index 5 /  end
+   testpmd> flow validate 0 ingress pattern eth / vlan tci is 3101 / ipv6 / sctp  / end actions queue index 9 /  end
+   testpmd> flow validate 0 ingress transfer pattern eth / vlan tci is 3353 / ipv6 / vf id is 0 / end actions queue index 1 /  end
+   testpmd> flow validate 0 ingress transfer pattern eth / vlan tci is 210 / ipv6 / tcp / vf id is 1 / end actions queue index 0 /  end
+   testpmd> flow validate 0 ingress pattern eth / vlan tci is 1249 / ipv6 / sctp  / end actions drop /  end
+   testpmd> flow validate 0 ingress transfer pattern eth / vlan tci is 3771 / ipv6 / tcp / vf id is 1 / end actions drop /  end
+
+3. send the packets with dst/src ip and dst/src port::
+
+    pkt1 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=91)/IP()/Raw('x' * 20)]
+    pkt2 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=91)/IP(src="192.168.0.1", dst="192.168.0.2", proto=3)/Raw("x" * 20)]
+
+    pkt3 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=1978)/IP()/UDP()/Raw('x' * 20)]
+    pkt4 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=1978)/IP(src="192.168.0.1", dst="192.168.0.2", tos=3)/UDP()/Raw("x" * 20)]
+
+    pkt5 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=2391)/IP()/TCP()/Raw('x' * 20)]
+    pkt6 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=2391)/IP(src="192.168.0.1", dst="192.168.0.2", ttl=3)/TCP()/Raw("x" * 20)]
+
+    pkt7 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=4028)/IP()/SCTP()/Raw('x' * 20)]
+    pkt8 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=4028)/IP(src="192.168.0.1", dst="192.168.0.2", tos=3, ttl=3)/SCTP()/Raw("x" * 20)]
+
+    pkt9 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=2391)/IP()/UDP()/Raw("x" * 20)]
+    pkt10 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=4028)/IP(src="192.168.0.1", dst="192.168.0.2", ttl=3)/TCP()/Raw("x" * 20)]
+    pkt11 = [Ether(dst='00:11:22:33:44:77')/Dot1Q(vlan=1276)/IP()/Raw('x' * 20)]
+    pkt12 = [Ether(dst='00:11:22:33:44:77')/Dot1Q(vlan=2221)/IP()/SCTP()/Raw('x' * 20)]
+
+    pkt13 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=986)/IP()/SCTP()/Raw('x' * 20)]
+    pkt14 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=986)/IP(src="192.168.0.5", dst="192.168.0.6", tos=3, ttl=3)/SCTP(sport=44,dport=45,tag=1)/Raw("x" * 20)]
+
+    pkt15 = [Ether(dst='00:11:22:33:44:77')/Dot1Q(vlan=2446)/IP()/UDP()/Raw('x' * 20)]
+    pkt16 = [Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=2446)/IP(src="192.168.0.5", dst="192.168.0.6", tos=3, ttl=3)/UDP(sport=44,dport=45)/SCTPChunkData(data="X" * 20)]
+      verify packet
+      pkt1,pkt2 to queue 1, pkt3,pkt4 to queue 2, pkt5,pkt6 to queue 3,
+      pkt7,pkt8 to queue 4, pkt9,pkt10 to queue 0, pkt11 to vf0 queue 2, pkt12 to vf1 queue 3,
+      pkt13, pkt14 can't be received by pf, pkt15, pkt16 can't be received by vf1.
+
+    pkt17 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=2477)/IPv6(src='cb5:c4a9:8855:e022:c66a:a5dc:f2b8:a4d9', dst='922c:9e24:a730:2c66:9b65:c00a:cfed:986')/Raw('x' * 20)]
+    pkt18 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=2477)/IPv6(src="2001::1", dst="2001::2", tc=1, nh=5, hlim=10)/Raw("x" * 20)]
+    pkt19 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=3407)/IPv6(src='4cff:139f:dad7:cb9f:bb6d:3e28:42b2:99b', dst='cb9e:cd92:b178:d273:de4d:c9fa:9952:5088')/UDP()/Raw('x' * 20)]
+    pkt20 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=3407)/IPv6(src="2001::1", dst="2001::2", tc=2, hlim=20)/UDP(sport=22,dport=23)/Raw("x" * 20)]
+    pkt21 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=2283)/IPv6(src='5548:dace:bc41:5829:ee11:1944:a56:18f9', dst='9ef3:710f:b492:778c:f87a:455f:4508:893e')/TCP()/Raw('x' * 20)]
+    pkt22 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=2283)/IPv6(src="2001::1", dst="2001::2", tc=2, hlim=20)/TCP(sport=32,dport=33)/Raw("x" * 20)]
+    pkt23 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=2709)/IPv6(src='7d7d:ca46:bd95:676e:b680:b7e9:4c21:d7cc', dst='c7bc:8b28:a48a:a7eb:bfd0:3313:1548:7579', nh=132)/SCTP()/Raw('x' * 20)]
+    pkt24 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=2709)/IPv6(src="2001::1", dst="2001::2", tc=4, nh=132, hlim=40)/SCTP(sport=44,dport=45,tag=1)/SCTPChunkData(data="X" * 20)]
+
+    pkt25 = [Ether(dst='00:11:22:33:44:77')/Dot1Q(vlan=2972)/IPv6(src='816d:2dfd:17f8:69bd:ec68:581f:740f:42db', dst='68c8:243:b709:3a8b:658:9ebb:f60f:c493')/Raw('x' * 20)]
+    pkt26 = [Ether(dst='00:11:22:33:44:77')/Dot1Q(vlan=942)/IPv6(src='9550:be5c:599b:705e:275c:6164:c034:b4e7', dst='3450:bddc:a4a6:23cd:b8e:f85f:7424:4f8f')/TCP()/Raw('x' * 20)]
+    pkt27 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=3734)/IPv6(src='1529:7d1c:6f:914a:2fe2:269f:3b16:3f60', dst='fd68:fd59:bb7c:12d4:3b19:20b2:1ef3:7100', nh=132)/SCTP()/Raw('x' * 20)]
+    pkt28 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=3734)/IPv6(src="2001::1", dst="2001::2", tc=4, nh=132, hlim=40)/SCTP(sport=44,dport=45,tag=1)/SCTPChunkData(data="X" * 20)]
+    pkt29 = [Ether(dst='00:11:22:33:44:77')/Dot1Q(vlan=3455)/IPv6(src='ffdf:e23b:9cc4:b99b:cdc:a881:6b7a:bac2', dst='c90b:3b2a:2c42:6d12:e51f:8657:e941:1fe1')/TCP()/Raw('x' * 20)]
+    pkt30 = [Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=3455)/IPv6(src="2001::1", dst="2001::2", tc=2, hlim=20)/TCP(sport=32,dport=33)/Raw("x" * 20)]
+     verify packet
+     pkt17,pkt18 to queue 1, pkt19,pkt20 to queue 2, pkt21,pkt22 to queue 3,
+     pkt23,pkt24 to queue 4, pkt25 to vf0 queue 0, pkt26 to vf1 queue 1,
+     pkt27, pkt28 can't be received by pf, pkt29, pkt30 can't be received by vf1.
+
+4. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+      ID	Group	Prio	Attr	Rule
+      0	    0	0	i--	ETH VLAN IPV4 => QUEUE
+      1	    0	0	i--	ETH VLAN IPV4 UDP => QUEUE
+      2	    0	0	i--	ETH VLAN IPV4 TCP => QUEUE
+      3	    0	0	i--	ETH VLAN IPV4 SCTP => QUEUE
+      4	    0	0	i-t	ETH VLAN IPV4 VF => QUEUE
+      5	    0	0	i-t	ETH VLAN IPV4 SCTP VF => QUEUE
+      6	    0 	0 	i--	ETH VLAN IPV4 SCTP => DROP
+      7	    0 	0	i-t	ETH VLAN IPV4 UDP VF => DROP
+      8 	0	0	i--	ETH VLAN IPV6 => QUEUE
+      9 	0	0	i--	ETH VLAN IPV6 UDP => QUEUE
+      10	0	0	i--	ETH VLAN IPV6 TCP => QUEUE
+      11	0	0	i--	ETH VLAN IPV6 SCTP => QUEUE
+      12	0	0	i-t	ETH VLAN IPV6 VF => QUEUE
+      13	0	0	i-t	ETH VLAN IPV6 TCP VF => QUEUE
+      14	0	0	i--	ETH VLAN IPV6 SCTP => DROP
+      15	0	0	i-t	ETH VLAN IPV6 TCP VF => DROP
+    testpmd> flow destroy 0 rule 0
+    testpmd> flow list 0
+    testpmd> flow flush 0
+    testpmd> flow list 0
 
 Test case: Intel® Ethernet 700 Series fdir wrong parameters
 ===========================================================
@@ -379,8 +517,9 @@ Test case: Intel® Ethernet 700 Series fdir wrong parameters
 
 2. create filter rules
 
-   Exceeds maximum payload limit::
+1) Exceeds maximum payload limit::
 
+    testpmd> flow validate 0 ingress pattern eth type is 0x0807 / raw relative is 1 pattern is abcdefghijklmnopq / end actions queue index 1 / end
     testpmd> flow create 0 ingress pattern eth / ipv4 src is 2.2.2.4 dst is 2.2.2.5 / sctp src is 42 / raw relative is 1 offset is 2 pattern is abcdefghijklmnopq / end actions queue index 5 / end
 
    it shows "Caught error type 9 (specific pattern item): cause: 0x7fd87ff60160
@@ -388,6 +527,7 @@ Test case: Intel® Ethernet 700 Series fdir wrong parameters
 
 2) can't set mac_addr when setting fdir filter::
 
+    testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 4095 / ipv6 src is 2001::3 dst is 2001::4 tc is 6 hop is 60 / tcp src is 32 dst is 33 / end actions queue index 2 / end
     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 4095 / ipv6 src is 2001::3 dst is 2001::4 tc is 6 hop is 60 / tcp src is 32 dst is 33 / end actions queue index 3 / end
 
    it shows "Caught error type 9 (specific pattern item): cause: 0x7f463ff60100
@@ -402,6 +542,7 @@ Test case: Intel® Ethernet 700 Series fdir wrong parameters
 
 4) invalid queue ID::
 
+    testpmd> flow validate 0 ingress pattern eth / ipv6 src is 2001::3 dst is 2001::4 tc is 6 hop is 60 / tcp src is 32 dst is 33 / end actions queue index 16 / end
     testpmd> flow create 0 ingress pattern eth / ipv6 src is 2001::3 dst is 2001::4 tc is 6 hop is 60 / tcp src is 32 dst is 33 / end actions queue index 16 / end
 
    it shows "Caught error type 11 (specific action): cause: 0x7ffc7bb9a338,
@@ -409,6 +550,7 @@ Test case: Intel® Ethernet 700 Series fdir wrong parameters
 
    If create a rule on vf that has invalid queue ID::
 
+    testpmd> flow validate 0 ingress transfer pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 3 / vf id is 0 / end actions queue index 4 / end
     testpmd> flow create 0 ingress transfer pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 3 / vf id is 0 / end actions queue index 4 / end
 
    it shows "Caught error type 11 (specific action): cause: 0x7ffc7bb9a338,
