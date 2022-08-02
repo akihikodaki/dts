@@ -3776,5 +3776,20 @@
             "Bug ID": "",
             "Comments": "the nic on the environment not support this case"
         }
+    ],
+    "fdir_wrong_parameters":[
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "testpmd not support socket-mem param in freebsd"
+        }
     ]
 }
