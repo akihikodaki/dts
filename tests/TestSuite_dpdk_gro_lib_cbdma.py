@@ -43,9 +43,9 @@ class TestDPDKGROLibCbdma(TestCase):
         )
         self.path = self.dut.apps_name["test-pmd"]
         self.testpmd_name = self.path.split("/")[-1]
-        cores_list = self.dut.get_core_list(config="all", socket=self.ports_socket)
-        self.vhost_list = cores_list[0:3]
-        self.qemu_cpupin = cores_list[3:4][0]
+        self.cores_list = self.dut.get_core_list(config="all", socket=self.ports_socket)
+        self.vhost_core_list = self.cores_list[0:3]
+        self.qemu_cpupin = self.cores_list[3:4][0]
 
         # Set the params for VM
         self.virtio_ip1 = "1.1.1.2"
@@ -175,6 +175,7 @@ class TestDPDKGROLibCbdma(TestCase):
                 raise Exception("Set up VM ENV failed")
         except Exception as e:
             print((utils.RED("Failure for %s" % str(e))))
+        self.vm1_dut.restore_interfaces()
 
     def iperf_result_verify(self, run_info):
         """
@@ -202,33 +203,49 @@ class TestDPDKGROLibCbdma(TestCase):
             iperfdata_kb = float(tmp_value)
         return iperfdata_kb
 
-    def check_dut_perf_top_info(self, check_string):
-        self.dut.send_expect("perf top", "# ")
+    def get_and_verify_func_name_of_perf_top(self, func_name_list):
+        self.dut.send_expect("rm -fr perf_top.log", "# ", 120)
+        self.dut.send_expect("perf top > perf_top.log", "", 120)
+        time.sleep(10)
+        self.dut.send_expect("^C", "#")
+        out = self.dut.send_expect("cat perf_top.log", "# ", 120)
+        self.logger.info(out)
+        for func_name in func_name_list:
+            self.verify(
+                func_name in out,
+                "the func_name {} is not in the perf top output".format(func_name),
+            )
 
     def test_vhost_gro_tcp_ipv4_with_cbdma_enable(self):
         """
-        Test Case1: DPDK GRO test with two queues and two CBDMA channels using tcp/ipv4 traffic
+        Test Case1: DPDK GRO test with two queues and cbdma channels using tcp/ipv4 traffic
         """
         self.config_kernel_nic_host()
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
-        lcore_dma = "[lcore{}@{},lcore{}@{},lcore{}@{}]".format(
-            self.vhost_list[1],
-            self.cbdma_list[0],
-            self.vhost_list[1],
-            self.cbdma_list[1],
-            self.vhost_list[2],
-            self.cbdma_list[1],
-        )
-        param = (
-            "--txd=1024 --rxd=1024 --txq=2 --rxq=2 --nb-cores=2 --lcore-dma={}".format(
-                lcore_dma
+        lcore_dma = (
+            "lcore%s@%s,"
+            "lcore%s@%s,"
+            "lcore%s@%s,"
+            % (
+                self.vhost_core_list[1],
+                self.cbdma_list[0],
+                self.vhost_core_list[1],
+                self.cbdma_list[1],
+                self.vhost_core_list[2],
+                self.cbdma_list[1],
             )
         )
-        eal_param = "--vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[txq0;txq1]'"
+        param = (
+            "--txd=1024 --rxd=1024 --txq=2 --rxq=2 --nb-cores=2 --lcore-dma=[%s]"
+            % lcore_dma
+        )
+        eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[txq0;txq1;rxq0;rxq1]'"
+        )
         ports = self.cbdma_list
         ports.append(self.pci)
         self.vhost_pmd.start_testpmd(
-            cores=self.vhost_list,
+            cores=self.vhost_core_list,
             ports=ports,
             prefix="vhost",
             eal_param=eal_param,
@@ -253,8 +270,9 @@ class TestDPDKGROLibCbdma(TestCase):
             "",
             180,
         )
+        self.func_name_list = ["virtio_dev_rx_async", "virtio_dev_tx_async"]
+        self.get_and_verify_func_name_of_perf_top(self.func_name_list)
         time.sleep(30)
-        print(out)
         perfdata = self.iperf_result_verify("GRO lib")
         print(("the GRO lib %s " % (self.output_result)))
         self.quit_testpmd()
