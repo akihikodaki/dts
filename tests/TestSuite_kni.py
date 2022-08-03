@@ -485,6 +485,8 @@ class TestKni(TestCase):
             self.output_path = os.sep.join([cur_path, self.logger.log_path])
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        # enable dut ipv6
+        self.dut.enable_ipv6("all")
 
     def set_up(self):
         """
@@ -1562,3 +1564,5 @@ class TestKni(TestCase):
         """
         self.dut.kill_all()
         self.dut.send_expect("rmmod rte_kni", "# ", 10)
+        # disable dut ipv6
+        self.dut.disable_ipv6("all")
