@@ -23,7 +23,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.core_list = self.dut.get_core_list(config="all", socket=self.ports_socket)
         self.vhost_core_list = self.core_list[0:9]
-        self.virtio0_core_list = self.core_list[10:12]
+        self.virtio0_core_list = self.core_list[10:15]
         self.path = self.dut.apps_name["test-pmd"]
         self.testpmd_name = self.path.split("/")[-1]
         self.app_pdump = self.dut.apps_name["pdump"]
@@ -41,8 +41,8 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         Run before each test case.
         """
-        self.dut.send_expect("rm -rf ./vhost-net*", "#")
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
+        self.dut.send_expect("rm -rf ./vhost-net*", "#")
         self.table_header = [
             "Mode",
             "Pkt_size",
@@ -84,13 +84,19 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
     def send_chain_packets_from_vhost(self):
         time.sleep(3)
         self.vhost_user_pmd.execute_cmd("set txpkts 65535,65535,65535,65535,65535")
-        self.vhost_user_pmd.execute_cmd("start tx_first 32")
+        self.vhost_user_pmd.execute_cmd("start tx_first 32", timeout=30)
 
     def verify_virtio_user_receive_packets(self):
-        out = self.virtio_user_pmd.execute_cmd("show port stats all")
-        self.logger.info(out)
-        rx_pkts = int(re.search("RX-packets: (\d+)", out).group(1))
-        self.verify(rx_pkts > 0, "virtio-user can not received packets")
+        results = 0.0
+        time.sleep(3)
+        for _ in range(10):
+            out = self.virtio_user_pmd.execute_cmd("show port stats all")
+            lines = re.search("Rx-pps:\s*(\d*)", out)
+            result = lines.group(1)
+            results += float(result)
+        Mpps = results / (1000000 * 10)
+        self.logger.info(Mpps)
+        self.verify(Mpps > 0, "virtio-user can not receive packets")
 
     def launch_pdump_to_capture_pkt(self, capture_all_queue=True):
         command = (
@@ -134,7 +140,9 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             fixed_prefix=True,
         )
 
-    def start_virtio_testpmd_with_vhost_net0(self, cores, eal_param, param):
+    def start_virtio_testpmd_with_vhost_net0(
+        self, cores, eal_param, param, set_fwd_csum=True
+    ):
         """
         launch the testpmd as virtio with vhost_net0
         """
@@ -148,7 +156,8 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             prefix="virtio-user0",
             fixed_prefix=True,
         )
-        self.virtio_user_pmd.execute_cmd("set fwd csum")
+        if set_fwd_csum:
+            self.virtio_user_pmd.execute_cmd("set fwd csum")
         self.virtio_user_pmd.execute_cmd("start")
 
     @staticmethod
@@ -215,38 +224,47 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.dut.close_session(self.vhost_user)
         self.dut.close_session(self.virtio_user)
 
-    def test_server_mode_packed_ring_all_path_multi_queues_payload_check_with_cbdma(
+    def test_loopback_packed_ring_all_path_multi_queues_payload_check_with_server_mode_and_cbdma_enable(
         self,
     ):
         """
-        Test Case 1: loopback packed ring all path cbdma test payload check with server mode and multi-queues
+        Test Case 1: Loopback packed ring all path multi-queues payload check with server mode and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(8)
-        vhost_eal_param = "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq6;txq7]'"
-        core1 = self.vhost_core_list[1]
-        core2 = self.vhost_core_list[2]
-        core3 = self.vhost_core_list[3]
-        core4 = self.vhost_core_list[4]
-        core5 = self.vhost_core_list[5]
-        cbdma1 = self.cbdma_list[0]
-        cbdma2 = self.cbdma_list[1]
-        cbdma3 = self.cbdma_list[2]
-        cbdma4 = self.cbdma_list[3]
-        cbdma5 = self.cbdma_list[4]
-        cbdma6 = self.cbdma_list[5]
-        cbdma7 = self.cbdma_list[6]
-        cbdma8 = self.cbdma_list[7]
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=8)
+        vhost_eal_param = "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]'"
         lcore_dma = (
-            f"[lcore{core1}@{cbdma1},lcore{core1}@{cbdma8},"
-            f"lcore{core2}@{cbdma2},lcore{core2}@{cbdma3},lcore{core2}@{cbdma4},"
-            f"lcore{core3}@{cbdma3},lcore{core3}@{cbdma4},lcore{core3}@{cbdma5},"
-            f"lcore{core4}@{cbdma3},lcore{core4}@{cbdma4},lcore{core4}@{cbdma5},lcore{core4}@{cbdma6},"
-            f"lcore{core5}@{cbdma1},lcore{core5}@{cbdma2},lcore{core5}@{cbdma3},lcore{core5}@{cbdma4},lcore{core5}@{cbdma5},lcore{core5}@{cbdma6},lcore{core5}@{cbdma7},lcore{core5}@{cbdma8}]"
+            "lcore%s@%s,"
+            "lcore%s@%s,"
+            "lcore%s@%s,"
+            "lcore%s@%s,"
+            "lcore%s@%s,"
+            "lcore%s@%s,"
+            "lcore%s@%s,"
+            "lcore%s@%s"
+            % (
+                self.vhost_core_list[1],
+                self.cbdma_list[0],
+                self.vhost_core_list[1],
+                self.cbdma_list[1],
+                self.vhost_core_list[2],
+                self.cbdma_list[2],
+                self.vhost_core_list[2],
+                self.cbdma_list[3],
+                self.vhost_core_list[3],
+                self.cbdma_list[4],
+                self.vhost_core_list[3],
+                self.cbdma_list[5],
+                self.vhost_core_list[4],
+                self.cbdma_list[6],
+                self.vhost_core_list[4],
+                self.cbdma_list[7],
+            )
         )
         vhost_param = (
-            " --nb-cores=5 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-            + " --lcore-dma={}".format(lcore_dma)
+            " --nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024 --lcore-dma=[%s]"
+            % lcore_dma
         )
+
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
@@ -256,8 +274,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         )
 
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,packed_vq=1,server=1"
-        virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-        self.logger.info("Launch virtio with packed ring mergeable inorder path")
+        virtio_param = " --nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
         self.start_virtio_testpmd_with_vhost_net0(
             cores=self.virtio0_core_list, eal_param=virtio_eal_param, param=virtio_param
         )
@@ -266,7 +283,6 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_6192_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=6192)
 
-        self.logger.info("Quit and relaunch vhost and rerun step 4-6")
         self.vhost_user_pmd.quit()
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -279,10 +295,9 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_6192_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=6192)
 
-        self.logger.info("Quit and relaunch virtio with packed ring mergeable path")
         self.virtio_user_pmd.quit()
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,packed_vq=1,server=1"
-        virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
+        virtio_param = " --nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
         self.start_virtio_testpmd_with_vhost_net0(
             cores=self.virtio0_core_list, eal_param=virtio_eal_param, param=virtio_param
         )
@@ -290,7 +305,6 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_6192_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=6192)
 
-        self.logger.info("Quit and relaunch vhost and rerun step 4-6")
         self.vhost_user_pmd.quit()
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -303,10 +317,9 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_6192_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=6192)
 
-        self.logger.info("Quit and relaunch virtio with packed ring non-mergeable path")
         self.virtio_user_pmd.quit()
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=0,packed_vq=1,server=1"
-        virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
+        virtio_param = " --nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
         self.start_virtio_testpmd_with_vhost_net0(
             cores=self.virtio0_core_list, eal_param=virtio_eal_param, param=virtio_param
         )
@@ -314,7 +327,6 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_960_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=960)
 
-        self.logger.info("Quit and relaunch vhost and rerun step 10-12")
         self.vhost_user_pmd.quit()
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -327,12 +339,9 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_960_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=960)
 
-        self.logger.info(
-            "Quit and relaunch virtio with packed ring inorder non-mergeable path"
-        )
         self.virtio_user_pmd.quit()
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=1,packed_vq=1,server=1"
-        virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
+        virtio_param = " --nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
         self.start_virtio_testpmd_with_vhost_net0(
             cores=self.virtio0_core_list, eal_param=virtio_eal_param, param=virtio_param
         )
@@ -340,7 +349,6 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_960_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=960)
 
-        self.logger.info("Quit and relaunch vhost and rerun step 10-12")
         self.vhost_user_pmd.quit()
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -353,12 +361,31 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_960_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=960)
 
-        self.logger.info(
-            "Quit and relaunch virtio with packed ring vectorized path and ring size is not power of 2 "
+        self.virtio_user_pmd.quit()
+        virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=1,packed_vq=1,vectorized=1,server=1"
+        virtio_param = " --nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
+        self.start_virtio_testpmd_with_vhost_net0(
+            cores=self.virtio0_core_list, eal_param=virtio_eal_param, param=virtio_param
         )
+        self.launch_pdump_to_capture_pkt()
+        self.send_960_packets_from_vhost()
+        self.check_packet_payload_valid(pkt_len=960)
+
+        self.vhost_user_pmd.quit()
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            eal_param=vhost_eal_param,
+            param=vhost_param,
+            ports=self.cbdma_list,
+            iova_mode="va",
+        )
+        self.launch_pdump_to_capture_pkt()
+        self.send_960_packets_from_vhost()
+        self.check_packet_payload_valid(pkt_len=960)
+
         self.virtio_user_pmd.quit()
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=1,packed_vq=1,vectorized=1,queue_size=1025,server=1"
-        virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1025 --rxd=1025"
+        virtio_param = " --nb-cores=4 --rxq=8 --txq=8 --txd=1025 --rxd=1025"
         self.start_virtio_testpmd_with_vhost_net0(
             cores=self.virtio0_core_list, eal_param=virtio_eal_param, param=virtio_param
         )
@@ -366,7 +393,6 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_960_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=960)
 
-        self.logger.info("Quit and relaunch vhost and rerun step 10-12")
         self.vhost_user_pmd.quit()
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -379,14 +405,13 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_960_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=960)
 
-        self.logger.info("Quit and relaunch vhost w/ iova=pa, Rerun steps 2-19")
         if not self.check_2M_env:
             self.virtio_user_pmd.quit()
             self.vhost_user_pmd.quit()
-            vhost_eal_param = "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq6;txq7]'"
+            vhost_eal_param = "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]'"
             vhost_param = (
-                " --nb-cores=5 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-                + " --lcore-dma={}".format(lcore_dma)
+                " --nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024 --lcore-dma=[%s]"
+                % lcore_dma
             )
             self.start_vhost_testpmd(
                 cores=self.vhost_core_list,
@@ -397,7 +422,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             )
 
             virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,packed_vq=1,server=1"
-            virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
+            virtio_param = " --nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
             self.logger.info("Launch virtio with packed ring mergeable inorder path")
             self.start_virtio_testpmd_with_vhost_net0(
                 cores=self.virtio0_core_list,
@@ -409,156 +434,47 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             self.send_6192_packets_from_vhost()
             self.check_packet_payload_valid(pkt_len=6192)
 
-            self.logger.info("Quit and relaunch vhost and rerun step 4-6")
-            self.vhost_user_pmd.quit()
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_6192_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=6192)
-
-            self.logger.info("Quit and relaunch virtio with packed ring mergeable path")
-            self.virtio_user_pmd.quit()
-            virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,packed_vq=1,server=1"
-            virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-            self.start_virtio_testpmd_with_vhost_net0(
-                cores=self.virtio0_core_list,
-                eal_param=virtio_eal_param,
-                param=virtio_param,
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_6192_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=6192)
-
-            self.logger.info("Quit and relaunch vhost and rerun step 4-6")
-            self.vhost_user_pmd.quit()
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_6192_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=6192)
-
-            self.logger.info(
-                "Quit and relaunch virtio with packed ring non-mergeable path"
-            )
-            self.virtio_user_pmd.quit()
-            virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=0,packed_vq=1,server=1"
-            virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-            self.start_virtio_testpmd_with_vhost_net0(
-                cores=self.virtio0_core_list,
-                eal_param=virtio_eal_param,
-                param=virtio_param,
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_960_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=960)
-
-            self.logger.info("Quit and relaunch vhost and rerun step 10-12")
-            self.vhost_user_pmd.quit()
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_960_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=960)
-
-            self.logger.info(
-                "Quit and relaunch virtio with packed ring inorder non-mergeable path"
-            )
-            self.virtio_user_pmd.quit()
-            virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=1,packed_vq=1,server=1"
-            virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-            self.start_virtio_testpmd_with_vhost_net0(
-                cores=self.virtio0_core_list,
-                eal_param=virtio_eal_param,
-                param=virtio_param,
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_960_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=960)
-
-            self.logger.info("Quit and relaunch vhost and rerun step 10-12")
-            self.vhost_user_pmd.quit()
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_960_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=960)
-
-            self.logger.info(
-                "Quit and relaunch virtio with packed ring vectorized path and ring size is not power of 2 "
-            )
-            self.virtio_user_pmd.quit()
-            virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=1,packed_vq=1,vectorized=1,queue_size=1025,server=1"
-            virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1025 --rxd=1025"
-            self.start_virtio_testpmd_with_vhost_net0(
-                cores=self.virtio0_core_list,
-                eal_param=virtio_eal_param,
-                param=virtio_param,
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_960_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=960)
-
-            self.logger.info("Quit and relaunch vhost and rerun step 10-12")
-            self.vhost_user_pmd.quit()
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_960_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=960)
-
-    def test_server_mode_split_ring_all_path_multi_queues_payload_check_with_cbdma(
+    def test_loopback_split_ring_all_path_multi_queues_payload_check_with_server_mode_and_cbdma_enable(
         self,
     ):
         """
-        Test Case 2: loopback split ring all path cbdma test payload check with server mode and multi-queues
+        Test Case 2: Loopback split ring all path multi-queues payload check with server mode and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(3)
-        vhost_eal_param = "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6]'"
-        core1 = self.vhost_core_list[1]
-        core2 = self.vhost_core_list[2]
-        core3 = self.vhost_core_list[3]
-        core4 = self.vhost_core_list[4]
-        core5 = self.vhost_core_list[5]
-        cbdma1 = self.cbdma_list[0]
-        cbdma2 = self.cbdma_list[1]
-        cbdma3 = self.cbdma_list[2]
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=3)
+        vhost_eal_param = "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]'"
         lcore_dma = (
-            f"[lcore{core1}@{cbdma1},"
-            f"lcore{core2}@{cbdma1},"
-            f"lcore{core3}@{cbdma2},lcore{core3}@{cbdma3},"
-            f"lcore{core4}@{cbdma2},lcore{core4}@{cbdma3},"
-            f"lcore{core5}@{cbdma2},lcore{core5}@{cbdma3}]"
+            "lcore%s@%s,"
+            "lcore%s@%s,"
+            "lcore%s@%s,"
+            "lcore%s@%s,"
+            "lcore%s@%s,"
+            "lcore%s@%s,"
+            "lcore%s@%s,"
+            "lcore%s@%s"
+            % (
+                self.vhost_core_list[1],
+                self.cbdma_list[0],
+                self.vhost_core_list[2],
+                self.cbdma_list[0],
+                self.vhost_core_list[3],
+                self.cbdma_list[1],
+                self.vhost_core_list[3],
+                self.cbdma_list[2],
+                self.vhost_core_list[4],
+                self.cbdma_list[1],
+                self.vhost_core_list[4],
+                self.cbdma_list[2],
+                self.vhost_core_list[5],
+                self.cbdma_list[1],
+                self.vhost_core_list[5],
+                self.cbdma_list[2],
+            )
         )
         vhost_param = (
-            " --nb-cores=5 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-            + " --lcore-dma={}".format(lcore_dma)
+            " --nb-cores=5 --rxq=8 --txq=8 --txd=1024 --rxd=1024 --lcore-dma=[%s]"
+            % lcore_dma
         )
+
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
@@ -569,15 +485,14 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
 
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,server=1"
         virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-        self.logger.info("Launch virtio with split ring mergeable inorder path")
         self.start_virtio_testpmd_with_vhost_net0(
             cores=self.virtio0_core_list, eal_param=virtio_eal_param, param=virtio_param
         )
+
         self.launch_pdump_to_capture_pkt()
         self.send_6192_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=6192)
 
-        self.logger.info("Quit and relaunch vhost and rerun step 4-6")
         self.vhost_user_pmd.quit()
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -590,7 +505,6 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_6192_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=6192)
 
-        self.logger.info("Quit and relaunch virtio with split ring mergeable path")
         self.virtio_user_pmd.quit()
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,server=1"
         virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
@@ -601,7 +515,6 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_6192_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=6192)
 
-        self.logger.info("Quit and relaunch vhost and rerun step 4-6")
         self.vhost_user_pmd.quit()
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -614,11 +527,10 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_6192_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=6192)
 
-        self.logger.info("Quit and relaunch virtio with split ring non-mergeable path")
         self.virtio_user_pmd.quit()
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=0,server=1"
         virtio_param = (
-            " --enable-hw-vlan-strip --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
+            "--enable-hw-vlan-strip --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
         )
         self.start_virtio_testpmd_with_vhost_net0(
             cores=self.virtio0_core_list, eal_param=virtio_eal_param, param=virtio_param
@@ -627,7 +539,6 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_960_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=960)
 
-        self.logger.info("Quit and relaunch vhost and rerun step 11-12")
         self.vhost_user_pmd.quit()
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -640,9 +551,6 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_960_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=960)
 
-        self.logger.info(
-            "Quit and relaunch virtio with split ring inorder non-mergeable path"
-        )
         self.virtio_user_pmd.quit()
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=1,server=1"
         virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
@@ -653,7 +561,6 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_960_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=960)
 
-        self.logger.info("Quit and relaunch vhost and rerun step 11-12")
         self.vhost_user_pmd.quit()
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -666,7 +573,6 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_960_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=960)
 
-        self.logger.info("Quit and relaunch virtio with split ring vectorized path")
         self.virtio_user_pmd.quit()
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=0,vectorized=1,server=1"
         virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
@@ -677,7 +583,6 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_960_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=960)
 
-        self.logger.info("Quit and relaunch vhost and rerun step 11-12")
         self.vhost_user_pmd.quit()
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -690,14 +595,13 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.send_960_packets_from_vhost()
         self.check_packet_payload_valid(pkt_len=960)
 
-        self.logger.info("Quit and relaunch vhost w/ iova=pa, Rerun steps 2-19")
         if not self.check_2M_env:
             self.virtio_user_pmd.quit()
             self.vhost_user_pmd.quit()
-            vhost_eal_param = "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6]'"
+            vhost_eal_param = "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]'"
             vhost_param = (
-                " --nb-cores=5 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-                + " --lcore-dma={}".format(lcore_dma)
+                " --nb-cores=5 --rxq=8 --txq=8 --txd=1024 --rxd=1024 --lcore-dma=[%s]"
+                % lcore_dma
             )
             self.start_vhost_testpmd(
                 cores=self.vhost_core_list,
@@ -708,153 +612,30 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             )
 
             virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,server=1"
-            virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-            self.logger.info("Launch virtio with split ring mergeable inorder path")
+            virtio_param = " --nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
+            self.logger.info("Launch virtio with packed ring mergeable inorder path")
             self.start_virtio_testpmd_with_vhost_net0(
                 cores=self.virtio0_core_list,
                 eal_param=virtio_eal_param,
                 param=virtio_param,
             )
+
             self.launch_pdump_to_capture_pkt()
             self.send_6192_packets_from_vhost()
             self.check_packet_payload_valid(pkt_len=6192)
 
-            self.logger.info("Quit and relaunch vhost and rerun step 4-6")
-            self.vhost_user_pmd.quit()
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_6192_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=6192)
-
-            self.logger.info("Quit and relaunch virtio with split ring mergeable path")
-            self.virtio_user_pmd.quit()
-            virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,server=1"
-            virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-            self.start_virtio_testpmd_with_vhost_net0(
-                cores=self.virtio0_core_list,
-                eal_param=virtio_eal_param,
-                param=virtio_param,
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_6192_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=6192)
-
-            self.logger.info("Quit and relaunch vhost and rerun step 4-6")
-            self.vhost_user_pmd.quit()
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_6192_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=6192)
-
-            self.logger.info(
-                "Quit and relaunch virtio with split ring non-mergeable path"
-            )
-            self.virtio_user_pmd.quit()
-            virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=0,server=1"
-            virtio_param = " --enable-hw-vlan-strip --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-            self.start_virtio_testpmd_with_vhost_net0(
-                cores=self.virtio0_core_list,
-                eal_param=virtio_eal_param,
-                param=virtio_param,
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_960_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=960)
-
-            self.logger.info("Quit and relaunch vhost and rerun step 11-12")
-            self.vhost_user_pmd.quit()
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_960_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=960)
-
-            self.logger.info(
-                "Quit and relaunch virtio with split ring inorder non-mergeable path"
-            )
-            self.virtio_user_pmd.quit()
-            virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=1,server=1"
-            virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-            self.start_virtio_testpmd_with_vhost_net0(
-                cores=self.virtio0_core_list,
-                eal_param=virtio_eal_param,
-                param=virtio_param,
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_960_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=960)
-
-            self.logger.info("Quit and relaunch vhost and rerun step 11-12")
-            self.vhost_user_pmd.quit()
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_960_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=960)
-
-            self.logger.info("Quit and relaunch virtio with split ring vectorized path")
-            self.virtio_user_pmd.quit()
-            virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=0,vectorized=1,server=1"
-            virtio_param = " --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-            self.start_virtio_testpmd_with_vhost_net0(
-                cores=self.virtio0_core_list,
-                eal_param=virtio_eal_param,
-                param=virtio_param,
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_960_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=960)
-
-            self.logger.info("Quit and relaunch vhost and rerun step 11-12")
-            self.vhost_user_pmd.quit()
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.launch_pdump_to_capture_pkt()
-            self.send_960_packets_from_vhost()
-            self.check_packet_payload_valid(pkt_len=960)
-
-    def test_server_mode_split_ring_large_chain_packets_stress_test_with_cbdma(self):
+    def test_loopback_split_ring_large_chain_packets_stress_test_with_server_mode_and_cbdma_enable(
+        self,
+    ):
         """
-        Test Case 3: loopback split ring large chain packets stress test with server mode and cbdma enqueue
+        Test Case 3: Loopback split ring large chain packets stress test with server mode and cbdma enable
         """
         if not self.check_2M_env:
-            self.get_cbdma_ports_info_and_bind_to_dpdk(1)
-            vhost_eal_param = (
-                "--vdev 'eth_vhost0,iface=vhost-net0,queues=1,client=1,dmas=[txq0]'"
-            )
-            core1 = self.vhost_core_list[1]
-            cbdma1 = self.cbdma_list[0]
-            lcore_dma = f"[lcore{core1}@{cbdma1}]"
-            vhost_param = " --nb-cores=1 --mbuf-size=65535" + " --lcore-dma={}".format(
-                lcore_dma
-            )
+            self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+            vhost_eal_param = "--vdev 'eth_vhost0,iface=vhost-net0,queues=1,client=1,dmas=[txq0;rxq0]'"
+            lcore_dma = "lcore%s@%s" % (self.vhost_core_list[1], self.cbdma_list[0])
+
+            vhost_param = " --nb-cores=1 --mbuf-size=65535 --lcore-dma=[%s]" % lcore_dma
             self.start_vhost_testpmd(
                 cores=self.vhost_core_list,
                 eal_param=vhost_eal_param,
@@ -865,19 +646,16 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
 
             virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=1,server=1,mrg_rxbuf=1,in_order=0,vectorized=1,queue_size=2048"
             virtio_param = " --nb-cores=1 --rxq=1 --txq=1 --txd=2048 --rxd=2048"
-            self.logger.info("Launch virtio with split ring vectorized path")
             self.start_virtio_testpmd_with_vhost_net0(
                 cores=self.virtio0_core_list,
                 eal_param=virtio_eal_param,
                 param=virtio_param,
+                set_fwd_csum=False,
             )
 
             self.send_chain_packets_from_vhost()
             self.verify_virtio_user_receive_packets()
 
-            self.logger.info(
-                "Stop and quit vhost testpmd and relaunch vhost with iova=pa"
-            )
             self.vhost_user_pmd.quit()
             self.start_vhost_testpmd(
                 cores=self.vhost_core_list,
@@ -889,21 +667,18 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             self.send_chain_packets_from_vhost()
             self.verify_virtio_user_receive_packets()
 
-    def test_server_mode_packed_ring_large_chain_packets_stress_test_with_cbdma(self):
+    def test_loopback_packed_ring_large_chain_packets_stress_test_with_server_mode_and_cbdma_enable(
+        self,
+    ):
         """
-        Test Case 4: loopback split packed large chain packets stress test with server mode and cbdma enqueue
+        Test Case 4: Loopback packed ring large chain packets stress test with server mode and cbdma enable
         """
         if not self.check_2M_env:
-            self.get_cbdma_ports_info_and_bind_to_dpdk(1)
-            vhost_eal_param = (
-                "--vdev 'eth_vhost0,iface=vhost-net0,queues=1,client=1,dmas=[txq0]'"
-            )
-            core1 = self.vhost_core_list[1]
-            cbdma1 = self.cbdma_list[0]
-            lcore_dma = f"[lcore{core1}@{cbdma1}]"
-            vhost_param = " --nb-cores=1 --mbuf-size=65535" + " --lcore-dma={}".format(
-                lcore_dma
-            )
+            self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+            vhost_eal_param = "--vdev 'eth_vhost0,iface=vhost-net0,queues=1,client=1,dmas=[txq0;rxq0]'"
+            lcore_dma = "lcore%s@%s" % (self.vhost_core_list[1], self.cbdma_list[0])
+
+            vhost_param = " --nb-cores=1 --mbuf-size=65535 --lcore-dma=[%s]" % lcore_dma
             self.start_vhost_testpmd(
                 cores=self.vhost_core_list,
                 eal_param=vhost_eal_param,
@@ -912,21 +687,18 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
                 iova_mode="va",
             )
 
-            virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=1,mrg_rxbuf=1,in_order=0,vectorized=1,packed_vq=1,queue_size=2048,server=1"
+            virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=1,server=1,mrg_rxbuf=1,in_order=0,vectorized=1,packed_vq=1,queue_size=2048"
             virtio_param = " --nb-cores=1 --rxq=1 --txq=1 --txd=2048 --rxd=2048"
-            self.logger.info("Launch virtio with split ring vectorized path")
             self.start_virtio_testpmd_with_vhost_net0(
                 cores=self.virtio0_core_list,
                 eal_param=virtio_eal_param,
                 param=virtio_param,
+                set_fwd_csum=False,
             )
 
             self.send_chain_packets_from_vhost()
             self.verify_virtio_user_receive_packets()
 
-            self.logger.info(
-                "Stop and quit vhost testpmd and relaunch vhost with iova=pa"
-            )
             self.vhost_user_pmd.quit()
             self.start_vhost_testpmd(
                 cores=self.vhost_core_list,
@@ -942,9 +714,8 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         Run after each test case.
         """
-        self.virtio_user_pmd.quit()
-        self.vhost_user_pmd.quit()
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
+        self.dut.kill_all()
         self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
