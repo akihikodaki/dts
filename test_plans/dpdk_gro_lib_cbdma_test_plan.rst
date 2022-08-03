@@ -35,24 +35,35 @@ Currently, the GRO library provides GRO supports for TCP/IPv4 packets and
 VxLAN packets which contain an outer IPv4 header and an inner TCP/IPv4
 packet.
 
-This test plan includes dpdk gro lib test with TCP/IPv4 traffic with CBDMA.
+This test plan includes dpdk gro lib test with TCP/IPv4 traffic when vhost uses the asynchronous operations with CBDMA channels.
 
 ..Note:
 1.For packed virtqueue virtio-net test, need qemu version > 4.2.0 and VM kernel version > 5.1, and packed ring multi-queues not support reconnect in qemu yet.
-2.For split virtqueue virtio-net with multi-queues server mode test, need qemu version >= 5.2.0, dut to old qemu exist reconnect issue when multi-queues test.
+2.For split virtqueue virtio-net with multi-queues server mode test, better to use qemu version >= 5.2.0, dut to qemu(v4.2.0~v5.1.0) exist split ring multi-queues reconnection issue.
 3.DPDK local patch that about vhost pmd is needed when testing Vhost asynchronous data path with testpmd.
 
 Prerequisites
 =============
+Topology
+--------
+	Test flow:NIC2(In kernel) -> NIC1(DPDK) -> testpmd(csum fwd) -> Vhost -> Virtio-net
 
-Test flow
+General set up
+--------------
+1. Compile DPDK::
+
+    # CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static <dpdk build dir>
+    # ninja -C <dpdk build dir> -j 110
+    For example:
+    CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc -j 110
+
+Test case
 =========
 
-NIC2(In kernel) -> NIC1(DPDK) -> testpmd(csum fwd) -> Vhost -> Virtio-net
-
-
-Test Case1: DPDK GRO test with two queues and two CBDMA channels using tcp/ipv4 traffic
-=======================================================================================
+Test Case1: DPDK GRO test with two queues and cbdma channels using tcp/ipv4 traffic
+-----------------------------------------------------------------------------------
+This case tests dpdk gro lib with TCP/IPv4 traffic when vhost uses the asynchronous operations with CBDMA channels.
 
 1. Connect two nic port directly, put nic2 into another namesapce and turn on the tso of this nic port by below cmds::
 
@@ -62,12 +73,12 @@ Test Case1: DPDK GRO test with two queues and two CBDMA channels using tcp/ipv4 
     ip netns exec ns1 ifconfig enp26s0f0 1.1.1.8 up
     ip netns exec ns1 ethtool -K enp26s0f0 tso on
 
-2. Bind cbdma port and nic1 to vfio-pci, launch vhost-user with testpmd and set flush interval to 1::
+2. Bind 2 CBDMA channels and nic1 to vfio-pci, launch vhost-user with testpmd and set flush interval to 1::
 
     ./usertools/dpdk-devbind.py -b vfio-pci xx:xx.x
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29-31 -n 4 \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[txq0@80:04.0;txq1@80:04.1]' \
-    -- -i --txd=1024 --rxd=1024 --txq=2 --rxq=2 --nb-cores=2
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[txq0;txq1;rxq0;rxq1]' \
+    -- -i --txd=1024 --rxd=1024 --txq=2 --rxq=2 --nb-cores=2 --lcore-dma=[lcore30@0000:00:04.0,lcore30@0000:00:04.1,lcore31@0000:00:04.1]
     testpmd> set fwd csum
     testpmd> stop
     testpmd> port stop 0
@@ -84,15 +95,16 @@ Test Case1: DPDK GRO test with two queues and two CBDMA channels using tcp/ipv4 
 
 3.  Set up vm with virto device and using kernel virtio-net driver::
 
-     taskset -c 31 /home/qemu-install/qemu-4.2.1/bin/qemu-system-x86_64 -name us-vhost-vm1 \
-       -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
-       -numa node,memdev=mem \
-       -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -netdev user,id=yinan,hostfwd=tcp:127.0.0.1:6005-:22 -device e1000,netdev=yinan \
-       -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu2004.img  \
-       -chardev socket,id=char0,path=./vhost-net \
-       -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce,queues=2 \
-       -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on,mq=on,vectors=15 \
-       -vnc :10 -daemonize
+	taskset -c 31 qemu-system-x86_64 -name vm0 -enable-kvm -cpu host -smp 1 -m 4096 \
+	-object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
+	-numa node,memdev=mem -mem-prealloc -drive file=/home/image/ubuntu2004.img \
+	-chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 -device virtio-serial \
+	-device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 -pidfile /tmp/.vm0.pid -daemonize \
+	-monitor unix:/tmp/vm0_monitor.sock,server,nowait \
+	-netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 -device e1000,netdev=nttsip1 \
+	-chardev socket,id=char0,path=./vhost-net \
+	-netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=2 \
+	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on,mq=on,vectors=15 -vnc :4
 
 4. In vm, config the virtio-net device with ip and turn the kernel gro off::
 
@@ -104,3 +116,7 @@ Test Case1: DPDK GRO test with two queues and two CBDMA channels using tcp/ipv4 
 
     Host side :  taskset -c 35 ip netns exec ns1 iperf -c 1.1.1.2 -i 1 -t 60 -m -P 2
     VM side:     iperf -s
+
+6. During the iperf send and receive packets, check that async data-path(virtio_dev_rx_async_xxx, virtio_dev_tx_async_xxx) is using at the host side::
+
+    perf top
