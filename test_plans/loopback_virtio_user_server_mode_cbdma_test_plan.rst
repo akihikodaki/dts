@@ -1,20 +1,20 @@
 .. SPDX-License-Identifier: BSD-3-Clause
    Copyright(c) 2022 Intel Corporation
 
-============================================================
+===========================================================
 Loopback vhost/virtio-user server mode with CBDMA test plan
-============================================================
+===========================================================
 
 Description
 ===========
 
 Vhost asynchronous data path leverages DMA devices to offload memory copies from the CPU and it is implemented in an asynchronous way.
 In addition, vhost supports M:N mapping between vrings and DMA virtual channels. Specifically, one vring can use multiple different DMA
-channels and one DMA channel can be shared by multiple vrings at the same time. Vhost enqueue operation with CBDMA channels is supported 
-in both split and packed ring.
+channels and one DMA channel can be shared by multiple vrings at the same time. From DPDK22.07, Vhost enqueue and dequeue operation with
+CBDMA channels is supported in both split and packed ring.
 
 This document provides the test plan for testing the following features when Vhost-user using asynchronous data path with
-CBDMA channels in loopback virtio-user topology.
+CBDMA channels in loopback vhost-user/virtio-user topology.
 1. Virtio-user server mode is a feature to enable virtio-user as the server, vhost as the client, thus after vhost-user is killed then relaunched,
 virtio-user can reconnect back to vhost-user again; at another hand, virtio-user also can reconnect back to vhost-user after virtio-user is killed.
 This feature test need cover different rx/tx paths with virtio 1.0 and virtio 1.1, includes split ring mergeable, non-mergeable, inorder mergeable,
@@ -43,24 +43,24 @@ General set up
 --------------
 1. Compile DPDK::
 
-      # CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=<dpdk build dir>
-      # ninja -C <dpdk build dir> -j 110
-      For example:
-      CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=x86_64-native-linuxapp-gcc
-      ninja -C x86_64-native-linuxapp-gcc -j 110
+    # CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static <dpdk build dir>
+    # ninja -C <dpdk build dir> -j 110
+    For example:
+    CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static x86_64-native-linuxapp-gcc
+    ninja -C x86_64-native-linuxapp-gcc -j 110
 
 2. Get the PCI device ID and DMA device ID of DUT, for example, 0000:18:00.0 is PCI device ID, 0000:00:04.0, 0000:00:04.1 is DMA device ID::
 
-      <dpdk dir># ./usertools/dpdk-devbind.py -s
+    <dpdk dir># ./usertools/dpdk-devbind.py -s
 
-      Network devices using kernel driver
-      ===================================
-      0000:18:00.0 'Device 159b' if=ens785f0 drv=ice unused=vfio-pci
+    Network devices using kernel driver
+    ===================================
+    0000:18:00.0 'Device 159b' if=ens785f0 drv=ice unused=vfio-pci
 
-      DMA devices using kernel driver
-      ===============================
-      0000:00:04.0 'Sky Lake-E CBDMA Registers 2021' drv=ioatdma unused=vfio-pci
-      0000:00:04.1 'Sky Lake-E CBDMA Registers 2021' drv=ioatdma unused=vfio-pci
+    DMA devices using kernel driver
+    ===============================
+    0000:00:04.0 'Sky Lake-E CBDMA Registers 2021' drv=ioatdma unused=vfio-pci
+    0000:00:04.1 'Sky Lake-E CBDMA Registers 2021' drv=ioatdma unused=vfio-pci
 
 Test case
 =========
@@ -69,33 +69,32 @@ Common steps
 ------------
 1. Bind 1 NIC port and CBDMA channels to vfio-pci::
 
-      <dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci <DUT port pci device id>
-      <dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci <DUT port DMA device id>
+    <dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci <DUT port pci device id>
+    <dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci <DUT port DMA device id>
 
-      For example, bind 2 CBDMA channels:
-      <dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci 0000:00:04.0,0000:00:04.1
+    For example, bind 2 CBDMA channels:
+    <dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci 0000:00:04.0,0000:00:04.1
 
-Test Case 1: loopback packed ring all path cbdma test payload check with server mode and multi-queues
------------------------------------------------------------------------------------------------------
+Test Case 1: Loopback packed ring all path multi-queues payload check with server mode and cbdma enable
+-------------------------------------------------------------------------------------------------------
 This case tests the payload is valid after forwading large chain packets in loopback vhost-user/virtio-user packed ring
-all path multi-queues with server mode when vhost uses the asynchronous enqueue operations with CBDMA channels. Both 
-iova as VA and PA mode test.
+all path multi-queues with server mode when vhost uses the asynchronous operations with CBDMA channels. Both iova as VA and PA mode test.
 
 1. Bind 8 CBDMA channel to vfio-pci, as common step 1.
 
 2. Launch vhost by below command::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 10-18 -n 4 \
+	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 10-14 -n 4 \
 	-a 0000:00:04.0 -a 0000:00:04.1 -a 0000:00:04.2 -a 0000:00:04.3 -a 0000:00:04.4 -a 0000:00:04.5 -a 0000:00:04.6 -a 0000:00:04.7 \
-	--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq6;txq7]' \
-	--iova=va -- -i --nb-cores=5 --rxq=8 --txq=8 --txd=1024 --rxd=1024 \
-	--lcore-dma=[lcore11@0000:00:04.0,lcore11@0000:00:04.7,lcore12@0000:00:04.1,lcore12@0000:00:04.2,lcore12@0000:00:04.3,lcore13@0000:00:04.2,lcore13@0000:00:04.3,lcore13@0000:00:04.4,lcore14@0000:00:04.2,lcore14@0000:00:04.3,lcore14@0000:00:04.4,lcore14@0000:00:04.5,lcore15@0000:00:04.0,lcore15@0000:00:04.1,lcore15@0000:00:04.2,lcore15@0000:00:04.3,lcore15@0000:00:04.4,lcore15@0000:00:04.5,lcore15@0000:00:04.6,lcore15@0000:00:04.7]
+	--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
+	--iova=va -- -i --nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024 \
+	--lcore-dma=[lcore11@0000:00:04.0,lcore11@0000:00:04.1,lcore12@0000:00:04.2,lcore12@0000:00:04.3,lcore13@0000:00:04.4,lcore13@0000:00:04.5,lcore14@0000:00:04.6,lcore14@0000:00:04.7]
 
 3. Launch virtio-user with packed ring mergeable inorder path::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci \
+	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-6 -n 4 --file-prefix=virtio-user0 --no-pci \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,packed_vq=1,server=1 \
-	-- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+	-- -i --nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024
 	testpmd>set fwd csum
 	testpmd>start
 
@@ -119,9 +118,9 @@ iova as VA and PA mode test.
 
 8. Quit and relaunch virtio with packed ring mergeable path as below::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci \
+	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-6 -n 4 --file-prefix=virtio-user0 --no-pci \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,packed_vq=1,server=1 \
-	-- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+	-- -i --nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024
 	testpmd>set fwd csum
 	testpmd>start
 
@@ -129,9 +128,9 @@ iova as VA and PA mode test.
 
 10. Quit and relaunch virtio with packed ring non-mergeable path as below::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci \
+	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-6 -n 4 --file-prefix=virtio-user0 --no-pci \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=0,packed_vq=1,server=1 \
-	-- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+	-- -i --nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024
 	testpmd>set fwd csum
 	testpmd>start
 
@@ -151,9 +150,9 @@ iova as VA and PA mode test.
 
 15. Quit and relaunch virtio with packed ring inorder non-mergeable path as below::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci \
+	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-6 -n 4 --file-prefix=virtio-user0 --no-pci \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=1,packed_vq=1,server=1 \
-	-- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+	-- -i --nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024
 	testpmd>set fwd csum
 	testpmd>start
 
@@ -161,9 +160,9 @@ iova as VA and PA mode test.
 
 17. Quit and relaunch virtio with packed ring vectorized path as below::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci --force-max-simd-bitwidth=512 \
+	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-6 -n 4 --file-prefix=virtio-user0 --no-pci --force-max-simd-bitwidth=512 \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=1,packed_vq=1,vectorized=1,server=1 \
-	-- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+	-- -i --nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024
 	testpmd>set fwd csum
 	testpmd>start
 
@@ -171,9 +170,9 @@ iova as VA and PA mode test.
 
 19. Quit and relaunch virtio with packed ring vectorized path and ring size is not power of 2 as below::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 30,31 -n 4 --file-prefix=virtio-user0 --no-pci --force-max-simd-bitwidth=512 \
+	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-6 -n 4 --file-prefix=virtio-user0 --no-pci --force-max-simd-bitwidth=512 \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=1,packed_vq=1,vectorized=1,queue_size=1025,server=1 \
-	-- -i --nb-cores=1 --rxq=8 --txq=8 --txd=1025 --rxd=1025
+	-- -i --nb-cores=4 --rxq=8 --txq=8 --txd=1025 --rxd=1025
 	testpmd>set fwd csum
 	testpmd>start
 
@@ -181,26 +180,25 @@ iova as VA and PA mode test.
 
 21. Quit and relaunch vhost w/ iova=pa::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 10-18 -n 4 \
+	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 10-14 -n 4 \
 	-a 0000:00:04.0 -a 0000:00:04.1 -a 0000:00:04.2 -a 0000:00:04.3 -a 0000:00:04.4 -a 0000:00:04.5 -a 0000:00:04.6 -a 0000:00:04.7 \
-	--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq6;txq7]' \
-	--iova=pa -- -i --nb-cores=5 --rxq=8 --txq=8 --txd=1024 --rxd=1024 \
-	--lcore-dma=[lcore11@0000:00:04.0,lcore11@0000:00:04.7,lcore12@0000:00:04.1,lcore12@0000:00:04.2,lcore12@0000:00:04.3,lcore13@0000:00:04.2,lcore13@0000:00:04.3,lcore13@0000:00:04.4,lcore14@0000:00:04.2,lcore14@0000:00:04.3,lcore14@0000:00:04.4,lcore14@0000:00:04.5,lcore15@0000:00:04.0,lcore15@0000:00:04.1,lcore15@0000:00:04.2,lcore15@0000:00:04.3,lcore14@0000:00:04.4,lcore14@0000:00:04.5,lcore15@0000:00:04.6,lcore15@0000:00:04.7]
+	--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
+	--iova=pa -- -i --nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024 \
+	--lcore-dma=[lcore11@0000:00:04.0,lcore11@0000:00:04.1,lcore12@0000:00:04.2,lcore12@0000:00:04.3,lcore13@0000:00:04.4,lcore13@0000:00:04.5,lcore14@0000:00:04.6,lcore14@0000:00:04.7]
 
 22. Rerun steps 3-6.
 
-Test Case 2: loopback split ring all path cbdma test payload check with server mode and multi-queues
-----------------------------------------------------------------------------------------------------
+Test Case 2: Loopback split ring all path multi-queues payload check with server mode and cbdma enable
+------------------------------------------------------------------------------------------------------
 This case tests the payload is valid after forwading large chain packets in loopback vhost-user/virtio-user split ring
-all path multi-queues with server mode when vhost uses the asynchronous enqueue operations with CBDMA channels. Both
-iova as VA and PA mode test.
+all path multi-queues with server mode when vhost uses the asynchronous operations with CBDMA channels. Both iova as VA and PA mode test.
 
 1. Bind 3 CBDMA channel to vfio-pci, as common step 1.
 
 2. Launch vhost by below command::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 10-18 -n 4 -a 0000:00:04.0 -a 0000:00:04.1 -a 0000:00:04.2 \
-	--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6]' \
+	--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
 	--iova=va -- -i --nb-cores=5 --rxq=8 --txq=8 --txd=1024 --rxd=1024 \
 	--lcore-dma=[lcore11@0000:00:04.0,lcore12@0000:00:04.0,lcore13@0000:00:04.1,lcore13@0000:00:04.2,lcore14@0000:00:04.1,lcore14@0000:00:04.2,lcore15@0000:00:04.1,lcore15@0000:00:04.2]
 
@@ -285,23 +283,23 @@ iova as VA and PA mode test.
 19. Quit and relaunch vhost w/ iova=pa::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 10-18 -n 4 -a 0000:00:04.0 -a 0000:00:04.1 -a 0000:00:04.2 \
-	--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6]' \
+	--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
 	--iova=pa -- -i --nb-cores=5 --rxq=8 --txq=8 --txd=1024 --rxd=1024 \
 	--lcore-dma=[lcore11@0000:00:04.0,lcore12@0000:00:04.0,lcore13@0000:00:04.1,lcore13@0000:00:04.2,lcore14@0000:00:04.1,lcore14@0000:00:04.2,lcore15@0000:00:04.1,lcore15@0000:00:04.2]
 
 20. Rerun steps 3-6.
 
-Test Case 3: loopback split ring large chain packets stress test with server mode and cbdma enqueue
----------------------------------------------------------------------------------------------------
+Test Case 3: Loopback split ring large chain packets stress test with server mode and cbdma enable
+--------------------------------------------------------------------------------------------------
 This is a stress test case about forwading large chain packets in loopback vhost-user/virtio-user split ring with server mode 
-when vhost uses the asynchronous enqueue operations with CBDMA channels. Both iova as VA and PA mode test.
+when vhost uses the asynchronous operations with CBDMA channels. Both iova as VA and PA mode test.
 
 1. Bind 1 CBDMA channel to vfio-pci, as common step 1.
 
 2. Launch vhost by below command::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-3 -n 4 -a 0000:00:04.0 \
-	--vdev 'eth_vhost0,iface=vhost-net0,queues=1,client=1,dmas=[txq0]' --iova=va -- -i --nb-cores=1 --mbuf-size=65535 --lcore-dma=[lcore3@0000:00:04.0]
+	--vdev 'eth_vhost0,iface=vhost-net0,queues=1,client=1,dmas=[txq0;rxq0]' --iova=va -- -i --nb-cores=1 --mbuf-size=65535 --lcore-dma=[lcore3@0000:00:04.0]
 
 3. Launch virtio and start testpmd::
 
@@ -319,21 +317,21 @@ when vhost uses the asynchronous enqueue operations with CBDMA channels. Both io
 5. Stop and quit vhost testpmd and relaunch vhost with iova=pa::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-3 -n 4 -a 0000:00:04.0 \
-	--vdev 'eth_vhost0,iface=vhost-net0,queues=1,client=1,dmas=[txq0]' --iova=pa -- -i --nb-cores=1 --mbuf-size=65535 --lcore-dma=[lcore3@0000:00:04.0]
+	--vdev 'eth_vhost0,iface=vhost-net0,queues=1,client=1,dmas=[txq0;rxq0]' --iova=pa -- -i --nb-cores=1 --mbuf-size=65535 --lcore-dma=[lcore3@0000:00:04.0]
 
 6. Rerun steps 4.
 
-Test Case 4: loopback packed ring large chain packets stress test with server mode and cbdma enqueue
-----------------------------------------------------------------------------------------------------
+Test Case 4: Loopback packed ring large chain packets stress test with server mode and cbdma enable
+---------------------------------------------------------------------------------------------------
 This is a stress test case about forwading large chain packets in loopback vhost-user/virtio-user packed ring with server mode 
-when vhost uses the asynchronous enqueue operations with dsa dpdk driver. Both iova as VA and PA mode test.
+when vhost uses the asynchronous operations with dsa dpdk driver. Both iova as VA and PA mode test.
 
 1. Bind 1 CBDMA channel to vfio-pci, as common step 1.
 
 2. Launch vhost by below command::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-3 -n 4 -a 0000:00:04.0 \
-	--vdev 'eth_vhost0,iface=vhost-net0,queues=1,dmas=[txq0],client=1' --iova=va -- -i --nb-cores=1 --mbuf-size=65535 --lcore-dma=[lcore3@0000:00:04.0]
+	--vdev 'eth_vhost0,iface=vhost-net0,queues=1,dmas=[txq0;rxq0],client=1' --iova=va -- -i --nb-cores=1 --mbuf-size=65535 --lcore-dma=[lcore3@0000:00:04.0]
 
 3. Launch virtio and start testpmd::
 
