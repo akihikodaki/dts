@@ -245,7 +245,7 @@ Test Case: Configure receive port outer VLAN TPID
 
 Enable vlan header QinQ on port ``0`` firstly to support set TPID::
 
-    testpmd> vlan set qinq on 0
+    testpmd> vlan set extend on 0
 
 Check whether the mode is set successfully::
 
@@ -260,9 +260,7 @@ Check whether the mode is set successfully::
     Allmulticast mode: disabled
     Maximum number of MAC addresses: 127
     VLAN offload:
-      strip off
-      filter off
-      qinq(extend) on
+      strip off, filter off, extend on, qinq strip off
 
 Set Tag Protocol ID ``0x1234`` on port ``0``.
 Nic only support inner model, except Intel® Ethernet 700 Series::

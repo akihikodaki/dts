@@ -520,7 +520,7 @@ class TestDualVlan(TestCase):
 
         self.mode_config(filter="on", strip="on", extend="on")
         # nic only support inner model, except Intel® Ethernet 700 Series nic
-        self.dut.send_expect("vlan set inner tpid 1234 %s" % dutRxPortId, "testpmd> ")
+        self.dut.send_expect("vlan set inner tpid 0x1234 %s" % dutRxPortId, "testpmd> ")
         self.vlan_send_packet(outvlan, invlan)
 
         out = self.get_tcpdump_package()
