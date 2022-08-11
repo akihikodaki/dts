@@ -228,7 +228,7 @@ class TestRssKeyUpdate(TestCase):
 
         self.dut.kill_all()
 
-        self.pmdout.start_testpmd("Default", f"--rxq={queue} --txq={queue}")
+        self.pmdout.start_testpmd("all", f"--rxq={queue} --txq={queue}")
 
     def test_set_hash_key_toeplitz(self):
 
@@ -255,6 +255,10 @@ class TestRssKeyUpdate(TestCase):
             )
             self.dut.send_expect("flow flush 0", "testpmd> ")
             cmd = f"flow create 0 ingress pattern eth / ipv4 / end actions rss types {iptype} end queues end func toeplitz / end"
+            if "sctp" in iptype or "udp" in iptype or "tcp" in iptype:
+                cmd = cmd.replace("/ ipv4 /", f"/ ipv4 / {rsstype} /")
+            if "ipv6" in iptype:
+                cmd = cmd.replace("ipv4", "ipv6")
             self.dut.send_expect(cmd, "testpmd> ")
             out = self.dut.send_expect(f"port config all rss {rsstype}", "testpmd> ")
             self.verify(
@@ -267,6 +271,10 @@ class TestRssKeyUpdate(TestCase):
             )
             self.dut.send_expect("flow flush 0", "testpmd> ")
             cmd = f"flow create 0 ingress pattern eth / ipv4 / end actions rss types {iptype} end queues end func toeplitz / end"
+            if "sctp" in iptype or "udp" in iptype or "tcp" in iptype:
+                cmd = cmd.replace("/ ipv4 /", f"/ ipv4 / {rsstype} /")
+            if "ipv6" in iptype:
+                cmd = cmd.replace("ipv4", "ipv6")
             self.dut.send_expect(cmd, "testpmd> ")
             new_output = self.send_packet(self.itf, iptype, False)
             self.verify(

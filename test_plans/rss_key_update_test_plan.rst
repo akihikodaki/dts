@@ -23,7 +23,7 @@ Test Case: test_set_hash_key_toeplitz
 
 #. Launch the ``testpmd`` application with the following arguments::
 
-    ./<build_target>/app/dpdk-testpmd -c ffffff -n 4 -- -i --portmask=0x6 --rxq=16 --txq=16
+    ./<build_target>/app/dpdk-testpmd -c ffffff -n 4 -- -i --rxq=16 --txq=16
 
 #. PMD fwd only receive the packets::
 
@@ -39,7 +39,14 @@ Test Case: test_set_hash_key_toeplitz
 
 #. Set hash function, symmetric, port and packet type::
 
-    testpmd> set_hash_global_config 0 toeplitz ipv4-udp enable
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / end actions rss types ipv4-udp end queues end func toeplitz / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / tcp / end actions rss types ipv4-tcp end queues end func toeplitz / end
+    types in pattern must match rss types.
+
+#. Configure RSS hash::
+
+    testpmd> port config all rss <udp|tcp>
+    verify "error" not in out
 
 #. Send packet and print the hash value and queue id of every packet. \
    Then use the hash value % the table size to find expected queue id. \
@@ -68,7 +75,7 @@ Test Case: test_set_hash_key_toeplitz_symmetric
 Same steps as the "test_set_hash_key_toeplitz" test case.
 When set hash function you will need to add::
 
-    testpmd>  set_sym_hash_ena_per_port 0 enable
+    testpmd> flow create 0 ingress pattern eth / ipv4 / tcp / end actions rss types ipv4-tcp end queues end func symmetric_toeplitz queues end / end
 
 Then send in packet as normal.
 
