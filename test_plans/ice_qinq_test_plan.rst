@@ -154,7 +154,7 @@ subcase: dest mac
     sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/("X"*480)], iface="ens786f0")
     sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/("X"*480)], iface="ens786f0")
     sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP()/("X"*480)], iface="ens786f0")
-    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6()/("X"*480)], iface="ens786f0")
 
    check the packets are not to port 1.
 
@@ -242,14 +242,14 @@ subcase: dest mac
 
 2. send matched packets::
 
-    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6()/("X"*480)], iface="ens786f0")
 
    check port 1 receive the packet.
    send mismatched packets::
 
-    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6()/("X"*480)], iface="ens786f0")
-    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6()/("X"*480)], iface="ens786f0")
-    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x86DD)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x86DD)/IPv6()/("X"*480)], iface="ens786f0")
     sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/("X"*480)], iface="ens786f0")
 
    check the packets are not to port 1.
@@ -418,7 +418,7 @@ subcase: dest mac
     sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(proto=0x21)/IP()/UDP(dport=23)/("X"*480)], iface="ens786f0")
     sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/UDP(dport=23)/("X"*480)], iface="ens786f0")
     sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/UDP(dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IPv6()/UDP(dport=23)/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/UDP(dport=23)/("X"*480)], iface="ens786f0")
     sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/UDP(dport=23)/("X"*480)], iface="ens786f0")
 
    check the packets are not to port 1.
@@ -517,7 +517,7 @@ subcase: dest mac
     sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(proto=0x57)/IPv6()/UDP(dport=23)/("X"*480)], iface="ens786f0")
     sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/UDP(dport=23)/("X"*480)], iface="ens786f0")
     sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/UDP(dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IP()/UDP(dport=23)/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/UDP(dport=23)/("X"*480)], iface="ens786f0")
     sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/UDP(dport=23)/("X"*480)], iface="ens786f0")
 
    check the packets are not to port 1.
@@ -1921,7 +1921,7 @@ Test Steps
 
 Tester::
 
-    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst>")/UDP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x86DD)/IPv6(dst="<ipv6 dst>")/UDP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
 
 DUT::
 
@@ -1933,13 +1933,13 @@ DUT::
 
 Tester::
 
-    >>> sendp([Ether(dst="<dst mac change inputset>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst>")/UDP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+    >>> sendp([Ether(dst="<dst mac change inputset>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x86DD)/IPv6(dst="<ipv6 dst>")/UDP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
     
-    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci change inputset>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst>")/UDP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci change inputset>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x86DD)/IPv6(dst="<ipv6 dst>")/UDP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
 
-    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci change inputset>,type=0x0800)/IPv6(dst="<ipv6 dst>")/UDP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci change inputset>,type=0x86DD)/IPv6(dst="<ipv6 dst>")/UDP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
 
-    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst change inputset>")/UDP(sport=<sport>,dport=<dport change inputset>)/("X"*80)],iface="<tester interface>")
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x86DD)/IPv6(dst="<ipv6 dst change inputset>")/UDP(sport=<sport>,dport=<dport change inputset>)/("X"*80)],iface="<tester interface>")
 
 5. Destroy a rule and list rules::
 
@@ -1989,7 +1989,7 @@ Test steps
 
 Tester::
 
-    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst>")/TCP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x86DD)/IPv6(dst="<ipv6 dst>")/TCP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
 
 DUT::
 
@@ -2001,13 +2001,13 @@ DUT::
 
 Tester::
 
-    >>> sendp([Ether(dst="<dst mac change inputset>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst>")/TCP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+    >>> sendp([Ether(dst="<dst mac change inputset>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x86DD)/IPv6(dst="<ipv6 dst>")/TCP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
     
-    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci change inputset>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst>")/TCP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci change inputset>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x86DD)/IPv6(dst="<ipv6 dst>")/TCP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
 
-    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci change inputset>,type=0x0800)/IPv6(dst="<ipv6 dst>")/TCP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci change inputset>,type=0x86DD)/IPv6(dst="<ipv6 dst>")/TCP(sport=<sport>,dport=<dport>)/("X"*80)],iface="<tester interface>")
 
-    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x0800)/IPv6(dst="<ipv6 dst change inputset>")/TCP(sport=<sport>,dport=<dport change inputset>)/("X"*80)],iface="<tester interface>")
+    >>> sendp([Ether(dst="<dst mac>",type=0x8100)/Dot1Q(vlan=<outer vlan tci>,type=0x8100)/Dot1Q(vlan=<inner vlan tci>,type=0x86DD)/IPv6(dst="<ipv6 dst change inputset>")/TCP(sport=<sport>,dport=<dport change inputset>)/("X"*80)],iface="<tester interface>")
 
 5. Destroy a rule and list rules::
 
