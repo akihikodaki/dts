@@ -223,10 +223,14 @@ Test Case 3: MACsec send and receive with different parameters
    It can't be set successfully.
 
 3. Set "pn" to 0xffffffec on both rx and tx sides.
-   Rx port can receive four packets.
+   Rx port can receive four packets.But the expected number
+   of packets is 3/4/5 While the explanation that DPDK developers
+   gave is that it's hardware's behavior.
 
    Set "pn" to 0xffffffed on both rx and tx sides.
-   Rx port can receive three packets.
+   Rx port can receive three packets.But the expected number
+   of packets is 3/4. While the explanation that DPDK developers
+   gave is that it's hardware's behavior.
 
    Set "pn" to 0xffffffee/0xffffffef on both rx and tx sides.
    Rx port can receive three packets too. But the expected number

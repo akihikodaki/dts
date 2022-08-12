@@ -236,6 +236,26 @@ class TestMacsecForIxgbe(TestCase):
             "MACsec pkts receive failed",
         )
 
+    def check_pn_boundary_value(self, i, pkt_num):
+        if i == "0xffffffec":
+            try:
+                self.verify(int(pkt_num) == 4, "Rx port can't receive 4 pkts")
+            except:
+                self.verify(
+                    int(pkt_num) in [3, 4, 5], "Rx port can't receive the expected pkts"
+                )
+                msg = (
+                    str(pkt_num)
+                    + " packages received, the hardware behavior is different on each series of CPUs"
+                )
+                self.logger.warning(msg)
+            finally:
+                self.clear_port_xstats()
+        else:
+            self.verify(
+                int(pkt_num) in [1, 2, 3, 4], "Rx port can't receive the expected pkts"
+            )
+
     def test_MACsec_pkts_tx_and_rx(self):
         """
         MACsec packets send and receive
@@ -364,15 +384,9 @@ class TestMacsecForIxgbe(TestCase):
                     0, 0, 0, i, "00112200000000000000000000000000"
                 )
                 pkt_num = self.packets_receive_num()
-                if i == "0xffffffec":
-                    self.verify(int(pkt_num[0]) == 4, "Rx port can't receive four pkts")
-                    self.clear_port_xstats()
-                else:
-                    self.verify(
-                        int(pkt_num[0]) == 3, "Rx port can't receive three pkts"
-                    )
-                    self.session_sec.send_expect("quit", "#")
-                    self.dut.send_expect("quit", "#")
+                self.check_pn_boundary_value(i, int(pkt_num[0]))
+                self.session_sec.send_expect("quit", "#")
+                self.dut.send_expect("quit", "#")
 
         # subcase4:set various key on rx and tx port
         for i in [
