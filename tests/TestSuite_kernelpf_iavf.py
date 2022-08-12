@@ -635,49 +635,6 @@ class TestKernelpfIavf(TestCase):
         self.verify(bad_ipcsum == 1, "Bad-ipcsum check error")
         self.verify(bad_l4csum == 2, "Bad-ipcsum check error")
 
-    def test_vf_tso(self):
-        self.tester.send_expect(
-            "ethtool -K %s rx off tx off tso off gso off gro off lro off"
-            % self.tester_intf,
-            "#",
-        )
-        self.tester.send_expect(
-            "ifconfig %s mtu %d" % (self.tester_intf, ETHER_JUMBO_FRAME_MTU), "#"
-        )
-        self.vm_testpmd.start_testpmd(
-            "all", "--port-topology=chained --max-pkt-len=%d" % ETHER_JUMBO_FRAME_MTU
-        )
-        self.vm_testpmd.execute_cmd("set fwd csum")
-        self.vm_testpmd.execute_cmd("set verbose 1")
-        self.enable_hw_checksum()
-        self.vm_testpmd.execute_cmd("tso set 1460 0")
-        self.vm_testpmd.execute_cmd("port start all")
-        self.vm_testpmd.execute_cmd("start")
-        self.tester.scapy_foreground()
-        time.sleep(5)
-        self.start_tcpdump(self.tester_intf)
-        pkt = (
-            'sendp([Ether(dst="%s")/IP(chksum=0x1234)/TCP(flags=0x10,chksum=0x1234)/'
-            'Raw(RandString(5214))], iface="%s")' % (self.vf_mac, self.tester_intf)
-        )
-        self.tester.scapy_append(pkt)
-        self.tester.scapy_execute()
-        time.sleep(5)
-        out = self.get_tcpdump_package()
-        self.verify_packet_segmentation(out)
-        self.vm_testpmd.execute_cmd("stop")
-        self.vm_testpmd.execute_cmd("port stop all")
-        self.vm_testpmd.execute_cmd("tso set 0 0")
-        self.vm_testpmd.execute_cmd("port start all")
-        self.vm_testpmd.execute_cmd("start")
-
-        self.start_tcpdump(self.tester_intf)
-        self.tester.scapy_append(pkt)
-        self.tester.scapy_execute()
-        time.sleep(5)
-        out = self.get_tcpdump_package()
-        self.verify_packet_segmentation(out, seg=False)
-
     def start_tcpdump(self, rxItf):
         self.tester.send_expect("rm -rf getPackageByTcpdump.cap", "#")
         self.tester.send_expect(
