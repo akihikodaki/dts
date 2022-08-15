@@ -5726,7 +5726,7 @@ class AdvancedRSSTest(TestCase):
         )
         out = fdirprocess.send_pkt_get_output(pkt_list[0])
         hashes, queues = self.rssprocess.get_hash_and_queues(out)
-        check_mark(out, pkt_num=1, check_param={"port_id": 0, "queue": [1, 2, 3, 4]})
+        check_mark(out, pkt_num=1, check_param={"port_id": 0, "queue": [0, 1, 2, 3]})
         self.logger.info("test_hash: {}       post_hash: {}".format(hashes_0, hashes))
         self.verify(hashes == hashes_0, "expect hash values not changed")
 
