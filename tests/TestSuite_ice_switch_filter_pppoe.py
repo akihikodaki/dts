@@ -2932,16 +2932,14 @@ class ICESwitchFilterPPPOETest(TestCase):
 
         self.generate_file_with_fdir_rules()
         self.path = self.dut.apps_name["test-pmd"]
+        self.rxq = 16
+        self.rxq_param = "--rxq={0} --txq={0}".format(self.rxq)
 
     def set_up(self):
         """
         Run before each test case.
         """
-        self.reload_ice()
-
-    def reload_ice(self):
-        self.dut.send_expect("rmmod ice", "# ", 15)
-        self.dut.send_expect("modprobe ice", "# ", 15)
+        pass
 
     def generate_file_with_fdir_rules(self):
         """
@@ -2980,9 +2978,8 @@ class ICESwitchFilterPPPOETest(TestCase):
         # Prepare testpmd EAL and parameters
         all_eal_param = self.dut.create_eal_parameters(cores="1S/4C/1T", ports=[0])
         command = (
-            self.path + all_eal_param + ' --log-level="ice,8" -- -i --rxq=16 --txq=16 '
+            self.path + all_eal_param + ' --log-level="ice,7" -- -i %s' % self.rxq_param
         )
-        # command = "./%s/app/testpmd %s --log-level=\"ice,8\" -- -i %s" % (self.dut.target, all_eal_param, "--rxq=16 --txq=16")
         return command
 
     def create_testpmd_command_pipeline_mode(self):
@@ -2994,7 +2991,7 @@ class ICESwitchFilterPPPOETest(TestCase):
             cores="1S/4C/1T", ports=[0], port_options={0: "pipeline-mode-support=1"}
         )
         command = (
-            self.path + all_eal_param + ' --log-level="ice,8" -- -i --rxq=16 --txq=16'
+            self.path + all_eal_param + ' --log-level="ice,7" -- -i %s' % self.rxq_param
         )
         return command
 
@@ -3023,13 +3020,15 @@ class ICESwitchFilterPPPOETest(TestCase):
         """
         # Specify the port to use
         dic["check_func"]["param"]["expect_port"] = port
+        dic["check_func"]["param"]["rxq"] = self.rxq
+        self.pmd.wait_link_status_up(port)
         self.dut.send_expect("start", "testpmd> ", 15)
-        time.sleep(2)
         # send packets
         self.pkt.update_pkt(dic["scapy_str"])
         self.pkt.send_pkt(self.tester, tx_port=self.__tx_iface, count=1, timeout=370)
-        time.sleep(3)
-        out = self.dut.send_expect("stop", "testpmd> ", 15)
+        out1 = self.pmd.get_output(timeout=1)
+        out2 = self.pmd.execute_cmd("stop")
+        out = out1 + out2
         result_flag, log_msg = dic["check_func"]["func"](
             out, dic["check_func"]["param"], dic["expect_results"]
         )
@@ -3354,6 +3353,9 @@ class ICESwitchFilterPPPOETest(TestCase):
         count = 1
         for tv in test_vectors:
             pattern_name = tv["name"]
+            self.logger.info(
+                GREEN("{0} case_name:{1} {0}".format("*" * 20, pattern_name))
+            )
             test_results[pattern_name] = OrderedDict()
             # get the queues that packets originally came to
             if count == 1:
