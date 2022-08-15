@@ -123,36 +123,20 @@ def check_output_log_queue_region_mismatched(out, func_param, expect_results):
     when the action is queue region, check the expect port received the expect
     number packets, while the corresponding queues not receive any packets.
     """
-    # parse input parameters
-    expect_port = func_param["expect_port"]
-    expect_queues = func_param["expect_queues"]
+    check_param = dict()
     expect_pkts = expect_results["expect_pkts"]
-
-    log_msg = ""
-    # check expect_port received expect number packets
-    pkt_num = get_port_rx_packets_number(out, expect_port)
-    if pkt_num != expect_pkts:
-        log_msg = (
-            "queue region mismatched: port %d receive %d packets, not receive %d packet"
-            % (expect_port, pkt_num, expect_pkts)
-        )
+    check_param["port_id"] = (
+        func_param["expect_port"] if func_param["expect_port"] else 0
+    )
+    check_param["queue"] = func_param["expect_queues"]
+    try:
+        check_queue(out, expect_pkts, check_param, stats=False)
+    except Exception as ex:
+        log_msg = ex
         return False, log_msg
     else:
-        # check expect queues not received packets
-        packet_sumnum = 0
-        for queue_id in expect_queues:
-            pkt_num = get_queue_rx_packets_number(out, expect_port, queue_id)
-            packet_sumnum += pkt_num
-
         log_msg = ""
-        if packet_sumnum == 0:
-            return True, log_msg
-        else:
-            log_msg = (
-                "queue region mismatched: expect queues should receive 0 packets, but it received %d packets"
-                % packet_sumnum
-            )
-            return False, log_msg
+        return True, log_msg
 
 
 def check_output_log_in_queue_mismatched(out, func_param, expect_results):
@@ -161,32 +145,21 @@ def check_output_log_in_queue_mismatched(out, func_param, expect_results):
     number packets, while the corresponding queue not receive any packets.
     """
     # parse input parameters
-    expect_port = func_param["expect_port"]
-    expect_queue = func_param["expect_queues"]
+    check_param = dict()
     expect_pkts = expect_results["expect_pkts"]
-
-    log_msg = ""
-    # check expect_port received expect number packets
-    pkt_num = get_port_rx_packets_number(out, expect_port)
-    if pkt_num != expect_pkts:
-        log_msg = "mismatched: port %d receive %d packets, not receive %d packet" % (
-            expect_port,
-            pkt_num,
-            expect_pkts,
-        )
+    check_param["port_id"] = (
+        func_param["expect_port"] if func_param["expect_port"] else 0
+    )
+    check_param["queue"] = func_param["expect_queues"]
+    check_queue(out, expect_pkts, check_param, stats=False)
+    try:
+        check_queue(out, expect_pkts, check_param, stats=False)
+    except Exception as ex:
+        log_msg = ex
         return False, log_msg
     else:
-        # check expect queue not received packets
-        pkt_num = get_queue_rx_packets_number(out, expect_port, expect_queue)
         log_msg = ""
-        if pkt_num == 0:
-            return True, log_msg
-        else:
-            log_msg = (
-                "mismatched: expect queue Port= %d/Queue= %d should receive 0 packets, but it received %d packets"
-                % (expect_port, expect_queue, pkt_num)
-            )
-            return False, log_msg
+        return True, log_msg
 
 
 def check_output_log_drop(out, func_param, expect_results):
@@ -372,47 +345,61 @@ def verify(passed, description):
         raise AssertionError(description)
 
 
-def check_queue(out, check_param, stats=True):
+def check_rss(out, pkt_num, check_param, stats=True):
+    """
+    check whether the packet directed by rss or not according to the specified parameters
+    :param out: information received by testpmd after sending packets and port statistics
+    :param kwargs: some specified parameters, such as: rxq, stats
+    :return: queue value list
+    usage:
+        check_rss(out, rxq=rxq, stats=stats)
+    """
+    verify(check_param.get("rxq"), "not get rxq")
+    rxq = check_param.get("rxq")
+    p = re.compile("RSS\shash=(\w+)\s-\sRSS\squeue=(\w+)")
+    pkt_info = p.findall(out)
+    verify(len(pkt_info) == pkt_num, "some packets no hash:{}".format(p.pattern))
+    pkt_queue = set([int(i[1], 16) for i in pkt_info])
+    if stats:
+        verify(
+            all([int(i[0], 16) % rxq == int(i[1], 16) for i in pkt_info]),
+            "some pkt not directed by rss.",
+        )
+        print((GREEN("pass: all pkts directed by rss")))
+    else:
+        verify(
+            not any([int(i[0], 16) % rxq == int(i[1], 16) for i in pkt_info]),
+            "some pkt directed by rss, expect not directed by rss",
+        )
+        print((GREEN("pass: no pkt directed by rss")))
+    return pkt_queue
+
+
+def check_queue(out, pkt_num, check_param, stats=True):
     port_id = check_param["port_id"] if check_param.get("port_id") is not None else 0
     queue = check_param["queue"]
+    queue = queue if isinstance(queue, list) else [queue]
     p = re.compile(r"port\s+%s/queue(.+?):\s+received\s+(\d+)\s+packets" % port_id)
     res = p.findall(out)
     if res:
+        verify(
+            len(res) == pkt_num,
+            "fail: queue num not matched, expect got queue num is %s, got %s"
+            % (pkt_num, len(res)),
+        )
         pkt_queue = set([int(i[0]) for i in res])
         if stats:
-            if isinstance(queue, int):
-                verify(
-                    all(q == queue for q in pkt_queue),
-                    "fail: queue id not matched, expect queue %s, got %s"
-                    % (queue, pkt_queue),
-                )
-                print((GREEN("pass: queue id %s matched" % pkt_queue)))
-            elif isinstance(queue, list):
-                verify(
-                    all(q in queue for q in pkt_queue),
-                    "fail: queue id not matched, expect queue %s, got %s"
-                    % (queue, pkt_queue),
-                )
-                print((GREEN("pass: queue id %s matched" % pkt_queue)))
-            else:
-                raise Exception("wrong queue value, expect int or list")
+            verify(
+                all(q in queue for q in pkt_queue),
+                "fail: queue id not matched, expect queue %s, got %s"
+                % (queue, pkt_queue),
+            )
+            print((GREEN("pass: queue id %s matched" % pkt_queue)))
         else:
-            if isinstance(queue, int):
-                verify(
-                    not any(q == queue for q in pkt_queue),
-                    "fail: queue id should not matched, expect queue %s, got %s"
-                    % (queue, pkt_queue),
-                )
-                print((GREEN("pass: queue id %s not matched" % pkt_queue)))
-            elif isinstance(queue, list):
-                verify(
-                    not any(q in queue for q in pkt_queue),
-                    "fail: each queue in %s should not in queue %s"
-                    % (pkt_queue, queue),
-                )
+            if not any(q in queue for q in pkt_queue):
                 print((GREEN("pass: queue id %s not matched" % pkt_queue)))
             else:
-                raise Exception("wrong action value, expect queue_index or queue_group")
+                check_rss(out, pkt_num, check_param, stats=True)
         return pkt_queue
     else:
         raise Exception("got wrong output, not match pattern %s" % p.pattern)
@@ -484,7 +471,7 @@ def check_mark(out, pkt_num, check_param, stats=True):
             else:
                 verify(not fdir_flag, "output should not include mark id")
             if queue is not None:
-                check_queue(out, check_param, stats)
+                check_queue(out, pkt_num, check_param, stats)
             if rss_flag:
                 pkt_queue = verify_directed_by_rss(out, rxq, stats=True)
         else:
@@ -1687,7 +1674,8 @@ class FdirProcessing(object):
                     ),
                 )
         else:
-            check_queue(out, check_param, stats=stats)
+            check_param["rxq"] = self.rxq
+            check_queue(out, expect_pkt, check_param, stats=stats)
 
     def handle_priority_cases(self, vectors):
         rule = vectors["rule"]
