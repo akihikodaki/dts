@@ -190,7 +190,115 @@ Start the packet forwarding::
 Configure the traffic generator to send the multiple packets with the following
 combination: good/bad ip checksum + good/bad udp/tcp checksum.
 
-Check the Rx checksum flags consistent with expected flags.
+Send a packet ptypes is IP/UDP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP(chksum=int(0x7ca0))/UDP(chksum=int(0x1126))/('X'*50), iface=iface)
+
+   Check the Rx checksum flags consistent with expected flags.
+
+   port=0, mbuf=0x168d06200, pkt_len=88, nb_segs=1:
+   rx: l2_len=14 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=20 m->l4_len=8
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV4
+
+Send a packet ptypes is IP/TCP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP(chksum=int(0xf19f))/TCP(chksum=int(0x165f))/('X'*50), iface=iface)
+
+   Check the Rx checksum flags consistent with expected flags.
+
+   port=0, mbuf=0x168be5100, pkt_len=100, nb_segs=1:
+   rx: l2_len=14 ethertype=800 l3_len=20 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=20 m->l4_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV4
+
+Send a packet ptypes is IP/SCTP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP(chksum=int(0xf127))/SCTP(chksum=int(0x2566b731))/('X'*50), iface=iface)
+
+   Check the Rx checksum flags consistent with expected flags.
+
+   port=0, mbuf=0x168be7600, pkt_len=94, nb_segs=1:
+   rx: l2_len=14 ethertype=800 l3_len=20 l4_proto=132 l4_len=0 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=20 m->l4_len=0
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_SCTP_CKSUM RTE_MBUF_F_TX_IPV4
+
+Send a packet ptypes is IPV6/UDP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPv6(src="::1")/UDP(chksum=int(0xf27))/('X'*50), iface=iface)
+
+   Check the Rx checksum flags consistent with expected flags.
+
+   port=0, mbuf=0x168d058c0, pkt_len=108, nb_segs=1:
+   rx: l2_len=14 ethertype=86dd l3_len=40 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=40 m->l4_len=8
+   tx: flags=RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV6
+
+Send a packet ptypes is IPV6/TCP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPv6(src="::1")/TCP(chksum=int(0x9f5f))/('X'*50), iface=iface)
+
+   Check the Rx checksum flags consistent with expected flags.
+
+   port=0, mbuf=0x168d033c0, pkt_len=120, nb_segs=1:
+   rx: l2_len=14 ethertype=86dd l3_len=40 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=40 m->l4_len=20
+   tx: flags=RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV6
+
+Send a packet ptypes is IP/UDP with a bad IP/UDP checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP(chksum=0x0)/UDP(chksum=0xf)/('X'*50), iface=iface)
+
+   Check the Rx checksum flags consistent with expected flags.
+
+   port=0, mbuf=0x168d00ec0, pkt_len=88, nb_segs=1:
+   rx: l2_len=14 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_BAD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=20 m->l4_len=8
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV4
+
+Send a packet ptypes is IP/TCP with a bad IP/TCP checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP(chksum=0x0)/TCP(chksum=0xf)/('X'*50), iface=iface)
+
+   Check the Rx checksum flags consistent with expected flags.
+
+   port=0, mbuf=0x168cfe9c0, pkt_len=100, nb_segs=1:
+   rx: l2_len=14 ethertype=800 l3_len=20 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_BAD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=20 m->l4_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV4
+
+Send a packet ptypes is IP/SCTP with a bad IP/SCTP checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP(chksum=0x0)/SCTP(chksum=0xf)/('X'*50), iface=iface)
+
+   Check the Rx checksum flags consistent with expected flags.
+
+   port=0, mbuf=0x168cfc4c0, pkt_len=94, nb_segs=1:
+   rx: l2_len=14 ethertype=800 l3_len=20 l4_proto=132 l4_len=0 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_BAD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=20 m->l4_len=0
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_SCTP_CKSUM RTE_MBUF_F_TX_IPV4
+
+Send a packet ptypes is IPV6/UDP with a bad UDP checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPv6(src="::1")/UDP(chksum=0xf)/('X'*50), iface=iface)
+
+   Check the Rx checksum flags consistent with expected flags.
+
+   port=0, mbuf=0x168cf9fc0, pkt_len=108, nb_segs=1:
+   rx: l2_len=14 ethertype=86dd l3_len=40 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=40 m->l4_len=8
+   tx: flags=RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV6
+
+Send a packet ptypes is IPV6/TCP with a bad TCP checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPv6(src="::1")/TCP(chksum=0xf)/('X'*50), iface=iface)
+
+   Check the Rx checksum flags consistent with expected flags.
+
+   port=0, mbuf=0x168cf9fc0, pkt_len=108, nb_segs=1:
+   rx: l2_len=14 ethertype=86dd l3_len=40 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=40 m->l4_len=8
+   tx: flags=RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV6
 
 Test Case: Hardware Checksum Check L4 RX
 ===========================================
@@ -215,13 +323,61 @@ Start the packet forwarding::
     TX queues=1 - TX desc=512 - TX free threshold=0
     TX threshold registers: pthresh=32 hthresh=8 wthresh=8
 
-Send a packet with a good checksum::
+Send a packet ptypes is IP/UDP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/UDP()/('X'*50), iface=iface)
+
+   check the packet received, the flag RTE_MBUF_F_RX_L4_CKSUM_GOOD in the packet received
 
    port=0, mbuf=0x2269df8780, pkt_len=96, nb_segs=1:
    rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD  RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
    tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
 
-Send a packet with a bad checksum::
+Send a packet ptypes is IP/UDP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/UDP(chksum=0xf)/('X'*50), iface=iface)
+
+   check the packet received, the flag RTE_MBUF_F_RX_L4_CKSUM_BAD in the packet received
+
+   port=0, mbuf=0x2269df7e40, pkt_len=96, nb_segs=1:
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_BAD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
+
+Send a packet ptypes is IP/TCP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/TCP()/('X'*50), iface=iface)
+
+   check the packet received, the flag RTE_MBUF_F_RX_L4_CKSUM_GOOD in the packet received
+
+   port=0, mbuf=0x2269df8780, pkt_len=96, nb_segs=1:
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD  RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
+
+Send a packet ptypes is IP/TCP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/TCP(chksum=0xf)/('X'*50), iface=iface)
+
+   check the packet received, the flag RTE_MBUF_F_RX_L4_CKSUM_BAD in the packet received
+
+   port=0, mbuf=0x2269df7e40, pkt_len=96, nb_segs=1:
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_BAD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
+
+Send a packet ptypes is IP/SCTP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/SCTP()/('X'*50), iface=iface)
+
+   check the packet received, the flag RTE_MBUF_F_RX_L4_CKSUM_GOOD in the packet received
+
+   port=0, mbuf=0x2269df8780, pkt_len=96, nb_segs=1:
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD  RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
+
+Send a packet ptypes is IP/SCTP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/SCTP(chksum=0xf)/('X'*50), iface=iface)
+
+   check the packet received, the flag RTE_MBUF_F_RX_L4_CKSUM_BAD in the packet received
 
    port=0, mbuf=0x2269df7e40, pkt_len=96, nb_segs=1:
    rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_BAD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
@@ -250,13 +406,61 @@ Start the packet forwarding::
     TX queues=1 - TX desc=512 - TX free threshold=0
     TX threshold registers: pthresh=32 hthresh=8 wthresh=8
 
-Send a packet with a good checksum::
+Send a packet ptypes is IP/UDP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/UDP()/('X'*50), iface=iface)
+
+   check the packet received, the flag RTE_MBUF_F_RX_IP_CKSUM_GOOD in the packet received
 
    port=0, mbuf=0x2269df8780, pkt_len=96, nb_segs=1:
    rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD  RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
    tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
 
-Send a packet with a bad checksum::
+Send a packet ptypes is IP/UDP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP(chksum=0xf)/UDP()/('X'*50), iface=iface)
+
+   check the packet received, the flag RTE_MBUF_F_RX_IP_CKSUM_BAD in the packet received
+
+   port=0, mbuf=0x2269df7e40, pkt_len=96, nb_segs=1:
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_BAD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
+
+Send a packet ptypes is IP/TCP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/TCP()/('X'*50), iface=iface)
+
+   check the packet received, the flag RTE_MBUF_F_RX_IP_CKSUM_GOOD in the packet received
+
+   port=0, mbuf=0x2269df8780, pkt_len=96, nb_segs=1:
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD  RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
+
+Send a packet ptypes is IP/TCP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP(chksum=0xf)/TCP()/('X'*50), iface=iface)
+
+   check the packet received, the flag RTE_MBUF_F_RX_IP_CKSUM_BAD in the packet received
+
+   port=0, mbuf=0x2269df7e40, pkt_len=96, nb_segs=1:
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_BAD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
+
+Send a packet ptypes is IP/SCTP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/SCTP()/('X'*50), iface=iface)
+
+   check the packet received, the flag RTE_MBUF_F_RX_IP_CKSUM_GOOD in the packet received
+
+   port=0, mbuf=0x2269df8780, pkt_len=96, nb_segs=1:
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD  RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
+
+Send a packet ptypes is IP/SCTP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP(chksum=0xf)/SCTP()/('X'*50), iface=iface)
+
+   check the packet received, the flag RTE_MBUF_F_RX_IP_CKSUM_BAD in the packet received
 
    port=0, mbuf=0x2269df7e40, pkt_len=96, nb_segs=1:
    rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_BAD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
@@ -293,19 +497,421 @@ Start a packet capture on the tester in the background::
 
    # tcpdump -i <iface> -s 65535 -w /tmp/tester/test_hardware_checksum_check_l4_tx_capture.pcap &
 
-Send a packet with a good checksum::
+Send a packet ptypes is IP/UDP with a good checksum::
 
-   port=0, mbuf=0x2269df8780, pkt_len=96, nb_segs=1:
-   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD  RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
-   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/UDP(chksum=0xb161)/Raw(load=b'x'), iface=iface)
 
-Send a packet with a bad checksum::
+   port=0, mbuf=0x168d06200, pkt_len=90, nb_segs=1:
+   rx: l2_len=14 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=20 m->l4_len=8
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV4
 
-   port=0, mbuf=0x2269df7e40, pkt_len=96, nb_segs=1:
-   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
-   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
+   Inspect the pcap file from the packet capture and verify the checksums.
 
-Inspect the pcap file from the packet capture and verify the checksums.
+Send a packet ptypes is IP/UDP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/UDP(chksum=0xf)/Raw(load=b'x'), iface=iface)
+
+   port=0, mbuf=0x168d06b40, pkt_len=90, nb_segs=1:
+   rx: l2_len=14 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=20 m->l4_len=8
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV4
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IP/TCP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/TCP(chksum=0x4904)/Raw(load=b'x'), iface=iface)
+
+   port=0, mbuf=0x168d07480, pkt_len=102, nb_segs=1:
+   rx: l2_len=14 ethertype=800 l3_len=20 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=20 m->l4_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV4
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IP/TCP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/TCP(chksum=0xf)/Raw(load=b'x'), iface=iface)
+
+   port=0, mbuf=0x168be47c0, pkt_len=102, nb_segs=1:
+   rx: l2_len=14 ethertype=800 l3_len=20 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=20 m->l4_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV4
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IPV6/UDP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPv6()/UDP(chksum=0xaf62)/Raw(load=b'x'), iface=iface)
+
+   port=0, mbuf=0x168be5100, pkt_len=110, nb_segs=1:
+   rx: l2_len=14 ethertype=86dd l3_len=40 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=40 m->l4_len=8
+   tx: flags=RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV6
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IPV6/UDP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPv6()/UDP(chksum=0xf)/Raw(load=b'x'), iface=iface)
+
+   port=0, mbuf=0x168be5a40, pkt_len=110, nb_segs=1:
+   rx: l2_len=14 ethertype=86dd l3_len=40 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=40 m->l4_len=8
+   tx: flags=RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV6
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IPV6/TCP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPv6()/TCP(chksum=0x4705)/Raw(load=b'x'), iface=iface)
+
+   port=0, mbuf=0x168be6380, pkt_len=122, nb_segs=1:
+   rx: l2_len=14 ethertype=86dd l3_len=40 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=40 m->l4_len=20
+   tx: flags=RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV6
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IPV6/TCP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPv6()/TCP(chksum=0xf)/Raw(load=b'x'), iface=iface)
+
+   port=0, mbuf=0x168be6cc0, pkt_len=122, nb_segs=1:
+   rx: l2_len=14 ethertype=86dd l3_len=40 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=40 m->l4_len=20
+   tx: flags=RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV6
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IP/UDP/VXLAN/IP/UDP inner UDP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/UDP()/VXLAN()/
+   Ether(dst='ff:ff:ff:ff:ff:ff', src='00:00:00:00:00:00')/IP()/UDP(chksum=0x9949)/Raw(load=b'Y'), iface=iface)
+
+   port=0, mbuf=0x168be7600, pkt_len=140, nb_segs=1:
+   rx: l2_len=30 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=800 outer_l3_len=20
+   tx: m->l2_len=30 m->l3_len=20 m->l4_len=8
+   tx: m->outer_l2_len=14 m->outer_l3_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV4 RTE_MBUF_F_TX_OUTER_IP_CKSUM RTE_MBUF_F_TX_OUTER_IPV4 RTE_MBUF_F_TX_TUNNEL_VXLAN RTE_MBUF_F_TX_OUTER_UDP_CKSUM
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IP/UDP/VXLAN/IP/UDP inner UDP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/UDP()/VXLAN()/
+   Ether(dst='ff:ff:ff:ff:ff:ff', src='00:00:00:00:00:00')/IP()/UDP(chksum=0xf)/Raw(load=b'Y'), iface=iface)
+
+   port=0, mbuf=0x168be7600, pkt_len=140, nb_segs=1:
+   rx: l2_len=30 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=800 outer_l3_len=20
+   tx: m->l2_len=30 m->l3_len=20 m->l4_len=8
+   tx: m->outer_l2_len=14 m->outer_l3_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV4 RTE_MBUF_F_TX_OUTER_IP_CKSUM RTE_MBUF_F_TX_OUTER_IPV4 RTE_MBUF_F_TX_TUNNEL_VXLAN RTE_MBUF_F_TX_OUTER_UDP_CKSUM
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IP/UDP/VXLAN/IP/UDP outer UDP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/UDP(chksum=0xf)/VXLAN()/
+   Ether(dst='ff:ff:ff:ff:ff:ff', src='00:00:00:00:00:00')/IP()/UDP()/Raw(load=b'Y'), iface=iface)
+
+   port=0, mbuf=0x168be7600, pkt_len=140, nb_segs=1:
+   rx: l2_len=30 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=800 outer_l3_len=20
+   tx: m->l2_len=30 m->l3_len=20 m->l4_len=8
+   tx: m->outer_l2_len=14 m->outer_l3_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV4 RTE_MBUF_F_TX_OUTER_IP_CKSUM RTE_MBUF_F_TX_OUTER_IPV4 RTE_MBUF_F_TX_TUNNEL_VXLAN RTE_MBUF_F_TX_OUTER_UDP_CKSUM
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IP/UDP/VXLAN/IP/UDP inter UDP and outer UDP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/UDP(chksum=0xf)/VXLAN()/
+   Ether(dst='ff:ff:ff:ff:ff:ff', src='00:00:00:00:00:00')/IP()/UDP(chksum=0xf)/Raw(load=b'Y'), iface=iface)
+
+   port=0, mbuf=0x168be7600, pkt_len=140, nb_segs=1:
+   rx: l2_len=30 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=800 outer_l3_len=20
+   tx: m->l2_len=30 m->l3_len=20 m->l4_len=8
+   tx: m->outer_l2_len=14 m->outer_l3_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV4 RTE_MBUF_F_TX_OUTER_IP_CKSUM RTE_MBUF_F_TX_OUTER_IPV4 RTE_MBUF_F_TX_TUNNEL_VXLAN RTE_MBUF_F_TX_OUTER_UDP_CKSUM
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IP/UDP/VXLAN/IP/TCP inner TCP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/UDP()/VXLAN()/
+   Ether(dst='ff:ff:ff:ff:ff:ff', src='00:00:00:00:00:00')/IP()/TCP(chksum=0x30ec)/Raw(load=b'Y'), iface=iface)
+
+   port=0, mbuf=0x168d058c0, pkt_len=152, nb_segs=1:
+   rx: l2_len=30 ethertype=800 l3_len=20 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=800 outer_l3_len=20
+   tx: m->l2_len=30 m->l3_len=20 m->l4_len=20
+   tx: m->outer_l2_len=14 m->outer_l3_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV4 RTE_MBUF_F_TX_OUTER_IP_CKSUM RTE_MBUF_F_TX_OUTER_IPV4 RTE_MBUF_F_TX_TUNNEL_VXLAN RTE_MBUF_F_TX_OUTER_UDP_CKSUM
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IP/UDP/VXLAN/IP/TCP inner TCP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/UDP()/VXLAN()/
+   Ether(dst='ff:ff:ff:ff:ff:ff', src='00:00:00:00:00:00')/IP()/TCP(chksum=0xf)/Raw(load=b'Y'), iface=iface)
+
+   port=0, mbuf=0x168d04f80, pkt_len=152, nb_segs=1:
+   rx: l2_len=30 ethertype=800 l3_len=20 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=800 outer_l3_len=20
+   tx: m->l2_len=30 m->l3_len=20 m->l4_len=20
+   tx: m->outer_l2_len=14 m->outer_l3_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV4 RTE_MBUF_F_TX_OUTER_IP_CKSUM RTE_MBUF_F_TX_OUTER_IPV4 RTE_MBUF_F_TX_TUNNEL_VXLAN RTE_MBUF_F_TX_OUTER_UDP_CKSUM
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IP/UDP/VXLAN/IP/TCP outer UDP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/UDP(chksum=0xf)/VXLAN()/
+   Ether(dst='ff:ff:ff:ff:ff:ff', src='00:00:00:00:00:00')/IP()/TCP()/Raw(load=b'Y'), iface=iface)
+
+   port=0, mbuf=0x168d04640, pkt_len=152, nb_segs=1:
+   rx: l2_len=30 ethertype=800 l3_len=20 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=800 outer_l3_len=20
+   tx: m->l2_len=30 m->l3_len=20 m->l4_len=20
+   tx: m->outer_l2_len=14 m->outer_l3_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV4 RTE_MBUF_F_TX_OUTER_IP_CKSUM RTE_MBUF_F_TX_OUTER_IPV4 RTE_MBUF_F_TX_TUNNEL_VXLAN RTE_MBUF_F_TX_OUTER_UDP_CKSUM
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IP/UDP/VXLAN/IP/TCP outer UDP and inner TCP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/UDP(chksum=0xf)/VXLAN()/
+   Ether(dst='ff:ff:ff:ff:ff:ff', src='00:00:00:00:00:00')/IP()/TCP(chksum=0xf)/Raw(load=b'Y'), iface=iface)
+
+   port=0, mbuf=0x168d03d00, pkt_len=152, nb_segs=1:
+   rx: l2_len=30 ethertype=800 l3_len=20 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=800 outer_l3_len=20
+   tx: m->l2_len=30 m->l3_len=20 m->l4_len=20
+   tx: m->outer_l2_len=14 m->outer_l3_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV4 RTE_MBUF_F_TX_OUTER_IP_CKSUM RTE_MBUF_F_TX_OUTER_IPV4 RTE_MBUF_F_TX_TUNNEL_VXLAN RTE_MBUF_F_TX_OUTER_UDP_CKSUM
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IPV6/UDP/VXLAN/IPV6/UDP inner UDP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPV6()/UDP()/VXLAN()/
+   Ether(dst='ff:ff:ff:ff:ff:ff', src='00:00:00:00:00:00')/IPV6()/UDP(chksum=0x9949)/Raw(load=b'Y'), iface=iface)
+
+   port=0, mbuf=0x168d033c0, pkt_len=180, nb_segs=1:
+   rx: l2_len=30 ethertype=86dd l3_len=40 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=86dd outer_l3_len=40
+   tx: m->l2_len=30 m->l3_len=40 m->l4_len=8
+   tx: m->outer_l2_len=14 m->outer_l3_len=40
+   tx: flags=RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV6 RTE_MBUF_F_TX_OUTER_IPV6 RTE_MBUF_F_TX_TUNNEL_VXLAN RTE_MBUF_F_TX_OUTER_UDP_CKSUM
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IPV6/UDP/VXLAN/IPV6/UDP inner UDP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPV6()/UDP()/VXLAN()/
+   Ether(dst='ff:ff:ff:ff:ff:ff', src='00:00:00:00:00:00')/IPV6()/UDP(chksum=0xf)/Raw(load=b'Y'), iface=iface)
+
+   port=0, mbuf=0x168d02a80, pkt_len=180, nb_segs=1:
+   rx: l2_len=30 ethertype=86dd l3_len=40 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=86dd outer_l3_len=40
+   tx: m->l2_len=30 m->l3_len=40 m->l4_len=8
+   tx: m->outer_l2_len=14 m->outer_l3_len=40
+   tx: flags=RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV6 RTE_MBUF_F_TX_OUTER_IPV6 RTE_MBUF_F_TX_TUNNEL_VXLAN RTE_MBUF_F_TX_OUTER_UDP_CKSUM
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IPV6/UDP/VXLAN/IPV6/UDP outer UDP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPV6()/UDP(chksum=0xf)/VXLAN()/
+   Ether(dst='ff:ff:ff:ff:ff:ff', src='00:00:00:00:00:00')/IPV6()/UDP()/Raw(load=b'Y'), iface=iface)
+
+   port=0, mbuf=0x168d02140, pkt_len=180, nb_segs=1:
+   rx: l2_len=30 ethertype=86dd l3_len=40 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=86dd outer_l3_len=40
+   tx: m->l2_len=30 m->l3_len=40 m->l4_len=8
+   tx: m->outer_l2_len=14 m->outer_l3_len=40
+   tx: flags=RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV6 RTE_MBUF_F_TX_OUTER_IPV6 RTE_MBUF_F_TX_TUNNEL_VXLAN RTE_MBUF_F_TX_OUTER_UDP_CKSUM
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IPV6/UDP/VXLAN/IPV6/UDP inter UDP and outer UDP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPV6()/UDP(chksum=0xf)/VXLAN()/
+   Ether(dst='ff:ff:ff:ff:ff:ff', src='00:00:00:00:00:00')/IPV6()/UDP(chksum=0xf)/Raw(load=b'Y'), iface=iface)
+
+   port=0, mbuf=0x168d01800, pkt_len=180, nb_segs=1:
+   rx: l2_len=30 ethertype=86dd l3_len=40 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=86dd outer_l3_len=40
+   tx: m->l2_len=30 m->l3_len=40 m->l4_len=8
+   tx: m->outer_l2_len=14 m->outer_l3_len=40
+   tx: flags=RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV6 RTE_MBUF_F_TX_OUTER_IPV6 RTE_MBUF_F_TX_TUNNEL_VXLAN RTE_MBUF_F_TX_OUTER_UDP_CKSUM
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IPV6/UDP/VXLAN/IPV6/TCP inner TCP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPV6()/UDP()/VXLAN()/
+   Ether(dst='ff:ff:ff:ff:ff:ff', src='00:00:00:00:00:00')/IPV6()/TCP(chksum=0x30ec)/Raw(load=b'Y'), iface=iface)
+
+   port=0, mbuf=0x168d00ec0, pkt_len=192, nb_segs=1:
+   rx: l2_len=30 ethertype=86dd l3_len=40 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=86dd outer_l3_len=40
+   tx: m->l2_len=30 m->l3_len=40 m->l4_len=20
+   tx: m->outer_l2_len=14 m->outer_l3_len=40
+   tx: flags=RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV6 RTE_MBUF_F_TX_OUTER_IPV6 RTE_MBUF_F_TX_TUNNEL_VXLAN RTE_MBUF_F_TX_OUTER_UDP_CKSUM
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IPV6/UDP/VXLAN/IPV6/TCP inner TCP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPV6()/UDP()/VXLAN()/
+   Ether(dst='ff:ff:ff:ff:ff:ff', src='00:00:00:00:00:00')/IPV6()/TCP(chksum=0xf)/Raw(load=b'Y'), iface=iface)
+
+   port=0, mbuf=0x168d00580, pkt_len=192, nb_segs=1:
+   rx: l2_len=30 ethertype=86dd l3_len=40 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=86dd outer_l3_len=40
+   tx: m->l2_len=30 m->l3_len=40 m->l4_len=20
+   tx: m->outer_l2_len=14 m->outer_l3_len=40
+   tx: flags=RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV6 RTE_MBUF_F_TX_OUTER_IPV6 RTE_MBUF_F_TX_TUNNEL_VXLAN RTE_MBUF_F_TX_OUTER_UDP_CKSUM
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IPV6/UDP/VXLAN/IPV6/TCP outer UDP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPV6()/UDP(chksum=0xf)/VXLAN()/
+   Ether(dst='ff:ff:ff:ff:ff:ff', src='00:00:00:00:00:00')/IPV6()/TCP()/Raw(load=b'Y'), iface=iface)
+
+   port=0, mbuf=0x168cffc40, pkt_len=192, nb_segs=1:
+   rx: l2_len=30 ethertype=86dd l3_len=40 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=86dd outer_l3_len=40
+   tx: m->l2_len=30 m->l3_len=40 m->l4_len=20
+   tx: m->outer_l2_len=14 m->outer_l3_len=40
+   tx: flags=RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV6 RTE_MBUF_F_TX_OUTER_IPV6 RTE_MBUF_F_TX_TUNNEL_VXLAN RTE_MBUF_F_TX_OUTER_UDP_CKSUM
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IPV6/UDP/VXLAN/IPV6/TCP outer UDP and inner TCP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPV6()/UDP(chksum=0xf)/VXLAN()/
+   Ether(dst='ff:ff:ff:ff:ff:ff', src='00:00:00:00:00:00')/IPV6()/TCP(chksum=0xf)/Raw(load=b'Y'), iface=iface)
+
+   port=0, mbuf=0x168cff300, pkt_len=192, nb_segs=1:
+   rx: l2_len=30 ethertype=86dd l3_len=40 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=86dd outer_l3_len=40
+   tx: m->l2_len=30 m->l3_len=40 m->l4_len=20
+   tx: m->outer_l2_len=14 m->outer_l3_len=40
+   tx: flags=RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV6 RTE_MBUF_F_TX_OUTER_IPV6 RTE_MBUF_F_TX_TUNNEL_VXLAN RTE_MBUF_F_TX_OUTER_UDP_CKSUM
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IP/GRE/IP/UDP inner UDP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/GRE()/IP()/UDP(chksum=0x8131)/Raw(load=b'Z'), iface=iface)
+
+   port=0, mbuf=0x168cfe9c0, pkt_len=114, nb_segs=1:
+   rx: l2_len=4 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=800 outer_l3_len=20
+   tx: m->l2_len=4 m->l3_len=20 m->l4_len=8
+   tx: m->outer_l2_len=14 m->outer_l3_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV4 RTE_MBUF_F_TX_OUTER_IP_CKSUM RTE_MBUF_F_TX_OUTER_IPV4 RTE_MBUF_F_TX_TUNNEL_GRE
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IP/GRE/IP/UDP inner UDP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/GRE()/IP()/UDP(chksum=0xf)/Raw(load=b'Z'), iface=iface)
+
+   port=0, mbuf=0x168cfe080, pkt_len=114, nb_segs=1:
+   rx: l2_len=4 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=800 outer_l3_len=20
+   tx: m->l2_len=4 m->l3_len=20 m->l4_len=8
+   tx: m->outer_l2_len=14 m->outer_l3_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV4 RTE_MBUF_F_TX_OUTER_IP_CKSUM RTE_MBUF_F_TX_OUTER_IPV4 RTE_MBUF_F_TX_TUNNEL_GRE
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IP/GRE/IP/TCP inner TCP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/GRE()/IP()/TCP(chksum=0x18d4)/Raw(load=b'Z'), iface=iface)
+
+   port=0, mbuf=0x168cfd740, pkt_len=126, nb_segs=1:
+   rx: l2_len=4 ethertype=800 l3_len=20 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=800 outer_l3_len=20
+   tx: m->l2_len=4 m->l3_len=20 m->l4_len=20
+   tx: m->outer_l2_len=14 m->outer_l3_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV4 RTE_MBUF_F_TX_OUTER_IP_CKSUM RTE_MBUF_F_TX_OUTER_IPV4 RTE_MBUF_F_TX_TUNNEL_GRE
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IP/GRE/IP/TCP inner TCP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP()/GRE()/IP()/TCP(chksum=0xf)/Raw(load=b'Z'), iface=iface)
+
+   port=0, mbuf=0x168cfce00, pkt_len=126, nb_segs=1:
+   rx: l2_len=4 ethertype=800 l3_len=20 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=800 outer_l3_len=20
+   tx: m->l2_len=4 m->l3_len=20 m->l4_len=20
+   tx: m->outer_l2_len=14 m->outer_l3_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV4 RTE_MBUF_F_TX_OUTER_IP_CKSUM RTE_MBUF_F_TX_OUTER_IPV4 RTE_MBUF_F_TX_TUNNEL_GRE
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IPV6/GRE/IPV6/UDP inner UDP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPV6()/GRE()/IPV6()/UDP(chksum=0x8131)/Raw(load=b'Z'), iface=iface)
+
+   port=0, mbuf=0x168cfe9c0, pkt_len=114, nb_segs=1:
+   rx: l2_len=4 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=800 outer_l3_len=20
+   tx: m->l2_len=4 m->l3_len=20 m->l4_len=8
+   tx: m->outer_l2_len=14 m->outer_l3_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV4 RTE_MBUF_F_TX_OUTER_IP_CKSUM RTE_MBUF_F_TX_OUTER_IPV4 RTE_MBUF_F_TX_TUNNEL_GRE
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IPV6/GRE/IPV6/UDP inner UDP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPV6()/GRE()/IPV6()/UDP(chksum=0xf)/Raw(load=b'Z'), iface=iface)
+
+   port=0, mbuf=0x168cfe080, pkt_len=114, nb_segs=1:
+   rx: l2_len=4 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=800 outer_l3_len=20
+   tx: m->l2_len=4 m->l3_len=20 m->l4_len=8
+   tx: m->outer_l2_len=14 m->outer_l3_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_UDP_CKSUM RTE_MBUF_F_TX_IPV4 RTE_MBUF_F_TX_OUTER_IP_CKSUM RTE_MBUF_F_TX_OUTER_IPV4 RTE_MBUF_F_TX_TUNNEL_GRE
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IPV6/GRE/IPV6/TCP inner TCP with a good checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPV6()/GRE()/IPV6()/TCP(chksum=0x18d4)/Raw(load=b'Z'), iface=iface)
+
+   port=0, mbuf=0x168cfd740, pkt_len=126, nb_segs=1:
+   rx: l2_len=4 ethertype=800 l3_len=20 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=800 outer_l3_len=20
+   tx: m->l2_len=4 m->l3_len=20 m->l4_len=20
+   tx: m->outer_l2_len=14 m->outer_l3_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV4 RTE_MBUF_F_TX_OUTER_IP_CKSUM RTE_MBUF_F_TX_OUTER_IPV4 RTE_MBUF_F_TX_TUNNEL_GRE
+
+   Inspect the pcap file from the packet capture and verify the checksums.
+
+Send a packet ptypes is IPV6/GRE/IPV6/TCP inner TCP with a bad checksum::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IPV6()/GRE()/IPV6()/TCP(chksum=0xf)/Raw(load=b'Z'), iface=iface)
+
+   port=0, mbuf=0x168cfce00, pkt_len=126, nb_segs=1:
+   rx: l2_len=4 ethertype=800 l3_len=20 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_BAD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   rx: outer_l2_len=14 outer_ethertype=800 outer_l3_len=20
+   tx: m->l2_len=4 m->l3_len=20 m->l4_len=20
+   tx: m->outer_l2_len=14 m->outer_l3_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV4 RTE_MBUF_F_TX_OUTER_IP_CKSUM RTE_MBUF_F_TX_OUTER_IPV4 RTE_MBUF_F_TX_TUNNEL_GRE
+
+   Inspect the pcap file from the packet capture and verify the checksums.
 
 Test Case: Hardware Checksum Check L3 TX
 ===========================================
@@ -328,22 +934,29 @@ Start the packet forwarding::
     TX queues=1 - TX desc=512 - TX free threshold=0
     TX threshold registers: pthresh=32 hthresh=8 wthresh=8
 
-
 Start a packet capture on the tester in the background::
 
    # tcpdump -i <iface> -s 65535 -w /tmp/tester/test_hardware_checksum_check_l3_tx_capture.pcap &
 
-Send a packet with a good checksum with a 1 in it's payload::
+Send a packet ptypes is IP/TCP with a good checksum with a 1 in it's payload::
 
-   port=0, mbuf=0x2269df8780, pkt_len=96, nb_segs=1:
-   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD  RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
-   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP(chksum=0x7ccc)/TCP()/Raw(load=b'1'), iface=iface)
 
-Send a packet with a bad checksum with a 0 in it's payload::
+   port=0, mbuf=0x168d06200, pkt_len=60, nb_segs=1:
+   rx: l2_len=14 ethertype=800 l3_len=20 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=20 m->l4_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV4
 
-   port=0, mbuf=0x2269df7e40, pkt_len=96, nb_segs=1:
-   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_BAD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
-   tx: flags=RTE_MBUF_F_TX_L4_NO_CKSUM RTE_MBUF_F_TX_IPV4
+   Inspect the pcap file from the packet capture and verify the checksums.
 
-Inspect the pcap file from the packet capture and verify the checksums.
+Send a packet ptypes is IP/TCP with a bad checksum with a 0 in it's payload::
+
+   sendp(Ether(dst='23:00:00:00:00:00', src='52:00:00:00:00:00')/IP(chksum=0xf)/TCP()/Raw(load=b'1'), iface=iface)
+
+   port=0, mbuf=0x168d06b40, pkt_len=60, nb_segs=1:
+   rx: l2_len=14 ethertype=800 l3_len=20 l4_proto=6 l4_len=20 flags=RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_BAD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: m->l2_len=14 m->l3_len=20 m->l4_len=20
+   tx: flags=RTE_MBUF_F_TX_IP_CKSUM RTE_MBUF_F_TX_TCP_CKSUM RTE_MBUF_F_TX_IPV4
+
+   Inspect the pcap file from the packet capture and verify the checksums.
 
