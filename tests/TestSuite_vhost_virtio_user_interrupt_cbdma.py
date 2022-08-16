@@ -31,11 +31,11 @@ class TestVirtioUserInterruptCbdma(TestCase):
         self.core_list = self.dut.get_core_list(
             self.core_config, socket=self.ports_socket
         )
-        self.core_list_vhost = self.core_list[0:2]
-        self.core_list_l3fwd = self.core_list[2:4]
-        self.core_mask_vhost = utils.create_mask(self.core_list_vhost)
-        self.core_mask_l3fwd = utils.create_mask(self.core_list_l3fwd)
-        self.core_mask_virtio = self.core_mask_l3fwd
+        self.vhost_core_list = self.core_list[0:2]
+        self.l3fwd_core_list = self.core_list[2:4]
+        self.core_mask_vhost = utils.create_mask(self.vhost_core_list)
+        self.l3fwd_core_mask = utils.create_mask(self.l3fwd_core_list)
+        self.virtio_core_mask = self.l3fwd_core_mask
         self.pci_info = self.dut.ports_info[0]["pci"]
         self.cbdma_dev_infos = []
         self.dmas_info = None
@@ -78,14 +78,14 @@ class TestVirtioUserInterruptCbdma(TestCase):
         return True if out == "2048" else False
 
     def launch_l3fwd(self, path, packed=False):
-        self.core_interrupt = self.core_list_l3fwd[0]
+        self.core_interrupt = self.l3fwd_core_list[0]
         example_para = "./%s " % self.app_l3fwd_power_path
         if not packed:
             vdev = "virtio_user0,path=%s,cq=1" % path
         else:
             vdev = "virtio_user0,path=%s,cq=1,packed_vq=1" % path
         eal_params = self.dut.create_eal_parameters(
-            cores=self.core_list_l3fwd, prefix="l3fwd-pwd", no_pci=True, vdevs=[vdev]
+            cores=self.l3fwd_core_list, prefix="l3fwd-pwd", no_pci=True, vdevs=[vdev]
         )
         if self.check_2M_env:
             eal_params += " --single-file-segments"
@@ -102,16 +102,13 @@ class TestVirtioUserInterruptCbdma(TestCase):
         else:
             self.logger.info("Launch l3fwd-power sample finished")
 
-    def check_interrupt_log(self, status):
-        out = self.l3fwd.get_session_before()
-        self.logger.info(out)
+    def check_interrupt_log(self, status, out):
         if status == "waked up":
             info = "lcore %s is waked up from rx interrupt on port 0 queue 0"
         elif status == "sleeps":
             info = "lcore %s sleeps until interrupt triggers"
         info = info % self.core_interrupt
         self.verify(info in out, "The CPU status not right for %s" % info)
-        self.logger.info(info)
 
     def check_virtio_side_link_status(self, status):
         out = self.virtio_pmd.execute_cmd("show port info 0")
@@ -171,21 +168,21 @@ class TestVirtioUserInterruptCbdma(TestCase):
             60,
         )
 
-    def test_lsc_event_between_vhost_user_and_virtio_user_with_split_ring_and_cbdma_enabled(
+    def test_split_ring_lsc_event_between_vhost_user_and_virtio_user_with_cbdma_enable(
         self,
     ):
         """
-        Test Case1: LSC event between vhost-user and virtio-user with split ring and cbdma enabled
+        Test Case1: Split ring LSC event between vhost-user and virtio-user with cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(1)
-        lcore_dma = "[lcore{}@{}]".format(self.core_list_vhost[1], self.cbdma_list[0])
-        vhost_param = "--lcore-dma={}".format(lcore_dma)
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        lcore_dma = "lcore%s@%s" % (self.vhost_core_list[1], self.cbdma_list[0])
+        vhost_param = "--lcore-dma=[%s]" % lcore_dma
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0]'"
+            "--vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0;rxq0]'"
         )
         ports = self.cbdma_list
         self.vhost_pmd.start_testpmd(
-            cores=self.core_list_vhost,
+            cores=self.vhost_core_list,
             ports=ports,
             prefix="vhost",
             eal_param=vhost_eal_param,
@@ -198,7 +195,7 @@ class TestVirtioUserInterruptCbdma(TestCase):
             "--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net"
         )
         self.virtio_pmd.start_testpmd(
-            cores=self.core_list_l3fwd,
+            cores=self.l3fwd_core_list,
             no_pci=True,
             prefix="virtio",
             eal_param=virtio_eal_param,
@@ -210,26 +207,28 @@ class TestVirtioUserInterruptCbdma(TestCase):
         self.vhost_pmd.quit()
         self.check_virtio_side_link_status("down")
 
-    def test_split_ring_virtio_user_interrupt_test_with_vhost_user_as_backend_and_cbdma_enabled(
+    def test_split_ring_virtio_user_interrupt_test_with_vhost_user_as_backend_and_cbdma_enable(
         self,
     ):
         """
-        Test Case2: Split ring virtio-user interrupt test with vhost-user as backend and cbdma enabled
+        Test Case2: Split ring virtio-user interrupt test with vhost-user as backend and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(2)
-        lcore_dma = "[lcore{}@{},lcore{}@{}]".format(
-            self.core_list_vhost[1],
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
+        lcore_dma = "lcore%s@%s,lcore%s@%s" % (
+            self.vhost_core_list[1],
             self.cbdma_list[0],
-            self.core_list_vhost[1],
+            self.vhost_core_list[1],
             self.cbdma_list[1],
         )
-        vhost_param = "--rxq=1 --txq=1 --lcore-dma={}".format(lcore_dma)
-        vhost_eal_param = "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0]'"
+        vhost_param = "--rxq=1 --txq=1 --lcore-dma=[%s]" % lcore_dma
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0;rxq0]'"
+        )
         ports = self.cbdma_list
         ports.append(self.dut.ports_info[0]["pci"])
         self.logger.info(ports)
         self.vhost_pmd.start_testpmd(
-            cores=self.core_list_vhost,
+            cores=self.vhost_core_list,
             ports=ports,
             prefix="vhost",
             eal_param=vhost_eal_param,
@@ -247,23 +246,26 @@ class TestVirtioUserInterruptCbdma(TestCase):
             )
             self.tester.scapy_execute()
             time.sleep(3)
-            self.check_interrupt_log(status="waked up")
+            out = self.l3fwd.get_session_before()
+            self.logger.info(out)
+            self.check_interrupt_log(status="waked up", out=out)
+            self.check_interrupt_log(status="sleeps", out=out)
 
-    def test_lsc_event_between_vhost_user_and_virtio_user_with_packed_ring_and_cbdma_enabled(
+    def test_packed_ring_lsc_event_between_vhost_user_and_virtio_user_with_cbdma_enable(
         self,
     ):
         """
-        Test Case3: LSC event between vhost-user and virtio-user with packed ring and cbdma enabled
+        Test Case3: Packed ring LSC event between vhost-user and virtio-user with cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(1)
-        lcore_dma = "[lcore{}@{}]".format(self.core_list_vhost[1], self.cbdma_list[0])
-        vhost_param = "--lcore-dma={}".format(lcore_dma)
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        lcore_dma = "lcore%s@%s" % (self.vhost_core_list[1], self.cbdma_list[0])
+        vhost_param = "--lcore-dma=[%s]" % lcore_dma
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0]'"
+            "--vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0;rxq0]'"
         )
         ports = self.cbdma_list
         self.vhost_pmd.start_testpmd(
-            cores=self.core_list_vhost,
+            cores=self.vhost_core_list,
             ports=ports,
             prefix="vhost",
             eal_param=vhost_eal_param,
@@ -276,7 +278,7 @@ class TestVirtioUserInterruptCbdma(TestCase):
             "--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1"
         )
         self.virtio_pmd.start_testpmd(
-            cores=self.core_list_l3fwd,
+            cores=self.l3fwd_core_list,
             no_pci=True,
             prefix="virtio",
             eal_param=virtio_eal_param,
@@ -288,25 +290,27 @@ class TestVirtioUserInterruptCbdma(TestCase):
         self.vhost_pmd.quit()
         self.check_virtio_side_link_status("down")
 
-    def test_packed_ring_virtio_user_interrupt_test_with_vhost_user_as_backend_and_cbdma_enabled(
+    def test_packed_ring_virtio_user_interrupt_test_with_vhost_user_as_backend_and_cbdma_enable(
         self,
     ):
         """
-        Test Case4: Packed ring virtio-user interrupt test with vhost-user as backend and cbdma enabled
+        Test Case4: Packed ring virtio-user interrupt test with vhost-user as backend and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(2)
-        lcore_dma = "[lcore{}@{},lcore{}@{}]".format(
-            self.core_list_vhost[1],
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
+        lcore_dma = "lcore%s@%s,lcore%s@%s" % (
+            self.vhost_core_list[1],
             self.cbdma_list[0],
-            self.core_list_vhost[1],
+            self.vhost_core_list[1],
             self.cbdma_list[1],
         )
-        vhost_param = "--rxq=1 --txq=1 --lcore-dma={}".format(lcore_dma)
-        vhost_eal_param = "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0]'"
+        vhost_param = "--rxq=1 --txq=1 --lcore-dma=[%s]" % lcore_dma
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0;rxq0]'"
+        )
         ports = self.cbdma_list
         ports.append(self.dut.ports_info[0]["pci"])
         self.vhost_pmd.start_testpmd(
-            cores=self.core_list_vhost,
+            cores=self.vhost_core_list,
             ports=ports,
             prefix="vhost",
             eal_param=vhost_eal_param,
@@ -324,7 +328,10 @@ class TestVirtioUserInterruptCbdma(TestCase):
             )
             self.tester.scapy_execute()
             time.sleep(3)
-            self.check_interrupt_log(status="waked up")
+            out = self.l3fwd.get_session_before()
+            self.logger.info(out)
+            self.check_interrupt_log(status="waked up", out=out)
+            self.check_interrupt_log(status="sleeps", out=out)
 
     def tear_down(self):
         """
