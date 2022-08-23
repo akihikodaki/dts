@@ -147,22 +147,27 @@ class TestTSO(TestCase):
         self.pks = packet.read_pcapfile(dump_pcap, self.tester)
         for i in range(len(self.pks)):
             pks = self.pks[i]
-            out = pks.show
-            chksum_list = re.findall(r"chksum=(0x\w+)", str(out))
+            out = repr(pks)
+            chksum_list = re.findall(r"chksum=(0x\w+)", out)
             pks["IP"].chksum = None
-            if "VXLAN" in str(out):
+            if "VXLAN" in out:
                 pks["UDP"].chksum = None
                 pks["VXLAN"]["IP"].chksum = None
                 pks["VXLAN"]["TCP"].chksum = None
-            elif "GRE" in str(out):
+            elif "GRE" in out:
                 pks["GRE"]["IP"].chksum = None
                 pks["GRE"]["TCP"].chksum = None
-            packet.save_pcapfile(self.tester, filename=save_file)
-            self.pks1 = Packet().read_pcapfile(save_file, self.tester)
-            out1 = self.pks1[i].show
-            chksum_list1 = re.findall(r"chksum=(0x\w+)", str(out1))
-            self.tester.send_expect("rm -rf %s" % save_file, "#")
-            if self.nic in Nic_list and "VXLAN" in str(out):
+        packet.save_pcapfile(self.tester, filename=save_file)
+        self.pks = Packet().read_pcapfile(dump_pcap, self.tester)
+        self.pks1 = Packet().read_pcapfile(save_file, self.tester)
+        self.tester.send_expect("rm -rf %s" % save_file, "#")
+        for i in range(len(self.pks1)):
+            pks = self.pks[i]
+            out = repr(pks)
+            chksum_list = re.findall(r"chksum=(0x\w+)", out)
+            out1 = repr(self.pks1[i])
+            chksum_list1 = re.findall(r"chksum=(0x\w+)", out1)
+            if self.nic in Nic_list and "VXLAN" in out:
                 self.verify(
                     chksum_list[0] == chksum_list1[0]
                     and chksum_list[2] == chksum_list1[2]
