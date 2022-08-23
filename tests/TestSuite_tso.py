@@ -146,7 +146,6 @@ class TestTSO(TestCase):
         packet = Packet()
         self.pks = packet.read_pcapfile(dump_pcap, self.tester)
         for i in range(len(self.pks)):
-            self.pks = packet.read_pcapfile(dump_pcap, self.tester)
             pks = self.pks[i]
             out = pks.show
             chksum_list = re.findall(r"chksum=(0x\w+)", str(out))
@@ -159,7 +158,7 @@ class TestTSO(TestCase):
                 pks["GRE"]["IP"].chksum = None
                 pks["GRE"]["TCP"].chksum = None
             packet.save_pcapfile(self.tester, filename=save_file)
-            self.pks1 = packet.read_pcapfile(save_file, self.tester)
+            self.pks1 = Packet().read_pcapfile(save_file, self.tester)
             out1 = self.pks1[i].show
             chksum_list1 = re.findall(r"chksum=(0x\w+)", str(out1))
             self.tester.send_expect("rm -rf %s" % save_file, "#")
