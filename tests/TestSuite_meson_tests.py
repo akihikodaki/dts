@@ -145,7 +145,9 @@ class TestMesonTests(TestCase):
         self.dut_pathlog = "fast-test.log"
         self.delete_exists_files()
         self.insmod_kni()
-        cmds = f'meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:fast-tests -t {self.ratio} --test-args="-c 0xff" |tee /root/{self.dut_pathlog}'
+        # config test case list in conf/meson_tests.cfg
+        caselist = self.get_suite_cfg()["fast-tests"]
+        cmds = f'meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:fast-tests {caselist} -t {self.ratio} --test-args="-c 0xff" |tee /root/{self.dut_pathlog}'
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
         self.logger.info(out)
         self.check_scp_file_valid_between_dut()
@@ -155,7 +157,9 @@ class TestMesonTests(TestCase):
         # init file name
         self.dut_pathlog = "driver-test.log"
         self.delete_exists_files()
-        cmds = f'meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:driver-tests -t {self.ratio} --test-args="-c 0xff" |tee /root/{self.dut_pathlog}'
+        # config test case list in conf/meson_tests.cfg
+        caselist = self.get_suite_cfg()["driver-tests"]
+        cmds = f'meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:driver-tests {caselist} -t {self.ratio} --test-args="-c 0xff" |tee /root/{self.dut_pathlog}'
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
         self.logger.info(out)
         self.check_scp_file_valid_between_dut()
@@ -165,7 +169,9 @@ class TestMesonTests(TestCase):
         self.dut_pathlog = "test-debug.log"
         # delete exists files
         self.delete_exists_files()
-        cmds = f'meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:debug-tests -t {self.ratio} --test-args="-c 0xff" |tee /root/{self.dut_pathlog}'
+        # config test case list in conf/meson_tests.cfg
+        caselist = self.get_suite_cfg()["debug-tests"]
+        cmds = f'meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:debug-tests {caselist} -t {self.ratio} --test-args="-c 0xff" |tee /root/{self.dut_pathlog}'
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
         self.logger.info(out)
         self.check_scp_file_valid_between_dut()
@@ -175,7 +181,9 @@ class TestMesonTests(TestCase):
         self.dut_pathlog = "extra-test.log"
         # delete exists files
         self.delete_exists_files()
-        cmds = f'meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:extra-tests -t {self.ratio} --test-args="-c 0xff" |tee /root/{self.dut_pathlog}'
+        # config test case list in conf/meson_tests.cfg
+        caselist = self.get_suite_cfg()["extra-tests"]
+        cmds = f'meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:extra-tests {caselist} -t {self.ratio} --test-args="-c 0xff" |tee /root/{self.dut_pathlog}'
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
         self.logger.info(out)
         self.check_scp_file_valid_between_dut()
@@ -189,7 +197,9 @@ class TestMesonTests(TestCase):
         self.dut_pathlog = "perf-test.log"
         # delete exists files
         self.delete_exists_files()
-        cmds = f'meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:perf-tests -t {self.ratio} --test-args="-c 0xff" |tee /root/{self.dut_pathlog}'
+        # config test case list in conf/meson_tests.cfg
+        caselist = self.get_suite_cfg()["perf-tests"]
+        cmds = f'meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:perf-tests {caselist} -t {self.ratio} --test-args="-c 0xff" |tee /root/{self.dut_pathlog}'
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
         self.logger.info(out)
         self.check_scp_file_valid_between_dut()
