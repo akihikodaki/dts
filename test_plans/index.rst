@@ -134,6 +134,7 @@ The following are the test plans for the DPDK DTS automated test system.
     runtime_vf_queue_number_kernel_test_plan
     runtime_vf_queue_number_maxinum_test_plan
     runtime_vf_queue_number_test_plan
+    rx_timestamp_perf_test_plan
     scatter_test_plan
     short_live_test_plan
     shutdown_api_test_plan
