@@ -39,7 +39,10 @@ class TestCoremask(TestCase):
         self.port_mask = utils.create_mask(self.dut.get_ports(self.nic))
         self.mem_channel = self.dut.get_memory_channels()
         self.app_test_path = self.dut.apps_name["test"]
-        self.all_cores = self.dut.get_core_list("all")
+        if self.dut.architecture == "i686":
+            self.all_cores = self.dut.get_core_list("all", socket=0)
+        else:
+            self.all_cores = self.dut.get_core_list("all")
 
     def set_up(self):
         """
