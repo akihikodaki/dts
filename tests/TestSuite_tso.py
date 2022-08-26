@@ -51,7 +51,7 @@ class TestTSO(TestCase):
             self.table_header.append("% linerate")
 
         self.eal_param = self.dut.create_eal_parameters(
-            cores="1S/1C/2T", socket=self.ports_socket, ports=self.dut_ports
+            cores="1S/2C/1T", socket=self.ports_socket, ports=self.dut_ports
         )
 
         self.headers_size = HEADER_SIZE["eth"] + HEADER_SIZE["ip"] + HEADER_SIZE["tcp"]
