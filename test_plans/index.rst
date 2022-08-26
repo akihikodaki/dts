@@ -130,7 +130,6 @@ The following are the test plans for the DPDK DTS automated test system.
     rss_to_rte_flow_test_plan
     rss_key_update_test_plan
     rxtx_offload_test_plan
-    rteflow_priority_test_plan
     rte_flow_test_plan
     runtime_vf_queue_number_kernel_test_plan
     runtime_vf_queue_number_maxinum_test_plan
