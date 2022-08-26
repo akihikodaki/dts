@@ -440,11 +440,22 @@ class ICEPFFlowPriorityTest(TestCase):
                 cores="1S/4C/1T",
                 ports=[self.pf_pci],
                 eal_param="--log-level=ice,8",
-                param="--rxq=16 --txq=16",
+                param="--rxq={0} --txq={0}".format(self.rxq),
+            )
+        # start testpmd in pipeline mode
+        elif "pipeline" in self._suite_result.test_case:
+            self.pmdout.start_testpmd(
+                cores="1S/4C/1T",
+                ports=[self.pf_pci],
+                port_options={self.pf_pci: "pipeline-mode-support=1"},
+                eal_param="--log-level=ice,7",
+                param="--rxq={0} --txq={0}".format(self.rxq),
             )
         else:
             self.pmdout.start_testpmd(
-                cores="1S/4C/1T", ports=[self.pf_pci], param="--rxq=16 --txq=16"
+                cores="1S/4C/1T",
+                ports=[self.pf_pci],
+                param="--rxq={0} --txq={0}".format(self.rxq),
             )
         self.pmdout.execute_cmd("set fwd rxonly")
         self.pmdout.execute_cmd("set verbose 1")
@@ -652,11 +663,166 @@ class ICEPFFlowPriorityTest(TestCase):
         queue = re.findall(p, out)
         self.verify(len(queue) == 1 and int(queue[0]) == 5, "drop pkt failed")
 
+    def test_create_fdir_rule_with_priority_0_pipeline(self):
+        """
+        Create Flow Rules Only Supported by Fdir Filter with Priority 0
+        """
+        # create rules only supported by fdir with priority 0, check the rules can not be created.
+        out = self.dut.send_expect(
+            "flow create 0 priority 0 ingress pattern eth / ipv6 src is 1111:2222:3333:4444:5555:6666:7777:8888 dst is 1111:2222:3333:4444:5555:6666:7777:9999 / sctp src is 25 dst is 23 / end actions queue index 1 / end",
+            "testpmd> ",
+        )
+        self.verify("Failed" in out, "failed: priority is not work")
+        out = self.dut.send_expect(
+            "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 ttl is 20 / sctp src is 25 dst is 23 / end actions queue index 1 / end",
+            "testpmd> ",
+        )
+        self.verify("Failed" in out, "failed: priority is not work")
+        self.dut.send_expect("quit", "# ")
+
+    def test_create_switch_rule_with_priority_1_pipeline(self):
+        """
+        Create flow rules only supported by switch filter with priority 1
+        """
+        # create rules only supported by switch with priority 1, check the rules can not be created.
+        out = self.dut.send_expect(
+            "flow create 0 priority 1 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / end actions queue index 3 / end",
+            "testpmd> ",
+        )
+        self.verify("Failed" in out, "failed: priority is not work")
+        out = self.dut.send_expect(
+            "flow create 0 priority 1 ingress pattern eth / ipv4 / nvgre / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / udp src is 25 dst is 23 / end actions queue index 3 / end",
+            "testpmd> ",
+        )
+        self.verify("Failed" in out, "failed: priority is not work")
+        self.dut.send_expect("quit", "# ")
+
+    def test_priority_in_pipeline_mode(self):
+        """
+        Create Flow Rules with Priority in Pipeline Mode
+        """
+        rules = [
+            "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / tcp src is 25 dst is 23 / end actions queue index 1 / end",
+            "flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / udp src is 25 dst is 23 / end actions queue index 2 / end",
+            "flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.4 dst is 192.168.0.7 tos is 4 ttl is 20 / tcp src is 25 dst is 23 / end actions queue index 3 / end",
+            "flow create 0 priority 1 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.4 dst is 192.168.0.7 / udp src is 25 dst is 23 / end actions queue index 4 / end",
+            "flow create 0 ingress pattern eth / ipv4 src is 192.168.1.2 dst is 192.168.0.3 tos is 5 / tcp src is 25 dst is 23 / end actions queue index 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 ttl is 20 / sctp src is 25 dst is 23 / end actions queue index 1 / end",
+        ]
+        pkts = [
+            'Ether(dst="00:00:00:00:01:00",src="11:22:33:44:55:66")/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/TCP(sport=25,dport=23)/Raw("x"*80)',
+            'Ether(dst="00:00:00:00:01:00",src="11:22:33:44:55:66")/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=25,dport=23)/Raw("x"*80)',
+            'Ether(dst="00:00:00:00:01:00",src="11:22:33:44:55:66")/IP(src="192.168.0.4",dst="192.168.0.7",tos=4,ttl=20)/TCP(sport=25,dport=23)/Raw("x"*80)',
+            'Ether(dst="00:00:00:00:01:00",src="11:22:33:44:55:66")/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.4",dst="192.168.0.7")/UDP(sport=25,dport=23)/Raw("x"*80)',
+        ]
+        # create fdir and switch rules with different priority
+        rule_list1 = self.process.create_rule(
+            rules[0:2], check_stats=True, msg="Succeeded to create (2) flow"
+        )
+        rule_list2 = self.process.create_rule(
+            rules[2:4], check_stats=True, msg="Succeeded to create (1) flow"
+        )
+        rule_list = rule_list1 + rule_list2
+        self.process.check_rule(port_id=0, stats=True, rule_list=rule_list)
+        # send pkts and check the rules are written to different filter tables and the rules can work
+        self.pmdout.wait_link_status_up(self.dut_ports[0])
+        out = self.process.send_pkt_get_out(pkts[0], port_id=0)
+        self.process.check_rx_packets(
+            out, check_param={"queue": 1}, expect_pkt=1, stats=True
+        )
+        self.logger.info("pass: queue id is 1")
+        out = self.process.send_pkt_get_out(pkts[1], port_id=0)
+        self.process.check_rx_packets(
+            out, check_param={"queue": 2}, expect_pkt=1, stats=True
+        )
+        self.logger.info("pass: queue id is 2")
+        out = self.process.send_pkt_get_out(pkts[2], port_id=0)
+        self.process.check_rx_packets(
+            out, check_param={"queue": 3}, expect_pkt=1, stats=True
+        )
+        self.logger.info("pass: queue id is 3")
+        out = self.process.send_pkt_get_out(pkts[3], port_id=0)
+        self.process.check_rx_packets(
+            out, check_param={"queue": 4}, expect_pkt=1, stats=True
+        )
+        self.logger.info("pass: queue id is 4")
+        # create rules without priority, only the pattern supported by switch can be created.
+        self.process.create_rule(
+            rules[4], check_stats=True, msg="Succeeded to create (2) flow"
+        )
+        self.process.create_rule(rules[5], check_stats=False)
+        self.pmdout.execute_cmd("flow flush 0")
+
+    def test_rules_with_same_parameters_different_action_pipeline(self):
+        """
+        Create flow rules with same parameter but different actions
+        """
+        rules = [
+            "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / tcp src is 25 dst is 23 / end actions queue index 1 / end",
+            "flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 tos is 4 / tcp src is 25 dst is 23 / end actions queue index 3 / end",
+        ]
+        pkts = [
+            'Ether(dst="00:00:00:00:01:00",src="11:22:33:44:55:66")/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/TCP(sport=25,dport=23)/Raw("x"*80)',
+        ]
+
+        # create rules with same parameters but different action
+        rule_list1 = self.process.create_rule(
+            rules[0], check_stats=True, msg="Succeeded to create (2) flow"
+        )
+        rule_list2 = self.process.create_rule(
+            rules[1], check_stats=True, msg="Succeeded to create (1) flow"
+        )
+        rule_list = rule_list1 + rule_list2
+        self.process.check_rule(port_id=0, stats=True, rule_list=rule_list)
+        # send a pkt to check the switch rule is work for its high priority
+        self.pmdout.wait_link_status_up(self.dut_ports[0])
+        out = self.process.send_pkt_get_out(pkts[0], port_id=0)
+        self.process.check_rx_packets(
+            out, check_param={"queue": 1}, expect_pkt=1, stats=True
+        )
+        self.logger.info("pass: queue id is 1")
+        # remove the switch rule and check the fdir rule is work
+        self.process.destroy_rule(port_id=0, rule_id=rule_list1)
+        out = self.process.send_pkt_get_out(pkts[0], port_id=0)
+        self.process.check_rx_packets(
+            out, check_param={"queue": 3}, expect_pkt=1, stats=True
+        )
+        self.logger.info("pass: queue id is 3")
+        self.pmdout.execute_cmd("flow flush 0")
+        self.pmdout.quit()
+        # restart testpmd in pipeline mode
+        self.launch_testpmd()
+        # create rules with same parameters but different action
+        rule_list1 = self.process.create_rule(
+            rules[1], check_stats=True, msg="Succeeded to create (1) flow"
+        )
+        rule_list2 = self.process.create_rule(
+            rules[0], check_stats=True, msg="Succeeded to create (2) flow"
+        )
+        rule_list = rule_list1 + rule_list2
+        self.process.check_rule(port_id=0, stats=True, rule_list=rule_list)
+        # send a pkt to check the switch rule is work for its high priority
+        self.pmdout.wait_link_status_up(self.dut_ports[0])
+        self.pmdout.wait_link_status_up(self.dut_ports[0])
+        out = self.process.send_pkt_get_out(pkts[0], port_id=0)
+        self.process.check_rx_packets(
+            out, check_param={"queue": 1}, expect_pkt=1, stats=True
+        )
+        self.logger.info("pass: queue id is 1")
+        # remove the switch rule and check the fdir rule is work
+        self.process.destroy_rule(port_id=0, rule_id=rule_list2)
+        out = self.process.send_pkt_get_out(pkts[0], port_id=0)
+        self.process.check_rx_packets(
+            out, check_param={"queue": 3}, expect_pkt=1, stats=True
+        )
+        self.logger.info("pass: queue id is 3")
+        self.pmdout.execute_cmd("flow flush 0")
+
     def tear_down(self):
         """
         Run after each test case.
         """
-        self.pmdout.execute_cmd("quit", "# ")
+        self.pmdout.quit()
 
     def tear_down_all(self):
         """
