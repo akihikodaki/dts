@@ -2983,67 +2983,6 @@ tvs_mac_ipv4_nvgre_ipv4_tcp_pipeline_mode = [
     tv_mac_ipv4_nvgre_ipv4_tcp_pipeline_mode_drop_03,
 ]
 
-# test vector ethertype_filter_pppoed
-ethertype_filter_pppoed_scapy_str = {
-    "matched": [
-        'Ether(dst="00:11:22:33:44:55", type=0x8863)/Raw("x" *80)',
-        'Ether(dst="00:11:22:33:44:55")/PPPoED()/Raw("x" *80)',
-    ],
-    "mismatched": [
-        'Ether(dst="00:11:22:33:44:55", type=0x8864)/Raw("x" *80)',
-        'Ether(dst="00:11:22:33:44:55")/PPPoE()/Raw("x" *80)',
-    ],
-}
-
-tv_ethertype_filter_pppoed_in_queue_01 = {
-    "name": "tv_ethertype_filter_pppoed_in_queue_01",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth type is 0x8863 / end actions queue index 2 / end",
-    "configuration": {"is_non_pipeline": True, "is_need_rss_rule": False},
-    "matched": {
-        "scapy_str": ethertype_filter_pppoed_scapy_str["matched"],
-        "check_func": {
-            "func": rfc.check_output_log_in_queue,
-            "param": {"expect_port": 0, "expect_queues": 2},
-        },
-        "expect_results": {"expect_pkts": 2},
-    },
-    "mismatched": {
-        "scapy_str": ethertype_filter_pppoed_scapy_str["mismatched"],
-        "check_func": {
-            "func": rfc.check_output_log_in_queue_mismatched,
-            "param": {"expect_port": 0, "expect_queues": 2},
-        },
-        "expect_results": {"expect_pkts": 2},
-    },
-}
-
-tv_ethertype_filter_pppoed_drop_02 = {
-    "name": "tv_ethertype_filter_pppoed_drop_02",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth type is 0x8863 / end actions drop / end",
-    "configuration": {"is_non_pipeline": True, "is_need_rss_rule": False},
-    "matched": {
-        "scapy_str": ethertype_filter_pppoed_scapy_str["matched"],
-        "check_func": {
-            "func": rfc.check_output_log_drop,
-            "param": {"expect_port": 0, "expect_queues": "null"},
-        },
-        "expect_results": {"expect_pkts": 2},
-    },
-    "mismatched": {
-        "scapy_str": ethertype_filter_pppoed_scapy_str["mismatched"],
-        "check_func": {
-            "func": rfc.check_output_log_drop_mismatched,
-            "param": {"expect_port": 0, "expect_queues": "null"},
-        },
-        "expect_results": {"expect_pkts": 2},
-    },
-}
-
-tvs_ethertype_filter_pppoed = [
-    tv_ethertype_filter_pppoed_in_queue_01,
-    tv_ethertype_filter_pppoed_drop_02,
-]
-
 # non-tunnel pipeline mode
 # test vector mac_ipv4_frag_pipeline_mode
 mac_ipv4_frag_pipeline_mode_scapy_str = {
@@ -4919,23 +4858,6 @@ class ICESwitchFilterTest(TestCase):
 
     def test_mac_ipv4_nvgre_ipv4_tcp_pipeline_mode(self):
         self._rte_flow_validate_pattern(tvs_mac_ipv4_nvgre_ipv4_tcp_pipeline_mode)
-
-    # ether filter non-pipeline mode
-    def test_ethertype_filter_pppoed(self):
-        self._rte_flow_validate_pattern(tvs_ethertype_filter_pppoed)
-
-    # ether filter pipeline mode
-    def test_ethertype_filter_pppoed_pipeline_mode(self):
-        tvs_ethertype_filter_pppoed_pipeline_mode = copy.deepcopy(
-            tvs_ethertype_filter_pppoed
-        )
-        for tv in tvs_ethertype_filter_pppoed_pipeline_mode:
-            create_rule = tv["rte_flow_pattern"].replace(
-                "flow create 0", "flow create 0 priority 0"
-            )
-            tv["rte_flow_pattern"] = create_rule
-            tv["configuration"]["is_non_pipeline"] = False
-        self._rte_flow_validate_pattern(tvs_ethertype_filter_pppoed_pipeline_mode)
 
     # non-tunnel pipeline mode
     def test_mac_ipv4_frag_pipeline_mode(self):
