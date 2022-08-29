@@ -171,7 +171,7 @@ class TestTX_preparation(TestCase):
                         "Failed to verify TSO correctness for large packets!!!",
                     )
                     if LastLength != 0:
-                        num = out.count("length %s" % LastLength)
+                        num = out.count("length %s:" % LastLength)
                         self.verify(
                             "length %s" % LastLength in out and num == count,
                             "Failed to verify TSO correctness for large packets!!!",
