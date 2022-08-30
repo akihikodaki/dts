@@ -73,7 +73,7 @@ class TestTX_preparation(TestCase):
             " --portmask=1 --port-topology=chained --max-pkt-len=%s --tx-offloads=0x8000"
             % Max_mtu,
         )
-        self.dmac = self.dut_testpmd.get_port_mac(0)
+        self.dmac = "00:11:22:33:44:55"
         self.dut_testpmd.execute_cmd("set fwd csum")
         self.dut_testpmd.execute_cmd("set verbose 1")
         # enable ip/udp/tcp hardware checksum
@@ -84,7 +84,7 @@ class TestTX_preparation(TestCase):
 
     def start_tcpdump(self, rxItf):
         # only sniff form dut packet and filter lldp packet
-        param = "ether[12:2]!=0x88cc and ether src %s" % self.dmac
+        param = "ether[12:2]!=0x88cc and ether dst %s -Q in" % self.dmac
         self.tester.send_expect("rm -rf ./getPackageByTcpdump.cap", "#")
         self.tester.send_expect(
             "tcpdump %s -i %s -n -e -vv -w\
