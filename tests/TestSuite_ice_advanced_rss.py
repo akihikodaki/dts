@@ -5493,7 +5493,7 @@ class AdvancedRSSTest(TestCase):
         expect_chksum = dict()
         checksum_pattern = re.compile("chksum.*=.*(0x[0-9a-z]+)")
         self.tester.send_expect("scapy", ">>> ")
-        sniff_src = self.dut.get_mac_address(self.dut_ports[0])
+        sniff_src = "52:00:00:00:00:00"
         for pkt in expect_pkts:
             self.tester.send_expect("p = %s" % expect_pkts[pkt], ">>>")
             out = self.tester.send_expect("p.show2()", ">>>")
@@ -5541,23 +5541,24 @@ class AdvancedRSSTest(TestCase):
         self.pmd_output.execute_cmd("csum set sctp hw 0")
         self.pmd_output.execute_cmd("port start all")
         self.pmd_output.execute_cmd("start")
+        dst_mac = "00:11:22:33:44:56"
         pkt_list = {
-            "IP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1", chksum=0xfff3)/("X"*48)',
-            "IP/TCP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/TCP(sport=22, chksum=0xfff3)/("X"*48)',
-            "IP/UDP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/UDP(sport=22, chksum=0x1)/("X"*48)',
-            "IP/SCTP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/SCTP(sport=22, chksum=0x0)/("X"*48)',
-            "IPv6/TCP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/TCP(sport=22, chksum=0xe38)/("X"*48)',
-            "IPv6/UDP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/UDP(sport=22, chksum=0xe38)/("X"*48)',
-            "IPv6/SCTP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/SCTP(sport=22, chksum=0x0)/("X"*48)',
+            "IP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IP(src="192.168.0.1", chksum=0xfff3)/("X"*48)',
+            "IP/TCP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/TCP(sport=22, chksum=0xfff3)/("X"*48)',
+            "IP/UDP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/UDP(sport=22, chksum=0x1)/("X"*48)',
+            "IP/SCTP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/SCTP(sport=22, chksum=0x0)/("X"*48)',
+            "IPv6/TCP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IPv6()/TCP(sport=22, chksum=0xe38)/("X"*48)',
+            "IPv6/UDP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IPv6()/UDP(sport=22, chksum=0xe38)/("X"*48)',
+            "IPv6/SCTP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IPv6()/SCTP(sport=22, chksum=0x0)/("X"*48)',
         }
         expect_pkt = {
-            "IP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/("X"*48)',
-            "IP/TCP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/TCP(sport=22)/("X"*48)',
-            "IP/UDP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/UDP(sport=22)/("X"*48)',
-            "IP/SCTP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/SCTP(sport=22)/("X"*48)',
-            "IPv6/TCP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/TCP(sport=22)/("X"*48)',
-            "IPv6/UDP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/UDP(sport=22)/("X"*48)',
-            "IPv6/SCTP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/SCTP(sport=22)/("X"*48)',
+            "IP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/("X"*48)',
+            "IP/TCP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/TCP(sport=22)/("X"*48)',
+            "IP/UDP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/UDP(sport=22)/("X"*48)',
+            "IP/SCTP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/SCTP(sport=22)/("X"*48)',
+            "IPv6/TCP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IPv6()/TCP(sport=22)/("X"*48)',
+            "IPv6/UDP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IPv6()/UDP(sport=22)/("X"*48)',
+            "IPv6/SCTP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IPv6()/SCTP(sport=22)/("X"*48)',
         }
         rule_list = [
             "flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4-chksum end queues end / end",
