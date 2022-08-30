@@ -204,11 +204,10 @@ class TestChecksumOffload(TestCase):
             self.tester.get_local_port(self.dut_ports[0])
         )
 
-        sniff_src = self.dut.get_mac_address(self.dut_ports[0])
+        sniff_src = "52:00:00:00:00:00"
         result = dict()
 
         chksum = self.get_chksum_values(packets_expected)
-
         inst = self.tester.tcpdump_sniff_packets(
             intf=rx_interface,
             count=len(packets_sent) * 4,
@@ -424,8 +423,9 @@ class TestChecksumOffload(TestCase):
     ):
         if os.path.isfile(capture_file_path):
             os.remove(capture_file_path)
+        src_mac = "52:00:00:00:00:00"
         self.tester.send_expect(
-            f"tcpdump -i '{iface}' ether src {dut_mac} -s 0 -w {capture_file_path} &",
+            f"tcpdump -i '{iface}' ether src {src_mac} -s 0 -w {capture_file_path} -Q in &",
             "# ",
         )
 
@@ -502,7 +502,8 @@ class TestChecksumOffload(TestCase):
         Verify that the same number of packet are correctly received on the
         traffic generator side.
         """
-        mac = self.dut.get_mac_address(self.dut_ports[0])
+        # mac = self.dut.get_mac_address(self.dut_ports[0])
+        mac = "52:00:00:00:00:01"
 
         pktsChkErr = {
             "IP/UDP": 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=1)/IP(chksum=0x0)/UDP(chksum=0xf)/("X"*46)'
@@ -546,7 +547,7 @@ class TestChecksumOffload(TestCase):
         transmit packet.Enable Checksum offload.
         Verify the checksum valid-flags.
         """
-        mac = self.dut.get_mac_address(self.dut_ports[0])
+        mac = "52:00:00:00:00:01"
 
         pkts_ref = {
             "IP/UDP": 'Ether(dst="%s", src="52:00:00:00:00:00")/IP()/UDP()/("X"*46)'
@@ -611,7 +612,7 @@ class TestChecksumOffload(TestCase):
         Verify that the same number of packet are correctly received on the
         traffic generator side.
         """
-        mac = self.dut.get_mac_address(self.dut_ports[0])
+        mac = "52:00:00:00:00:01"
 
         pkts = {
             "IP/UDP": 'Ether(dst="%s", src="52:00:00:00:00:00")/IP(chksum=0x0)/UDP(chksum=0xf)/("X"*46)'
@@ -660,7 +661,7 @@ class TestChecksumOffload(TestCase):
         Verify that the same number of packet are correctly received on
         the traffic generator side.
         """
-        mac = self.dut.get_mac_address(self.dut_ports[0])
+        mac = "52:00:00:00:00:01"
         sndIP = "10.0.0.1"
         sndIPv6 = "::1"
         sndPkts = {
@@ -816,9 +817,8 @@ class TestChecksumOffload(TestCase):
         verification_errors: List[VerifyFailure] = []
 
         iface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
-        dut_mac = self.dut.get_mac_address(self.dut_ports[0])
-        tester_mac = self.tester.get_mac(self.tester.get_local_port(self.dut_ports[0]))
-
+        dut_mac = "52:00:00:00:00:01"
+        tester_mac = "52:00:00:00:00:00"
         self.scapy_exec(f"eth = Ether(dst='{dut_mac}', src='{tester_mac}')")
         self.scapy_exec(f"iface = '{iface}'")
 
@@ -848,8 +848,8 @@ class TestChecksumOffload(TestCase):
         verification_errors: List[VerifyFailure] = []
 
         iface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
-        dut_mac = self.dut.get_mac_address(self.dut_ports[0])
-        tester_mac = self.tester.get_mac(self.tester.get_local_port(self.dut_ports[0]))
+        dut_mac = "52:00:00:00:00:01"
+        tester_mac = "52:00:00:00:00:00"
         eth = Ether(dst=dut_mac, src=tester_mac)
 
         checksum_options = (
@@ -903,9 +903,8 @@ class TestChecksumOffload(TestCase):
         verification_errors: List[VerifyFailure] = []
 
         iface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
-        dut_mac = self.dut.get_mac_address(self.dut_ports[0])
-        tester_mac = self.tester.get_mac(self.tester.get_local_port(self.dut_ports[0]))
-
+        dut_mac = "52:00:00:00:00:01"
+        tester_mac = "52:00:00:00:00:00"
         self.tester.send_expect("scapy", ">>> ")
         self.scapy_exec(f"eth = Ether(dst='{dut_mac}', src='{tester_mac}')")
         self.scapy_exec(f"iface = '{iface}'")
@@ -1003,9 +1002,8 @@ class TestChecksumOffload(TestCase):
         verification_errors: List[VerifyFailure] = []
 
         iface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
-        dut_mac = self.dut.get_mac_address(self.dut_ports[0])
-        tester_mac = self.tester.get_mac(self.tester.get_local_port(self.dut_ports[0]))
-
+        dut_mac = "52:00:00:00:00:01"
+        tester_mac = "52:00:00:00:00:00"
         packets = self.get_packets(dut_mac, tester_mac)
 
         capture_file_name = "test_hardware_checksum_check_l4_tx_capture.pcap"
@@ -1022,7 +1020,6 @@ class TestChecksumOffload(TestCase):
         )
 
         captured_packets = rdpcap("output/tmp/pcap/" + capture_file_name)
-
         self.verify(
             len(packets) == len(captured_packets), "Not all packets were received"
         )
