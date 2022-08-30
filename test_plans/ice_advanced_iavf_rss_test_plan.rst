@@ -310,6 +310,10 @@ Prerequisites
     echo 1 > /sys/bus/pci/devices/0000\:18\:00.0/sriov_numvfs
     ip link set enp24s0f0 vf 0 mac 00:11:22:33:44:55
 
+    If test set HW csum flow rule does not impact RX checksum and TX checksum:
+    ip link set enp24s0f0 vf 0 trust on
+    ip link set enp24s0f0 vf 0 spoofchk off
+
 4. bind the VF to dpdk driver in DUT::
 
     modprobe vfio-pci
@@ -2911,6 +2915,7 @@ Test case: Set HW csum, flow rule does not impact RX checksum and TX checksum
     csum set tcp hw 0
     csum set sctp hw 0
     port start all
+    set promisc 0 on
     set verbose 1
     start
 
