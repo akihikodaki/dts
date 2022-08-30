@@ -195,6 +195,12 @@ Prerequisites
     ip link set enp134s0f1 vf 0 mac 00:11:22:33:44:77
     ip link set enp134s0f1 vf 1 mac 00:11:22:33:44:88
 
+    If test set HW checksum and SW checksum:
+    ip link set enp24s0f0 vf 0 trust on
+    ip link set enp24s0f0 vf 0 spoofchk off
+    ip link set enp24s0f0 vf 1 trust on
+    ip link set enp24s0f0 vf 1 spoofchk off
+
    0000:86:00.0 generate 0000:86:01.0 and 0000:86:01.1
    0000:86:00.1 generate 0000:86:11.0 and 0000:86:11.1
    define 86:01.0 as vf00, 86:01.1 as vf01, 86:11.0 as vf10, 86:11.1 as vf11.
@@ -5058,6 +5064,7 @@ Subcase 1: PFCP FDIR vlan strip on HW checksum offload check
     testpmd> csum set ip hw 0
     testpmd> csum set udp hw 0
     testpmd> port start all
+    testpmd> set promisc 0 on
     testpmd> set verbose 1
     testpmd> start
 
@@ -5129,6 +5136,7 @@ subcase 2: PFCP FDIR vlan strip off SW checksum offload check
     testpmd> csum set udp sw 0
     testpmd> port start all
     testpmd> set verbose 1
+    testpmd> set promisc 0 on
     testpmd> start
 
 4. DUT create fdir rules for MAC_IPV4_PFCP_NODE/MAC_IPV4_PFCP_SESSION/MAC_IPV6_PFCP_NODE/MAC_IPV6_PFCP_SESSION with queue index and mark::
