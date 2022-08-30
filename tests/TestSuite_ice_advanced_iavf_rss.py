@@ -5781,10 +5781,34 @@ class AdvancedIavfRSSTest(TestCase):
         self.vf_flag = False
         self.create_iavf()
 
+    def ip_link_set(self, host_intf=None, cmd=None, port=None, types=None, value=0):
+        if host_intf is None or cmd is None or port is None or types is None:
+            return
+        set_command = f"ip link set {host_intf} {cmd} {port} {types} {value}"
+        out = self.dut.send_expect(set_command, "# ")
+        if "RTNETLINK answers: Invalid argument" in out:
+            self.dut.send_expect(set_command, "# ")
+
     def set_up(self):
         """
         Run before each test case.
         """
+        if self.running_case == "test_flow_rule_not_impact_rx_tx_chksum":
+            self.host_intf_0 = self.dut.ports_info[self.used_dut_port]["intf"]
+            self.ip_link_set(
+                host_intf=self.host_intf_0,
+                cmd="vf",
+                port=0,
+                types="trust",
+                value="on",
+            )
+            self.ip_link_set(
+                host_intf=self.host_intf_0,
+                cmd="vf",
+                port=0,
+                types="spoofchk",
+                value="off",
+            )
         self.pkt = Packet()
         self.pmd_output = PmdOutput(self.dut)
         self.launch_testpmd()
@@ -6370,7 +6394,7 @@ class AdvancedIavfRSSTest(TestCase):
         expect_chksum = dict()
         checksum_pattern = re.compile("chksum.*=.*(0x[0-9a-z]+)")
         self.tester.send_expect("scapy", ">>> ")
-        sniff_src = self.dut.get_mac_address(self.dut_ports[0])
+        sniff_src = "52:00:00:00:00:00"
         for pkt in expect_pkts:
             self.tester.send_expect("p = %s" % expect_pkts[pkt], ">>>")
             out = self.tester.send_expect("p.show2()", ">>>")
@@ -6382,7 +6406,7 @@ class AdvancedIavfRSSTest(TestCase):
             inst = self.tester.tcpdump_sniff_packets(
                 intf=self.tester_iface0,
                 count=len(pkts),
-                filters=[{"layer": "ether", "config": {"src": vf0_mac}}],
+                filters=[{"layer": "ether", "config": {"src": sniff_src}}],
             )
             out = self.rssprocess.send_pkt_get_output(pkts=pkts[pkt])
             rece_pkt = self.tester.load_tcpdump_sniff_packets(inst)
@@ -6417,24 +6441,26 @@ class AdvancedIavfRSSTest(TestCase):
         self.pmd_output.execute_cmd("csum set tcp hw 0")
         self.pmd_output.execute_cmd("csum set sctp hw 0")
         self.pmd_output.execute_cmd("port start all")
+        self.pmd_output.execute_cmd("set promisc 0 on")
         self.pmd_output.execute_cmd("start")
+        dst_mac = "00:11:22:33:44:56"
         pkt_list = {
-            "IP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1", chksum=0xfff3)/("X"*48)',
-            "IP/TCP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/TCP(sport=22, chksum=0xfff3)/("X"*48)',
-            "IP/UDP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/UDP(sport=22, chksum=0x1)/("X"*48)',
-            "IP/SCTP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/SCTP(sport=22, chksum=0x0)/("X"*48)',
-            "IPv6/TCP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/TCP(sport=22, chksum=0xe38)/("X"*48)',
-            "IPv6/UDP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/UDP(sport=22, chksum=0xe38)/("X"*48)',
-            "IPv6/SCTP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/SCTP(sport=22, chksum=0x0)/("X"*48)',
+            "IP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IP(src="192.168.0.1", chksum=0xfff3)/("X"*48)',
+            "IP/TCP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/TCP(sport=22, chksum=0xfff3)/("X"*48)',
+            "IP/UDP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/UDP(sport=22, chksum=0x1)/("X"*48)',
+            "IP/SCTP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/SCTP(sport=22, chksum=0x0)/("X"*48)',
+            "IPv6/TCP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IPv6()/TCP(sport=22, chksum=0xe38)/("X"*48)',
+            "IPv6/UDP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IPv6()/UDP(sport=22, chksum=0xe38)/("X"*48)',
+            "IPv6/SCTP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IPv6()/SCTP(sport=22, chksum=0x0)/("X"*48)',
         }
         expect_pkt = {
-            "IP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/("X"*48)',
-            "IP/TCP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/TCP(sport=22)/("X"*48)',
-            "IP/UDP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/UDP(sport=22)/("X"*48)',
-            "IP/SCTP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/SCTP(sport=22)/("X"*48)',
-            "IPv6/TCP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/TCP(sport=22)/("X"*48)',
-            "IPv6/UDP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/UDP(sport=22)/("X"*48)',
-            "IPv6/SCTP": 'Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/SCTP(sport=22)/("X"*48)',
+            "IP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/("X"*48)',
+            "IP/TCP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/TCP(sport=22)/("X"*48)',
+            "IP/UDP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/UDP(sport=22)/("X"*48)',
+            "IP/SCTP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/SCTP(sport=22)/("X"*48)',
+            "IPv6/TCP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IPv6()/TCP(sport=22)/("X"*48)',
+            "IPv6/UDP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IPv6()/UDP(sport=22)/("X"*48)',
+            "IPv6/SCTP": f'Ether(dst="{dst_mac}", src="52:00:00:00:00:00")/IPv6()/SCTP(sport=22)/("X"*48)',
         }
         rule_list = [
             "flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4-chksum end queues end / end",
@@ -6631,6 +6657,22 @@ class AdvancedIavfRSSTest(TestCase):
         self.dut.send_command("clear port stats all", timeout=1)
         self.pmd_output.execute_cmd("stop")
         self.pmd_output.execute_cmd("quit", "#")
+        if self.running_case == "test_flow_rule_not_impact_rx_tx_chksum":
+            self.host_intf_0 = self.dut.ports_info[self.used_dut_port]["intf"]
+            self.ip_link_set(
+                host_intf=self.host_intf_0,
+                cmd="vf",
+                port=0,
+                types="trust",
+                value="off",
+            )
+            self.ip_link_set(
+                host_intf=self.host_intf_0,
+                cmd="vf",
+                port=0,
+                types="spoofchk",
+                value="on",
+            )
 
     def tear_down_all(self):
         self.dut.kill_all()
