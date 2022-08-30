@@ -2461,21 +2461,21 @@ Test case: Set HW csum, flow rule does not impact RX checksum and TX checksum
 3. Capture the tx packet at tester port and check checksum values same as expect pkts::
 
     take a IPV4 for example:
-    p = Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/("X"*48)
+    p = Ether(dst="00:11:22:33:44:56", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/("X"*48)
     p.show2()
     expect pkts checksum value: chksum= 0x3b0f
 
-    tcpdump -i ens7  'ether src 40:a6:b7:0b:76:28 and ether[12:2] != 0x88cc'  -Q in -w /tmp/tester/sniff_ens7.pcap -c 7
+    tcpdump -i ens7  'ether src 52:00:00:00:00:00 and ether[12:2] != 0x88cc'  -Q in -w /tmp/tester/sniff_ens7.pcap -c 7
 
 4. Send packets::
 
-    p1=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1", chksum=0xfff3)/("X"*48)
-    p2=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/TCP(sport=22, chksum=0xfff3)/("X"*48)
-    p3=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/UDP(sport=22, chksum=0x1)/("X"*48)
-    p4=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/SCTP(sport=22, chksum=0x1)/("X"*48)
-    p5=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/TCP(sport=22, chksum=0xe38)/("X"*48)
-    p6=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/UDP(sport=22, chksum=0xe38)/("X"*48)
-    p7=Ether(dst="00:11:22:33:44:55", src="52:00:00:00:00:00")/IPv6()/SCTP(sport=22, chksum=0xf)/("X"*48)
+    p1=Ether(dst="00:11:22:33:44:56", src="52:00:00:00:00:00")/IP(src="192.168.0.1", chksum=0xfff3)/("X"*48)
+    p2=Ether(dst="00:11:22:33:44:56", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/TCP(sport=22, chksum=0xfff3)/("X"*48)
+    p3=Ether(dst="00:11:22:33:44:56", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/UDP(sport=22, chksum=0x1)/("X"*48)
+    p4=Ether(dst="00:11:22:33:44:56", src="52:00:00:00:00:00")/IP(src="192.168.0.1")/SCTP(sport=22, chksum=0x1)/("X"*48)
+    p5=Ether(dst="00:11:22:33:44:56", src="52:00:00:00:00:00")/IPv6()/TCP(sport=22, chksum=0xe38)/("X"*48)
+    p6=Ether(dst="00:11:22:33:44:56", src="52:00:00:00:00:00")/IPv6()/UDP(sport=22, chksum=0xe38)/("X"*48)
+    p7=Ether(dst="00:11:22:33:44:56", src="52:00:00:00:00:00")/IPv6()/SCTP(sport=22, chksum=0xf)/("X"*48)
 
     take a IPV4 for example:
     get sniff_ens7.pcap checksum value: 0x3b0f
