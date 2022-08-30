@@ -43,7 +43,7 @@ class TestVfOffload(TestCase):
         self.setup_2pf_2vf_1vm_env_flag = 0
         self.setup_2pf_2vf_1vm_env(driver="")
         self.vm0_dut_ports = self.vm_dut_0.get_ports("any")
-        self.portMask = utils.create_mask([self.vm0_dut_ports[0]])
+        self.portMask = utils.create_mask(self.vm0_dut_ports)
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         self.tester.send_expect(
             "ifconfig %s mtu %s"
@@ -59,6 +59,14 @@ class TestVfOffload(TestCase):
     def set_up(self):
         pass
 
+    def ip_link_set(self, host_intf=None, cmd=None, port=None, types=None, value=0):
+        if host_intf is None or cmd is None or port is None or types is None:
+            return
+        set_command = f"ip link set {host_intf} {cmd} {port} {types} {value}"
+        out = self.dut.send_expect(set_command, "# ")
+        if "RTNETLINK answers: Invalid argument" in out:
+            self.dut.send_expect(set_command, "# ")
+
     def setup_2pf_2vf_1vm_env(self, driver="default"):
 
         self.used_dut_port_0 = self.dut_ports[0]
@@ -68,6 +76,37 @@ class TestVfOffload(TestCase):
         self.dut.generate_sriov_vfs_by_port(self.used_dut_port_1, 1, driver=driver)
         self.sriov_vfs_port_1 = self.dut.ports_info[self.used_dut_port_1]["vfs_port"]
 
+        self.host_intf_0 = self.dut.ports_info[self.used_dut_port_0]["intf"]
+        self.host_intf_1 = self.dut.ports_info[self.used_dut_port_1]["intf"]
+
+        self.ip_link_set(
+            host_intf=self.host_intf_0,
+            cmd="vf",
+            port=0,
+            types="trust",
+            value="on",
+        )
+        self.ip_link_set(
+            host_intf=self.host_intf_1,
+            cmd="vf",
+            port=0,
+            types="trust",
+            value="on",
+        )
+        self.ip_link_set(
+            host_intf=self.host_intf_0,
+            cmd="vf",
+            port=0,
+            types="spoofchk",
+            value="off",
+        )
+        self.ip_link_set(
+            host_intf=self.host_intf_1,
+            cmd="vf",
+            port=0,
+            types="spoofchk",
+            value="off",
+        )
         try:
 
             for port in self.sriov_vfs_port_0:
@@ -154,12 +193,11 @@ class TestVfOffload(TestCase):
             self.tester.get_local_port(self.dut_ports[0])
         )
         rx_interface = self.tester.get_interface(
-            self.tester.get_local_port(self.dut_ports[0])
+            self.tester.get_local_port(self.dut_ports[1])
         )
-
         sniff_src = self.vm0_testpmd.get_port_mac(0)
         checksum_pattern = re.compile("chksum.*=.*(0x[0-9a-z]+)")
-
+        sniff_src = "52:00:00:00:00:00"
         chksum = dict()
         result = dict()
 
@@ -175,16 +213,11 @@ class TestVfOffload(TestCase):
         self.tester.send_expect("exit()", "#")
 
         self.tester.scapy_background()
-        self.tester.scapy_append(
-            'p = sniff(filter="ether src %s", iface="%s", count=%d)'
-            % (sniff_src, rx_interface, len(packets_sent))
+        inst = self.tester.tcpdump_sniff_packets(
+            intf=rx_interface,
+            count=len(packets_sent),
+            filters=[{"layer": "ether", "config": {"src": sniff_src}}],
         )
-        self.tester.scapy_append("nr_packets=len(p)")
-        self.tester.scapy_append(
-            'reslist = [p[i].sprintf("%IP.chksum%;%TCP.chksum%;%UDP.chksum%;%SCTP.chksum%") for i in range(nr_packets)]'
-        )
-        self.tester.scapy_append("import string")
-        self.tester.scapy_append('RESULT = ",".join(reslist)')
 
         # Send packet.
         self.tester.scapy_foreground()
@@ -196,7 +229,15 @@ class TestVfOffload(TestCase):
 
         self.tester.scapy_execute()
         out = self.tester.scapy_get_result()
-        packets_received = out.split(",")
+
+        p = self.tester.load_tcpdump_sniff_packets(inst)
+        nr_packets = len(p)
+        print(p)
+        packets_received = [
+            p[i].sprintf("%IP.chksum%;%TCP.chksum%;%UDP.chksum%;%SCTP.chksum%")
+            for i in range(nr_packets)
+        ]
+
         self.verify(
             len(packets_sent) == len(packets_received), "Unexpected Packets Drop"
         )
@@ -251,17 +292,15 @@ class TestVfOffload(TestCase):
         """
         self.vm0_testpmd.start_testpmd(
             VM_CORES_MASK,
-            "--portmask=%s " % (self.portMask)
-            + "--enable-rx-cksum "
-            + ""
-            + "--port-topology=loop",
+            "--portmask=%s " % (self.portMask) + "--enable-rx-cksum " + "",
         )
         self.vm0_testpmd.execute_cmd("set fwd csum")
+        self.vm0_testpmd.execute_cmd("set promisc 1 on")
+        self.vm0_testpmd.execute_cmd("set promisc 0 on")
 
         time.sleep(2)
         port_id_0 = 0
         mac = self.vm0_testpmd.get_port_mac(0)
-
         sndIP = "10.0.0.1"
         sndIPv6 = "::1"
         pkts = {
@@ -280,19 +319,20 @@ class TestVfOffload(TestCase):
         expIP = sndIP
         expIPv6 = sndIPv6
         pkts_ref = {
-            "IP/UDP": 'Ether(dst="02:00:00:00:00:00", src="%s")/IP(src="%s")/UDP()/("X"*46)'
+            "IP/UDP": 'Ether(dst="%s", src="52:00:00:00:00:00")/IP(src="%s")/UDP()/("X"*46)'
             % (mac, expIP),
-            "IP/TCP": 'Ether(dst="02:00:00:00:00:00", src="%s")/IP(src="%s")/TCP()/("X"*46)'
+            "IP/TCP": 'Ether(dst="%s", src="52:00:00:00:00:00")/IP(src="%s")/TCP()/("X"*46)'
             % (mac, expIP),
-            "IP/SCTP": 'Ether(dst="02:00:00:00:00:00", src="%s")/IP(src="%s")/SCTP()/("X"*48)'
+            "IP/SCTP": 'Ether(dst="%s", src="52:00:00:00:00:00")/IP(src="%s")/SCTP()/("X"*48)'
             % (mac, expIP),
-            "IPv6/UDP": 'Ether(dst="02:00:00:00:00:00", src="%s")/IPv6(src="%s")/UDP()/("X"*46)'
+            "IPv6/UDP": 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="%s")/UDP()/("X"*46)'
             % (mac, expIPv6),
-            "IPv6/TCP": 'Ether(dst="02:00:00:00:00:00", src="%s")/IPv6(src="%s")/TCP()/("X"*46)'
+            "IPv6/TCP": 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="%s")/TCP()/("X"*46)'
             % (mac, expIPv6),
         }
 
         self.checksum_enablehw(0, self.vm_dut_0)
+        self.checksum_enablehw(1, self.vm_dut_0)
 
         self.vm0_testpmd.execute_cmd("start")
         result = self.checksum_validate(pkts, pkts_ref)
@@ -311,14 +351,13 @@ class TestVfOffload(TestCase):
         Enable SW checksum offload.
         Send same packet with incorrect checksum and verify checksum is valid.
         """
-
         self.vm0_testpmd.start_testpmd(
             VM_CORES_MASK,
-            "--portmask=%s " % (self.portMask)
-            + "--enable-rx-cksum "
-            + "--port-topology=loop",
+            "--portmask=%s " % (self.portMask) + "--enable-rx-cksum " + "",
         )
         self.vm0_testpmd.execute_cmd("set fwd csum")
+        self.vm0_testpmd.execute_cmd("set promisc 1 on")
+        self.vm0_testpmd.execute_cmd("set promisc 0 on")
 
         time.sleep(2)
 
@@ -350,6 +389,7 @@ class TestVfOffload(TestCase):
         }
 
         self.checksum_enablesw(0, self.vm_dut_0)
+        self.checksum_enablesw(1, self.vm_dut_0)
 
         self.vm0_testpmd.execute_cmd("start")
         result = self.checksum_validate(sndPkts, expPkts)
@@ -457,7 +497,6 @@ class TestVfOffload(TestCase):
         )
 
         mac = self.vm0_testpmd.get_port_mac(0)
-
         self.vm0_testpmd.execute_cmd("set verbose 1", "testpmd> ", 120)
         self.vm0_testpmd.execute_cmd("port stop all", "testpmd> ", 120)
         self.vm0_testpmd.execute_cmd(
@@ -501,7 +540,8 @@ class TestVfOffload(TestCase):
         self.vm0_testpmd.execute_cmd("tso set 800 %d" % self.vm0_dut_ports[1])
         self.vm0_testpmd.execute_cmd("set fwd csum")
         self.vm0_testpmd.execute_cmd("port start all", "testpmd> ", 120)
-        self.vm0_testpmd.execute_cmd("set promisc all off", "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("set promisc 0 on", "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("set promisc 1 on", "testpmd> ", 120)
         self.vm0_testpmd.execute_cmd("start")
 
         self.tester.scapy_foreground()
