@@ -17,6 +17,11 @@ to the device under test::
    modprobe vfio-pci
    usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
 
+IP link set VF trust on and spoofchk off on DUT::
+
+   ip link set $PF_INTF vf 0 trust on
+   ip link set $PF_INTF vf 0 spoofchk off
+
 Assuming that ports ``0`` and ``1`` are connected to a traffic generator,
 enable hardware rx checksum offload with "--enable-rx-cksum",
 launch the ``testpmd`` with the following arguments::
@@ -71,6 +76,7 @@ Enable the IPv4/UDP/TCP/SCTP HW checksum offload on port 0::
   testpmd> csum set udp hw 0
   testpmd> csum set sctp hw 0
   testpmd> port start all
+  testpmd> set promisc 0 on
   testpmd> start
     csum packet forwarding - CRC stripping disabled - packets/burst=32
     nb forwarding cores=1 - nb forwarding ports=10
@@ -110,6 +116,7 @@ Enable the IPv4/UDP/TCP/SCTP SW checksum offload on port 0::
   testpmd> csum set udp sw 0
   testpmd> csum set sctp sw 0
   testpmd> port start all
+  testpmd> set promisc 0 on
   testpmd> start
     csum packet forwarding - CRC stripping disabled - packets/burst=32
     nb forwarding cores=1 - nb forwarding ports=10
@@ -154,6 +161,7 @@ and checksum on rx port. The test commands is below::
   testpmd> csum set udp hw 0
   testpmd> csum set sctp hw 0
   testpmd> port start all
+  testpmd> set promisc 0 on
   testpmd> set fwd csum
 
   # Enable TSO on tx port
@@ -185,6 +193,7 @@ Launch the userland ``testpmd`` application on DUT as follows::
   testpmd> csum set tcp hw 0
   testpmd> csum set udp hw 0
   testpmd> csum set sctp hw 0
+  testpmd> set promisc 0 on
   testpmd> port start all
 
   # Enable TSO on tx port
