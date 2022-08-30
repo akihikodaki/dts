@@ -8401,6 +8401,14 @@ class TestICEIAVFFdir(TestCase):
         self.dut_file_dir = "/tmp/"
         self.q_num = TXQ_RXQ_NUMBER
 
+    def ip_link_set(self, host_intf=None, cmd=None, port=None, types=None, value=0):
+        if host_intf is None or cmd is None or port is None or types is None:
+            return
+        set_command = f"ip link set {host_intf} {cmd} {port} {types} {value}"
+        out = self.dut.send_expect(set_command, "# ")
+        if "RTNETLINK answers: Invalid argument" in out:
+            self.dut.send_expect(set_command, "# ")
+
     def set_up(self):
         """
         Run before each test case.
@@ -8421,6 +8429,42 @@ class TestICEIAVFFdir(TestCase):
         self.dut.generate_sriov_vfs_by_port(self.used_dut_port_1, 2, driver=driver)
         self.sriov_vfs_pf0 = self.dut.ports_info[self.used_dut_port_0]["vfs_port"]
         self.sriov_vfs_pf1 = self.dut.ports_info[self.used_dut_port_1]["vfs_port"]
+
+        self.host_intf_0 = self.dut.ports_info[self.used_dut_port_0]["intf"]
+        self.host_intf_1 = self.dut.ports_info[self.used_dut_port_0]["intf"]
+
+        if self.running_case in [
+            "test_pfcp_vlan_strip_off_sw_checksum",
+            "test_pfcp_vlan_strip_on_hw_checksum",
+        ]:
+            self.ip_link_set(
+                host_intf=self.host_intf_0,
+                cmd="vf",
+                port=0,
+                types="trust",
+                value="on",
+            )
+            self.ip_link_set(
+                host_intf=self.host_intf_0,
+                cmd="vf",
+                port=0,
+                types="spoofchk",
+                value="off",
+            )
+            self.ip_link_set(
+                host_intf=self.host_intf_1,
+                cmd="vf",
+                port=0,
+                types="trust",
+                value="on",
+            )
+            self.ip_link_set(
+                host_intf=self.host_intf_1,
+                cmd="vf",
+                port=0,
+                types="spoofchk",
+                value="off",
+            )
 
         self.dut.send_expect(
             "ip link set %s vf 0 mac 00:11:22:33:44:55" % self.pf0_intf, "#"
@@ -10760,6 +10804,7 @@ class TestICEIAVFFdir(TestCase):
         self.dut.send_expect("csum set ip %s %d" % (hw, port), "testpmd>")
         self.dut.send_expect("csum set udp %s %d" % (hw, port), "testpmd>")
         self.dut.send_expect("port start all", "testpmd>")
+        self.dut.send_expect("set promisc 0 on", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
 
     def get_chksum_values(self, packets_expected):
@@ -10791,7 +10836,7 @@ class TestICEIAVFFdir(TestCase):
         tx_interface = self.tester_iface0
         rx_interface = self.tester_iface0
 
-        sniff_src = "00:11:22:33:44:55"
+        sniff_src = "52:00:00:00:00:00"
         result = dict()
         pkt = Packet()
         chksum = self.get_chksum_values(packets_expected)
@@ -10896,7 +10941,7 @@ class TestICEIAVFFdir(TestCase):
             socket=self.ports_socket,
         )
         vlan = 51
-        mac = "00:11:22:33:44:55"
+        mac = "00:11:22:33:44:56"
         sndIP = "10.0.0.1"
         sndIPv6 = "::1"
         pkts_sent = {
@@ -11051,7 +11096,7 @@ class TestICEIAVFFdir(TestCase):
             socket=self.ports_socket,
         )
         vlan = 51
-        mac = "00:11:22:33:44:55"
+        mac = "00:11:22:33:44:56"
         sndIP = "10.0.0.1"
         sndIPv6 = "::1"
         pkts_sent = {
@@ -11609,6 +11654,39 @@ class TestICEIAVFFdir(TestCase):
             self.dut.close_session(self.session_secondary)
         if getattr(self, "session_third", None):
             self.dut.close_session(self.session_third)
+
+        if self.running_case in [
+            "test_pfcp_vlan_strip_off_sw_checksum",
+            "test_pfcp_vlan_strip_on_hw_checksum",
+        ]:
+            self.ip_link_set(
+                host_intf=self.host_intf_0,
+                cmd="vf",
+                port=0,
+                types="trust",
+                value="off",
+            )
+            self.ip_link_set(
+                host_intf=self.host_intf_0,
+                cmd="vf",
+                port=0,
+                types="spoofchk",
+                value="on",
+            )
+            self.ip_link_set(
+                host_intf=self.host_intf_1,
+                cmd="vf",
+                port=0,
+                types="trust",
+                value="off",
+            )
+            self.ip_link_set(
+                host_intf=self.host_intf_1,
+                cmd="vf",
+                port=0,
+                types="spoofchk",
+                value="on",
+            )
 
     def tear_down_all(self):
         self.dut.kill_all()
