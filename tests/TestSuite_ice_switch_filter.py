@@ -4169,6 +4169,151 @@ drop_any_pkt_list = [
     "Ether(dst='68:05:CA:BB:26:E0')/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst='192.168.0.1', src='192.168.0.2')/UDP(sport=22, dport=33)/('X'*480)",
 ]
 
+IP_MASK = {
+    "matched": [
+        'Ether()/IP(src="192.168.0.1", dst="239.255.255.255")/UDP()/Raw("x"*80)',
+    ],
+    "mismatched": [
+        'Ether()/IP(src="192.168.0.1", dst="223.0.0.0")/TCP()/Raw("x"*80)',
+        'Ether()/IP(src="192.168.0.1", dst="240.0.0.0")/UDP()/Raw("x"*80)',
+        'Ether()/IP(src="192.168.0.1", dst="128.0.0.0")/Raw("x"*80)',
+    ],
+}
+
+tv_ip_dst_mask_quest = {
+    "name": "tv_ip_dst_mask",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions queue index 12 / end",
+    "configuration": {"is_non_pipeline": True, "is_need_rss_rule": False},
+    "matched": {
+        "scapy_str": IP_MASK["matched"],
+        "check_func": {
+            "func": rfc.check_output_log_in_queue,
+            "param": {"expect_port": 0, "expect_queues": 12},
+        },
+        "expect_results": {"expect_pkts": len(IP_MASK["matched"])},
+    },
+    "mismatched": {
+        "scapy_str": IP_MASK["mismatched"],
+        "check_func": {
+            "func": rfc.check_output_log_in_queue_mismatched,
+            "param": {"expect_port": 0, "expect_queues": 12},
+        },
+        "expect_results": {"expect_pkts": len(IP_MASK["mismatched"])},
+    },
+}
+
+IPv6_MASK = {
+    "matched": [
+        'Ether(dst="00:00:5e:00:00:01")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:1515", src="CDCD:910A:2222:5498:ffff:ffff:ffff:ffff")/TCP()/("X"*480)',
+    ],
+    "mismatched": [
+        'Ether(dst="00:00:5e:00:00:01")/IPv6(src="CDCD:910A:2222:ffff:8475:1111:3900:2023")/("X"*480)',
+        'Ether(dst="00:00:5e:00:00:01")/IPv6(src="CFCD:910A:ffff:5498:8475:1111:3900:2023")/UDP()/("X"*480)',
+        'Ether(dst="00:00:5e:00:00:01")/IPv6(src="CDCD:ffff:2222:5498:8475:1111:3900:1515")/TCP()/("X"*480)',
+        'Ether(dst="00:00:5e:00:00:01")/IPv6(src="ffff:910A:2222:5498:8475:1111:3900:1515")/TCP()/("X"*480)',
+    ],
+}
+
+tv_ipv6_src_mask_drop = {
+    "name": "tv_ipv6_src_mask",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv6 src spec CDCD:910A:2222:5498:8475:1111:3900:2023 src mask ffff:ffff:ffff:ffff:0:0:0:0 / end actions drop / end",
+    "configuration": {"is_non_pipeline": True, "is_need_rss_rule": False},
+    "matched": {
+        "scapy_str": IPv6_MASK["matched"],
+        "check_func": {
+            "func": rfc.check_output_log_drop,
+            "param": {"expect_port": 0, "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": len(IPv6_MASK["matched"])},
+    },
+    "mismatched": {
+        "scapy_str": IPv6_MASK["mismatched"],
+        "check_func": {
+            "func": rfc.check_output_log_drop_mismatched,
+            "param": {"expect_port": 0, "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": len(IPv6_MASK["mismatched"])},
+    },
+}
+
+tvs_L3_mask_non_pipeline_mode = [
+    tv_ip_dst_mask_quest,
+    tv_ipv6_src_mask_drop,
+]
+
+L2_DST_MASK = {
+    "matched": [
+        'Ether(src="00:00:5e:00:00:01", dst="00:00:5e:7f:ff:ff")/IP()/UDP()/Raw("x"*80)',
+    ],
+    "mismatched": [
+        'Ether(dst="00:00:5e:80:00:00")/Raw("x"*80)',
+        'Ether(dst="00:00:ff:00:00:00")/IP()/Raw("x"*80)',
+        'Ether(dst="00:ff:5e:00:00:00")/IP()/TCP()/Raw("x"*80)',
+        'Ether(dst="ff:00:5e:00:00:00")/IP()/UDP()/Raw("x"*80)',
+    ],
+}
+
+tv_eth_dst_mask_quest = {
+    "name": "tv_eth_dst_mask_quest",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth dst spec 00:00:5e:00:00:00 dst mask ff:ff:ff:80:00:00 / end actions queue index 12 / end",
+    "configuration": {"is_non_pipeline": True, "is_need_rss_rule": False},
+    "matched": {
+        "scapy_str": L2_DST_MASK["matched"],
+        "check_func": {
+            "func": rfc.check_output_log_in_queue,
+            "param": {"expect_port": 0, "expect_queues": 12},
+        },
+        "expect_results": {"expect_pkts": len(L2_DST_MASK["matched"])},
+    },
+    "mismatched": {
+        "scapy_str": L2_DST_MASK["mismatched"],
+        "check_func": {
+            "func": rfc.check_output_log_in_queue_mismatched,
+            "param": {"expect_port": 0, "expect_queues": 12},
+        },
+        "expect_results": {"expect_pkts": len(L2_DST_MASK["mismatched"])},
+    },
+}
+
+L2_SRC_MASK = {
+    "matched": [
+        'Ether(dst="00:00:5e:00:00:01", src="00:00:5e:7f:ff:ff")/IP()/UDP()/Raw("x"*80)',
+    ],
+    "mismatched": [
+        'Ether(src="00:00:5e:80:00:00")/Raw("x"*80)',
+        'Ether(src="00:00:ff:00:00:00")/IP()/Raw("x"*80)',
+        'Ether(src="00:ff:5e:00:00:00")/IP()/TCP()/Raw("x"*80)',
+        'Ether(src="ff:00:5e:00:00:00")/IP()/UDP()/Raw("x"*80)',
+    ],
+}
+
+tv_eth_src_mask_drop = {
+    "name": "tv_eth_src_mask_drop",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth src spec 00:00:5e:00:00:00 src mask ff:ff:ff:80:00:00 / end actions drop / end",
+    "configuration": {"is_non_pipeline": True, "is_need_rss_rule": False},
+    "matched": {
+        "scapy_str": L2_SRC_MASK["matched"],
+        "check_func": {
+            "func": rfc.check_output_log_drop,
+            "param": {"expect_port": 0, "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": len(L2_SRC_MASK["matched"])},
+    },
+    "mismatched": {
+        "scapy_str": L2_SRC_MASK["mismatched"],
+        "check_func": {
+            "func": rfc.check_output_log_drop_mismatched,
+            "param": {"expect_port": 0, "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": len(L2_SRC_MASK["mismatched"])},
+    },
+}
+
+tvs_L2_mask_non_pipeline_mode = [
+    tv_eth_dst_mask_quest,
+    tv_eth_src_mask_drop,
+]
+
 test_results = OrderedDict()
 
 
@@ -4212,7 +4357,7 @@ class ICESwitchFilterTest(TestCase):
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         localPort = self.tester.get_local_port(self.dut_ports[0])
         self.__tx_iface = self.tester.get_interface(localPort)
-        self.dut.send_expect("ifconfig %s up" % self.__tx_iface, "# ")
+        self.tester.send_expect("ifconfig %s up" % self.__tx_iface, "# ")
         self.pkt = Packet()
         self.pmd = PmdOutput(self.dut)
 
@@ -5320,6 +5465,18 @@ class ICESwitchFilterTest(TestCase):
         self.verify(
             not all(rule6), "all rules should create failed, result {}".format(rule6)
         )
+
+    def test_l3_mask(self):
+        """
+        Test case: L3 mask
+        """
+        self._rte_flow_validate_pattern(tvs_L3_mask_non_pipeline_mode)
+
+    def test_l2_mask(self):
+        """
+        Test case: L2 mask
+        """
+        self._rte_flow_validate_pattern(tvs_L2_mask_non_pipeline_mode)
 
     def tear_down(self):
         """
