@@ -5632,3 +5632,192 @@ subcase 3: pipeline mode
 7. create rule, check the rule can not be created::
 
     testpmd> flow create 0 priority 1 ingress pattern any / end actions queue index 4 / end
+
+Test case: L3 mask
+=======================
+
+subcase 1: ipv4 dst + mask + queue action
+-----------------------------------------
+
+1. validate a rule::
+
+     testpmd> flow validate 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions queue index 12 / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create a rule::
+
+     testpmd> flow create 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions queue index 12 / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets::
+
+     sendp(Ether()/IP(src="192.168.0.1", dst="239.255.255.255")/UDP()/Raw("x"*80), iface="enp27s0f0", count=1),
+
+   check all the packets received by queue 12.
+   send mismatched packets::
+
+     sendp(Ether()/IP(src="192.168.0.1", dst="223.0.0.0")/TCP()/Raw("x"*80), iface="enp27s0f0", count=1)
+     sendp(Ether()/IP(src="192.168.0.1", dst="240.0.0.0")/UDP()/Raw("x"*80), iface="enp27s0f0", count=1)
+     sendp(Ether()/IP(src="192.168.0.1", dst="128.0.0.0")/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check all the packets can't received by queue 12.
+
+4. verify rules can be destroyed::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets, check all the packets can't received by queue 12.
+
+subcase 2: ipv6 src + mask + drop action
+----------------------------------------
+
+1. validate a rule::
+
+     testpmd> flow validate 0 ingress pattern eth / ipv6 src spec CDCD:910A:2222:5498:8475:1111:3900:2023 src mask ffff:ffff:ffff:ffff:0:0:0:0 / end actions drop / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create a rule::
+
+     testpmd> flow create 0 ingress pattern eth / ipv6 src spec CDCD:910A:2222:5498:8475:1111:3900:2023 src mask ffff:ffff:ffff:ffff:0:0:0:0 / end actions drop / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets::
+
+     sendp(Ether(dst="00:00:5e:00:00:01")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:1515", src="CDCD:910A:2222:5498:ffff:ffff:ffff:ffff")/TCP()/("X"*480), iface="enp27s0f0", count=1),
+
+   check all the packets are dropped.
+   send mismatched packets::
+
+     sendp(Ether(dst="00:00:5e:00:00:01")/IPv6(src="CDCD:910A:2222:ffff:8475:1111:3900:2023")/("X"*480), iface="enp27s0f0", count=1)
+     sendp(Ether(dst="00:00:5e:00:00:01")/IPv6(src="CFCD:910A:ffff:5498:8475:1111:3900:2023")/UDP()/("X"*480), iface="enp27s0f0", count=1)
+     sendp(Ether(dst="00:00:5e:00:00:01")/IPv6(src="CDCD:ffff:2222:5498:8475:1111:3900:1515")/TCP()/("X"*480), iface="enp27s0f0", count=1)
+	 sendp(Ether(dst="00:00:5e:00:00:01")/IPv6(src="ffff:910A:2222:5498:8475:1111:3900:1515")/TCP()/("X"*480), iface="enp27s0f0", count=1)
+
+   check all the packets are not dropped.
+
+4. verify rules can be destroyed::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets, check all the packets are not dropped.
+
+Test case: L2 mask
+=======================
+
+subcase 1: mac dst + mask + queue action
+----------------------------------------
+
+1. validate a rule::
+
+     testpmd> flow validate 0 ingress pattern eth dst spec 00:00:5e:00:00:00 dst mask ff:ff:ff:80:00:00 / end actions queue index 12 / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create a rule::
+
+     testpmd> flow create 0 ingress pattern eth dst spec 00:00:5e:00:00:00 dst mask ff:ff:ff:80:00:00 / end actions queue index 12 / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets::
+
+     sendp(Ether(src="00:00:5e:00:00:01", dst="00:00:5e:7f:ff:ff")/IP()/UDP()/Raw("x"*80)), iface="enp27s0f0", count=1)
+
+   check all the packets received by queue 12.
+   send mismatched packets::
+
+     sendp(Ether(dst="00:00:5e:80:00:00")/Raw("x"*80), iface="enp27s0f0", count=1)
+     sendp(Ether(dst="00:00:ff:00:00:00")/IP()/Raw("x"*80), iface="enp27s0f0", count=1)
+     sendp(Ether(dst="00:ff:5e:00:00:00")/IP()/TCP()/Raw("x"*80), iface="enp27s0f0", count=1)
+     sendp(Ether(dst="ff:00:5e:00:00:00")/IP()/UDP()/Raw("x"*80), iface="enp27s0f0", count=1)
+
+   check all the packets can't receive by queue 12.
+
+4. verify rules can be destroyed::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets, check all the packets can't receive by queue 12.
+
+subcase 2: mac src + mask + drop action
+---------------------------------------
+
+1. validate a rule::
+
+     testpmd> flow validate 0 ingress pattern eth src spec 00:00:5e:00:00:00 src mask ff:ff:ff:80:00:00 / end actions drop / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create a rule::
+
+     testpmd> flow create 0 ingress pattern eth src spec 00:00:5e:00:00:00 src mask ff:ff:ff:80:00:00 / end actions drop / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets::
+
+     sendp(Ether(dst="00:00:5e:00:00:01", src="00:00:5e:7f:ff:ff")/IP()/UDP()/Raw("x"*80), iface="enp27s0f0", count=1)
+
+   check all the packets are dropped.
+   send mismatched packets::
+
+     sendp(Ether(src="00:00:5e:80:00:00")/Raw("x"*80), iface="enp27s0f0", count=1)
+     sendp(Ether(src="00:00:ff:00:00:00")/IP()/Raw("x"*80), iface="enp27s0f0", count=1)
+     sendp(Ether(src="00:ff:5e:00:00:00")/IP()/TCP()/Raw("x"*80), iface="enp27s0f0", count=1)
+     sendp(Ether(src="ff:00:5e:00:00:00")/IP()/UDP()/Raw("x"*80), iface="enp27s0f0", count=1)
+
+   check all the packets are not dropped.
+
+4. verify rules can be destroyed::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets, check all the packets are not dropped.
