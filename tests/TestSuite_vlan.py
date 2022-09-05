@@ -31,6 +31,10 @@ class TestVlan(TestCase):
         # Based on h/w type, choose how many ports to use
         ports = self.dut.get_ports()
 
+        self.dut_ports = self.dut.get_ports(self.nic)
+        self.used_dut_port_0 = self.dut_ports[0]
+        self.tester_intf_0 = self.tester.get_interface(self.used_dut_port_0)
+
         # Verify that enough ports are available
         self.verify(len(ports) >= 1, "Insufficient ports")
 
@@ -159,11 +163,19 @@ class TestVlan(TestCase):
         )
         self.dut.send_expect("port start all", "testpmd> ")
 
-        self.dut.send_expect("start", "testpmd> ")
-        self.vlan_send_packet(-1)
-
-        out = self.get_tcpdump_package()
-        self.verify(self.vlan in out, "Vlan not found:" + str(out))
+        filter = [{"layer": "ether", "config": {"dst": "not ff:ff:ff:ff:ff:ff"}}]
+        inst = self.tester.tcpdump_sniff_packets(
+            intf=self.tester_intf_0,
+            filters=filter,
+        )
+        self.dut.send_expect("set nbport 1", "testpmd> ")
+        self.dut.send_expect("start tx_first", "testpmd> ")
+        pkts = self.tester.load_tcpdump_sniff_packets(inst)
+        self.verify(len(pkts) > 0, f"no packets received.")
+        self.verify(
+            self.vlan == pkts[0].vlan,
+            f"Vlan id {self.vlan} is not found in the packet.",
+        )
         self.dut.send_expect("stop", "testpmd> ")
         self.dut.send_expect("port stop all", "testpmd> ")
         self.dut.send_expect("tx_vlan reset %s" % dutTxPortId, "testpmd> ", 30)
