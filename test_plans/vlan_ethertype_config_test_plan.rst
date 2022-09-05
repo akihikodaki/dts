@@ -52,15 +52,19 @@ Test Case 2: test VLAN filtering on/off
       testpmd> vlan set filter on 0
       testpmd> start
 
-2. Send 1 packet with the VLAN Tag 16 on port ``A``,
+2. Send 1 packet with VLAN TPID 0xA100 and VLAN Tag 16 on port ``A``,
    Verify that the VLAN packet cannot be received in port ``B``.
 
 3. Disable vlan filtering on port ``0``::
 
       testpmd> vlan set filter off 0
 
-4. Send 1 packet with the VLAN Tag 16 on port ``A``,
-   Verify that the VLAN packet can be received in port ``B``.
+4. Change VLAN TPIDs to 0xA100 on port ``0``::
+
+      testpmd> vlan set outer tpid 0xA100 0
+
+5. Send 1 packet with VLAN TPID 0xA100 and VLAN Tag 16 on port ``A``,
+   Verify that the VLAN packet can be received in port ``B`` and TPID is 0xA100
 
 Test Case 3: test adding VLAN Tag Identifier with changing VLAN TPID
 ====================================================================
