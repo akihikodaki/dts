@@ -202,7 +202,7 @@ class TestVlanEthertypeConfig(TestCase):
                 )
                 self.check_vlan_packets(rx_vlan, tpid, self.rxItf)
 
-    def test_vlan_add_vlan_tag(self):
+    def test_add_vlan_tag_identifier_with_change_vlan_tpid(self):
         """
         test adding VLAN Tag Identifier with changing VLAN TPID
         """
@@ -235,7 +235,7 @@ class TestVlanEthertypeConfig(TestCase):
 
         self.dut.send_expect("stop", "testpmd> ", 30)
 
-    def test_vlan_strip(self):
+    def test_vlan_header_strip_with_change_vlan_tpid(self):
         """
         Test Case 4: test VLAN header striping with changing VLAN TPID
         """
@@ -265,7 +265,7 @@ class TestVlanEthertypeConfig(TestCase):
                 )
                 self.check_vlan_packets(rx_vlan, tpid, self.rxItf)
 
-    def test_vlan_enable_vlan_insertion(self):
+    def test_vlan_header_insert_with_change_vlan_tpid(self):
         """
         Test Case 5: test VLAN header inserting with changing VLAN TPID
         """
