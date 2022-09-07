@@ -73,7 +73,7 @@ Common steps
     <dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci <DUT port DMA device id>
 
     For example, bind 2 CBDMA channels:
-    <dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci 0000:00:04.0,0000:00:04.1
+    <dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci 0000:00:04.0 0000:00:04.1
 
 Test Case 1: Loopback packed ring all path multi-queues payload check with server mode and cbdma enable
 -------------------------------------------------------------------------------------------------------
@@ -101,8 +101,8 @@ all path multi-queues with server mode when vhost uses the asynchronous operatio
 4. Attach pdump secondary process to primary process by same file-prefix::
 
     <dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=virtio-user0 -- \
-    --pdump 'device_id=net_virtio_user1,queue=0,rx-dev=./pdump-virtio-rx-q0.pcap,mbuf-size=8000' \
-    --pdump 'device_id=net_virtio_user1,queue=1,rx-dev=./pdump-virtio-rx-q1.pcap,mbuf-size=8000'
+    --pdump 'device_id=net_virtio_user0,queue=0,rx-dev=./pdump-virtio-rx-q0.pcap,mbuf-size=8000' \
+    --pdump 'device_id=net_virtio_user0,queue=1,rx-dev=./pdump-virtio-rx-q1.pcap,mbuf-size=8000'
 
 5. Send large pkts from vhost, check loopback performance can get expected and each queue can receive packets::
 
@@ -213,8 +213,8 @@ all path multi-queues with server mode when vhost uses the asynchronous operatio
 4. Attach pdump secondary process to primary process by same file-prefix::
 
     <dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=virtio-user0 -- \
-    --pdump 'device_id=net_virtio_user1,queue=0,rx-dev=./pdump-virtio-rx-q0.pcap,mbuf-size=8000' \
-    --pdump 'device_id=net_virtio_user1,queue=1,rx-dev=./pdump-virtio-rx-q1.pcap,mbuf-size=8000'
+    --pdump 'device_id=net_virtio_user0,queue=0,rx-dev=./pdump-virtio-rx-q0.pcap,mbuf-size=8000' \
+    --pdump 'device_id=net_virtio_user0,queue=1,rx-dev=./pdump-virtio-rx-q1.pcap,mbuf-size=8000'
 
 5. Send large pkts from vhost, check loopback performance can get expected and each queue can receive packets::
 
