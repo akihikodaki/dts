@@ -217,7 +217,7 @@ The following are the test plans for the DPDK DTS automated test system.
     virtio_smoke_test_plan
     vm2vm_virtio_net_perf_test_plan
     vm2vm_virtio_net_perf_cbdma_test_plan
-    vm2vm_virtio_net_dsa_test_plan
+    vm2vm_virtio_net_perf_dsa_test_plan
     vm2vm_virtio_pmd_test_plan
     vm2vm_virtio_pmd_cbdma_test_plan
     dpdk_gro_lib_test_plan
