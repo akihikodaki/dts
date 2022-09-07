@@ -284,7 +284,7 @@ The following are the test plans for the DPDK DTS automated test system.
 
     fips_cryptodev_test_plan
     flow_filtering_test_plan
-    af_xdp_2_test_plan
+    af_xdp_test_plan
     cbdma_test_plan
     flexible_rxd_test_plan
     ipsec_gw_and_library_test_plan
