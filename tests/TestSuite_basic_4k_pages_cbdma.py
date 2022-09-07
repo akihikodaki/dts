@@ -569,8 +569,8 @@ class TestBasic4kPagesCbdma(TestCase):
         )
         vhost_eal_param = (
             "--no-huge -m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,queues=1,tso=1,dmas=[txq0;rxq0],dma_ring_size=2048'"
-            + " --vdev 'net_vhost1,iface=./vhost-net1,queues=1,tso=1,dmas=[txq0;rxq0],dma_ring_size=2048'"
+            + "--vdev 'net_vhost0,iface=./vhost-net0,queues=1,tso=1,dmas=[txq0;rxq0]'"
+            + " --vdev 'net_vhost1,iface=./vhost-net1,queues=1,tso=1,dmas=[txq0;rxq0]'"
         )
         vhost_param = " --nb-cores=2 --txd=1024 --rxd=1024 --lcore-dma=[%s]" % lcore_dma
         self.start_vhost_user_testpmd(
@@ -607,8 +607,8 @@ class TestBasic4kPagesCbdma(TestCase):
         )
         vhost_eal_param = (
             "--no-huge -m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,queues=1,tso=1,dmas=[txq0;rxq0],dma_ring_size=2048'"
-            + " --vdev 'net_vhost1,iface=./vhost-net1,queues=1,tso=1,dmas=[txq0;rxq0],dma_ring_size=2048'"
+            + "--vdev 'net_vhost0,iface=./vhost-net0,queues=1,tso=1,dmas=[txq0;rxq0]'"
+            + " --vdev 'net_vhost1,iface=./vhost-net1,queues=1,tso=1,dmas=[txq0;rxq0]'"
         )
         vhost_param = " --nb-cores=2 --txd=1024 --rxd=1024 --lcore-dma=[%s]" % lcore_dma
         self.start_vhost_user_testpmd(
