@@ -88,7 +88,7 @@ Common steps
 
     For example, Bind 1 NIC port and 2 CBDMA devices::
     ./usertools/dpdk-devbind.py -b vfio-pci 0000:00:18.0
-    ./usertools/dpdk-devbind.py -b vfio-pci 0000:00:04.0,0000:00:04.1
+    ./usertools/dpdk-devbind.py -b vfio-pci 0000:00:04.0 0000:00:04.1
 
 2. Send tcp imix packets [64,1518] to NIC by traffic generator::
 

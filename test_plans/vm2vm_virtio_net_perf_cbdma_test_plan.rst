@@ -76,7 +76,7 @@ Common steps
     <dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci <DUT port DMA device id>
 
     For example, Bind 1 NIC port and 2 CBDMA channels:
-    <dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci 0000:00:04.0,0000:00:04.1
+    <dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci 0000:00:04.0 0000:00:04.1
 
 Test Case 1: VM2VM virtio-net split ring CBDMA enable test with tcp traffic
 ---------------------------------------------------------------------------
