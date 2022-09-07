@@ -135,8 +135,8 @@ when vhost uses the asynchronous operations with CBDMA channels in 4K-pages memo
 
 	rm -rf vhost-net*
 	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 --no-huge -m 1024 --file-prefix=vhost -a 0000:00:04.0 -a 0000:00:04.1 \
-	--vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1,dmas=[txq0;rxq0],dma_ring_size=2048' \
-	--vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1,dmas=[txq0;rxq0],dma_ring_size=2048' \
+	--vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1,dmas=[txq0;rxq0]' \
+	--vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1,dmas=[txq0;rxq0]' \
 	--iova=va -- -i --nb-cores=2 --txd=1024 --rxd=1024 --lcore-dma=[lcore3@0000:00:04.0,lcore4@0000:00:04.1]
 	testpmd>start
 
@@ -194,8 +194,8 @@ when vhost uses the asynchronous operations with CBDMA channels in 4K-pages memo
 
 	rm -rf vhost-net*
 	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 --no-huge -m 1024 --file-prefix=vhost -a 0000:00:04.0 -a 0000:00:04.1 \
-	--vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1,dmas=[txq0;rxq0],dma_ring_size=2048' \
-	--vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1,dmas=[txq0;rxq0],dma_ring_size=2048' \
+	--vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1,dmas=[txq0;rxq0]' \
+	--vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1,dmas=[txq0;rxq0]' \
 	--iova=va -- -i --nb-cores=2 --txd=1024 --rxd=1024 --lcore-dma=[lcore3@0000:00:04.0,lcore4@0000:00:04.1]
 	testpmd>start
 
