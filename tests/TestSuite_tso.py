@@ -36,25 +36,21 @@ class TestTSO(TestCase):
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports for testing")
 
         # Verify that enough threads are available
-        self.all_cores_mask = utils.create_mask(self.dut.get_core_list("all"))
         self.portMask = utils.create_mask([self.dut_ports[0], self.dut_ports[1]])
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
+        core_config = "1S/2C/1T"
+        cores = self.dut.get_core_list(core_config, socket=self.ports_socket)
+        self.verify(cores is not None, "Insufficient cores for speed testing")
 
         self.loading_sizes = [128, 800, 801, 1700, 2500]
-        self.rxfreet_values = [0, 8, 16, 32, 64, 128]
 
-        self.test_cycles = [{"cores": "", "Mpps": {}, "pct": {}}]
-
-        self.table_header = ["Frame Size"]
-        for test_cycle in self.test_cycles:
-            self.table_header.append("%s Mpps" % test_cycle["cores"])
-            self.table_header.append("% linerate")
+        self.test_result = {"header": [], "data": []}
 
         self.eal_param = self.dut.create_eal_parameters(
-            cores="1S/2C/1T", socket=self.ports_socket, ports=self.dut_ports
+            cores=core_config, socket=self.ports_socket, ports=self.dut_ports
         )
-
         self.headers_size = HEADER_SIZE["eth"] + HEADER_SIZE["ip"] + HEADER_SIZE["tcp"]
+
         self.tester.send_expect(
             "ifconfig %s mtu %s"
             % (
@@ -192,9 +188,6 @@ class TestTSO(TestCase):
         )
 
         mac = self.dut.get_mac_address(self.dut_ports[0])
-        cores = self.dut.get_core_list("1S/2C/2T")
-        self.verify(cores is not None, "Insufficient cores for speed testing")
-        self.coreMask = utils.create_mask(cores)
 
         self.tester.send_expect(
             "ethtool -K %s rx off tx off tso off gso off gro off lro off"
@@ -345,10 +338,6 @@ class TestTSO(TestCase):
 
         mac = self.dut.get_mac_address(self.dut_ports[0])
 
-        cores = self.dut.get_core_list("1S/2C/2T")
-        self.verify(cores is not None, "Insufficient cores for speed testing")
-        self.coreMask = utils.create_mask(cores)
-
         self.tester.send_expect(
             "ethtool -K %s rx off tx off tso off gso off gro off lro off"
             % tx_interface,
@@ -492,66 +481,61 @@ class TestTSO(TestCase):
         TSO Performance Benchmarking with 2 ports.
         """
 
+        # set header table
+        header_row = ["Fwd Core", "Frame Size", "Throughput", "Rate"]
+        self.test_result["header"] = header_row
+        self.result_table_create(header_row)
+        self.test_result["data"] = []
+
+        test_configs = ["1S/1C/1T", "1S/1C/2T", "1S/2C/2T"]
+        core_offset = 3
         # prepare traffic generator input
         tgen_input = []
 
         # run testpmd for each core config
-        for test_cycle in self.test_cycles:
-            core_config = test_cycle["cores"]
-            cores = self.dut.get_core_list(core_config, socket=self.ports_socket)
-            self.coreMask = utils.create_mask(cores)
-            if len(cores) > 2:
-                queues = len(cores) // 2
-            else:
-                queues = 1
-
+        for configs in test_configs:
+            cores = configs.split("/")[1]
+            thread = configs.split("/")[-1]
+            thread_num = int(int(thread[:-1]) // int(cores[:-1]))
+            _cores = str(core_offset + int(cores[0])) + "C"
+            core_config = "/".join(["1S", _cores, str(thread_num) + "T"])
+            corelist = self.dut.get_core_list(core_config, self.ports_socket)
+            core_list = corelist[(core_offset - 1) * thread_num :]
+            if "2T" in core_config:
+                core_list = core_list[1:2] + core_list[0::2] + core_list[1::2][1:]
+            _core_list = core_list[thread_num - 1 :]
+            self.eal_param = self.dut.create_eal_parameters(
+                cores=_core_list, socket=self.ports_socket, ports=self.dut_ports
+            )
             command_line = (
                 "%s %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 "
                 % (self.path, self.eal_param, self.portMask, TSO_MTU)
             )
-            info = "Executing PMD using %s\n" % test_cycle["cores"]
+            info = "Executing PMD using cores: {0} of config {1}".format(
+                _core_list, configs
+            )
             self.logger.info(info)
-            self.rst_report(info, annex=True)
-            self.rst_report(command_line + "\n\n", frame=True, annex=True)
-
             self.dut.send_expect(command_line, "testpmd> ", 120)
             self.dut.send_expect("port stop all", "testpmd> ", 120)
-            self.dut.send_expect(
-                "csum set ip hw %d" % self.dut_ports[0], "testpmd> ", 120
-            )
-            self.dut.send_expect(
-                "csum set udp hw %d" % self.dut_ports[0], "testpmd> ", 120
-            )
-            self.dut.send_expect(
-                "csum set tcp hw %d" % self.dut_ports[0], "testpmd> ", 120
-            )
-            self.dut.send_expect(
-                "csum set sctp hw %d" % self.dut_ports[0], "testpmd> ", 120
-            )
-            self.dut.send_expect(
-                "csum set outer-ip hw %d" % self.dut_ports[0], "testpmd> ", 120
-            )
-            self.dut.send_expect(
-                "csum parse-tunnel on %d" % self.dut_ports[0], "testpmd> ", 120
-            )
-            self.dut.send_expect(
-                "csum set ip hw %d" % self.dut_ports[1], "testpmd> ", 120
-            )
-            self.dut.send_expect(
-                "csum set udp hw %d" % self.dut_ports[1], "testpmd> ", 120
-            )
-            self.dut.send_expect(
-                "csum set tcp hw %d" % self.dut_ports[1], "testpmd> ", 120
-            )
-            self.dut.send_expect(
-                "csum set sctp hw %d" % self.dut_ports[1], "testpmd> ", 120
-            )
-            self.dut.send_expect(
-                "csum set outer-ip hw %d" % self.dut_ports[1], "testpmd> ", 120
-            )
-            self.dut.send_expect(
-                "csum parse-tunnel on %d" % self.dut_ports[1], "testpmd> ", 120
-            )
+            for i in range(2):
+                self.dut.send_expect(
+                    "csum set ip hw %d" % self.dut_ports[i], "testpmd> ", 120
+                )
+                self.dut.send_expect(
+                    "csum set udp hw %d" % self.dut_ports[i], "testpmd> ", 120
+                )
+                self.dut.send_expect(
+                    "csum set tcp hw %d" % self.dut_ports[i], "testpmd> ", 120
+                )
+                self.dut.send_expect(
+                    "csum set sctp hw %d" % self.dut_ports[i], "testpmd> ", 120
+                )
+                self.dut.send_expect(
+                    "csum set outer-ip hw %d" % self.dut_ports[i], "testpmd> ", 120
+                )
+                self.dut.send_expect(
+                    "csum parse-tunnel on %d" % self.dut_ports[i], "testpmd> ", 120
+                )
             self.dut.send_expect("tso set 800 %d" % self.dut_ports[1], "testpmd> ", 120)
             self.dut.send_expect("set fwd csum", "testpmd> ", 120)
             self.dut.send_expect("port start all", "testpmd> ", 120)
@@ -588,31 +572,21 @@ class TestTSO(TestCase):
                     tgen_input, 100, None, self.tester.pktgen
                 )
                 _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
-
+                self.verify(pps > 0, "No traffic detected")
                 pps /= 1000000.0
-                test_cycle["Mpps"][loading_size] = pps
-                test_cycle["pct"][loading_size] = pps * 100 // wirespeed
-
+                percentage = pps * 100 / wirespeed
+                data_row = [
+                    configs,
+                    frame_size,
+                    "{:.3f} Mpps".format(pps),
+                    "{:.3f}%".format(percentage),
+                ]
+                self.result_table_add(data_row)
             self.dut.send_expect("stop", "testpmd> ")
             self.dut.send_expect("quit", "# ", 30)
             time.sleep(5)
 
-        for n in range(len(self.test_cycles)):
-            for loading_size in self.loading_sizes:
-                self.verify(
-                    self.test_cycles[n]["Mpps"][loading_size] > 0, "No traffic detected"
-                )
-
         # Print results
-        self.result_table_create(self.table_header)
-        for loading_size in self.loading_sizes:
-            table_row = [loading_size]
-            for test_cycle in self.test_cycles:
-                table_row.append(test_cycle["Mpps"][loading_size])
-                table_row.append(test_cycle["pct"][loading_size])
-
-            self.result_table_add(table_row)
-
         self.result_table_print()
 
     def tear_down(self):
