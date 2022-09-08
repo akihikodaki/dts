@@ -44,6 +44,10 @@ Enable vlan filtering on port 0::
 
     testpmd> vlan set filter on 0
 
+Disable extend on port 0::
+
+    testpmd> vlan set extend off 0
+
 Check whether the mode is set successful::
 
     testpmd> show port info 0
@@ -102,6 +106,11 @@ Configure the traffic generator to send VLAN packets with the Tag Identifier
 
 Test Case: Add/Remove VLAN Tag Identifier pass VLAN filtering
 =============================================================
+
+Disable VLAN packet extend and strip port ``0``::
+
+    testpmd> vlan set extend off 0
+    testpmd> vlan set strip off 0
 
 Enable VLAN filtering on port ``0``::
 
@@ -240,7 +249,7 @@ and send 1 packet on port ``A``. Verify that the packet can been received on por
 ``B`` without VLAN Tag Identifier.
 
 
-Test Case: Configure receive port outer VLAN TPID
+Test Case: Configure receive port inner VLAN TPID
 =================================================
 
 Enable vlan header QinQ on port ``0`` firstly to support set TPID::
