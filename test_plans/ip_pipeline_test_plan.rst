@@ -171,17 +171,14 @@ Test Case: RSS pipeline
 
     ./<build_target>/examples/dpdk-ip_pipeline -c 0x1f -n 4 –- -s examples/rss.cli
 
-3. Send following packets with one test port::
+3. Send 20 IP packets randomly for one test port
 
-    packet_1:Ether(dst="00:11:22:33:44:55")/IP(src="100.0.10.1",dst="100.0.20.2")/Raw(load="X"*6)
-    packet_2:Ether(dst="00:11:22:33:44:55")/IP(src="100.0.0.0",dst="100.0.0.1")/Raw(load="X"*6)
-    packet_3:Ether(dst="00:11:22:33:44:55")/IP(src="100.0.10.1",dst="100.0.0.2")/Raw(load="X"*6)
-    packet_4:Ether(dst="00:11:22:33:44:55")/IP(src="100.0.0.1",dst="100.0.10.2")/Raw(load="X"*6)
+4. Check the test port can be received and assigned to other ports through RSS
+   Verify that the sum of packets received by all ports is 20.
+   Verify all tester_port can received packets.
 
-   Verify packet_1 was received by tester_port_0.
-   Verify packet_2 was received by tester_port_1.
-   Verify packet_3 was received by tester_port_2.
-   Verify packet_4 was received by tester_port_3.
+5. Repeat steps 3-4 to ensure that the RSS functions of all test ports are normal.
+   Verify that packets of the same IP can be assigned to the same port through different test ports.
 
 Test Case: vf l2fwd pipeline(pf bound to dpdk driver)
 ======================================================
