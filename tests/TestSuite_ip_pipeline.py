@@ -2,34 +2,18 @@
 # Copyright(c) 2010-2018 Intel Corporation
 #
 
-import os
-import random
 import re
 import time
 from time import sleep
 
-import scapy.layers.inet
-from scapy.arch import get_if_hwaddr
 from scapy.layers.inet import ICMP, IP, TCP, UDP, Ether
-from scapy.layers.l2 import ARP, GRE, Dot1Q
-from scapy.layers.sctp import SCTP, SCTPChunkData
 from scapy.packet import Raw, bind_layers
 from scapy.route import *
-from scapy.sendrecv import sendp, sniff
-
-# from scapy.all import conf
 from scapy.utils import hexstr, rdpcap, wrpcap
 
-import framework.utils as utils
-from framework.crb import Crb
-from framework.dut import Dut
 from framework.exception import VerifyFailure
 from framework.packet import Packet
-from framework.pmd_output import PmdOutput
-from framework.project_dpdk import DPDKdut
-from framework.settings import DRIVERS, HEADER_SIZE
 from framework.test_case import TestCase
-from framework.virt_dut import VirtDut
 
 
 class TestIPPipeline(TestCase):
@@ -105,6 +89,9 @@ class TestIPPipeline(TestCase):
 
         # check that the link status of the port sending the packet is up
         self.tester.is_interface_up(tx_interface)
+        self.verify(
+            self.tester.is_interface_up(tx_interface), "port link status is down"
+        )
         # Prepare the pkts to be sent
         self.tester.scapy_foreground()
         self.tester.scapy_append('pkt = rdpcap("%s")' % (pcap_file))
@@ -970,76 +957,94 @@ class TestIPPipeline(TestCase):
         )
         self.dut.send_expect(cmd, "PIPELINE3 enable", 60)
 
-        # rule 0 test
-        pcap_file = "/tmp/rss_0.pcap"
-        pkt = [
-            Ether(dst=self.dut_p0_mac)
-            / IP(src="100.0.10.1", dst="100.0.20.2")
-            / Raw(load="X" * 6)
-        ]
-        self.write_pcap_file(pcap_file, pkt)
-        filters = "dst host 100.0.20.2"
-        sniff_pkts = self.send_and_sniff_pkts(0, 0, pcap_file, filters)
-        dst_ip_list = []
-        for packet in sniff_pkts:
-            dst_ip_list.append(packet.getlayer(1).dst)
-        self.verify("100.0.20.2" in dst_ip_list, "rule 0 test fail")
+        pkt = Packet()
+        tx_pkt_num = 20
+        pkt.generate_random_pkts(
+            dstmac="00:11:22:33:44:55",
+            pktnum=tx_pkt_num,
+            random_type=["IP_RAW"],
+            options={"ip": {"dst": "100.0.20.2"}, "layers_config": []},
+        )
 
-        # rule 1 test
-        pcap_file = "/tmp/rss_1.pcap"
-        pkt = [
-            Ether(dst=self.dut_p0_mac)
-            / IP(src="100.0.0.0", dst="100.0.0.1")
-            / Raw(load="X" * 6)
-        ]
-        self.write_pcap_file(pcap_file, pkt)
-        filters = "dst host 100.0.0.1"
-        sniff_pkts = self.send_and_sniff_pkts(0, 1, pcap_file, filters)
-        dst_ip_list = []
-        for packet in sniff_pkts:
-            dst_ip_list.append(packet.getlayer(1).dst)
-        self.verify("100.0.0.1" in dst_ip_list, "rule 1 test fail")
-
-        # rule 2 test
-        pcap_file = "/tmp/rss_2.pcap"
-        pkt = [
-            Ether(dst=self.dut_p0_mac)
-            / IP(src="100.0.10.1", dst="100.0.0.2")
-            / Raw(load="X" * 6)
-        ]
-        self.write_pcap_file(pcap_file, pkt)
-        filters = "dst host 100.0.0.2"
-        sniff_pkts = self.send_and_sniff_pkts(0, 2, pcap_file, filters)
-        dst_ip_list = []
-        for packet in sniff_pkts:
-            dst_ip_list.append(packet.getlayer(1).dst)
-        self.verify("100.0.0.2" in dst_ip_list, "rule 2 test fail")
-
-        # rule 3 test
-        pcap_file = "/tmp/rss_3.pcap"
-        pkt = [
-            Ether(dst=self.dut_p0_mac)
-            / IP(src="100.0.0.1", dst="100.0.10.2")
-            / Raw(load="X" * 6)
-        ]
-        self.write_pcap_file(pcap_file, pkt)
-        filters = "dst host 100.0.10.2"
-        sniff_pkts = self.send_and_sniff_pkts(0, 3, pcap_file, filters)
-        dst_ip_list = []
-        for packet in sniff_pkts:
-            dst_ip_list.append(packet.getlayer(1).dst)
-        self.verify("100.0.10.2" in dst_ip_list, "rule 3 test fail")
-
-        sleep(1)
-        cmd = "^C"
-        self.dut.send_expect(cmd, "# ", 20)
+        all_rx_num = []
+        all_rx_packet = []
+        for num in range(len(self.dut_ports)):
+            inst_list = []
+            for port in self.dut_ports:
+                rx_interface = self.tester.get_interface(port)
+                filters = [
+                    {"layer": "ether", "config": {"dst": "not ff:ff:ff:ff:ff:ff"}}
+                ]
+                inst = self.tester.tcpdump_sniff_packets(
+                    intf=rx_interface, filters=filters
+                )
+                inst_list.append(inst)
+            rx_port = self.tester.get_local_port(self.dut_ports[num])
+            tport_iface = self.tester.get_interface(rx_port)
+            self.verify(
+                self.tester.is_interface_up(tport_iface), "port link status is down"
+            )
+            pkt.send_pkt(crb=self.tester, tx_port=tport_iface, count=1)
+            t_rx_ports = []
+            t_rx_num = []
+            t_rx_packets = []
+            t_no_rx_ports = []
+            rx_pkt_num = 0
+            for port in self.dut_ports:
+                p = self.tester.load_tcpdump_sniff_packets(inst_list[port])
+                if len(p):
+                    t_rx_ports.append(port)
+                    t_rx_num.append(len(p))
+                    t_rx_packets.append(p)
+                    rx_pkt_num += len(p)
+                else:
+                    t_no_rx_ports.append(port)
+            # Verify that the sum of packets received by all ports is 20
+            self.verify(
+                rx_pkt_num == tx_pkt_num,
+                "send packet %s, but receive packet %s" % (tx_pkt_num, rx_pkt_num),
+            )
+            # Verify all tester_port can received packets
+            self.verify(
+                len(t_rx_ports) == len(self.dut_ports),
+                "port %s not received packets" % t_no_rx_ports,
+            )
+            all_rx_num.append(tuple(t_rx_num))
+            all_rx_packet.append(t_rx_packets)
+        # Verify that packets of the same IP can be assigned to the same port through different test ports.
+        self.verify(
+            len(set(all_rx_num)),
+            "pipeline rss failed, all receiced packet num: %s" % all_rx_num,
+        )
+        for d_port in self.dut_ports:
+            if d_port > 0:
+                for t_port in range(len(all_rx_packet[d_port])):
+                    for i in range(len(all_rx_packet[d_port][t_port])):
+                        try:
+                            self.verify(
+                                all_rx_packet[d_port][t_port][i]
+                                in all_rx_packet[0][t_port],
+                                "test port %s rss different with test port 0" % d_port,
+                            )
+                        except VerifyFailure as ex:
+                            self.logger.error(
+                                "\n%s\n\n%s"
+                                % (
+                                    all_rx_packet[0][t_port][0].command(),
+                                    all_rx_packet[d_port][t_port][0].command(),
+                                )
+                            )
+                            raise ex
 
     def tear_down(self):
         """
         Run after each test case.
         """
+        # kill all tcpdump
+        self.tcpdump_stop_sniff()
         # close app
         self.dut.send_expect("^C", "# ")
+        self.dut.kill_all()
 
     def tear_down_all(self):
         """
