@@ -233,16 +233,18 @@ class TestVfVlan(TestCase):
 
         # remove vlan
         self.vm0_testpmd.execute_cmd("stop")
-        self.vm0_testpmd.execute_cmd("port stop all")
+        self.vm0_testpmd.quit()
         self.dut.send_expect("ip link set %s vf 0 vlan 0" % self.host_intf0, "# ")
         out = self.dut.send_expect("ip link show %s" % self.host_intf0, "# ")
         self.verify("vlan %d" % random_vlan not in out, "Failed to remove pvid on VF0")
 
-        # send packet with vlan
-        self.vm0_testpmd.execute_cmd("port reset 0", "testpmd> ", 120)
-        self.vm0_testpmd.execute_cmd("port start all")
+        # restart testpmd
+        self.vm0_testpmd = PmdOutput(self.vm_dut_0)
+        self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
+        self.vm0_testpmd.execute_cmd("set fwd rxonly")
+        self.vm0_testpmd.execute_cmd("set verbose 1")
         self.vm0_testpmd.execute_cmd("start")
-
+        # send packet with vlan
         out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
         if (
             (self.kdriver == "i40e" and self.driver_version < "2.13.10")
