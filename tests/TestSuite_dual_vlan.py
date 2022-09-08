@@ -502,7 +502,7 @@ class TestDualVlan(TestCase):
 
     def test_vlan_tpid_config(self):
         """
-        Configure receive port out vlan TPID
+        Configure receive port inner VLAN TPID
         """
         self.verify(
             self.nic
@@ -524,6 +524,7 @@ class TestDualVlan(TestCase):
         self.vlan_send_packet(outvlan, invlan)
 
         out = self.get_tcpdump_package()
+        self.verify("0x8100" in out, "tpid is error: " + out)
         self.verify("vlan %s" % outvlan in out, "vlan tpid disable error: " + out)
         self.verify("vlan %s" % invlan in out, "vlan tpid disable error: " + out)
 
@@ -531,6 +532,7 @@ class TestDualVlan(TestCase):
         self.vlan_send_packet(outvlan, invlan)
 
         out = self.get_tcpdump_package()
+        self.verify("0x8100" in out, "tpid is error: " + out)
         self.verify(
             out is not None and "vlan" not in out, "vlane tpid enable error: " + out
         )
