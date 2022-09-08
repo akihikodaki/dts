@@ -10,7 +10,7 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 
 
-class DcfDatePathTest(TestCase):
+class DcfDataPathTest(TestCase):
     vf_mac = "D2:6B:4C:EB:1C:26"
     wrong_mac = "68:05:CA:8D:ED:A8"
 
@@ -37,7 +37,7 @@ class DcfDatePathTest(TestCase):
     def set_up(self):
         self.pmd_output.start_testpmd(
             cores="1S/4C/1T",
-            param="--txq=2 --rxq=2 --txd=384 --rxd=384",
+            param="--txq=4 --rxq=4",
             prefix="vf",
             ports=[self.used_vf_pci],
             port_options={self.used_vf_pci: "cap=dcf"},
