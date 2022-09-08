@@ -28,7 +28,7 @@ The following are the test plans for the DPDK DTS automated test system.
     ice_advanced_iavf_rss_pppol2tpoudp_test_plan
     ice_advanced_rss_vlan_esp_ah_l2tp_pfcp_test_plan
     ice_dcf_acl_filter_test_plan
-    ice_dcf_date_path_test_plan
+    ice_dcf_data_path_test_plan
     ice_dcf_switch_filter_test_plan
     ice_dcf_switch_filter_pppoe_test_plan
     ice_dcf_switch_filter_gtpu_test_plan

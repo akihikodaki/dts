@@ -1,3 +1,15 @@
+.. SPDX-License-Identifier: BSD-3-Clause
+   Copyright(c) 2019 Intel Corporation
+
+
+=======================
+ICE DCF Data Path Tests
+=======================
+
+Description
+===========
+
+This document provides the plan for testing DCF data path function of Intel® Ethernet 800 Series.
 
 Common steps for launching DCF
 ==============================
@@ -17,7 +29,7 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=vf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=vf -- -i --rxq=4 --txq=4
 
 
 Test Case: Launch DCF and do macfwd
@@ -64,7 +76,9 @@ Send a series packets to check if DCF RSS is correct for IPv4 ::
     sendp(Ether(dst="D2:6B:4C:EB:1C:26", src="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.2")/Raw('x'*64), iface=intf)
     sendp(Ether(dst="D2:6B:4C:EB:1C:26", src="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.2")/Raw('x'*64), iface=intf)
 
-Expected: p1 hash value is not equal to p2 or p3, and should be same to p4.
+Expected:
+   p1 hash value is not equal to p2 or p3, and should be same to p4.
+   check the packets are distributed to queues by rss.
 
 Send a series packets to check if DCF RSS is correct for IPv6 ::
 
@@ -73,7 +87,9 @@ Send a series packets to check if DCF RSS is correct for IPv6 ::
     sendp(Ether(dst="D2:6B:4C:EB:1C:26", src="00:11:22:33:44:55")/IPv6(src="::21", dst="::11")/Raw('x'*64), iface=intf)
     sendp(Ether(dst="D2:6B:4C:EB:1C:26", src="00:11:22:33:44:55")/IPv6(src="::22", dst="::11")/Raw('x'*64), iface=intf)
 
-Expected: p1 hash value is not equal to p2 or p3, and should be same to p4.
+Expected:
+   p1 hash value is not equal to p2 or p3, and should be same to p4.
+   check the packets are distributed to queues by rss.
 
 Send a series packets to check if DCF RSS is correct for tunnelling packet (inner IPv4) ::
 
@@ -84,8 +100,9 @@ Send a series packets to check if DCF RSS is correct for tunnelling packet (inne
     sendp(Ether(dst="D2:6B:4C:EB:1C:26", src="11:22:33:44:55:77")/IPv6(src="::11", dst="::22")/GRE()/IP(src="192.168.1.1", dst="192.168.1.2")/Raw('x'*64), iface=intf)
 
 
-Expected: p1 hash value is not equal to p2 or p3. p1 hash value is equal to p4 and p5.
-
+Expected:
+   p1 hash value is not equal to p2 or p3. p1 hash value is equal to p4 and p5.
+   check the packets are distributed to queues by rss.
 
 Send a series packets to check if DCF RSS is correct for tunnelling packet (inner IPv6) ::
 
@@ -95,7 +112,9 @@ Send a series packets to check if DCF RSS is correct for tunnelling packet (inne
     sendp(Ether(dst="D2:6B:4C:EB:1C:26", src="11:22:33:44:55:77")/IP(src="1.1.1.2", dst="2.2.2.1")/GRE()/IPv6(src="::22", dst="::11")/Raw('x'*64), iface=intf)
     sendp(Ether(dst="D2:6B:4C:EB:1C:26", src="11:22:33:44:55:77")/IPv6(src="::33", dst="::44")/GRE()/IPv6(src="::22", dst="::11")/Raw('x'*64), iface=intf)
 
-Expected: p1 hash value is not equal to p2 or p3. p1 hash value is equal to p4 and p5.
+Expected:
+   p1 hash value is not equal to p2 or p3. p1 hash value is equal to p4 and p5.
+   p1/p2/p3 should be devided into different queues.
 
 
 Test Case: Check default rss for L4
@@ -121,7 +140,9 @@ Send a series packets to check if DCF RSS is correct for IPv4 ::
     sendp(Ether(dst="D2:6B:4C:EB:1C:26", src="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=1234, dport=5679)/Raw('x'*64), iface=intf)
     sendp(Ether(dst="D2:6B:4C:EB:1C:26", src="00:22:33:44:55:77")/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=1234, dport=5678)/Raw('x'*64), iface=intf)
 
-Expected: p1 hash value is not equal to p2 or p3 or p4 or p5, and should be equal to p6.
+Expected:
+   p1 hash value is not equal to p2 or p3 or p4 or p5, and should be equal to p6.
+   check the packets are distributed to queues by rss.
 
 Send a series packets to check if DCF RSS is correct for IPv6 ::
 
@@ -132,7 +153,9 @@ Send a series packets to check if DCF RSS is correct for IPv6 ::
     sendp(Ether(dst="D2:6B:4C:EB:1C:26", src="00:11:22:33:44:55")/IPv6(src="::22", dst="::11")/UDP(sport=1234, dport=5679)/Raw('x'*64), iface=intf)
     sendp(Ether(dst="D2:6B:4C:EB:1C:26", src="11:22:33:44:55:77")/IPv6(src="::22", dst="::11")/TCP(sport=1234, dport=5678)/Raw('x'*64), iface=intf)
 
-Expected: p1 hash value is not equal to p2 or p3 or p4 or p5, and should be equal to p6.
+Expected:
+   p1 hash value is not equal to p2 or p3 or p4 or p5, and should be equal to p6.
+   check the packets are distributed to queues by rss.
 
 Send a series packets to check if DCF RSS is correct for tunnelling packet (inner IPv4) ::
 
@@ -144,8 +167,9 @@ Send a series packets to check if DCF RSS is correct for tunnelling packet (inne
     sendp(Ether(dst="D2:6B:4C:EB:1C:26", src="00:22:33:44:55:77")/IP(src="1.1.1.2", dst="2.2.2.1")/GRE()/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=1234, dport=5678)/Raw('x'*64), iface=intf)
     sendp(Ether(dst="D2:6B:4C:EB:1C:26", src="00:22:33:44:55:77")/IPv6(src="::11", dst="::22")/GRE()/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=1234, dport=5678)/Raw('x'*64), iface=intf)
 
-Expected: p1 hash value is not equal to p2 or p3 or p4 or p5, and should be equal to p6 and p7.
-
+Expected:
+   p1 hash value is not equal to p2 or p3 or p4 or p5, and should be equal to p6 and p7.
+   check the packets are distributed to queues by rss.
 
 Send a series packets to check if DCF RSS is correct for tunnelling packet (inner IPv6) ::
 
@@ -157,7 +181,9 @@ Send a series packets to check if DCF RSS is correct for tunnelling packet (inne
     sendp(Ether(dst="D2:6B:4C:EB:1C:26", src="00:22:33:44:55:77")/IP(src="1.1.1.2", dst="2.2.2.1")/GRE()/IPv6(src="::22", dst="::11")/UDP(sport=1234, dport=5678)/Raw('x'*64), iface=intf)
     sendp(Ether(dst="D2:6B:4C:EB:1C:26", src="00:22:33:44:55:77")/IPv6(src="::33", dst="::44")/GRE()/IPv6(src="::22", dst="::11")/UDP(sport=1234, dport=5678)/Raw('x'*64), iface=intf)
 
-Expected: p1 hash value is not equal to p2 or p3 or p4 or p5, and should be equal to p6 and p7.
+Expected:
+   p1 hash value is not equal to p2 or p3 or p4 or p5, and should be equal to p6 and p7.
+   check the packets are distributed to queues by rss.
 
 
 Test Case: Create rule with to original VF action
