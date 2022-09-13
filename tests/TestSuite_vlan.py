@@ -33,7 +33,8 @@ class TestVlan(TestCase):
 
         self.dut_ports = self.dut.get_ports(self.nic)
         self.used_dut_port_0 = self.dut_ports[0]
-        self.tester_intf_0 = self.tester.get_interface(self.used_dut_port_0)
+        self.used_tester_port = self.tester.get_local_port(self.used_dut_port_0)
+        self.tester_intf_0 = self.tester.get_interface(self.used_tester_port)
 
         # Verify that enough ports are available
         self.verify(len(ports) >= 1, "Insufficient ports")
