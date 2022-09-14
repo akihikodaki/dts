@@ -314,15 +314,11 @@ rules::
 matched packets::
 
   >>> sendp([Ether()/IPv6(src="<ipv6 src>", dst="<ipv6 dst>")/("X"*480)], iface="<tester interface>")
-  >>> sendp([Ether()/IPv6(src="<ipv6 src>", dst="<ipv6 dst>")/IPv6ExtHdrFragment()/("X"*480)], iface="<tester interface>")
 
 mismatched packets::
 
   >>> sendp([Ether()/IPv6(src="<ipv6 src change inputset>", dst="<ipv6 dst>")/("X"*480)], iface="<tester interface>")
   >>> sendp([Ether()/IPv6(src="<ipv6 src>", dst="<ipv6 dst change inputset>")/("X"*480)], iface="<tester interface>")
-  >>> sendp([Ether()/IPv6(src="<ipv6 src change inputset>", dst="<ipv6 dst>")/IPv6ExtHdrFragment()/("X"*480)], iface="<tester interface>")
-  >>> sendp([Ether()/IPv6(src="<ipv6 src>", dst="<ipv6 dst change inputset>")/IPv6ExtHdrFragment()/("X"*480)], iface="<tester interface>")
-
 
 Test Case 4: MAC_IPV6_TCP
 -------------------------
@@ -632,7 +628,7 @@ mismatched packets::
 
 Test Case 20: check flow priority filter
 ----------------------------------------
-1. launch testpmd with --log-level="ice,8"
+1. launch testpmd with --log-level="ice,7"
 
 2. create rules with priority 0, check the rule is created to switch with a log "Succeeded to create (2) flow"::
 
