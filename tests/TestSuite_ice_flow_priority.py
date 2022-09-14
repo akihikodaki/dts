@@ -71,8 +71,6 @@ tv_mac_ipv6 = {
         "mismatched": [
             'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
             'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/("X"*480)',
-            'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
-            'Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/IPv6ExtHdrFragment()/("X"*480)',
         ],
     },
     "check_param": {"check_0": {"queue": [4, 5]}, "check_1": {"queue": 8}},
@@ -421,14 +419,7 @@ class ICEPFFlowPriorityTest(TestCase):
         """
         Run before each test case.
         """
-        self.reload_ice()
         self.launch_testpmd()
-
-    def reload_ice(self):
-        self.dut.bind_interfaces_linux("ice")
-        self.dut.send_expect("rmmod ice", "#", 120)
-        self.dut.send_expect("modprobe ice", "#", 120)
-        self.dut.bind_interfaces_linux("vfio-pci")
 
     def launch_testpmd(self, eal_param=False):
         """
@@ -439,7 +430,7 @@ class ICEPFFlowPriorityTest(TestCase):
             self.pmdout.start_testpmd(
                 cores="1S/4C/1T",
                 ports=[self.pf_pci],
-                eal_param="--log-level=ice,8",
+                eal_param="--log-level=ice,7",
                 param="--rxq={0} --txq={0}".format(self.rxq),
             )
         # start testpmd in pipeline mode
