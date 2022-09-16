@@ -1388,6 +1388,144 @@ tv_add_two_rules_with_different_input_set_different_vf_id = {
     },
 }
 
+# l4 mask
+# ipv4/ipv6 + udp/tcp
+mac_ipv4_udp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether(dst="00:11:22:33:44:66")/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=2048,dport=1)/Raw("x"*80)',
+    ],
+    "mismatched": [
+        'Ether(dst="00:11:22:33:44:66")/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=2152,dport=2)/Raw("x"*80)',
+        'Ether(dst="00:11:22:33:44:66")/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=2408,dport=1281)/Raw("x"*80)',
+    ],
+}
+tv_mac_ipv4_udp_l4_mask_in_single_vf_01 = {
+    "name": "tv_mac_ipv4_udp_l4_mask_in_single_vf_01",
+    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv4 / udp src spec 2152 src mask 0xff00 dst spec 1281 dst mask 0x00ff / end actions vf id 1 / end",
+    "matched": {
+        "scapy_str": mac_ipv4_udp_l4_mask_scapy_str["matched"],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": 1, "expect_queues": "null"},
+        },
+        "expect_results": {
+            "expect_pkts": len(mac_ipv4_udp_l4_mask_scapy_str["matched"])
+        },
+    },
+    "mismatched": {
+        "scapy_str": mac_ipv4_udp_l4_mask_scapy_str["mismatched"],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": 1, "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": 0},
+    },
+}
+
+mac_ipv6_udp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether(dst="00:11:22:33:44:66")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=10,dport=3328)/Raw("x"*80)',
+    ],
+    "mismatched": [
+        'Ether(dst="00:11:22:33:44:66")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=10,dport=3077)/Raw("x"*80)',
+    ],
+}
+tv_mac_ipv6_tcp_l4_mask_in_single_vf_02 = {
+    "name": "tv_mac_ipv6_tcp_l4_mask_in_single_vf_02",
+    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv6 / tcp dst spec 3333 dst mask 0x0ff0 / end actions vf id 1 / end",
+    "matched": {
+        "scapy_str": mac_ipv6_udp_l4_mask_scapy_str["matched"],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": 1, "expect_queues": "null"},
+        },
+        "expect_results": {
+            "expect_pkts": len(mac_ipv6_udp_l4_mask_scapy_str["matched"])
+        },
+    },
+    "mismatched": {
+        "scapy_str": mac_ipv6_udp_l4_mask_scapy_str["mismatched"],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": 1, "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": 0},
+    },
+}
+
+# test vxlan l4 mask
+mac_ipv4_udp_vxlan_eth_ipv4_udp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether(dst="00:11:22:33:44:66")/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=16,dport=22)/Raw("x"*80)',
+    ],
+    "mismatched": [
+        'Ether(dst="00:11:22:33:44:66")/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=33,dport=22)/Raw("x"*80)'
+    ],
+}
+tv_mac_ipv4_udp_vxlan_eth_ipv4_udp_l4_mask_in_single_vf_03 = {
+    "name": "tv_mac_ipv4_udp_vxlan_eth_ipv4_udp_l4_mask_in_single_vf_03",
+    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 / udp src spec 32 src mask 0x0f / end actions vf id 1 / end",
+    "matched": {
+        "scapy_str": mac_ipv4_udp_vxlan_eth_ipv4_udp_l4_mask_scapy_str["matched"],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": 1, "expect_queues": "null"},
+        },
+        "expect_results": {
+            "expect_pkts": len(
+                mac_ipv4_udp_vxlan_eth_ipv4_udp_l4_mask_scapy_str["matched"]
+            )
+        },
+    },
+    "mismatched": {
+        "scapy_str": mac_ipv4_udp_vxlan_eth_ipv4_udp_l4_mask_scapy_str["mismatched"],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": 1, "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": 0},
+    },
+}
+
+# test nvgre l4 mask
+mac_ipv4_nvgre_eth_ipv4_udp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether(dst="00:11:22:33:44:66")/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=1536)/Raw("x"*80)',
+    ],
+    "mismatched": [
+        'Ether(dst="00:11:22:33:44:66")/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=1281)/Raw("x"*80)',
+    ],
+}
+tv_mac_ipv4_nvgre_eth_ipv4_udp_l4_mask_in_single_vf_04 = {
+    "name": "tv_mac_ipv4_nvgre_eth_ipv4_udp_l4_mask_in_single_vf_04",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src spec 1280 src mask 0x00ff / end actions vf id 1 / end",
+    "matched": {
+        "scapy_str": mac_ipv4_nvgre_eth_ipv4_udp_l4_mask_scapy_str["matched"],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": 1, "expect_queues": "null"},
+        },
+        "expect_results": {
+            "expect_pkts": len(mac_ipv4_nvgre_eth_ipv4_udp_l4_mask_scapy_str["matched"])
+        },
+    },
+    "mismatched": {
+        "scapy_str": mac_ipv4_nvgre_eth_ipv4_udp_l4_mask_scapy_str["mismatched"],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": 1, "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": 0},
+    },
+}
+
+tvs_l4_mask = [
+    tv_mac_ipv4_udp_l4_mask_in_single_vf_01,
+    tv_mac_ipv6_tcp_l4_mask_in_single_vf_02,
+    tv_mac_ipv4_udp_vxlan_eth_ipv4_udp_l4_mask_in_single_vf_03,
+    tv_mac_ipv4_nvgre_eth_ipv4_udp_l4_mask_in_single_vf_04,
+]
+
 tv_mac_ipv4_drop = {
     "name": "tv_mac_ipv4_drop",
     "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions drop / end",
@@ -1632,6 +1770,129 @@ tv_mac_blend_pkg_drop = {
     },
 }
 
+vf1_mac = "00:11:22:33:44:55"
+mac_ipv4_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether(dst="%s")/IP()/TCP(sport=2313,dport=23)/Raw("x"*80)' % vf1_mac,
+    ],
+    "mismatched": [
+        'Ether(dst="%s")/IP()/TCP(sport=2344,dport=23)/Raw("x"*80)' % vf1_mac,
+    ],
+}
+tv_mac_ipv4_tcp_l4_mask_drop = {
+    "name": "tv_mac_ipv4_tcp_l4_mask_drop",
+    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv4 / tcp src spec 2345 src mask 0x0f0f / end actions drop / end",
+    "matched": {
+        "scapy_str": mac_ipv4_tcp_l4_mask_scapy_str["matched"],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": 1, "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": 0},
+    },
+    "mismatched": {
+        "scapy_str": mac_ipv4_tcp_l4_mask_scapy_str["mismatched"],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": 1, "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": 1},
+    },
+}
+
+mac_ipv6_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether(dst="%s")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=10,dport=3328)/Raw("x"*80)'
+        % vf1_mac,
+    ],
+    "mismatched": [
+        'Ether(dst="%s")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=10,dport=3077)/Raw("x"*80)'
+        % vf1_mac,
+    ],
+}
+tv_mac_ipv6_udp_l4_mask_drop = {
+    "name": "tv_mac_ipv6_udp_l4_mask_drop",
+    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv6 / udp dst spec 3333 dst mask 0x0ff0 / end actions drop / end",
+    "matched": {
+        "scapy_str": mac_ipv6_tcp_l4_mask_scapy_str["matched"],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": 1, "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": 0},
+    },
+    "mismatched": {
+        "scapy_str": mac_ipv6_tcp_l4_mask_scapy_str["mismatched"],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": 1, "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": 1},
+    },
+}
+
+mac_ipv4_udp_vxlan_eth_ipv4_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether(dst="%s")/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=16,dport=22)/Raw("x"*80)'
+        % vf1_mac,
+    ],
+    "mismatched": [
+        'Ether(dst="%s")/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=33,dport=22)/Raw("x"*80)'
+        % vf1_mac,
+    ],
+}
+tv_mac_ipv4_udp_vxlan_eth_ipv4_tcp_l4_mask_drop = {
+    "name": "tv_mac_ipv4_udp_vxlan_eth_ipv4_tcp_l4_mask_drop",
+    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 / tcp src spec 32 src mask 0x0f / end actions drop / end",
+    "matched": {
+        "scapy_str": mac_ipv4_udp_vxlan_eth_ipv4_tcp_l4_mask_scapy_str["matched"],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": 1, "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": 0},
+    },
+    "mismatched": {
+        "scapy_str": mac_ipv4_udp_vxlan_eth_ipv4_tcp_l4_mask_scapy_str["mismatched"],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": 1, "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": 1},
+    },
+}
+
+mac_ipv4_nvgre_eth_ipv4_tcp_l4_mask_scapy_str = {
+    "matched": [
+        'Ether(dst="%s")/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=50,dport=1536)/Raw("x"*80)'
+        % vf1_mac,
+    ],
+    "mismatched": [
+        'Ether(dst="%s")/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=50,dport=1281)/Raw("x"*80)'
+        % vf1_mac,
+    ],
+}
+tv_mac_ipv4_nvgre_eth_ipv4_tcp_l4_mask_drop = {
+    "name": "tv_mac_ipv4_nvgre_eth_ipv4_tcp_l4_mask_drop",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp dst spec 1280 dst mask 0x00ff / end actions drop / end",
+    "matched": {
+        "scapy_str": mac_ipv4_nvgre_eth_ipv4_tcp_l4_mask_scapy_str["matched"],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": 1, "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": 0},
+    },
+    "mismatched": {
+        "scapy_str": mac_ipv4_nvgre_eth_ipv4_tcp_l4_mask_scapy_str["mismatched"],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": 1, "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": 1},
+    },
+}
+
 sv_mac_test_drop_action = [
     tv_mac_ipv4_drop,
     tv_mac_ipv4_mask_drop,
@@ -1642,6 +1903,10 @@ sv_mac_test_drop_action = [
     tv_mac_l2tp_drop,
     tv_mac_esp_drop,
     tv_mac_blend_pkg_drop,
+    tv_mac_ipv4_tcp_l4_mask_drop,
+    tv_mac_ipv6_udp_l4_mask_drop,
+    tv_mac_ipv4_udp_vxlan_eth_ipv4_tcp_l4_mask_drop,
+    tv_mac_ipv4_nvgre_eth_ipv4_tcp_l4_mask_drop,
 ]
 
 
@@ -1719,8 +1984,7 @@ class ICEDCFSwitchFilterTest(TestCase):
         time.sleep(5)
 
     def reload_ice(self):
-        self.dut.send_expect("rmmod ice", "# ", 15)
-        self.dut.send_expect("modprobe ice", "# ", 15)
+        self.dut.send_expect("rmmod ice && modprobe ice", "# ", 60)
 
     def set_up(self):
         """
@@ -1748,8 +2012,8 @@ class ICEDCFSwitchFilterTest(TestCase):
         launch testpmd with the command
         """
         command = self.create_testpmd_command()
-        out = self.dut.send_expect(command, "testpmd> ", 15)
         self.testpmd_status = "running"
+        out = self.dut.send_expect(command, "testpmd> ", 30)
         self.dut.send_expect("set portlist 1", "testpmd> ", 15)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
         self.dut.send_expect("set verbose 1", "testpmd> ", 15)
@@ -2640,6 +2904,7 @@ class ICEDCFSwitchFilterTest(TestCase):
             'ip link set %s vf 1 mac "00:11:22:33:44:55"' % self.pf0_intf, "# "
         )
         self.launch_testpmd()
+        self.dut.send_expect("rx_vxlan_port add 4789 0", "testpmd> ")
         for pattern in sv_mac_test_drop_action:
             # validate a rule
             self.validate_switch_filter_rule(pattern["rte_flow_pattern"])
@@ -2666,6 +2931,31 @@ class ICEDCFSwitchFilterTest(TestCase):
             self.dut.send_expect("flow flush 0", "testpmd> ", 15)
             self.dut.send_expect("clear port stats all", "testpmd> ", 15)
 
+    # l4 mask
+    def test_l4_mask(self):
+        self.setup_1pf_vfs_env()
+        self.dut.send_expect(
+            "ip link set %s vf 1 mac 00:11:22:33:44:55" % self.pf0_intf, "# "
+        )
+        self.launch_testpmd()
+        self.dut.send_expect("rx_vxlan_port add 4789 0", "testpmd> ")
+        test_result = []
+        for sub_case in tvs_l4_mask:
+            try:
+                self.logger.info(
+                    (GREEN("========test subcase: %s========" % sub_case["name"]))
+                )
+                self._rte_flow_validate_pattern(sub_case, launch_testpmd=False)
+            except Exception as ex:
+                test_result.append(False)
+                self.logger.error(ex)
+            else:
+                test_result.append(True)
+            finally:
+                self.dut.send_expect("flow flush 0", "testpmd> ")
+        if False in test_result:
+            self.verify(False, "some subcases failed, result %s" % test_result)
+
     def tear_down(self):
         """
         Run after each test case.
@@ -2675,14 +2965,14 @@ class ICEDCFSwitchFilterTest(TestCase):
             self.dut.send_expect("flow flush 0", "testpmd> ", 15)
             self.dut.send_expect("clear port stats all", "testpmd> ", 15)
             self.dut.send_expect("quit", "#", 15)
-            # kill all DPDK application
-            self.dut.kill_all()
             # destroy vfs
             for port_id in self.dut_ports:
                 self.dut.destroy_sriov_vfs_by_port(port_id)
-        self.testpmd_status = "close"
+            self.testpmd_status = "close"
         if getattr(self, "session_secondary", None):
             self.dut.close_session(self.session_secondary)
+        # kill all DPDK application
+        self.dut.kill_all()
 
     def tear_down_all(self):
         """
