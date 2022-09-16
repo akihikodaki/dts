@@ -3582,3 +3582,352 @@ Subcase 8:  DCF DROP blend PACKAGES
 
    check the rules not exist in the list.
    send matched packets, check port can receive the packet.
+
+Subcase 9:  MAC_IPV4_TCP + L4 MASK + drop
+-----------------------------------------
+1. validate a rule::
+
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 / tcp src spec 2345 src mask 0x0f0f / end actions drop / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create MAC_IPV4_L2TP_PAY rule::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 / tcp src spec 2345 src mask 0x0f0f / end actions drop / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets::
+
+     sendp([Ether(dst={vf1_mac})/IP()/TCP(sport=2313,dport=23)/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check port 1 can't receive the packet.
+
+4. send mismatched packets::
+
+     sendp([Ether(dst={vf1_mac})/IP()/TCP(sport=2344,dport=23)/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check port 1 can receive the packet.
+
+5. verify rules can be destroyed::
+
+     testpmd> flow flush 0
+     testpmd> flow list 0
+
+   check the rules not exist in the list.
+   send matched packets, check port 1 can receive the packet.
+
+Subcase 10:  MAC_IPV6_UDP + L4 MASK + drop
+------------------------------------------
+1. validate a rule::
+
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv6 / udp dst spec 3333 dst mask 0x0ff0 / end actions drop / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create MAC_IPV4_L2TP_PAY rule::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv6 / udp dst spec 3333 dst mask 0x0ff0 / end actions drop / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets::
+
+     sendp([Ether(dst={vf1_mac})/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=10,dport=3328)/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check port 1 can't receive the packet.
+
+4. send mismatched packets::
+
+     sendp([Ether(dst={vf1_mac})/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=10,dport=3077)/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check port 1 can receive the packet.
+
+5. verify rules can be destroyed::
+
+     testpmd> flow flush 0
+     testpmd> flow list 0
+
+   check the rules not exist in the list.
+   send matched packets, check port 1 can receive the packet.
+
+Subcase 11:  MAC_IPV4_UDP_VXLAN_MAC_IPV4_TCP + L4 MASK + drop
+-------------------------------------------------------------
+1. validate a rule::
+
+     testpmd> rx_vxlan_port add 4789 0
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 / tcp src spec 32 src mask 0x0f / end actions drop / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create MAC_IPV4_L2TP_PAY rule::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 / tcp src spec 32 src mask 0x0f / end actions drop / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets::
+
+     sendp([Ether(dst={vf1_mac})/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=16,dport=22)/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check port 1 can't receive the packet.
+
+4. send mismatched packets::
+
+     sendp([Ether(dst={vf1_mac})/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=33,dport=22)/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check port 1 can receive the packet.
+
+5. verify rules can be destroyed::
+
+     testpmd> flow flush 0
+     testpmd> flow list 0
+
+   check the rules not exist in the list.
+   send matched packets, check port 1 can receive the packet.
+
+Subcase 12:  MAC_IPV4_NVGRE_MAC_IPV4_TCP + L4 MASK + drop
+---------------------------------------------------------
+1. validate a rule::
+
+     testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp dst spec 1280 dst mask 0x00ff / end actions drop / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create MAC_IPV4_L2TP_PAY rule::
+
+     testpmd> flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp dst spec 1280 dst mask 0x00ff / end actions drop / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets::
+
+     sendp([Ether(dst={vf1_mac})/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=50,dport=1536)/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check port 1 can't receive the packet.
+
+4. send mismatched packets::
+
+     sendp([Ether(dst={vf1_mac})/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=50,dport=1281)/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check port 1 can receive the packet.
+
+5. verify rules can be destroyed::
+
+     testpmd> flow flush 0
+     testpmd> flow list 0
+
+   check the rules not exist in the list.
+   send matched packets, check port 1 can receive the packet.
+
+Test case: IPv4/IPv6 + TCP/UDP + L4 MASK
+========================================
+Subcase 1:  MAC_IPV4_UDP + L4 MASK + single vf
+----------------------------------------------
+1. validate a rule::
+
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 / udp src spec 2152 src mask 0xff00 dst spec 1281 dst mask 0x00ff / end actions vf id 1 / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create MAC_IPV4_L2TP_PAY rule::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 / udp src spec 2152 src mask 0xff00 dst spec 1281 dst mask 0x00ff / end actions vf id 1 / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:66")/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=2048,dport=1)/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check port 1 receive the packet.
+
+4. send mismatched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:66")/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=2152,dport=2)/Raw("x"*80)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst="00:11:22:33:44:66")/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=2408,dport=1281)/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check port 1 can not receive the packet.
+
+5. verify rules can be destroyed::
+
+     testpmd> flow flush 0
+     testpmd> flow list 0
+
+   check the rules not exist in the list.
+   send matched packets, check port 1 can not receive the packet.
+
+Subcase 2:  MAC_IPV6_TCP + L4 MASK + single vf
+----------------------------------------------
+1. validate a rule::
+
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv6 / tcp dst spec 3333 dst mask 0x0ff0 / end actions vf id 1 / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create MAC_IPV4_L2TP_PAY rule::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv6 / tcp dst spec 3333 dst mask 0x0ff0 / end actions vf id 1 / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:66")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=10,dport=3328)/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check port 1 receive the packet.
+
+4. send mismatched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:66")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=10,dport=3077)/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check port 1 can not receive the packet.
+
+5. verify rules can be destroyed::
+
+     testpmd> flow flush 0
+     testpmd> flow list 0
+
+   check the rules not exist in the list.
+   send matched packets, check port 1 can not receive the packet.
+
+Subcase 3:  MAC_IPV4_UDP_VXLAN_MAC_IPV4_UDP + L4 MASK + single vf
+-----------------------------------------------------------------
+1. validate a rule::
+
+     testpmd> rx_vxlan_port add 4789 0
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 / udp src spec 32 src mask 0x0f / end actions vf id 1 / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create MAC_IPV4_L2TP_PAY rule::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 / udp src spec 32 src mask 0x0f / end actions vf id 1 / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:66")/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=16,dport=22)/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check port 1 receive the packet.
+
+4. send mismatched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:66")/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=33,dport=22)/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check port 1 can not receive the packet.
+
+5. verify rules can be destroyed::
+
+     testpmd> flow flush 0
+     testpmd> flow list 0
+
+   check the rules not exist in the list.
+   send matched packets, check port 1 can not receive the packet.
+
+Subcase 4:  MAC_IPV4_NVGRE_MAC_IPV4_UDP + L4 MASK + single vf
+-------------------------------------------------------------
+1. validate a rule::
+
+     testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src spec 1280 src mask 0x00ff / end actions vf id 1 / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create MAC_IPV4_L2TP_PAY rule::
+
+     testpmd> flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src spec 1280 src mask 0x00ff / end actions vf id 1 / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:66")/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=1536)/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check port 1 receive the packet.
+
+4. send mismatched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:66")/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=1281)/Raw("x"*80)], iface="enp27s0f0", count=1)
+
+   check port 1 can not receive the packet.
+
+5. verify rules can be destroyed::
+
+     testpmd> flow flush 0
+     testpmd> flow list 0
+
+   check the rules not exist in the list.
+   send matched packets, check port 1 can not receive the packet.
