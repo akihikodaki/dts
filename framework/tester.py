@@ -87,7 +87,7 @@ class Tester(Crb):
 
         # import scapy moudle to scapy APP
         out = session.session.send_expect(get_scapy_module_impcmd(), ">>> ")
-        if "ImportError" in out:
+        if "ImportError" in out or "ModuleNotFoundError" in out:
             session.logger.warning(f"entering import error: {out}")
 
         return session
