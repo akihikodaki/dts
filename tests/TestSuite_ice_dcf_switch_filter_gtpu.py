@@ -3592,8 +3592,7 @@ class ICEDCFSwitchFilterGTPUTest(TestCase):
         """
         dcf switch need reload driver to ensure create rule sucessful
         """
-        self.dut.send_expect("rmmod ice", "# ", 15)
-        self.dut.send_expect("modprobe ice", "# ", 15)
+        self.dut.send_expect("rmmod ice && modprobe ice", "# ", 60)
 
     def create_testpmd_command(self):
         """
@@ -3617,7 +3616,7 @@ class ICEDCFSwitchFilterGTPUTest(TestCase):
         launch testpmd with the command
         """
         command = self.create_testpmd_command()
-        self.dut.send_expect(command, "testpmd> ", 15)
+        self.dut.send_expect(command, "testpmd> ", 30)
         self.testpmd_status = "running"
         self.dut.send_expect("set portlist 1", "testpmd> ", 15)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
@@ -3822,12 +3821,10 @@ class ICEDCFSwitchFilterGTPUTest(TestCase):
             self.dut.send_expect("flow flush 0", "testpmd> ", 15)
             self.dut.send_expect("clear port stats all", "testpmd> ", 15)
             self.dut.send_expect("quit", "#", 15)
-            # kill all DPDK application
-            self.dut.kill_all()
             # destroy vfs
             for port_id in self.dut_ports:
                 self.dut.destroy_sriov_vfs_by_port(port_id)
-        self.testpmd_status = "close"
+            self.testpmd_status = "close"
         if getattr(self, "session_secondary", None):
             self.dut.close_session(self.session_secondary)
 
@@ -3971,6 +3968,8 @@ class ICEDCFSwitchFilterGTPUTest(TestCase):
         Run after each test case.
         """
         self.destroy_testpmd_and_vf()
+        # kill all DPDK application
+        self.dut.kill_all()
 
     def tear_down_all(self):
         """
