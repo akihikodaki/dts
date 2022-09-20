@@ -33,8 +33,8 @@ Test Case 1: VM2VM split ring vhost-user/virtio-net test with tcp traffic
 
     rm -rf vhost-net*
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 --no-pci --file-prefix=vhost \
-    --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=1' \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1' \
     -- -i --nb-cores=2 --txd=1024 --rxd=1024
     testpmd>start
 
@@ -90,8 +90,8 @@ Test Case 2: VM2VM split ring vhost-user/virtio-net test with udp traffic
 
     rm -rf vhost-net*
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --no-pci --file-prefix=vhost \
-    --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=1' \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
@@ -147,8 +147,8 @@ Test Case 3: Check split ring virtio-net device capability
 
     rm -rf vhost-net*
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --no-pci --file-prefix=vhost \
-    --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=1' \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1' \
     -- -i --nb-cores=2 --txd=1024 --rxd=1024
     testpmd>start
 
@@ -197,8 +197,8 @@ Test Case 4: VM2VM packed ring vhost-user/virtio-net test with tcp traffic
 
     rm -rf vhost-net*
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 --no-pci --file-prefix=vhost \
-    --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=1' \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1' \
     -- -i --nb-cores=2 --txd=1024 --rxd=1024
     testpmd>start
 
@@ -254,8 +254,8 @@ Test Case 5: VM2VM packed ring vhost-user/virtio-net test with udp traffic
 
     rm -rf vhost-net*
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --no-pci --file-prefix=vhost \
-    --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=1' \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1' \
     -- -i --nb-cores=2 --txd=1024 --rxd=1024
     testpmd>start
 
@@ -311,8 +311,8 @@ Test Case 6: Check packed ring virtio-net device capability
 
     rm -rf vhost-net*
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --no-pci --file-prefix=vhost \
-    --vdev 'net_vhost0,iface=vhost-net0,queues=1' \
-    --vdev 'net_vhost1,iface=vhost-net1,queues=1' \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1' \
+    --vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1' \
     -- -i --nb-cores=2 --txd=1024 --rxd=1024
     testpmd>start
 
