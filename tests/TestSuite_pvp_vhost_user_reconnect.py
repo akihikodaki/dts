@@ -426,9 +426,6 @@ class TestPVPVhostUserReconnect(TestCase):
         self.config_vm_intf()
         self.start_iperf()
         self.before_data = self.iperf_result_verify(vm_cycle, "before reconnet")
-        # Because of repeat iperf test on Intel® Ethernet Converged Network Adapter XL710-QDA2 nic,
-        # the result is unstable, so use 15Gb/s as check value.
-        self.check_data = 15.000
 
         vm_cycle = 1
         # reconnet from vhost
@@ -440,12 +437,7 @@ class TestPVPVhostUserReconnect(TestCase):
             self.reconnect_data = self.iperf_result_verify(
                 vm_cycle, "reconnet from vhost"
             )
-            self.verify(
-                self.reconnect_data >= self.check_data,
-                "iperf test result lower than {0} after reconnect from vhost".format(
-                    self.check_data
-                ),
-            )
+            self.check_reconnect_perf()
 
         # reconnet from VM
         self.logger.info("now reconnect from vm")
@@ -458,12 +450,7 @@ class TestPVPVhostUserReconnect(TestCase):
             self.config_vm_intf()
             self.start_iperf()
             self.reconnect_data = self.iperf_result_verify(vm_cycle, "reconnet from vm")
-            self.verify(
-                self.reconnect_data > self.check_data,
-                "iperf test result lower than {0} after reconnect from vm".format(
-                    self.check_data
-                ),
-            )
+            self.check_reconnect_perf()
         self.result_table_print()
 
     def test_perf_packed_ring_reconnet_one_vm(self):
@@ -556,9 +543,6 @@ class TestPVPVhostUserReconnect(TestCase):
         self.config_vm_intf()
         self.start_iperf()
         self.before_data = self.iperf_result_verify(vm_cycle, "before reconnet")
-        # Because of repeat iperf test on Intel® Ethernet Converged Network Adapter XL710-QDA2 nic,
-        # the result is unstable, so use 15Gb/s as check value.
-        self.check_data = 15.000
 
         vm_cycle = 1
         # reconnet from vhost
@@ -570,12 +554,7 @@ class TestPVPVhostUserReconnect(TestCase):
             self.reconnect_data = self.iperf_result_verify(
                 vm_cycle, "reconnet from vhost"
             )
-            self.verify(
-                self.reconnect_data > self.check_data,
-                "iperf test result lower than {0} after reconnect from vhost".format(
-                    self.check_data
-                ),
-            )
+            self.check_reconnect_perf()
 
         # reconnet from VM
         self.logger.info("now reconnect from vm")
@@ -587,12 +566,7 @@ class TestPVPVhostUserReconnect(TestCase):
             self.config_vm_intf()
             self.start_iperf()
             self.reconnect_data = self.iperf_result_verify(vm_cycle, "reconnet from vm")
-            self.verify(
-                self.reconnect_data > self.check_data,
-                "iperf test result lower than {0} after recconnect from vm".format(
-                    self.check_data
-                ),
-            )
+            self.check_reconnect_perf()
         self.result_table_print()
 
     def tear_down(self):
