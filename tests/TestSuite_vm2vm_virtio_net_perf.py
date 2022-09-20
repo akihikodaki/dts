@@ -68,40 +68,35 @@ class TestVM2VMVirtioNetPerf(TestCase):
         enable_queues=1,
         nb_cores=2,
         rxq_txq=None,
-        exchange_cbdma=False,
     ):
         """
         launch the testpmd with different parameters
         """
         testcmd = self.app_testpmd_path + " "
         if not client_mode:
-            vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=%d' " % (
+            vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=%d,tso=1' " % (
                 self.base_dir,
                 enable_queues,
             )
-            vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=%d' " % (
+            vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=%d,tso=1' " % (
                 self.base_dir,
                 enable_queues,
             )
         else:
-            vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,client=1,queues=%d' " % (
-                self.base_dir,
-                enable_queues,
+            vdev1 = (
+                "--vdev 'net_vhost0,iface=%s/vhost-net0,client=1,queues=%d,tso=1' "
+                % (
+                    self.base_dir,
+                    enable_queues,
+                )
             )
-            vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,client=1,queues=%d' " % (
-                self.base_dir,
-                enable_queues,
+            vdev2 = (
+                "--vdev 'net_vhost1,iface=%s/vhost-net1,client=1,queues=%d,tso=1' "
+                % (
+                    self.base_dir,
+                    enable_queues,
+                )
             )
-        if exchange_cbdma:
-            vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,client=1,queues=%d' " % (
-                self.base_dir,
-                enable_queues,
-            )
-            vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,client=1,queues=%d' " % (
-                self.base_dir,
-                enable_queues,
-            )
-
         eal_params = self.dut.create_eal_parameters(
             cores=self.cores_list, prefix="vhost", no_pci=no_pci
         )
@@ -256,8 +251,10 @@ class TestVM2VMVirtioNetPerf(TestCase):
         out_tx = self.vhost.send_expect("show port xstats 0", "testpmd> ", 20)
         out_rx = self.vhost.send_expect("show port xstats 1", "testpmd> ", 20)
 
-        rx_info = re.search("rx_size_1523_to_max_packets:\s*(\d*)", out_rx)
-        tx_info = re.search("tx_size_1523_to_max_packets:\s*(\d*)", out_tx)
+        # rx_info = re.search("rx_size_1523_to_max_packets:\s*(\d*)", out_rx)
+        rx_info = re.search("rx_q0_size_1519_max_packets:\s*(\d*)", out_rx)
+        # tx_info = re.search("tx_size_1523_to_max_packets:\s*(\d*)", out_tx)
+        tx_info = re.search("tx_q0_size_1519_max_packets:\s*(\d*)", out_tx)
 
         self.verify(
             int(rx_info.group(1)) > 0, "Port 1 not receive packet greater than 1522"
