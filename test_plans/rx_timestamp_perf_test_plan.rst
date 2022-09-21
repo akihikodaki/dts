@@ -24,6 +24,10 @@ Prerequisites
     dpdk: git clone http://dpdk.org/git/dpdk
     trex: git clone http://trex-tgn.cisco.com/trex/release/v2.93.tar.gz
 
+.. note::
+
+    Require kernel support rx timestamp offload function in VF.
+
 Test Case
 =========
 The test case check the throughput result with ipv4, in the case,
