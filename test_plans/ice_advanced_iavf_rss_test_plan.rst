@@ -336,16 +336,23 @@ Default parameters
 
     [Src MAC]: 68:05:CA:BB:26:E0
     [Dest MAC]: 00:11:22:33:44:55
+    [Multicast Dest MAC]: 11:22:33:44:55:66
+
+   .. note::
+  
+    The LSB of the first byte "11" is 1, it says it to be multicast MAC address.
 
    IPv4::
 
     [Dest IP]: 192.168.0.1
     [Source IP]: 192.168.0.2
+    [Multicast Dest IPv4]: 224.0.0.1
 
    IPv6::
 
     [Source IPv6]: ABAB:910B:6666:3457:8295:3333:1800:2929
     [Dest IPv6]: CDCD:910A:2222:5498:8475:1111:3900:2020
+    [Multicast Dest IPv6]: ff01::2
 
    UDP/TCP/SCTP::
 
@@ -896,6 +903,227 @@ Subcase: MAC_IPV4_SCTP_IPV4
 Subcase: MAC_IPV4_SCTP_ALL
 --------------------------
 
+Test case: MAC_IPV4 multicast
+=============================
+Disable promisc mode in the testpmd::
+
+   testpmd> set promisc all off
+
+Enable all multicast mode in the testpmd::
+
+   testpmd> set allmulti all on
+
+configure multicast address::
+
+   testpmd> mcast_addr add 0 11:22:33:44:55:66
+
+basic hit pattern packets are the same in this multicast test case:
+ipv4-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.2")/("X"*480)],iface="enp134s0f0")
+
+ipv4-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv4-tcp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_L2SRC
+-----------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / end actions rss types eth l2-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv4-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.2")/("X"*480)],iface="enp134s0f0")
+
+ipv4-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv4-tcp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set:
+ipv4-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/("X"*480)],iface="enp134s0f0")
+
+ipv4-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv4-tcp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/TCP(sport=19,dport=99)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_L2DST
+-----------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / end actions rss types eth l2-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv4-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:67", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/("X"*480)],iface="enp134s0f0")
+
+ipv4-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:67", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv4-tcp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:67", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/TCP(sport=19,dport=99)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set:
+ipv4-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.5")/("X"*480)],iface="enp134s0f0")
+
+ipv4-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.5")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv4-tcp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.5")/TCP(sport=19,dport=99)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_L2SRC_L2DST
+-----------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / end actions rss types eth end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv4-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.2", src="192.168.0.2")/("X"*480)],iface="enp134s0f0")
+
+ipv4-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.2", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv4-tcp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.2", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set:
+ipv4-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/("X"*480)],iface="enp134s0f0")
+
+ipv4-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv4-tcp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/TCP(sport=23,dport=25)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_L3SRC
+-----------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv4-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.1.2")/("X"*480)],iface="enp134s0f0")
+
+ipv4-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.1.2")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv4-tcp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set:
+ipv4-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.2", src="192.168.0.2")/("X"*480)],iface="enp134s0f0")
+
+ipv4-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.2", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv4-tcp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.2", src="192.168.0.2")/TCP(sport=32,dport=33)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_L3DST
+-----------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv4-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.2.1", src="192.168.0.2")/("X"*480)],iface="enp134s0f0")
+
+ipv4-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.2.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv4-tcp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.2.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set:
+ipv4-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.1.2")/("X"*480)],iface="enp134s0f0")
+
+ipv4-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.1.2")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv4-tcp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.1.2")/TCP(sport=32,dport=33)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_ALL
+---------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv4-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.2.1", src="192.168.0.2")/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.1.2")/("X"*480)],iface="enp134s0f0")
+
+ipv4-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.2.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.1.2")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv4-tcp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.2.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set:
+ipv4-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.2")/("X"*480)],iface="enp134s0f0")
+
+ipv4-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv4-tcp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.2")/TCP(sport=32,dport=33)/("X"*480)],iface="enp134s0f0")
 
 Test case: MAC_IPV6
 ===================
@@ -1096,6 +1324,228 @@ ipv6-udp packets::
 
     sendp([Ether(dst="00:11:22:33:44:55", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)],iface="enp134s0f0")
 
+Test case: MAC_IPV6 multicast
+=============================
+Disable promisc mode in the testpmd::
+
+   testpmd> set promisc all off
+
+Enable all multicast mode in the testpmd::
+
+   testpmd> set allmulti all on
+
+configure multicast address::
+
+   testpmd> mcast_addr add 0 11:22:33:44:55:66
+
+basic hit pattern packets are the same in this test case, including unicast and multicast::
+ipv6-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/("X"*480)],iface="enp134s0f0")
+
+ipv6-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv6-udp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV6_L2SRC
+-----------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / end actions rss types eth l2-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/("X"*480)],iface="enp134s0f0")
+
+ipv6-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv6-udp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set:
+ipv6-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/("X"*480)],iface="enp134s0f0")
+
+ipv6-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv6-udp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/UDP(sport=25,dport=99)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV6_L2DST
+-----------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / end actions rss types eth l2-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:67", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/("X"*480)],iface="enp134s0f0")
+
+ipv6-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:67", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv6-udp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:67", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/UDP(sport=25,dport=99)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set:
+ipv6-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/("X"*480)],iface="enp134s0f0")
+
+ipv6-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv6-udp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/UDP(sport=25,dport=99)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV6_L2SRC_L2DST
+-----------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / end actions rss types eth end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/("X"*480)],iface="enp134s0f0")
+
+ipv6-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv6-udp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set:
+ipv6-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::25")/("X"*480)],iface="enp134s0f0")
+
+ipv6-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::25")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv6-udp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::25")/UDP(sport=25,dport=99)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV6_L3SRC
+-----------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / end actions rss types ipv6 l3-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::2")/("X"*480)],iface="enp134s0f0")
+
+
+ipv6-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::25")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv6-udp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::25")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set:
+ipv6-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/("X"*480)],iface="enp134s0f0")
+
+ipv6-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv6-udp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/UDP(sport=32,dport=33)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV6_L3DST
+-----------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / end actions rss types ipv6 l3-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::25")/("X"*480)],iface="enp134s0f0")
+
+ipv6-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::25")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv6-udp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::25")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set:
+ipv6-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::2")/("X"*480)],iface="enp134s0f0")
+
+ipv6-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::2")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv6-udp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::2")/UDP(sport=32,dport=33)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV6_ALL
+---------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / end actions rss types ipv6 end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::21")/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::2")/("X"*480)],iface="enp134s0f0")
+
+ipv6-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::21")/ICMP()/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::2")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv6-udp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::21")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
+
+3. hit pattern/not defined input set:
+ipv6-nonfrag packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/("X"*480)],iface="enp134s0f0")
+
+ipv6-icmp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/ICMP()/("X"*480)],iface="enp134s0f0")
+
+ipv6-udp packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/UDP(sport=32,dport=33)/("X"*480)],iface="enp134s0f0")
 
 Test case: MAC_IPV6_64BIT_PREFIX
 =================================
