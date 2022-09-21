@@ -29,6 +29,20 @@ MAC_IPV4_PAY = {
     ],
 }
 
+MAC_IPV4_PAY_MULTICAST = {
+    "match": [
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=255, ttl=2, tos=4) / Raw("X" * 80)',
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=255, ttl=2, tos=4)/UDP(sport=22,dport=23)/Raw("x" * 80)',
+    ],
+    "mismatch": [
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.22",dst="224.0.0.1", proto=255, ttl=2, tos=4) / Raw("X" * 80)',
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.2", proto=255, ttl=2, tos=4) / Raw("X" * 80)',
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=1, ttl=2, tos=4) / Raw("X" * 80)',
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=255, ttl=3, tos=4) / Raw("X" * 80)',
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=255, ttl=2, tos=9) / Raw("X" * 80)',
+    ],
+}
+
 MAC_IPV4_PAY_protocol = {
     "match": [
         'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=1)/Raw("x" * 80)',
@@ -46,6 +60,23 @@ MAC_IPV4_PAY_protocol = {
     ],
 }
 
+MAC_IPV4_PAY_multicast_protocol = {
+    "match": [
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=1)/Raw("x" * 80)',
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.19",dst="224.0.0.1", proto=1)/Raw("x" * 80)',
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", ttl=2, tos=4)/UDP(sport=22,dport=23)/Raw("x" * 80)',
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=17)/TCP(sport=22,dport=23)/Raw("x" * 80)',
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=17, ttl=2, tos=4)/Raw("x" * 80)',
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=17)/Raw("x" * 80)',
+    ],
+    "mismatch": [
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.2", proto=1)/Raw("x" * 80)',
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=6)/UDP(sport=22,dport=23)/Raw("x" * 80)',
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1")/TCP(sport=22,dport=23)/Raw("x" * 80)',
+        'Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", ttl=2, tos=4)/SCTP()/Raw("x" * 80)',
+    ],
+}
+
 MAC_IPV4_UDP = {
     "match": [
         'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", ttl=2, tos=4) /UDP(sport=22,dport=23)/Raw("x" * 80)'
@@ -58,6 +89,20 @@ MAC_IPV4_UDP = {
         'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", ttl=64, tos=4) /UDP(sport=22,dport=23)/Raw("x" * 80)',
         'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", ttl=2, tos=1) /UDP(sport=22,dport=23)/Raw("x" * 80)',
         'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", ttl=2, tos=4) /TCP(sport=22,dport=23)/Raw("x" * 80)',
+    ],
+}
+
+MAC_IPV6_PAY_MULTICAST = {
+    "match": [
+        'Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", src="2001::2", nh=0, tc=1, hlim=2)/("X"*480)',
+        'Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", src="2001::2", nh=0, tc=1, hlim=2)/UDP(sport=22,dport=23)/("X"*480)',
+    ],
+    "mismatch": [
+        'Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::1", src="2001::2", nh=0, tc=1, hlim=2)/("X"*480)',
+        'Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", src="2001::1", nh=0, tc=1, hlim=2)/("X"*480)',
+        'Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", src="2001::2", nh=2, tc=1, hlim=2)/("X"*480)',
+        'Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", src="2001::2", nh=0, tc=2, hlim=2)/("X"*480)',
+        'Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", src="2001::2", nh=0, tc=1, hlim=5)/("X"*480)',
     ],
 }
 
@@ -121,6 +166,22 @@ MAC_IPV6_PAY_protocol = {
     ],
 }
 
+MAC_IPV6_PAY_multicast_protocol = {
+    "match": [
+        'Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", src="2001::2", nh=17, tc=1, hlim=2)/("X"*480)',
+        'Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2")/UDP(sport=22,dport=23)/("X"*480)',
+        'Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", nh=17)/TCP(sport=22,dport=23)/("X"*480)',
+        'Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2")/UDP(sport=22,dport=23)/TCP(sport=22,dport=23)/("X"*480)',
+        'Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", nh=6)/("X"*480)',
+        'Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2")/TCP(sport=22,dport=23)/("X"*480)',
+    ],
+    "mismatch": [
+        'Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::3", nh=1)/("X"*480)',
+        'Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2")/SCTP()/("X"*480)',
+        'Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", nh=1)/TCP(sport=22,dport=23)/("X"*480)',
+    ],
+}
+
 MAC_IPV6_UDP = {
     "match": [
         'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2",tc=1, hlim=2)/UDP(sport=22,dport=23)/("X"*480)'
@@ -134,6 +195,94 @@ MAC_IPV6_UDP = {
         'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2",tc=1, hlim=2)/UDP(sport=22,dport=24)/("X"*480)',
         'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2",tc=1, hlim=2)/TCP(sport=22,dport=23)/("X"*480)',
     ],
+}
+
+tv_mac_ipv4_pay_queue_index_multicast = {
+    "name": "test_mac_ipv4_pay_queue_index_multicast",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 224.0.0.1 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / mark / end",
+    "scapy_str": MAC_IPV4_PAY_MULTICAST,
+    "check_param": {"port_id": 0, "queue": 1, "mark_id": 0},
+}
+
+tv_mac_ipv4_pay_rss_multicast = {
+    "name": "test_mac_ipv4_pay_rss_multicast",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 224.0.0.1 proto is 255 ttl is 2 tos is 4 / end actions rss queues 2 3 end / mark / end",
+    "scapy_str": MAC_IPV4_PAY_MULTICAST,
+    "check_param": {"port_id": 0, "queue": [2, 3], "mark_id": 0},
+}
+
+tv_mac_ipv4_pay_passthru_multicast = {
+    "name": "test_mac_ipv4_pay_passthru_multicast",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 224.0.0.1 proto is 255 ttl is 2 tos is 4 / end actions passthru / mark / end",
+    "scapy_str": MAC_IPV4_PAY_MULTICAST,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0},
+}
+
+tv_mac_ipv4_pay_drop_multicast = {
+    "name": "test_mac_ipv4_pay_drop_multicast",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 224.0.0.1 proto is 255 ttl is 2 tos is 4 / end actions drop / mark / end",
+    "scapy_str": MAC_IPV4_PAY_MULTICAST,
+    "check_param": {"port_id": 0, "drop": 1, "mark_id": 0},
+}
+
+tv_mac_ipv4_pay_mark_rss_multicast = {
+    "name": "test_mac_ipv4_pay_mark_rss_multicast",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 224.0.0.1 proto is 255 ttl is 2 tos is 4 / end actions mark / rss / end",
+    "scapy_str": MAC_IPV4_PAY_MULTICAST,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0},
+}
+
+tv_mac_ipv4_pay_mark_multicast = {
+    "name": "test_mac_ipv4_pay_mark_multicast",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 224.0.0.1 proto is 255 ttl is 2 tos is 4 / end actions mark / end",
+    "scapy_str": MAC_IPV4_PAY_MULTICAST,
+    "check_param": {"port_id": 0, "mark_id": 0},
+}
+
+tv_mac_ipv6_pay_queue_index_multicast = {
+    "name": "test_mac_ipv4_pay_queue_index_multicast",
+    "rule": "flow create 0 ingress pattern eth / ipv6 dst is ff01::2 src is 2001::2 proto is 0 hop is 2 tc is 1 / end actions queue index 15 / mark / end",
+    "scapy_str": MAC_IPV6_PAY_MULTICAST,
+    "check_param": {"port_id": 0, "queue": 15, "mark_id": 0},
+}
+
+tv_mac_ipv6_pay_rss_multicast = {
+    "name": "test_mac_ipv6_pay_rss_multicast",
+    "rule": "flow create 0 ingress pattern eth / ipv6 dst is ff01::2 src is 2001::2 proto is 0 hop is 2 tc is 1 / end actions rss queues 8 9 10 11 12 13 14 15 end / mark / end",
+    "scapy_str": MAC_IPV6_PAY_MULTICAST,
+    "check_param": {
+        "port_id": 0,
+        "queue": [8, 9, 10, 11, 12, 13, 14, 15],
+        "mark_id": 0,
+    },
+}
+
+tv_mac_ipv6_pay_passthru_multicast = {
+    "name": "test_mac_ipv6_pay_passthru_multicast",
+    "rule": "flow create 0 ingress pattern eth / ipv6 dst is ff01::2 src is 2001::2 proto is 0 hop is 2 tc is 1 / end actions passthru / mark / end",
+    "scapy_str": MAC_IPV6_PAY_MULTICAST,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0},
+}
+
+tv_mac_ipv6_pay_drop_multicast = {
+    "name": "test_mac_ipv6_pay_drop_multicast",
+    "rule": "flow create 0 ingress pattern eth / ipv6 dst is ff01::2 src is 2001::2 proto is 0 hop is 2 tc is 1 / end actions drop / mark / end",
+    "scapy_str": MAC_IPV6_PAY_MULTICAST,
+    "check_param": {"port_id": 0, "drop": 1, "mark_id": 0},
+}
+
+tv_mac_ipv6_pay_mark_rss_multicast = {
+    "name": "test_mac_ipv6_pay_mark_rss_multicast",
+    "rule": "flow create 0 ingress pattern eth / ipv6 dst is ff01::2 src is 2001::2 proto is 0 hop is 2 tc is 1 / end actions mark / rss / end",
+    "scapy_str": MAC_IPV6_PAY_MULTICAST,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0},
+}
+
+tv_mac_ipv6_pay_mark_multicast = {
+    "name": "test_mac_ipv6_pay_mark_multicast",
+    "rule": "flow create 0 ingress pattern eth / ipv6 dst is ff01::2 src is 2001::2 proto is 0 hop is 2 tc is 1 / end actions mark / end",
+    "scapy_str": MAC_IPV6_PAY_MULTICAST,
+    "check_param": {"port_id": 0, "mark_id": 0},
 }
 
 MAC_IPV6_TCP = {
@@ -7223,6 +7372,15 @@ vectors_ipv4_pay = [
     tv_mac_ipv4_pay_mark,
 ]
 
+vectors_ipv4_pay_multicast = [
+    tv_mac_ipv4_pay_queue_index_multicast,
+    tv_mac_ipv4_pay_rss_multicast,
+    tv_mac_ipv4_pay_passthru_multicast,
+    tv_mac_ipv4_pay_drop_multicast,
+    tv_mac_ipv4_pay_mark_rss_multicast,
+    tv_mac_ipv4_pay_mark_multicast,
+]
+
 vectors_ipv4_udp = [
     tv_mac_ipv4_udp_drop,
     tv_mac_ipv4_udp_queue_group,
@@ -7230,6 +7388,15 @@ vectors_ipv4_udp = [
     tv_mac_ipv4_udp_mark_rss,
     tv_mac_ipv4_udp_passthru,
     tv_mac_ipv4_udp_mark,
+]
+
+vectors_ipv6_pay_multicast = [
+    tv_mac_ipv6_pay_queue_index_multicast,
+    tv_mac_ipv6_pay_rss_multicast,
+    tv_mac_ipv6_pay_passthru_multicast,
+    tv_mac_ipv6_pay_drop_multicast,
+    tv_mac_ipv6_pay_mark_rss_multicast,
+    tv_mac_ipv6_pay_mark_multicast,
 ]
 
 vectors_ipv4_tcp = [
@@ -8554,6 +8721,16 @@ class TestICEIAVFFdir(TestCase):
         self.pmd_output.execute_cmd(
             "port config 1 rss-hash-key ipv4 1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd"
         )
+        if self.running_case in [
+            "test_mac_ipv4_pay_multicast",
+            "test_mac_ipv4_multicast_protocol",
+            "test_mac_ipv6_pay_multicast",
+            "test_mac_ipv6_multicast_protocol",
+        ]:
+            self.pmd_output.execute_cmd("set promisc all off")
+            self.pmd_output.execute_cmd("set allmulti all on")
+            # add multicast mac address to pmd
+            self.pmd_output.execute_cmd("mcast_addr add 0 11:22:33:44:55:66")
         res = self.pmd_output.wait_link_status_up("all", timeout=15)
         self.verify(res is True, "there have port link is down")
         self.pmd_output.execute_cmd("start")
@@ -8700,6 +8877,9 @@ class TestICEIAVFFdir(TestCase):
     def test_mac_ipv4_pay(self):
         self.rte_flow_process(vectors_ipv4_pay)
 
+    def test_mac_ipv4_pay_multicast(self):
+        self.rte_flow_process(vectors_ipv4_pay_multicast)
+
     def test_mac_ipv4_udp(self):
         self.rte_flow_process(vectors_ipv4_udp)
 
@@ -8711,6 +8891,9 @@ class TestICEIAVFFdir(TestCase):
 
     def test_mac_ipv6_pay(self):
         self.rte_flow_process(vectors_ipv6_pay)
+
+    def test_mac_ipv6_pay_multicast(self):
+        self.rte_flow_process(vectors_ipv6_pay_multicast)
 
     def test_mac_ipv6_udp(self):
         self.rte_flow_process(vectors_ipv6_udp)
@@ -8828,6 +9011,53 @@ class TestICEIAVFFdir(TestCase):
             out4, pkt_num=6, check_param={"port_id": 0, "passthru": 1}, stats=False
         )
 
+    def test_mac_ipv4_multicast_protocol(self):
+        rules = [
+            "flow create 0 ingress pattern eth / ipv4 dst is 224.0.0.1 proto is 1 / end actions queue index 1 / mark id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 dst is 224.0.0.1 proto is 17 / end actions passthru / mark id 3 / end",
+        ]
+
+        # validate rules
+        self.validate_fdir_rule(rules, check_stats=True)
+        self.check_fdir_rule(port_id=0, stats=False)
+
+        # create rules
+        rule_li = self.create_fdir_rule(rules, check_stats=True)
+        self.check_fdir_rule(port_id=0, rule_list=rule_li)
+
+        # pkt1 and pkt2 in "match" match rule 0, pkt3-6 match rule 1.
+        out1 = self.send_pkts_getouput(MAC_IPV4_PAY_multicast_protocol["match"][0:2])
+        rfc.check_iavf_fdir_mark(
+            out1,
+            pkt_num=2,
+            check_param={"port_id": 0, "mark_id": 1, "queue": 1},
+            stats=True,
+        )
+
+        out2 = self.send_pkts_getouput(MAC_IPV4_PAY_multicast_protocol["match"][2:6])
+        rfc.check_iavf_fdir_mark(
+            out2,
+            pkt_num=4,
+            check_param={"port_id": 0, "mark_id": 3, "passthru": 1},
+            stats=True,
+        )
+
+        # send mismatched packets:
+        out3 = self.send_pkts_getouput(MAC_IPV4_PAY_multicast_protocol["mismatch"])
+        rfc.check_iavf_fdir_mark(
+            out3, pkt_num=4, check_param={"port_id": 0, "passthru": 1}, stats=False
+        )
+
+        # destroy the rules and check there is no rule listed.
+        self.destroy_fdir_rule(rule_id=rule_li, port_id=0)
+        self.check_fdir_rule(port_id=0, stats=False)
+
+        # send matched packet
+        out4 = self.send_pkts_getouput(MAC_IPV4_PAY_multicast_protocol["match"])
+        rfc.check_iavf_fdir_mark(
+            out4, pkt_num=6, check_param={"port_id": 0, "passthru": 1}, stats=False
+        )
+
     def test_mac_ipv6_protocol(self):
         rules = [
             "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 proto is 17 / end actions rss queues 5 6 end / mark id 0 / end",
@@ -8871,6 +9101,53 @@ class TestICEIAVFFdir(TestCase):
 
         # send matched packet
         out4 = self.send_pkts_getouput(MAC_IPV6_PAY_protocol["match"])
+        rfc.check_iavf_fdir_mark(
+            out4, pkt_num=6, check_param={"port_id": 0, "passthru": 1}, stats=False
+        )
+
+    def test_mac_ipv6_multicast_protocol(self):
+        rules = [
+            "flow create 0 ingress pattern eth / ipv6 dst is ff01::2 proto is 17 / end actions rss queues 5 6 end / mark id 0 / end",
+            "flow create 0 ingress pattern eth / ipv6 dst is ff01::2 proto is 6 / end actions mark id 2 / rss / end",
+        ]
+
+        # validate rules
+        self.validate_fdir_rule(rules, check_stats=True)
+        self.check_fdir_rule(port_id=0, stats=False)
+
+        # create rules
+        rule_li = self.create_fdir_rule(rules, check_stats=True)
+        self.check_fdir_rule(port_id=0, rule_list=rule_li)
+
+        # pkt1-4 in "match" match rule 0, pkt5-6 match rule 1.
+        out1 = self.send_pkts_getouput(MAC_IPV6_PAY_multicast_protocol["match"][0:4])
+        rfc.check_iavf_fdir_mark(
+            out1,
+            pkt_num=4,
+            check_param={"port_id": 0, "mark_id": 0, "queue": [5, 6]},
+            stats=True,
+        )
+
+        out2 = self.send_pkts_getouput(MAC_IPV6_PAY_multicast_protocol["match"][4:6])
+        rfc.check_iavf_fdir_mark(
+            out2,
+            pkt_num=2,
+            check_param={"port_id": 0, "mark_id": 2, "passthru": 1},
+            stats=True,
+        )
+
+        # send mismatched packets:
+        out3 = self.send_pkts_getouput(MAC_IPV6_PAY_multicast_protocol["mismatch"])
+        rfc.check_iavf_fdir_mark(
+            out3, pkt_num=3, check_param={"port_id": 0, "passthru": 1}, stats=False
+        )
+
+        # destroy the rules and check there is no rule listed.
+        self.destroy_fdir_rule(rule_id=rule_li, port_id=0)
+        self.check_fdir_rule(port_id=0, stats=False)
+
+        # send matched packet
+        out4 = self.send_pkts_getouput(MAC_IPV6_PAY_multicast_protocol["match"])
         rfc.check_iavf_fdir_mark(
             out4, pkt_num=6, check_param={"port_id": 0, "passthru": 1}, stats=False
         )
@@ -11648,8 +11925,15 @@ class TestICEIAVFFdir(TestCase):
 
     def tear_down(self):
         # destroy all flow rule on port 0
-        self.dut.kill_all()
+        if self.running_case in [
+            "test_mac_ipv4_pay_multicast",
+            "test_mac_ipv4_multicast_protocol",
+            "test_mac_ipv6_pay_multicast",
+            "test_mac_ipv6_multicast_protocol",
+        ]:
+            self.pmd_output.execute_cmd("mcast_addr remove 0 11:22:33:44:55:66")
         self.destroy_env()
+        self.dut.kill_all()
         if getattr(self, "session_secondary", None):
             self.dut.close_session(self.session_secondary)
         if getattr(self, "session_third", None):
