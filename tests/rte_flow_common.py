@@ -129,6 +129,7 @@ def check_output_log_queue_region_mismatched(out, func_param, expect_results):
         func_param["expect_port"] if func_param["expect_port"] else 0
     )
     check_param["queue"] = func_param["expect_queues"]
+    check_param["rxq"] = func_param["rxq"]
     try:
         check_queue(out, expect_pkts, check_param, stats=False)
     except Exception as ex:
@@ -151,7 +152,7 @@ def check_output_log_in_queue_mismatched(out, func_param, expect_results):
         func_param["expect_port"] if func_param["expect_port"] else 0
     )
     check_param["queue"] = func_param["expect_queues"]
-    check_queue(out, expect_pkts, check_param, stats=False)
+    check_param["rxq"] = func_param["rxq"]
     try:
         check_queue(out, expect_pkts, check_param, stats=False)
     except Exception as ex:
