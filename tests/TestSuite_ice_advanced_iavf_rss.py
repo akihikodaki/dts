@@ -80,6 +80,18 @@ mac_ipv6_toeplitz_basic_pkt = {
     # ],
 }
 
+mac_ipv6_toeplitz_basic_multicast_pkt = {
+    "ipv6-nonfrag": [
+        'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/("X"*480)',
+    ],
+    "ipv6-icmp": [
+        'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/ICMP()/("X"*480)',
+    ],
+    "ipv6-udp": [
+        'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/UDP(sport=22,dport=23)/("X"*480)',
+    ],
+}
+
 mac_ipv6_udp_toeplitz_basic_pkt = {
     "ipv6-udp": [
         'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)'
@@ -89,6 +101,296 @@ mac_ipv6_udp_toeplitz_basic_pkt = {
     #     'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)' % vf0_mac,
     # ],
 }
+
+mac_ipv4_toeplitz_basic_multicast_pkt = {
+    "ipv4-nonfrag": [
+        'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.2")/("X"*480)',
+    ],
+    "ipv4-icmp": [
+        'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.2")/ICMP()/("X"*480)',
+    ],
+    "ipv4-tcp": [
+        'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+    ],
+}
+
+# mac_ipv4 multicast
+mac_ipv4_l2_src_multicast = {
+    "sub_casename": "mac_ipv4_l2_src_multicast",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv4 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-nonfrag"],
+            "action": {"save_hash": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.2")/("X"*480)',
+            "action": {"check_hash_different": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/("X"*480)',
+            "action": {"check_hash_same": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-icmp"],
+            "action": {"save_hash": "ipv4-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.2")/ICMP()/("X"*480)',
+            "action": {"check_hash_different": "ipv4-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/("X"*480)',
+            "action": {"check_hash_same": "ipv4-icmp"},
+        },
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-tcp"],
+            "action": {"save_hash": "ipv4-tcp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv4-tcp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/TCP(sport=19,dport=99)/("X"*480)',
+            "action": {"check_hash_same": "ipv4-tcp"},
+        },
+    ],
+}
+
+mac_ipv4_l2_dst_multicast = {
+    "sub_casename": "mac_ipv4_l2_dst_multicast",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv4 / end actions rss types eth l2-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-nonfrag"],
+            "action": {"save_hash": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:67", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/("X"*480)',
+            "action": {"check_hash_different": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.5")/("X"*480)',
+            "action": {"check_hash_same": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-icmp"],
+            "action": {"save_hash": "ipv4-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:67", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/ICMP()/("X"*480)',
+            "action": {"check_hash_different": "ipv4-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.5")/ICMP()/("X"*480)',
+            "action": {"check_hash_same": "ipv4-icmp"},
+        },
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-tcp"],
+            "action": {"save_hash": "ipv4-tcp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:67", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/TCP(sport=19,dport=99)/("X"*480)',
+            "action": {"check_hash_different": "ipv4-tcp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.5")/TCP(sport=19,dport=99)/("X"*480)',
+            "action": {"check_hash_same": "ipv4-tcp"},
+        },
+    ],
+}
+
+mac_ipv4_l2src_l2dst_multicast = {
+    "sub_casename": "mac_ipv4_l2src_l2dst_multicast",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv4 / end actions rss types eth end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-nonfrag"],
+            "action": {"save_hash": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.2", src="192.168.0.2")/("X"*480)',
+            "action": {"check_hash_different": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/("X"*480)',
+            "action": {"check_hash_same": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-icmp"],
+            "action": {"save_hash": "ipv4-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.2", src="192.168.0.2")/ICMP()/("X"*480)',
+            "action": {"check_hash_different": "ipv4-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/ICMP()/("X"*480)',
+            "action": {"check_hash_same": "ipv4-icmp"},
+        },
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-tcp"],
+            "action": {"save_hash": "ipv4-tcp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.2", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv4-tcp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.0.5")/TCP(sport=23,dport=25)/("X"*480)',
+            "action": {"check_hash_same": "ipv4-tcp"},
+        },
+    ],
+}
+
+mac_ipv4_l3_src_multicast = {
+    "sub_casename": "mac_ipv4_l3_src_multicast",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-nonfrag"],
+            "action": {"save_hash": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.1.2")/("X"*480)',
+            "action": {"check_hash_different": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.2", src="192.168.0.2")/("X"*480)',
+            "action": {"check_hash_same": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-icmp"],
+            "action": {"save_hash": "ipv4-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.1.2")/ICMP()/("X"*480)',
+            "action": {"check_hash_different": "ipv4-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.2", src="192.168.0.2")/ICMP()/("X"*480)',
+            "action": {"check_hash_same": "ipv4-icmp"},
+        },
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-tcp"],
+            "action": {"save_hash": "ipv4-tcp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv4-tcp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.2", src="192.168.0.2")/TCP(sport=32,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv4-tcp"},
+        },
+    ],
+}
+
+mac_ipv4_l3_dst_multicast = {
+    "sub_casename": "mac_ipv4_l3_dst_multicast",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-nonfrag"],
+            "action": {"save_hash": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.2.1", src="192.168.0.2")/("X"*480)',
+            "action": {"check_hash_different": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.1.2")/("X"*480)',
+            "action": {"check_hash_same": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-icmp"],
+            "action": {"save_hash": "ipv4-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.2.1", src="192.168.0.2")/ICMP()/("X"*480)',
+            "action": {"check_hash_different": "ipv4-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.1.2")/ICMP()/("X"*480)',
+            "action": {"check_hash_same": "ipv4-icmp"},
+        },
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-tcp"],
+            "action": {"save_hash": "ipv4-tcp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.2.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv4-tcp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.1.2")/TCP(sport=32,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv4-tcp"},
+        },
+    ],
+}
+
+mac_ipv4_all_multicast = {
+    "sub_casename": "mac_ipv4_all_multicast",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-nonfrag"],
+            "action": {"save_hash": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.2.1", src="192.168.0.2")/("X"*480)',
+            "action": {"check_hash_different": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.1.2")/("X"*480)',
+            "action": {"check_hash_different": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.2")/("X"*480)',
+            "action": {"check_hash_same": "ipv4-nonfrag"},
+        },
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-icmp"],
+            "action": {"save_hash": "ipv4-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.2.1", src="192.168.0.2")/ICMP()/("X"*480)',
+            "action": {"check_hash_different": "ipv4-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.1.2")/ICMP()/("X"*480)',
+            "action": {"check_hash_different": "ipv4-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.2")/ICMP()/("X"*480)',
+            "action": {"check_hash_same": "ipv4-icmp"},
+        },
+        {
+            "send_packet": mac_ipv4_toeplitz_basic_multicast_pkt["ipv4-tcp"],
+            "action": {"save_hash": "ipv4-tcp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.2.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv4-tcp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IP(dst="224.0.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv4-tcp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IP(dst="224.0.0.1", src="192.168.0.2")/TCP(sport=32,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv4-tcp"},
+        },
+    ],
+}
+
 
 mac_ipv6_tcp_toeplitz_basic_pkt = {
     "ipv6-tcp": [
@@ -1416,6 +1718,282 @@ mac_ipv4_tcp_chksum = [
     for element in mac_ipv4_udp_chksum
 ]
 
+# mac_ipv6 multicast
+mac_ipv6_l2_src_multicast = {
+    "sub_casename": "mac_ipv6_l2_src_multicast",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-nonfrag"],
+            "action": {"save_hash": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/("X"*480)',
+            "action": {"check_hash_different": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/("X"*480)',
+            "action": {"check_hash_same": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-icmp"],
+            "action": {"save_hash": "ipv6-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/ICMP()/("X"*480)',
+            "action": {"check_hash_different": "ipv6-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/ICMP()/("X"*480)',
+            "action": {"check_hash_same": "ipv6-icmp"},
+        },
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-udp"],
+            "action": {"save_hash": "ipv6-udp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6-udp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/UDP(sport=25,dport=99)/("X"*480)',
+            "action": {"check_hash_same": "ipv6-udp"},
+        },
+    ],
+}
+
+mac_ipv6_l2_dst_multicast = {
+    "sub_casename": "mac_ipv6_l2_dst_multicast",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / end actions rss types eth l2-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-nonfrag"],
+            "action": {"save_hash": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:67", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/("X"*480)',
+            "action": {"check_hash_different": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/("X"*480)',
+            "action": {"check_hash_same": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-icmp"],
+            "action": {"save_hash": "ipv6-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:67", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/ICMP()/("X"*480)',
+            "action": {"check_hash_different": "ipv6-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/ICMP()/("X"*480)',
+            "action": {"check_hash_same": "ipv6-icmp"},
+        },
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-udp"],
+            "action": {"save_hash": "ipv6-udp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:67", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/UDP(sport=25,dport=99)/("X"*480)',
+            "action": {"check_hash_different": "ipv6-udp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::23")/UDP(sport=25,dport=99)/("X"*480)',
+            "action": {"check_hash_same": "ipv6-udp"},
+        },
+    ],
+}
+
+mac_ipv6_l2src_l2dst_multicast = {
+    "sub_casename": "mac_ipv6_l2src_l2dst_multicast",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / end actions rss types eth end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-nonfrag"],
+            "action": {"save_hash": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/("X"*480)',
+            "action": {"check_hash_different": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::25")/("X"*480)',
+            "action": {"check_hash_same": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-icmp"],
+            "action": {"save_hash": "ipv6-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/ICMP()/("X"*480)',
+            "action": {"check_hash_different": "ipv6-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::25")/ICMP()/("X"*480)',
+            "action": {"check_hash_same": "ipv6-icmp"},
+        },
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-udp"],
+            "action": {"save_hash": "ipv6-udp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6-udp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="ff01::25")/UDP(sport=25,dport=99)/("X"*480)',
+            "action": {"check_hash_same": "ipv6-udp"},
+        },
+    ],
+}
+
+mac_ipv6_l3_src_multicast = {
+    "sub_casename": "mac_ipv6_l3_src_multicast",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / end actions rss types ipv6 l3-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-nonfrag"],
+            "action": {"save_hash": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::2")/("X"*480)',
+            "action": {"check_hash_different": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/("X"*480)',
+            "action": {"check_hash_same": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-icmp"],
+            "action": {"save_hash": "ipv6-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::25")/ICMP()/("X"*480)',
+            "action": {"check_hash_different": "ipv6-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/ICMP()/("X"*480)',
+            "action": {"check_hash_same": "ipv6-icmp"},
+        },
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-udp"],
+            "action": {"save_hash": "ipv6-udp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::25")/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6-udp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/UDP(sport=32,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6-udp"},
+        },
+    ],
+}
+
+mac_ipv6_l3_dst_multicast = {
+    "sub_casename": "mac_ipv6_l3_dst_multicast",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / end actions rss types ipv6 l3-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-nonfrag"],
+            "action": {"save_hash": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::25")/("X"*480)',
+            "action": {"check_hash_different": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::2")/("X"*480)',
+            "action": {"check_hash_same": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-icmp"],
+            "action": {"save_hash": "ipv6-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::25")/ICMP()/("X"*480)',
+            "action": {"check_hash_different": "ipv6-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::2")/ICMP()/("X"*480)',
+            "action": {"check_hash_same": "ipv6-icmp"},
+        },
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-udp"],
+            "action": {"save_hash": "ipv6-udp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::25")/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6-udp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::2")/UDP(sport=32,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6-udp"},
+        },
+    ],
+}
+
+mac_ipv6_all_multicast = {
+    "sub_casename": "mac_ipv6_all_multicast",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / end actions rss types ipv6 end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-nonfrag"],
+            "action": {"save_hash": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::21")/("X"*480)',
+            "action": {"check_hash_different": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::2")/("X"*480)',
+            "action": {"check_hash_different": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/("X"*480)',
+            "action": {"check_hash_same": "ipv6-nonfrag"},
+        },
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-icmp"],
+            "action": {"save_hash": "ipv6-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::21")/ICMP()/("X"*480)',
+            "action": {"check_hash_different": "ipv6-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::2")/ICMP()/("X"*480)',
+            "action": {"check_hash_different": "ipv6-icmp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/ICMP()/("X"*480)',
+            "action": {"check_hash_same": "ipv6-icmp"},
+        },
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_multicast_pkt["ipv6-udp"],
+            "action": {"save_hash": "ipv6-udp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::21")/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6-udp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="ff01::2")/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6-udp"},
+        },
+        {
+            "send_packet": 'Ether(dst="11:22:33:44:55:66", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="ff01::2")/UDP(sport=32,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6-udp"},
+        },
+    ],
+}
 # mac ipv4_sctp
 mac_ipv4_sctp_l2_src = {
     "sub_casename": "mac_ipv4_sctp_l2_src",
@@ -3424,6 +4002,16 @@ mac_ipv4 = [
     mac_ipv4_l3_dst,
     mac_ipv4_all,
 ]
+
+mac_ipv4_multicast = [
+    mac_ipv4_l2_src_multicast,
+    mac_ipv4_l2_dst_multicast,
+    mac_ipv4_l2src_l2dst_multicast,
+    mac_ipv4_l3_src_multicast,
+    mac_ipv4_l3_dst_multicast,
+    mac_ipv4_all_multicast,
+]
+
 mac_ipv4_ipv4_chksum = [mac_ipv4_ipv4_chksum]
 
 mac_ipv4_udp = [
@@ -3478,6 +4066,15 @@ mac_ipv6 = [
     mac_ipv6_l3_src,
     mac_ipv6_l3_dst,
     mac_ipv6_all,
+]
+
+mac_ipv6_multicast = [
+    mac_ipv6_l2_src_multicast,
+    mac_ipv6_l2_dst_multicast,
+    mac_ipv6_l2src_l2dst_multicast,
+    mac_ipv6_l3_src_multicast,
+    mac_ipv6_l3_dst_multicast,
+    mac_ipv6_all_multicast,
 ]
 
 mac_ipv6_udp = [
@@ -5860,11 +6457,21 @@ class AdvancedIavfRSSTest(TestCase):
         self.pmd_output.execute_cmd("port config all rss all")
         self.pmd_output.execute_cmd("set fwd rxonly")
         self.pmd_output.execute_cmd("set verbose 1")
+        if self.running_case in ["test_mac_ipv4_multicast", "test_mac_ipv6_multicast"]:
+            self.pmd_output.execute_cmd("set promisc all off")
+            self.pmd_output.execute_cmd("set allmulti all on")
+            # add multicast mac address to pmd
+            self.pmd_output.execute_cmd("mcast_addr add 0 11:22:33:44:55:66")
+            self.pmd_output.execute_cmd("mcast_addr add 0 11:22:33:44:55:67")
+
         res = self.pmd_output.wait_link_status_up("all", timeout=15)
         self.verify(res is True, "there have port link is down")
 
     def test_mac_ipv4(self):
         self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4)
+
+    def test_mac_ipv4_multicast(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_multicast)
 
     def test_mac_ipv4_udp(self):
         self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_udp)
@@ -5877,6 +6484,9 @@ class AdvancedIavfRSSTest(TestCase):
 
     def test_mac_ipv6(self):
         self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6)
+
+    def test_mac_ipv6_multicast(self):
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_multicast)
 
     def test_mac_ipv6_udp(self):
         self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_udp)
@@ -6655,6 +7265,9 @@ class AdvancedIavfRSSTest(TestCase):
         # destroy all flow rule on port 0
         self.dut.send_command("flow flush 0", timeout=1)
         self.dut.send_command("clear port stats all", timeout=1)
+        if self.running_case in ["test_mac_ipv4_multicast", "test_mac_ipv6_multicast"]:
+            self.pmd_output.execute_cmd("mcast_addr remove 0 11:22:33:44:55:66")
+            self.pmd_output.execute_cmd("mcast_addr remove 0 11:22:33:44:55:67")
         self.pmd_output.execute_cmd("stop")
         self.pmd_output.execute_cmd("quit", "#")
         if self.running_case == "test_flow_rule_not_impact_rx_tx_chksum":
