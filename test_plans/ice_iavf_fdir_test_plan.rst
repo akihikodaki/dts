@@ -236,6 +236,11 @@ Default parameters
    VF00 MAC::
 
     [Dest MAC]: 00:11:22:33:44:55
+    [Multicast Dest MAC]: 11:22:33:44:55:66
+   
+   .. note::
+
+    The LSB of the first byte "11" is 1, it says it to be multicast MAC address.
 
    VF01 MAC::
 
@@ -253,6 +258,7 @@ Default parameters
 
     [Source IP]: 192.168.0.20
     [Dest IP]: 192.168.0.21
+    [Multicast Dest IPv4]: 224.0.0.1
     [IP protocol]: 255
     [TTL]: 2
     [DSCP]: 4
@@ -261,6 +267,7 @@ Default parameters
 
     [Source IPv6]: 2001::2
     [Dest IPv6]: CDCD:910A:2222:5498:8475:1111:3900:2020
+    [Multicast Dest IPv6]: ff01::2
     [IP protocol]: 0
     [TTL]: 2
     [TC]: 1
@@ -302,6 +309,21 @@ Send packets
     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=1, ttl=2, tos=4) / Raw('x' * 80)],iface="enp134s0f1")
     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=255, ttl=3, tos=4) / Raw('x' * 80)],iface="enp134s0f1")
     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=255, ttl=2, tos=9) / Raw('x' * 80)],iface="enp134s0f1")
+
+* MAC_IPV4_PAY multicast
+
+   matched packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=255, ttl=2, tos=4) / Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=255, ttl=2, tos=4)/UDP(sport=22,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
+
+   mismatched packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.22",dst="224.0.0.1", proto=255, ttl=2, tos=4) / Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.2", proto=255, ttl=2, tos=4) / Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=1, ttl=2, tos=4) / Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=255, ttl=3, tos=4) / Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=255, ttl=2, tos=9) / Raw('x' * 80)],iface="enp134s0f1")
 
 * MAC_IPV4_UDP
 
@@ -365,6 +387,21 @@ Send packets
     sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=2, tc=1, hlim=2)/("X"*480)], iface="enp134s0f1")
     sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=0, tc=2, hlim=2)/("X"*480)], iface="enp134s0f1")
     sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=0, tc=1, hlim=5)/("X"*480)], iface="enp134s0f1")
+
+* MAC_IPV6_PAY multicast
+
+   matched packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", src="2001::2", nh=0, tc=1, hlim=2)/("X"*480)], iface="enp134s0f1")
+    sendp([Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", src="2001::2", nh=0, tc=1, hlim=2)/UDP(sport=22,dport=23)/("X"*480)], iface="enp134s0f1")
+
+   mismatched packets::
+
+    sendp([Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::1", src="2001::2", nh=0, tc=1, hlim=2)/("X"*480)], iface="enp134s0f1")
+    sendp([Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", src="2001::1", nh=0, tc=1, hlim=2)/("X"*480)], iface="enp134s0f1")
+    sendp([Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", src="2001::2", nh=2, tc=1, hlim=2)/("X"*480)], iface="enp134s0f1")
+    sendp([Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", src="2001::2", nh=0, tc=2, hlim=2)/("X"*480)], iface="enp134s0f1")
+    sendp([Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", src="2001::2", nh=0, tc=1, hlim=5)/("X"*480)], iface="enp134s0f1")
 
 * MAC_IPV6_UDP
 
@@ -7268,3 +7305,287 @@ Subcase 6: MAC_IPV6_GRE_IPV6_UDP mark
 
 each subcase is the same as the subcase of Test case: MAC_IPV6_GRE_IPV6_TCP pattern, just only pattern is different,
 replace "tcp" with "udp" in all the subcases
+
+Test case: MAC_IPV4_PAY pattern multicast
+=========================================
+Disable promisc mode in the testpmd::
+
+   testpmd> set promisc all off
+
+Enable all multicast mode in the testpmd::
+
+   testpmd> set allmulti all on
+
+configure multicast address::
+
+   testpmd> mcast_addr add 0 11:22:33:44:55:66
+
+Subcase 1: MAC_IPV4_PAY queue index
+-----------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 224.0.0.1 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / mark / end
+
+2. send multicast matched packets, check the packets are distributed to queue 1 without FDIR matched ID.
+   send multicast mismatched packets, check the packets are not distributed to queue 1 without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are not distributed to queue 1 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 2: MAC_IPV4_PAY rss queues
+----------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 224.0.0.1 proto is 255 ttl is 2 tos is 4 / end actions rss queues 2 3 end / mark / end
+
+2. send multicast matched packets, check the packets are distributed to queue 2 or 3 without without FDIR matched ID.
+   send multicast mismatched packets, check the packets are not distributed to queue 2 or 3 without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not distributed to queue 2 or 3 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 3: MAC_IPV4_PAY passthru
+--------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 224.0.0.1 proto is 255 ttl is 2 tos is 4 / end actions passthru / mark / end
+
+2. send multicast matched packets, check the packets are distributed by RSS without FDIR matched ID.
+   send multicast mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to the same queue without FDIR matched ID=0x0.
+   check there is no rule listed.
+
+Subcase 4: MAC_IPV4_PAY drop
+----------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 224.0.0.1 proto is 255 ttl is 2 tos is 4 / end actions drop / mark / end
+
+2. send multicast matched packets, check the packets are dropped
+   send multicast mismatched packets, check the packets are not dropped.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped.
+   check there is no rule listed.
+
+Subcase 5: MAC_IPV4_PAY mark+rss
+--------------------------------
+Note: This combined action is mark with RSS which is without queues specified.
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 224.0.0.1 proto is 255 ttl is 2 tos is 4 / end actions mark / rss / end
+
+2. send multicast  matched packets, check the packets are distributed by RSS with FDIR matched ID=0x0
+   send multicast  mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to the same queue without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 6: MAC_IPV4_PAY mark
+----------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 224.0.0.1 proto is 255 ttl is 2 tos is 4 / end actions mark / end
+
+2. send multicast matched packets, check the packets are distributed by RSS with FDIR matched ID=0x0.
+   send multicast mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to the same queue without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 7: MAC_IPV4_PAY protocal
+--------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 dst is 224.0.0.1 proto is 1 / end actions queue index 1 / mark id 1 / end
+    flow create 0 ingress pattern eth / ipv4 dst is 224.0.0.1 proto is 17 / end actions passthru / mark id 3 / end
+
+2. send matched packets::
+
+    pkt1 = Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=1)/Raw('x' * 80)
+    pkt2 = Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.19",dst="224.0.0.1", proto=1)/Raw('x' * 80)
+    pkt3 = Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", ttl=2, tos=4)/UDP(sport=22,dport=23)/Raw('x' * 80)
+    pkt4 = Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=17)/UDP(sport=22,dport=23)/Raw('x' * 80)
+    pkt5 = Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=17, ttl=2, tos=4)/Raw('x' * 80)
+    pkt6 = Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", frag=1, proto=17, ttl=2, tos=4)/Raw('x' * 80)
+
+   check the pkt1 and pkt2 are redirected to queue 1 with FDIR matched ID=0x1.
+   check the pkt3-pkt6 are distributed by RSS with FDIR matched ID=0x3.
+   send mismatched packets::
+
+    pkt7 = Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.2", proto=1)/Raw('x' * 80)
+    pkt8 = Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", proto=6)/UDP(sport=22,dport=23)/Raw('x' * 80)
+    pkt9 = Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1")/TCP(sport=22,dport=23)/Raw('x' * 80)
+    pkt10 = Ether(dst="11:22:33:44:55:66")/IP(src="192.168.0.20",dst="224.0.0.1", ttl=2, tos=4)/TCP(sport=22,dport=23)/Raw('x' * 80)
+
+   check the packets received have not FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets have not FDIR matched ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV6_PAY pattern multicast
+=========================================
+Disable promisc mode in the testpmd::
+
+   testpmd> set promisc all off
+
+Enable all multicast mode in the testpmd::
+
+   testpmd> set allmulti all on
+
+configure multicast address::
+
+   testpmd> mcast_addr add 0 11:22:33:44:55:66
+
+Subcase 1: MAC_IPV6_PAY queue index
+-----------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 dst is ff01::2 src is 2001::2 proto is 0 hop is 2 tc is 1 / end actions queue index 15 / mark / end
+
+2. send multicast matched packets, check the packets is distributed to queue 15 with FDIR matched ID=0x0.
+   send multicast mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 2: MAC_IPV6_PAY rss queues
+----------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 dst is ff01::2 src is 2001::2 proto is 0 hop is 2 tc is 1 / end actions rss queues 8 9 10 11 12 13 14 15 end / mark / end
+
+2. send multicast matched packets, check the packets is distributed to queue 8-15 with FDIR matched ID=0x0.
+   send multicast mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 3: MAC_IPV6_PAY passthru
+--------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 dst is ff01::2 src is 2001::2 proto is 0 hop is 2 tc is 1 / end actions passthru / mark / end
+
+2. send multicast matched packets, check the packets are distributed by RSS with FDIR matched ID=0x0.
+   send multicast mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are destributed to the same queue without FDIR matched ID .
+   check there is no rule listed.
+
+Subcase 4: MAC_IPV6_PAY drop
+----------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 dst is ff01::2 src is 2001::2 proto is 0 hop is 2 tc is 1 / end actions drop / mark / end
+
+2. send multicast matched packets, check the packets are dropped.
+   send multicast mismatched packets, check the packets are not dropped.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is dropped.
+   check there is no rule listed.
+
+Subcase 5: MAC_IPV6_PAY mark+rss
+--------------------------------
+Note: This combined action is mark with RSS which is without queues specified.
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 dst is ff01::2 src is 2001::2 proto is 0 hop is 2 tc is 1 / end actions mark / rss / end
+
+2. send multicast matched packets, check the packets are distributed by RSS with FDIR matched ID=0x0
+   send multicast mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to the same queue without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 6: MAC_IPV6_PAY mark
+----------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 dst is ff01::2 src is 2001::2 proto is 0 hop is 2 tc is 1 / end actions mark / end
+
+2. repeat the steps of passthru with mark part in subcase 3,
+   get the same result.
+
+Subcase 7: MAC_IPV6_PAY protocal
+--------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 dst is ff01::2 proto is 17 / end actions rss queues 5 6 end / mark id 0 / end
+    flow create 0 ingress pattern eth / ipv6 dst is ff01::2 proto is 6 / end actions mark id 2 / rss / end
+
+2. send matched packets::
+
+    pkt1 = Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", src="2001::2", nh=17, tc=1, hlim=2)/("X"*480)
+    pkt2 = Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2")/UDP(sport=22,dport=23)/("X"*480)
+    pkt3 = Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", nh=17)/TCP(sport=22,dport=23)/("X"*480)
+    pkt4 = Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2")/UDP(sport=22,dport=23)/TCP(sport=22,dport=23)/("X"*480)
+    pkt5 = Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", nh=6)/("X"*480)
+    pkt6 = Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2")/TCP(sport=22,dport=23)/("X"*480)
+
+   check pkt1-pkt4 are redirected to queue 5 or queue 6 with FDIR matched ID=0x0.
+   check pkt5 and pkt6 are distributed by RSS with FDIR matched ID=0x2.
+   send mismatched packets::
+
+    pkt7 = Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::3", nh=1)/("X"*480)
+    pkt8 = Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2")/SCTP()/("X"*480)
+    pkt9 = Ether(dst="11:22:33:44:55:66")/IPv6(dst="ff01::2", nh=1)/TCP(sport=22,dport=23)/("X"*480)
+
+   check the packets are received without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are received without FDIR matched ID.
+   check there is no rule listed.
