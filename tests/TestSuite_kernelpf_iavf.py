@@ -548,11 +548,7 @@ class TestKernelpfIavf(TestCase):
         return pkt_info
 
     def verify_packet_number(self, out):
-        queue0_number = len(re.findall("port 0/queue 0", out))
-        queue1_number = len(re.findall("port 0/queue 1", out))
-        queue2_number = len(re.findall("port 0/queue 2", out))
-        queue3_number = len(re.findall("port 0/queue 3", out))
-        queue_numbers = [queue0_number, queue1_number, queue2_number, queue3_number]
+        queue_number = len(re.findall("port 0", out))
         self.verify(
             "queue 0" in out
             and "queue 1" in out
@@ -560,10 +556,20 @@ class TestKernelpfIavf(TestCase):
             and "queue 3" in out,
             "some queue can't receive packet when send ip packet",
         )
+        p = re.compile("RSS\shash=(\w+)\s-\sRSS\squeue=(\w+)")
+        pkt_info = p.findall(out)
         self.verify(
-            max(queue_numbers) - min(queue_numbers) <= 3,
-            "packet number on each queue should be similar",
+            len(pkt_info) == queue_number, "some packets no hash:{}".format(p.pattern)
         )
+        hit_rssHash = False
+        for rss_hash, rss_queue in pkt_info:
+            for i, j in zip(list(range(64)), [3, 2, 1, 0] * 16):
+                if int(rss_hash, 16) % 64 == i and int(rss_queue, 16) == j:
+                    hit_rssHash = True
+                    break
+                else:
+                    hit_rssHash = False
+            self.verify(hit_rssHash, "some pkt not directed by rss.")
 
     def send_packet(self, itf, tran_type):
         """
