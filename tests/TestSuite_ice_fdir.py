@@ -377,6 +377,83 @@ MAC_IPV6_NAT_T_ESP = {
     ],
 }
 
+# 22.07 new feature
+IPV6_NEXT_PROTO = {
+    "match": [
+        "Ether(dst='00:11:22:33:44:55')/IPv6(nh=123)/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrDestOpt(nh=123)/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrRouting(nh=123)/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrHopByHop(nh=123)/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrSegmentRouting(nh=123)/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=123)/Raw('x'*40)",
+    ],
+    "unmatched": [
+        "Ether(dst='00:11:22:33:44:55')/IPv6(nh=111)/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/UDP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/TCP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/SCTP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrFragment(nh=123)/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrRouting()/IPv6ExtHdrRouting(nh=111)/Raw('x'*40)",
+    ],
+}
+
+IPV6_NEXT_PROTO_TCP = {
+    "match": [
+        "Ether(dst='00:11:22:33:44:55')/IPv6(nh=6)/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6(nh=6)/TCP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrDestOpt(nh=6)/TCP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrRouting(nh=6)/TCP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrHopByHop(nh=6)/TCP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrSegmentRouting(nh=6)/TCP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=6)/TCP()/Raw('x'*40)",
+    ],
+    "unmatched": [
+        "Ether(dst='00:11:22:33:44:55')/IPv6(nh=17)/TCP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/UDP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/SCTP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrFragment(nh=6)/TCP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrRouting()/IPv6ExtHdrRouting(nh=111)/TCP()/Raw('x'*40)",
+    ],
+}
+
+IPV6_NEXT_PROTO_UDP = {
+    "match": [
+        "Ether(dst='00:11:22:33:44:55')/IPv6(nh=17)/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/UDP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrDestOpt(nh=17)/UDP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrRouting(nh=17)/UDP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrHopByHop(nh=17)/UDP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrSegmentRouting(nh=17)/UDP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=17)/UDP()/Raw('x'*40)",
+    ],
+    "unmatched": [
+        "Ether(dst='00:11:22:33:44:55')/IPv6(nh=6)/UDP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/TCP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/SCTP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrFragment(nh=6)/UDP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrRouting()/IPv6ExtHdrRouting(nh=111)/UDP()/Raw('x'*40)",
+    ],
+}
+
+IPV6_NEXT_PROTO_SCTP = {
+    "match": [
+        "Ether(dst='00:11:22:33:44:55')/IPv6(nh=132)/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/SCTP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrDestOpt(nh=132)/SCTP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrRouting(nh=132)/SCTP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrHopByHop(nh=132)/SCTP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrSegmentRouting(nh=132)/SCTP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=132)/SCTP()/Raw('x'*40)",
+    ],
+    "unmatched": [
+        "Ether(dst='00:11:22:33:44:55')/IPv6(nh=6)/SCTP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/UDP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/TCP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrFragment(nh=6)/SCTP()/Raw('x'*40)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrRouting()/IPv6ExtHdrRouting(nh=111)/SCTP()/Raw('x'*40)",
+    ],
+}
+
 tv_mac_ipv4_pay_queue_index = {
     "name": "test_mac_ipv4_pay_queue_index",
     "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / mark / end",
@@ -2682,6 +2759,235 @@ vectors_mac_ipv6_nat_t_esp = [
     tv_mac_ipv6_nat_t_esp_mark,
 ]
 
+# 22.07 new feature
+tv_ipv6_next_proto_queue_index = {
+    "name": "tv_ipv6_next_proto_queue_index",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 123 / end actions queue index 1 / mark / end",
+    "scapy_str": IPV6_NEXT_PROTO,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "queue": 1, "mark_id": 0},
+}
+
+tv_ipv6_next_proto_rss_queues = {
+    "name": "tv_ipv6_next_proto_rss_queues",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 123 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": IPV6_NEXT_PROTO,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "queue": [2, 3], "mark_id": 1},
+}
+
+tv_ipv6_next_proto_passthru = {
+    "name": "tv_ipv6_next_proto_passthru",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 123 / end actions passthru / mark / end",
+    "scapy_str": IPV6_NEXT_PROTO,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "rss": True, "mark_id": 0},
+}
+
+tv_ipv6_next_proto_drop = {
+    "name": "tv_ipv6_next_proto_drop",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 123 / end actions drop / end",
+    "scapy_str": IPV6_NEXT_PROTO,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "drop": True},
+}
+
+tv_ipv6_next_proto_mark_rss = {
+    "name": "tv_ipv6_next_proto_mark_rss",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 123 / end actions mark / rss / end",
+    "scapy_str": IPV6_NEXT_PROTO,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 0, "rss": True},
+}
+
+tv_ipv6_next_proto_mark = {
+    "name": "tv_ipv6_next_proto_mark",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 123 / end actions mark / end",
+    "scapy_str": IPV6_NEXT_PROTO,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 0, "rss": True},
+}
+
+vectors_ipv6_next_proto = [
+    tv_ipv6_next_proto_queue_index,
+    tv_ipv6_next_proto_rss_queues,
+    tv_ipv6_next_proto_passthru,
+    tv_ipv6_next_proto_drop,
+    tv_ipv6_next_proto_mark_rss,
+    tv_ipv6_next_proto_mark,
+]
+
+tv_ipv6_next_proto_tcp_queue_index = {
+    "name": "tv_ipv6_next_proto_tcp_queue_index",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 6 / tcp / end actions queue index 3 / mark / end",
+    "scapy_str": IPV6_NEXT_PROTO_TCP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "queue": 3, "mark_id": 0},
+}
+
+tv_ipv6_next_proto_tcp_rss_queues = {
+    "name": "tv_ipv6_next_proto_tcp_rss_queues",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 6 / tcp / end actions rss queues 5 6 end / mark id 1 / end",
+    "scapy_str": IPV6_NEXT_PROTO_TCP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "queue": [5, 6], "mark_id": 1},
+}
+
+tv_ipv6_next_proto_tcp_passthru = {
+    "name": "tv_ipv6_next_proto_tcp_passthru",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 6 / tcp / end actions passthru / mark / end",
+    "scapy_str": IPV6_NEXT_PROTO_TCP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "rss": True, "mark_id": 0},
+}
+
+tv_ipv6_next_proto_tcp_drop = {
+    "name": "tv_ipv6_next_proto_tcp_drop",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 6 / tcp / end actions drop / end",
+    "scapy_str": IPV6_NEXT_PROTO_TCP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "drop": True},
+}
+
+tv_ipv6_next_proto_tcp_mark_rss = {
+    "name": "tv_ipv6_next_proto_tcp_mark_rss",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 6 / tcp / end actions mark / rss / end",
+    "scapy_str": IPV6_NEXT_PROTO_TCP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 0, "rss": True},
+}
+
+tv_ipv6_next_proto_tcp_mark = {
+    "name": "tv_ipv6_next_proto_tcp_mark",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 6 / tcp / end actions mark / end",
+    "scapy_str": IPV6_NEXT_PROTO_TCP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 0, "rss": True},
+}
+
+vectors_ipv6_next_proto_tcp = [
+    tv_ipv6_next_proto_tcp_queue_index,
+    tv_ipv6_next_proto_tcp_rss_queues,
+    tv_ipv6_next_proto_tcp_passthru,
+    tv_ipv6_next_proto_tcp_drop,
+    tv_ipv6_next_proto_tcp_mark_rss,
+    tv_ipv6_next_proto_tcp_mark,
+]
+
+tv_ipv6_next_proto_udp_queue_index = {
+    "name": "tv_ipv6_next_proto_udp_queue_index",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 17 / udp / end actions queue index 3 / mark / end",
+    "scapy_str": IPV6_NEXT_PROTO_UDP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "queue": 3, "mark_id": 0},
+}
+
+tv_ipv6_next_proto_udp_rss_queues = {
+    "name": "tv_ipv6_next_proto_udp_rss_queues",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 17 / udp / end actions rss queues 7 8 end / mark id 1 / end",
+    "scapy_str": IPV6_NEXT_PROTO_UDP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "queue": [7, 8], "mark_id": 1},
+}
+
+tv_ipv6_next_proto_udp_passthru = {
+    "name": "tv_ipv6_next_proto_udp_passthru",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 17 / udp / end actions passthru / mark / end",
+    "scapy_str": IPV6_NEXT_PROTO_UDP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "rss": True, "mark_id": 0},
+}
+
+tv_ipv6_next_proto_udp_drop = {
+    "name": "tv_ipv6_next_proto_udp_drop",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 17 / udp / end actions drop / end",
+    "scapy_str": IPV6_NEXT_PROTO_UDP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "drop": True},
+}
+
+tv_ipv6_next_proto_udp_mark_rss = {
+    "name": "tv_ipv6_next_proto_udp_mark_rss",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 17 / udp / end actions mark / rss / end",
+    "scapy_str": IPV6_NEXT_PROTO_UDP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 0, "rss": True},
+}
+
+tv_ipv6_next_proto_udp_mark = {
+    "name": "tv_ipv6_next_proto_udp_mark",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 17 / udp / end actions mark / end",
+    "scapy_str": IPV6_NEXT_PROTO_UDP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 0, "rss": True},
+}
+
+vectors_ipv6_next_proto_udp = [
+    tv_ipv6_next_proto_udp_queue_index,
+    tv_ipv6_next_proto_udp_rss_queues,
+    tv_ipv6_next_proto_udp_passthru,
+    tv_ipv6_next_proto_udp_drop,
+    tv_ipv6_next_proto_udp_mark_rss,
+    tv_ipv6_next_proto_udp_mark,
+]
+
+tv_ipv6_next_proto_sctp_queue_index = {
+    "name": "tv_ipv6_next_proto_sctp_queue_index",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 132 / sctp / end actions queue index 5 / mark id 3 / end",
+    "scapy_str": IPV6_NEXT_PROTO_SCTP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "queue": 5, "mark_id": 3},
+}
+
+tv_ipv6_next_proto_sctp_rss_queues = {
+    "name": "tv_ipv6_next_proto_sctp_rss_queues",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 132 / sctp / end actions rss queues 1 2 end / mark id 1 / end",
+    "scapy_str": IPV6_NEXT_PROTO_SCTP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "queue": [1, 2], "mark_id": 1},
+}
+
+tv_ipv6_next_proto_sctp_passthru = {
+    "name": "tv_ipv6_next_proto_sctp_passthru",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 132 / sctp / end actions passthru / mark id 4 / end",
+    "scapy_str": IPV6_NEXT_PROTO_SCTP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "rss": True, "mark_id": 4},
+}
+
+tv_ipv6_next_proto_sctp_drop = {
+    "name": "tv_ipv6_next_proto_sctp_drop",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 132 / sctp / end actions drop / end",
+    "scapy_str": IPV6_NEXT_PROTO_SCTP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "drop": True},
+}
+
+tv_ipv6_next_proto_sctp_mark_rss = {
+    "name": "tv_ipv6_next_proto_sctp_mark_rss",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 132 / sctp / end actions mark / rss / end",
+    "scapy_str": IPV6_NEXT_PROTO_SCTP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 0, "rss": True},
+}
+
+tv_ipv6_next_proto_sctp_mark = {
+    "name": "tv_ipv6_next_proto_sctp_mark",
+    "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 132 / sctp / end actions mark / end",
+    "scapy_str": IPV6_NEXT_PROTO_SCTP,
+    "check_func": rfc.check_mark,
+    "check_param": {"port_id": 0, "mark_id": 0, "rss": True},
+}
+
+vectors_ipv6_next_proto_sctp = [
+    tv_ipv6_next_proto_sctp_queue_index,
+    tv_ipv6_next_proto_sctp_rss_queues,
+    tv_ipv6_next_proto_sctp_passthru,
+    tv_ipv6_next_proto_sctp_drop,
+    tv_ipv6_next_proto_sctp_mark_rss,
+    tv_ipv6_next_proto_sctp_mark,
+]
+
 
 class TestICEFdir(TestCase):
     def query_count(self, hits_set, hits, port_id=0, rule_id=0):
@@ -4168,6 +4474,36 @@ class TestICEFdir(TestCase):
             rule, check_stats=True, msg="Succeeded to create (2) flow"
         )
         self.check_fdir_rule(stats=True)
+
+    # 22.07 new feature
+    @skip_unsupported_pkg(["os default", "wireless"])
+    def test_ipv6_next_proto(self):
+        self._rte_flow_validate(vectors_ipv6_next_proto)
+
+    @skip_unsupported_pkg(["os default", "wireless"])
+    def test_ipv6_next_proto_tcp(self):
+        self._rte_flow_validate(vectors_ipv6_next_proto_tcp)
+
+    @skip_unsupported_pkg(["os default", "wireless"])
+    def test_ipv6_next_proto_udp(self):
+        self._rte_flow_validate(vectors_ipv6_next_proto_udp)
+
+    @skip_unsupported_pkg(["os default", "wireless"])
+    def test_ipv6_next_proto_sctp(self):
+        self._rte_flow_validate(vectors_ipv6_next_proto_sctp)
+
+    @skip_unsupported_pkg(["os default", "wireless"])
+    def test_ipv6_next_proto_exclusive(self):
+        rule = "flow create 0 priority 0 ingress pattern eth / ipv6 proto is 123 / end actions queue index 1 / mark / end"
+        self.create_fdir_rule(rule, check_stats=True)
+        self.pmd_output.execute_cmd("flow flush 0")
+        rule1 = "flow create 0 ingress pattern eth / ipv6 proto is 123 / end actions queue index 1 / mark / end"
+        rule2 = "flow create 0 ingress pattern eth / ipv6 proto is 123 / end actions rss queues 2 3 end / mark / end"
+        self.create_fdir_rule(rule1, check_stats=True)
+        out = self.pmd_output.execute_cmd(rule2)
+        self.verify(
+            "Rule already exists!: File exists" in out, "created rule successfully!!!"
+        )
 
     def tear_down(self):
         try:
