@@ -37,6 +37,7 @@ class TestPortControl(TestCase):
         self.socket = self.dut.get_numa_id(self.dut_ports[0])
         port = self.dut.ports_info[0]["port"]
         self.pf_default_driver = port.get_nic_driver()
+        self.driver = self.get_suite_cfg()["vf_driver"]
 
     def set_up(self):
         """
@@ -191,6 +192,14 @@ class TestPortControl(TestCase):
         )
 
     def test_pf_start_stop_reset_close(self):
+        # check PF whether bind to vfio-pci
+        res = self.dut.send_expect("./usertools/dpdk-devbind.py -s", "#")
+        pattern = f"({self.dut.nic.pci}).*drv={self.driver}"
+        regex = re.compile(pattern)
+        mo = regex.search(res)
+        if mo is None:
+            self.bind_nic_driver(self.dut_ports[:1], driver=self.driver)
+
         self.start_testpmd(self.host_testpmd)
         # start port
         self.start_pmd_port(self.host_testpmd)
