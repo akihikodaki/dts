@@ -9,63 +9,72 @@ Enable fdir filter for IPv4/IPv6 + TCP/UDP/SCTP  (OS default package)
 Enable fdir filter for UDP tunnel: Vxlan / NVGRE (OS default package)
 Enable fdir filter for GTP (comm #1 package)
 Enable fdir filter for L2 Ethertype (comm #1 package)
+Enable fdir filter for IPv6 Next Protocol ID(comm #1 package)
 
 Pattern and input set
 ---------------------
 
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |    Packet Type               |        Pattern             |            Input Set                                                          |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    | IPv4/IPv6 + TCP/UDP/SCTP     |      MAC_IPV4_PAY          | [Dest MAC]，[Source IP], [Dest IP], [IP protocol], [TTL], [DSCP]              |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              |      MAC_IPV4_UDP          | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port] |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              |      MAC_IPV4_TCP          | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port] |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              |      MAC_IPV4_SCTP         | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port] |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              |      MAC_IPV6_PAY          | [Dest MAC]，[Source IP], [Dest IP], [IP protocol], [TTL], [TC]                |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              |      MAC_IPV6_UDP          | [Dest MAC]，[Source IP], [Dest IP], [TTL], [TC], [Source Port], [Dest Port]   |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              |      MAC_IPV6_TCP          | [Dest MAC]，[Source IP], [Dest IP], [TTL], [TC], [Source Port], [Dest Port]   |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              |      MAC_IPV6_SCTP         | [Dest MAC]，[Source IP], [Dest IP], [TTL], [TC], [Source Port], [Dest Port]   |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    | UDP tunnel: VXLAN inner only | MAC_IPV4_TUN_IPV4_PAY      | [Inner Source IP], [Inner Dest IP]                                            |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              | MAC_IPV4_TUN_IPV4_UDP      | [Inner Source IP], [Inner Dest IP], [Inner Source Port], [Inner Dest Port]    |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              | MAC_IPV4_TUN_IPV4_TCP      | [Inner Source IP], [Inner Dest IP], [Inner Source Port], [Inner Dest Port]    |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              | MAC_IPV4_TUN_IPV4_SCTP     | [Inner Source IP], [Inner Dest IP], [Inner Source Port], [Inner Dest Port]    |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              | MAC_IPV4_TUN_MAC_IPV4_PAY  | [Inner Source IP], [Inner Dest IP]                                            |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              | MAC_IPV4_TUN_MAC_IPV4_UDP  | [Inner Source IP], [Inner Dest IP], [Inner Source Port], [Inner Dest Port]    |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              | MAC_IPV4_TUN_MAC_IPV4_TCP  | [Inner Source IP], [Inner Dest IP], [Inner Source Port], [Inner Dest Port]    |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              | MAC_IPV4_TUN_MAC_IPV4_SCTP | [Inner Source IP], [Inner Dest IP], [Inner Source Port], [Inner Dest Port]    |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    | IPv4/IPv6 + GTP-U            | MAC_IPV4_GTPU              | [Source IP], [Dest IP], [TEID]                                                |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              | MAC_IPV4_GTPU_EH           | [Source IP], [Dest IP], [TEID], [QFI]                                         |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              | MAC_IPV6_GTPU              | [Source IPV6], [Dest IPV6], [TEID]                                            |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              | MAC_IPV6_GTPU_EH           | [Source IPV6], [Dest IPV6], [TEID], [QFI]                                     |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    | L2 Ethertype                 |      L2 Ethertype          | [Ethertype]                                                                   |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    | ESP                          |      MAC_IPV4_ESP          | [Source IP] [Dest IP] [SPI]                                                   |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              |      MAC_IPV6_ESP          | [Source IP] [Dest IP] [SPI]                                                   |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              |     MAC_IPV4_NAT-T-ESP     | [Source IP] [Dest IP] [SPI]                                                   |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              |     MAC_IPV6_NAT-T-ESP     | [Source IP] [Dest IP] [SPI]                                                   |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |    Packet Type                   |        Pattern             |            Input Set                                                          |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    | IPv4/IPv6 + TCP/UDP/SCTP         |      MAC_IPV4_PAY          | [Dest MAC]，[Source IP], [Dest IP], [IP protocol], [TTL], [DSCP]              |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  |      MAC_IPV4_UDP          | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port] |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  |      MAC_IPV4_TCP          | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port] |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  |      MAC_IPV4_SCTP         | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port] |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  |      MAC_IPV6_PAY          | [Dest MAC]，[Source IP], [Dest IP], [IP protocol], [TTL], [TC]                |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  |      MAC_IPV6_UDP          | [Dest MAC]，[Source IP], [Dest IP], [TTL], [TC], [Source Port], [Dest Port]   |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  |      MAC_IPV6_TCP          | [Dest MAC]，[Source IP], [Dest IP], [TTL], [TC], [Source Port], [Dest Port]   |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  |      MAC_IPV6_SCTP         | [Dest MAC]，[Source IP], [Dest IP], [TTL], [TC], [Source Port], [Dest Port]   |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    | UDP tunnel: VXLAN inner only     | MAC_IPV4_TUN_IPV4_PAY      | [Inner Source IP], [Inner Dest IP]                                            |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  | MAC_IPV4_TUN_IPV4_UDP      | [Inner Source IP], [Inner Dest IP], [Inner Source Port], [Inner Dest Port]    |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  | MAC_IPV4_TUN_IPV4_TCP      | [Inner Source IP], [Inner Dest IP], [Inner Source Port], [Inner Dest Port]    |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  | MAC_IPV4_TUN_IPV4_SCTP     | [Inner Source IP], [Inner Dest IP], [Inner Source Port], [Inner Dest Port]    |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  | MAC_IPV4_TUN_MAC_IPV4_PAY  | [Inner Source IP], [Inner Dest IP]                                            |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  | MAC_IPV4_TUN_MAC_IPV4_UDP  | [Inner Source IP], [Inner Dest IP], [Inner Source Port], [Inner Dest Port]    |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  | MAC_IPV4_TUN_MAC_IPV4_TCP  | [Inner Source IP], [Inner Dest IP], [Inner Source Port], [Inner Dest Port]    |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  | MAC_IPV4_TUN_MAC_IPV4_SCTP | [Inner Source IP], [Inner Dest IP], [Inner Source Port], [Inner Dest Port]    |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    | IPv4/IPv6 + GTP-U                | MAC_IPV4_GTPU              | [Source IP], [Dest IP], [TEID]                                                |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  | MAC_IPV4_GTPU_EH           | [Source IP], [Dest IP], [TEID], [QFI]                                         |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  | MAC_IPV6_GTPU              | [Source IPV6], [Dest IPV6], [TEID]                                            |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  | MAC_IPV6_GTPU_EH           | [Source IPV6], [Dest IPV6], [TEID], [QFI]                                     |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    | L2 Ethertype                     |      L2 Ethertype          | [Ethertype]                                                                   |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    | ESP                              |      MAC_IPV4_ESP          | [Source IP] [Dest IP] [SPI]                                                   |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  |      MAC_IPV6_ESP          | [Source IP] [Dest IP] [SPI]                                                   |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  |     MAC_IPV4_NAT-T-ESP     | [Source IP] [Dest IP] [SPI]                                                   |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  |     MAC_IPV6_NAT-T-ESP     | [Source IP] [Dest IP] [SPI]                                                   |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    | IPv6 Next Protocol + TCP/UDP/SCTP| IPV6_NEXT_PROTO            | [IPv6ExtHdrtype]                                                              |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  | IPV6_NEXT_PROTO_TCP        | [IPv6ExtHdrtype]                                                              |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  | IPV6_NEXT_PROTO_UDP        | [IPv6ExtHdrtype]                                                              |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    |                                  | IPV6_NEXT_PROTO_SCTP       | [IPv6ExtHdrtype]                                                              |
+    +----------------------------------+----------------------------+-------------------------------------------------------------------------------+
 
 .. note::
 
@@ -172,6 +181,10 @@ Default parameters
    L2 Ethertype::
 
     [Ethertype]: 0x8863 0x8864 0x0806 0x8100 0x88f7
+
+   IPv6 ExtHdrtype::
+
+    [IPv6ExtHdrtype]: IPv6ExtHdrDestOpt IPv6ExtHdrRouting IPv6ExtHdrHopByHop IPv6ExtHdrSegmentRouting
 
 Send packets
 ------------
@@ -541,6 +554,86 @@ Send packets
     sendp(Ether(dst='00:11:22:33:44:55')/IPv6(src="2001::8",dst="2001::2")/UDP(dport=4500)/ESP(spi=7)/Raw('x'*480),iface="enp134s0f1")
     sendp(Ether(dst='00:11:22:33:44:55')/IPv6(src="2001::1",dst="2001::9")/UDP(dport=4500)/ESP(spi=7)/Raw('x'*480),iface="enp134s0f1")
     sendp(Ether(dst='00:11:22:33:44:55')/IPv6(src="2001::1",dst="2001::2")/UDP(dport=4500)/ESP(spi=77)/Raw('x'*480),iface="enp134s0f1")
+
+* IPV6_NEXT_PROTO
+
+   matched packets::
+
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6(nh=123)/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrDestOpt(nh=123)/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrRouting(nh=123)/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrHopByHop(nh=123)/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrSegmentRouting(nh=123)/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=123)/Raw('x'*40)],iface="ens192f0")
+
+   mismatched packets::
+
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6(nh=111)/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/UDP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/TCP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/SCTP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrFragment(nh=123)/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrRouting()/IPv6ExtHdrRouting(nh=111)/Raw('x'*40)],iface="ens192f0")
+
+* IPV6_NEXT_PROTO_UDP
+
+   matched packets::
+
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6(nh=17)/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/TCP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrDestOpt(nh=17)/UDP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrRouting(nh=17)/UDP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrHopByHop(nh=17)/UDP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrSegmentRouting(nh=17)/UDP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=17)/UDP()/Raw('x'*40)],iface="ens192f0")
+
+   mismatched packets::
+
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6(nh=6)/UDP/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/TCP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/SCTP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrFragment(nh=17)/UDP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrRouting()/IPv6ExtHdrRouting(nh=111)/UDP()/Raw('x'*40)],iface="ens192f0")
+
+* IPV6_NEXT_PROTO_TCP
+
+   matched packets::
+
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6(nh=6)/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/TCP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrDestOpt(nh=6)/TCP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrRouting(nh=6)/TCP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrHopByHop(nh=6)/TCP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrSegmentRouting(nh=6)/TCP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=6)/TCP()/Raw('x'*40)],iface="ens192f0")
+
+   mismatched packets::
+
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6(nh=17)/TCP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/UDP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/SCTP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrFragment(nh=6)/TCP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrRouting()/IPv6ExtHdrRouting(nh=111)/TCP()/Raw('x'*40)],iface="ens192f0")
+
+* IPV6_NEXT_PROTO_SCTP
+
+   matched packets::
+
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6(nh=132)/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/SCTP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrDestOpt(nh=132)/SCTP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrRouting(nh=132)/SCTP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrHopByHop(nh=132)/SCTP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrSegmentRouting(nh=132)/SCTP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrDestOpt(nh=123)/IPv6ExtHdrDestOpt(nh=132)/SCTP()/Raw('x'*40)],iface="ens192f0")
+
+   mismatched packets::
+
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6(nh=123)/SCTP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/TCP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/UDP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrFragment(nh=132)/SCTP()/Raw('x'*40)],iface="ens192f0")
+    sendp([Ether(dst='00:11:22:33:44:55')/IPv6()/IPv6ExtHdrRouting()/IPv6ExtHdrRouting(nh=111)/SCTP()/Raw('x'*40)],iface="ens192f0")
 
 Test case: flow validation
 ==========================
@@ -4203,3 +4296,222 @@ So there can be created 14848 fdir rules on 1 PF port.
    there is no rule listed.
 
 6. verify matched packets for rule 0 and rule 15359 received without FDIR matched ID.
+
+
+Test_Case: IPV6_NEXT_PROTO pattern
+==================================
+
+Subcase 1: IPV6_NEXT_PROTO queue index
+--------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 123 / end actions queue index 1 / mark / end
+
+2. send matched packets, check the packets is distributed to queue 1 with FDIR matched ID=0x0.
+   send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 2: IPV6_NEXT_PROTO rss queues
+-------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 123 / end actions rss queues 1 2 end / mark id 1 / end
+
+2. send matched packets, check the packets is distributed to queue 56-63 with FDIR matched ID=0x0.
+   send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 3: IPV6_NEXT_PROTO passthru
+-----------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 123 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID=0x0.
+   send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are destributed by RSS without FDIR matched ID .
+   check there is no rule listed.
+
+Subcase 4: IPV6_NEXT_PROTO drop
+-------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 123 / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send unmatched packets, check the packets are not dropped.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is dropped.
+   check there is no rule listed.
+
+Subcase 5: IPV6_NEXT_PROTO mark+rss
+-----------------------------------
+Note: This combined action is mark with RSS which is without queues specified.
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 123 / end actions mark / rss / end
+
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID=0x0
+   send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 6: IPV6_NEXT_PROTO mark
+-------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 123 / end actions mark / end
+
+2. repeat the steps of passthru in subcase 3,
+   get the same result.
+
+
+Test_Case: IPV6_NEXT_PROTO_UDP pattern
+======================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 17 / udp / end actions queue index 3 / mark / end
+
+2. send matched packets, check the packets is distributed to queue 1 with FDIR matched ID=0x0.
+   send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 2: IPV6_NEXT_PROTO_UDP rss queues
+-----------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 17 / udp / end actions rss queues 5 6 end / mark id 1 / end
+
+2. send matched packets, check the packets is distributed to queue 56-63 with FDIR matched ID=0x0.
+   send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 3: IPV6_NEXT_PROTO_UDP passthru
+---------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 17 / udp / end actions passthru / mark / end
+
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID=0x0.
+   send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are destributed by RSS without FDIR matched ID .
+   check there is no rule listed.
+
+Subcase 4: IPV6_NEXT_PROTO_UDP drop
+-----------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 17 / udp / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send unmatched packets, check the packets are not dropped.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is dropped.
+   check there is no rule listed.
+
+Subcase 5: IPV6_NEXT_PROTO_UDP mark+rss
+---------------------------------------
+Note: This combined action is mark with RSS which is without queues specified.
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 17 / udp / end actions mark / rss / end
+
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID=0x0
+   send unmatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 6: IPV6_NEXT_PROTO_UDP mark
+-----------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 17 / udp / end actions mark / end
+
+2. repeat the steps of passthru in subcase 3,
+   get the same result.
+
+
+Test_Case: IPV6_NEXT_PROTO_TCP pattern
+======================================
+
+1. replace "udp" with "tcp", replace "proto is 17" with "proto is 6" in all the subcases of IPV6_NEXT_PROTO_UDP pattern.
+2. Then repeat all the steps in all the subcases of IPV6_NEXT_PROTO_UDP pattern.
+3. get the same result.
+
+
+Test_Case: IPV6_NEXT_PROTO_SCTP pattern
+=======================================
+
+1. replace "udp" with "sctp", replace "proto is 17" with "proto is 132" in all the subcases of IPV6_NEXT_PROTO_UDP pattern.
+2. Then repeat all the steps in all the subcases of IPV6_NEXT_PROTO_UDP pattern.
+3. get the same result.
+
+exclusive test cases
+====================
+
+support priority::
+
+    rule1: flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 123 / end actions queue index 1 / mark / end
+
+same proto value can't be created twice::
+
+    rule1: flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 123 / end actions queue index 1 / mark / end
+    rule2: flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 proto is 123 / end actions rss queues 2 3 end / mark / end
