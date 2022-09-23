@@ -25,28 +25,16 @@ On the TX side:
 - IPv6/SCTP checksum insertion by hardware in transmitted packets (sctp
   length in 4 bytes).
 
-RX side, the L3/L4 checksum offload by hardware can be enabled with the
-following command of the ``testpmd`` application::
-
-   enable-rx-cksum
-
-TX side, the insertion of a L3/L4 checksum by hardware can be enabled with the
+RX/TX side, the insertion of a L3/L4 checksum by hardware can be enabled with the
 following command of the ``testpmd`` application and running in a dedicated
 tx checksum mode::
 
    set fwd csum
-   tx_checksum set mask port_id
+   csum set ip|tcp|udp|sctp|outer-ip|outer-udp hw|sw port_id
 
 The transmission of packet is done with the ``start`` command of the ``testpmd``
 application that will receive packets and then transmit the packet out on all
-configured ports. ``mask`` is used to indicated what hardware checksum
-offload is required on the ``port_id``. Please check the NIC datasheet for the
-corresponding Hardware limits::
-
-      bit 0 - insert ip checksum offload if set
-      bit 1 - insert udp checksum offload if set
-      bit 2 - insert tcp checksum offload if set
-      bit 3 - insert sctp checksum offload if set
+configured ports. 
 
 
 Prerequisites
@@ -71,8 +59,52 @@ Set the verbose level to 1 to display information for each received packet::
 
   testpmd> set verbose 1
 
-Test Case: Validate checksum on the receive packet
-==================================================
+
+Test Case: Insert IPv4/IPv6 UDP/TCP/SCTP checksum on the transmit packet
+========================================================================
+
+Setup the ``csum`` forwarding mode::
+
+  testpmd> set fwd csum
+  Set csum packet forwarding mode
+
+Start the packet forwarding::
+
+  testpmd> port stop all
+  testpmd> csum set ip hw 0
+  testpmd> csum set udp hw 0
+  testpmd> csum set tcp hw 0
+  testpmd> csum set sctp hw 0
+  testpmd> port start all
+  testpmd> start
+    csum packet forwarding - CRC stripping disabled - packets/burst=32
+    nb forwarding cores=1 - nb forwarding ports=10
+    RX queues=1 - RX desc=128 - RX free threshold=64
+    RX threshold registers: pthresh=8 hthresh=8 wthresh=4
+    TX queues=1 - TX desc=512 - TX free threshold=0
+    TX threshold registers: pthresh=32 hthresh=8 wthresh=8
+
+Start a packet capture on the tester in the background::
+
+   tcpdump -i <iface> -s 65535 -w /tmp/tester/test_checksum_capture.pcap &
+
+Send the following multiple packets from tester for with scapy 
+combination: IPv4/UDP, IPv4/TCP, IPv4/SCTP, IPv6/UDP, IPv6/TCP::
+
+   sendp([Ether(dst="52:00:00:00:00:01", src="52:00:00:00:00:00")/IP(chksum=0x0)/UDP(chksum=0xf)/("X"*46),
+   Ether(dst="52:00:00:00:00:01", src="52:00:00:00:00:00")/IP(chksum=0x0)/TCP(chksum=0xf)/("X"*46),
+   Ether(dst="52:00:00:00:00:01", src="52:00:00:00:00:00")/IP(chksum=0x0)/SCTP(chksum=0x0)/("X"*48),
+   Ether(dst="52:00:00:00:00:01", src="52:00:00:00:00:00")/IPv6(src="::1")/UDP(chksum=0xf)/("X"*46),
+   Ether(dst="52:00:00:00:00:01", src="52:00:00:00:00:00")/IPv6(src="::1")/TCP(chksum=0xf)/("X"*46)],
+   iface="ens192f0",count=4,inter=0,verbose=False)
+
+Then verify that the same number of packet are correctly received on the tester. 
+
+Inspect the pcap file from the packet capture and verify the checksums.
+
+
+Test Case: Do not insert IPv4/IPv6 UDP/TCP checksum on the transmit packet
+==========================================================================
 
 Setup the ``csum`` forwarding mode::
 
@@ -89,85 +121,22 @@ Start the packet forwarding::
     TX queues=1 - TX desc=512 - TX free threshold=0
     TX threshold registers: pthresh=32 hthresh=8 wthresh=8
 
-Configure the traffic generator to send the multiple packets with the following
-combination: good/bad ip checksum + good/bad udp/tcp checksum.
+Start a packet capture on the tester in the background::
 
-Except that SCTP header + payload length must be a multiple of 4 bytes.
-IPv4 + UDP/TCP packet length can range from the minimum length to 1518 bytes.
+   tcpdump -i <iface> -s 65535 -w /tmp/tester/test_checksum_capture.pcap &
 
-Then verify that how many packets found with Bad-ipcsum or Bad-l4csum::
+Send the following multiple packets from tester for with scapy 
+combination: IPv4/UDP, IPv4/TCP, IPv6/UDP, IPv6/TCP::
+   
+   sendp([Ether(dst="52:00:00:00:00:01", src="52:00:00:00:00:00")/IP(src="10.0.0.1",chksum=0x0)/UDP(chksum=0xf)/("X"*46),
+   Ether(dst="52:00:00:00:00:01", src="52:00:00:00:00:00")/IP(src="10.0.0.1",chksum=0x0)/TCP(chksum=0xf)/("X"*46),
+   Ether(dst="52:00:00:00:00:01", src="52:00:00:00:00:00")/IPv6(src="::1")/UDP(chksum=0xf)/("X"*46),
+   Ether(dst="52:00:00:00:00:01", src="52:00:00:00:00:00")/IPv6(src="::1")/TCP(chksum=0xf)/("X"*46)],
+   iface="ens192f0",count=4,inter=0,verbose=False)
 
-  testpmd> stop
-  ---------------------- Forward statistics for port 0  ----------------------
-  RX-packets: 0              RX-dropped: 0             RX-total: 0
-  Bad-ipcsum: 0              Bad-l4csum: 0
-  TX-packets: 0              TX-dropped: 0             TX-total: 0
-  ----------------------------------------------------------------------------
+Then verify that the same number of packet are correctly received on the tester.  
 
-
-Test Case: Insert IPv4/IPv6 UDP/TCP/SCTP checksum on the transmit packet
-========================================================================
-
-Setup the ``csum`` forwarding mode::
-
-  testpmd> set fwd csum
-  Set csum packet forwarding mode
-
-Enable the IPv4/UDP/TCP/SCTP checksum offload on port 0::
-
-  testpmd> tx_checksum set 0xf 0
-  testpmd> start
-    csum packet forwarding - CRC stripping disabled - packets/burst=32
-    nb forwarding cores=1 - nb forwarding ports=10
-    RX queues=1 - RX desc=128 - RX free threshold=64
-    RX threshold registers: pthresh=8 hthresh=8 wthresh=4
-    TX queues=1 - TX desc=512 - TX free threshold=0
-    TX threshold registers: pthresh=32 hthresh=8 wthresh=8
-
-Configure the traffic generator to send the multiple packets for the following
-combination: IPv4/UDP, IPv4/TCP, IPv4/SCTP, IPv6/UDP, IPv6/TCP.
-
-Except that SCTP header + payload length must be a multiple of 4 bytes.
-IPv4 + UDP/TCP packet length can range from the minimum length to 1518 bytes.
-
-Then verify that the same number of packet are correctly received on the traffic
-generator side. And IPv4 checksum, TCP checksum, UDP checksum, SCTP CRC32c need
-be validated as pass by the IXIA.
-
-The IPv4 source address will not be changed by testpmd.
-
-
-Test Case: Do not insert IPv4/IPv6 UDP/TCP checksum on the transmit packet
-==========================================================================
-
-Setup the ``csum`` forwarding mode::
-
-  testpmd> set fwd csum
-  Set csum packet forwarding mode
-
-Disable the IPv4/UDP/TCP/SCTP checksum offload on port 0::
-
-  testpmd> tx_checksum set 0x0 0
-  testpmd> start
-    csum packet forwarding - CRC stripping disabled - packets/burst=32
-    nb forwarding cores=1 - nb forwarding ports=10
-    RX queues=1 - RX desc=128 - RX free threshold=64
-    RX threshold registers: pthresh=8 hthresh=8 wthresh=4
-    TX queues=1 - TX desc=512 - TX free threshold=0
-    TX threshold registers: pthresh=32 hthresh=8 wthresh=8
-
-Configure the traffic generator to send the multiple packets for the following
-combination: IPv4/UDP, IPv4/TCP, IPv6/UDP, IPv6/TCP.
-
-IPv4 + UDP/TCP packet length can range from the minimum length to 1518 bytes.
-
-Then verify that the same number of packet are correctly received on the traffic
-generator side. And IPv4 checksum, TCP checksum, UDP checksum need
-be validated as pass by the IXIA.
-
-The first byte of source IPv4 address will be increment by testpmd. The checksum
-is indeed recalculated by software algorithms.
-
+Inspect the pcap file from the packet capture and verify the checksums.
 
 Test Case: Validate RX checksum valid flags on the receive packet
 =================================================================
@@ -179,6 +148,12 @@ Setup the ``csum`` forwarding mode::
 
 Start the packet forwarding::
 
+  testpmd> port stop all
+  testpmd> csum set ip hw 0
+  testpmd> csum set udp hw 0
+  testpmd> csum set tcp hw 0
+  testpmd> csum set sctp hw 0
+  testpmd> port start all
   testpmd> start
     csum packet forwarding - CRC stripping disabled - packets/burst=32
     nb forwarding cores=1 - nb forwarding ports=10
@@ -315,6 +290,12 @@ Setup the ``csum`` forwarding mode::
 
 Start the packet forwarding::
 
+  testpmd> port stop all
+  testpmd> csum set ip hw 0
+  testpmd> csum set udp hw 0
+  testpmd> csum set tcp hw 0
+  testpmd> csum set sctp hw 0
+  testpmd> port start all
   testpmd> start
     csum packet forwarding - CRC stripping disabled - packets/burst=32
     nb forwarding cores=1 - nb forwarding ports=10
@@ -398,6 +379,13 @@ Setup the ``csum`` forwarding mode::
 
 Start the packet forwarding::
 
+  testpmd> port stop all
+  testpmd> csum set ip hw 0
+  testpmd> csum set udp hw 0
+  testpmd> csum set tcp hw 0
+  testpmd> csum set sctp hw 0
+  testpmd> csum set 0xf 0
+  testpmd> port start all
   testpmd> start
     csum packet forwarding - CRC stripping disabled - packets/burst=32
     nb forwarding cores=1 - nb forwarding ports=10
@@ -484,6 +472,12 @@ Setup the ``csum`` forwarding mode::
 
 Start the packet forwarding::
 
+  testpmd> port stop all
+  testpmd> csum set ip hw 0
+  testpmd> csum set udp hw 0
+  testpmd> csum set tcp hw 0
+  testpmd> csum set sctp hw 0
+  testpmd> port start all
   testpmd> start
     csum packet forwarding - CRC stripping disabled - packets/burst=32
     nb forwarding cores=1 - nb forwarding ports=10
@@ -926,6 +920,12 @@ Setup the ``csum`` forwarding mode::
 
 Start the packet forwarding::
 
+  testpmd> port stop all
+  testpmd> csum set ip hw 0
+  testpmd> csum set udp hw 0
+  testpmd> csum set tcp hw 0
+  testpmd> csum set sctp hw 0
+  testpmd> port start all
   testpmd> start
     csum packet forwarding - CRC stripping disabled - packets/burst=32
     nb forwarding cores=1 - nb forwarding ports=10
@@ -960,3 +960,44 @@ Send a packet ptypes is IP/TCP with a bad checksum with a 0 in it's payload::
 
    Inspect the pcap file from the packet capture and verify the checksums.
 
+Test Case: checksum offload with vlan
+=====================================
+
+Setup the ``csum`` forwarding mode::
+
+  testpmd> set fwd csum
+  Set csum packet forwarding mode
+
+Enable the IPv4/UDP/TCP/SCTP checksum offload on port 0::
+
+  testpmd> port stop all
+  testpmd> csum set ip hw 0
+  testpmd> csum set udp hw 0
+  testpmd> csum set tcp hw 0
+  testpmd> csum set sctp hw 0
+  testpmd> port start all
+  testpmd> start
+    csum packet forwarding - CRC stripping disabled - packets/burst=32
+    nb forwarding cores=1 - nb forwarding ports=10
+    RX queues=1 - RX desc=128 - RX free threshold=64
+    RX threshold registers: pthresh=8 hthresh=8 wthresh=4
+    TX queues=1 - TX desc=512 - TX free threshold=0
+    TX threshold registers: pthresh=32 hthresh=8 wthresh=8
+
+Start a packet capture on the tester in the background::
+
+   tcpdump -i <iface> -s 65535 -w /tmp/tester/test_checksum_capture.pcap &
+
+Send the following multiple packets from tester for with scapy 
+combination: IPv4/UDP, IPv4/TCP, IPv6/UDP, IPv6/TCP::
+
+   sendp([Ether(dst="52:00:00:00:00:01", src="52:00:00:00:00:00")/Dot1Q(vlan=1)/IP(chksum=0x0)/UDP(chksum=0xf)/("X"*46),
+   Ether(dst="52:00:00:00:00:01", src="52:00:00:00:00:00")/Dot1Q(vlan=1)/IP(chksum=0x0)/TCP(chksum=0xf)/("X"*46),
+   Ether(dst="52:00:00:00:00:01", src="52:00:00:00:00:00")/Dot1Q(vlan=1)/IP(chksum=0x0)/SCTP(chksum=0x0)/("X"*48),
+   Ether(dst="52:00:00:00:00:01", src="52:00:00:00:00:00")/Dot1Q(vlan=1)/IPv6(src="::1")/UDP(chksum=0xf)/("X"*46),
+   Ether(dst="52:00:00:00:00:01", src="52:00:00:00:00:00")/Dot1Q(vlan=1)/IPv6(src="::1")/TCP(chksum=0xf)/("X"*46)],
+   iface="ens192f0",count=4,inter=0,verbose=False)
+
+Then verify that the same number of packet are correctly received on the tester. 
+
+Inspect the pcap file from the packet capture and verify the checksums.
