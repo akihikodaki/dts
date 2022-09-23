@@ -605,7 +605,7 @@ class TestChecksumOffload(TestCase):
         # send the packet checksum value different from the expected value
         self.checksum_valid_flags(pkts_bad, 0)
 
-    def test_checksum_offload_enable(self):
+    def test_insert_checksum_on_the_transmit_packet(self):
         """
         Insert IPv4/IPv6 UDP/TCP/SCTP checksum on the transmit packet.
         Enable Checksum offload.
@@ -654,7 +654,7 @@ class TestChecksumOffload(TestCase):
 
         self.verify(len(result) == 0, ",".join(list(result.values())))
 
-    def test_checksum_offload_disable(self):
+    def test_do_not_insert_checksum_on_the_transmit_packet(self):
         """
         Do not insert IPv4/IPv6 UDP/TCP checksum on the transmit packet.
         Disable Checksum offload.
