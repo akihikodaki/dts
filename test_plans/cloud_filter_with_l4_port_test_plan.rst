@@ -470,7 +470,7 @@ Test Case 13: multi-rule
 
         packets should be in queue 0.
 
-Test Case 3: NEGATIVE_TEST
+Test Case 14: NEGATIVE_TEST
 ====================================
 
 1. rules can not create
