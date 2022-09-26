@@ -9,7 +9,7 @@ Prerequisites
 =============
 
 1. Hardware:
-   Intel® Ethernet 700 Series and 82599
+   Intel® Ethernet 700 Series, Intel® Ethernet 800 Series and 82599
   
 2. software: 
    dpdk: http://dpdk.org/git/dpdk
@@ -2169,6 +2169,7 @@ Test case: Dual vlan(QinQ)
 
 Test case: create same rule after destroy
 =========================================
+support NIC: Intel® Ethernet 700 Series, Intel® Ethernet 800 Series and 82599.
 
 1. Launch the app ``testpmd`` with the following arguments::
 
@@ -2192,6 +2193,7 @@ Test case: create same rule after destroy
 
 Test case: create different rule after destroy
 ==============================================
+support NIC: Intel® Ethernet 700 Series, Intel® Ethernet 800 Series and 82599.
 
 1. Launch the app ``testpmd`` with the following arguments::
 
@@ -2214,11 +2216,12 @@ Test case: create different rule after destroy
     verify match pkt2 to queue 2, verify mismatch pkt1 to queue 0.
 
 Test Case: 10GB Multiple filters
-======================================
+================================
+only supported by ixgbe and igb
 
 1. config testpmd on DUT
 
-   1. set up testpmd with Intel® Ethernet 700 Series NICs::
+   1. set up testpmd with 82599 NICs::
 
          ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1,2,3,4,5,6,7,8 -n 4 -- -i --disable-rss --rxq=16 --txq=16
 

@@ -1,9 +1,9 @@
 .. SPDX-License-Identifier: BSD-3-Clause
    Copyright(c) 2011-2017 Intel Corporation
 
-======================================
-82599 Reta (Redirection table) Tests
-======================================
+==============================
+Reta (Redirection table) Tests
+==============================
 
 This document provides test plan for benchmarking of Rss reta(Redirection
 table) updating for the Intel® 82599 10 Gigabit Ethernet Controller
@@ -14,6 +14,7 @@ the table prior to enabling multiple receive queues .It can also update
 the redirection table during run time. Such updates of the table are
 not synchronized with the arrival time of received packets.
 
+The suit support NIC: Intel® Ethernet 700 Series, Intel® Ethernet 800 Series, 82599 and igc driver NIC.
 Prerequisites
 =============
 

@@ -14,7 +14,7 @@ The support of Dual VLAN offload features by Poll Mode Drivers consists in:
 Prerequisites
 =============
 
-In this feature, x7xx series, 82576 and 82599 are supported.
+In this feature, x7xx series, Intel® Ethernet 800 Series, 82576 and 82599 are supported.
 
 If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
 using vfio, use the following commands to load the vfio driver and bind it

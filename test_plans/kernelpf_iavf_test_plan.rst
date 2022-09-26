@@ -17,7 +17,7 @@ This plan for IAVF only supports kernel PF scenario.
 
 Hardware
 ========
-ICE driver NIC.
+ICE/I40E driver NIC.
 
 Prerequisites
 =============

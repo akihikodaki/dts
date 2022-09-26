@@ -6,6 +6,7 @@ VF PF Reset Tests
 =================
 
    The scenario is kernel PF + DPDK VF
+   The suit support NIC: Intel® Ethernet 700 Series, Intel® Ethernet 800 Series
 
 Prerequisites
 =============

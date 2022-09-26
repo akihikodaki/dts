@@ -21,7 +21,7 @@ if valid. The response is then formatted in JSON and sent back to the requesting
 
 Hardwares::
 ------------
-I40E driver NIC  or ixgbe driver NIC
+I40E driver NIC, ICE driver NIC or ixgbe driver NIC
 
 Prerequisites
 =============

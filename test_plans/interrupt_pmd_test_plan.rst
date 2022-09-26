@@ -18,6 +18,8 @@ interrupt.
 Prerequisites
 =============
 
+The suit support NIC: Intel® Ethernet 700 Series, Intel® Ethernet 800 Series and 82599.
+
 Each of the 10Gb Ethernet* ports of the DUT is directly connected in
 full-duplex to a different port of the peer traffic generator.
 

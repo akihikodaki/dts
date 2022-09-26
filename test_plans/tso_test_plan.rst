@@ -20,6 +20,9 @@ according to the MTU size.
 Prerequisites
 =============
 
+Hardware:
+   Intel® Ethernet 700 Series, Intel® Ethernet 800 Series and 82599/500 Series
+
 The DUT must take one of the Ethernet controller ports connected to a port on another
 device that is controlled by the Scapy packet generator.
 

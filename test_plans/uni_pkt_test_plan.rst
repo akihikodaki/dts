@@ -19,10 +19,11 @@ Prerequisites
 =============
 
 Enable ABI and disable vector ixgbe driver in dpdk configuration file.
-Plug in three different types of nic on the board.
+Plug in different types of nic on the board.
 1x Intel® XL710-DA2 (Eagle Fountain)
 1x Intel® 82599 Gigabit Ethernet Controller
 1x Intel® I350 Gigabit Network Connection
+1x Intel® Ethernet 800 Series NIC
 
 Start testpmd and then enable rxonly and verbose mode::
 

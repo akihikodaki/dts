@@ -8,6 +8,8 @@ IP fragmentation Tests
 The IP fragmentation results are produced using ''ip_fragmentation'' application.
 The test application should run with both IPv4 and IPv6 fragmentation.
 
+The suit support NIC: Intel® Ethernet 700 Series, Intel® Ethernet 800 Series, 82599 and igc driver NIC.
+
 Prerequisites
 =============
 

@@ -5,6 +5,7 @@
 VF Port Start Stop Tests
 ========================
 
+The suit support NIC: Intel® Ethernet 700 Series, Intel® Ethernet 800 Series and Intel® 82599 Gigabit Ethernet Controller.
 
 Prerequisites
 =============

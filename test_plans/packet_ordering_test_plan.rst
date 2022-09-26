@@ -77,7 +77,7 @@ For example::
 Prerequisites
 =============
 
-1x Intel® Ethernet Port (710 series, 82599, etc)
+1x Intel® Ethernet Port (710 series, 82599, E810 series etc)
 
 Test Case: Packet ordering at different rates
 =============================================

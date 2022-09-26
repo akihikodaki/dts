@@ -29,7 +29,7 @@ To run the testpmd application in linuxapp environment with 4 lcores,
 Test Case: queue start/stop
 ---------------------------
 
-This case support PF (Intel® Ethernet 700 Series), VF (Intel® Ethernet 700 Series, 82599)
+This case support PF (Intel® Ethernet 700 Series/Intel® Ethernet 800 Series/82599), VF (Intel® Ethernet 700 Series, 82599)
 
 #. Update testpmd source code. Add the following C code in ./app/test-pmd/fwdmac.c::
 

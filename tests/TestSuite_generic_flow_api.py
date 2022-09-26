@@ -1105,7 +1105,7 @@ class TestGeneric_flow_api(TestCase):
 
     def test_2_tuple_filter(self):
         """
-        only supported by igb
+        supported by igb igc i40e and ice
         """
         self.verify(
             self.nic
@@ -4136,15 +4136,13 @@ class TestGeneric_flow_api(TestCase):
 
     def test_fdir_for_mac_vlan(self):
         """
-        only supported by ixgbe
+        supported by ixgbe, ice, i40e
         """
         self.verify(
             self.nic
             in [
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IXGBE_10G-X550T",
-                "IGC-I225_LM",
-                "IGC-I226_LM",
                 "I40E_10G-SFP_XL710",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_A",

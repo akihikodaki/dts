@@ -22,7 +22,7 @@ application in linux app environment with 4 lcores, 2 ports::
 
     ethtool -c f -n 4
 
-The sample should be validated on Intel® Ethernet 700 Series, 82599 and i350 Nics.
+The sample should be validated on Intel® Ethernet 700 Series, Intel® Ethernet 800 Series, 82599 and i350 Nics.
 
 other requirements:
 

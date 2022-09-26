@@ -19,7 +19,7 @@ Case Config::
 
     Meson: For support IEEE1588, build DPDK with '-Dc_args=-DRTE_LIBRTE_IEEE1588'
 
-The sample should be validated on Intel® Ethernet 700 Series, 82599 and i350 Nics.
+The sample should be validated on Intel® Ethernet 700 Series, Intel® Ethernet 800 Series, 82599 and i350 Nics.
 
 Test case: ptp client
 ======================

@@ -5,6 +5,7 @@
 VF RSS - Configuring Hash Function Tests
 ========================================
 
+The suit support NIC: Intel® Ethernet 700 Series, Intel® Ethernet 800 Series.
 This document provides test plan for testing the function of Intel® Ethernet 700 Series:
 Support configuring hash functions.
 

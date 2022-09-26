@@ -37,6 +37,11 @@ Ethernet Controller XL710 for 40GbE QSFP+ 1583
 ixgbe driver nic:
 82599ES 10-Gigabit SFI/SFP+ Network Connection 10fb
 
+ice driver nic:
+Ethernet Controller E810-C for QSFP 1592
+Ethernet Controller E810-XXV for SFP 159b
+Ethernet Controller E810-C for SFP 1593
+
 HW configuration
 ----------------
 link peer topology::

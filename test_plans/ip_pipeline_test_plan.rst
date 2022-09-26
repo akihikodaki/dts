@@ -10,6 +10,8 @@ Description
 The "examples/ip_pipeline" application is the main DPDK Packet Framework
 application.
 
+The suit support NIC: Intel® Ethernet 700 Series(I40E_10G-SFP_XL710), Intel® Ethernet 800 Series(ICE_25G-E810C_SFP).
+
 Prerequisites
 ==============
 The DUT must have four 10G Ethernet ports connected to four ports on

@@ -35,6 +35,8 @@ switch. It's similar as 82599's SRIOV switch.
 Prerequisites for VEB testing
 =============================
 
+The suit support NIC: Intel® Ethernet 700 Series, Intel® Ethernet 800 Series.
+
 1. Get the pci device id of DUT, for example::
 
       ./dpdk-devbind.py --st

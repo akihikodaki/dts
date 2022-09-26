@@ -5,6 +5,8 @@
 VF MAC Filter Tests
 ===================
 
+The suit support NIC: Intel® Ethernet 700 Series, Intel® Ethernet 800 Series and Intel® 82599 Gigabit Ethernet Controller.
+
 Test Case 1: test_kernel_2pf_2vf_1vm_iplink_macfilter
 =====================================================
 

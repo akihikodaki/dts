@@ -20,6 +20,7 @@ Prerequisites
 1. Hardware:
 
 - Intel® Ethernet 700 Series(X710/XL710/XXV710)
+- Intel® Ethernet 800 Series
 
 2. Software:
 

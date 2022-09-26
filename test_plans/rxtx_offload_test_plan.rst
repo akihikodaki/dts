@@ -36,7 +36,7 @@ Prerequisites
 =============
 
 1. Hardware:
-   Intel® Ethernet 700 Series and 82599/500 Series
+   Intel® Ethernet 700 Series, Intel® Ethernet 800 Series and 82599/500 Series
 
 2. Software:
    dpdk: http://dpdk.org/git/dpdk

@@ -18,7 +18,7 @@ a qemu device from/to a VM.
 
 Hardware
 ========
-Ixgbe and i40e NICs
+Ixgbe, ice and i40e NICs
 
 Note
 ====

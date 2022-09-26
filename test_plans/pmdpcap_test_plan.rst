@@ -17,6 +17,8 @@ The core configurations description is:
 Prerequisites
 =============
 
+The suit support NIC: Intel® Ethernet 700 Series, Intel® Ethernet 800 Series, 82599 and igc driver NIC.
+
 This test does not requires connections between DUT and tester as it is focused
 in PCAP devices created by Test PMD.
 

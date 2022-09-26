@@ -34,7 +34,7 @@ in a rule database to figure out whether the packets should be dropped
 Prerequisites
 =============
 
-1. The DUT has at least 2 DPDK supported IXGBE/I40E NIC ports::
+1. The DUT has at least 2 DPDK supported IXGBE/I40E/ICE/IGC NIC ports::
 
     Tester      DUT
     eth1  <---> PORT 0

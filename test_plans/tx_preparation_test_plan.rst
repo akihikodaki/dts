@@ -27,7 +27,7 @@ APPLICATION (CASE OF USE):
 Prerequisites
 =============
 
-Support igb_uio, test txprep forwarding features on e1000, i40e and ixgbe
+Support igb_uio, test txprep forwarding features on e1000, i40e, ice, igc and ixgbe
 drivers.Send packets from tester platform through the interface eth1 to
 the tested port 0, then testpmd sends back packet using same port and uses
 tcpdump to capture packet information::

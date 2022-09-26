@@ -1,9 +1,9 @@
 .. SPDX-License-Identifier: BSD-3-Clause
    Copyright(c) 2010-2017 Intel Corporation
 
-======================================
-Intel® Ethernet 700 Series NVGRE Tests
-======================================
+===========
+NVGRE Tests
+===========
 
 Cloud providers build virtual network overlays over existing network
 infrastructure that provide tenant isolation and scaling. Tunneling
@@ -11,6 +11,8 @@ layers added to the packets carry the virtual networking frames over
 existing Layer 2 and IP networks. Conceptually, this is similar to
 creating virtual private networks over the Internet. Intel® Ethernet
 700 Series will process these tunneling layers by the hardware.
+
+The suit support NIC: Intel® Ethernet 700 Series, Intel® Ethernet 800 Series.
 
 This document provides test plan for Intel® Ethernet 700 Series NVGRE
 packet detecting, checksum computing and filtering.

@@ -78,7 +78,7 @@ to the device under test::
    modprobe vfio-pci
    usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
 
-The DUT has at least 2 DPDK supported IXGBE NIC ports.
+The DUT has at least 2 DPDK supported IXGBE/I40E/ICE/IGC NIC ports.
 
 The DUT has to be able to install rte_kni kernel module and launch kni
 application with a default configuration (This configuration may change form a
