@@ -139,10 +139,11 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         self.vhost_user.send_expect(
             "port config 0 tx_offload ipv4_cksum on", "testpmd> ", 120
         )
+        self.vhost_user.send_expect("csum set tcp hw 0", "testpmd> ", 120)
+        self.vhost_user.send_expect("csum set ip hw 0", "testpmd> ", 120)
         self.vhost_user.send_expect("csum set ip sw 1", "testpmd> ", 120)
         self.vhost_user.send_expect("csum set tcp hw 1", "testpmd> ", 120)
-        self.vhost_user.send_expect("csum set ip hw 0", "testpmd> ", 120)
-        self.vhost_user.send_expect("csum set tcp hw 0", "testpmd> ", 120)
+        self.vhost_user.send_expect("set port 0 gso on", "testpmd> ", 120)
         self.vhost_user.send_expect("tso set 1448 0", "testpmd> ", 120)
         self.vhost_user.send_expect("port start 0", "testpmd> ", 120)
         self.vhost_user.send_expect("port start 1", "testpmd> ", 120)
@@ -172,12 +173,6 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         self.dut.send_expect("ip link set %s netns ns1" % self.nic_in_kernel, "#")
         self.dut.send_expect(
             "ip netns exec ns1 ifconfig %s 1.1.1.8 up" % self.nic_in_kernel, "#"
-        )
-        self.dut.send_expect(
-            "ip netns exec ns1 ethtool -K %s gro on" % self.nic_in_kernel, "#"
-        )
-        self.dut.send_expect(
-            "ip netns exec ns1 ethtool -K %s tso on" % self.nic_in_kernel, "#"
         )
 
     def iperf_result_verify(self, vm_client, direction):
@@ -258,11 +253,13 @@ class TestVirtioUserAsExceptionalPath(TestCase):
             rate_value > 0, "The received package did not reach the expected value"
         )
 
-    def test_vhost_exception_path_TAP_original(self):
+    def test_vhost_exception_path_with_virtio_user(self):
+        """
+        Test Case1:test exceptional path with virtio_user
+        """
         self.get_pci_info_from_cfg()
         self.config_kernel_nic_host()
         self.launch_testpmd_exception_path()
-        self.dut.get_session_output(timeout=2)
         time.sleep(5)
         # Get the virtio-net device name
         self.prepare_tap_device()
@@ -278,21 +275,7 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         self.iperf_result_verify(self.iperf, "direction_TAP_original")
         self.logger.info("TAP->virtio-user->Kernel_NIC %s " % (self.output_result))
         self.iperf.send_expect("rm /root/iperf_client.log", "#", 10)
-        self.vhost_user.send_expect("quit", "#", 120)
-        self.dut.close_session(self.vhost_user)
-        self.dut.send_expect("ip netns del ns1", "#")
-        self.dut.close_session(self.iperf)
 
-    def test_vhost_exception_path_NIC_original(self):
-        self.get_pci_info_from_cfg()
-        self.config_kernel_nic_host()
-        self.launch_testpmd_exception_path()
-        time.sleep(5)
-        self.dut.get_session_output(timeout=2)
-        self.prepare_tap_device()
-        self.testpmd_reset()
-        self.iperf = self.dut.new_session(suite="iperf")
-        self.dut.send_expect("rm /root/iperf_client.log", "#", 10)
         self.iperf.send_expect("iperf -s -i 1", "", 180)
         self.dut.send_expect(
             "ip netns exec ns1 iperf -c 1.1.1.2 -i 1 -t 10 > /root/iperf_client.log &",
@@ -302,9 +285,9 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         time.sleep(30)
         self.iperf.send_expect("^C", "#", 10)
         self.iperf_result_verify(self.dut, "direction_NIC_original")
-        self.dut.get_session_output(timeout=2)
         self.logger.info("Kernel_NIC<-virtio-user<-TAP %s " % (self.output_result))
         self.dut.send_expect("rm /root/iperf_client.log", "#", 10)
+
         self.vhost_user.send_expect("quit", "#", 120)
         self.dut.close_session(self.vhost_user)
         self.dut.send_expect("ip netns del ns1", "#")
