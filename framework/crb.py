@@ -207,6 +207,9 @@ class Crb(object):
         """
         self.send_expect("umount `awk '/hugetlbfs/ { print $2 }' /proc/mounts`", "# ")
         out = self.send_expect("awk '/hugetlbfs/ { print $2 }' /proc/mounts", "# ")
+        # if no hugetlbfs mounted, then above command will return " [PEXPECT]#"
+        # so strip the unexptectd " [PEXPECT]#", to proceed to mount the hugetlbfs
+        out = out.strip(" [PEXPECT]#")
         # only mount hugepage when no hugetlbfs mounted
         if not len(out):
             self.send_expect("mkdir -p /mnt/huge", "# ")
