@@ -539,6 +539,126 @@ class TestTelemetry(TestCase):
             self.close_telemetry_server()
             raise Exception(e)
 
+    def start_telemetry_server_and_get_module_eeprom(self, port_id):
+        try:
+            self.change_flag = True
+            self.dut.bind_interfaces_linux(self.drivername)
+            out = self.start_telemetry_server()
+            self.tester.is_interface_up(self.tester_iface0)
+            p = re.search("socket /var/run/dpdk/(.+?)/", out)
+            self.start_dpdk_telemetry(p.group(1))
+            module_eeprom_output = self.dut_telemetry.send_expect(
+                "/ethdev/module_eeprom,{}".format(port_id), "--> "
+            )
+            self.close_telemetry_server()
+            return module_eeprom_output
+        except Exception as e:
+            self.close_telemetry_server()
+            raise Exception(e)
+
+    def start_dpdk_telemetry(self, *args):
+        self.dut_telemetry = self.dut.new_session()
+        dpdk_tool = os.path.join(self.target_dir, "usertools/dpdk-telemetry.py")
+        self.dut_telemetry.send_expect(
+            "python3 " + dpdk_tool + " -f {}".format(args[0]), "--> ", 5
+        )
+
+    def verify_nic_laser_power_via_dpdk(self, laser_powers, *ports):
+        for laser_power, port in zip(laser_powers, ports):
+            laser_power_via_dpdk = self.get_nic_laser_power_via_dpdk(port)
+            dpdk_float_values = self.get_float_laser_power_values(laser_power_via_dpdk)
+            eth_float_values = self.get_float_laser_power_values(laser_power)
+            test_flag = [
+                abs(v_d - v_e) for v_d, v_e in zip(dpdk_float_values, eth_float_values)
+            ]
+            self.logger.info(
+                "dpdk:{} eth:{}".format(dpdk_float_values, eth_float_values)
+            )
+            self.verify(
+                [flag <= 0.1 for flag in test_flag],
+                "dpdk:{} eth:{},get the incorrect laser power values".format(
+                    dpdk_float_values, eth_float_values
+                ),
+            )
+
+    def verify_laser_Power_in_different_optical_modules(self, laser_powers, *ports):
+        laser_power_via_dpdk = self.get_nic_laser_power_via_dpdk(ports[-1])
+        dpdk_float_values = self.get_float_laser_power_values(laser_power_via_dpdk)
+        eth_float_values = self.get_float_laser_power_values(laser_powers[0])
+        self.logger.info(
+            "dpdk port 1: {}   eth port 0: {}".format(
+                dpdk_float_values, eth_float_values
+            )
+        )
+        test_flag = [
+            abs(v_d - v_e) for v_d, v_e in zip(dpdk_float_values, eth_float_values)
+        ]
+        self.verify(
+            [flag > 0.1 for flag in test_flag],
+            "different optical modules should have different laser power values",
+        )
+
+    def verify_laser_Power_in_same_optical_modules(self, laser_powers, *ports):
+        laser_power_via_dpdk = self.get_nic_laser_power_via_dpdk(ports[-1])
+        dpdk_float_values = self.get_float_laser_power_values(laser_power_via_dpdk)
+        eth_float_values = self.get_float_laser_power_values(laser_powers[0])
+        self.logger.info(
+            "dpdk port 1: {}   eth port 0: {}".format(
+                dpdk_float_values, eth_float_values
+            )
+        )
+        test_flag = [
+            abs(v_d - v_e) for v_d, v_e in zip(dpdk_float_values, eth_float_values)
+        ]
+        self.verify(
+            [flag <= 0.1 for flag in test_flag],
+            "same optical modules should have same laser power values",
+        )
+
+    def get_float_laser_power_values(self, output):
+        p = re.findall(r"(\d+\.\d+.)", output)
+        float_list = list(map(float, p))
+        return float_list
+
+    def get_nic_laser_power_via_ethtool(self, intf):
+        output = self.d_a_console(
+            "ethtool -m {} | grep 'Laser output power'".format(intf)
+        )
+        rex_output = re.search(r"Laser output power\s+:.*", output)
+        if not rex_output:
+            return False
+        return rex_output.group()
+
+    def get_nic_laser_power_via_dpdk(self, port):
+        out = self.start_telemetry_server_and_get_module_eeprom(port)
+        laser_power_via_dpdk = self.get_nic_laser_power_via_dpdk_rex(out)
+        return laser_power_via_dpdk
+
+    def get_nic_laser_power_via_dpdk_rex(self, output):
+        rex_output = re.search(r'"Laser output power":.*?dBm"', output)
+        if not rex_output:
+            return False
+        return rex_output.group()
+
+    def check_interface_link_up(self, intf):
+        try:
+            self.d_a_console("ifconfig {} up".format(intf))
+            link = self.dut.is_interface_up(intf)
+            self.verify(link, "link is down")
+        except Exception as e:
+            self.d_a_console("ifconfig {} up".format(intf))
+        finally:
+            time.sleep(3)
+
+    def skip_unsupported_get_laser_power(self, *intfs):
+        laser_power_list = []
+        for intf in intfs:
+            output = self.get_nic_laser_power_via_ethtool(intf)
+            if not output:
+                return False
+            laser_power_list.append(output)
+        return laser_power_list
+
     #
     # Test cases.
     #
@@ -550,6 +670,11 @@ class TestTelemetry(TestCase):
         # get ports information
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
+        self.pf0_intf = self.dut.ports_info[self.dut_ports[0]]["intf"]
+        self.pf1_intf = self.dut.ports_info[self.dut_ports[1]]["intf"]
+        self.tester_iface0 = self.tester.get_interface(
+            self.tester.get_local_port(self.dut_ports[0])
+        )
         self.init_test_binary_files()
         self.nic_grp = self.get_ports_by_nic_type()
         self.used_ports = []
@@ -559,7 +684,7 @@ class TestTelemetry(TestCase):
         """
         Run before each test case.
         """
-        pass
+        self.dut.bind_interfaces_linux(self.drivername)
 
     def tear_down(self):
         """
@@ -571,7 +696,7 @@ class TestTelemetry(TestCase):
         """
         Run after each test suite.
         """
-        pass
+        self.dut.bind_interfaces_linux(self.drivername)
 
     def test_basic_connection(self):
         """
@@ -585,3 +710,59 @@ class TestTelemetry(TestCase):
         Stats of 2 ports for testpmd and telemetry with same type nic
         """
         self.verify_same_nic_with_2ports()
+
+    def test_read_nic_laser_power_via_dpdk(self):
+        """
+        read laser power, check testpmd show correct laser power
+        """
+        self.dut.bind_interfaces_linux(self.kdriver)
+        self.check_interface_link_up(self.pf0_intf)
+        laser_power_list = self.skip_unsupported_get_laser_power(self.pf0_intf)
+        self.skip_case(laser_power_list, "The test need Optical module to support")
+        self.verify_nic_laser_power_via_dpdk(laser_power_list, self.dut_ports[0])
+
+    def test_check_laser_power_in_different_optical_modules(self):
+        """
+        set different optical modules in two ports and check the testpmd show different laser power
+        """
+        self.dut.bind_interfaces_linux(self.kdriver)
+        [self.check_interface_link_up(i) for i in [self.pf0_intf, self.pf1_intf]]
+        laser_power_list = self.skip_unsupported_get_laser_power(
+            self.pf0_intf, self.pf1_intf
+        )
+        self.skip_case(laser_power_list, "The test need Optical module to support")
+        float_list = [
+            self.get_float_laser_power_values(laser_power)
+            for laser_power in laser_power_list
+        ]
+        self.skip_case(
+            abs(float_list[0][0] - float_list[1][0]) > 0.1
+            and abs(float_list[0][1] - float_list[1][1]) > 0.1,
+            "The test need different optical module in two ports",
+        )
+        self.verify_laser_Power_in_different_optical_modules(
+            laser_power_list, self.dut_ports[0], self.dut_ports[1]
+        )
+
+    def test_check_laser_power_in_same_optical_modules(self):
+        """
+        set same optical modules in two ports and check the testpmd show same laser power
+        """
+        self.dut.bind_interfaces_linux(self.kdriver)
+        [self.check_interface_link_up(i) for i in [self.pf0_intf, self.pf1_intf]]
+        laser_power_list = self.skip_unsupported_get_laser_power(
+            self.pf0_intf, self.pf1_intf
+        )
+        self.skip_case(laser_power_list, "The test need Optical module to support")
+        float_list = [
+            self.get_float_laser_power_values(laser_power)
+            for laser_power in laser_power_list
+        ]
+        self.skip_case(
+            abs(float_list[0][0] - float_list[1][0]) <= 0.1
+            and abs(float_list[0][1] - float_list[1][1]) <= 0.1,
+            "The test need same optical module in two ports",
+        )
+        self.verify_laser_Power_in_same_optical_modules(
+            laser_power_list, self.dut_ports[0], self.dut_ports[1]
+        )
