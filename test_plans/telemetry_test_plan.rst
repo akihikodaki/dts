@@ -201,3 +201,108 @@ Test case:  Stats of 4 ports for testpmd and telemetry with different  type nic
 	b.	Ensure packet counts (eg rx_good_packets) is 0
 	c.   Ensure extended NIC stats are shown (depends on PMD used for testing, refer to ixgbe/i40e tests for PMD xstats)
 	d.	Ensure extended NIC stats are 0 (eg: rx_q0_packets == 0)
+
+Test case: read nic Laser Power via dpdk
+========================================
+
+1.Bind ports to dpdk::
+
+      ./usertools/dpdk-devbind.py --bind=vfio-pci 18:00.0 18.00.1
+
+2.Launch the dpdk testpmd with teltmetry::
+
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --telemetry  -- -i
+
+3.Launch the telemetry client::
+
+      python ./usertools/dpdk-telemetry.py
+
+4.Excute command in telemtry client::
+
+      --> /ethdev/module_eeprom,<port number>
+
+      take a example:/ethdev/module_eeprom,0
+      {"/ethdev/module_eeprom": {"Identifier": "0x03 (SFP)", "Extended identifier": "0x04 (GBIC/SFP defined by 2-wire
+       interface ID)", "Connector": "0x07 (LC)", "Transceiver codes": "0x10 0x00 0x00 0x01 0x00 0x00 0x00 0x00 0x00",
+        "Transceiver type": "10G Ethernet: 10G Base-SR; Ethernet: 1000BASE-SX", "Encoding": "0x06 (64B/66B)", "BR,
+        Nominal": "10300MBd", "Rate identifier": "0x00 (unspecified)", "Length (SMF,km)": "0km", "Length (SMF)":
+        "0m", "Length (50um)": "80m", "Length (62.5um)": "30m", "Length (Copper)": "0m", "Length (OM3)": "300m",
+        "Laser wavelength": "850nm", "Vendor name": "Intel Corp", "Vendor OUI": "00:1b:21", "Vendor PN":
+        "AFBR-703SDZ-IN2", "Vendor rev": "G2.3", "Option values": "0x00 0x3a", "Option": "RX_LOS implemented;
+        TX_FAULT implemented; TX_DISABLE implemented; RATE_SELECT implemented", "BR margin, max": "0%", "BR margin,
+        min": "0%", "Vendor SN": "AD1345A04JR", "Date code": "131108", "Optical diagnostics support": "Yes", "Laser
+        bias current": "5.942 mA", "Laser output power": "0.6703 mW / -1.74 dBm", "Receiver signal average optical
+        power": "0.8002 mW / -0.97 dBm", "Module temperature": "38.50 degrees C / 101.30 degrees F", "Module
+        voltage": "3.3960 V", "Alarm/warning flags implemented": "Yes", "Laser bias current high alarm": "Off",
+        "Laser bias current low alarm": "Off", "Laser bias current high warning": "Off", "Laser bias current low
+        warning": "Off", "Laser output power high alarm": "Off", "Laser output power low alarm": "Off", "Laser output
+        power high warning": "Off", "Laser output power low warning": "Off", "Module temperature high alarm": "Off",
+        "Module temperature low alarm": "Off", "Module temperature high warning": "Off", "Module temperature low
+        warning": "Off", "Module voltage high alarm": "Off", "Module voltage low alarm": "Off", "Module voltage
+        high warning": "Off", "Module voltage low warning": "Off", "Laser rx power high alarm": "Off", "Laser rx
+        power low alarm": "Off", "Laser rx power high warning": "On", "Laser rx power low warning": "Off", "Laser
+        bias current high alarm threshold": "10.500 mA", "Laser bias current low alarm threshold": "2.500 mA",
+        "Laser bias current high warning threshold": "10.500 mA", "Laser bias current low warning threshold": "2
+        .500 mA", "Laser output power high alarm threshold": "2.0000 mW / 3.01 dBm", "Laser output power low alarm
+        threshold": "0.0600 mW / -12.22 dBm", "Laser output power high warning threshold": "0.7900 mW / -1.02 dBm",
+        "Laser output power low warning threshold": "0.0850 mW / -10.71 dBm", "Module temperature high alarm
+        threshold": "85.00 degrees C / 185.00 degrees F", "Module temperature low alarm threshold": "-5.00 degrees
+        C / 23.00 degrees F", "Module temperature high warning threshold": "80.00 degrees C / 176.00 degrees F",
+        "Module temperature low warning threshold": "0.00 degrees C / 32.00 degrees F", "Module voltage high
+        alarm threshold": "3.6000 V", "Module voltage low alarm threshold": "3.1300 V", "Module voltage high
+        warning threshold": "3.4600 V", "Laser rx power high alarm threshold": "2.0000 mW / 3.01 dBm", "Laser rx
+        power low alarm threshold": "0.0000 mW / -inf dBm", "Laser rx power high warning threshold": "0.7900 mW /
+        -1.02 dBm", "Laser rx power low warning threshold": "0.0200 mW / -16.99 dBm"}}
+
+5.check the testpmd and telemetry show info same as 'ethtool -m'::
+
+      ethtool -m ens25f1 | grep 'Laser output power'
+      Laser output power                        : 0.6703 mW / -1.74 dBm
+
+.. note::
+
+   refer to command 'ethtool -m' of ethtool v5.4
+
+Test case: check Laser Power in different optical modules
+=========================================================
+
+1.set port 0 and port 1 with diffent optical modules
+
+2.Launch the dpdk testpmd with teltmetry::
+
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --telemetry  -- -i
+
+3.Launch the telemetry client::
+
+      python ./usertools/dpdk-telemetry.py
+
+4.Excute command in telemtry client::
+
+      --> /ethdev/module_eeprom,0
+      --> /ethdev/module_eeprom,1
+
+5.check port 0 and port 1 have different Laser Power
+
+Test case: check Laser Power in same optical modules
+====================================================
+
+1.set port 0 and port 1 with same optical modules
+
+2.Launch the dpdk testpmd with teltmetry::
+
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd --telemetry  -- -i
+
+3.Launch the telemetry client::
+
+      python ./usertools/dpdk-telemetry.py
+
+4.Excute command in telemtry client::
+
+      --> /ethdev/module_eeprom,0
+      --> /ethdev/module_eeprom,1
+
+5.check port 0 and port 1 have same Laser Power
+
+.. note::
+
+   the laser power will change slightly with the voltage and temperature
