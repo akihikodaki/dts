@@ -51,6 +51,7 @@ The following are the test plans for the DPDK DTS automated test system.
     ice_switch_filter_pppoe_test_plan
     ice_vf_support_multicast_address_test_plan
     ice_1pps_signal_test_plan
+    ice_rss_protocol_agnostic_flow_test_plan
     cloud_filter_with_l4_port_test_plan
     dcf_lifecycle_test_plan
     crypto_perf_cryptodev_perf_test_plan
