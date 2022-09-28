@@ -78,6 +78,7 @@ The following are the test plans for the DPDK DTS automated test system.
     iavf_flexible_descriptor_test_plan
     iavf_package_driver_error_handle_test_plan
     iavf_fdir_protocol_agnostic_flow_test_plan
+    iavf_rss_protocol_agnostic_flow_test_plan
     ieee1588_test_plan
     inline_ipsec_test_plan
     interrupt_pmd_test_plan
