@@ -141,7 +141,13 @@ def dts_parse_config(config, section):
     except:
         rx_mode = "default"
 
+    try:
+        dcf_mode = config.get(section, "dcf_mode").strip().lower()
+    except:
+        dcf_mode = ""
+
     settings.save_global_setting(settings.DPDK_RXMODE_SETTING, rx_mode)
+    settings.save_global_setting(settings.DPDK_DCFMODE_SETTING, dcf_mode)
 
     for suite in test_suites:
         if suite == "":
