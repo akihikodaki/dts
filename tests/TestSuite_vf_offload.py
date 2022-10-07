@@ -9,7 +9,7 @@ import time
 import framework.utils as utils
 from framework.crb import Crb
 from framework.pmd_output import PmdOutput
-from framework.settings import HEADER_SIZE
+from framework.settings import DPDK_DCFMODE_SETTING, HEADER_SIZE, load_global_setting
 from framework.test_case import TestCase
 from framework.utils import GREEN, RED
 from framework.virt_common import VM
@@ -39,6 +39,7 @@ class TestVfOffload(TestCase):
         else:
             self.vf_assign_method = "vfio-pci"
             self.dut.send_expect("modprobe vfio-pci", "#")
+        self.dcf_mode = load_global_setting(DPDK_DCFMODE_SETTING)
 
         self.setup_2pf_2vf_1vm_env_flag = 0
         self.setup_2pf_2vf_1vm_env(driver="")
@@ -131,6 +132,8 @@ class TestVfOffload(TestCase):
             self.vm_dut_0 = self.vm0.start()
             if self.vm_dut_0 is None:
                 raise Exception("Set up VM0 ENV failed!")
+            self.vf0_guest_pci = self.vm0.pci_maps[0]["guestpci"]
+            self.vf1_guest_pci = self.vm0.pci_maps[1]["guestpci"]
 
             self.setup_2pf_2vf_1vm_env_flag = 1
         except Exception as e:
@@ -168,6 +171,22 @@ class TestVfOffload(TestCase):
             port.bind_driver()
 
         self.setup_2pf_2vf_1vm_env_flag = 0
+
+    def launch_testpmd(self, **kwargs):
+        dcf_flag = kwargs.get("dcf_flag")
+        param = kwargs.get("param") if kwargs.get("param") else ""
+        if dcf_flag == "enable":
+            self.vm0_testpmd.start_testpmd(
+                VM_CORES_MASK,
+                param=param,
+                ports=[self.vf0_guest_pci, self.vf1_guest_pci],
+                port_options={
+                    self.vf0_guest_pci: "cap=dcf",
+                    self.vf1_guest_pci: "cap=dcf",
+                },
+            )
+        else:
+            self.vm0_testpmd.start_testpmd(VM_CORES_MASK, param=param)
 
     def checksum_enablehw(self, port, dut):
         dut.send_expect("port stop all", "testpmd>")
@@ -290,9 +309,9 @@ class TestVfOffload(TestCase):
         can rx it and report the checksum error,
         verify forwarded packets have correct checksum.
         """
-        self.vm0_testpmd.start_testpmd(
-            VM_CORES_MASK,
-            "--portmask=%s " % (self.portMask) + "--enable-rx-cksum " + "",
+        self.launch_testpmd(
+            dcf_flag=self.dcf_mode,
+            param="--portmask=%s " % (self.portMask) + "--enable-rx-cksum " + "",
         )
         self.vm0_testpmd.execute_cmd("set fwd csum")
         self.vm0_testpmd.execute_cmd("set promisc 1 on")
@@ -351,9 +370,10 @@ class TestVfOffload(TestCase):
         Enable SW checksum offload.
         Send same packet with incorrect checksum and verify checksum is valid.
         """
-        self.vm0_testpmd.start_testpmd(
-            VM_CORES_MASK,
-            "--portmask=%s " % (self.portMask) + "--enable-rx-cksum " + "",
+
+        self.launch_testpmd(
+            dcf_flag=self.dcf_mode,
+            param="--portmask=%s " % (self.portMask) + "--enable-rx-cksum " + "",
         )
         self.vm0_testpmd.execute_cmd("set fwd csum")
         self.vm0_testpmd.execute_cmd("set promisc 1 on")
@@ -491,9 +511,11 @@ class TestVfOffload(TestCase):
         )
 
         self.portMask = utils.create_mask([self.vm0_dut_ports[0]])
-        self.vm0_testpmd.start_testpmd(
-            VM_CORES_MASK,
-            "--portmask=0x3 " + "--enable-rx-cksum " + "--max-pkt-len=%s" % TSO_MTU,
+        self.launch_testpmd(
+            dcf_flag=self.dcf_mode,
+            param="--portmask=0x3 "
+            + "--enable-rx-cksum "
+            + "--max-pkt-len=%s" % TSO_MTU,
         )
 
         mac = self.vm0_testpmd.get_port_mac(0)

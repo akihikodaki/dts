@@ -16,7 +16,7 @@ import time
 import framework.utils as utils
 from framework.packet import Packet
 from framework.pmd_output import PmdOutput
-from framework.settings import HEADER_SIZE
+from framework.settings import DPDK_DCFMODE_SETTING, load_global_setting
 from framework.test_case import TestCase
 from framework.utils import RED
 from framework.virt_common import VM
@@ -74,6 +74,7 @@ class TestKernelpfIavf(TestCase):
         # get priv-flags default stats
         self.flag = "vf-vlan-pruning"
         self.default_stats = self.dut.get_priv_flags_state(self.host_intf, self.flag)
+        self.dcf_mode = load_global_setting(DPDK_DCFMODE_SETTING)
 
     def set_up(self):
 
@@ -129,6 +130,10 @@ class TestKernelpfIavf(TestCase):
             self.dut.send_expect(
                 "ip link set %s vf 0 mac %s" % (self.host_intf, self.vf_mac), "# "
             )
+        if self.dcf_mode:
+            self.dut.send_expect(
+                "ip link set %s vf 0 trust on" % (self.host_intf), "# "
+            )
         try:
 
             for port in self.sriov_vfs_port:
@@ -145,6 +150,7 @@ class TestKernelpfIavf(TestCase):
                 raise Exception("Set up VM ENV failed!")
 
             self.vm_testpmd = PmdOutput(self.vm_dut)
+            self.vf_guest_pci = self.vm.pci_maps[0]["guestpci"]
         except Exception as e:
             self.destroy_vm_env()
             raise Exception(e)
@@ -195,11 +201,25 @@ class TestKernelpfIavf(TestCase):
         )
         return result
 
+    def launch_testpmd(self, **kwargs):
+        dcf_flag = kwargs.get("dcf_flag")
+        param = kwargs.get("param") if kwargs.get("param") else ""
+        if dcf_flag == "enable":
+            out = self.vm_testpmd.start_testpmd(
+                "all",
+                param=param,
+                ports=[self.vf_guest_pci],
+                port_options={self.vf_guest_pci: "cap=dcf"},
+            )
+        else:
+            out = self.vm_testpmd.start_testpmd("all", param=param)
+        return out
+
     def test_vf_basic_rxtx(self):
         """
         Set rxonly forward,Send 100 random packets from tester, check packets can be received
         """
-        self.vm_testpmd.start_testpmd("all")
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.vm_testpmd.execute_cmd("set fwd rxonly")
         self.vm_testpmd.execute_cmd("set verbose 1")
         self.vm_testpmd.execute_cmd("start")
@@ -234,7 +254,7 @@ class TestKernelpfIavf(TestCase):
         Not set VF MAC from kernel PF for this case, if set, will print
         "not permitted error" when add new MAC for VF.
         """
-        out = self.vm_testpmd.start_testpmd("all")
+        out = self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.testpmd_mac = self.get_testpmd_vf_mac(out)
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set promisc all off")
@@ -282,7 +302,7 @@ class TestKernelpfIavf(TestCase):
         Enable kernel trust mode
         """
         self.dut.send_expect("ip link set dev %s vf 0 trust on" % self.host_intf, "# ")
-        self.vm_testpmd.start_testpmd("all")
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set verbose 1")
         self.vm_testpmd.execute_cmd("start")
@@ -321,7 +341,7 @@ class TestKernelpfIavf(TestCase):
         """
         multicast_mac = "01:80:C2:00:00:08"
         self.dut.send_expect("ip link set dev %s vf 0 trust on" % self.host_intf, "# ")
-        self.vm_testpmd.start_testpmd("all")
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set promisc all off")
         self.vm_testpmd.execute_cmd("set allmulti all off")
@@ -345,7 +365,7 @@ class TestKernelpfIavf(TestCase):
     def test_vf_broadcast(self):
         """ """
         broadcast_mac = "ff:ff:ff:ff:ff:ff"
-        self.vm_testpmd.start_testpmd("all")
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set promisc all off")
         self.vm_testpmd.execute_cmd("set verbose 1")
@@ -375,7 +395,7 @@ class TestKernelpfIavf(TestCase):
         return out
 
     def test_vf_vlan_insertion(self):
-        self.vm_testpmd.start_testpmd("all")
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         random_vlan = random.randint(1, MAX_VLAN)
         self.vm_testpmd.execute_cmd("vlan set strip off 0")
         self.vm_testpmd.execute_cmd("port stop all")
@@ -396,7 +416,7 @@ class TestKernelpfIavf(TestCase):
 
     def test_vf_vlan_strip(self):
         random_vlan = random.randint(1, MAX_VLAN)
-        self.vm_testpmd.start_testpmd("all")
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.vm_testpmd.execute_cmd("port stop all")
         self.vm_testpmd.execute_cmd("vlan set filter on 0")
         self.vm_testpmd.execute_cmd("rx_vlan add %s 0" % random_vlan)
@@ -432,7 +452,7 @@ class TestKernelpfIavf(TestCase):
 
     def test_vf_vlan_filter(self):
         random_vlan = random.randint(2, MAX_VLAN)
-        self.vm_testpmd.start_testpmd("all")
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.vm_testpmd.execute_cmd("port stop all")
         self.vm_testpmd.execute_cmd("set promisc all off")
         self.vm_testpmd.execute_cmd("vlan set filter on 0")
@@ -473,7 +493,7 @@ class TestKernelpfIavf(TestCase):
 
     def test_vf_rss(self):
         rss_type = ["ip", "tcp", "udp"]
-        self.vm_testpmd.start_testpmd("all", "--txq=4 --rxq=4")
+        self.launch_testpmd(dcf_flag=self.dcf_mode, param="--txq=4 --rxq=4")
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set verbose 1")
         default_rss_reta = self.vm_testpmd.execute_cmd(
@@ -496,7 +516,7 @@ class TestKernelpfIavf(TestCase):
 
     def test_vf_rss_hash_key(self):
         update_hash_key = "1b9d58a4b961d9cd1c56ad1621c3ad51632c16a5d16c21c3513d132c135d132c13ad1531c23a51d6ac49879c499d798a7d949c8a"
-        self.vm_testpmd.start_testpmd("all", "--txq=4 --rxq=4")
+        self.launch_testpmd(dcf_flag=self.dcf_mode, param="--txq=4 --rxq=4")
         self.vm_testpmd.execute_cmd("show port 0 rss-hash key")
         self.vm_testpmd.execute_cmd("set fwd rxonly")
         self.vm_testpmd.execute_cmd("set verbose 1")
@@ -681,7 +701,7 @@ class TestKernelpfIavf(TestCase):
         self.tester.send_expect("^C", "#")
 
     def test_vf_port_start_stop(self):
-        self.vm_testpmd.start_testpmd("all")
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         for i in range(10):
             self.vm_testpmd.execute_cmd("port stop all")
             self.vm_testpmd.execute_cmd("port start all")
@@ -700,7 +720,7 @@ class TestKernelpfIavf(TestCase):
         self.verify(vf0_tx_cnt == 100, "no packet was fwd by vm0_VF0")
 
     def test_vf_statistic_reset(self):
-        self.vm_testpmd.start_testpmd("all")
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set verbose 1")
         self.vm_testpmd.execute_cmd("start")
@@ -722,7 +742,7 @@ class TestKernelpfIavf(TestCase):
         )
 
     def test_vf_information(self):
-        self.vm_testpmd.start_testpmd("all")
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         out = self.vm_testpmd.execute_cmd("show port info 0")
         self.verify("Link status: up" in out, "link stats has error")
         self.verify("Link speed: %s" % self.speed in out, "link speed has error")
@@ -791,7 +811,7 @@ class TestKernelpfIavf(TestCase):
         )
 
     def test_vf_unicast(self):
-        self.vm_testpmd.start_testpmd("all")
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.vm_testpmd.execute_cmd("set verbose 1")
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set promisc all off")
@@ -809,7 +829,7 @@ class TestKernelpfIavf(TestCase):
         self.verify(packets == 10, "Not receive expected packet")
 
     def test_vf_vlan_promisc(self):
-        self.vm_testpmd.start_testpmd("all")
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.vm_testpmd.execute_cmd("port stop all")
         self.vm_testpmd.execute_cmd("set promisc all on")
         self.vm_testpmd.execute_cmd("set fwd mac")
@@ -827,6 +847,7 @@ class TestKernelpfIavf(TestCase):
             (self.kdriver == "i40e" and self.driver_version < "2.13.10")
             or (self.kdriver == "i40e" and not self.default_stats)
             or (self.kdriver == "ice" and not self.default_stats)
+            or self.dcf_mode
         ):
             self.verify(packets == 10, "Not receive expected packet")
         else:
@@ -899,7 +920,10 @@ class TestKernelpfIavf(TestCase):
             time.sleep(1)
         if self.running_case == "test_vf_mac_filter":
             self.destroy_vm_env()
-        self.dut.send_expect("ip link set dev %s vf 0 trust off" % self.host_intf, "# ")
+        if not self.dcf_mode:
+            self.dut.send_expect(
+                "ip link set dev %s vf 0 trust off" % self.host_intf, "# "
+            )
 
     def tear_down_all(self):
         """

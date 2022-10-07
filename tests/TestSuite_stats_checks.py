@@ -17,6 +17,7 @@ from typing import Iterator, List, Tuple
 import framework.packet as packet
 import framework.utils as utils
 from framework.pmd_output import PmdOutput
+from framework.settings import DPDK_DCFMODE_SETTING, load_global_setting
 from framework.test_case import TestCase
 
 ETHER_HEADER_LEN = 18
@@ -241,6 +242,7 @@ class TestStatsChecks(TestCase):
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
         self.rx_port = self.dut_ports[0]
         self.tx_port = self.dut_ports[1]
+        self.rx_intf = self.dut.ports_info[self.rx_port]["intf"]
 
         cores = self.dut.get_core_list("1S/2C/1T")
         self.coremask = utils.create_mask(cores)
@@ -248,6 +250,7 @@ class TestStatsChecks(TestCase):
         self.port_mask = utils.create_mask([self.rx_port, self.tx_port])
 
         self.pmdout = PmdOutput(self.dut)
+        self.dcf_mode = load_global_setting(DPDK_DCFMODE_SETTING)
 
     def set_up(self):
         """
@@ -271,6 +274,20 @@ class TestStatsChecks(TestCase):
         """
         self.dut.kill_all()
 
+    def launch_testpmd(self, **kwargs):
+        dcf_flag = kwargs.get("dcf_flag")
+        param = kwargs.get("param") if kwargs.get("param") else ""
+        if dcf_flag == "enable":
+            self.pmdout.start_testpmd(
+                "default",
+                param=param,
+                eal_param="-a %s,cap=dcf" % self.vf_port_pci,
+            )
+        else:
+            self.pmdout.start_testpmd(
+                "default", param=param, eal_param="-a %s" % self.vf_port_pci
+            )
+
     def test_stats_checks(self):
         self.pmdout.start_testpmd("Default")
         self.exec("port start all")
@@ -288,10 +305,10 @@ class TestStatsChecks(TestCase):
 
     def test_xstats_check_vf(self):
         self.dut.generate_sriov_vfs_by_port(self.dut_ports[0], 1, self.kdriver)
+        if self.dcf_mode:
+            self.dut.send_expect("ip link set %s vf 0 trust on" % (self.rx_intf), "# ")
         self.vf_port = self.dut.ports_info[self.dut_ports[0]]["vfs_port"][0]
         self.vf_port.bind_driver(driver="vfio-pci")
         self.vf_port_pci = self.dut.ports_info[self.dut_ports[0]]["sriov_vfs_pci"][0]
-        self.pmdout.start_testpmd(
-            "default", "--rxq=4 --txq=4", eal_param="-a %s" % self.vf_port_pci
-        )
+        self.launch_testpmd(dcf_flag=self.dcf_mode, param="--txq=4 --rxq=4")
         self.xstats_check(0, 0, if_vf=True)

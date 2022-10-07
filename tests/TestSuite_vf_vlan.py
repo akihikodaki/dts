@@ -9,7 +9,7 @@ import time
 import framework.utils as utils
 from framework.packet import Packet
 from framework.pmd_output import PmdOutput
-from framework.settings import get_nic_name
+from framework.settings import DPDK_DCFMODE_SETTING, load_global_setting
 from framework.test_case import TestCase
 from framework.virt_common import VM
 
@@ -48,6 +48,7 @@ class TestVfVlan(TestCase):
         # get priv-flags default stats
         self.flag = "vf-vlan-pruning"
         self.default_stats = self.dut.get_priv_flags_state(self.host_intf0, self.flag)
+        self.dcf_mode = load_global_setting(DPDK_DCFMODE_SETTING)
 
     def set_up(self):
         self.setup_vm_env()
@@ -87,6 +88,10 @@ class TestVfVlan(TestCase):
         self.dut.send_expect(
             "ip link set %s vf 0 mac %s" % (self.host_intf0, self.vf0_mac), "# "
         )
+        if self.dcf_mode:
+            self.dut.send_expect(
+                "ip link set %s vf 0 trust on" % (self.host_intf0), "# "
+            )
 
         self.used_dut_port_1 = self.dut_ports[1]
         self.host_intf1 = self.dut.ports_info[self.used_dut_port_1]["intf"]
@@ -103,6 +108,10 @@ class TestVfVlan(TestCase):
         self.dut.send_expect(
             "ip link set %s vf 0 mac %s" % (self.host_intf1, self.vf1_mac), "# "
         )
+        if self.dcf_mode:
+            self.dut.send_expect(
+                "ip link set %s vf 0 trust on" % (self.host_intf1), "# "
+            )
 
         try:
 
@@ -123,6 +132,8 @@ class TestVfVlan(TestCase):
             self.vm_dut_0 = self.vm0.start()
             if self.vm_dut_0 is None:
                 raise Exception("Set up VM0 ENV failed!")
+            self.vf0_guest_pci = self.vm0.pci_maps[0]["guestpci"]
+            self.vf1_guest_pci = self.vm0.pci_maps[1]["guestpci"]
 
         except Exception as e:
             self.destroy_vm_env()
@@ -155,6 +166,22 @@ class TestVfVlan(TestCase):
 
         self.env_done = False
 
+    def launch_testpmd(self, **kwargs):
+        dcf_flag = kwargs.get("dcf_flag")
+        param = kwargs.get("param") if kwargs.get("param") else ""
+        if dcf_flag:
+            self.vm0_testpmd.start_testpmd(
+                VM_CORES_MASK,
+                ports=[self.vf0_guest_pci, self.vf1_guest_pci],
+                param=param,
+                port_options={
+                    self.vf0_guest_pci: "cap=dcf",
+                    self.vf1_guest_pci: "cap=dcf",
+                },
+            )
+        else:
+            self.vm0_testpmd.start_testpmd(VM_CORES_MASK, param=param)
+
     def test_pvid_vf_tx(self):
         """
         Add port based vlan on vf device and check vlan tx work
@@ -170,7 +197,7 @@ class TestVfVlan(TestCase):
         self.vm0_dut_ports = self.vm_dut_0.get_ports("any")
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.vm0_testpmd.execute_cmd("set fwd mac")
         self.vm0_testpmd.execute_cmd("start")
 
@@ -214,7 +241,7 @@ class TestVfVlan(TestCase):
         self.vm0_dut_ports = self.vm_dut_0.get_ports("any")
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.vm0_testpmd.execute_cmd("set fwd rxonly")
         self.vm0_testpmd.execute_cmd("set verbose 1")
         self.vm0_testpmd.execute_cmd("start")
@@ -240,7 +267,7 @@ class TestVfVlan(TestCase):
 
         # restart testpmd
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.vm0_testpmd.execute_cmd("set fwd rxonly")
         self.vm0_testpmd.execute_cmd("set verbose 1")
         self.vm0_testpmd.execute_cmd("start")
@@ -250,6 +277,7 @@ class TestVfVlan(TestCase):
             (self.kdriver == "i40e" and self.driver_version < "2.13.10")
             or (self.kdriver == "i40e" and not self.default_stats)
             or (self.kdriver == "ice" and not self.default_stats)
+            or self.dcf_mode
         ):
             self.verify("received" in out, "Failed to received vlan packet!!!")
         else:
@@ -291,7 +319,7 @@ class TestVfVlan(TestCase):
         self.vm0_dut_ports = self.vm_dut_0.get_ports("any")
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.vm0_testpmd.execute_cmd("set verbose 1")
 
         for tx_vlan in tx_vlans:
@@ -316,7 +344,7 @@ class TestVfVlan(TestCase):
         self.vm0_dut_ports = self.vm_dut_0.get_ports("any")
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.vm0_testpmd.execute_cmd("set fwd rxonly")
         self.vm0_testpmd.execute_cmd("set verbose 1")
         self.vm0_testpmd.execute_cmd("vlan set strip on 0")
@@ -395,10 +423,7 @@ class TestVfVlan(TestCase):
         self.vm0_dut_ports = self.vm_dut_0.get_ports("any")
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        if self.kdriver == "i40e":
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK, "")
-        else:
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.vm0_testpmd.execute_cmd("set fwd rxonly")
         self.vm0_testpmd.execute_cmd("set verbose 1")
         self.vm0_testpmd.execute_cmd("start")

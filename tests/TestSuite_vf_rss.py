@@ -15,6 +15,7 @@ reta_entries = []
 reta_lines = []
 
 from framework.pmd_output import PmdOutput
+from framework.settings import DPDK_DCFMODE_SETTING, load_global_setting
 
 # Use scapy to send packets with different source and dest ip.
 # and collect the hash result of five tuple and the queue id.
@@ -289,6 +290,7 @@ class TestVfRss(TestCase):
         self.vm0 = None
         self.host_testpmd = None
         self.setup_1pf_1vf_1vm_env_flag = 0
+        self.dcf_mode = load_global_setting(DPDK_DCFMODE_SETTING)
         self.setup_1pf_1vf_1vm_env(driver="")
 
     def set_up(self):
@@ -302,6 +304,9 @@ class TestVfRss(TestCase):
         self.used_dut_port_0 = self.dut_ports[0]
         self.dut.generate_sriov_vfs_by_port(self.used_dut_port_0, 1, driver=driver)
         self.sriov_vfs_port_0 = self.dut.ports_info[self.used_dut_port_0]["vfs_port"]
+        pf_intf0 = self.dut.ports_info[0]["port"].get_interface_name()
+        if self.dcf_mode == "enable":
+            self.dut.send_expect("ip link set %s vf 0 trust on" % (pf_intf0), "# ")
 
         try:
             for port in self.sriov_vfs_port_0:
@@ -322,6 +327,7 @@ class TestVfRss(TestCase):
             self.vm_dut_0 = self.vm0.start()
             if self.vm_dut_0 is None:
                 raise Exception("Set up VM0 ENV failed!")
+            self.vf0_guest_pci = self.vm0.pci_maps[0]["guestpci"]
 
             self.vm0_testpmd = PmdOutput(self.vm_dut_0)
 
@@ -357,6 +363,24 @@ class TestVfRss(TestCase):
 
         self.setup_1pf_2vf_1vm_env_flag = 0
 
+    def launch_testpmd(self, **kwargs):
+        dcf_flag = kwargs.get("dcf_flag")
+        param = kwargs.get("param") if kwargs.get("param") else ""
+        if dcf_flag == "enable":
+            self.vm0_testpmd.start_testpmd(
+                "all",
+                param=param,
+                ports=[self.vf0_guest_pci],
+                port_options={self.vf0_guest_pci: "cap=dcf"},
+                socket=self.vm0_ports_socket,
+            )
+        else:
+            self.vm0_testpmd.start_testpmd(
+                "all",
+                param=param,
+                socket=self.vm0_ports_socket,
+            )
+
     def test_vf_pmdrss_reta(self):
 
         vm0dutPorts = self.vm_dut_0.get_ports("any")
@@ -381,12 +405,10 @@ class TestVfRss(TestCase):
         eal_param = ""
         for queue in testQueues:
 
-            self.vm0_testpmd.start_testpmd(
-                "all",
-                "--rxq=%d --txq=%d %s" % (queue, queue, eal_param),
-                socket=self.vm0_ports_socket,
+            self.launch_testpmd(
+                dcf_flag=self.dcf_mode,
+                param="--rxq=%d --txq=%d %s" % (queue, queue, eal_param),
             )
-
             for iptype, rss_type in list(iptypes.items()):
                 self.vm_dut_0.send_expect("set verbose 8", "testpmd> ")
                 self.vm_dut_0.send_expect("set fwd rxonly", "testpmd> ")
@@ -453,10 +475,9 @@ class TestVfRss(TestCase):
         # test with different rss queues
         for queue in testQueues:
 
-            self.vm0_testpmd.start_testpmd(
-                "all",
-                "--rxq=%d --txq=%d %s" % (queue, queue, eal_param),
-                socket=self.vm0_ports_socket,
+            self.launch_testpmd(
+                dcf_flag=self.dcf_mode,
+                param="--rxq=%d --txq=%d %s" % (queue, queue, eal_param),
             )
 
             for iptype, rsstype in list(iptypes.items()):

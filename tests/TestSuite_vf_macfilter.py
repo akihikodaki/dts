@@ -6,6 +6,7 @@ import re
 import time
 
 from framework.pmd_output import PmdOutput
+from framework.settings import DPDK_DCFMODE_SETTING, load_global_setting
 from framework.test_case import TestCase
 from framework.virt_common import VM
 
@@ -34,6 +35,7 @@ class TestVfMacFilter(TestCase):
         else:
             self.vf_assign_method = "vfio-pci"
             self.dut.send_expect("modprobe vfio-pci", "#")
+        self.dcf_mode = load_global_setting(DPDK_DCFMODE_SETTING)
 
     def set_up(self):
 
@@ -50,10 +52,15 @@ class TestVfMacFilter(TestCase):
             self.dut.send_expect(
                 "ip link set %s vf 0 mac %s" % (pf_intf0, self.pf0_vf0_mac), "#"
             )
+        if self.dcf_mode == "enable":
+            self.dut.send_expect("ip link set %s vf 0 trust on" % (pf_intf0), "# ")
 
         self.used_dut_port_1 = self.dut_ports[1]
         self.dut.generate_sriov_vfs_by_port(self.used_dut_port_1, 1, driver=driver)
         self.sriov_vfs_port_1 = self.dut.ports_info[self.used_dut_port_1]["vfs_port"]
+        pf_intf1 = self.dut.ports_info[1]["port"].get_interface_name()
+        if self.dcf_mode == "enable":
+            self.dut.send_expect("ip link set %s vf 0 trust on" % (pf_intf1), "# ")
 
         try:
 
@@ -89,6 +96,9 @@ class TestVfMacFilter(TestCase):
                 raise Exception("Set up VM0 ENV failed!")
 
             self.setup_2pf_2vf_1vm_env_flag = 1
+            self.vf0_guest_pci = self.vm0.pci_maps[0]["guestpci"]
+            self.vf1_guest_pci = self.vm0.pci_maps[1]["guestpci"]
+
         except Exception as e:
             self.destroy_2pf_2vf_1vm_env()
             raise Exception(e)
@@ -128,6 +138,22 @@ class TestVfMacFilter(TestCase):
 
         self.setup_2pf_2vf_1vm_env_flag = 0
 
+    def launch_testpmd(self, **kwargs):
+        dcf_flag = kwargs.get("dcf_flag")
+        param = kwargs.get("param") if kwargs.get("param") else ""
+        if dcf_flag == "enable":
+            self.vm0_testpmd.start_testpmd(
+                VM_CORES_MASK,
+                param=param,
+                ports=[self.vf0_guest_pci, self.vf1_guest_pci],
+                port_options={
+                    self.vf0_guest_pci: "cap=dcf",
+                    self.vf1_guest_pci: "cap=dcf",
+                },
+            )
+        else:
+            self.vm0_testpmd.start_testpmd(VM_CORES_MASK, param=param)
+
     def test_kernel_2pf_2vf_1vm_iplink_macfilter(self):
         """
         test case for kernel pf and dpdk vf 2pf_2vf_1vm MAC filter
@@ -145,7 +171,7 @@ class TestVfMacFilter(TestCase):
             self.host_testpmd.execute_cmd("set vf mac addr 0 0 %s" % self.pf0_vf0_mac)
         self.vm0_dut_ports = self.vm_dut_0.get_ports("any")
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
         # Get VF's MAC
         pmd_vf0_mac = self.vm0_testpmd.get_port_mac(0)
         self.vm0_testpmd.execute_cmd("set promisc all off")
@@ -242,7 +268,7 @@ class TestVfMacFilter(TestCase):
     def send_packet_and_verify(self):
         self.vm0_dut_ports = self.vm_dut_0.get_ports("any")
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
+        self.launch_testpmd(dcf_flag=self.dcf_mode)
 
         # Get VF0 port MAC address
         pmd_vf0_mac = self.vm0_testpmd.get_port_mac(0)

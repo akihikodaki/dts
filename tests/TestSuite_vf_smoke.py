@@ -4,6 +4,7 @@
 
 from framework.packet import Packet
 from framework.pmd_output import PmdOutput
+from framework.settings import DPDK_DCFMODE_SETTING, load_global_setting
 from framework.test_case import TestCase
 
 from .smoke_base import (
@@ -60,11 +61,16 @@ class TestVfSmoke(TestCase):
         self.vf0_prop = {"opt_host": self.vf_ports[0].pci}
         self.dut.send_expect("ifconfig %s up" % self.pf_interface, "# ")
         self.tester.send_expect("ifconfig %s up" % self.smoke_tester_nic, "# ")
+        self.dcf_mode = load_global_setting(DPDK_DCFMODE_SETTING)
 
         # set vf mac address
         self.dut.send_expect(
             "ip link set %s vf 0 mac %s" % (self.pf_interface, self.smoke_dut_mac), "# "
         )
+        if self.dcf_mode == "enable":
+            self.dut.send_expect(
+                "ip link set %s vf 0 trust on" % (self.pf_interface), "# "
+            )
 
         # set default app parameter
         if self.vf0_prop is not None:
@@ -100,7 +106,17 @@ class TestVfSmoke(TestCase):
             self.vf_launch_dpdk_app()
 
     def vf_launch_dpdk_app(self):
-        self.pmd_out.start_testpmd(cores=self.cores, ports=self.ports, param=self.param)
+        if self.dcf_mode == "enable":
+            self.pmd_out.start_testpmd(
+                cores=self.cores,
+                ports=self.ports,
+                port_options={port: "cap=dcf" for port in self.ports},
+                param=self.param,
+            )
+        else:
+            self.pmd_out.start_testpmd(
+                cores=self.cores, ports=self.ports, param=self.param
+            )
 
         # set default param
         self.dut.send_expect("set promisc all off", "testpmd> ")
