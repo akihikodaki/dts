@@ -50,9 +50,22 @@ The following RX Ports/Queues configurations have to be benchmarked:
 Testpmd configuration - 4 RX/TX queues per port
 -----------------------------------------------
 
-::
+ if test IAVF, start up VF port::
 
   dpdk-testpmd -c 1f -n 3  -- -i --rxq=4 --txq=4
+
+
+ if test DCF, set VF port to dcf and start up::
+
+   Enable kernel trust mode:
+
+       ip link set $PF_INTF vf 0 trust on
+
+    dpdk-testpmd -c 0x0f -n 4 -a 00:04.0,cap=dcf -a 00:05.0,cap=dcf -- -i --rxq=4 --txq=4
+
+.. note::
+
+   make dcf as full feature pmd is dpdk22.07 feature, and only support E810 series nic.
 
 Testpmd Configuration Options
 -----------------------------

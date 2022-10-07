@@ -43,9 +43,21 @@ Test IAVF cases on host or in qemu
 
 Bind VF device to igb_uio or vfio-pci
 
-Start up VF port::
+if test IAVF, start up VF port::
 
     ./<build_target>/app/dpdk-testpmd -c f -n 4 -- -i
+
+if test DCF, set VF port to dcf and start up::
+
+   Enable kernel trust mode:
+
+       ip link set $PF_INTF vf 0 trust on
+
+    ./<build_target>/app/dpdk-testpmd -c f -n 4 -a 0000:18:01.0,cap=dcf -- -i
+
+.. note::
+
+   make dcf as full feature pmd is dpdk22.07 feature, and only support E810 series nic.
 
 Test case: VF basic RX/TX
 =========================

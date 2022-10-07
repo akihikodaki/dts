@@ -68,6 +68,9 @@ Test Case 1: test_kernel_2pf_2vf_1vm_iplink_macfilter
    disable promisc mode,set it in mac forward mode::
 
       ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
+
+   if test IAVF, start up VF port::
+
       ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 -- -i --portmask=0x3
 
       testpmd> port stop all
@@ -76,6 +79,14 @@ Test Case 1: test_kernel_2pf_2vf_1vm_iplink_macfilter
       testpmd> set promisc all off
       testpmd> set fwd mac
       testpmd> start
+
+   if test DCF, set VF port to dcf and start up::
+
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0f -n 4 -a 00:06.0,cap=dcf -a 00:07.0,cap=dcf -- -i --portmask=0x3
+
+.. note::
+
+      make dcf as full feature pmd is dpdk22.07 feature, and only support E810 series nic.
 
 6. Use scapy to send 100 random packets with ip link set MAC to VF, verify the
    packets can be received by one VF and can be forwarded to another VF
@@ -146,6 +157,9 @@ Test Case 2: test_kernel_2pf_2vf_1vm_mac_add_filter
    VF, disable promisc mode, add a new MAC to VF0 and then start::
 
       ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
+
+   if test IAVF, start up VF port::
+
       ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0f -n 4 -a 00:06.0 -a 00:07.0 -- -i --portmask=0x3
 
       testpmd> port stop all
@@ -155,6 +169,14 @@ Test Case 2: test_kernel_2pf_2vf_1vm_mac_add_filter
       testpmd> mac_addr add 0 00:11:22:33:44:55
       testpmd> set fwd mac
       testpmd> start
+
+   if test DCF, set VF port to dcf and start up::
+
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0f -n 4 -a 00:06.0,cap=dcf -a 00:07.0,cap=dcf -- -i --portmask=0x3
+
+.. note::
+
+      make dcf as full feature pmd is dpdk22.07 feature, and only support E810 series nic.
 
 6. Use scapy to send 100 random packets with current VF0's MAC, verify the
    packets can be received by one VF and can be forwarded to another VF

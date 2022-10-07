@@ -24,11 +24,27 @@ IP link set VF trust on and spoofchk off on DUT::
 
 Assuming that ports ``0`` and ``1`` are connected to a traffic generator,
 enable hardware rx checksum offload with "--enable-rx-cksum",
-launch the ``testpmd`` with the following arguments::
+launch the ``testpmd`` with the following arguments:
+
+ if test IAVF, start up VF port::
 
   ./build/app/dpdk-testpmd -cffffff -n 1 -- -i --burst=1 --txpt`=32 \
   --txht=8 --txwt=0 --txfreet=0 --rxfreet=64 --mbcache=250 --portmask=0x5
   --enable-rx-cksum
+
+ if test DCF, set VF port to dcf and start up::
+
+   Enable kernel trust mode:
+
+       ip link set $PF_INTF vf 0 trust on
+
+   dpdk-testpmd -c 0x0f -n 4 -a 00:04.0,cap=dcf -a 00:05.0,cap=dcf -- -i --burst=1 --txpt=32 \
+   --txht=8 --txwt=0 --txfreet=0 --rxfreet=64 --mbcache=250 --portmask=0x5
+   --enable-rx-cksum
+
+.. note::
+
+   make dcf as full feature pmd is dpdk22.07 feature, and only support E810 series nic.
 
 Set the verbose level to 1 to display information for each received packet::
 

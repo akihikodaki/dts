@@ -259,11 +259,25 @@ Test Case: VF xstats Checks
     ./usertools/dpdk-devbind.py -s
     ./usertools/dpdk-devbind.py -b vfio-pci vf_bus_id
 
-2. Launch testpmd on the VF and enable RSS::
+2. Launch testpmd on the VF and enable RSS:
+
+   if test IAVF, start up VF port::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 -- -i --rxq=4 --txq=4
     testpmd> port config all rss all
     testpmd> set fwd mac
+
+   if test DCF, set VF port to dcf and start up::
+
+    Enable kernel trust mode:
+
+       ip link set $PF_INTF vf 0 trust on
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 -a 0000:18:01.0,cap=dcf -- -i --rxq=4 --txq=4
+
+.. note::
+
+   make dcf as full feature pmd is dpdk22.07 feature, and only support E810 series nic.
 
 3. Then run the same steps of PF xstats Checks, get same result.
 note: because one port forwarding packets, so check rx and tx both in port 0.

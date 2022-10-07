@@ -51,13 +51,28 @@ Prerequisites
     modprobe vfio-pci
     ./usertools/dpdk-devbind.py -b vfio-pci 0000:86:01.0
 
-8. Launch dpdk on VF::
+8. Launch dpdk on VF:
+
+ if test IAVF, start up VF port::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:86:01.0 --file-prefix=pf -- -i --rxq=4 --txq=4
     testpmd> set fwd mac
     testpmd> set verbose 3
     testpmd> start
     testpmd> show port info all
+
+ if test DCF, set VF port to dcf and start up::
+
+   Enable kernel trust mode:
+
+       ip link set $PF_INTF vf 0 trust on
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:86:01.0,cap=dcf --file-prefix=pf -- -i --rxq=4
+    --txq=4
+
+.. note::
+
+   make dcf as full feature pmd is dpdk22.07 feature, and only support E810 series nic.
 
 
 Test Case 1: test enable and disable jumbo frame
