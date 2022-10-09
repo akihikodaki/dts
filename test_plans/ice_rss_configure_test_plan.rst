@@ -28,7 +28,7 @@ Testpmd Command-line Options:
 
 port config all rss: set the RSS (Receive Side Scaling) mode on or off.
 
-port config all rss ip/udp/tcp/sctp/all/default
+port config all rss ip/udp/tcp/sctp/all/default/none
 
 Prerequisites
 =============
@@ -52,7 +52,7 @@ Test Case: test_command_line_option_rss_ip
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10 --rss-ip
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10 --rss-ip
     testpmd>set fwd rxonly
     testpmd>set verbose 1
     testpmd>start
@@ -172,7 +172,7 @@ Test Case: test_command_line_option_rss_udp
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10 --rss-udp
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10 --rss-udp
     testpmd>set fwd rxonly
     testpmd>set verbose 1
     testpmd>start
@@ -236,7 +236,7 @@ Test Case: test_command_line_option_disable-rss
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10 --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10 --disable-rss
     testpmd>set fwd rxonly
     testpmd>set verbose 1
     testpmd>start
@@ -253,12 +253,24 @@ Test Case: test_command_line_option_disable-rss
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
+Test Case: test_command_line_option_rss_default
+===============================================
+
+1. Launch the testpmd in DUT::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
+    testpmd>set fwd rxonly
+    testpmd>set verbose 1
+    testpmd>start
+
+2. The rss phenomenon of all packets is the same as that of test_command_line_option_rss_ip
+
 Test Case: test_RSS_configure_to_ip
 ===================================
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
     testpmd>set fwd rxonly
     testpmd>set verbose 1
 
@@ -382,7 +394,7 @@ Test Case: test_RSS_configure_to_udp
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
     testpmd>set fwd rxonly
     testpmd>set verbose 1
 
@@ -450,7 +462,7 @@ Test Case: test_RSS_configure_to_tcp
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
     testpmd>set fwd rxonly
     testpmd>set verbose 1
 
@@ -518,7 +530,7 @@ Test Case: test_RSS_configure_to_sctp
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
     testpmd>set fwd rxonly
     testpmd>set verbose 1
 
@@ -586,7 +598,7 @@ Test Case: test_RSS_configure_to_all
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
     testpmd>set fwd rxonly
     testpmd>set verbose 1
 
@@ -692,7 +704,7 @@ Test Case: test_RSS_configure_to_default
 
 1. Launch the testpmd in DUT::
 
-    testpmd>./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
     testpmd>set fwd rxonly
     testpmd>set verbose 1
 
@@ -792,3 +804,19 @@ Test Case: test_RSS_configure_to_default
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::5")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1026)/("X"*40)], iface="enp27s0f2")
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1026,dport=1025)/("X"*40)], iface="enp27s0f2")
+
+Test Case: test_RSS_configure_to_none
+=====================================
+
+1. Launch the testpmd in DUT::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xff -n 4 -- -i --rxq=10 --txq=10
+    testpmd>set fwd rxonly
+    testpmd>set verbose 1
+
+2. rss received package type configuration::
+
+    testpmd> port config all none all
+    testpmd> start
+
+3. The rss phenomenon of all packets is the same as that of test_command_line_option_disable-rss
