@@ -130,7 +130,7 @@ class TestPVPShareLib(TestCase):
             ports=[self.pci_info],
         )
         eal_param += (
-            "-d librte_net_vhost.so -d librte_net_%s.so -d librte_mempool_ring.so --file-prefix=vhost"
+            " -d librte_net_vhost.so -d librte_net_%s.so -d librte_mempool_ring.so --file-prefix=vhost"
             % driver
         )
         command_line_client = self.path + eal_param + " -- -i"
