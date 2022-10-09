@@ -1014,10 +1014,12 @@ class TestMultiprocess(TestCase):
                 self.logger.err("Error occured:{}".format(traceback.format_exc(e)))
             finally:
                 session_obj.close()
-        res = re.search(
-            r"Port \d+\s+-\s+rx:\s+(?P<rx>\d+)\s+tx:.*PORTS", out, re.DOTALL
+        res = re.findall(
+            r"Port \d+\s+-\s+rx:\s+\d+.*?Client\s+[1]\s+-.*?tx_drop:\s+\d+",
+            out,
+            re.DOTALL,
         )
-        rx_num = re.findall(r"Client\s+\d\s+-\s+rx:\s+(\d+)", res.group(0))
+        rx_num = re.findall(r"Client\s+\d\s+-\s+rx:\s+(\d+)", res[-1])
         for i in range(proc_num):
             self.verify(
                 int(rx_num[i]) > 0,
