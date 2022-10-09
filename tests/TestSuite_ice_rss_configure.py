@@ -334,6 +334,10 @@ class RSSConfigureTest(TestCase):
         self.launch_testpmd(line_option="--disable-rss")
         self.rsspro.handle_rss_distribute_cases(command_line_option_disable_rss)
 
+    def test_command_line_option_rss_default(self):
+        self.launch_testpmd()
+        self.rsspro.handle_rss_distribute_cases(command_line_option_rss_ip)
+
     def test_rss_configure_to_ip(self):
         self.launch_testpmd(rss_type="ip")
         self.rsspro.handle_rss_distribute_cases(rss_configure_to_ip)
@@ -357,6 +361,10 @@ class RSSConfigureTest(TestCase):
     def test_rss_configure_to_default(self):
         self.launch_testpmd(rss_type="default")
         self.rsspro.handle_rss_distribute_cases(rss_configure_to_default)
+
+    def test_rss_configure_to_none(self):
+        self.launch_testpmd(rss_type="none")
+        self.rsspro.handle_rss_distribute_cases(command_line_option_disable_rss)
 
     def tear_down(self):
         """
