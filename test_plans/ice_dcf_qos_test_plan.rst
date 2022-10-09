@@ -155,18 +155,18 @@ when the scheduler use strict priority mode in different user priority.
     add port tm leaf node 0 5 700 0 1 2 2 0 0xffffffff 0 0          
     port tm hierarchy commit 0 no
 
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 700 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 700 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 no
     port start all
     set fwd mac
@@ -200,18 +200,18 @@ when the scheduler use strict priority mode in different user priority.
     add port tm leaf node 0 4 700 0 1 2 2 0 0xffffffff 0 0       
     add port tm leaf node 0 5 700 0 1 2 2 0 0xffffffff 0 0          
     port tm hierarchy commit 0 no
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 800 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 800 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 no
     port start all
     set fwd mac
@@ -265,29 +265,29 @@ when the scheduler use ETS mode in different user priority.
     add port tm leaf node 2 2 800 0 1 2 1 0 0xffffffff 0 0       
     add port tm leaf node 2 3 800 0 1 2 1 0 0xffffffff 0 0        
     port tm hierarchy commit 2 yes
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 800 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 800 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 yes
-    add port tm nonleaf node 3 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 3 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 3 800 1000 0 1 1 0 1 0 0
-    add port tm leaf node 3 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 6 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 7 800 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 3 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 3 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 3 800 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 3 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 6 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 7 800 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 3 yes
     port start all
     set fwd mac
@@ -389,31 +389,31 @@ this case is to check the TC throughput of min BW allocation.
     add port tm leaf node 2 4 700 0 1 2 1 0 0xffffffff 0 0
     add port tm leaf node 2 5 700 0 1 2 1 0 0xffffffff 0 0
     port tm hierarchy commit 2 yes
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 700 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 700 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 yes
-    add port tm nonleaf node 3 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 3 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 3 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 3 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 3 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 2 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 3 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 6 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 7 700 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 3 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 3 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 3 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 3 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 3 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 2 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 3 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 6 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 7 700 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 3 yes
     port start all
     set fwd mac
@@ -477,31 +477,31 @@ Each VF's max rate is limited by the sum of peak_tb_rate of all TCs binded to it
     add port tm leaf node 0 7 700 0 1 2 1 0 0xffffffff 0 0          
     add port tm leaf node 0 8 700 0 1 2 2 0 0xffffffff 0 0          
     port tm hierarchy commit 0 yes
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 700 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 700 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 yes
-    add port tm nonleaf node 2 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 2 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 2 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 2 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 2 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 2 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 3 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 6 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 7 700 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 2 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 2 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 2 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 2 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 2 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 2 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 3 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 6 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 7 700 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 2 yes
     port start all
     set fwd mac
@@ -572,53 +572,53 @@ Note: now, the cmit_tb_rate setting can't take work, it is not supported by kern
     add port tm leaf node 3 4 800 0 1 2 1 0 0xffffffff 0 0       
     add port tm leaf node 3 5 800 0 1 2 1 0 0xffffffff 0 0     
     port tm hierarchy commit 3 no
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 800 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 800 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 no
-    add port tm nonleaf node 4 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 4 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 4 800 1000 0 1 1 0 1 0 0
-    add port tm leaf node 4 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 4 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 4 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 4 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 4 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 4 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 4 6 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 4 7 800 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 4 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 4 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 4 800 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 4 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 4 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 4 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 4 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 4 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 4 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 4 6 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 4 7 800 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 4 no
-    add port tm nonleaf node 2 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 2 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 2 800 1000 0 1 1 0 1 0 0
-    add port tm leaf node 2 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 2 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 3 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 6 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 7 800 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 2 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 2 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 2 800 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 2 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 2 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 3 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 6 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 7 800 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 2 no
-    add port tm nonleaf node 5 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 5 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 5 800 1000 0 1 1 0 1 0 0
-    add port tm leaf node 5 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 5 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 5 2 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 5 3 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 5 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 5 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 5 6 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 5 7 800 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 5 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 5 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 5 800 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 5 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 5 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 5 2 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 5 3 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 5 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 5 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 5 6 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 5 7 800 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 5 no
     port start all
     set fwd mac
@@ -698,57 +698,57 @@ the proportion of the value of different TC is consistent to TC bandwitch distri
     add port tm leaf node 3 7 700 0 1 2 1 0 0xffffffff 0 0          
     add port tm leaf node 3 8 700 0 1 2 1 0 0xffffffff 0 0          
     port tm hierarchy commit 3 yes
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 700 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 700 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 yes
-    add port tm nonleaf node 2 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 2 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 2 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 2 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 2 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 2 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 3 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 6 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 2 7 700 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 2 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 2 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 2 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 2 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 2 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 2 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 3 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 6 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 2 7 700 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 2 yes
-    add port tm nonleaf node 4 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 4 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 4 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 4 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 4 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 4 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 4 2 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 4 3 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 4 4 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 4 5 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 4 6 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 4 7 700 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 4 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 4 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 4 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 4 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 4 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 4 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 4 2 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 4 3 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 4 4 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 4 5 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 4 6 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 4 7 700 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 4 yes
-    add port tm nonleaf node 5 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 5 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 5 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 5 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 5 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 5 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 5 2 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 5 3 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 5 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 5 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 5 6 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 5 7 700 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 5 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 5 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 5 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 5 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 5 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 5 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 5 2 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 5 3 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 5 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 5 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 5 6 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 5 7 700 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 5 yes
     port start all
     set fwd mac
@@ -812,23 +812,23 @@ This case is to check QoS Tx side processing with max TC number set in strict pr
     add port tm leaf node 0 14 200 0 1 2 1 0 0xffffffff 0 0
     add port tm leaf node 0 15 200 0 1 2 1 0 0xffffffff 0 0
     port tm hierarchy commit 0 yes
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 700 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 600 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 500 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 400 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 300 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 200 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 600 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 500 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 400 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 300 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 200 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 700 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 600 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 500 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 400 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 300 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 200 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 600 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 500 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 400 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 300 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 200 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 yes
     port start all
     set fwd mac
@@ -867,23 +867,23 @@ This case is to check QoS Tx side processing with max TC number set in strict pr
     add port tm leaf node 0 14 200 0 1 2 1 0 0xffffffff 0 0        
     add port tm leaf node 0 15 200 0 1 2 1 0 0xffffffff 0 0          
     port tm hierarchy commit 0 yes
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 700 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 600 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 500 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 400 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 300 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 200 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 600 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 500 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 400 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 300 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 200 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 700 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 600 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 500 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 400 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 300 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 200 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 600 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 500 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 400 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 300 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 200 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 yes
     port start all
     set fwd mac
@@ -915,16 +915,16 @@ This case is to check QoS Tx side processing with min TC number set in strict pr
     add port tm leaf node 0 0 900 0 1 2 1 0 0xffffffff 0 0
     add port tm leaf node 0 1 900 0 1 2 1 0 0xffffffff 0 0
     port tm hierarchy commit 0 yes
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 900 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 900 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 yes
     port start all
     set fwd mac
@@ -1007,41 +1007,41 @@ This case is to check QoS Tx side processing with max TC number set in ETS mode.
     add port tm leaf node 2 14 200 0 1 2 1 0 0xffffffff 0 0
     add port tm leaf node 2 15 200 0 1 2 1 0 0xffffffff 0 0
     port tm hierarchy commit 2 yes
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 700 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 600 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 500 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 400 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 300 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 200 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 600 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 500 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 400 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 300 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 200 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 700 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 600 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 500 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 400 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 300 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 200 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 600 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 500 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 400 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 300 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 200 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 yes
-    add port tm nonleaf node 3 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 3 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 3 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 3 700 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 3 600 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 3 500 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 3 400 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 3 300 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 3 200 1000 0 1 1 0 1 0 0
-    add port tm leaf node 3 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 1 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 2 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 3 600 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 4 500 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 5 400 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 6 300 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 7 200 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 3 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 3 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 3 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 3 700 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 3 600 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 3 500 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 3 400 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 3 300 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 3 200 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 3 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 1 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 2 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 3 600 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 4 500 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 5 400 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 6 300 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 7 200 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 3 yes
     port start all
     set fwd mac
@@ -1098,16 +1098,16 @@ This case is to check QoS Tx side processing with min TC number set in ETS mode.
     add port tm leaf node 0 0 900 0 1 2 1 0 0xffffffff 0 0        
     add port tm leaf node 0 1 900 0 1 2 1 0 0xffffffff 0 0        
     port tm hierarchy commit 0 yes
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 900 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 900 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 yes
     add port tm node shaper profile 2 1 1000000 0 1000000000 0 0 0    
     add port tm nonleaf node 2 1000 -1 0 1 0 -1 1 0 0              
@@ -1115,16 +1115,16 @@ This case is to check QoS Tx side processing with min TC number set in ETS mode.
     add port tm leaf node 2 0 900 0 1 2 1 0 0xffffffff 0 0        
     add port tm leaf node 2 1 900 0 1 2 1 0 0xffffffff 0 0        
     port tm hierarchy commit 2 yes
-    add port tm nonleaf node 3 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 3 900 1000 0 1 1 0 1 0 0
-    add port tm leaf node 3 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 4 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 5 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 6 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 3 7 900 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 3 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 3 900 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 3 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 4 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 5 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 6 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 3 7 900 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 3 yes
     port start all
     set fwd mac
@@ -1159,18 +1159,18 @@ The case is to check the support to query QoS settings.
     add port tm leaf node 0 4 700 0 1 2 2 0 0xffffffff 0 0       
     add port tm leaf node 0 5 700 0 1 2 2 0 0xffffffff 0 0  
     port tm hierarchy commit 0 no
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 700 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 700 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 no
     port start all
 
@@ -1476,17 +1476,17 @@ Subcase 3: Valid Min and Max values
     add port tm leaf node 0 2 800000 0 1 2 1 0 0xffffffff 0 0
     add port tm leaf node 0 3 800000 0 1 2 1 0 0xffffffff 0 0
     port tm hierarchy commit 0 yes
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 800 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 800 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 yes
     port start all
     set fwd mac
@@ -1532,36 +1532,36 @@ Subcase 1: Total number of queue pairs match to what the VF is allocated
     add port tm leaf node 0 4 700 0 1 2 2 0 0xffffffff 0 0
     add port tm leaf node 0 5 700 0 1 2 2 0 0xffffffff 0 0
     port tm hierarchy commit 0 yes
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 800 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 800 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 yes
     iavf_hierarchy_commit(): queue node is less than allocated queue pairs
     no error: (no stated reason) (error 0)
 
 2. 8 queues, map 9 queues to TC::
 
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 8 700 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 8 700 0 1 2 -1 0 0xffffffff 0 0
     num strict priorities field (node params): SP priority not supported (error 27)
 
 Subcase 1: Number of TCs match is less than TC enabled on the VF
@@ -1597,35 +1597,35 @@ Subcase 1: Number of TCs match is less than TC enabled on the VF
     add port tm leaf node 0 4 700 0 1 2 2 0 0xffffffff 0 0
     add port tm leaf node 0 5 700 0 1 2 2 0 0xffffffff 0 0
     port tm hierarchy commit 0 no
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 800 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 800 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 yes
     iavf_hierarchy_commit(): Does not set VF vsi nodes to all TCs
     no error: (no stated reason) (error 0)
 
 3. Not all VF1 VSI nodes mapping to queues, set successfully::
 
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 800 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 800 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 yes
 
    Send TC0 and TC1 streams, the queue mapping is correct.
@@ -1660,22 +1660,22 @@ Run the below steps sequentially.
 3. VF1's TC node number is more than TC enabled by lldptool::
 
     port tm hierarchy commit 0 yes
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 700 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 600 1000 0 1 1 0 1 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 700 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 600 1000 0 1 1 -1 1 0 0
     node id: too many TCs (error 33)
 
 4. Map the nonexist VSI node to queues::
 
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 600 0 1 2 0 0 0xffffffff 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 600 0 1 2 -1 0 0xffffffff 0 0
     parent node id: parent not exist (error 19)
 
 Subcase 4: overlap between queue to TC mapping
@@ -1695,15 +1695,15 @@ There can't be overlap between queue to TC mapping::
     add port tm leaf node 0 4 700 0 1 2 2 0 0xffffffff 0 0
     add port tm leaf node 0 5 700 0 1 2 2 0 0xffffffff 0 0
     port tm hierarchy commit 0 no
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 800 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 800 0 1 2 -1 0 0xffffffff 0 0
     node id: node id already used (error 33)
 
 Subcase 5: Non-contiguous TC setting in queue mapping
@@ -1723,18 +1723,18 @@ Subcase 5: Non-contiguous TC setting in queue mapping
     add port tm leaf node 0 4 700 0 1 2 2 0 0xffffffff 0 0       
     add port tm leaf node 0 5 700 0 1 2 2 0 0xffffffff 0 0          
     port tm hierarchy commit 0 yes
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 800 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 800 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 yes
     port start all
     set fwd mac
@@ -1782,18 +1782,18 @@ The sum of the streams's throughput is limited by the tcbw distribution or peak_
     add port tm leaf node 0 5 700 0 1 2 2 0 0xffffffff 0 0
     port tm hierarchy commit 0 no
 
-    add port tm nonleaf node 1 1000 -1 0 1 0 0 1 0 0
-    add port tm nonleaf node 1 900 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 800 1000 0 1 1 0 1 0 0
-    add port tm nonleaf node 1 700 1000 0 1 1 0 1 0 0
-    add port tm leaf node 1 0 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 1 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 2 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 3 900 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 4 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 5 800 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 6 700 0 1 2 0 0 0xffffffff 0 0
-    add port tm leaf node 1 7 700 0 1 2 0 0 0xffffffff 0 0
+    add port tm nonleaf node 1 1000 -1 0 1 0 -1 1 0 0
+    add port tm nonleaf node 1 900 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 800 1000 0 1 1 -1 1 0 0
+    add port tm nonleaf node 1 700 1000 0 1 1 -1 1 0 0
+    add port tm leaf node 1 0 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 1 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 2 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 3 900 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 4 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 5 800 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 6 700 0 1 2 -1 0 0xffffffff 0 0
+    add port tm leaf node 1 7 700 0 1 2 -1 0 0xffffffff 0 0
     port tm hierarchy commit 1 no
     port start all
     set fwd mac
