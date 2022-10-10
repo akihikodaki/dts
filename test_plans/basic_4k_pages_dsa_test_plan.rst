@@ -1,7 +1,7 @@
 .. SPDX-License-Identifier: BSD-3-Clause
    Copyright(c) 2022 Intel Corporation
 
-=============================================
+==============================================
 Basic 4k-pages test with DSA driver test plan
 ==============================================
 
