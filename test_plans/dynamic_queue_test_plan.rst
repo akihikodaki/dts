@@ -94,7 +94,7 @@ Stop one Tx queue on port 0::
 
 Set txonly forward, start testpmd
 
-Start testpmd, then stop, check this stopped queue only transmits 255 packets
+Start testpmd, then stop, check this stopped queue not display
   
 Setup this stopped queue on the port::
 
@@ -162,7 +162,7 @@ Stop one Tx queue on port 0::
 
 Set txonly forward, start testpmd
 
-Start testpmd, then stop, check this stopped queue only transmits 255 packets
+Start testpmd, then stop, check this stopped queue not display
 
 Reconfigure ring size as 512 for the stopped queues on port 0::
 
