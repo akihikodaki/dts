@@ -101,7 +101,7 @@ This case tests that the imix packets can forward normally with two VMs in PVP t
 6. Quit and relaunch dpdk-vhost by below command::
 
 	./x86_64-native-linuxapp-gcc/examples/dpdk-vhost -l 26-28 -n 4 -a 0000:af:00.0 -a 0000:00:04.0 -a 0000:00:04.1 -a 0000:00:04.2 -a 0000:00:04.3  -- \
-	-p 0x1 --mergeable 1 --vm2vm 1  --stats 1 --socket-file /root/dpdk/vhost-net0 --socket-file /root/dpdk/vhost-net1 --dmas [txd0@0000:00:01.0,rxd1@0000:00:01.1] --client--total-num-mbufs 600000
+	-p 0x1 --mergeable 1 --vm2vm 1  --stats 1 --socket-file /root/dpdk/vhost-net0 --socket-file /root/dpdk/vhost-net1 --dmas [txd0@0000:00:04.0,rxd1@0000:00:04.1] --client--total-num-mbufs 600000
 
 7. Start packets from two virtio-user side individually to let vswitch know the mac addr::
 
@@ -172,7 +172,7 @@ This case checks that the split ring with CBDMA channel can work stably when the
 2. On host, launch dpdk-vhost by below command::
 
 	./x86_64-native-linuxapp-gcc/examples/dpdk-vhost -l 26-28 -n 4 -a 0000:af:00.0 -a 0000:00:04.0 -a 0000:00:04.1 -a 0000:00:04.2 -a 0000:00:04.3 -- -p 0x1 --mergeable 1 --vm2vm 1  \
-	--socket-file /root/dpdk/vhost-net0 --socket-file /root/dpdk/vhost-net1 --dmas [txd0@0000:00:04.0,rxd0@0000:00:04.1,txd1@0000:00:01.2,rxd1@0000:00:01.3] --client --total-num-mbufs 600000
+	--socket-file /root/dpdk/vhost-net0 --socket-file /root/dpdk/vhost-net1 --dmas [txd0@0000:00:04.0,rxd0@0000:00:04.1,txd1@0000:00:04.2,rxd1@0000:00:04.3] --client --total-num-mbufs 600000
 
 3. Start VM0 with qemu::
 
@@ -245,7 +245,7 @@ This case checks that the split ring with CBDMA channel can work stably when the
 9. Quit and relaunch dpdk-vhost with below command::
 
 	./x86_64-native-linuxapp-gcc/examples/dpdk-vhost -l 26-28 -n 4 -a 0000:af:00.0 -a 0000:00:04.0 -a 0000:00:04.1 -a 0000:00:04.2 -a 0000:00:04.3 -- -p 0x1 --mergeable 1 --vm2vm 1  \
-	--socket-file /root/dpdk/vhost-net0 --socket-file /root/dpdk/vhost-net1 --dmas [txd0@0000:00:04.0,rxd1@0000:00:01.3] --client --total-num-mbufs 600000
+	--socket-file /root/dpdk/vhost-net0 --socket-file /root/dpdk/vhost-net1 --dmas [txd0@0000:00:04.0,rxd1@0000:00:04.3] --client --total-num-mbufs 600000
 
 10. Rerun step 6-7，check vhost can stable work and get expected throughput.
 
