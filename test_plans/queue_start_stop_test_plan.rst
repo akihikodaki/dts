@@ -35,15 +35,29 @@ This case support PF (Intel® Ethernet 700 Series/Intel® Ethernet 800 Series/82
 
       printf("ports %u queue %u received %u packages\n", fs->rx_port, fs->rx_queue, nb_rx);
 
-#. Compile testpmd again, then run testpmd.
+#. Compile testpmd again, then run testpmd::
+    x86_64-native-linuxapp-gcc/app/dpdk-testpmd  -l 1-2 -n 4 -a 0000:af:00.0 -- -i --portmask=0x1 --port-topology=loop
+
 #. Run "set fwd mac" to set fwd type
 #. Run "start" to start fwd package
-#. Start packet generator to transmit and receive packets
+
+#. Start a packet capture on the tester in the background::
+    tcpdump -i ens7  'ether[12:2] != 0x88cc'  -Q in -w /tmp/tester/sniff_ens7.pcap
+
+#. Start packet generator to transmit packets::
+    sendp([Ether(dst='3c:fd:fe:c1:0f:4c', src='00:00:20:00:00:00')/IP()/UDP()/Raw(load=b'XXXXXXXXXXXXXXXXXX')],iface="ens7",count=4,inter=0,verbose=False)
+
+#. Quit tcpdump and check tester port receive packets
+
 #. Run "port 0 rxq 0 stop" to stop rxq 0 in port 0
-#. Start packet generator to transmit and not receive packets
+#. Start packet generator to transmit and check tester port not receive packets
+
 #. Run "port 0 rxq 0 start" to start rxq 0 in port 0
-#. Run "port 1 txq 1 stop" to start txq 0 in port 1
-#. Start packet generator to transmit and not receive packets but in testpmd it is a "ports 0 queue 0 received 1 packages" print
-#. Run "port 1 txq 1 start" to start txq 0 in port 1
-#. Start packet generator to transmit and receive packets
+#. Run "port 0 txq 0 stop" to stop txq 0 in port 0
+#. Start packet generator to transmit and check tester port not receive packets
+   and in testpmd it not has "ports 0 queue 0 received 1 packages" print
+
+#. Run "port 0 txq 0 start" to start txq 0 in port 0
+#. Start packet generator to transmit and check tester port receive packets
+   and in testpmd it has "ports 0 queue 0 received 1 packages" print
 #. Test it again with VF

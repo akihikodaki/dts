@@ -137,17 +137,10 @@ class TestQueueStartStop(TestCase):
             out = self.dut.get_session_output()
         except Exception as e:
             raise IOError("queue start/stop forward failure: %s" % e)
-
-        if self.nic == "cavium_a063":
-            self.verify(
-                "ports 0 queue 0 receive 4 packages" in out,
-                "start queue revice package failed, out = %s" % out,
-            )
-        else:
-            self.verify(
-                "ports 0 queue 0 receive 1 packages\r\n" * 4 in out,
-                "start queue revice package failed, out = %s" % out,
-            )
+        self.verify(
+            "ports 0 queue 0 receive " not in out,
+            "start queue revice package failed, out = %s" % out,
+        )
 
         try:
             # start tx queue test
@@ -156,8 +149,13 @@ class TestQueueStartStop(TestCase):
             self.dut.send_expect("port 0 txq 0 start", "testpmd>")
             self.dut.send_expect("start", "testpmd>")
             self.check_forwarding([0, 0], self.nic)
+            out = self.dut.get_session_output()
         except Exception as e:
             raise IOError("queue start/stop forward failure: %s" % e)
+        self.verify(
+            "ports 0 queue 0 receive " in out,
+            "start queue revice package failed, out = %s" % out,
+        )
 
     def tear_down(self):
         """
