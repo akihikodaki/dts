@@ -152,7 +152,7 @@ class TestPVPShareLib(TestCase):
         )
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        eal_param += "-d librte_net_virtio.so -d librte_mempool_ring.so"
+        eal_param += " -d librte_net_virtio.so -d librte_mempool_ring.so"
         command_line_user = self.path + eal_param + " -- -i"
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("start", "testpmd> ", 120)
