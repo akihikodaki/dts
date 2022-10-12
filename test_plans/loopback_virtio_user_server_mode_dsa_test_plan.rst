@@ -88,7 +88,7 @@ Common steps
 2. Bind DSA devices to kernel idxd driver, and configure Work Queue (WQ)::
 
 	<dpdk dir># ./usertools/dpdk-devbind.py -b idxd <numDevices>
-	<dpdk dir># ./drivers/dma/idxd/dpdk_idxd_cfg.py -q <numWq>
+	<dpdk dir># ./drivers/dma/idxd/dpdk_idxd_cfg.py -q <numWq> <numDevices>
 
 .. note::
 
