@@ -124,9 +124,9 @@ class TestPortControl(TestCase):
 
     def start_pmd_port(self, terminal):
         terminal.execute_cmd("port start all")
+        terminal.wait_link_status_up("all")
         terminal.execute_cmd("start")
         time.sleep(5)
-        terminal.wait_link_status_up("all", timeout=5)
         ret = terminal.get_port_link_status(self.port_id_0)
         self.verify(ret == "up", "port not up!")
 
