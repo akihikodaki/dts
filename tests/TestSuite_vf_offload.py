@@ -584,6 +584,7 @@ class TestVfOffload(TestCase):
             rx_stats = self.number_of_packets(rx_interface)
             tx_stats = self.number_of_packets(tx_interface)
             tx_outlist = self.number_of_bytes(rx_interface)
+            tx_outlist.sort(reverse=True)
             self.logger.info(tx_outlist)
             if loading_size <= 800:
                 self.verify(
@@ -618,6 +619,7 @@ class TestVfOffload(TestCase):
             rx_stats = self.number_of_packets(rx_interface)
             tx_stats = self.number_of_packets(tx_interface)
             tx_outlist = self.number_of_bytes(rx_interface)
+            tx_outlist.sort(reverse=True)
             self.logger.info(tx_outlist)
             if loading_size <= 800:
                 self.verify(
