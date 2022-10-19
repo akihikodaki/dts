@@ -321,6 +321,9 @@ class TestTSO(TestCase):
             "I40E_40G-QSFP_A",
             "I40E_40G-QSFP_B",
             "I40E_25G-25G_SFP28",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_X722",
+            "I40E_10G-10G_BASE_T_BC",
         ]
         save_file = "/tmp/save.pcap"
         dump_pcap = "/tmp/tcpdump_%s.pcap" % rx_interface
