@@ -52,7 +52,9 @@ to the device under test::
    usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
 
 The support of the IEEE1588 Precise Time Protocol in Poll Mode Drivers must
-be configured at compile-time with the ``CONFIG_RTE_LIBRTE_IEEE1588`` option.
+be configured at compile-time with the ``DRTE_LIBRTE_IEEE1588`` option::
+
+   CC=gcc meson -Denable_kmods=True -Dlibdir=lib -Dc_args=-DRTE_LIBRTE_IEEE1588 --default-library=static x86_64-native-linuxapp-gcc
 
 Configure the packet format for the traffic generator to be IEEE1588 PTP
 Ethernet type ``0x88F7`` and containing PTP ``SYNC`` (version 2 at offset 1,
@@ -60,10 +62,11 @@ and message ID 0 at offset 0).
 
 Start the ``testpmd`` application with the following parameters::
 
-   -cffffff -n 3 -- -i --rxpt=0 --rxht=0 --rxwt=0 \
-   --txpt=39 --txht=0 --txwt=0
+   -cffffff -n 3 -- -i --tx-offloads=0x00008000
 
 The -n command is used to select the number of memory channels. It should match the number of memory channels on that setup.
+--tx-offloads: for IEEE1588, the full-feature tx path needs to be enabled. Enabling any tx offload will force DPDK utilize full tx path.
+Enabling multiple segment offload is more reasonable for user cases.
 
 Test Case: Enable IEEE1588 PTP packet reception and generation
 ==============================================================
