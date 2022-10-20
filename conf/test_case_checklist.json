@@ -315,8 +315,6 @@
             ],
             "NIC": [
                 "I40E_40G-QSFP_B",
-                "I40E_10G-SFP_X722",
-                "I40E_10G-10G_BASE_T_X722",
                 "cavium_a063",
                 "cavium_a064",
                 "I40E_10G-10G_BASE_T_BC",
@@ -579,8 +577,6 @@
             ],
             "NIC": [
                 "I40E_40G-QSFP_B",
-                "I40E_10G-SFP_X722",
-                "I40E_10G-10G_BASE_T_X722",
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IXGBE_10G-X550T",
                 "I40E_10G-10G_BASE_T_BC",
@@ -601,8 +597,6 @@
             ],
             "NIC": [
                 "I40E_40G-QSFP_B",
-                "I40E_10G-SFP_X722",
-                "I40E_10G-10G_BASE_T_X722",
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IXGBE_10G-X550T",
                 "I40E_10G-10G_BASE_T_BC",
