@@ -899,7 +899,7 @@ class TestChecksumOffload(TestCase):
     def test_hardware_checksum_check_l4_rx(self):
         self.checksum_enablehw(self.dut_ports[0])
         self.dut.send_expect("start", "testpmd>")
-
+        self.pmdout.wait_link_status_up("all")
         verification_errors: List[VerifyFailure] = []
 
         iface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
@@ -998,7 +998,7 @@ class TestChecksumOffload(TestCase):
     def test_hardware_checksum_check_l4_tx(self):
         self.checksum_enablehw(self.dut_ports[0])
         self.dut.send_expect("start", "testpmd>")
-
+        self.pmdout.wait_link_status_up("all")
         verification_errors: List[VerifyFailure] = []
 
         iface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))

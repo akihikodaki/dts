@@ -510,8 +510,6 @@ class TestDualVlan(TestCase):
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
                 "I40E_40G-QSFP_B",
-                "I40E_10G-SFP_X722",
-                "I40E_10G-10G_BASE_T_X722",
                 "IGB_1G-82574L",
                 "I40E_10G-10G_BASE_T_BC",
             ],
