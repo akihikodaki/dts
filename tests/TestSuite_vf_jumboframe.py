@@ -117,7 +117,7 @@ class TestVfJumboFrame(TestCase):
         if getattr(self, "used_dut_port", None) != None:
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port)
             self.used_dut_port = None
-        self.bind_nic_driver(self.dut_ports[:1], driver="default")
+        self.bind_nic_driver(self.dut_ports[:1], driver=self.drivername)
 
         self.env_done = False
 

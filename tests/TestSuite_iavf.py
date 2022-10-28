@@ -147,7 +147,7 @@ class TestIavf(TestCase):
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port_1)
             port = self.dut.ports_info[self.used_dut_port_1]["port"]
             self.used_dut_port_1 = None
-        self.bind_nic_driver(self.dut_ports[:2], driver="default")
+        self.bind_nic_driver(self.dut_ports[:2], driver=self.drivername)
         self.env_done = False
 
     def send_packet(self, mac, itf, tran_type="udp", count=1, pktLength=64, VID=100):

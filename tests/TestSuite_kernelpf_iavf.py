@@ -172,7 +172,7 @@ class TestKernelpfIavf(TestCase):
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port)
             self.used_dut_port = None
 
-        self.bind_nic_driver(self.dut_ports, driver="default")
+        self.bind_nic_driver(self.dut_ports, driver=self.drivername)
 
         self.env_done = False
 
