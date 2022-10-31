@@ -163,9 +163,9 @@ Disable kernel trust mode::
 
 Test case: VF multicast
 =======================
-Enable kernel trust mode::
+Disable kernel trust mode::
 
-    ip link set $PF_INTF vf 0 trust on
+    ip link set $PF_INTF vf 0 trust off
 
 Start VF testpmd
 
@@ -184,14 +184,14 @@ Enable multicast mode::
 
     testpmd> set allmulti all on
 
+configure multicast address::
+
+    testpmd> mcast_addr add 0 01:80:C2:00:00:08
+
 Send packet with current VF0's MAC, and check VF can receive the packet.
 
 Send packet with multicast MAC 01:80:C2:00:00:08, and check VF can
 receive the packet.
-
-Disable kernel trust mode::
-
-    ip link set $PF_INTF vf 0 trust off
 
 Test case: VF broadcast
 =======================
