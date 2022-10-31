@@ -334,13 +334,14 @@ class TestKernelpfIavf(TestCase):
         self.send_random_pkt(self.wrong_mac, count=1)
         out = self.vm_dut.get_session_output()
         self.verify(self.wrong_mac in out, "vf receive pkt fail with wrong mac")
+        self.dut.send_expect("ip link set dev %s vf 0 trust off" % self.host_intf, "# ")
 
     def test_vf_multicast(self):
         """
         enable kernel trust mode
         """
         multicast_mac = "01:80:C2:00:00:08"
-        self.dut.send_expect("ip link set dev %s vf 0 trust on" % self.host_intf, "# ")
+        self.dut.send_expect("ip link set dev %s vf 0 trust off" % self.host_intf, "# ")
         self.launch_testpmd(dcf_flag=self.dcf_mode)
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set promisc all off")
@@ -355,6 +356,7 @@ class TestKernelpfIavf(TestCase):
         self.verify(multicast_mac not in out, "vf receive pkt with multicast mac")
 
         self.vm_testpmd.execute_cmd("set allmulti all on")
+        self.vm_testpmd.execute_cmd(f"mcast_addr add 0 {multicast_mac}")
         self.send_random_pkt(self.vf_mac, count=1)
         out = self.vm_dut.get_session_output()
         self.verify(self.vf_mac in out, "vf receive pkt fail with current mac")
