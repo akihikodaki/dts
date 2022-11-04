@@ -13,9 +13,6 @@ This test plan test several features in VM2VM topo:
 in the UDP/IP stack with vm2vm split ring and packed ring vhost-user/virtio-net mergeable path.
 2. Check the payload of large packet (larger than 1MB) is valid after forwarding packets with vm2vm split ring
 and packed ring vhost-user/virtio-net mergeable and non-mergeable path.
-3. Check Vhost tx offload function by verifying the TSO/cksum in the TCP/IP stack with vm2vm split ring and
-packed ring vhost-user/virtio-net mergeable path with CBDMA channel.
-4. Multi-queues number dynamic change in vm2vm vhost-user/virtio-net with split ring and packed ring when vhost enqueue operation with multi-CBDMA channels.
 Note: 
 1.For packed virtqueue virtio-net test, need qemu version > 4.2.0 and VM kernel version > v5.1.
 2.For split virtqueue virtio-net with multi-queues server mode test, need qemu version > LTS 4.2.1, dut to old qemu exist reconnect issue when multi-queues test.
