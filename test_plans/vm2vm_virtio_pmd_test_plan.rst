@@ -8,7 +8,6 @@ vm2vm vhost-user/virtio-pmd test plan
 This test plan includes vm2vm mergeable, normal and vector_rx path test with virtio 0.95 and virtio 1.0,
 also add mergeable and normal path test with virtio 1.1. Specially, three mergeable path cases check the
 payload of each packets are valid by using pdump.
-Note: Blow cases 9-11 which have cbdma usage should add dpdk local path to support async vhostpmd.
 
 Test flow
 =========
