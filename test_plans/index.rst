@@ -71,7 +71,6 @@ The following are the test plans for the DPDK DTS automated test system.
     external_mempool_handler_test_plan
     firmware_version_test_plan
     floating_veb_test_plan
-    flow_classify_softnic_test_plan
     i40e_rss_input_test_plan
     generic_flow_api_test_plan
     hotplug_mp_test_plan
