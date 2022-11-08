@@ -12,95 +12,84 @@ is configurable through firmware (DPDK Packet Framework script).
 
 Prerequisites
 =============
-1. The DUT must have one 10G Ethernet port connected to a port on tester
-   that are controlled by the traffic generator::
+The DUT must have atleast one 10G Ethernet ports connected to one port on
+Tester.::
 
     dut_port_0 <---> tester_port_0
 
-   Assume the DUT 10G Ethernet port's pci device id is as the following::
+Assume DUT 10G Ethernet ports' pci device id is as the following::
 
-    dut_port_0 : "0000:05:00.0"
+    dut_port_0 : "0000:af:00.1"
 
-   Bind it to dpdk igb_uio driver::
+Bind them to dpdk vfio-pci driver::
 
-    ./usertools/dpdk-devbind.py -b igb_uio 05:00.0
+    ./usertools/dpdk-devbind.py -b vfio-pci 0000:af:00.1
 
-2. Change ./drivers/net/softnic/firmware.cli to meet the specific test environment.
-   Change the DUT port info to the actual port info in your test environment::
-
-    link LINK dev 0000:05:00.0
-
-3. Start softnic with following command line::
-
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7 -s 0x4 -n 4 \
-    --vdev 'net_softnic0,firmware=./drivers/net/softnic/firmware.cli,cpu_id=1,conn_port=8086' \
-    -- -i --forward-mode=softnic --portmask=0x2
-    testpmd> start
-
-   Set the thread id consistent to the service core::
-
-    thread 2 pipeline PIPELINE0 enable
-
-Test Case 1: softnic performance
-================================
-1. Start softnic::
-
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7 -s 0x4 -n 4 \
-    --vdev 'net_softnic0,firmware=./drivers/net/softnic/firmware.cli,cpu_id=1,conn_port=8086' \
-    -- -i --forward-mode=softnic --portmask=0x2
-    testpmd> start
-
-2. Send packet at line rate from traffic generator (IXIA or other) with packet size from 64~1518B.
-3. Check performance number is same as the physical NIC's performance number, no performance drop.
-
-Test Case 2: shaping for pipe
-=============================
-1. The specifications of the default Hierarchical Scheduler are as follows:
-
-    Root node (x1, level 0)
-    Subport node (x1, level 1)
-    Pipe node (x4096, level 2)
-    Traffic Class node (x16348, level 3)
-    Queue node (x65536, level 4)
-
-2. Start softnic with the default hierarchy Qos::
-
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7 -s 0x4 -n 4 \
-    --vdev 'net_softnic0,firmware=./drivers/net/softnic/tm_firmware.cli,cpu_id=1,conn_port=8086' \
-    -- -i --forward-mode=softnic --portmask=0x2
-    testpmd> start
-
-3. Send per flow traffic with 100% line rate, verify output flow rate is 1/4096 subport rate.
-
-Test Case 3: NAT
+Supporting Files
 ================
-1. Set SNAT with proto tcp test, edit nat_firmware.cli to change "table action" as below::
+All the supporting files for this test suite are maintained inside softnic folder, and softnic folder
+is present in the {DTS_SRC_DIR}/dep directory.
 
-    table action profile AP0 ipv4 offset 270 fwd nat src proto tcp
+Directory Structure of Each Test Case
+=====================================
+Within {DTS_SRC_DIR}/dep/softnic, all files related to a particular test case are maintained
+in a separate directory of which the directory structure is shown below::
 
-(a). Start softnic::
+    test_case_name [directory]
+        test_case_name.spec
+        test_case_name_x.io [x: 1 to n; depending on the test case]
+        test_case_name.cli
+        table.txt [applicable for test cases requiring it]
+        readme.txt
+        pcap_files [subdirectory]
+            in.txt
+            out.txt
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7 -s 0x4 -n 4 \
-    --vdev 'net_softnic0,firmware=./drivers/net/softnic/nat_firmware.cli,cpu_id=1,conn_port=8086' \
-    -- -i --forward-mode=softnic --portmask=0x2
+For an example, files related to rx_tx test case are maintained as shown below::
+
+    rx_tx [directory]
+        rx_tx.spec
+        rx_tx_1.io
+        rx_tx_2.io
+        rx_tx.cli
+        readme.txt
+        pcap_files [subdirectory]
+            in.txt
+            out.txt
+
+Template of each Test Case
+===========================
+1. Edit test_case_name/test_case_name.io:
+   change pci device id of port in and port out to pci device id of dut_port_0
+
+2. Run softnic driver as the following::
+
+    x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 0-2 -n 4  --file-prefix=dpdk_2374972_20221107140937   -s 0x4 -a 0000:af:00.1 \
+    --vdev 'net_softnic0,firmware=/tmp/softnic/rx_tx/firmware.cli,cpu_id=1,conn_port=8086' -- -i --portmask=0x2
     testpmd> start
 
-(b). Sent packet, verify the received packet's ipaddr and port was changed as expected.
+3. Send packets at tester side using scapy. The packets to be sent are maintained in softnic/test_case_name/pcap_files/in.txt
 
-2. Set DNAT with proto tcp test, edit nat_firmware.cli to change "table action" as below::
+4. Verify the packets received using tcpdump. The expected packets are maintained in softnic/test_case_name/pcap_files/out.txt
 
-    table action profile AP0 ipv4 offset 270 fwd nat dst proto tcp
+5. Test case is considered as successful if the received packets and the expected packets match for all the port combinations used.
 
-   Then re-run step (a) & step (b).
+Example Test Case : rx_tx
+================================
+1. Edit rx_tx/rx_tx_1.io:
+   change pci device id of port in to pci device id of dut_port_0
+   Edit rx_tx/rx_tx_2.io:
+   change pci device id of port out to pci device id of dut_port_0
 
-3. Set SNAT with proto udp test, edit nat_firmware.cli to change "table action" as below::
+2. Start softnic::
 
-    table action profile AP0 ipv4 offset 270 fwd nat src proto udp
+    x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 0-2 -n 4  --file-prefix=dpdk_2374972_20221107140937 \
+    -s 0x4 -a 0000:af:00.1 --vdev 'net_softnic0,firmware=/tmp/softnic/rx_tx/firmware.cli,cpu_id=1, \
+    conn_port=8086' -- -i --portmask=0x2
+    testpmd> start
 
-   Then re-run step (a) & step (b).
+3. Send packets at tester side using scapy. The packets to be sent are maintained in softnic/rx_tx/pcap_files/in.txt
 
-4. Set DNAT with proto udp test, edit nat_firmware.cli to change "table action" as below::
+4. Verify the packets received using tcpdump. The expected packets are maintained in softnic/rx_tx/pcap_files/out.txt
 
-    table action profile AP0 ipv4 offset 270 fwd nat dst proto udp
-
-   Then re-run step (a) & step (b).
+5. Test rx_tx is considered as successful if the received packets and the expected packets match for all port combinations used.

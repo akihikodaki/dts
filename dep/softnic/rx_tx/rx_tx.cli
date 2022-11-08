@@ -1,0 +1,21 @@
+; SPDX-License-Identifier: BSD-3-Clause
+; Copyright(c) 2022 Intel Corporation
+
+;
+; Pipeline code generation & shared object library build.
+;
+pipeline codegen /tmp/softnic/rx_tx/rx_tx.spec /tmp/firmware.c
+pipeline libbuild /tmp/firmware.c /tmp/firmware.so
+
+;
+; List of pipelines.
+;
+pipeline RX build lib /tmp/firmware.so io /tmp/softnic/rx_tx/rx_tx_1.io numa 0
+pipeline TX build lib /tmp/firmware.so io /tmp/softnic/rx_tx/rx_tx_2.io numa 0
+
+;
+; Pipelines-to-threads mapping. For the Soft NIC devices, the pipelines can be mapped to any of the
+; application service cores (see the -s <core_mask> argument):
+;
+thread 2 pipeline RX enable
+thread 2 pipeline TX enable

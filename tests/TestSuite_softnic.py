@@ -7,233 +7,263 @@ DPDK Test suite.
 Test softnic API in DPDK.
 """
 
+import itertools
 import os
 import re
 import string
 import time
+import traceback
+from time import sleep
+
+import scapy.layers.inet
+from scapy.arch import get_if_hwaddr
+from scapy.packet import Raw, bind_layers
+from scapy.route import *
+from scapy.sendrecv import sendp, sniff
+from scapy.utils import hexstr, rdpcap, wrpcap
 
 import framework.utils as utils
-from framework.pktgen import PacketGeneratorHelper
 from framework.pmd_output import PmdOutput
-from framework.settings import HEADER_SIZE
 from framework.test_case import TestCase
 
 
 class TestSoftnic(TestCase):
-    def set_up_all(self):
+    def pair_hex_digits(self, iterable, count, fillvalue=None):
+        args = [iter(iterable)] * count
+        return itertools.zip_longest(*args, fillvalue=fillvalue)
 
+    def get_flow_direction_param_of_tcpdump(self):
+        """
+        get flow dirction param depend on tcpdump version
+        """
+        param = ""
+        direct_param = r"(\s+)\[ (\S+) in\|out\|inout \]"
+        out = self.tester.send_expect("tcpdump -h", "# ", trim_whitespace=False)
+        for line in out.split("\n"):
+            m = re.match(direct_param, line)
+            if m:
+                opt = re.search("-Q", m.group(2))
+                if opt:
+                    param = "-Q" + " in"
+                else:
+                    opt = re.search("-P", m.group(2))
+                    if opt:
+                        param = "-P" + " in"
+        if len(param) == 0:
+            self.logger.info("tcpdump not support direction choice!!!")
+        return param
+
+    def tcpdump_start_sniff(self, interface, filters=""):
+        """
+        Starts tcpdump in the background to sniff packets that received by interface.
+        """
+        cmd = "rm -f /tmp/tcpdump_{0}.pcap".format(interface)
+        self.tester.send_expect(cmd, "#")
+        cmd = "tcpdump -nn -e {0} -w /tmp/tcpdump_{1}.pcap -i {1} {2} -Q in 2>/tmp/tcpdump_{1}.out &".format(
+            self.param_flow_dir, interface, filters
+        )
+        self.tester.send_expect(cmd, "# ")
+
+    def tcpdump_stop_sniff(self):
+        """
+        Stops the tcpdump process running in the background.
+        """
+        self.tester.send_expect("killall tcpdump", "# ")
+        # For the [pid]+ Done tcpdump... message after killing the process
+        sleep(1)
+        self.tester.send_expect('echo "Cleaning buffer"', "# ")
+        sleep(1)
+
+    def compare_packets(self, in_file, out_file, all_pkts):
+        """
+        Flag all_pkt is zero, then it compares small packet(size upto 48 bytes).
+        Flag all_pkt is non-zero, then it compares all packets of out_file.
+        """
+        if all_pkts == 0:
+            cmd = "diff -sqw <(head -n 11 {}) <(head -n 11 {})".format(
+                in_file, out_file
+            )
+        else:
+            cmd = "diff -sqw {} {}".format(in_file, out_file)
+        return self.tester.send_command(cmd, timeout=0.5)
+
+    def convert_tcpdump_to_text2pcap(self, in_filename, out_filename):
+        with open(in_filename) as input, open(out_filename, "w") as output:
+            output.write("# SPDX-License-Identifier: BSD-3-Clause\n")
+            output.write("# Copyright(c) 2022 Intel Corporation\n")
+            output.write("#\n\n")
+            output.write("# text to pcap: text2pcap packet.txt packet.pcap\n")
+            output.write("# pcap to text: tcpdump -r packet.pcap -xx\n\n")
+
+            i = 0
+            for line in input:
+                time = self.pkt_timestamp.match(line)
+                if time:
+                    output.write("# Packet {}\n".format(i))
+                    i += 1
+                    continue
+                payload = self.pkt_content.match(line)
+                if payload:
+                    address = payload.group(1)
+                    hex_data = payload.group(2).replace(" ", "")
+                    hex_data = " ".join(
+                        "".join(part) for part in self.pair_hex_digits(hex_data, 2, " ")
+                    )
+                    output.write("{:0>6}  {:<47}\n".format(address, hex_data))
+
+    def send_and_sniff(
+        self, from_port, to_port, in_pcap, out_pcap, filters, all_pkts=0
+    ):
+        self.tester.send_expect("rm -f /tmp/*.txt /tmp/*.pcap /tmp/*.out", "# ")
+        tx_count = len(from_port)
+        rx_count = len(to_port)
+        tx_port, rx_port, tx_inf, rx_inf = ([] for i in range(4))
+
+        for i in range(tx_count):
+            tx_port.append(self.tester.get_local_port(self.dut_ports[from_port[i]]))
+            tx_inf.append(self.tester.get_interface(tx_port[i]).strip())
+
+        for i in range(rx_count):
+            rx_port.append(self.tester.get_local_port(self.dut_ports[to_port[i]]))
+            rx_inf.append(self.tester.get_interface(rx_port[i]).strip())
+            self.tcpdump_start_sniff(rx_inf[i], filters[i])
+
+        self.tester.scapy_foreground()
+        for i in range(tx_count):
+            self.tester.send_expect(
+                "text2pcap -q {} /tmp/tx_{}.pcap".format(
+                    self.src_path + in_pcap[i], tx_inf[i]
+                ),
+                "# ",
+            )
+            self.tester.scapy_append(
+                'pkt = rdpcap("/tmp/tx_{}.pcap")'.format(tx_inf[i])
+            )
+
+            self.tester.scapy_append(
+                'sendp(pkt, iface="{}", count=32)'.format(tx_inf[i])
+            )
+
+        self.tester.scapy_execute()
+        self.tcpdump_stop_sniff()
+        mismatch_count = 0
+
+        for i in range(rx_count):
+            self.tester.send_expect(
+                "tcpdump -n -r /tmp/tcpdump_{}.pcap -xx > /tmp/packet_rx.txt".format(
+                    rx_inf[i]
+                ),
+                "# ",
+            )
+            self.convert_tcpdump_to_text2pcap(
+                "/tmp/packet_rx.txt", "/tmp/packet_rx_rcv_{}.txt".format(rx_inf[i])
+            )
+            out = self.compare_packets(
+                "/tmp/packet_rx_rcv_{}.txt".format(rx_inf[i]),
+                self.src_path + out_pcap[i],
+                all_pkts,
+            )
+            if "are identical" not in out:
+                return False
+        return True
+
+    def set_up_all(self):
         # Based on h/w type, choose how many ports to use
-        ports = self.dut.get_ports()
-        self.dut_ports = self.dut.get_ports(self.nic)
+        self.dut_ports = self.dut.get_ports()
 
         # Verify that enough ports are available
-        self.verify(len(ports) >= 1, "Insufficient ports for testing")
-        self.def_driver = self.dut.ports_info[ports[0]]["port"].get_nic_driver()
-        self.ports_socket = self.dut.get_numa_id(ports[0])
+        self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
+        self.def_driver = self.dut.ports_info[self.dut_ports[0]][
+            "port"
+        ].get_nic_driver()
+        self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         # Verify that enough threads are available
         cores = self.dut.get_core_list("1S/1C/1T")
         self.verify(cores is not None, "Insufficient cores for speed testing")
-        global P0
-        P0 = ports[0]
+        self.param_flow_dir = self.get_flow_direction_param_of_tcpdump()
 
-        self.txItf = self.tester.get_interface(self.tester.get_local_port(P0))
-        self.dmac = self.dut.get_mac_address(P0)
-        self.headers_size = HEADER_SIZE["eth"] + HEADER_SIZE["ip"] + HEADER_SIZE["udp"]
+        # setting up source and destination location
+        self.dst_path = "/tmp/"
+        FILE_DIR = os.path.dirname(os.path.abspath(__file__)).split(os.path.sep)
+        self.src_path = os.path.sep.join(FILE_DIR[:-1]) + "/dep/"
+        SOFTNIC_TAR_FOLDER = self.src_path + "softnic"
 
-        # need change config files
-        self.root_path = "/tmp/"
-        self.firmware = r"dep/firmware.cli"
-        self.tm_firmware = r"dep/tm_firmware.cli"
-        self.nat_firmware = r"dep/nat_firmware.cli"
-        self.dut.session.copy_file_to(self.firmware, self.root_path)
-        self.dut.session.copy_file_to(self.tm_firmware, self.root_path)
-        self.dut.session.copy_file_to(self.nat_firmware, self.root_path)
-        self.eal_param = " -a %s" % self.dut.ports_info[0]["pci"]
+        # copy dependancies to the DUT
+        self.tester.send_expect("rm -rf /tmp/softnic.tar.gz", "# ")
+        self.tester.send_expect(
+            "tar -zcf /tmp/softnic.tar.gz --absolute-names {}".format(self.src_path),
+            "# ",
+            20,
+        )
+        self.dut.send_expect("rm -rf /tmp/softnic.tar.gz /tmp/softnic", "# ", 20)
+        self.dut.session.copy_file_to("/tmp/softnic.tar.gz", self.dst_path)
+        self.dut.send_expect(
+            "tar -zxf /tmp/softnic.tar.gz --strip-components={} --absolute-names --directory /tmp".format(
+                SOFTNIC_TAR_FOLDER.count("/") - 1
+            ),
+            "# ",
+            20,
+        )
+
+        self.eal_param = " ".join(
+            " -a " + port_info["pci"] for port_info in self.dut.ports_info
+        )
         self.path = self.dut.apps_name["test-pmd"]
         self.pmdout = PmdOutput(self.dut)
+
+        # create packet matching regular expression
+        self.pkt_timestamp = re.compile(r"\d{2}\:\d{2}\:\d{2}\.\d{6}")
+        self.pkt_content = re.compile(r"\t0x([0-9a-fA-F]+):  ([0-9a-fA-F ]+)")
+
         # get dts output path
         if self.logger.log_path.startswith(os.sep):
             self.output_path = self.logger.log_path
         else:
             cur_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
             self.output_path = os.sep.join([cur_path, self.logger.log_path])
-        # create an instance to set stream field setting
-        self.pktgen_helper = PacketGeneratorHelper()
-        self.dut.bind_interfaces_linux(self.drivername, [ports[0]])
+        # bind the ports
+        self.dut.bind_interfaces_linux(self.drivername, [self.dut_ports[0]])
 
     def set_up(self):
         """
         Run before each test case.
         """
 
-    def change_config_file(self, file_name):
-        self.dut.send_expect(
-            "sed -i -e '4c link LINK0 dev %s' %s"
-            % (self.dut.ports_info[0]["pci"], self.root_path + file_name),
-            "#",
-        )
-        self.dut.send_expect(
-            "sed -i -e 's/thread [0-9]/thread 2/g' %s" % self.root_path + file_name, "#"
-        )
+    def run_test_pmd(self, file_name):
+        try:
+            cmd = 'test -f {} && echo "File exists!"'.format(file_name)
+            self.dut.send_expect(cmd, "File exists!", 1)
 
-    def test_perf_softnic_performance(self):
-        self.frame_size = [64, 128, 256, 512, 1024, 1280, 1518]
-        self.change_config_file("firmware.cli")
-        # 10G nic pps(M)
-        expect_pps = [14, 8, 4, 2, 1, 0.9, 0.8]
+            self.pmdout.start_testpmd(
+                list(range(3)),
+                "--portmask=0x2",
+                eal_param="-s 0x4 %s --vdev 'net_softnic0,firmware=%s,cpu_id=1,conn_port=8086'"
+                % (self.eal_param, file_name),
+            )
+        except Exception:
+            trace = traceback.format_exc()
+            self.logger.error("Error while running testpmd:\n" + trace)
 
-        self.pmdout.start_testpmd(
-            list(range(3)),
-            "--forward-mode=softnic --portmask=0x2",
-            eal_param="-s 0x4 %s --vdev 'net_softnic0,firmware=/tmp/%s,cpu_id=1,conn_port=8086'"
-            % (self.eal_param, "firmware.cli"),
-        )
+    def test_rx_tx(self):
+        cli_file = "/tmp/softnic/rx_tx/rx_tx.cli"
+        self.run_test_pmd(cli_file)
+        sleep(5)
         self.dut.send_expect("start", "testpmd>")
-        rx_port = self.tester.get_local_port(0)
-        tx_port = self.tester.get_local_port(0)
-        n = 0
-        for frame in self.frame_size:
-            payload_size = frame - self.headers_size
-            tgen_input = []
-            pcap = os.sep.join([self.output_path, "test.pcap"])
-            pkt = "Ether(dst='%s')/IP()/UDP()/Raw(load='x'*%d)" % (
-                self.dmac,
-                payload_size,
-            )
-            self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, pkt))
-            tgen_input.append((tx_port, rx_port, pcap))
-            self.tester.scapy_execute()
-            # clear streams before add new streams
-            self.tester.pktgen.clear_streams()
-            # run packet generator
-            streams = self.pktgen_helper.prepare_stream_from_tginput(
-                tgen_input, 100, None, self.tester.pktgen
-            )
-            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
-            pps = pps / 1000000.0
-            self.verify(pps > 0, "No traffic detected")
-            self.verify(pps > expect_pps[n], "No traffic detected")
-            n = n + 1
 
-    def test_perf_shaping_for_pipe(self):
-        self.change_config_file("tm_firmware.cli")
-        self.pmdout.start_testpmd(
-            list(range(3)),
-            "--forward-mode=softnic --portmask=0x2",
-            eal_param="-s 0x4 %s --vdev 'net_softnic0,firmware=/tmp/%s,cpu_id=1,conn_port=8086'"
-            % (self.eal_param, "tm_firmware.cli"),
-        )
-        self.dut.send_expect("start", "testpmd>")
-        rx_port = self.tester.get_local_port(0)
-        pkts = [
-            "Ether(dst='%s')/IP(dst='100.0.0.0')/UDP()/Raw(load='x'*(64 - %s))",
-            "Ether(dst='%s')/IP(dst='100.0.15.255')/UDP()/Raw(load='x'*(64 - %s))",
-            "Ether(dst='%s')/IP(dst='100.0.4.0')/UDP()/Raw(load='x'*(64 - %s))",
-        ]
-        except_bps_range = [1700000, 2000000]
-
-        for i in range(3):
-            tgen_input = []
-            pcap = os.sep.join([self.output_path, "test.pcap"])
-            pkt = pkts[i] % (self.dmac, self.headers_size)
-            self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, pkt))
-            self.tester.scapy_execute()
-            if i == 2:
-                for j in range(16):
-                    pk = (
-                        "Ether(dst='%s')/IP(dst='100.0.15.%d')/UDP()/Raw(load='x'*(64 - %s))"
-                        % (self.dmac, j, self.headers_size)
-                    )
-                    self.tester.scapy_append(
-                        'wrpcap("%s/test_%d.pcap", [%s])' % (self.output_path, j, pk)
-                    )
-                    self.tester.scapy_execute()
-                    tgen_input.append(
-                        (rx_port, rx_port, "%s/test_%d.pcap" % (self.output_path, j))
-                    )
-            else:
-                tgen_input.append((rx_port, rx_port, pcap))
-            # clear streams before add new streams
-            self.tester.pktgen.clear_streams()
-            # run packet generator
-            streams = self.pktgen_helper.prepare_stream_from_tginput(
-                tgen_input, 100, None, self.tester.pktgen
-            )
-            bps, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
-            if i == 2:
-                self.verify(
-                    except_bps_range[1] * 16 > bps > except_bps_range[0] * 16,
-                    "No traffic detected",
-                )
-            else:
-                self.verify(
-                    except_bps_range[1] > bps > except_bps_range[0],
-                    "No traffic detected",
-                )
-
-    def test_nat(self):
-        self.change_config_file("nat_firmware.cli")
-        expect_ips = ["192.168.0.1.5000", "192.168.0.2.5001"]
-        ips = ["100.0.0.1", "100.0.0.2"]
-        pkt_location = ["src", "dst"]
-        pkt_type = ["tcp", "udp"]
-        for t in pkt_type:
-            for i in range(2):
-                self.dut.send_expect(
-                    "sed -i -e '12c table action profile AP0 ipv4 offset 270 fwd nat %s proto %s' %s"
-                    % (pkt_location[i], t, self.root_path + "nat_firmware.cli"),
-                    "#",
-                )
-                self.pmdout.start_testpmd(
-                    list(range(3)),
-                    "--forward-mode=softnic --portmask=0x2",
-                    eal_param="-s 0x4 %s --vdev 'net_softnic0,firmware=/tmp/%s,cpu_id=1,conn_port=8086'"
-                    % (self.eal_param, "nat_firmware.cli"),
-                )
-                if self.nic in [
-                    "ICE_100G-E810C_QSFP",
-                    "ICE_25G-E810C_SFP",
-                    "ICE_25G-E810_XXV_SFP",
-                ]:
-                    self.dut.send_expect("set fwd mac", "testpmd>")
-                self.dut.send_expect("start", "testpmd>")
-                # src ip tcp
-                for j in range(2):
-                    out = self.scapy_send_packet(pkt_location[i], ips[j], t)
-                    self.verify(expect_ips[j] in out, "fail to receive expect packet")
-                self.dut.send_expect("quit", "# ")
-                time.sleep(1)
-
-    def scapy_send_packet(self, pkt_location, ip, pkt_type):
-        self.tester.scapy_foreground()
-        pkt = "Ether(dst='%s')/IP(dst='%s')/" % (self.dmac, ip)
-        if pkt_type == "tcp":
-            pkt = pkt + "TCP()/Raw(load='x'*20)"
+        in_pcap = ["softnic/rx_tx/pcap_files/in.txt"]
+        out_pcap = ["softnic/rx_tx/pcap_files/out.txt"]
+        filters = ["tcp"]
+        tx_port = [0]
+        rx_port = [0]
+        result = self.send_and_sniff(tx_port, rx_port, in_pcap, out_pcap, filters)
+        if result:
+            self.dut.send_expect("stop", "testpmd>")
         else:
-            pkt = pkt + "UDP()/Raw(load='x'*20)"
+            self.verify(False, "Output pcap files mismatch error")
 
-        self.tester.scapy_append('sendp([%s], iface="%s")' % (pkt, self.txItf))
-        self.start_tcpdump(self.txItf)
-        self.tester.scapy_execute()
-        out = self.get_tcpdump_package()
-        return out
-
-    def get_tcpdump_package(self):
-        time.sleep(4)
-        self.tester.send_expect("killall tcpdump", "#")
-        out = self.tester.send_expect(
-            "tcpdump -A -nn -e -vv -r getPackageByTcpdump.cap |grep '192.168'", "#"
-        )
-        return out
-
-    def start_tcpdump(self, rxItf):
-        self.tester.send_expect("rm -rf getPackageByTcpdump.cap", "#")
-        self.tester.send_expect(
-            "tcpdump -A -nn -e -vv -w getPackageByTcpdump.cap -i %s 2> /dev/null& "
-            % self.txItf,
-            "#",
-        )
-        time.sleep(4)
+        """
+        Add new test cases here.
+        """
 
     def tear_down(self):
         """
@@ -245,6 +275,4 @@ class TestSoftnic(TestCase):
         """
         Run after each test suite.
         """
-        self.dut.bind_interfaces_linux(
-            driver=self.def_driver, nics_to_bind=self.dut.get_ports()
-        )
+        self.dut.kill_all()
