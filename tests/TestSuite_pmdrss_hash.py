@@ -456,7 +456,7 @@ class TestPmdrssHash(TestCase):
                 status = "true"
                 result.insert(i, 0)
                 if i % 2 == 1:
-                    if pre_RSS_hash != tmp_reta_line["RSS hash"]:
+                    if pre_RSS_hash == tmp_reta_line["RSS hash"]:
                         status = "true"
                         result.insert(len(reta_lines) + (i - 1) // 2, 0)
                     else:
@@ -549,7 +549,6 @@ class TestPmdrssHash(TestCase):
             self.dut.send_expect("set promisc all off", "testpmd> ")
             self.dut.send_expect("set nbcore %d" % (queue + 1), "testpmd> ")
 
-            self.dut.send_expect("port stop all", "testpmd> ")
             self.dut.send_expect("flow flush 0", "testpmd> ")
             rule_cmd = f"flow create 0 ingress pattern eth / ipv4 / end actions rss types {iptype} end queues end {rule_action}"
             if "sctp" in iptype or "udp" in iptype or "tcp" in iptype:
@@ -558,7 +557,6 @@ class TestPmdrssHash(TestCase):
                 rule_cmd = rule_cmd.replace("ipv4", "ipv6")
             outx = self.dut.send_expect(rule_cmd, "testpmd> ")
             self.verify("created" in outx, "Create flow failed")
-            self.dut.send_expect("port start all", "testpmd> ")
             out = self.dut.send_expect("port config all rss %s" % rsstype, "testpmd> ")
             self.verify(
                 "error" not in out, "Configuration of RSS hash failed: Invalid argument"
@@ -600,7 +598,6 @@ class TestPmdrssHash(TestCase):
             self.dut.send_expect("set promisc all off", "testpmd> ")
             self.dut.send_expect("set nbcore %d" % (queue + 1), "testpmd> ")
 
-            self.dut.send_expect("port stop all", "testpmd> ")
             self.dut.send_expect("flow flush 0", "testpmd> ")
             rule_cmd = f"flow create 0 ingress pattern eth / ipv4 / end actions rss types {iptype} end queues end {rule_action}"
             if "sctp" in iptype or "udp" in iptype or "tcp" in iptype:
@@ -609,7 +606,6 @@ class TestPmdrssHash(TestCase):
                 rule_cmd = rule_cmd.replace("ipv4", "ipv6")
             outx = self.dut.send_expect(rule_cmd, "testpmd> ")
             self.verify("created" in outx, "Create flow failed")
-            self.dut.send_expect("port start all", "testpmd> ")
             out = self.dut.send_expect("port config all rss %s" % rsstype, "testpmd> ")
             self.verify(
                 "error" not in out, "Configuration of RSS hash failed: Invalid argument"
@@ -657,7 +653,6 @@ class TestPmdrssHash(TestCase):
             self.dut.send_expect("set promisc all off", "testpmd> ")
             self.dut.send_expect("set nbcore %d" % (queue + 1), "testpmd> ")
 
-            self.dut.send_expect("port stop all", "testpmd> ")
             # some nic not support change hash algorithm
             self.dut.send_expect("flow flush 0", "testpmd> ")
             rule_cmd = f"flow create 0 ingress pattern eth / ipv4 / end actions rss types {iptype} end queues end {rule_action}"
@@ -667,7 +662,6 @@ class TestPmdrssHash(TestCase):
                 rule_cmd = rule_cmd.replace("ipv4", "ipv6")
             outx = self.dut.send_expect(rule_cmd, "testpmd> ")
             self.verify("created" in outx, "Create flow failed")
-            self.dut.send_expect("port start all", "testpmd> ")
             out = self.dut.send_expect("port config all rss %s" % rsstype, "testpmd> ")
             self.verify(
                 "error" not in out, "Configuration of RSS hash failed: Invalid argument"
