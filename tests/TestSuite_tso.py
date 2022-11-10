@@ -138,41 +138,30 @@ class TestTSO(TestCase):
         scanner = 'tcpdump  -vv -r /tmp/tcpdump_{iface}.pcap 2>/dev/null | grep "seq"  | grep "length"'
         return self.tcpdump_scanner(scanner.format(**locals()))
 
-    def get_chksum_value_and_verify(self, dump_pcap, save_file, Nic_list):
+    def get_chksum_value_and_verify(self, dump_pcap, Nic_list):
         packet = Packet()
-        self.pks = packet.read_pcapfile(dump_pcap, self.tester)
-        for i in range(len(self.pks)):
-            pks = self.pks[i]
-            out = repr(pks)
-            chksum_list = re.findall(r"chksum=(0x\w+)", out)
-            pks["IP"].chksum = None
-            if "VXLAN" in out:
-                pks["UDP"].chksum = None
-                pks["VXLAN"]["IP"].chksum = None
-                pks["VXLAN"]["TCP"].chksum = None
-            elif "GRE" in out:
-                pks["GRE"]["IP"].chksum = None
-                pks["GRE"]["TCP"].chksum = None
-        packet.save_pcapfile(self.tester, filename=save_file)
-        self.pks = Packet().read_pcapfile(dump_pcap, self.tester)
-        self.pks1 = Packet().read_pcapfile(save_file, self.tester)
-        self.tester.send_expect("rm -rf %s" % save_file, "#")
-        for i in range(len(self.pks1)):
-            pks = self.pks[i]
-            out = repr(pks)
-            chksum_list = re.findall(r"chksum=(0x\w+)", out)
-            out1 = repr(self.pks1[i])
-            chksum_list1 = re.findall(r"chksum=(0x\w+)", out1)
-            if self.nic in Nic_list and "VXLAN" in out:
+        pkts = packet.read_pcapfile(dump_pcap, self.tester)
+        for pkt in pkts:
+            chksum_list_rx = re.findall(r"chksum\s*=\s*(0x\w+)", pkt.show(dump=True))
+            pkt["IP"].chksum = None
+            if "VXLAN" in pkt:
+                pkt["UDP"].chksum = None
+                pkt["VXLAN"]["IP"].chksum = None
+                pkt["VXLAN"]["TCP"].chksum = None
+            elif "GRE" in pkt:
+                pkt["GRE"]["IP"].chksum = None
+                pkt["GRE"]["TCP"].chksum = None
+            chksum_list_good = re.findall(r"chksum\s*=\s*(0x\w+)", pkt.show2(dump=True))
+            if self.nic in Nic_list and "VXLAN" in pkt:
                 self.verify(
-                    chksum_list[0] == chksum_list1[0]
-                    and chksum_list[2] == chksum_list1[2]
-                    and chksum_list[3] == chksum_list1[3],
+                    chksum_list_rx[0] == chksum_list_good[0]
+                    and chksum_list_rx[2] == chksum_list_good[2]
+                    and chksum_list_rx[3] == chksum_list_good[3],
                     "The obtained chksum value is incorrect.",
                 )
             else:
                 self.verify(
-                    chksum_list == chksum_list1,
+                    chksum_list_rx == chksum_list_good,
                     "The obtained chksum value is incorrect.",
                 )
 
@@ -439,7 +428,7 @@ class TestTSO(TestCase):
                         int(tx_outlist[num]) == loading_size % 800,
                         "the packet segmentation incorrect, %s" % tx_outlist,
                     )
-            self.get_chksum_value_and_verify(dump_pcap, save_file, Nic_list)
+            self.get_chksum_value_and_verify(dump_pcap, Nic_list)
 
         for loading_size in self.loading_sizes:
             # Nvgre test
@@ -474,7 +463,7 @@ class TestTSO(TestCase):
                         int(tx_outlist[num]) == loading_size % 800,
                         "the packet segmentation incorrect, %s" % tx_outlist,
                     )
-            self.get_chksum_value_and_verify(dump_pcap, save_file, Nic_list)
+            self.get_chksum_value_and_verify(dump_pcap, Nic_list)
 
     def test_perf_TSO_2ports(self):
         """
