@@ -36,6 +36,7 @@ class TestPortHotPlug(TestCase):
         else:
             self.driver_name = self.drivername
         self.path = self.dut.apps_name["test-pmd"]
+        self.session2 = self.dut.create_session(name="virtio_user")
 
     def set_up(self):
         """
@@ -122,6 +123,13 @@ class TestPortHotPlug(TestCase):
         )
         pkt.send_pkt(self.tester, tx_port=self.txItf)
 
+    @property
+    def check_2M_env(self):
+        out = self.session2.send_expect(
+            "cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# "
+        )
+        return True if out == "2048" else False
+
     def test_before_attach(self):
         """
         first attach port after run testpmd
@@ -185,6 +193,8 @@ class TestPortHotPlug(TestCase):
         eal_param = self.dut.create_eal_parameters(
             no_pci=True, fixed_prefix="virtio1", cores=cores[5:9]
         )
+        if self.check_2M_env:
+            eal_param += "--single-file-segments"
         testpmd_cmd2 = "%s/%s " % (self.dut.base_dir, self.path) + eal_param + " -- -i"
         self.session2.send_expect(testpmd_cmd2, "testpmd>", timeout=60)
         self.session2.send_expect(
@@ -207,11 +217,11 @@ class TestPortHotPlug(TestCase):
         self.verify(
             rx_pkts != 0 and tx_pkts != 0, "not received packets or transport packets"
         )
-        self.session2.send_expect("show port stats 0", "testpmd", timeout=2)
-        self.session2.send_expect("stop", "testpmd", timeout=2)
-        self.session2.send_expect("quit", "#", timeout=2)
-        self.dut.send_expect("stop", "testpmd", timeout=2)
-        self.dut.send_expect("quit", "#", timeout=2)
+        self.session2.send_expect("show port stats 0", "testpmd")
+        self.session2.send_expect("stop", "testpmd")
+        self.session2.send_expect("quit", "#")
+        self.dut.send_expect("stop", "testpmd")
+        self.dut.send_expect("quit", "#")
         self.session2.close()
 
     def tear_down(self):
