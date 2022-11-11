@@ -133,7 +133,7 @@ def check_output_log_queue_region_mismatched(out, func_param, expect_results):
     try:
         check_queue(out, expect_pkts, check_param, stats=False)
     except Exception as ex:
-        log_msg = ex
+        log_msg = str(ex)
         return False, log_msg
     else:
         log_msg = ""
@@ -156,7 +156,7 @@ def check_output_log_in_queue_mismatched(out, func_param, expect_results):
     try:
         check_queue(out, expect_pkts, check_param, stats=False)
     except Exception as ex:
-        log_msg = ex
+        log_msg = str(ex)
         return False, log_msg
     else:
         log_msg = ""
@@ -346,7 +346,7 @@ def verify(passed, description):
         raise AssertionError(description)
 
 
-def check_rss(out, pkt_num, check_param, stats=True):
+def check_rss(out, pkt_num, check_param, stats=True, check_hash_num=True):
     """
     check whether the packet directed by rss or not according to the specified parameters
     :param out: information received by testpmd after sending packets and port statistics
@@ -359,7 +359,8 @@ def check_rss(out, pkt_num, check_param, stats=True):
     rxq = check_param.get("rxq")
     p = re.compile("RSS\shash=(\w+)\s-\sRSS\squeue=(\w+)")
     pkt_info = p.findall(out)
-    verify(len(pkt_info) == pkt_num, "some packets no hash:{}".format(p.pattern))
+    if check_hash_num:
+        verify(len(pkt_info) == pkt_num, "some packets no hash:{}".format(p.pattern))
     pkt_queue = set([int(i[1], 16) for i in pkt_info])
     if stats:
         verify(
@@ -400,7 +401,7 @@ def check_queue(out, pkt_num, check_param, stats=True):
             if not any(q in queue for q in pkt_queue):
                 print((GREEN("pass: queue id %s not matched" % pkt_queue)))
             else:
-                check_rss(out, pkt_num, check_param, stats=True)
+                check_rss(out, pkt_num, check_param, stats=True, check_hash_num=False)
         return pkt_queue
     else:
         raise Exception("got wrong output, not match pattern %s" % p.pattern)
