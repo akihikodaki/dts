@@ -97,6 +97,7 @@ The following are the test plans for the DPDK DTS automated test system.
     l2fwd_test_plan
     l2tp_esp_coverage_test_plan
     l3fwd_test_plan
+    l3fwd_lpm_ipv4_test_plan.rst
     l3fwd_func_test_plan
     l3fwdacl_test_plan
     large_vf_test_plan
