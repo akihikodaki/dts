@@ -46,9 +46,8 @@ class TestMulticast(TestCase):
         dutPorts = self.dut.get_ports(self.nic)
         # Verify that enough ports are available
         self.verify(len(dutPorts) >= 4, "Insufficient ports for testing")
-
         # Verify that enough threads are available
-        cores = self.dut.get_core_list("1S/2C/2T")
+        cores = self.dut.get_core_list("1S/1C/1T")
         self.verify(cores is not None, "Insufficient cores for speed testing")
 
         global P1, P3, TG0, TG1, TGs
