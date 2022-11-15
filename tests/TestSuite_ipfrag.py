@@ -67,7 +67,7 @@ class TestIpfrag(TestCase):
         self.verify("No such file" not in out, "compilation error 2")
 
         self.eal_para = self.dut.create_eal_parameters(
-            cores="1S/1C/2T", socket=self.ports_socket, ports=self.ports
+            socket=self.ports_socket, ports=self.ports
         )
         portmask = utils.create_mask([P0, P1])
         numPortThread = len([P0, P1]) / len(cores)
