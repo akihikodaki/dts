@@ -1,0 +1,4 @@
+; SPDX-License-Identifier: BSD-3-Clause
+; Copyright(c) 2010-2020 Intel Corporation
+
+pipeline codegen /tmp/pipeline/annotation_003/annotation_003.spec /tmp/pipeline/annotation_003/annotation_003.c

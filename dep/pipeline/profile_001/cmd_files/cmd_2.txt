@@ -1,0 +1,4 @@
+match 0x0 action profile_001_action_02 port 0 new_mac_da 0xa1a2a3a40000 new_mac_sa 0xb1b2b3b40000
+match 0x1 action profile_001_action_02 port 1 new_mac_da 0xa1a2a3a40001 new_mac_sa 0xb1b2b3b40001
+match 0x2 action profile_001_action_02 port 2 new_mac_da 0xa1a2a3a40002 new_mac_sa 0xb1b2b3b40002
+match 0x3 action profile_001_action_02 port 3 new_mac_da 0xa1a2a3a40003 new_mac_sa 0xb1b2b3b40003

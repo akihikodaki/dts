@@ -1,0 +1,32 @@
+; SPDX-License-Identifier: BSD-3-Clause
+; Copyright(c) 2010-2020 Intel Corporation
+
+;
+; Pipeline code generation & shared object library build
+;
+pipeline codegen /tmp/pipeline/u100_002/u100_002.spec /tmp/pipeline/u100_002/u100_002.c
+pipeline libbuild /tmp/pipeline/u100_002/u100_002.c /tmp/pipeline/u100_002/u100_002.so
+
+mempool MEMPOOL0 buffer 9472 pool 32K cache 256 cpu 0
+
+ethdev 0000:00:04.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:05.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:06.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:07.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+
+
+pipeline PIPELINE0 build lib /tmp/pipeline/u100_002/u100_002.so io /tmp/pipeline/u100_002/ethdev.io numa 0
+
+pipeline PIPELINE0 table ipv4_host_1 add /tmp/pipeline/u100_002/table_1.txt
+
+pipeline PIPELINE0 table ipv4_host_2 add /tmp/pipeline/u100_002/table_2.txt
+
+pipeline PIPELINE0 table ipv4_host_3 add /tmp/pipeline/u100_002/table_3.txt
+
+pipeline PIPELINE0 table ipv6_host add /tmp/pipeline/u100_002/table_5.txt
+
+pipeline PIPELINE0 table nexthop add /tmp/pipeline/u100_002/table_4.txt
+
+pipeline PIPELINE0 commit
+
+thread 1 pipeline PIPELINE0 enable

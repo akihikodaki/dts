@@ -1,0 +1,1 @@
+match 0xc800000a action sub_008_action value 0x1

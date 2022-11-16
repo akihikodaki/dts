@@ -1,0 +1,6 @@
+
+// match <dst_addr_hi> <dst_addr_lo>
+match 0x1234123412341234 0x1234123412340001 action set_nexthop nexthop 0x1
+match 0x1234123412341234 0x1234123412340002 action set_nexthop nexthop 0x2
+match 0x1234123412341234 0x1234123412340003 action set_nexthop nexthop 0x3
+match 0x1234123412341234 0x1234123412340004 action set_nexthop nexthop 0x4

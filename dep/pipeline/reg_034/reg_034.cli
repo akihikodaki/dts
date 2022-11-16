@@ -1,0 +1,22 @@
+; SPDX-License-Identifier: BSD-3-Clause
+; Copyright(c) 2010-2020 Intel Corporation
+
+;
+; Pipeline code generation & shared object library build
+;
+pipeline codegen /tmp/pipeline/reg_034/reg_034.spec /tmp/pipeline/reg_034/reg_034.c
+pipeline libbuild /tmp/pipeline/reg_034/reg_034.c /tmp/pipeline/reg_034/reg_034.so
+
+mempool MEMPOOL0 buffer 9472 pool 32K cache 256 cpu 0
+
+ethdev 0000:00:04.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:05.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:06.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:07.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+
+
+pipeline PIPELINE0 build lib /tmp/pipeline/reg_034/reg_034.so io /tmp/pipeline/reg_034/ethdev.io numa 0
+pipeline PIPELINE0 table reg_034 add /tmp/pipeline/reg_034/table.txt
+pipeline PIPELINE0 commit
+
+thread 1 pipeline PIPELINE0 enable

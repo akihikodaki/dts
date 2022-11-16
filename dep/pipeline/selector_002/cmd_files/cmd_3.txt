@@ -1,0 +1,14 @@
+match  0 action selector_002_action_02 ethernet_dst_addr 0xaabbcc000000 ethernet_src_addr 0xddeeff000000 ethernet_ethertype 0x0800 port_out 0
+match  1 action selector_002_action_02 ethernet_dst_addr 0xaabbcc000001 ethernet_src_addr 0xddeeff000001 ethernet_ethertype 0x0800 port_out 1
+match  2 action selector_002_action_02 ethernet_dst_addr 0xaabbcc000002 ethernet_src_addr 0xddeeff000002 ethernet_ethertype 0x0800 port_out 2
+match  3 action selector_002_action_02 ethernet_dst_addr 0xaabbcc000003 ethernet_src_addr 0xddeeff000003 ethernet_ethertype 0x0800 port_out 3
+
+match  4 action selector_002_action_02 ethernet_dst_addr 0xaabbcc000004 ethernet_src_addr 0xddeeff000004 ethernet_ethertype 0x0800 port_out 0
+match  5 action selector_002_action_02 ethernet_dst_addr 0xaabbcc000005 ethernet_src_addr 0xddeeff000005 ethernet_ethertype 0x0800 port_out 1
+match  6 action selector_002_action_02 ethernet_dst_addr 0xaabbcc000006 ethernet_src_addr 0xddeeff000006 ethernet_ethertype 0x0800 port_out 2
+match  7 action selector_002_action_02 ethernet_dst_addr 0xaabbcc000007 ethernet_src_addr 0xddeeff000007 ethernet_ethertype 0x0800 port_out 3
+
+match  8 action selector_002_action_02 ethernet_dst_addr 0xaabbcc000008 ethernet_src_addr 0xddeeff000008 ethernet_ethertype 0x0800 port_out 0
+match  9 action selector_002_action_02 ethernet_dst_addr 0xaabbcc000009 ethernet_src_addr 0xddeeff000009 ethernet_ethertype 0x0800 port_out 1
+match 10 action selector_002_action_02 ethernet_dst_addr 0xaabbcc00000a ethernet_src_addr 0xddeeff00000a ethernet_ethertype 0x0800 port_out 2
+match 11 action selector_002_action_02 ethernet_dst_addr 0xaabbcc00000b ethernet_src_addr 0xddeeff00000b ethernet_ethertype 0x0800 port_out 3

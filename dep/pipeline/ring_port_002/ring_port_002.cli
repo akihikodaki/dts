@@ -1,0 +1,24 @@
+; SPDX-License-Identifier: BSD-3-Clause
+; Copyright(c) 2010-2020 Intel Corporation
+
+;
+; Pipeline code generation & shared object library build
+;
+pipeline codegen /tmp/pipeline/ring_port_002/ring_port_002_a.spec /tmp/pipeline/ring_port_002/ring_port_002_a.c
+pipeline libbuild /tmp/pipeline/ring_port_002/ring_port_002_a.c /tmp/pipeline/ring_port_002/ring_port_002_a.so
+
+pipeline codegen /tmp/pipeline/ring_port_002/ring_port_002_b.spec /tmp/pipeline/ring_port_002/ring_port_002_b.c
+pipeline libbuild /tmp/pipeline/ring_port_002/ring_port_002_b.c /tmp/pipeline/ring_port_002/ring_port_002_b.so
+
+
+mempool MEMPOOL0 buffer 9472 pool 32K cache 256 cpu 0
+
+ethdev 0000:00:04.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+
+ring RING0 size 32  numa 0
+
+pipeline PIPELINE0 build lib /tmp/pipeline/ring_port_002/ring_port_002_a.so io /tmp/pipeline/ring_port_002/ring_port_002_a.io numa 0
+pipeline PIPELINE1 build lib /tmp/pipeline/ring_port_002/ring_port_002_b.so io /tmp/pipeline/ring_port_002/ring_port_002_b.io numa 0
+
+thread 2 pipeline PIPELINE1 enable
+thread 1 pipeline PIPELINE0 enable

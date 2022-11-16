@@ -1,0 +1,28 @@
+
+// ICMP Protocol
+// match <ipv4_src_add> <ipv4_dst_add> <ipv4_protocol_type> <icmp_type_code> <icmp_checksum>
+match 0x32000001 0xb8000001 0x1 0x0000 0xf6f6 action set_nexthop nexthop 1
+match 0x32000001 0xb8000002 0x1 0x0300 0xf3f6 action set_nexthop nexthop 2
+match 0x32000001 0xb8000003 0x1 0x0301 0xf3f5 action set_nexthop nexthop 3
+match 0x32000001 0xb8000004 0x1 0x0302 0xf3f4 action set_nexthop nexthop 4
+
+// IGMP Protocol
+// match <ipv4_src_add> <ipv4_dst_add> <ipv4_protocol_type> <igmp_type_max_response_time> <igmp_checksum>
+match 0x32000001 0xb8000001 0x2 0x1110 0x8d8e action set_nexthop nexthop 1
+match 0x32000001 0xb8000002 0x2 0x1120 0x8d7e action set_nexthop nexthop 2
+match 0x32000001 0xb8000003 0x2 0x1130 0x8d6e action set_nexthop nexthop 3
+match 0x32000001 0xb8000004 0x2 0x1140 0x8d5e action set_nexthop nexthop 4
+
+// TCP Protocol
+// match <ipv4_src_add> <ipv4_dst_add> <ipv4_protocol_type> <tcp_src_port> <tcp_dst_port>
+match 0x32000001 0xb8000001 0x6 0x0064 0x00c8 action set_nexthop nexthop 1
+match 0x32000001 0xb8000002 0x6 0x0064 0x00c8 action set_nexthop nexthop 2
+match 0x32000001 0xb8000003 0x6 0x0064 0x00c8 action set_nexthop nexthop 3
+match 0x32000001 0xb8000004 0x6 0x0064 0x00c8 action set_nexthop nexthop 4
+
+// UDP Protocol
+// match <ipv4_src_add> <ipv4_dst_add> <ipv4_protocol_type> <udp_src_port> <udp_dst_port>
+match 0x32000001 0xb8000001 0x11 0x0064 0x00c8 action set_nexthop nexthop 1
+match 0x32000001 0xb8000002 0x11 0x0064 0x00c8 action set_nexthop nexthop 2
+match 0x32000001 0xb8000003 0x11 0x0064 0x00c8 action set_nexthop nexthop 3
+match 0x32000001 0xb8000004 0x11 0x0064 0x00c8 action set_nexthop nexthop 4

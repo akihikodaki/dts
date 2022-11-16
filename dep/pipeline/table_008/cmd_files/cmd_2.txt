@@ -1,0 +1,1 @@
+action table_008_default_action_02 dst_addr 0x778899aabbcc src_addr 0xaabbccddeeff ethertype 0x0800

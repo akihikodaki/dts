@@ -1,0 +1,16 @@
+match 0x00000000 0x0a0a0a00 action direct_counter_004_action
+match 0x01010101 0x0a0a0a01 action direct_counter_004_action
+match 0x02020202 0x0a0a0a02 action direct_counter_004_action
+match 0x03030303 0x0a0a0a03 action direct_counter_004_action
+match 0x04040404 0x0a0a0a04 action direct_counter_004_action
+match 0x05050505 0x0a0a0a05 action direct_counter_004_action
+match 0x06060606 0x0a0a0a06 action direct_counter_004_action
+match 0x07070707 0x0a0a0a07 action direct_counter_004_action
+match 0x08080808 0x0a0a0a08 action direct_counter_004_action
+match 0x09090909 0x0a0a0a09 action direct_counter_004_action
+match 0x0a0a0a0a 0x0a0a0a0a action direct_counter_004_action
+match 0x0b0b0b0b 0x0a0a0a0b action direct_counter_004_action
+match 0x0c0c0c0c 0x0a0a0a0c action direct_counter_004_action
+match 0x0d0d0d0d 0x0a0a0a0d action direct_counter_004_action
+match 0x0e0e0e0e 0x0a0a0a0e action direct_counter_004_action
+match 0x0f0f0f0f 0x0a0a0a0f action direct_counter_004_action

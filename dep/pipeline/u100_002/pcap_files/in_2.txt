@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright(c) 2020 Intel Corporation
+#
+
+# text to pcap: text2pcap packet.txt packet.pcap
+# pcap to text: tcpdump -r packet.pcap -xx
+
+# Packet 0 (Table 3: UDP)
+000000  aa bb cc dd 00 00 11 22 33 44 55 66 08 00 45 00
+000010  00 22 00 01 00 00 40 11 90 c8 32 00 00 01 b8 00
+000020  00 01 00 64 00 c8 00 0e 0b 9b 58 58 58 58 58 58
+# Packet 1 (Table 3: UDP)
+000000  aa bb cc dd 00 00 11 22 33 44 55 66 81 00 00 10
+000010  08 00 45 00 00 22 00 01 00 00 40 11 90 c8 32 00
+000020  00 01 b8 00 00 02 00 64 00 c8 00 0e 0b 9b 58 58
+000030  58 58 58 58
+# Packet 2 (Table 3: UDP)
+000000  aa bb cc dd 00 00 11 22 33 44 55 66 81 00 00 10
+000010  81 00 00 11 08 00 45 00 00 22 00 01 00 00 40 11
+000020  90 c8 32 00 00 01 b8 00 00 03 00 64 00 c8 00 0e
+000030  0b 9b 58 58 58 58 58 58
+# Packet 3 (Table 3: UDP)
+000000  aa bb cc dd 00 00 11 22 33 44 55 66 08 00 45 00
+000010  00 22 00 01 00 00 40 11 90 c8 32 00 00 01 b8 00
+000020  00 04 00 64 00 c8 00 0e 0b 9b 58 58 58 58 58 58

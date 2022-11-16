@@ -1,0 +1,4 @@
+; SPDX-License-Identifier: BSD-3-Clause
+; Copyright(c) 2020 Intel Corporation
+
+pipeline codegen /tmp/pipeline/learner_018/learner_018.spec /tmp/pipeline/learner_018/learner_018.c

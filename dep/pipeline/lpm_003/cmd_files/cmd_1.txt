@@ -1,0 +1,9 @@
+match 0 0x00000000/0xC0000000 action lpm_003_action port_out 0
+match 0 0x40000000/0xC0000000 action lpm_003_action port_out 1
+match 0 0x80000000/0xC0000000 action lpm_003_action port_out 2
+match 0 0xC0000000/0xC0000000 action lpm_003_action port_out 3
+
+match 1 0x00000000/0x00000000 action lpm_003_action port_out 0
+match 1 0x00000000/0x80000000 action lpm_003_action port_out 1
+match 1 0x00000000/0xC0000000 action lpm_003_action port_out 2
+match 1 0x00000000/0xE0000000 action lpm_003_action port_out 3

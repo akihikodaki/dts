@@ -1,0 +1,6 @@
+
+// match <ipv4_dst_add>
+match 0xc800000a action set_nexthop nexthop 1
+match 0xc800000b action set_nexthop nexthop 2
+match 0xc800000c action set_nexthop nexthop 3
+match 0xc800000d action set_nexthop nexthop 4

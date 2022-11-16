@@ -1,0 +1,29 @@
+; SPDX-License-Identifier: BSD-3-Clause
+; Copyright(c) 2010-2020 Intel Corporation
+
+;
+; Pipeline code generation & shared object library build
+;
+pipeline codegen /tmp/pipeline/learner_005/learner_005.spec /tmp/pipeline/learner_005/learner_005.c
+pipeline libbuild /tmp/pipeline/learner_005/learner_005.c /tmp/pipeline/learner_005/learner_005.so
+
+;
+; Customize the LINK parameters to match your setup.
+;
+mempool MEMPOOL0 buffer 9472 pool 32K cache 256 cpu 0
+
+ethdev 0000:00:04.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:05.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:06.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:07.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+
+;
+; PIPELINE0 setup.
+;
+
+pipeline PIPELINE0 build lib /tmp/pipeline/learner_005/learner_005.so io /tmp/pipeline/learner_005/ethdev.io numa 0
+
+;
+; Pipelines-to-threads mapping.
+;
+thread 1 pipeline PIPELINE0 enable

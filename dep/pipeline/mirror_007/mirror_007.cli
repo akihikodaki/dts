@@ -1,0 +1,35 @@
+; SPDX-License-Identifier: BSD-3-Clause
+; Copyright(c) 2010-2020 Intel Corporation
+
+;
+; Pipeline code generation & shared object library build
+;
+pipeline codegen /tmp/pipeline/mirror_007/mirror_007.spec /tmp/pipeline/mirror_007/mirror_007.c
+pipeline libbuild /tmp/pipeline/mirror_007/mirror_007.c /tmp/pipeline/mirror_007/mirror_007.so
+
+;
+; Customize the LINK parameters to match your setup.
+;
+mempool MEMPOOL0 buffer 9472 pool 32K cache 256 cpu 0
+
+ethdev 0000:00:04.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:05.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:06.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:07.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+
+;
+; PIPELINE0 setup.
+;
+
+pipeline PIPELINE0 mirror slots 4 sessions 16
+pipeline PIPELINE0 build lib /tmp/pipeline/mirror_007/mirror_007.so io /tmp/pipeline/mirror_007/ethdev.io numa 0
+
+pipeline PIPELINE0 mirror session 0 port 0 clone fast truncate 0
+pipeline PIPELINE0 mirror session 1 port 1 clone fast truncate 0
+pipeline PIPELINE0 mirror session 2 port 2 clone fast truncate 0
+pipeline PIPELINE0 mirror session 3 port 3 clone fast truncate 0
+
+;
+; Pipelines-to-threads mapping.
+;
+thread 1 pipeline PIPELINE0 enable

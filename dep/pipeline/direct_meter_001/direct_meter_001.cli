@@ -1,0 +1,23 @@
+; SPDX-License-Identifier: BSD-3-Clause
+; Copyright(c) 2022 Intel Corporation
+
+;
+; Pipeline code generation & shared object library build
+;
+pipeline codegen /tmp/pipeline/direct_meter_001/direct_meter_001.spec /tmp/pipeline/direct_meter_001/direct_meter_001.c
+pipeline libbuild /tmp/pipeline/direct_meter_001/direct_meter_001.c /tmp/pipeline/direct_meter_001/direct_meter_001.so
+
+mempool MEMPOOL0 buffer 9472 pool 32K cache 256 cpu 0
+
+ethdev 0000:00:04.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:05.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:06.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:07.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+
+pipeline PIPELINE0 build lib /tmp/pipeline/direct_meter_001/direct_meter_001.so io /tmp/pipeline/direct_meter_001/ethdev.io numa 0
+pipeline PIPELINE0 meter profile platinum add cir 8 pir 16 cbs 8 pbs 16
+pipeline PIPELINE0 table direct_meter_001 add /tmp/pipeline/direct_meter_001/direct_meter_001.txt
+pipeline PIPELINE0 commit
+
+pipeline PIPELINE0 meter MET_DIRECT_METER_001 set profile platinum table direct_meter_001 match 0x01010101 0x0a0a0a01
+thread 1 pipeline PIPELINE0 enable

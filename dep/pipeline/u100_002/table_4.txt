@@ -1,0 +1,7 @@
+
+// match <Ingress_nexthop_id>
+match 0x0000 action drop
+match 0x0001 action send port 0
+match 0x0002 action l3_switch port 1 new_mac_da 0xa1a2a3a40000 new_mac_sa 0xb1b2b3b40000
+match 0x0003 action send port 2
+match 0x0004 action l3_switch port 3 new_mac_da 0xc1c2c3c40000 new_mac_sa 0xd1d2d3d40000

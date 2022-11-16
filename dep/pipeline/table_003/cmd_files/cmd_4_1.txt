@@ -1,0 +1,1 @@
+match 0xaabbccdd8000/0xffffffffc000 action table_003_action_01 ethernet_dst_addr 0xa0a1a2a30000 ethernet_src_addr 0xb0b1b2b30000 ethernet_ethertype 0x0800
