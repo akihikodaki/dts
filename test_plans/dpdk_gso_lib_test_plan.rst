@@ -54,6 +54,8 @@ Test Case1: DPDK GSO test with tcp traffic
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
+    testpmd>csum mac-swap off 0
+    testpmd>csum mac-swap off 1
     testpmd>stop
     testpmd>port stop 0
     testpmd>csum set tcp hw 0
@@ -112,6 +114,8 @@ Test Case3: DPDK GSO test with vxlan traffic
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
+    testpmd>csum mac-swap off 0
+    testpmd>csum mac-swap off 1
     testpmd>stop
     testpmd>port stop 0
     testpmd>csum set tcp hw 0
@@ -164,6 +168,8 @@ Test Case4: DPDK GSO test with gre traffic
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
+    testpmd>csum mac-swap off 0
+    testpmd>csum mac-swap off 1
     testpmd>stop
     testpmd>port stop 0
     testpmd>csum set tcp hw 0
