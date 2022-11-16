@@ -33,12 +33,12 @@ Bind them to dpdk igb_uio driver::
 
 Supporting Files
 ================
-All the supporting files for this test suite are maintained in a tar file named "pipeline.tar.gz"
+All the supporting files for this test suite are maintained in the folder named "pipeline"
 present in the {DTS_SRC_DIR}/dep directory.
 
 Directory Structure of Each Test Case
 =====================================
-Within {DTS_SRC_DIR}/dep/pipeline.tar.gz, all files related to a particular test case are maintained
+Within {DTS_SRC_DIR}/dep/pipeline folder, all files related to a particular test case are maintained
 in a separate directory of which the directory structure is shown below::
 
     test_case_name [directory]
