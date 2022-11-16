@@ -63,6 +63,8 @@ Test Case1: DPDK GRO lightmode test with tcp/ipv4 traffic
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
+    testpmd>csum mac-swap off 0
+    testpmd>csum mac-swap off 1
     testpmd>stop
     testpmd>port stop 0
     testpmd>port stop 1
@@ -115,6 +117,8 @@ Test Case2: DPDK GRO heavymode test with tcp/ipv4 traffic
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
+    testpmd>csum mac-swap off 0
+    testpmd>csum mac-swap off 1
     testpmd>stop
     testpmd>port stop 0
     testpmd>port stop 1
@@ -167,6 +171,8 @@ Test Case3: DPDK GRO heavymode_flush4 test with tcp/ipv4 traffic
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
+    testpmd>csum mac-swap off 0
+    testpmd>csum mac-swap off 1
     testpmd>stop
     testpmd>port stop 0
     testpmd>port stop 1
@@ -235,6 +241,8 @@ Vxlan topology
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
+    testpmd>csum mac-swap off 0
+    testpmd>csum mac-swap off 1
     testpmd>stop
     testpmd>port stop 0
     testpmd>port stop 1
@@ -293,19 +301,21 @@ Test Case5: DPDK GRO test with 2 queues using tcp/ipv4 traffic
     ./usertools/dpdk-devbind.py -b vfio-pci xx:xx.x
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29-31 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2' -- -i --txd=1024 --rxd=1024 --txq=2 --rxq=2 --nb-cores=2
-    set fwd csum
-    stop
-    port stop 0
-    port stop 1
-    csum set tcp hw 0
-    csum set ip hw 0
-    csum set tcp hw 1
-    csum set ip hw 1
-    set port 0 gro on
-    set gro flush 1
-    port start 0
-    port start 1
-    start
+    testpmd>set fwd csum
+    testpmd>csum mac-swap off 0
+    testpmd>csum mac-swap off 1
+    testpmd>stop
+    testpmd>port stop 0
+    testpmd>port stop 1
+    testpmd>csum set tcp hw 0
+    testpmd>csum set ip hw 0
+    testpmd>csum set tcp hw 1
+    testpmd>csum set ip hw 1
+    testpmd>set port 0 gro on
+    testpmd>set gro flush 1
+    testpmd>port start 0
+    testpmd>port start 1
+    testpmd>start
 
 3.  Set up vm with virto device and using kernel virtio-net driver::
 
