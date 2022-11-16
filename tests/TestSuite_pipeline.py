@@ -8,6 +8,7 @@ import random
 import re
 import socket
 import time
+import traceback
 from time import sleep
 
 import scapy.layers.inet
@@ -18,8 +19,6 @@ from scapy.layers.sctp import SCTP, SCTPChunkData
 from scapy.packet import Raw, bind_layers
 from scapy.route import *
 from scapy.sendrecv import sendp, sniff
-
-# from scapy.all import conf
 from scapy.utils import hexstr, rdpcap, wrpcap
 
 import framework.utils as utils
@@ -32,16 +31,6 @@ from framework.project_dpdk import DPDKdut
 from framework.settings import DRIVERS, HEADER_SIZE
 from framework.test_case import TestCase
 from framework.virt_dut import VirtDut
-
-TIMESTAMP = re.compile(r"\d{2}\:\d{2}\:\d{2}\.\d{6}")
-PAYLOAD = re.compile(r"\t0x([0-9a-fA-F]+):  ([0-9a-fA-F ]+)")
-
-FILE_DIR = os.path.dirname(os.path.abspath(__file__)).split(os.path.sep)
-DEP_DIR = os.path.sep.join(FILE_DIR[:-1]) + "/dep/"
-DIR_RTE_INSTALL_DIR = "/root/dpdk"
-
-BUFFER_SIZE = 1024
-CLI_SERVER_CONNECT_DELAY = 1
 
 
 class TestPipeline(TestCase):
@@ -60,32 +49,19 @@ class TestPipeline(TestCase):
             i = 0
             flag_line_completed = 0
             for line in input:
-                time = TIMESTAMP.match(line)
+                time = self.pkt_timestamp.match(line)
                 if time:
-                    if flag_line_completed == 1:
-                        flag_line_completed = 0
-                        output.write("\n# Packet {}\n".format(i))
-                    else:
-                        output.write("# Packet {}\n".format(i))
+                    output.write("# Packet {}\n".format(i))
                     i += 1
                     continue
-                payload = PAYLOAD.match(line)
+                payload = self.pkt_payload.match(line)
                 if payload:
                     address = payload.group(1)
                     hex_data = payload.group(2).replace(" ", "")
                     hex_data = " ".join(
                         "".join(part) for part in self.pair_hex_digits(hex_data, 2, " ")
                     )
-                    if len(hex_data) < 47:
-                        output.write("{:0>6}  {:<47}\n".format(address, hex_data))
-                        output.write("\n")
-                        flag_line_completed = 0
-                    else:
-                        output.write("{:0>6}  {:<47}\n".format(address, hex_data))
-                        flag_line_completed = 1
-
-            if flag_line_completed == 1:
-                output.write("\n")
+                    output.write("{:0>6}  {:<47}\n".format(address, hex_data))
 
     def get_flow_direction_param_of_tcpdump(self):
         """
@@ -114,8 +90,9 @@ class TestPipeline(TestCase):
         """
         command = "rm -f /tmp/tcpdump_{0}.pcap".format(interface)
         self.tester.send_expect(command, "#")
-        command = "tcpdump -nn -e {0} -w /tmp/tcpdump_{1}.pcap -i {1} {2} 2>/tmp/tcpdump_{1}.out &".format(
-            self.param_flow_dir, interface, filters
+        command = (
+            "tcpdump -nn -e {0} -w /tmp/tcpdump_{1}.pcap -i {1} {2} "
+            "2>/tmp/tcpdump_{1}.out &".format(self.param_flow_dir, interface, filters)
         )
         self.tester.send_expect(command, "# ")
 
@@ -161,7 +138,7 @@ class TestPipeline(TestCase):
         # Prepare the pkts to be sent
         self.tester.scapy_foreground()
         self.tester.send_expect(
-            "text2pcap -q {} /tmp/packet_tx.pcap".format("/tmp/" + in_pcap), "# "
+            "text2pcap -q {} /tmp/packet_tx.pcap".format(self.dep_dir + in_pcap), "# "
         )
         self.tester.scapy_append('pkt = rdpcap("/tmp/packet_tx.pcap")')
         self.tester.scapy_append('sendp(pkt, iface="{}", count=1)'.format(tx_interface))
@@ -177,7 +154,7 @@ class TestPipeline(TestCase):
             "/tmp/packet_rx.txt", "/tmp/packet_rx_rcv.txt"
         )
         out = self.tester.send_command(
-            "diff -sqw /tmp/packet_rx_rcv.txt {}".format("/tmp/" + out_pcap),
+            "diff -sqwB /tmp/packet_rx_rcv.txt {}".format(self.dep_dir + out_pcap),
             timeout=0.5,
         )
         if "are identical" not in out:
@@ -206,7 +183,7 @@ class TestPipeline(TestCase):
         for i in range(tx_count):
             self.tester.send_expect(
                 "text2pcap -q {} /tmp/tx_{}.pcap".format(
-                    "/tmp/" + in_pcap[i], tx_inf[i]
+                    self.dep_dir + in_pcap[i], tx_inf[i]
                 ),
                 "# ",
             )
@@ -237,8 +214,8 @@ class TestPipeline(TestCase):
             self.convert_tcpdump_to_text2pcap(
                 "/tmp/packet_rx.txt", "/tmp/packet_rx_rcv_{}.txt".format(rx_inf[i])
             )
-            cmd = "diff -sqw /tmp/packet_rx_rcv_{}.txt {}".format(
-                rx_inf[i], "/tmp/" + out_pcap[i]
+            cmd = "diff -sqwB /tmp/packet_rx_rcv_{}.txt {}".format(
+                rx_inf[i], self.dep_dir + out_pcap[i]
             )
             out = self.tester.send_command(cmd, timeout=0.5)
             if "are identical" not in out:
@@ -404,21 +381,38 @@ class TestPipeline(TestCase):
         self.app_testpmd_path = self.dut.apps_name["test-pmd"]
         self.param_flow_dir = self.get_flow_direction_param_of_tcpdump()
 
+        # Setting the paths
+        FILE_DIR = os.path.dirname(os.path.abspath(__file__)).split(os.path.sep)
+        self.dep_dir = os.path.sep.join(FILE_DIR[:-1]) + "/dep/"
+
+        # Setting the regular express to find packet header and packet content
+        self.pkt_timestamp = re.compile(r"\d{2}\:\d{2}\:\d{2}\.\d{6}")
+        self.pkt_payload = re.compile(r"\t0x([0-9a-fA-F]+):  ([0-9a-fA-F ]+)")
+
+        # Setting commonly used variables
+        self.buffer_size = 1024
+        self.cli_connect_delay = 1
+
         # update the ./dep/pipeline.tar.gz file
-        PIPELINE_TAR_FILE = DEP_DIR + "pipeline.tar.gz"
-        self.tester.send_expect("rm -rf /tmp/pipeline", "# ")
+        PIPELINE_TAR_FOLDER = self.dep_dir + "pipeline"
+        self.tester.send_expect("pwd", "# ")
+        self.tester.send_expect("rm -rf /tmp/pipeline.tar.gz", "# ")
         self.tester.send_expect(
-            "tar -zxf {} --directory /tmp".format(PIPELINE_TAR_FILE), "# ", 20
+            "tar -zcf /tmp/pipeline.tar.gz --absolute-names {}".format(
+                PIPELINE_TAR_FOLDER
+            ),
+            "# ",
+            20,
         )
 
         # copy the ./dep/pipeline.tar.gz file to DUT
         self.dut.send_expect("rm -rf /tmp/pipeline.tar.gz /tmp/pipeline", "# ", 20)
-        self.session_secondary.copy_file_to("dep/pipeline.tar.gz", "/tmp/")
-        self.dut.send_expect("tar -zxf /tmp/pipeline.tar.gz --directory /tmp", "# ", 20)
-
-        # update environment variable for the performance improvement
+        self.session_secondary.copy_file_to("/tmp/pipeline.tar.gz", "/tmp/")
         self.dut.send_expect(
-            "export RTE_INSTALL_DIR={}".format(DIR_RTE_INSTALL_DIR), "#"
+            "tar -zxf /tmp/pipeline.tar.gz --strip-components={} --absolute-names "
+            "--directory /tmp".format(PIPELINE_TAR_FOLDER.count("/") - 1),
+            "# ",
+            20,
         )
 
     def set_up(self):
@@ -437,7 +431,7 @@ class TestPipeline(TestCase):
             try:
                 s.connect((SERVER_IP, SERVER_PORT))
                 sleep(1)
-                msg = s.recv(BUFFER_SIZE)
+                msg = s.recv(self.buffer_size)
                 response = msg.decode()
                 if "pipeline>" not in response:
                     s.close()
@@ -458,7 +452,7 @@ class TestPipeline(TestCase):
 
         socket.send(cmd.encode("utf-8"))
         sleep(0.1)
-        msg = socket.recv(BUFFER_SIZE)
+        msg = socket.recv(self.buffer_size)
         response = msg.decode()
         if expected_rsp not in response:
             socket.close()
@@ -467,9 +461,10 @@ class TestPipeline(TestCase):
 
     def run_dpdk_app(self, cli_file, exp_out="PIPELINE0 enable"):
 
-        cmd = 'test -f {} && echo "File exists!"'.format(cli_file)
-        self.dut.send_expect(cmd, "File exists!", 1)
         try:
+            cmd = 'test -f {} && echo "File exists!"'.format(cli_file)
+            self.dut.send_expect(cmd, "File exists!", 1)
+
             cmd = "sed -i -e 's/0000:00:04.0/%s/' {}".format(cli_file) % self.dut_p0_pci
             self.dut.send_expect(cmd, "# ", 20)
             cmd = "sed -i -e 's/0000:00:05.0/%s/' {}".format(cli_file) % self.dut_p1_pci
@@ -483,6 +478,8 @@ class TestPipeline(TestCase):
             )
             self.dut.send_expect(cmd, exp_out, 60)
         except Exception:
+            trace = traceback.format_exc()
+            self.logger.error("Error while running DPDK: " + trace)
             self.dut.send_expect("^C", "# ", 20)
             self.verify(0, "ERROR in running DPDK application")
 
@@ -501,7 +498,7 @@ class TestPipeline(TestCase):
         # Prepare the pkts to be sent
         self.tester.scapy_foreground()
         self.tester.send_expect(
-            "text2pcap -q {} /tmp/packet_tx.pcap".format("/tmp/" + in_pcap), "# "
+            "text2pcap -q {} /tmp/packet_tx.pcap".format(self.dep_dir + in_pcap), "# "
         )
         self.tester.scapy_append('pkt = rdpcap("/tmp/packet_tx.pcap")')
         self.tester.scapy_append('sendp(pkt, iface="{}", count=1)'.format(tx_interface))
@@ -684,6 +681,19 @@ class TestPipeline(TestCase):
         in_pcap = ["pipeline/extract_emit_013/pcap_files/in_1.txt"] * 4
         out_pcap = ["pipeline/extract_emit_013/pcap_files/out_1.txt"] * 4
         filters = ["udp and less 160"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_extract_emit_014(self):
+
+        cli_file = "/tmp/pipeline/extract_emit_014/extract_emit_014.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/extract_emit_014/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/extract_emit_014/pcap_files/out_1.txt"] * 4
+        filters = ["tcp"] * 4
         tx_port = [0, 1, 2, 3]
         rx_port = [0, 1, 2, 3]
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
@@ -2444,7 +2454,7 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/table_002/table_002.cli"
         self.run_dpdk_app(cli_file)
-        sleep(1)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # empty table scenario
@@ -2535,7 +2545,8 @@ class TestPipeline(TestCase):
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
 
         # deafult action scenario [empty table]
-        CMD_FILE = "/tmp/pipeline/table_002/cmd_files/cmd_6_1.txt"  # delete the previously added rule
+        # delete the previously added rule
+        CMD_FILE = "/tmp/pipeline/table_002/cmd_files/cmd_6_1.txt"
         CLI_CMD = "pipeline PIPELINE0 table table_002_table delete {}\n".format(
             CMD_FILE
         )
@@ -2551,7 +2562,8 @@ class TestPipeline(TestCase):
 
         # deafult action scenario [table with one rule]
         """
-        Add key A => Lookup HIT for the right packet with the specific key associated action executed
+        Add key A => Lookup HIT for the right packet with the specific key
+                     associated action executed
                      Lookup MISS for any other packets with default action executed
         """
         CMD_FILE = "/tmp/pipeline/table_002/cmd_files/cmd_6_2.txt"  # add a new rule
@@ -2573,7 +2585,7 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/table_003/table_003.cli"
         self.run_dpdk_app(cli_file)
-        sleep(1)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Empty table scenario
@@ -2640,7 +2652,8 @@ class TestPipeline(TestCase):
         rx_port = [0, 1, 2, 3]
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
 
-        # action update scenario (restore one of the previously deleted rules and check the update)
+        # action update scenario (restore one of the previously deleted rules
+        # and check the update)
         CMD_FILE = "/tmp/pipeline/table_003/cmd_files/cmd_5_1.txt"
         CLI_CMD = "pipeline PIPELINE0 table table_003_table add {}\n".format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
@@ -2650,7 +2663,8 @@ class TestPipeline(TestCase):
         out_pcap = "pipeline/table_003/pcap_files/out_5_1.txt"
         self.send_and_sniff_pkts(0, 0, in_pcap, out_pcap, "tcp")
 
-        # action update scenario (change the action of restored rule and check the update)
+        # action update scenario (change the action of restored rule and check
+        # the update)
         CMD_FILE = "/tmp/pipeline/table_003/cmd_files/cmd_5_2.txt"
         CLI_CMD = "pipeline PIPELINE0 table table_003_table add {}\n".format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
@@ -2664,8 +2678,10 @@ class TestPipeline(TestCase):
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
 
         # Default action scenario [Empty table]
-        CMD_FILE = "/tmp/pipeline/table_003/cmd_files/cmd_6_1_1.txt"  # delete the previously added rule
-        CMD_FILE_2 = "/tmp/pipeline/table_003/cmd_files/cmd_6_1_2.txt"  # change the default action of table
+        # delete the previously added rule
+        CMD_FILE = "/tmp/pipeline/table_003/cmd_files/cmd_6_1_1.txt"
+        # change the default action of table
+        CMD_FILE_2 = "/tmp/pipeline/table_003/cmd_files/cmd_6_1_2.txt"
         CLI_CMD = "pipeline PIPELINE0 table table_003_table delete {}\n".format(
             CMD_FILE
         )
@@ -2685,8 +2701,10 @@ class TestPipeline(TestCase):
 
         # Default action scenario [Table with one rule]
         """
-        Add key A => Lookup HIT for the right packet with the specific key associated action executed
-                     Lookup MISS for any other packets with default action executed
+        Add key A => Lookup HIT for the right packet with the specific key
+                     associated action executed
+                     Lookup MISS for any other packets with default action
+                     executed
         """
         CMD_FILE = "/tmp/pipeline/table_003/cmd_files/cmd_6_2.txt"  # add a new rule
         CLI_CMD = "pipeline PIPELINE0 table table_003_table add {}\n".format(CMD_FILE)
@@ -2762,7 +2780,7 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/table_008/table_008.cli"
         self.run_dpdk_app(cli_file)
-        sleep(1)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         in_pcap = ["pipeline/table_008/pcap_files/in_1.txt"] * 4
@@ -2792,27 +2810,408 @@ class TestPipeline(TestCase):
         s.close()
         self.dut.send_expect("^C", "# ", 20)
 
+    def test_table_009(self):
+
+        cli_file = "/tmp/pipeline/table_009/table_009.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/table_009/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table table_009 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/table_009/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_009/pcap_files/out_1.txt"] * 4
+        filters = ["tcp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+
+        sleep(2)
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_010(self):
+
+        cli_file = "/tmp/pipeline/table_010/table_010.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/table_010/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table table_010 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/table_010/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_010/pcap_files/out_1.txt"] * 4
+        filters = ["tcp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+
+        sleep(2)
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_011(self):
+
+        cli_file = "/tmp/pipeline/table_011/table_011.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/table_011/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table table_011 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/table_011/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_011/pcap_files/out_1.txt"] * 4
+        filters = ["udp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+
+        sleep(2)
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        in_pcap = ["pipeline/table_011/pcap_files/in_2.txt"] * 4
+        out_pcap = ["pipeline/table_011/pcap_files/out_2.txt"] * 4
+        filters = ["tcp"] * 4
+
+        sleep(2)
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_012(self):
+
+        cli_file = "/tmp/pipeline/table_012/table_012.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/table_012/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table table_012 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/table_012/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_012/pcap_files/out_1.txt"] * 4
+        filters = ["tcp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+
+        sleep(2)
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_013(self):
+
+        cli_file = "/tmp/pipeline/table_013/table_013.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/table_013/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table table_013 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/table_013/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_013/pcap_files/out_1.txt"] * 4
+        filters = ["tcp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+
+        sleep(2)
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_014(self):
+
+        cli_file = "/tmp/pipeline/table_014/table_014.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/table_014/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table table_014 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/table_014/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_014/pcap_files/out_1.txt"] * 4
+        filters = ["udp port 4789"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        in_pcap = ["pipeline/table_014/pcap_files/in_2.txt"] * 4
+        out_pcap = ["pipeline/table_014/pcap_files/out_2.txt"] * 4
+        filters = ["udp port 200"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_015(self):
+
+        cli_file = "/tmp/pipeline/table_015/table_015.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/table_015/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table table_015 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/table_015/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_015/pcap_files/out_1.txt"] * 4
+        filters = ["udp port 4789"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        in_pcap = ["pipeline/table_015/pcap_files/in_2.txt"] * 4
+        out_pcap = ["pipeline/table_015/pcap_files/out_2.txt"] * 4
+        filters = ["udp port 200"] * 4
+        tx_port = [0, 1, 2, 3]
+
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_016(self):
+
+        cli_file = "/tmp/pipeline/table_016/table_016.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/table_016/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table table_016 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/table_016/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_016/pcap_files/out_1.txt"] * 4
+        filters = ["udp port 4789"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        in_pcap = ["pipeline/table_016/pcap_files/in_2.txt"] * 4
+        out_pcap = ["pipeline/table_016/pcap_files/out_2.txt"] * 4
+        filters = ["udp port 200"] * 4
+        tx_port = [0, 1, 2, 3]
+
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_017(self):
+
+        cli_file = "/tmp/pipeline/table_017/table_017.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/table_017/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table table_017 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/table_017/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_017/pcap_files/out_1.txt"] * 4
+        filters = ["udp port 4789"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        in_pcap = ["pipeline/table_017/pcap_files/in_2.txt"] * 4
+        out_pcap = ["pipeline/table_017/pcap_files/out_2.txt"] * 4
+        filters = ["udp port 200"] * 4
+        tx_port = [0, 1, 2, 3]
+
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_018(self):
+
+        cli_file = "/tmp/pipeline/table_018/table_018.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/table_018/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table table_018 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/table_018/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_018/pcap_files/out_1.txt"] * 4
+        filters = ["udp port 4789"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        in_pcap = ["pipeline/table_018/pcap_files/in_2.txt"] * 4
+        out_pcap = ["pipeline/table_018/pcap_files/out_2.txt"] * 4
+        filters = ["udp port 200"] * 4
+        tx_port = [0, 1, 2, 3]
+
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_019(self):
+
+        cli_file = "/tmp/pipeline/table_019/table_019.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/table_019/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table table_019 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/table_019/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_019/pcap_files/out_1.txt"] * 4
+        filters = ["udp port 4789"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        in_pcap = ["pipeline/table_019/pcap_files/in_2.txt"] * 4
+        out_pcap = ["pipeline/table_019/pcap_files/out_2.txt"] * 4
+        filters = ["udp port 200"] * 4
+        tx_port = [0, 1, 2, 3]
+
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_020(self):
+
+        cli_file = "/tmp/pipeline/table_020/table_020.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/table_020/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table table_020 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/table_020/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_020/pcap_files/out_1.txt"] * 4
+        filters = ["udp port 4789"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        in_pcap = ["pipeline/table_020/pcap_files/in_2.txt"] * 4
+        out_pcap = ["pipeline/table_020/pcap_files/out_2.txt"] * 4
+        filters = ["udp port 200"] * 4
+        tx_port = [0, 1, 2, 3]
+
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_021(self):
+
+        cli_file = "/tmp/pipeline/table_021/table_021.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/table_021/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table table_021 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/table_021/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/table_021/pcap_files/out_1.txt"] * 4
+        filters = ["udp port 4789"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        in_pcap = ["pipeline/table_021/pcap_files/in_2.txt"] * 4
+        out_pcap = ["pipeline/table_021/pcap_files/out_2.txt"] * 4
+        filters = ["udp port 200"] * 4
+        tx_port = [0, 1, 2, 3]
+
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
     def test_reg_001(self):
 
         cli_file = "/tmp/pipeline/reg_001/reg_001.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Read default initial value
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x0\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x0\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12\npipeline> ")
 
         # Update the register array location
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x0 0xab\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xab index 0x0\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Verify updated value
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x0\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x0\n"
         self.socket_send_cmd(s, CLI_CMD, "0xab\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12\npipeline> ")
 
         s.close()
@@ -2822,17 +3221,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_002/reg_002.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Update the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xa1a2 0x123456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0x123456789012 index 0xa1a2\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xb1b2 0x12345678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x12345678 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xc1 0x1234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1234 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xd1 0x12\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x12 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         s.close()
 
@@ -2846,17 +3247,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_003/reg_003.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Update the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x1a1a2a3 0x123456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0x123456789012 index 0x1a1a2a3\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fb1b2 0x12345678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x12345678 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fc1 0x1234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1234 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7f 0x12\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x12 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         s.close()
 
@@ -2870,17 +3273,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_004/reg_004.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Update the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x1a1a2a3 0x123456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0x123456789012 index 0x1a1a2a3\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fb1b2 0x12345678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x12345678 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fc1 0x1234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1234 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7f 0x12\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x12 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         s.close()
 
@@ -2894,17 +3299,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_005/reg_005.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Update the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x1a1a2a3 0x123456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0x123456789012 index 0x1a1a2a3\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fb1b2 0x12345678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x12345678 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fc1 0x1234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1234 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7f 0x12\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x12 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         s.close()
 
@@ -2918,17 +3325,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_006/reg_006.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Update the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xa1a2 0x123456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0x123456789012 index 0xa1a2\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xb1b2 0x12345678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x12345678 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xc1 0x1234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1234 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xd1 0x12\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x12 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send a packet to trigger the execution of apply block
@@ -2936,13 +3345,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify written vs read values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa3a4\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa3a4\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb3b4\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb3b4\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12\npipeline> ")
 
         s.close()
@@ -2952,17 +3361,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_007/reg_007.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Update the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xa1a2 0x123456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0x123456789012 index 0xa1a2\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xb1b2 0x12345678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x12345678 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xc1 0x1234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1234 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xd1 0x12\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x12 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send a packet to trigger the execution of apply block
@@ -2970,13 +3381,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify written vs read values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa3a4\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa3a4\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb3b4\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb3b4\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12\npipeline> ")
 
         s.close()
@@ -2986,17 +3397,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_008/reg_008.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Update the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x1a1a2a3 0x123456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0x123456789012 index 0x1a1a2a3\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fb1b2 0x12345678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x12345678 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fc1 0x1234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1234 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7f 0x12\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x12 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send a packet to trigger the execution of apply block
@@ -3004,13 +3417,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify written vs read values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa3a4\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa3a4\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb3b4\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb3b4\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12\npipeline> ")
 
         s.close()
@@ -3020,17 +3433,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_009/reg_009.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Update the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x1a1a2a3 0x123456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0x123456789012 index 0x1a1a2a3\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fb1b2 0x12345678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x12345678 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fc1 0x1234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1234 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7f 0x12\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x12 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send a packet to trigger the execution of apply block
@@ -3038,13 +3453,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify written vs read values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa3a4\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa3a4\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb3b4\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb3b4\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12\npipeline> ")
 
         s.close()
@@ -3054,17 +3469,17 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_010/reg_010.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Verify the default initial values of zero
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3072,13 +3487,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x6\npipeline> ")
 
         s.close()
@@ -3088,17 +3503,17 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_011/reg_011.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Verify the default initial values of zero
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3106,13 +3521,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x6\npipeline> ")
 
         s.close()
@@ -3122,17 +3537,17 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_012/reg_012.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Verify the default initial values of zero
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3140,13 +3555,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12\npipeline> ")
 
         s.close()
@@ -3156,19 +3571,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_013/reg_013.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Verify the default initial values of zero
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x06\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x06\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3176,15 +3591,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x6\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x06\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x06\n"
         self.socket_send_cmd(s, CLI_CMD, "0x9876543210987654\npipeline> ")
 
         s.close()
@@ -3194,17 +3609,17 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_014/reg_014.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Verify the default initial values of zero
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3212,13 +3627,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x6\npipeline> ")
 
         s.close()
@@ -3228,17 +3643,17 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_015/reg_015.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Verify the default initial values of zero
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3246,13 +3661,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x6\npipeline> ")
 
         s.close()
@@ -3262,19 +3677,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_016/reg_016.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Verify the default initial values of zero
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3282,15 +3697,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234567890123456\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12\npipeline> ")
 
         s.close()
@@ -3300,19 +3715,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_017/reg_017.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Verify the default initial values of zero
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3320,15 +3735,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234567890123456\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12\npipeline> ")
 
         s.close()
@@ -3338,19 +3753,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_018/reg_018.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Verify the default initial values of zero
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3358,15 +3773,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234567890123456\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12\npipeline> ")
 
         s.close()
@@ -3376,19 +3791,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_019/reg_019.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Verify the default initial values of zero
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3396,15 +3811,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234567890123456\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12\npipeline> ")
 
         s.close()
@@ -3414,17 +3829,17 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_020/reg_020.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Verify the default initial values of zero
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3432,13 +3847,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234567890123456\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
 
         s.close()
@@ -3448,19 +3863,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_021/reg_021.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Verify the default initial values of zero
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3468,15 +3883,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234567890123456\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12\npipeline> ")
 
         s.close()
@@ -3486,17 +3901,17 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_022/reg_022.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Verify the default initial values of zero
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3504,13 +3919,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x6\npipeline> ")
 
         s.close()
@@ -3520,19 +3935,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_023/reg_023.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Verify the default initial values of zero
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3540,15 +3955,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234567890123456\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12\npipeline> ")
 
         s.close()
@@ -3558,19 +3973,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_024/reg_024.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Verify the default initial values of zero
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3578,15 +3993,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234567890123456\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12\npipeline> ")
 
         s.close()
@@ -3596,17 +4011,17 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_025/reg_025.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Verify the default initial values of zero
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3614,13 +4029,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234567890123456\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x123456789012\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345678\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1234\npipeline> ")
 
         s.close()
@@ -3630,17 +4045,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_026/reg_026.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xa1a2 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0xa1a2\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xd1 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3648,13 +4065,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468acf12024\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1333acf0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0xff8\npipeline> ")
 
         s.close()
@@ -3664,17 +4081,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_027/reg_027.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xa1a2 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0xa1a2\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xd1 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3682,13 +4101,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468acf12024\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1333acf0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0xff8\npipeline> ")
 
         s.close()
@@ -3698,17 +4117,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_028/reg_028.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xa1a2 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0xa1a2\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xd1 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3716,13 +4137,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468acf12024\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1333acf0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0xff8\npipeline> ")
 
         s.close()
@@ -3732,17 +4153,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_029/reg_029.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xa1a2 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0xa1a2\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xd1 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3750,13 +4173,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468acf12024\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1333acf0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0xff8\npipeline> ")
 
         s.close()
@@ -3766,17 +4189,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_030/reg_030.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xa1a2 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0xa1a2\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xd1 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3784,13 +4209,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468acf12024\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1333acf0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0xff8\npipeline> ")
 
         s.close()
@@ -3800,17 +4225,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_031/reg_031.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x1a1a2a3 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0x1a1a2a3\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7f 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3818,13 +4245,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468acf12024\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1333acf0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0xff8\npipeline> ")
 
         s.close()
@@ -3834,19 +4261,21 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_032/reg_032.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x1a1a2a3 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0x1a1a2a3\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7f 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xf7 0x1f\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1f index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3854,15 +4283,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ace68ac468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345777e68a\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ac\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x10f1\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x25\npipeline> ")
 
         s.close()
@@ -3872,19 +4301,21 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_033/reg_033.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x1a1a2a3 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0x1a1a2a3\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7f 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xf7 0x1f\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1f index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3892,15 +4323,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ace68ac468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345777e68a\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ac\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x10f1\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x25\npipeline> ")
 
         s.close()
@@ -3910,19 +4341,21 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_034/reg_034.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x1a1a2a3 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0x1a1a2a3\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7f 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xf7 0x1f\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1f index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3930,15 +4363,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ace68ac468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345777e68a\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ac\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x10f1\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x25\npipeline> ")
 
         s.close()
@@ -3948,19 +4381,21 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_035/reg_035.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x1a1a2a3 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0x1a1a2a3\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7f 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xf7 0x1f\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1f index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -3968,15 +4403,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ace68ac468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345777e68a\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ac\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x10f1\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x25\npipeline> ")
 
         s.close()
@@ -3986,19 +4421,21 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_036/reg_036.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x1a1a2a3 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0x1a1a2a3\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7f 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xf7 0x1f\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1f index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -4006,15 +4443,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ace68ac468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345777e68a\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ac\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x10f1\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x25\npipeline> ")
 
         s.close()
@@ -4024,19 +4461,21 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_037/reg_037.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x1a1a2a3 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0x1a1a2a3\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7f 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xf7 0x1f\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1f index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -4044,15 +4483,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ace68ac468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345777e68a\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ac\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x10f1\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x25\npipeline> ")
 
         s.close()
@@ -4062,17 +4501,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_038/reg_038.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xa1a2 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0xa1a2\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xd1 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -4080,13 +4521,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468acf12024\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1333acf0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0xff8\npipeline> ")
 
         s.close()
@@ -4096,19 +4537,21 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_039/reg_039.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x1a1a2a3 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0x1a1a2a3\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7f 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xf7 0x1f\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1f index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -4116,15 +4559,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ace68ac468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345777e68a\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ac\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x10f1\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x25\npipeline> ")
 
         s.close()
@@ -4134,19 +4577,21 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_040/reg_040.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x1a1a2a3 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0x1a1a2a3\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7f 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xf7 0x1f\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1f index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -4154,15 +4599,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ace68ac468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345777e68a\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ac\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x10f1\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x25\npipeline> ")
 
         s.close()
@@ -4172,19 +4617,21 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_041/reg_041.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x1a1a2a3 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0x1a1a2a3\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7f 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xf7 0x1f\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0x1f index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -4192,15 +4639,15 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Update the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ace68ac468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x12345777e68a\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x124448ac\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0x10f1\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xf7\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xf7\n"
         self.socket_send_cmd(s, CLI_CMD, "0x25\npipeline> ")
 
         s.close()
@@ -4210,17 +4657,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_042/reg_042.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xa1a2 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0xa1a2\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xd1 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -4228,13 +4677,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468acf12024\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1333acf0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0xff8\npipeline> ")
 
         s.close()
@@ -4244,17 +4693,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_043/reg_043.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xa1a2 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0xa1a2\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xd1 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -4262,13 +4713,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468acf12024\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1333acf0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0xff8\npipeline> ")
 
         s.close()
@@ -4278,17 +4729,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_044/reg_044.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x1a1a2a3 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0x1a1a2a3\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7fc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0x7f 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -4296,13 +4749,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x1a1a2a3\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468acf12024\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1333acf0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7fc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7fc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0x7f\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0x7f\n"
         self.socket_send_cmd(s, CLI_CMD, "0xff8\npipeline> ")
 
         s.close()
@@ -4312,17 +4765,19 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/reg_045/reg_045.cli"
         self.run_dpdk_app(cli_file)
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # Initialize the register array locations with required values
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xa1a2 0xff23456789012\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff23456789012 index 0xa1a2\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xb1b2 0xff5678\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff5678 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xc1 0xff234\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff234 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 0xd1 0xff2\n"
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_ARR_1 value 0xff2 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
@@ -4330,13 +4785,13 @@ class TestPipeline(TestCase):
         self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xa1a2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468acf12024\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xb1b2\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xb1b2\n"
         self.socket_send_cmd(s, CLI_CMD, "0x1333acf0\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xc1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xc1\n"
         self.socket_send_cmd(s, CLI_CMD, "0x100468\npipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 0xd1\n"
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_ARR_1 index 0xd1\n"
         self.socket_send_cmd(s, CLI_CMD, "0xff8\npipeline> ")
 
         s.close()
@@ -4369,7 +4824,9 @@ class TestPipeline(TestCase):
         s = self.connect_cli_server()
         CLI_CMD = "pipeline PIPELINE0 meter profile gold add cir 460 pir 1380 cbs 100 pbs 150\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = "pipeline PIPELINE0 meter MET_ARRAY_1 from 0 to 0 set profile gold\n"
+        CLI_CMD = (
+            "pipeline PIPELINE0 meter MET_ARRAY_1 set profile gold index from 0 to 0\n"
+        )
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         CLI_CMD = "pipeline PIPELINE0 meter profile platinum delete\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
@@ -4383,7 +4840,7 @@ class TestPipeline(TestCase):
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters, 1000)
 
         # Default Profile with High Packet Transmission Rate
-        CLI_CMD = "pipeline PIPELINE0 meter MET_ARRAY_1 from 0 to 0 reset\n"
+        CLI_CMD = "pipeline PIPELINE0 meter MET_ARRAY_1 reset index from 0 to 0\n"
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         s.close()
 
@@ -4892,7 +5349,7 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/lpm_001/lpm_001.cli"
         self.run_dpdk_app(cli_file)
-        sleep(1)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # [1]: Empty table: Default action executed for all the packets.
@@ -4957,7 +5414,7 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/lpm_002/lpm_002.cli"
         self.run_dpdk_app(cli_file)
-        sleep(1)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # [1] Input packets on ports 0 .. 3:
@@ -5043,12 +5500,37 @@ class TestPipeline(TestCase):
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
         self.dut.send_expect("^C", "# ", 20)
 
+    def test_lpm_005(self):
+
+        cli_file = "/tmp/pipeline/lpm_005/lpm_005.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/lpm_005/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table lpm_005 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/lpm_005/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/lpm_005/pcap_files/out_1.txt"] * 4
+        filters = ["tcp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+
+        sleep(2)
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
     def test_selector_001(self):
 
         # ----- Selector table feature validation -----
         cli_file = "/tmp/pipeline/selector_001/selector_001.cli"
         self.run_dpdk_app(cli_file)
-        sleep(1)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         # [1]: Absence of Group
@@ -5347,7 +5829,7 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/learner_005/learner_005.cli"
         self.run_dpdk_app(cli_file)
-        sleep(1)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
 
         in_pcap = ["pipeline/learner_005/pcap_files/in_1.txt"]
@@ -5383,17 +5865,10 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/learner_006/learner_006.cli"
         self.run_dpdk_app(
-            cli_file, "pipeline PIPELINE0 port out 3 link LINK3 txq 0 bsz 1\n"
+            cli_file, "Error -22 at line 81: Invalid default_action statement.\n"
         )
         sleep(1)
-        s = self.connect_cli_server()
 
-        CLI_CMD = (
-            "pipeline PIPELINE0 build /tmp/pipeline/learner_006/learner_006.spec\n"
-        )
-        self.socket_send_cmd(s, CLI_CMD, "Error -22 at line 65: Action config error.")
-
-        s.close()
         self.dut.send_expect("^C", "# ", 20)
 
     def test_learner_007(self):
@@ -5534,6 +6009,114 @@ class TestPipeline(TestCase):
         tx_port = [0]
         rx_port = [1, 0]
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_012(self):
+
+        cli_file = "/tmp/pipeline/learner_012/learner_012.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/learner_012/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/learner_012/pcap_files/out_1.txt"]
+        filters = ["udp port 200"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        out_pcap = ["pipeline/learner_012/pcap_files/out_2.txt"]
+        filters = ["udp port 4789"]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_013(self):
+
+        cli_file = "/tmp/pipeline/learner_013/learner_013.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/learner_013/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/learner_013/pcap_files/out_1.txt"]
+        filters = ["udp port 200"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        out_pcap = ["pipeline/learner_013/pcap_files/out_2.txt"]
+        filters = ["udp port 4789"]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_014(self):
+
+        cli_file = "/tmp/pipeline/learner_014/learner_014.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/learner_014/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/learner_014/pcap_files/out_1.txt"]
+        filters = ["udp port 200"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        out_pcap = ["pipeline/learner_014/pcap_files/out_2.txt"]
+        filters = ["udp port 4789"]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_015(self):
+
+        cli_file = "/tmp/pipeline/learner_015/learner_015.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/learner_015/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/learner_015/pcap_files/out_1.txt"]
+        filters = ["udp port 200"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        out_pcap = ["pipeline/learner_015/pcap_files/out_2.txt"]
+        filters = ["udp port 4789"]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_016(self):
+
+        cli_file = "/tmp/pipeline/learner_016/learner_016.cli"
+        self.run_dpdk_app(
+            cli_file, "Error -22 at line 0: Learner table configuration error.\n"
+        )
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_017(self):
+
+        cli_file = "/tmp/pipeline/learner_017/learner_017.cli"
+        self.run_dpdk_app(
+            cli_file, "Error -22 at line 0: Learner table configuration error.\n"
+        )
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_018(self):
+
+        cli_file = "/tmp/pipeline/learner_018/learner_018.cli"
+        self.run_dpdk_app(
+            cli_file, "Error -22 at line 0: Learner table configuration error.\n"
+        )
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_learner_019(self):
+
+        cli_file = "/tmp/pipeline/learner_019/learner_019.cli"
+        self.run_dpdk_app(
+            cli_file, "Error -22 at line 0: Learner table configuration error.\n"
+        )
 
         self.dut.send_expect("^C", "# ", 20)
 
@@ -5765,16 +6348,8 @@ class TestPipeline(TestCase):
 
         cli_file = "/tmp/pipeline/annotation_003/annotation_003.cli"
         self.run_dpdk_app(
-            cli_file, "pipeline PIPELINE0 port out 3 link LINK3 txq 0 bsz 1\n"
+            cli_file, "Error -22 at line 54: Invalid action name statement.\n"
         )
-
-        sleep(CLI_SERVER_CONNECT_DELAY)
-        s = self.connect_cli_server()
-        CLI_CMD = "pipeline PIPELINE0 build /tmp/pipeline/annotation_003/annotation_003.spec\n"
-        self.socket_send_cmd(
-            s, CLI_CMD, "Error -22 at line 54: Invalid action name statement."
-        )
-        s.close()
 
         self.dut.send_expect("^C", "# ", 20)
 
@@ -5783,11 +6358,11 @@ class TestPipeline(TestCase):
         cli_file = "/tmp/pipeline/annotation_004/annotation_004.cli"
         self.run_dpdk_app(
             cli_file,
-            "pipeline PIPELINE0 build /tmp/pipeline/annotation_004/"
-            "annotation_004.spec\n",
+            "pipeline PIPELINE0 build lib /tmp/pipeline/annotation_004/annotation_004.so "
+            "io /tmp/pipeline/annotation_004/ethdev.io numa 0\n",
         )
 
-        sleep(CLI_SERVER_CONNECT_DELAY)
+        sleep(self.cli_connect_delay)
         s = self.connect_cli_server()
         CLI_CMD = (
             "pipeline PIPELINE0 table annotation_004 add /tmp/pipeline/annotation_004/"
@@ -5806,17 +6381,7 @@ class TestPipeline(TestCase):
     def test_annotation_005(self):
 
         cli_file = "/tmp/pipeline/annotation_005/annotation_005.cli"
-        self.run_dpdk_app(
-            cli_file, "pipeline PIPELINE0 port out 3 link LINK3 txq 0 bsz 1\n"
-        )
-
-        sleep(CLI_SERVER_CONNECT_DELAY)
-        s = self.connect_cli_server()
-        CLI_CMD = "pipeline PIPELINE0 build /tmp/pipeline/annotation_005/annotation_005.spec\n"
-        self.socket_send_cmd(
-            s, CLI_CMD, "Error -22 at line 62: Table configuration error."
-        )
-        s.close()
+        self.run_dpdk_app(cli_file, "Error -22 at line 0: Table configuration error.\n")
 
         self.dut.send_expect("^C", "# ", 20)
 
@@ -5847,6 +6412,358 @@ class TestPipeline(TestCase):
         rx_port = [3]
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap_2, filters)
 
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_hash_001(self):
+
+        cli_file = "/tmp/pipeline/hash_001/hash_001.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/hash_001/pcap_files/in_1.txt"]
+        out_pcap_1 = "pipeline/hash_001/pcap_files/out_1.txt"
+        out_pcap_2 = "pipeline/hash_001/pcap_files/out_2.txt"
+        out_pcap_3 = "pipeline/hash_001/pcap_files/out_3.txt"
+        out_pcap_4 = "pipeline/hash_001/pcap_files/out_4.txt"
+
+        out_pcap = [out_pcap_1, out_pcap_2, out_pcap_3, out_pcap_4]
+
+        filters = ["udp and less 120"] * 4
+        tx_port = [0]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_hash_002(self):
+
+        cli_file = "/tmp/pipeline/hash_002/hash_002.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/hash_002/pcap_files/in_1.txt"]
+        out_pcap_1 = "pipeline/hash_002/pcap_files/out_1.txt"
+        out_pcap_2 = "pipeline/hash_002/pcap_files/out_2.txt"
+        out_pcap_3 = "pipeline/hash_002/pcap_files/out_3.txt"
+        out_pcap_4 = "pipeline/hash_002/pcap_files/out_4.txt"
+
+        out_pcap = [out_pcap_1, out_pcap_2, out_pcap_3, out_pcap_4]
+
+        filters = ["udp and less 120"] * 4
+        tx_port = [0]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_hash_003(self):
+
+        cli_file = "/tmp/pipeline/hash_003/hash_003.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/hash_003/pcap_files/in_1.txt"]
+        out_pcap_1 = "pipeline/hash_003/pcap_files/out_1.txt"
+
+        out_pcap = [out_pcap_1]
+
+        filters = ["udp and less 120"] * 4
+        tx_port = [0]
+        rx_port = [2]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_direct_counter_001(self):
+
+        cli_file = "/tmp/pipeline/direct_counter_001/direct_counter_001.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        in_pcap = ["pipeline/direct_counter_001/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/direct_counter_001/pcap_files/out_1.txt"] * 4
+        filters = ["tcp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 regrd REG_DIRECT_COUNTER_001 table "
+            "direct_counter_001 match 0x0a0a0a01\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "0x4\npipeline> ")
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 regrd REG_DIRECT_COUNTER_001 table "
+            "direct_counter_001 match 0x0a0a0a02\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "0x4\npipeline> ")
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 regrd REG_DIRECT_COUNTER_001 table "
+            "direct_counter_001 match 0x0a0a0a03\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_direct_counter_002(self):
+
+        cli_file = "/tmp/pipeline/direct_counter_002/direct_counter_002.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        in_pcap = ["pipeline/direct_counter_002/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/direct_counter_002/pcap_files/out_1.txt"] * 4
+        filters = ["tcp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 regrd REG_DIRECT_COUNTER_002 table "
+            "direct_counter_002 match 0x01010101 0x0a0a0a01\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "0x4\npipeline> ")
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 regrd REG_DIRECT_COUNTER_002 table "
+            "direct_counter_002 match 0x02020202 0x0a0a0a02\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "0x4\npipeline> ")
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 regrd REG_DIRECT_COUNTER_002 table "
+            "direct_counter_002 match 0x01010101 0x0a0a0a03\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_direct_counter_003(self):
+
+        cli_file = "/tmp/pipeline/direct_counter_003/direct_counter_003.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        in_pcap = ["pipeline/direct_counter_003/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/direct_counter_003/pcap_files/out_1.txt"] * 4
+        filters = ["tcp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 regrd REG_DIRECT_COUNTER_003 table "
+            "direct_counter_003 match 0x0a0a0a01 0x06 0x01010101\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "0x4\npipeline> ")
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 regrd REG_DIRECT_COUNTER_003 table "
+            "direct_counter_003 match 0x0a0a0a02 0x06 0x02020202\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "0x4\npipeline> ")
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 regrd REG_DIRECT_COUNTER_003 table "
+            "direct_counter_003 match 0x0a0a0a03 0x06 0xffffffff\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_direct_counter_004(self):
+
+        cli_file = "/tmp/pipeline/direct_counter_004/direct_counter_004.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        in_pcap = ["pipeline/direct_counter_004/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/direct_counter_004/pcap_files/out_1.txt"] * 4
+        filters = ["tcp"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        in_pcap = ["pipeline/direct_counter_004/pcap_files/in_2.txt"] * 3
+        out_pcap = ["pipeline/direct_counter_004/pcap_files/out_2.txt"] * 3
+        filters = ["tcp"] * 3
+        tx_port = [0, 1, 2]
+        rx_port = [0, 1, 2]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        in_pcap = ["pipeline/direct_counter_004/pcap_files/in_3.txt"] * 2
+        out_pcap = ["pipeline/direct_counter_004/pcap_files/out_3.txt"] * 2
+        filters = ["tcp"] * 2
+        tx_port = [0, 1]
+        rx_port = [0, 1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        in_pcap = ["pipeline/direct_counter_004/pcap_files/in_4.txt"]
+        out_pcap = ["pipeline/direct_counter_004/pcap_files/out_4.txt"]
+        filters = ["tcp"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 regrd REG_DIRECT_COUNTER_004 table "
+            "direct_counter_004 match 0x00000000 0x0a0a0a00\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "0x4\npipeline> ")
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 regrd REG_DIRECT_COUNTER_004 table "
+            "direct_counter_004 match 0x05050505 0x0a0a0a05\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "0x3\npipeline> ")
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 regrd REG_DIRECT_COUNTER_004 table "
+            "direct_counter_004 match 0x0a0a0a0a 0x0a0a0a0a\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "0x2\npipeline> ")
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 regrd REG_DIRECT_COUNTER_004 table "
+            "direct_counter_004 match 0x0f0f0f0f 0x0a0a0a0f\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "0x1\npipeline> ")
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 regrd REG_DIRECT_COUNTER_004 table "
+            "direct_counter_004 match 0xa0a1a2a3 0xb0b1b2b3\n"
+        )
+        self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_direct_counter_005(self):
+
+        cli_file = "/tmp/pipeline/direct_counter_005/direct_counter_005.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CLI_CMD = "pipeline PIPELINE0 regwr REG_DIRECT_COUNTER_005 value 0x0 index 1\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/direct_counter_005/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/direct_counter_005/pcap_files/out_1.txt"]
+        filters = ["tcp"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        in_pcap = ["pipeline/direct_counter_005/pcap_files/in_1.txt"] * 2
+        out_pcap = ["pipeline/direct_counter_005/pcap_files/out_2.txt"] * 2
+        filters = ["tcp"] * 2
+        tx_port = [0, 1]
+        rx_port = [0, 1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        CLI_CMD = "pipeline PIPELINE0 regrd REG_DIRECT_COUNTER_005 index 1\n"
+        self.socket_send_cmd(s, CLI_CMD, "0x2\npipeline> ")
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_direct_meter_001(self):
+
+        cli_file = "/tmp/pipeline/direct_meter_001/direct_meter_001.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        in_pcap = "pipeline/direct_meter_001/pcap_files/in_1.txt"
+        self.send_pkts(0, 0, in_pcap)
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 meter MET_DIRECT_METER_001 stats table "
+            "direct_meter_001 match 0x01010101 0x0a0a0a01\n"
+        )
+
+        expected_response = (
+            "+---------+------------------+------------------+------------------+"
+            "------------------+------------------+------------------+\n"
+            "| METER # |  GREEN (packets) | YELLOW (packets) |    RED (packets) |    "
+            "GREEN (bytes) |   YELLOW (bytes) |      RED (bytes) |\n"
+            "+---------+------------------+------------------+------------------+"
+            "------------------+------------------+------------------+\n"
+            "|       0 |                8 |                0 |                0 |    "
+            "            8 |                0 |                0 |\n"
+            "pipeline> "
+        )
+        self.socket_send_cmd(s, CLI_CMD, expected_response)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_direct_meter_002(self):
+
+        cli_file = "/tmp/pipeline/direct_meter_002/direct_meter_002.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        in_pcap = "pipeline/direct_meter_002/pcap_files/in_1.txt"
+        self.send_pkts(0, 0, in_pcap)
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 meter MET_DIRECT_METER_002 stats table "
+            "direct_meter_002 match 0x0a0a0a01 0x06 0x01010101\n"
+        )
+
+        expected_response = (
+            "+---------+------------------+------------------+------------------+"
+            "------------------+------------------+------------------+\n"
+            "| METER # |  GREEN (packets) | YELLOW (packets) |    RED (packets) |    "
+            "GREEN (bytes) |   YELLOW (bytes) |      RED (bytes) |\n"
+            "+---------+------------------+------------------+------------------+"
+            "------------------+------------------+------------------+\n"
+            "|       0 |                8 |                0 |                0 |    "
+            "          190 |                0 |                0 |\n"
+            "pipeline> "
+        )
+        self.socket_send_cmd(s, CLI_CMD, expected_response)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_direct_meter_003(self):
+
+        cli_file = "/tmp/pipeline/direct_meter_003/direct_meter_003.cli"
+        self.run_dpdk_app(cli_file)
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        in_pcap = "pipeline/direct_meter_003/pcap_files/in_1.txt"
+        self.send_pkts(0, 0, in_pcap)
+
+        CLI_CMD = (
+            "pipeline PIPELINE0 meter MET_DIRECT_METER_003 stats index from 1 to 1\n"
+        )
+
+        expected_response = (
+            "+---------+------------------+------------------+------------------+"
+            "------------------+------------------+------------------+\n"
+            "| METER # |  GREEN (packets) | YELLOW (packets) |    RED (packets) |    "
+            "GREEN (bytes) |   YELLOW (bytes) |      RED (bytes) |\n"
+            "+---------+------------------+------------------+------------------+"
+            "------------------+------------------+------------------+\n"
+            "|       1 |                4 |                0 |                0 |    "
+            "            4 |                0 |                0 |\n"
+            "pipeline> "
+        )
+        self.socket_send_cmd(s, CLI_CMD, expected_response)
+
+        s.close()
         self.dut.send_expect("^C", "# ", 20)
 
     def tear_down(self):
