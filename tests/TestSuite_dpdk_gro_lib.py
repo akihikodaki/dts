@@ -111,6 +111,8 @@ class TestDPDKGROLib(TestCase):
     def set_testpmd_params(self, mode=1):
         # set testpmd params
         self.vhost_user.send_expect("set fwd csum", "testpmd> ", 120)
+        self.vhost_user.send_expect("csum mac-swap off 0", "testpmd> ", 120)
+        self.vhost_user.send_expect("csum mac-swap off 1", "testpmd> ", 120)
         self.vhost_user.send_expect("stop", "testpmd> ", 120)
         self.vhost_user.send_expect("port stop 0", "testpmd> ", 120)
         self.vhost_user.send_expect("port stop 1", "testpmd> ", 120)
