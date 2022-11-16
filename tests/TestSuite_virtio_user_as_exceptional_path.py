@@ -97,7 +97,7 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         testcmd = self.app_testpmd_path + " "
         vdev = "--vdev=virtio_user0,mac=%s,path=/dev/vhost-net," % self.virtio_mac
         eal_params = self.dut.create_eal_parameters(cores=core_mask, ports=[self.pci0])
-        para = " queue_size=1024,queues=%s -- -i --rxd=1024 --txd=1024 %s" % (
+        para = "queue_size=1024,queues=%s -- -i --rxd=1024 --txd=1024 %s" % (
             self.queue,
             comment,
         )
@@ -130,6 +130,8 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         self.vhost_user.send_expect("modprobe vhost-net", "#", 120)
         self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)
         self.vhost_user.send_expect("set fwd csum", "testpmd> ", 120)
+        self.vhost_user.send_expect("csum mac-swap off 0", "testpmd> ", 120)
+        self.vhost_user.send_expect("csum mac-swap off 1", "testpmd> ", 120)
         self.vhost_user.send_expect("stop", "testpmd> ", 120)
         self.vhost_user.send_expect("port stop 0", "testpmd> ", 120)
         self.vhost_user.send_expect("port stop 1", "testpmd> ", 120)
