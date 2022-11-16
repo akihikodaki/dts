@@ -106,6 +106,8 @@ class TestDPDKGsoLib(TestCase):
         self.vhost_user = self.dut.new_session(suite="user")
         self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)
         self.vhost_user.send_expect("set fwd csum", "testpmd> ", 120)
+        self.vhost_user.send_expect("csum mac-swap off 0", "testpmd> ", 120)
+        self.vhost_user.send_expect("csum mac-swap off 1", "testpmd> ", 120)
         self.vhost_user.send_expect("stop", "testpmd> ", 120)
         if mode == 0:
             self.vhost_user.send_expect("port stop 0", "testpmd> ", 120)
