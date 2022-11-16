@@ -32,6 +32,8 @@ Flow:tap0-->vhost-net-->virtio_user-->nic0-->nic1
     ./<build_target>/app/dpdk-testpmd -c 0xc0000 -n 4 --file-prefix=test2 \
     --vdev=virtio_user0,mac=00:01:02:03:04:05,path=/dev/vhost-net,queue_size=1024 -- -i --rxd=1024 --txd=1024
     testpmd>set fwd csum
+    testpmd>csum mac-swap off 0
+    testpmd>csum mac-swap off 1
     testpmd>stop
     testpmd>port stop 0
     testpmd>port stop 1
