@@ -444,15 +444,13 @@ class TestICEEcpri(TestCase):
         data_lst = self.get_receive_lst(tag_lst, [pkt_str])
         hash_lst = [i.get("RSS hash") for i in data_lst]
         self.verify(
-            len(set(hash_lst))
-            == len(tag_lst)
-            == len(set([i.get("queue") for i in data_lst])),
+            len(set(hash_lst)) == len(tag_lst),
             "test fail, RSS hash is same.",
         )
         # destroy rule and test
         self.pmd_output.execute_cmd("flow destroy 1 rule 0")
         out = self.pmd_output.execute_cmd("flow list 1")
-        data_lst = self.get_receive_lst(tag_lst, [pkt_str], stats=False)
+        data_lst = self.get_receive_lst(tag_lst, [pkt_str], check_rss=False)
         hash_lst = [i.get("RSS hash") for i in data_lst]
         self.verify(
             len(hash_lst) == 0 or len(set(hash_lst)) == 1,
@@ -494,7 +492,7 @@ class TestICEEcpri(TestCase):
         # destroy rule and test
         self.pmd_output.execute_cmd("flow destroy 1 rule 0")
         self.pmd_output.execute_cmd("flow list 1")
-        data_lst = self.get_receive_lst(tag_lst, [pkt_str], stats=False)
+        data_lst = self.get_receive_lst(tag_lst, [pkt_str], check_rss=False)
         hash_lst = [i.get("RSS hash") for i in data_lst]
         self.verify(
             len(hash_lst) == 0 or len(set(hash_lst)) == 1,
@@ -544,7 +542,7 @@ class TestICEEcpri(TestCase):
         out_data = {}
         for dst_mac in dst_mac_lst:
             pkt_lst = [pkt.format(dst_mac) for pkt in module_pkt_lst]
-            reta_line = self.get_receive_lst(tag_lst[:1], pkt_lst, stats=False)
+            reta_line = self.get_receive_lst(tag_lst[:1], pkt_lst, check_rss=False)
             out_data.setdefault(dst_mac, reta_line)
         # verify
         for key in out_data.keys():
@@ -1031,7 +1029,7 @@ class TestICEEcpri(TestCase):
                 Mac_list[1]
             )
         ]
-        data_lst = self.get_receive_lst(tag_lst[:1], pkt_lst, stats=False)
+        data_lst = self.get_receive_lst(tag_lst[:1], pkt_lst, check_rss=False)
         queue = [data.get("queue") for data in data_lst]
         self.verify([i for i in queue if i in ["5", "6"]], "pkt go to wrong queue!")
         self.verify(
@@ -1048,7 +1046,7 @@ class TestICEEcpri(TestCase):
                 Mac_list[1]
             )
         ]
-        data_lst = self.get_receive_lst(tag_lst, pkt_lst, stats=False)
+        data_lst = self.get_receive_lst(tag_lst, pkt_lst, check_rss=False)
         self.verify(
             [data.get("queue") for data in data_lst] == [None, "1"],
             "pkt go to wrong queue!",
@@ -1207,13 +1205,16 @@ class TestICEEcpri(TestCase):
             "mark id or queue wrong!",
         )
 
-    def get_receive_lst(self, tag_lst=[], pkt_lst=[], pmd_output="", stats=True):
+    def get_receive_lst(self, tag_lst=[], pkt_lst=[], pmd_output="", check_rss=True):
         data_lst = []
         for tag in tag_lst:
             for pkt in pkt_lst:
                 pkt_str = pkt % tag
                 out = self.send_pkt(pkt_str=pkt_str, pmd_output=pmd_output)
-                rfc.verify_directed_by_rss(out, rxq=16, stats=stats)
+                # packets without hash or hitting the fdir rule whose action is to queue
+                # do not need to check the calculation of hash value.
+                if check_rss:
+                    rfc.verify_directed_by_rss(out, rxq=16, stats=check_rss)
                 reta_line = self.get_receive_data(out)
                 data_lst.append(reta_line)
         return data_lst
