@@ -109,11 +109,13 @@ Test Case2: NTB test with file-trans fwd mode using vfio-pci
 
     ./x86_64-native-linuxapp-gcc/examples/dpdk-ntb -l 28-32 -n 6 -- -i --buf-size=65407
     >set fwd file-trans
+    >start
 
 3. Launch ntb_fwd sample on Machine2::
 
     ./x86_64-native-linuxapp-gcc/examples/dpdk-ntb -l 28-32 -n 6 -- -i --buf-size=65407
     >set fwd file-trans
+    >start
 
 4. Send file from Machine1::
 
