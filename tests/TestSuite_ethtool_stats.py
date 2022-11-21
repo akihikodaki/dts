@@ -56,7 +56,7 @@ class TestEthtoolStats(TestCase):
         # make sure interface in link up status
         src_intf, src_mac = self.link_topo
         cmd = "ifconfig {0} up".format(src_intf)
-        self.d_a_con(cmd)
+        self.tester.alt_session.send_expect(cmd, "# ")
         # send out packet
         for frame_size in self.frame_sizes:
             headers_size = sum([HEADER_SIZE[x] for x in ["eth", "ip", "udp"]])
