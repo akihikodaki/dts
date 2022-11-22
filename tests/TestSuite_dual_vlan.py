@@ -14,65 +14,6 @@ import re
 import time
 
 import framework.utils as utils
-
-txvlan = 3
-outvlan = 1
-invlan = 2
-
-allResult = {
-    "TX+OUTER+INNER": (txvlan, outvlan, invlan),
-    "TX+INNER": (txvlan, invlan),
-    "TX+OUTER": (txvlan, outvlan),
-    "OUTER+INNER": (outvlan, invlan),
-    "INNER": (invlan,),
-    "OUTER": (outvlan,),
-    "NONE": ("No",),
-}
-
-stripCase = 0x1
-filterCase = 0x2
-qinqCase = 0x4
-txCase = 0x8
-
-vlanCaseDef = [
-    0,
-    stripCase,
-    filterCase,
-    filterCase | stripCase,
-    qinqCase,
-    qinqCase | stripCase,
-    qinqCase | filterCase,
-    qinqCase | filterCase | stripCase,
-    txCase,
-    txCase | stripCase,
-    txCase | filterCase,
-    txCase | filterCase | stripCase,
-    txCase | qinqCase,
-    txCase | qinqCase | stripCase,
-    txCase | qinqCase | filterCase,
-    txCase | qinqCase | filterCase | stripCase,
-]
-
-vlanCase = [
-    "OUTER+INNER",
-    "INNER",
-    ("OUTER+INNER", "NONE"),
-    ("INNER", "NONE"),
-    "OUTER+INNER",
-    "OUTER",
-    ("NONE", "OUTER+INNER"),
-    ("NONE", "OUTER"),
-    "TX+OUTER+INNER",
-    "TX+INNER",
-    ("TX+OUTER+INNER", "NONE"),
-    ("TX+INNER", "NONE"),
-    "TX+OUTER+INNER",
-    "TX+OUTER",
-    ("NONE", "TX+OUTER+INNER"),
-    ("NONE", "TX+OUTER"),
-]
-
-
 from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 
@@ -104,6 +45,15 @@ class TestDualVlan(TestCase):
             "Default", "--portmask=%s" % portMask, socket=self.ports_socket
         )
 
+        # Get the firmware version information
+        try:
+            self.fwversion, _, _ = self.pmdout.get_firmware_version(
+                self.dut_ports[0]
+            ).split()
+        except ValueError:
+            # nic IXGBE, IGC
+            self.fwversion = self.pmdout.get_firmware_version(self.dut_ports[0]).split()
+
         if self.nic in [
             "I40E_10G-SFP_XL710",
             "I40E_40G-QSFP_A",
@@ -119,6 +69,124 @@ class TestDualVlan(TestCase):
         out = self.dut.send_expect("set fwd mac", "testpmd> ")
         self.verify("Set mac packet forwarding mode" in out, "set fwd mac error")
         out = self.dut.send_expect("start", "testpmd> ", 120)
+
+        # Vlan id
+        self.txvlanId_id = 3
+        self.outvlanId_id = 1
+        self.invlanId_id = 2
+
+        if self.kdriver == "i40e" and self.fwversion >= "8.40":
+            self.config_i40e_firmware_vlan()
+        else:
+            self.config_original()
+
+    def config_original(self):
+        self.allResult = {
+            "TX+OUTER+INNER": (self.txvlanId_id, self.outvlanId_id, self.invlanId_id),
+            "TX+INNER": (self.txvlanId_id, self.invlanId_id),
+            "TX+OUTER": (self.txvlanId_id, self.outvlanId_id),
+            "OUTER+INNER": (self.outvlanId_id, self.invlanId_id),
+            "INNER": (self.invlanId_id,),
+            "OUTER": (self.outvlanId_id,),
+            "NONE": ("No",),
+        }
+
+        self.stripCase = 0x1
+        self.filterCase = 0x2
+        self.qinqCase = 0x4
+        self.txCase = 0x8
+
+        self.vlanCaseDef = [
+            0,
+            self.stripCase,
+            self.filterCase,
+            self.filterCase | self.stripCase,
+            self.qinqCase,
+            self.qinqCase | self.stripCase,
+            self.qinqCase | self.filterCase,
+            self.qinqCase | self.filterCase | self.stripCase,
+            self.txCase,
+            self.txCase | self.stripCase,
+            self.txCase | self.filterCase,
+            self.txCase | self.filterCase | self.stripCase,
+            self.txCase | self.qinqCase,
+            self.txCase | self.qinqCase | self.stripCase,
+            self.txCase | self.qinqCase | self.filterCase,
+            self.txCase | self.qinqCase | self.filterCase | self.stripCase,
+        ]
+
+        self.vlanCase = [
+            "OUTER+INNER",
+            "INNER",
+            ("OUTER+INNER", "NONE"),
+            ("INNER", "NONE"),
+            "OUTER+INNER",
+            "OUTER",
+            ("NONE", "OUTER+INNER"),
+            ("NONE", "OUTER"),
+            "TX+OUTER+INNER",
+            "TX+INNER",
+            ("TX+OUTER+INNER", "NONE"),
+            ("TX+INNER", "NONE"),
+            "TX+OUTER+INNER",
+            "TX+OUTER",
+            ("NONE", "TX+OUTER+INNER"),
+            ("NONE", "TX+OUTER"),
+        ]
+
+    def config_i40e_firmware_vlan(self):
+        self.allResult = {
+            "TX+OUTER+INNER": (self.txvlanId_id, self.outvlanId_id, self.invlanId_id),
+            "TX+INNER": (self.txvlanId_id, self.invlanId_id),
+            "TX+OUTER": (self.txvlanId_id, self.outvlanId_id),
+            "OUTER+INNER": (self.outvlanId_id, self.invlanId_id),
+            "INNER": (self.invlanId_id,),
+            "OUTER": (self.outvlanId_id,),
+            "NONE": ("No",),
+        }
+
+        self.stripCase = 0x1
+        self.filterCase = 0x2
+        self.qinqCase = 0x4
+        self.txCase = 0x8
+
+        self.vlanCaseDef = [
+            0,
+            self.stripCase,
+            self.filterCase | self.qinqCase,
+            self.filterCase | self.qinqCase | self.stripCase,
+            self.qinqCase,
+            self.qinqCase | self.stripCase,
+            self.qinqCase | self.filterCase,
+            self.qinqCase | self.filterCase | self.stripCase,
+            self.txCase,
+            self.txCase | self.stripCase,
+            self.txCase | self.filterCase | self.qinqCase,
+            self.txCase | self.filterCase | self.qinqCase | self.stripCase,
+            self.txCase | self.qinqCase,
+            self.txCase | self.qinqCase | self.stripCase,
+            self.txCase | self.qinqCase | self.filterCase,
+            self.txCase | self.qinqCase | self.filterCase | self.stripCase,
+        ]
+
+        self.vlanCase = [
+            "OUTER+INNER",
+            "INNER",
+            ("OUTER+INNER", "NONE"),
+            ("OUTER", "NONE"),
+            "OUTER+INNER",
+            "OUTER",
+            ("OUTER+INNER", "NONE"),
+            ("OUTER", "NONE"),
+            "TX+OUTER+INNER",
+            "TX+INNER",
+            ("TX+OUTER+INNER", "NONE"),
+            ("TX+OUTER", "NONE"),
+            "TX+OUTER+INNER",
+            "TX+OUTER",
+            ("TX+OUTER+INNER", "NONE"),
+            ("TX+OUTER", "NONE"),
+        ]
 
     def start_tcpdump(self, rxItf):
 
@@ -174,14 +242,10 @@ class TestDualVlan(TestCase):
                 # Intel® Ethernet 700 Series NIC vlan filter can't close, if want close need remove rx_vlan
                 if mode == "filter":
                     if modeName[mode] == "off":
-                        self.dut.send_expect(
-                            "rx_vlan add %s %s" % (outvlan, dutRxPortId), "testpmd> "
-                        )
+                        self.dut.send_expect("vlan set filter off all", "testpmd> ")
                         continue
                     else:
-                        self.dut.send_expect(
-                            "rx_vlan rm %s %s" % (outvlan, dutRxPortId), "testpmd> "
-                        )
+                        self.dut.send_expect("vlan set filter on all", "testpmd> ")
                         continue
 
             if mode == "stripq":
@@ -209,14 +273,10 @@ class TestDualVlan(TestCase):
                 # Intel® Ethernet 700 Series NIC vlan filter can't close, if want close need remove rx_vlan
                 if mode == "filter":
                     if modeName[mode] == "off":
-                        self.dut.send_expect(
-                            "rx_vlan add %s %s" % (outvlan, dutRxPortId), "testpmd> "
-                        )
+                        self.dut.send_expect("vlan set filter off all", "testpmd> ")
                         continue
                     else:
-                        self.dut.send_expect(
-                            "rx_vlan rm %s %s" % (outvlan, dutRxPortId), "testpmd> "
-                        )
+                        self.dut.send_expect("vlan set filter on all", "testpmd> ")
                         continue
 
             if mode == "extend":
@@ -235,22 +295,22 @@ class TestDualVlan(TestCase):
         """
         Setup Strip/Filter/Extend/Insert enable/disable for synthetic test.
         """
-        caseDef = vlanCaseDef[caseIndex]
+        caseDef = self.vlanCaseDef[caseIndex]
         temp = []
 
-        temp.append("on") if (caseDef & stripCase) != 0 else temp.append("off")
-        temp.append("on") if (caseDef & filterCase) != 0 else temp.append("off")
-        temp.append("on") if (caseDef & qinqCase) != 0 else temp.append("off")
+        temp.append("on") if (caseDef & self.stripCase) != 0 else temp.append("off")
+        temp.append("on") if (caseDef & self.filterCase) != 0 else temp.append("off")
+        temp.append("on") if (caseDef & self.qinqCase) != 0 else temp.append("off")
         if (self.nic in ["cavium_a063", "cavium_a064"]) and temp[2] == "on":
             ## Skip QinQ for cavium devices as it is not supported.
             return
         self.mode_config(strip=temp[0], filter=temp[1], extend=temp[2])
 
-        if (caseDef & txCase) != 0:
+        if (caseDef & self.txCase) != 0:
             self.dut.send_expect("stop", "testpmd> ")
             self.dut.send_expect("port stop all", "testpmd> ")
             self.dut.send_expect(
-                "tx_vlan set %s %s" % (dutTxPortId, txvlan), "testpmd> "
+                "tx_vlan set %s %s" % (dutTxPortId, self.txvlanId_id), "testpmd> "
             )
             self.dut.send_expect("port start all", "testpmd> ")
             self.dut.send_expect("start", "testpmd> ")
@@ -259,27 +319,27 @@ class TestDualVlan(TestCase):
             temp[0],
             temp[1],
             temp[2],
-            "on" if (caseDef & txCase) != 0 else "off",
+            "on" if (caseDef & self.txCase) != 0 else "off",
         )
 
-        if (caseDef & filterCase) != 0:
+        if (caseDef & self.filterCase) != 0:
             self.dut.send_expect(
-                "rx_vlan add %s %s" % (outvlan, dutRxPortId), "testpmd> "
+                "rx_vlan add %s %s" % (self.outvlanId_id, dutRxPortId), "testpmd> "
             )
-            self.vlan_send_packet(outvlan, invlan)
-            self.check_result(vlanCase[caseIndex][0], configMode + " result Error")
+            self.vlan_send_packet(self.outvlanId_id, self.invlanId_id)
+            self.check_result(self.vlanCase[caseIndex][0], configMode + " result Error")
             self.dut.send_expect(
-                "rx_vlan rm %s %s" % (outvlan, dutRxPortId), "testpmd> "
+                "rx_vlan rm %s %s" % (self.outvlanId_id, dutRxPortId), "testpmd> "
             )
             self.dut.send_expect(
-                "rx_vlan add %s %s" % (invlan, dutRxPortId), "testpmd> "
+                "rx_vlan add %s %s" % (self.invlanId_id, dutRxPortId), "testpmd> "
             )
-            self.vlan_send_packet(outvlan, invlan)
-            self.check_result(vlanCase[caseIndex][1], configMode + " result Error")
+            self.vlan_send_packet(self.outvlanId_id, self.invlanId_id)
+            self.check_result(self.vlanCase[caseIndex][1], configMode + " result Error")
             self.dut.send_expect(
-                "rx_vlan rm %s %s" % (invlan, dutRxPortId), "testpmd> "
+                "rx_vlan rm %s %s" % (self.invlanId_id, dutRxPortId), "testpmd> "
             )
-            if (caseDef & txCase) != 0:
+            if (caseDef & self.txCase) != 0:
                 self.dut.send_expect("stop", "testpmd> ")
                 self.dut.send_expect("port stop all", "testpmd> ")
                 self.dut.send_expect("tx_vlan reset %s" % dutTxPortId, "testpmd> ")
@@ -288,24 +348,24 @@ class TestDualVlan(TestCase):
 
         else:
             self.dut.send_expect(
-                "rx_vlan add %s %s" % (invlan, dutRxPortId), "testpmd> "
+                "rx_vlan add %s %s" % (self.invlanId_id, dutRxPortId), "testpmd> "
             )
             self.dut.send_expect(
-                "rx_vlan add %s %s" % (outvlan, dutRxPortId), "testpmd> "
+                "rx_vlan add %s %s" % (self.outvlanId_id, dutRxPortId), "testpmd> "
             )
-            self.vlan_send_packet(outvlan, invlan)
-            self.check_result(vlanCase[caseIndex], configMode + " result Error")
-            if (caseDef & txCase) != 0:
+            self.vlan_send_packet(self.outvlanId_id, self.invlanId_id)
+            self.check_result(self.vlanCase[caseIndex], configMode + " result Error")
+            if (caseDef & self.txCase) != 0:
                 self.dut.send_expect("stop", "testpmd> ")
                 self.dut.send_expect("port stop all", "testpmd> ")
                 self.dut.send_expect("tx_vlan reset %s" % dutTxPortId, "testpmd> ")
                 self.dut.send_expect("port start all", "testpmd> ")
                 self.dut.send_expect("start", "testpmd> ")
             self.dut.send_expect(
-                "rx_vlan rm %s %s" % (invlan, dutRxPortId), "testpmd> "
+                "rx_vlan rm %s %s" % (self.invlanId_id, dutRxPortId), "testpmd> "
             )
             self.dut.send_expect(
-                "rx_vlan rm %s %s" % (outvlan, dutRxPortId), "testpmd> "
+                "rx_vlan rm %s %s" % (self.outvlanId_id, dutRxPortId), "testpmd> "
             )
 
     def check_result(self, resultKey, errorString):
@@ -314,14 +374,15 @@ class TestDualVlan(TestCase):
         """
         print(("vlan flage config:%s" % errorString))
         out = self.get_tcpdump_package()
-        if allResult[resultKey][0] == "No":
+        if self.allResult[resultKey][0] == "No":
             self.verify("vlan" not in out, errorString)
         else:
             resultList = []
-            for i in range(len(allResult[resultKey]) - 1):
-                resultList.append("vlan %s" % allResult[resultKey][i])
+            for i in range(len(self.allResult[resultKey]) - 1):
+                resultList.append("vlan %s" % self.allResult[resultKey][i])
             resultList.append(
-                "vlan %s" % allResult[resultKey][len(allResult[resultKey]) - 1]
+                "vlan %s"
+                % self.allResult[resultKey][len(self.allResult[resultKey]) - 1]
             )
             for line in resultList:
                 self.verify(line in out, "receive packet is wrong:%s" % out)
@@ -338,15 +399,24 @@ class TestDualVlan(TestCase):
         """
         self.mode_config(filter="on")
         self.mode_config(strip="off")
-        self.mode_config(extend="off")
-        self.vlan_send_packet(outvlan)
+        # Because the kernel forces enable Qinq and cannot be closed,
+        # the dpdk can only add 'extend on' to make the VLAN filter work normally.
+        if self.kdriver == "i40e" and self.fwversion >= "8.40":
+            self.mode_config(extend="on")
+            self.dut.send_expect(
+                "rx_vlan rm %s %s" % (self.outvlanId_id, dutRxPortId), "testpmd> "
+            )
+        else:
+            self.mode_config(extend="off")
+
+        self.vlan_send_packet(self.outvlanId_id)
         out = self.get_tcpdump_package()
         print(out)
         self.verify(
-            out is not None and "vlan %s" % outvlan not in out,
+            out is not None and "vlan %s" % self.outvlanId_id not in out,
             "Vlan filter enable error: " + out,
         )
-
+        self.logger.debug(self.nic)
         if self.nic not in [
             "ICE_25G-E810C_SFP",
             "ICE_100G-E810C_QSFP",
@@ -359,18 +429,24 @@ class TestDualVlan(TestCase):
             "I40E_10G-10G_BASE_T_X722",
         ]:
             self.mode_config(filter="off")
-            self.vlan_send_packet(outvlan)
+            self.vlan_send_packet(self.outvlanId_id)
             out = self.get_tcpdump_package()
-            self.verify("vlan %s" % outvlan in out, "Vlan filter disable error: " + out)
+            self.verify(
+                "vlan %s" % self.outvlanId_id in out,
+                "Vlan filter disable error: " + out,
+            )
         else:
             self.dut.send_expect(
-                "rx_vlan add %s %s" % (outvlan, dutRxPortId), "testpmd> "
+                "rx_vlan add %s %s" % (self.outvlanId_id, dutRxPortId), "testpmd> "
             )
-            self.vlan_send_packet(outvlan)
+            self.vlan_send_packet(self.outvlanId_id)
             out = self.get_tcpdump_package()
-            self.verify("vlan %s" % outvlan in out, "Vlan filter disable error: " + out)
+            self.verify(
+                "vlan %s" % self.outvlanId_id in out,
+                "Vlan filter disable error: " + out,
+            )
             self.dut.send_expect(
-                "rx_vlan rm %s %s" % (outvlan, dutRxPortId), "testpmd> "
+                "rx_vlan rm %s %s" % (self.outvlanId_id, dutRxPortId), "testpmd> "
             )
 
     def test_vlan_filter_table(self):
@@ -380,20 +456,29 @@ class TestDualVlan(TestCase):
 
         self.mode_config(filter="on")
         self.mode_config(strip="off")
-        self.mode_config(extend="off")
-
-        self.dut.send_expect("rx_vlan add %s %s" % (outvlan, dutRxPortId), "testpmd> ")
-        self.vlan_send_packet(outvlan)
+        # Because the kernel forces enable Qinq and cannot be closed,
+        # the dpdk can only add 'extend on' to make the VLAN filter work normally.
+        if self.kdriver == "i40e" and self.fwversion >= "8.40":
+            self.mode_config(extend="on")
+        else:
+            self.mode_config(extend="off")
+        self.dut.send_expect(
+            "rx_vlan add %s %s" % (self.outvlanId_id, dutRxPortId), "testpmd> "
+        )
+        self.vlan_send_packet(self.outvlanId_id)
         out = self.get_tcpdump_package()
         self.verify(
-            "vlan %s" % outvlan in out, "vlan filter table enable error: " + out
+            "vlan %s" % self.outvlanId_id in out,
+            "vlan filter table enable error: " + out,
         )
 
-        self.dut.send_expect("rx_vlan rm %s %s" % (outvlan, dutRxPortId), "testpmd> ")
-        self.vlan_send_packet(outvlan)
+        self.dut.send_expect(
+            "rx_vlan rm %s %s" % (self.outvlanId_id, dutRxPortId), "testpmd> "
+        )
+        self.vlan_send_packet(self.outvlanId_id)
         out = self.get_tcpdump_package()
         self.verify(
-            out is not None and "vlan %s" % outvlan not in out,
+            out is not None and "vlan %s" % self.outvlanId_id not in out,
             "vlan filter table disable error: " + out,
         )
 
@@ -417,16 +502,20 @@ class TestDualVlan(TestCase):
             "I40E_10G-10G_BASE_T_X722",
         ]:
             self.dut.send_expect(
-                "rx_vlan add %s %s" % (outvlan, dutRxPortId), "testpmd> "
+                "rx_vlan add %s %s" % (self.outvlanId_id, dutRxPortId), "testpmd> "
             )
-        self.vlan_send_packet(outvlan)
+        self.vlan_send_packet(self.outvlanId_id)
         out = self.get_tcpdump_package()
-        self.verify("vlan %s" % outvlan not in out, "Vlan strip enable error: " + out)
+        self.verify(
+            "vlan %s" % self.outvlanId_id not in out, "Vlan strip enable error: " + out
+        )
 
         self.mode_config(strip="off")
-        self.vlan_send_packet(outvlan)
+        self.vlan_send_packet(self.outvlanId_id)
         out = self.get_tcpdump_package()
-        self.verify("vlan %s" % outvlan in out, "Vlan strip disable error: " + out)
+        self.verify(
+            "vlan %s" % self.outvlanId_id in out, "Vlan strip disable error: " + out
+        )
         if self.nic in [
             "ICE_25G-E810C_SFP",
             "ICE_100G-E810C_QSFP",
@@ -439,7 +528,7 @@ class TestDualVlan(TestCase):
             "I40E_10G-10G_BASE_T_X722",
         ]:
             self.dut.send_expect(
-                "rx_vlan rm %s %s" % (outvlan, dutRxPortId), "testpmd> "
+                "rx_vlan rm %s %s" % (self.outvlanId_id, dutRxPortId), "testpmd> "
             )
 
     def test_vlan_stripq_config(self):
@@ -450,23 +539,27 @@ class TestDualVlan(TestCase):
         self.mode_config(extend="off")
         self.mode_config(strip="off")
         self.mode_config(stripq="off")
-        self.vlan_send_packet(outvlan)
+        self.vlan_send_packet(self.outvlanId_id)
         out = self.get_tcpdump_package()
         self.verify(
-            "vlan %s" % outvlan in out, "vlan strip queue disable error : " + out
+            "vlan %s" % self.outvlanId_id in out,
+            "vlan strip queue disable error : " + out,
         )
         # if self.nic in ["I40E_10G-SFP_XL710", "I40E_40G-QSFP_A", "I40E_40G-QSFP_B"]:
         self.mode_config(strip="on")
         self.mode_config(stripq="on")
-        self.vlan_send_packet(outvlan)
-        out = self.get_tcpdump_package()
-        self.verify("vlan %s" % outvlan not in out, "vlan strip enable error: " + out)
-
-        self.mode_config(stripq="off")
-        self.vlan_send_packet(outvlan)
+        self.vlan_send_packet(self.outvlanId_id)
         out = self.get_tcpdump_package()
         self.verify(
-            "vlan %s" % outvlan in out, "vlan strip queue disable error: " + out
+            "vlan %s" % self.outvlanId_id not in out, "vlan strip enable error: " + out
+        )
+
+        self.mode_config(stripq="off")
+        self.vlan_send_packet(self.outvlanId_id)
+        out = self.get_tcpdump_package()
+        self.verify(
+            "vlan %s" % self.outvlanId_id in out,
+            "vlan strip queue disable error: " + out,
         )
 
     def test_vlan_insert_config(self):
@@ -482,13 +575,17 @@ class TestDualVlan(TestCase):
 
         self.dut.send_expect("stop", "testpmd> ")
         self.dut.send_expect("port stop all", "testpmd> ")
-        self.dut.send_expect("tx_vlan set %s %s" % (dutTxPortId, txvlan), "testpmd> ")
+        self.dut.send_expect(
+            "tx_vlan set %s %s" % (dutTxPortId, self.txvlanId_id), "testpmd> "
+        )
         self.dut.send_expect("port start all", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
 
         self.vlan_send_packet()
         out = self.get_tcpdump_package()
-        self.verify("vlan %s" % txvlan in out, "vlan insert enable error: " + out)
+        self.verify(
+            "vlan %s" % self.txvlanId_id in out, "vlan insert enable error: " + out
+        )
 
         self.dut.send_expect("stop", "testpmd> ")
         self.dut.send_expect("port stop all", "testpmd> ")
@@ -498,7 +595,9 @@ class TestDualVlan(TestCase):
 
         self.vlan_send_packet()
         out = self.get_tcpdump_package()
-        self.verify("vlan %s" % txvlan not in out, "vlan insert disable error: " + out)
+        self.verify(
+            "vlan %s" % self.txvlanId_id not in out, "vlan insert disable error: " + out
+        )
 
     def test_vlan_tpid_config(self):
         """
@@ -517,23 +616,42 @@ class TestDualVlan(TestCase):
         )
 
         self.mode_config(filter="on", strip="on", extend="on")
+        # i40e set VLAN id
+        self.dut.send_expect(
+            "rx_vlan add %s %s" % (self.outvlanId_id, dutRxPortId),
+            "testpmd> ",
+        )
         # nic only support inner model, except Intel® Ethernet 700 Series nic
         self.dut.send_expect("vlan set inner tpid 0x1234 %s" % dutRxPortId, "testpmd> ")
-        self.vlan_send_packet(outvlan, invlan)
-
-        out = self.get_tcpdump_package()
-        self.verify("0x8100" in out, "tpid is error: " + out)
-        self.verify("vlan %s" % outvlan in out, "vlan tpid disable error: " + out)
-        self.verify("vlan %s" % invlan in out, "vlan tpid disable error: " + out)
-
-        self.dut.send_expect("vlan set inner tpid 0x8100 %s" % dutRxPortId, "testpmd> ")
-        self.vlan_send_packet(outvlan, invlan)
+        self.vlan_send_packet(self.outvlanId_id, self.invlanId_id)
 
         out = self.get_tcpdump_package()
         self.verify("0x8100" in out, "tpid is error: " + out)
         self.verify(
-            out is not None and "vlan" not in out, "vlane tpid enable error: " + out
+            "vlan %s" % self.outvlanId_id in out, "vlan tpid disable error: " + out
         )
+        self.verify(
+            "vlan %s" % self.invlanId_id in out, "vlan tpid disable error: " + out
+        )
+
+        self.dut.send_expect("vlan set inner tpid 0x8100 %s" % dutRxPortId, "testpmd> ")
+        self.vlan_send_packet(self.outvlanId_id, self.invlanId_id)
+
+        out = self.get_tcpdump_package()
+        # Because the kernel forces enable Qinq and cannot be closed,
+        # the dpdk can only add 'extend on' to make the VLAN filter work normally.
+        # The kernel driver uses the outer VLAN filter, and the DPDK synchronously modifies,
+        # DPDK filter outer VLAN when firmware >= 8.4, the test result check strip inner.
+        if self.kdriver == "i40e" and self.fwversion >= "8.40":
+            self.verify("0x8100" in out, "tpid is error: " + out)
+            self.verify(
+                out is not None and f"vlan {self.invlanId_id}" not in out,
+                "vlane tpid enable error: " + out,
+            )
+        else:
+            self.verify(
+                out is not None and "vlan" not in out, "vlane tpid enable error: " + out
+            )
 
     def test_vlan_synthetic_test(self):
         """
@@ -542,7 +660,7 @@ class TestDualVlan(TestCase):
         self.verify(
             self.nic != "IGB_1G-82574L", "sorry, dual vlan cannot support this self.nic"
         )
-        for i in range(len(vlanCase)):
+        for i in range(len(self.vlanCase)):
             self.multimode_test(i)
 
     def test_vlan_random_test(self):
