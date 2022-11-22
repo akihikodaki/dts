@@ -10,6 +10,7 @@ Virtio-user interrupt need test with l3fwd-power sample
 import re
 import time
 
+import framework.packet as packet
 import framework.utils as utils
 from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
@@ -77,21 +78,29 @@ class TestVirtioUserInterruptCbdma(TestCase):
         )
         return True if out == "2048" else False
 
-    def launch_l3fwd(self, path, packed=False):
-        self.core_interrupt = self.l3fwd_core_list[0]
+    def launch_l3fwd(self, path, packed=False, multi_queue=False):
+        if multi_queue:
+            queues = 2
+        else:
+            queues = 1
         example_para = "./%s " % self.app_l3fwd_power_path
         if not packed:
-            vdev = "virtio_user0,path=%s,cq=1" % path
+            vdev = "virtio_user0,path=%s,queues=%d" % (path, queues)
         else:
-            vdev = "virtio_user0,path=%s,cq=1,packed_vq=1" % path
+            vdev = "virtio_user0,path=%s,queues=%d,packed_vq=1" % (path, queues)
         eal_params = self.dut.create_eal_parameters(
             cores=self.l3fwd_core_list, prefix="l3fwd-pwd", no_pci=True, vdevs=[vdev]
         )
         if self.check_2M_env:
             eal_params += " --single-file-segments"
-        para = (
-            " --config='(0,0,%s)' --parse-ptype --interrupt-only" % self.core_interrupt
-        )
+        if not multi_queue:
+            config = " --config='(0,0,%s)'" % self.l3fwd_core_list[0]
+        else:
+            config = " --config='(0,0,%s),(0,1,%s)'" % (
+                self.l3fwd_core_list[0],
+                self.l3fwd_core_list[1],
+            )
+        para = config + " --parse-ptype --interrupt-only"
         cmd_l3fwd = example_para + eal_params + " --log-level='user1,7' -- -p 1 " + para
         self.l3fwd.get_session_before(timeout=2)
         self.l3fwd.send_expect(cmd_l3fwd, "POWER", 40)
@@ -102,13 +111,19 @@ class TestVirtioUserInterruptCbdma(TestCase):
         else:
             self.logger.info("Launch l3fwd-power sample finished")
 
-    def check_interrupt_log(self, status, out):
+    def check_interrupt_log(self, status, out, multi_queue=False):
         if status == "waked up":
             info = "lcore %s is waked up from rx interrupt on port 0 queue 0"
         elif status == "sleeps":
             info = "lcore %s sleeps until interrupt triggers"
-        info = info % self.core_interrupt
-        self.verify(info in out, "The CPU status not right for %s" % info)
+        if not multi_queue:
+            info = info % self.l3fwd_core_list[0]
+            self.verify(info in out, "The CPU status not right for %s" % info)
+        else:
+            info1 = info % self.l3fwd_core_list[0]
+            self.verify(info1 in out, "The CPU status not right for %s" % info)
+            info2 = info % self.l3fwd_core_list[0]
+            self.verify(info2 in out, "The CPU status not right for %s" % info)
 
     def check_virtio_side_link_status(self, status):
         out = self.virtio_pmd.execute_cmd("show port info 0")
@@ -168,6 +183,24 @@ class TestVirtioUserInterruptCbdma(TestCase):
             60,
         )
 
+    def send_packet(self, multi_queue=False):
+        pkt_count = 100
+        pkt = packet.Packet()
+        if not multi_queue:
+            scapy_pkt = 'Ether(dst="52:54:00:00:00:01")/IP(src="192.168.0.1")/("X"*64)'
+            pkt.update_pkt(scapy_pkt)
+            pkt.send_pkt(crb=self.tester, tx_port=self.tx_interface, count=pkt_count)
+        else:
+            pkt_list = []
+            for i in range(pkt_count):
+                scapy_pkt = (
+                    'Ether(dst="52:54:00:00:00:01")/IP(src="192.168.0.%d")/("X"*64)'
+                    % (i + 1)
+                )
+                pkt_list.append(scapy_pkt)
+            pkt.update_pkt(pkt_list)
+            pkt.send_pkt(crb=self.tester, tx_port=self.tx_interface)
+
     def test_split_ring_lsc_event_between_vhost_user_and_virtio_user_with_cbdma_enable(
         self,
     ):
@@ -175,10 +208,13 @@ class TestVirtioUserInterruptCbdma(TestCase):
         Test Case1: Split ring LSC event between vhost-user and virtio-user with cbdma enable
         """
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
-        lcore_dma = "lcore%s@%s" % (self.vhost_core_list[1], self.cbdma_list[0])
-        vhost_param = "--lcore-dma=[%s]" % lcore_dma
+        dmas = "txq0@%s;" "rxq0@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+        )
+        vhost_param = ""
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0;rxq0]'"
+            "--vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[%s]'" % dmas
         )
         ports = self.cbdma_list
         self.vhost_pmd.start_testpmd(
@@ -213,16 +249,14 @@ class TestVirtioUserInterruptCbdma(TestCase):
         """
         Test Case2: Split ring virtio-user interrupt test with vhost-user as backend and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
-        lcore_dma = "lcore%s@%s,lcore%s@%s" % (
-            self.vhost_core_list[1],
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        dmas = "txq0@%s;" "rxq0@%s" % (
             self.cbdma_list[0],
-            self.vhost_core_list[1],
-            self.cbdma_list[1],
+            self.cbdma_list[0],
         )
-        vhost_param = "--rxq=1 --txq=1 --lcore-dma=[%s]" % lcore_dma
+        vhost_param = "--rxq=1 --txq=1"
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0;rxq0]'"
+            "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
         ports = self.cbdma_list
         ports.append(self.dut.ports_info[0]["pci"])
@@ -236,20 +270,10 @@ class TestVirtioUserInterruptCbdma(TestCase):
         )
         self.vhost_pmd.execute_cmd("start")
         self.launch_l3fwd(path="./vhost-net")
-        # double check the status of interrupt core
-        for _ in range(2):
-            self.tester.scapy_append(
-                'pk=[Ether(dst="52:54:00:00:00:01")/IP()/("X"*64)]'
-            )
-            self.tester.scapy_append(
-                'sendp(pk, iface="%s", count=100)' % self.tx_interface
-            )
-            self.tester.scapy_execute()
-            time.sleep(3)
-            out = self.l3fwd.get_session_before()
-            self.logger.info(out)
-            self.check_interrupt_log(status="waked up", out=out)
-            self.check_interrupt_log(status="sleeps", out=out)
+        self.send_packet()
+        out = self.l3fwd.get_session_before()
+        self.check_interrupt_log(status="waked up", out=out)
+        self.check_interrupt_log(status="sleeps", out=out)
 
     def test_packed_ring_lsc_event_between_vhost_user_and_virtio_user_with_cbdma_enable(
         self,
@@ -258,10 +282,13 @@ class TestVirtioUserInterruptCbdma(TestCase):
         Test Case3: Packed ring LSC event between vhost-user and virtio-user with cbdma enable
         """
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
-        lcore_dma = "lcore%s@%s" % (self.vhost_core_list[1], self.cbdma_list[0])
-        vhost_param = "--lcore-dma=[%s]" % lcore_dma
+        dmas = "txq0@%s;" "rxq0@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+        )
+        vhost_param = "--tx-offloads=0x00"
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0;rxq0]'"
+            "--vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[%s]'" % dmas
         )
         ports = self.cbdma_list
         self.vhost_pmd.start_testpmd(
@@ -296,16 +323,14 @@ class TestVirtioUserInterruptCbdma(TestCase):
         """
         Test Case4: Packed ring virtio-user interrupt test with vhost-user as backend and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
-        lcore_dma = "lcore%s@%s,lcore%s@%s" % (
-            self.vhost_core_list[1],
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        dmas = "txq0@%s;" "rxq0@%s" % (
             self.cbdma_list[0],
-            self.vhost_core_list[1],
-            self.cbdma_list[1],
+            self.cbdma_list[0],
         )
-        vhost_param = "--rxq=1 --txq=1 --lcore-dma=[%s]" % lcore_dma
+        vhost_param = "--rxq=1 --txq=1"
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0;rxq0]'"
+            "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
         ports = self.cbdma_list
         ports.append(self.dut.ports_info[0]["pci"])
@@ -318,20 +343,90 @@ class TestVirtioUserInterruptCbdma(TestCase):
         )
         self.vhost_pmd.execute_cmd("start")
         self.launch_l3fwd(path="./vhost-net", packed=True)
-        # double check the status of interrupt core
-        for _ in range(2):
-            self.tester.scapy_append(
-                'pk=[Ether(dst="52:54:00:00:00:01")/IP()/("X"*64)]'
+        self.send_packet()
+        out = self.l3fwd.get_session_before()
+        self.check_interrupt_log(status="waked up", out=out)
+        self.check_interrupt_log(status="sleeps", out=out)
+
+    def test_split_ring_multi_queues_virtio_user_interrupt_test_with_vhost_user_as_backend_and_cbdma_enable(
+        self,
+    ):
+        """
+        Test Case 5: Split ring multi-queues virtio-user interrupt test with vhost-user as backend and cbdma enable
+        """
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        dmas = (
+            "txq0@%s;"
+            "rxq0@%s;"
+            "txq1@%s;"
+            "rxq1@%s"
+            % (
+                self.cbdma_list[0],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
             )
-            self.tester.scapy_append(
-                'sendp(pk, iface="%s", count=100)' % self.tx_interface
+        )
+        vhost_param = "--rxq=2 --txq=2"
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[%s]'" % dmas
+        )
+        ports = self.cbdma_list
+        ports.append(self.dut.ports_info[0]["pci"])
+        self.logger.info(ports)
+        self.vhost_pmd.start_testpmd(
+            cores=self.vhost_core_list,
+            ports=ports,
+            prefix="vhost",
+            eal_param=vhost_eal_param,
+            param=vhost_param,
+        )
+        self.vhost_pmd.execute_cmd("start")
+        self.launch_l3fwd(path="./vhost-net", multi_queue=True)
+        self.send_packet(multi_queue=True)
+        out = self.l3fwd.get_session_before()
+        self.check_interrupt_log(status="waked up", out=out)
+        self.check_interrupt_log(status="sleeps", out=out)
+
+    def test_packed_ring_multi_queues_virtio_user_interrupt_test_with_vhost_user_as_backend_and_cbdma_enable(
+        self,
+    ):
+        """
+        Test Case 6: Packed ring multi-queues virtio-user interrupt test with vhost-user as backend and cbdma enable
+        """
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        dmas = (
+            "txq0@%s;"
+            "rxq0@%s;"
+            "txq1@%s;"
+            "rxq1@%s"
+            % (
+                self.cbdma_list[0],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
             )
-            self.tester.scapy_execute()
-            time.sleep(3)
-            out = self.l3fwd.get_session_before()
-            self.logger.info(out)
-            self.check_interrupt_log(status="waked up", out=out)
-            self.check_interrupt_log(status="sleeps", out=out)
+        )
+        vhost_param = "--rxq=2 --txq=2"
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[%s]'" % dmas
+        )
+        ports = self.cbdma_list
+        ports.append(self.dut.ports_info[0]["pci"])
+        self.logger.info(ports)
+        self.vhost_pmd.start_testpmd(
+            cores=self.vhost_core_list,
+            ports=ports,
+            prefix="vhost",
+            eal_param=vhost_eal_param,
+            param=vhost_param,
+        )
+        self.vhost_pmd.execute_cmd("start")
+        self.launch_l3fwd(path="./vhost-net", packed=True, multi_queue=True)
+        self.send_packet(multi_queue=True)
+        out = self.l3fwd.get_session_before()
+        self.check_interrupt_log(status="waked up", out=out)
+        self.check_interrupt_log(status="sleeps", out=out)
 
     def tear_down(self):
         """
