@@ -252,7 +252,7 @@ class TestVhostVirtioPmdInterruptCbdma(TestCase):
             pci_info = re.search("\s*(0000:\S*:\d*.\d*)", device)
             if pci_info is not None:
                 dev_info = pci_info.group(1)
-                # the numa id of ioat dev, only add the device which on same socket with nic dev
+                # the numa id of DMA dev, only add the device which on same socket with NIC dev
                 bus = int(dev_info[5:7], base=16)
                 if bus >= 128:
                     cur_socket = 1
@@ -293,9 +293,6 @@ class TestVhostVirtioPmdInterruptCbdma(TestCase):
         if self.vm_dut is not None:
             vm_dut2 = self.vm_dut.create_session(name="vm_dut2")
             vm_dut2.send_expect("killall %s" % self.l3fwdpower_name, "# ", 10)
-            # self.vm_dut.send_expect("killall l3fwd-power", "# ", 60, alt_session=True)
-            self.vm_dut.send_expect("cp /tmp/main.c ./examples/l3fwd-power/", "#", 15)
-            out = self.vm_dut.build_dpdk_apps("examples/l3fwd-power")
             self.vm.stop()
             self.dut.close_session(vm_dut2)
         self.vhost_pmd.quit()
@@ -305,65 +302,78 @@ class TestVhostVirtioPmdInterruptCbdma(TestCase):
         Test Case1: Basic virtio0.95 interrupt test with 16 queues and cbdma enable
         """
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
+        dmas = (
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "txq6@%s;"
+            "txq7@%s;"
+            "txq8@%s;"
+            "txq9@%s;"
+            "txq10@%s;"
+            "txq11@%s;"
+            "txq12@%s;"
+            "txq13@%s;"
+            "txq14@%s;"
+            "txq15@%s;"
+            "rxq0@%s;"
+            "rxq1@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s;"
+            "rxq8@%s;"
+            "rxq9@%s;"
+            "rxq10@%s;"
+            "rxq11@%s;"
+            "rxq12@%s;"
+            "rxq13@%s;"
+            "rxq14@%s;"
+            "rxq15@%s"
             % (
-                self.vhost_core_list[1],
                 self.cbdma_list[0],
-                self.vhost_core_list[2],
-                self.cbdma_list[0],
-                self.vhost_core_list[3],
                 self.cbdma_list[1],
-                self.vhost_core_list[3],
                 self.cbdma_list[2],
-                self.vhost_core_list[4],
                 self.cbdma_list[3],
-                self.vhost_core_list[5],
                 self.cbdma_list[4],
-                self.vhost_core_list[6],
                 self.cbdma_list[5],
-                self.vhost_core_list[7],
                 self.cbdma_list[6],
-                self.vhost_core_list[8],
                 self.cbdma_list[7],
-                self.vhost_core_list[9],
                 self.cbdma_list[8],
-                self.vhost_core_list[10],
                 self.cbdma_list[9],
-                self.vhost_core_list[11],
                 self.cbdma_list[10],
-                self.vhost_core_list[12],
                 self.cbdma_list[11],
-                self.vhost_core_list[13],
                 self.cbdma_list[12],
-                self.vhost_core_list[14],
                 self.cbdma_list[13],
-                self.vhost_core_list[15],
                 self.cbdma_list[14],
-                self.vhost_core_list[16],
+                self.cbdma_list[15],
+                self.cbdma_list[0],
+                self.cbdma_list[1],
+                self.cbdma_list[2],
+                self.cbdma_list[3],
+                self.cbdma_list[4],
+                self.cbdma_list[5],
+                self.cbdma_list[6],
+                self.cbdma_list[7],
+                self.cbdma_list[8],
+                self.cbdma_list[9],
+                self.cbdma_list[10],
+                self.cbdma_list[11],
+                self.cbdma_list[12],
+                self.cbdma_list[13],
+                self.cbdma_list[14],
                 self.cbdma_list[15],
             )
         )
-        vhost_param = (
-            "--nb-cores=16 --rxq=16 --txq=16 --rss-ip --lcore-dma=[%s]" % lcore_dma
+        vhost_param = "--nb-cores=16 --rxq=16 --txq=16 --rss-ip"
+        vhost_eal_param = (
+            "--vdev 'eth_vhost0,iface=vhost-net,queues=16,dmas=[%s]'" % dmas
         )
-        vhost_eal_param = "--vdev 'eth_vhost0,iface=vhost-net,queues=16,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;txq8;txq9;txq10;txq11;txq12;txq13;txq14;txq15;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7;rxq8;rxq9;rxq10;rxq11;rxq12;rxq13;rxq14;rxq15]'"
         ports = self.cbdma_list
         ports.append(self.dut.ports_info[0]["pci"])
         self.vhost_pmd.start_testpmd(
@@ -386,26 +396,30 @@ class TestVhostVirtioPmdInterruptCbdma(TestCase):
         Test Case2: Basic virtio-1.0 interrupt test with 4 queues and cbdma enable
         """
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
+        dmas = (
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "rxq0@%s;"
+            "rxq1@%s;"
+            "rxq2@%s;"
+            "rxq3@%s"
             % (
-                self.vhost_core_list[1],
                 self.cbdma_list[0],
-                self.vhost_core_list[2],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
                 self.cbdma_list[1],
-                self.vhost_core_list[3],
-                self.cbdma_list[2],
-                self.vhost_core_list[4],
-                self.cbdma_list[3],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
             )
         )
-        vhost_param = (
-            "--nb-cores=4 --rxq=4 --txq=4 --rss-ip --lcore-dma=[%s]" % lcore_dma
+        vhost_param = "--nb-cores=4 --rxq=4 --txq=4 --rss-ip"
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net,queues=4,dmas=[%s]'" % dmas
         )
-        vhost_eal_param = "--vdev 'net_vhost0,iface=vhost-net,queues=4,dmas=[txq0;txq1;txq2;txq3;rxq0;rxq1;rxq2;rxq3]'"
         ports = self.cbdma_list
         ports.append(self.dut.ports_info[0]["pci"])
         self.vhost_pmd.start_testpmd(
@@ -429,66 +443,79 @@ class TestVhostVirtioPmdInterruptCbdma(TestCase):
         """
         Test Case3: Packed ring virtio interrupt test with 16 queues and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4, allow_diff_socket=True)
+        dmas = (
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "txq6@%s;"
+            "txq7@%s;"
+            "txq8@%s;"
+            "txq9@%s;"
+            "txq10@%s;"
+            "txq11@%s;"
+            "txq12@%s;"
+            "txq13@%s;"
+            "txq14@%s;"
+            "txq15@%s;"
+            "rxq0@%s;"
+            "rxq1@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s;"
+            "rxq8@%s;"
+            "rxq9@%s;"
+            "rxq10@%s;"
+            "rxq11@%s;"
+            "rxq12@%s;"
+            "rxq13@%s;"
+            "rxq14@%s;"
+            "rxq15@%s"
             % (
-                self.vhost_core_list[1],
                 self.cbdma_list[0],
-                self.vhost_core_list[2],
                 self.cbdma_list[0],
-                self.vhost_core_list[3],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
                 self.cbdma_list[1],
-                self.vhost_core_list[3],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
                 self.cbdma_list[2],
-                self.vhost_core_list[4],
+                self.cbdma_list[2],
+                self.cbdma_list[2],
+                self.cbdma_list[2],
                 self.cbdma_list[3],
-                self.vhost_core_list[5],
-                self.cbdma_list[4],
-                self.vhost_core_list[6],
-                self.cbdma_list[5],
-                self.vhost_core_list[7],
-                self.cbdma_list[6],
-                self.vhost_core_list[8],
-                self.cbdma_list[7],
-                self.vhost_core_list[9],
-                self.cbdma_list[8],
-                self.vhost_core_list[10],
-                self.cbdma_list[9],
-                self.vhost_core_list[11],
-                self.cbdma_list[10],
-                self.vhost_core_list[12],
-                self.cbdma_list[11],
-                self.vhost_core_list[13],
-                self.cbdma_list[12],
-                self.vhost_core_list[14],
-                self.cbdma_list[13],
-                self.vhost_core_list[15],
-                self.cbdma_list[14],
-                self.vhost_core_list[16],
-                self.cbdma_list[15],
+                self.cbdma_list[3],
+                self.cbdma_list[3],
+                self.cbdma_list[3],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+                self.cbdma_list[2],
+                self.cbdma_list[2],
+                self.cbdma_list[2],
+                self.cbdma_list[2],
+                self.cbdma_list[3],
+                self.cbdma_list[3],
+                self.cbdma_list[3],
+                self.cbdma_list[3],
             )
         )
-        vhost_param = (
-            "--nb-cores=16 --rxq=16 --txq=16 --rss-ip --lcore-dma=[%s]" % lcore_dma
+        vhost_param = "--nb-cores=16 --rxq=16 --txq=16 --rss-ip"
+        vhost_eal_param = (
+            "--vdev 'eth_vhost0,iface=vhost-net,queues=16,dmas=[%s]'" % dmas
         )
-        vhost_eal_param = "--vdev 'eth_vhost0,iface=vhost-net,queues=16,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;txq8;txq9;txq10;txq11;txq12;txq13;txq14;txq15;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7;rxq8;rxq9;rxq10;rxq11;rxq12;rxq13;rxq14;rxq15]'"
         ports = self.cbdma_list
         ports.append(self.dut.ports_info[0]["pci"])
         self.vhost_pmd.start_testpmd(
