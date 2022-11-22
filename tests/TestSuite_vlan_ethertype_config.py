@@ -56,6 +56,17 @@ class TestVlanEthertypeConfig(TestCase):
         """
         self.pmdout = PmdOutput(self.dut)
         self.pmdout.start_testpmd("Default", "--portmask=%s" % self.portmask)
+        # Get the firmware version information
+        try:
+            self.fwversion, _, _ = self.pmdout.get_firmware_version(
+                self.dut.get_ports()[0]
+            ).split()
+        except ValueError:
+            # nic IXGBE, IGC
+            self.fwversion = self.pmdout.get_firmware_version(
+                self.dut.get_ports()[0]
+            ).split()
+
         if self.kdriver == "i40e":
             self.dut.send_expect("set promisc all off", "testpmd> ")
 
@@ -194,6 +205,12 @@ class TestVlanEthertypeConfig(TestCase):
                 self.dut.send_expect(
                     "vlan set filter on  %s" % dutRxPortId, "testpmd> "
                 )
+                # Because the kernel forces enable Qinq and cannot be closed,
+                # the dpdk can only add 'extend on' to make the VLAN filter work normally.
+                if self.kdriver == "i40e" and self.fwversion >= "8.40":
+                    self.dut.send_expect(
+                        "vlan set extend on %s" % dutRxPortId, "testpmd> "
+                    )
                 self.dut.send_expect("start", "testpmd> ")
                 self.check_vlan_packets(rx_vlan, tpid, self.rxItf, False)
                 # test vlan filter off
@@ -209,8 +226,12 @@ class TestVlanEthertypeConfig(TestCase):
         random_vlan = random.randint(1, MAX_VLAN - 1)
         rx_vlans = [1, random_vlan, MAX_VLAN]
         self.dut.send_expect("set fwd mac", "testpmd> ")
-        self.dut.send_expect("vlan set filter on  %s" % dutRxPortId, "testpmd> ")
+        self.dut.send_expect("vlan set filter on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("vlan set strip off %s" % dutRxPortId, "testpmd> ", 20)
+        # Because the kernel forces enable Qinq and cannot be closed,
+        # the dpdk can only add 'extend on' to make the VLAN filter work normally.
+        if self.kdriver == "i40e" and self.fwversion >= "8.40":
+            self.dut.send_expect("vlan set extend on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
 
         # caium_a063 card support only default '0x8100' tpid in rx mode
@@ -359,6 +380,8 @@ class TestVlanEthertypeConfig(TestCase):
         """
         Run after each test case.
         """
+        if self.kdriver == "i40e" and self.fwversion >= "8.40":
+            self.dut.send_expect("vlan set extend off %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("stop", "testpmd> ", 30)
         self.dut.send_expect("quit", "# ", 30)
         pass
