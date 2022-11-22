@@ -13,87 +13,93 @@ to virtio side, check virtio-user cores can be wakeup status, and virtio-user co
 status after stop sending packets from traffic generator.
 This test plan tests virtio-user Rx interrupt and LSC interrupt with vhost-user as the backend when cbdma enable.
 
-..Note:
+.. note::
 
-DPDK local patch that about vhost pmd is needed when testing Vhost asynchronous data path with testpmd.
+   DPDK local patch that about vhost pmd is needed when testing Vhost asynchronous data path with testpmd.
 
 Prerequisites
 =============
 
 Software
 --------
-    Trex:http://trex-tgn.cisco.com/trex/release/v2.26.tar.gz
+
+   Scapy
 
 General set up
 --------------
 1. Compile DPDK::
 
-    # CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static <dpdk build dir>
-    # ninja -C <dpdk build dir> -j 110
-    For example:
-    CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static x86_64-native-linuxapp-gcc
-    ninja -C x86_64-native-linuxapp-gcc -j 110
+	# CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static <dpdk build dir>
+	# ninja -C <dpdk build dir> -j 110
+	For example:
+	CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static x86_64-native-linuxapp-gcc
+	ninja -C x86_64-native-linuxapp-gcc -j 110
 
 2. Get the PCI device ID and DMA device ID of DUT, for example, 0000:18:00.0 is PCI device ID, 0000:00:04.0, 0000:00:04.1 is DMA device ID::
 
-    <dpdk dir># ./usertools/dpdk-devbind.py -s
+	<dpdk dir># ./usertools/dpdk-devbind.py -s
 
-    Network devices using kernel driver
-    ===================================
-    0000:18:00.0 'Device 159b' if=ens785f0 drv=ice unused=vfio-pci
+	Network devices using kernel driver
+	===================================
+	0000:18:00.0 'Device 159b' if=ens785f0 drv=ice unused=vfio-pci
 
-    DMA devices using kernel driver
-    ===============================
-    0000:00:04.0 'Sky Lake-E CBDMA Registers 2021' drv=ioatdma unused=vfio-pci
-    0000:00:04.1 'Sky Lake-E CBDMA Registers 2021' drv=ioatdma unused=vfio-pci
+	DMA devices using kernel driver
+	===============================
+	0000:00:04.0 'Sky Lake-E CBDMA Registers 2021' drv=ioatdma unused=vfio-pci
+	0000:00:04.1 'Sky Lake-E CBDMA Registers 2021' drv=ioatdma unused=vfio-pci
 
 Test case
 =========
 
-Test Case1: Split ring LSC event between vhost-user and virtio-user with cbdma enable
--------------------------------------------------------------------------------------
-This case tests the LSC interrupt of split ring virtio-user with vhost-user as the back-end
-when vhost uses the asynchronous operations with CBDMA channels.
+Test Case 1: Split ring LSC event between vhost-user and virtio-user with cbdma enable
+--------------------------------------------------------------------------------------
+This case tests the LSC interrupt of split ring virtio-user with vhost-user as the
+back-end when vhost uses the asynchronous operations with CBDMA channels.
 Flow: Vhost <--> Virtio
 
-1. Bind 1 CBDMA channel to vfio-pci driver, then start vhost-user side::
+1. Bind 1 CBDMA port to vfio-pci driver, then start vhost-user side::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3000 -n 4 -a 00:04.0 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0;rxq0]' \
-    -- -i --lcore-dma=[lcore13@0000:00:04.0]
-    testpmd> set fwd mac
-    testpmd> start
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3000 -n 4 -a 0000:00:04.0 --file-prefix=vhost \
+	--vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0@0000:00:04.0;rxq0@0000:00:04.0]' \
+	-- -i
+	testpmd> set fwd mac
+	testpmd> start
 
 2. Start virtio-user side::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc000 -n 4 --no-pci --file-prefix=virtio --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net -- -i --tx-offloads=0x00
-    testpmd> set fwd mac
-    testpmd> start
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc000 -n 4 --no-pci --file-prefix=virtio \
+	--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net \
+	-- -i --tx-offloads=0x00
+	testpmd> set fwd mac
+	testpmd> start
 
 3. Check the virtio-user side link status::
 
-    testpmd>  show port info 0
-    #it should show "up"
+	testpmd>  show port info 0
+	#it should show "up"
 
 4. Quit the vhost-user side with testpmd, then check the virtio-user side link status::
 
-    testpmd>  show port info 0
-    #it should show "down"
+	testpmd>  show port info 0
+	#it should show "down"
 
-Test Case2: Split ring virtio-user interrupt test with vhost-user as backend and cbdma enable
----------------------------------------------------------------------------------------------
-This case tests Rx interrupt of split ring virtio-user with vhost-user as the back-end when vhost uses the asynchronous operations with CBDMA channels.
+Test Case 2: Split ring virtio-user interrupt test with vhost-user as backend and cbdma enable
+----------------------------------------------------------------------------------------------
+This case tests Rx interrupt of split ring virtio-user with vhost-user as the back-end when
+vhost uses the asynchronous operations with CBDMA channels.
 Flow: TG --> NIC --> Vhost --> Virtio
 
-1. Bind 1 CBDMA channel and 1 NIC port to vfio-pci, launch testpmd with a virtual vhost device as backend::
+1. Bind 1 CBDMA port and 1 NIC port to vfio-pci, launch testpmd with a virtual vhost device as backend::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0;rxq0]' \
-    -- -i  --rxq=1 --txq=1 --lcore-dma=[lcore3@0000:00:04.0,lcore3@0000:00:04.1]
-    testpmd> start
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7c -n 4 -a 0000:af:00.0 -a 0000:00:04.0 \
+	--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0@0000:00:04.0;rxq0@0000:00:04.0]' \
+	-- -i  --rxq=1 --txq=1
+	testpmd> start
 
 2. Start l3fwd-power with a virtio-user device::
 
-    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
-    --vdev=virtio_user0,path=./vhost-net -- -p 1 --config="(0,0,14)" --parse-ptype --interrupt-only
+	./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
+	--vdev=virtio_user0,path=./vhost-net -- -p 1 --config="(0,0,14)" --parse-ptype --interrupt-only
 
 3. Send packets with packet generator, check the virtio-user related core can be wakeup status.
 
@@ -101,51 +107,56 @@ Flow: TG --> NIC --> Vhost --> Virtio
 
 5. Restart sending packets with packet generator, check virtio-user related core change to wakeup status again.
 
-Test Case3: Packed ring LSC event between vhost-user and virtio-user with cbdma enable
---------------------------------------------------------------------------------------
-This case tests the LSC interrupt of packed ring virtio-user with vhost-user as the back-end
-when vhost uses the asynchronous operations with CBDMA channels.
+Test Case 3: Packed ring LSC event between vhost-user and virtio-user with cbdma enable
+---------------------------------------------------------------------------------------
+This case tests the LSC interrupt of packed ring virtio-user with vhost-user as the
+back-end when vhost uses the asynchronous operations with CBDMA channels.
 Flow: Vhost <--> Virtio
 
-1. Bind one cbdma port to vfio-pci driver, then start vhost-user side::
+1. Bind 1 CBDMA port to vfio-pci driver, then start vhost-user side::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3000 -n 4 -a 00:04.0 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0;rxq0]' \
-    -- -i --lcore-dma=[lcore13@0000:00:04.0,lcore13@0000:00:04.1]
-    testpmd> set fwd mac
-    testpmd> start
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3000 -n 4 -a 0000:00:04.0 --file-prefix=vhost \
+	--vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0@0000:00:04.0;rxq0@0000:00:04.0]' \
+	-- -i
+	testpmd> set fwd mac
+	testpmd> start
 
 2. Start virtio-user side::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc000 -n 4 --no-pci --file-prefix=virtio --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1 -- -i --tx-offloads=0x00
-    testpmd> set fwd mac
-    testpmd> start
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc000 -n 4 --no-pci --file-prefix=virtio \
+	--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1 \
+	-- -i --tx-offloads=0x00
+	testpmd> set fwd mac
+	testpmd> start
 
 3. Check the virtio-user side link status::
 
-    testpmd>  show port info 0
-    #it should show "up"
+	testpmd>  show port info 0
+	#it should show "up"
 
 4. Quit the vhost-user side with testpmd, then check the virtio-user side link status::
 
-    testpmd>  show port info 0
-    #it should show "down"
+	testpmd>  show port info 0
+	#it should show "down"
 
-Test Case4: Packed ring virtio-user interrupt test with vhost-user as backend and cbdma enable
-----------------------------------------------------------------------------------------------
-This case tests Rx interrupt of packed ring virtio-user with vhost-user as the back-end when vhost uses the asynchronous operations with CBDMA channels.
+Test Case 4: Packed ring virtio-user interrupt test with vhost-user as backend and cbdma enable
+-----------------------------------------------------------------------------------------------
+This case tests Rx interrupt of packed ring virtio-user with vhost-user as the back-end when
+vhost uses the asynchronous operations with CBDMA channels.
 
 flow: TG --> NIC --> Vhost --> Virtio
 
-1. Bind one cbdma port and one NIC port to vfio-pci, launch testpmd with a virtual vhost device as backend::
+1. Bind 1 CBDMA port and 1 NIC port to vfio-pci, launch testpmd with a virtual vhost device as backend::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0;rxq0]' \
-    -- -i  --rxq=1 --txq=1 --lcore-dma=[lcore3@0000:00:04.0]
-    testpmd> start
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7c -n 4 -a 0000:af:00.0 -a 0000:00:04.0 \
+	--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0@0000:00:04.0;rxq0@0000:00:04.0]' \
+	-- -i  --rxq=1 --txq=1
+	testpmd> start
 
 2. Start l3fwd-power with a virtio-user device::
 
-    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
-    --vdev=virtio_user0,path=./vhost-net,packed_vq=1 -- -p 1 --config="(0,0,14)" --parse-ptype --interrupt-only
+	./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
+	--vdev=virtio_user0,path=./vhost-net,packed_vq=1 -- -p 1 --config="(0,0,14)" --parse-ptype --interrupt-only
 
 3. Send packets with packet generator, check the virtio-user related core can be wakeup status.
 
@@ -153,3 +164,52 @@ flow: TG --> NIC --> Vhost --> Virtio
 
 5. Restart sending packets with packet generator, check virtio-user related core change to wakeup status again.
 
+Test Case 5: Split ring multi-queues virtio-user interrupt test with vhost-user as backend and cbdma enable
+-----------------------------------------------------------------------------------------------------------
+This case tests Rx interrupt of split ring virtio-user with multi-queues and vhost-user as the back-end when
+vhost uses the asynchronous operations with CBDMA channels.
+
+flow: TG --> NIC --> Vhost --> Virtio
+
+1. Bind 1 CBDMA port and 1 NIC port to vfio-pci, launch testpmd with a virtual vhost device as backend::
+
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7c -n 4 -a 0000:af:00.0 -a 0000:00:04.0 \
+	--vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[txq0@0000:00:04.0;rxq0@0000:00:04.0;txq1@0000:00:04.0;rxq1@0000:00:04.0]' \
+	-- -i  --rxq=2 --txq=2
+	testpmd> start
+
+2. Start l3fwd-power with a virtio-user device::
+
+	./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
+	--vdev=virtio_user0,path=./vhost-net,queues=2 -- -p 1 --config="(0,0,14),(0,1,15)" --parse-ptype --interrupt-only
+
+3. Send packets with random ip from packet generator, check packets can forward back and both 2 queues exist packets, check the virtio-user related core can be wakeup status.
+
+4. Stop sending packets with packet generator, check virtio-user related core change to sleep status.
+
+5. Restart sending packets with packet generator, check virtio-user related core change to wakeup status again.
+
+Test Case 6: Packed ring multi-queues virtio-user interrupt test with vhost-user as backend and cbdma enable
+------------------------------------------------------------------------------------------------------------
+This case tests Rx interrupt of packed ring virtio-user with multi-queues and vhost-user as the back-end when
+vhost uses the asynchronous operations with CBDMA channels.
+
+flow: TG --> NIC --> Vhost --> Virtio
+
+1. Bind 1 CBDMA port and 1 NIC port to vfio-pci, launch testpmd with a virtual vhost device as backend::
+
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x7c -n 4 -a 0000:af:00.0 -a 0000:00:04.0 \
+	--vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[txq0@0000:00:04.0;rxq0@0000:00:04.0;txq1@0000:00:04.0;rxq1@0000:00:04.0]' \
+	-- -i  --rxq=2 --txq=2
+	testpmd> start
+
+2. Start l3fwd-power with a virtio-user device::
+
+	./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
+	--vdev=virtio_user0,path=./vhost-net,queues=2,packed_vq=1 -- -p 1 --config="(0,0,14),(0,1,15)" --parse-ptype --interrupt-only
+
+3. Send packets with random ip from packet generator, check packets can forward back and both 2 queues exist packets, check the virtio-user related core can be wakeup status.
+
+4. Stop sending packets with packet generator, check virtio-user related core change to sleep status.
+
+5. Restart sending packets with packet generator, check virtio-user related core change to wakeup status again.
