@@ -48,7 +48,14 @@ class TestVlan(TestCase):
         self.pmdout.start_testpmd(
             "Default", "--portmask=%s --port-topology=loop" % portMask
         )
-
+        # Get the firmware version information
+        try:
+            self.fwversion, _, _ = self.pmdout.get_firmware_version(
+                self.dut_ports[0]
+            ).split()
+        except ValueError:
+            # nic IXGBE, IGC
+            self.fwversion = self.pmdout.get_firmware_version(self.dut_ports[0]).split()
         self.dut.send_expect("set verbose 1", "testpmd> ")
         self.dut.send_expect("set fwd mac", "testpmd> ")
         self.dut.send_expect("set promisc all off", "testpmd> ")
@@ -105,6 +112,10 @@ class TestVlan(TestCase):
         self.dut.send_expect(
             "rx_vlan add %d %s" % (self.vlan, dutRxPortId), "testpmd> "
         )
+        # Because the kernel forces enable Qinq and cannot be closed,
+        # the dpdk can only add 'extend on' to make the VLAN filter work normally.
+        if self.kdriver == "i40e" and self.fwversion >= "8.40":
+            self.dut.send_expect("vlan set extend on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("vlan set strip off  %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("start", "testpmd> ", 120)
         out = self.dut.send_expect("show port info %s" % dutRxPortId, "testpmd> ", 20)
@@ -127,6 +138,10 @@ class TestVlan(TestCase):
         Disable receipt of VLAN packets
         """
         self.dut.send_expect("rx_vlan rm %d %s" % (self.vlan, dutRxPortId), "testpmd> ")
+        # Because the kernel forces enable Qinq and cannot be closed,
+        # the dpdk can only add 'extend on' to make the VLAN filter work normally.
+        if self.kdriver == "i40e" and self.fwversion >= "8.40":
+            self.dut.send_expect("vlan set extend on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("start", "testpmd> ", 120)
         self.vlan_send_packet(self.vlan)
 
@@ -187,7 +202,8 @@ class TestVlan(TestCase):
         """
         Run after each test case.
         """
-        pass
+        if self.kdriver == "i40e" and self.fwversion >= "8.40":
+            self.dut.send_expect("vlan set extend off %s" % dutRxPortId, "testpmd> ")
 
     def tear_down_all(self):
         """
