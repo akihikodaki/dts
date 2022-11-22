@@ -52,6 +52,10 @@ Test Case 2: test VLAN filtering on/off
       testpmd> vlan set filter on 0
       testpmd> start
 
+      Due to the kernel enables Qinq and cannot be closed, the DPDK only add `extend on` to make the VLAN filter
+      work normally. Therefore, if the i40e firmware version >= 8.4 the DPDK can only add `extend on` to make the VLAN filter work normally:
+      testpmd> vlan set extend on 0
+
 2. Send 1 packet with VLAN TPID 0xA100 and VLAN Tag 16 on port ``A``,
    Verify that the VLAN packet cannot be received in port ``B``.
 
@@ -76,6 +80,10 @@ Test Case 3: test adding VLAN Tag Identifier with changing VLAN TPID
       testpmd> vlan set filter on 0
       testpmd> vlan set strip off 0
       testpmd> start
+
+      Due to the kernel enables Qinq and cannot be closed, the DPDK only add `extend on` to make the VLAN filter
+      work normally. Therefore, if the i40e firmware version >= 8.4 the DPDK can only add `extend on` to make the VLAN filter work normally:
+      testpmd> vlan set extend on 0
 
 2. Add a VLAN Tag Identifier ``16`` on port ``0``::
 
