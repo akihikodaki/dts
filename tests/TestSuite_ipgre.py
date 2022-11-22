@@ -309,9 +309,22 @@ class TestIpgre(TestCase):
                 socket=self.ports_socket,
             )
 
+        # Get the firmware version information
+        try:
+            fwversion, _, _ = self.pmdout.get_firmware_version(
+                self.dut_ports[0]
+            ).split()
+        except ValueError:
+            # nic IXGBE, IGC
+            fwversion = self.pmdout.get_firmware_version(self.dut_ports[0]).split()
+
         self.dut.send_expect("set fwd rxonly", "testpmd>")
         self.dut.send_expect("set verbose 1", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
+        # Because the kernel forces enable Qinq and cannot be closed,
+        # the dpdk can only add 'extend on' to make the VLAN filter work normally.
+        if self.kdriver == "i40e" and fwversion >= "8.40":
+            self.dut.send_expect("vlan set extend off 0", "testpmd>")
 
         # inner ipv4
         config_layers = {
