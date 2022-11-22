@@ -58,6 +58,10 @@ Start testpmd and enable rxonly forwarding mode::
     testpmd> set verbose 1
     testpmd> start
 
+    Due to the kernel enables Qinq and cannot be closed, the DPDK only add `extend on` to make the VLAN filter
+    work normally. Therefore, if the i40e firmware version >= 8.4 the DPDK can only add `extend on` to make the VLAN filter work normally:
+    testpmd> vlan set extend on 0
+
 Send packet as table listed and packet type match each layer::
 
    Ether()/IPv6(nh=47)/GRE()/IP()/UDP()/Raw('x'*40)
