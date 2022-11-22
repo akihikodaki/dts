@@ -61,6 +61,11 @@ Enable the receipt of VLAN packets with VLAN Tag Identifier 1 on port 0::
 
   testpmd> rx_vlan add 1 0
   testpmd> vlan set strip off 0
+  
+  Due to the kernel enables Qinq and cannot be closed, the DPDK only add `extend on` to make the VLAN filter
+  work normally. Therefore, if the i40e firmware version >= 8.4 the DPDK can only add `extend on` to make the VLAN filter work normally:
+  testpmd> vlan set extend on 0
+  
   testpmd> start
     rxonly packet forwarding - CRC stripping disabled - packets/burst=32
     nb forwarding cores=1 - nb forwarding ports=10
@@ -111,7 +116,11 @@ Test Case: Disable receipt of VLAN packets
 Disable the receipt of VLAN packets with Tag Identifier ``1`` on port 0.
 Send VLAN packets with the Tag Identifier ``1`` check that no packet is received
 on port ``B``, meaning that VLAN packets are now dropped on port 0::
-
+  
+  Due to the kernel enables Qinq and cannot be closed, the DPDK only add `extend on` to make the VLAN filter
+  work normally. Therefore, if the i40e firmware version >= 8.4 the DPDK can only add `extend on` to make the VLAN filter work normally:
+  testpmd> vlan set extend on 0
+  
   testpmd> rx_vlan rm 1 0
   testpmd> start
   rxonly packet forwarding - CRC stripping disabled - packets/burst=32
