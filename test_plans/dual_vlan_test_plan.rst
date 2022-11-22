@@ -35,6 +35,11 @@ The -n command is used to select the number of memory channels. It should match 
 Test Case: Enable/Disable VLAN packets filtering
 ================================================
 
+Due to the kernel enables Qinq and cannot be closed, the DPDK only add `extend on` to make the VLAN filter
+work normally. Therefore, if the i40e firmware version >= 8.4 the DPDK can only add `extend on` to make the VLAN filter work normally::
+
+    testpmd> vlan set extend on 0
+
 Setup the ``mac`` forwarding mode::
 
     testpmd> set fwd mac
@@ -61,9 +66,7 @@ Check whether the mode is set successful::
     Allmulticast mode: disabled
     Maximum number of MAC addresses: 127
     VLAN offload:
-      strip off
-      filter on
-      qinq(extend) off
+        strip off, filter on, extend on, qinq strip off
 
 start forwarding packets::
 
@@ -111,6 +114,11 @@ Disable VLAN packet extend and strip port ``0``::
 
     testpmd> vlan set extend off 0
     testpmd> vlan set strip off 0
+
+Due to the kernel enables Qinq and cannot be closed, the DPDK only add `extend on` to make the VLAN filter
+work normally. Therefore, if the i40e firmware version >= 8.4 the DPDK can only add `extend on` to make the VLAN filter work normally::
+
+    testpmd> vlan set extend on 0
 
 Enable VLAN filtering on port ``0``::
 
@@ -301,7 +309,9 @@ Do the synthetic test following the below table and check the result is the same
 as the table(the inserted VLAN Tag Identifier is limited to ``0x3``, and all modes
 except insert are set on rx port).
 
-+-------+-------+--------+------------+--------+--------+-------+-------+-------+
++-------------------------------------------------------+-----------------------+
+|                  Configure setting                    |       Result          |
++=======+=======+========+============+========+========+=======+=======+=======+
 | Outer | Inner |  Vlan  |   Vlan     | Vlan   | Vlan   | Pass/ | Outer | Inner |
 | vlan  | vlan  |  strip |   filter   | extend | insert | Drop  | vlan  | vlan  |
 +-------+-------+--------+------------+--------+--------+-------+-------+-------+
@@ -356,6 +366,71 @@ except insert are set on rx port).
 |  0x1  |  0x2  |  yes   |  yes,0x1   |  yes   |  yes   | drop  |  no   |  no   |
 +-------+-------+--------+------------+--------+--------+-------+-------+-------+
 |  0x1  |  0x2  |  yes   |  yes,0x2   |  yes   |  yes   | pass  |  0x3  |  0x1  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+
+Due to the kernel enables Qinq and cannot be closed, the DPDK only add `extend on` to make the VLAN filter
+work normally. Therefore, if the i40e firmware >= 8.4 the synthetic test according to the following table.
+In addition, filter inner vlan when firmware <= 8.3, filter outer vlan when firmware >= 8.4.
+
++-------------------------------------------------------+-----------------------+
+|                  Configure setting                    |       Result          |
++=======+=======+========+============+========+========+=======+=======+=======+
+| Outer | Inner |  Vlan  |   Vlan     | Vlan   | Vlan   | Pass/ | Outer | Inner |
+| vlan  | vlan  |  strip |   filter   | extend | insert | Drop  | vlan  | vlan  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |   no   |     no     |   no   |   no   | pass  |  0x1  |  0x2  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |  yes   |     no     |   no   |   no   | pass  |  no   |  0x2  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |   no   |  yes,0x1   |   no   |   no   | pass  |  0x1  |  0x2  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |   no   |  yes,0x2   |   no   |   no   | pass  |  0x1  |  0x2  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |  yes   |  yes,0x1   |   no   |   no   | pass  |  no   |  0x2  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |  yes   |  yes,0x2   |   no   |   no   | pass  |  no   |  0x2  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |   no   |     no     |  yes   |   no   | pass  |  0x1  |  0x2  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |  yes   |     no     |  yes   |   no   | pass  |  no   |  0x1  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |   no   |  yes,0x1   |  yes   |   no   | pass  |  0x1  |  0x2  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |   no   |  yes,0x2   |  yes   |   no   | drop  |  no   |   no  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |  yes   |  yes,0x1   |  yes   |   no   | pass  |  no   |  0x1  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |  yes   |  yes,0x2   |  yes   |   no   | drop  |  no   |  no   |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |   no   |     no     |   no   |  yes   | pass  |  0x3  |  0x1  |
+|       |       |        |            |        |        |       |       |  0x2  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |  yes   |     no     |   no   |  yes   | pass  |  0x3  |  0x2  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |   no   |  yes,0x1   |   no   |  yes   | pass  |  0x3  |  0x1  |
+|       |       |        |            |        |        |       |       |  0x2  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |   no   |  yes,0x2   |   no   |  yes   | pass  |  0x3  |  0x1  |
+|       |       |        |            |        |        |       |       |  0x2  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |  yes   |  yes,0x1   |   no   |  yes   | pass  |  0x3  |  0x2  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |  yes   |  yes,0x2   |   no   |  yes   | drop  |  no   |  no   |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |   no   |     no     |  yes   |  yes   | pass  |  0x3  |  0x1  |
+|       |       |        |            |        |        |       |       |  0x2  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |  yes   |     no     |  yes   |  yes   | pass  |  0x3  |  0x1  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |   no   |  yes,0x1   |  yes   |  yes   | pass  |  0x3  |  0x1  |
+|       |       |        |            |        |        |       |       |  0x2  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |   no   |  yes,0x2   |  yes   |  yes   | pass  |  0x3  |  0x1  |
+|       |       |        |            |        |        |       |       |  0x2  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |  yes   |  yes,0x1   |  yes   |  yes   | pass  |  0x3  |  0x1  |
++-------+-------+--------+------------+--------+--------+-------+-------+-------+
+|  0x1  |  0x2  |  yes   |  yes,0x2   |  yes   |  yes   | drop  |   no  |  no   |
 +-------+-------+--------+------------+--------+--------+-------+-------+-------+
 
 Test Case: Strip/Filter/Extend/Insert enable/disable random test
