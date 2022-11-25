@@ -314,6 +314,8 @@ class TestVfOffload(TestCase):
             param="--portmask=%s " % (self.portMask) + "--enable-rx-cksum " + "",
         )
         self.vm0_testpmd.execute_cmd("set fwd csum")
+        self.vm0_testpmd.execute_cmd("csum mac-swap off 0", "testpmd>")
+        self.vm0_testpmd.execute_cmd("csum mac-swap off 1", "testpmd>")
         self.vm0_testpmd.execute_cmd("set promisc 1 on")
         self.vm0_testpmd.execute_cmd("set promisc 0 on")
 
@@ -376,6 +378,8 @@ class TestVfOffload(TestCase):
             param="--portmask=%s " % (self.portMask) + "--enable-rx-cksum " + "",
         )
         self.vm0_testpmd.execute_cmd("set fwd csum")
+        self.vm0_testpmd.execute_cmd("csum mac-swap off 0", "testpmd>")
+        self.vm0_testpmd.execute_cmd("csum mac-swap off 1", "testpmd>")
         self.vm0_testpmd.execute_cmd("set promisc 1 on")
         self.vm0_testpmd.execute_cmd("set promisc 0 on")
 
