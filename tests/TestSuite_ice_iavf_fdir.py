@@ -11082,6 +11082,7 @@ class TestICEIAVFFdir(TestCase):
         self.dut.send_expect("csum set udp %s %d" % (hw, port), "testpmd>")
         self.dut.send_expect("port start all", "testpmd>")
         self.dut.send_expect("set promisc 0 on", "testpmd>")
+        self.dut.send_expect("csum mac-swap off 0", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
 
     def get_chksum_values(self, packets_expected):
