@@ -2562,6 +2562,12 @@ Test case: Set HW csum, flow rule does not impact RX checksum and TX checksum
     csum set sctp hw 0
     port start all
     set verbose 1
+
+    Due to DPDK 236bc417e2da(app/testpmd: fix MAC header in checksum forward engine) changes the checksum 
+    functions adds switches to control whether to exchange MAC address.
+    Currently, our test scripts are based on not exchanging MAC addresses, mac-swap needs to be disabled:
+    testpmd> csum mac-swap off 0
+
     start
 
 3. Capture the tx packet at tester port and check checksum values same as expect pkts::
