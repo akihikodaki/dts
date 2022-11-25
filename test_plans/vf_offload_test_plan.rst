@@ -92,7 +92,13 @@ Enable the IPv4/UDP/TCP/SCTP HW checksum offload on port 0::
   testpmd> csum set udp hw 0
   testpmd> csum set sctp hw 0
   testpmd> port start all
-  testpmd> set promisc 0 on
+  testpmd> set promisc 0 
+  
+  Due to DPDK 236bc417e2da(app/testpmd: fix MAC header in checksum forward engine) changes the checksum 
+  functions adds switches to control whether to exchange MAC address.
+  Currently, our test scripts are based on not exchanging MAC addresses, mac-swap needs to be disabled:
+  testpmd> csum mac-swap off 0
+
   testpmd> start
     csum packet forwarding - CRC stripping disabled - packets/burst=32
     nb forwarding cores=1 - nb forwarding ports=10
@@ -133,6 +139,12 @@ Enable the IPv4/UDP/TCP/SCTP SW checksum offload on port 0::
   testpmd> csum set sctp sw 0
   testpmd> port start all
   testpmd> set promisc 0 on
+
+  Due to DPDK 236bc417e2da(app/testpmd: fix MAC header in checksum forward engine) changes the checksum 
+  functions adds switches to control whether to exchange MAC address.
+  Currently, our test scripts are based on not exchanging MAC addresses, mac-swap needs to be disabled:
+  testpmd> csum mac-swap off 0
+
   testpmd> start
     csum packet forwarding - CRC stripping disabled - packets/burst=32
     nb forwarding cores=1 - nb forwarding ports=10
@@ -217,6 +229,12 @@ Launch the userland ``testpmd`` application on DUT as follows::
   # Set fwd engine and start
 
   testpmd> set fwd csum
+
+  Due to DPDK 236bc417e2da(app/testpmd: fix MAC header in checksum forward engine) changes the checksum 
+  functions adds switches to control whether to exchange MAC address.
+  Currently, our test scripts are based on not exchanging MAC addresses, mac-swap needs to be disabled:
+  testpmd> csum mac-swap off 0
+
   testpmd> start
 
 Test IPv4() in scapy::
