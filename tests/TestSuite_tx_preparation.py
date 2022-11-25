@@ -183,6 +183,7 @@ class TestTX_preparation(TestCase):
         """
         self.dut_testpmd.execute_cmd("tso set 0 0")
         self.dut_testpmd.execute_cmd("port start all")
+        self.dut_testpmd.execute_cmd("csum mac-swap off 0", "testpmd>")
         self.dut_testpmd.execute_cmd("start")
 
         self.send_packet_verify()
@@ -192,6 +193,7 @@ class TestTX_preparation(TestCase):
         ftag functional test
         """
         self.dut_testpmd.execute_cmd("tso set %s 0" % TSO_value)
+        self.dut_testpmd.execute_cmd("csum mac-swap off 0", "testpmd>")
         self.dut_testpmd.execute_cmd("port start all")
         self.dut_testpmd.execute_cmd("start")
 
