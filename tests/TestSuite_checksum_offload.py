@@ -90,6 +90,7 @@ class TestChecksumOffload(TestCase):
         )
         self.dut.send_expect("set verbose 1", "testpmd>")
         self.dut.send_expect("set fwd csum", "testpmd>")
+        self.dut.send_expect("csum mac-swap off 0", "testpmd>")
 
     def checksum_enablehw(self, port):
         self.dut.send_expect("port stop all", "testpmd>")
