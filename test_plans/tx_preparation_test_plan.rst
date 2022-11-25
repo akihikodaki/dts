@@ -64,6 +64,11 @@ Enable hardware checksum for IP/TCP/UDP packets::
    testpmd> csum set tcp hw 0
    testpmd> csum set udp hw 0
 
+Due to DPDK 236bc417e2da(app/testpmd: fix MAC header in checksum forward engine) changes the checksum 
+functions adds switches to control whether to exchange MAC address.
+Currently, our test scripts are based on not exchanging MAC addresses, mac-swap needs to be disabled:
+
+   testpmd> csum mac-swap off 0
 
 Test Case: TX preparation forwarding of non-TSO packets
 =======================================================
