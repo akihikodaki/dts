@@ -59,6 +59,11 @@ Set the verbose level to 1 to display information for each received packet::
 
   testpmd> set verbose 1
 
+Due to DPDK 236bc417e2da(app/testpmd: fix MAC header in checksum forward engine) changes the checksum 
+functions adds switches to control whether to exchange MAC address.
+Currently, our test scripts are based on not exchanging MAC addresses, mac-swap needs to be disabled:
+
+  testpmd> csum mac-swap off 0
 
 Test Case: Insert IPv4/IPv6 UDP/TCP/SCTP checksum on the transmit packet
 ========================================================================
