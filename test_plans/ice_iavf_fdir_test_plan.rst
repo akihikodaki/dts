@@ -5103,6 +5103,12 @@ Subcase 1: PFCP FDIR vlan strip on HW checksum offload check
     testpmd> port start all
     testpmd> set promisc 0 on
     testpmd> set verbose 1
+
+    Due to DPDK 236bc417e2da(app/testpmd: fix MAC header in checksum forward engine) changes the checksum 
+    functions adds switches to control whether to exchange MAC address.
+    Currently, our test scripts are based on not exchanging MAC addresses, mac-swap needs to be disabled:
+    testpmd> csum mac-swap off 0
+
     testpmd> start
 
 4. DUT create fdir rules for MAC_IPV4_PFCP_NODE/MAC_IPV4_PFCP_SESSION/MAC_IPV6_PFCP_NODE/MAC_IPV6_PFCP_SESSION with queue index and mark::
@@ -5174,6 +5180,12 @@ subcase 2: PFCP FDIR vlan strip off SW checksum offload check
     testpmd> port start all
     testpmd> set verbose 1
     testpmd> set promisc 0 on
+
+    Due to DPDK 236bc417e2da(app/testpmd: fix MAC header in checksum forward engine) changes the checksum 
+    functions adds switches to control whether to exchange MAC address.
+    Currently, our test scripts are based on not exchanging MAC addresses, mac-swap needs to be disabled:
+    testpmd> csum mac-swap off 0
+
     testpmd> start
 
 4. DUT create fdir rules for MAC_IPV4_PFCP_NODE/MAC_IPV4_PFCP_SESSION/MAC_IPV6_PFCP_NODE/MAC_IPV6_PFCP_SESSION with queue index and mark::
