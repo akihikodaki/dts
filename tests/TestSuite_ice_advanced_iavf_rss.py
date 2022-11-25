@@ -7052,6 +7052,7 @@ class AdvancedIavfRSSTest(TestCase):
         self.pmd_output.execute_cmd("csum set sctp hw 0")
         self.pmd_output.execute_cmd("port start all")
         self.pmd_output.execute_cmd("set promisc 0 on")
+        self.pmd_output.execute_cmd("csum mac-swap off 0", "testpmd>")
         self.pmd_output.execute_cmd("start")
         dst_mac = "00:11:22:33:44:56"
         pkt_list = {
