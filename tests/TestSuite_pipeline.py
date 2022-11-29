@@ -2450,6 +2450,19 @@ class TestPipeline(TestCase):
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
         self.dut.send_expect("^C", "# ", 20)
 
+    def test_validate_002(self):
+
+        cli_file = "/tmp/pipeline/validate_002/validate_002.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/validate_002/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/validate_002/pcap_files/out_1.txt"] * 4
+        filters = ["vlan 2"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
     def test_table_002(self):
 
         cli_file = "/tmp/pipeline/table_002/table_002.cli"
