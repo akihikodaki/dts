@@ -207,7 +207,7 @@ Send a packet, check the DCF can't recieve the packet (Dest mac address is not D
 
 Create a rule to DCF ::
 
-    flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / tcp src is 25 dst is 23 / end actions vf original 1 / end
+    flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / tcp src is 25 dst is 23 / end actions port_representor port_id 0 / end
 
 Send the packet again, check DCF can recieve the packet ::
 
