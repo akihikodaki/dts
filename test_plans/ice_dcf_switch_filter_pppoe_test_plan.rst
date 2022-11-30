@@ -172,8 +172,8 @@ Prerequisites
 
 9. Launch dpdk on VF0 and VF1, and VF0 request DCF mode::
 
-     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -- -i
-     testpmd> set portlist 1
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf,representor=[1] -a 0000:18:01.1 -- -i
+     testpmd> set portlist 2
      testpmd> set fwd rxonly
      testpmd> set verbose 1
      testpmd> start
@@ -199,7 +199,7 @@ Test case: MAC_VLAN_PPPOE_IPV4_PAY_session_id_proto_id
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -213,7 +213,7 @@ Test case: MAC_VLAN_PPPOE_IPV4_PAY_session_id_proto_id
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -222,7 +222,7 @@ Test case: MAC_VLAN_PPPOE_IPV4_PAY_session_id_proto_id
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="enp27s0f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(dst="00:11:22:33:44:54",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="enp27s0f0",count=1)
@@ -230,7 +230,7 @@ Test case: MAC_VLAN_PPPOE_IPV4_PAY_session_id_proto_id
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=4)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="enp27s0f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6()/Raw("x" * 80)],iface="enp27s0f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -238,14 +238,14 @@ Test case: MAC_VLAN_PPPOE_IPV4_PAY_session_id_proto_id
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Test case: MAC_VLAN_PPPOE_IPV6_PAY_session_id_proto_id
 ======================================================
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -259,7 +259,7 @@ Test case: MAC_VLAN_PPPOE_IPV6_PAY_session_id_proto_id
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -268,7 +268,7 @@ Test case: MAC_VLAN_PPPOE_IPV6_PAY_session_id_proto_id
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6()/Raw("x" * 80)],iface="enp27s0f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(dst="00:11:22:33:44:54",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6()/Raw("x" * 80)],iface="enp27s0f0",count=1)
@@ -276,7 +276,7 @@ Test case: MAC_VLAN_PPPOE_IPV6_PAY_session_id_proto_id
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=4)/PPP(proto=0x0057)/IPv6()/Raw("x" * 80)],iface="enp27s0f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="enp27s0f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -284,14 +284,14 @@ Test case: MAC_VLAN_PPPOE_IPV6_PAY_session_id_proto_id
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Test case: MAC_PPPOE_IPV4_PAY_session_id_proto_id
 =================================================
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -305,7 +305,7 @@ Test case: MAC_PPPOE_IPV4_PAY_session_id_proto_id
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -314,14 +314,14 @@ Test case: MAC_PPPOE_IPV4_PAY_session_id_proto_id
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="enp27s0f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(dst="00:11:22:33:44:54",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="enp27s0f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=4)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="enp27s0f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6()/Raw("x" * 80)],iface="enp27s0f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -329,14 +329,14 @@ Test case: MAC_PPPOE_IPV4_PAY_session_id_proto_id
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Test case: MAC_PPPOE_IPV6_PAY_session_id_proto_id
 =================================================
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -350,7 +350,7 @@ Test case: MAC_PPPOE_IPV6_PAY_session_id_proto_id
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -359,14 +359,14 @@ Test case: MAC_PPPOE_IPV6_PAY_session_id_proto_id
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6()/Raw("x" * 80)],iface="enp27s0f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(dst="00:11:22:33:44:54",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6()/Raw("x" * 80)],iface="enp27s0f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=4)/PPP(proto=0x0057)/IPv6()/Raw("x" * 80)],iface="enp27s0f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="enp27s0f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -374,7 +374,7 @@ Test case: MAC_PPPOE_IPV6_PAY_session_id_proto_id
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Test case: PPPoE data
 =====================
@@ -384,7 +384,7 @@ Subcase 1: MAC_PPPOE_IPV4_PAY_IP_address
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -398,7 +398,7 @@ Subcase 1: MAC_PPPOE_IPV4_PAY_IP_address
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -407,13 +407,13 @@ Subcase 1: MAC_PPPOE_IPV4_PAY_IP_address
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x"*80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/Raw("x"*80)],iface="ens786f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.4")/Raw("x"*80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -421,14 +421,14 @@ Subcase 1: MAC_PPPOE_IPV4_PAY_IP_address
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 2: MAC_PPPOE_IPV4_UDP_PAY
 ---------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -442,7 +442,7 @@ Subcase 2: MAC_PPPOE_IPV4_UDP_PAY
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -451,7 +451,7 @@ Subcase 2: MAC_PPPOE_IPV4_UDP_PAY
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
@@ -459,7 +459,7 @@ Subcase 2: MAC_PPPOE_IPV4_UDP_PAY
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=27,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=19)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -467,14 +467,14 @@ Subcase 2: MAC_PPPOE_IPV4_UDP_PAY
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 3: MAC_PPPOE_IPV4_UDP_PAY_non_src_dst_port
 --------------------------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -488,7 +488,7 @@ Subcase 3: MAC_PPPOE_IPV4_UDP_PAY_non_src_dst_port
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -497,7 +497,7 @@ Subcase 3: MAC_PPPOE_IPV4_UDP_PAY_non_src_dst_port
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
@@ -505,7 +505,7 @@ Subcase 3: MAC_PPPOE_IPV4_UDP_PAY_non_src_dst_port
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -513,14 +513,14 @@ Subcase 3: MAC_PPPOE_IPV4_UDP_PAY_non_src_dst_port
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 4: MAC_PPPOE_IPV4_TCP_PAY
 ---------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -534,7 +534,7 @@ Subcase 4: MAC_PPPOE_IPV4_TCP_PAY
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -543,7 +543,7 @@ Subcase 4: MAC_PPPOE_IPV4_TCP_PAY
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
@@ -551,7 +551,7 @@ Subcase 4: MAC_PPPOE_IPV4_TCP_PAY
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=27,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=19)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -559,14 +559,14 @@ Subcase 4: MAC_PPPOE_IPV4_TCP_PAY
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 5: MAC_PPPOE_IPV4_TCP_PAY_non_src_dst_port
 --------------------------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -580,7 +580,7 @@ Subcase 5: MAC_PPPOE_IPV4_TCP_PAY_non_src_dst_port
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -589,7 +589,7 @@ Subcase 5: MAC_PPPOE_IPV4_TCP_PAY_non_src_dst_port
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
@@ -597,7 +597,7 @@ Subcase 5: MAC_PPPOE_IPV4_TCP_PAY_non_src_dst_port
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -605,14 +605,14 @@ Subcase 5: MAC_PPPOE_IPV4_TCP_PAY_non_src_dst_port
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 6: MAC_PPPOE_IPV6_PAY_IP_address
 ----------------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -626,7 +626,7 @@ Subcase 6: MAC_PPPOE_IPV6_PAY_IP_address
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -635,14 +635,14 @@ Subcase 6: MAC_PPPOE_IPV6_PAY_IP_address
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -650,14 +650,14 @@ Subcase 6: MAC_PPPOE_IPV6_PAY_IP_address
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 7: MAC_PPPOE_IPV6_UDP_PAY
 ---------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -671,7 +671,7 @@ Subcase 7: MAC_PPPOE_IPV6_UDP_PAY
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -680,14 +680,14 @@ Subcase 7: MAC_PPPOE_IPV6_UDP_PAY
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=27,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=19)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -695,14 +695,14 @@ Subcase 7: MAC_PPPOE_IPV6_UDP_PAY
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 8: MAC_PPPOE_IPV6_UDP_PAY_non_src_dst_port
 --------------------------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -716,7 +716,7 @@ Subcase 8: MAC_PPPOE_IPV6_UDP_PAY_non_src_dst_port
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -725,7 +725,7 @@ Subcase 8: MAC_PPPOE_IPV6_UDP_PAY_non_src_dst_port
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
@@ -733,7 +733,7 @@ Subcase 8: MAC_PPPOE_IPV6_UDP_PAY_non_src_dst_port
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -741,14 +741,14 @@ Subcase 8: MAC_PPPOE_IPV6_UDP_PAY_non_src_dst_port
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 9: MAC_PPPOE_IPV6_TCP_PAY
 ---------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -762,7 +762,7 @@ Subcase 9: MAC_PPPOE_IPV6_TCP_PAY
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -771,14 +771,14 @@ Subcase 9: MAC_PPPOE_IPV6_TCP_PAY
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=27,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=19)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -786,14 +786,14 @@ Subcase 9: MAC_PPPOE_IPV6_TCP_PAY
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 10: MAC_PPPOE_IPV6_TCP_PAY_non_src_dst_port
 ---------------------------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -807,7 +807,7 @@ Subcase 10: MAC_PPPOE_IPV6_TCP_PAY_non_src_dst_port
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -816,7 +816,7 @@ Subcase 10: MAC_PPPOE_IPV6_TCP_PAY_non_src_dst_port
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
@@ -824,7 +824,7 @@ Subcase 10: MAC_PPPOE_IPV6_TCP_PAY_non_src_dst_port
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -832,14 +832,14 @@ Subcase 10: MAC_PPPOE_IPV6_TCP_PAY_non_src_dst_port
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 11: MAC_VLAN_PPPOE_IPV4_PAY_IP_address
 ----------------------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -853,7 +853,7 @@ Subcase 11: MAC_VLAN_PPPOE_IPV4_PAY_IP_address
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -862,14 +862,14 @@ Subcase 11: MAC_VLAN_PPPOE_IPV4_PAY_IP_address
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x"*80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x"*80)],iface="ens786f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/Raw("x"*80)],iface="ens786f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.4")/Raw("x"*80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -877,14 +877,14 @@ Subcase 11: MAC_VLAN_PPPOE_IPV4_PAY_IP_address
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 12: MAC_VLAN_PPPOE_IPV4_UDP_PAY
 ---------------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -898,7 +898,7 @@ Subcase 12: MAC_VLAN_PPPOE_IPV4_UDP_PAY
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -907,7 +907,7 @@ Subcase 12: MAC_VLAN_PPPOE_IPV4_UDP_PAY
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
@@ -916,7 +916,7 @@ Subcase 12: MAC_VLAN_PPPOE_IPV4_UDP_PAY
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=27,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=19)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -924,14 +924,14 @@ Subcase 12: MAC_VLAN_PPPOE_IPV4_UDP_PAY
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 13: MAC_VLAN_PPPOE_IPV4_UDP_PAY_non_src_dst_port
 --------------------------------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -945,7 +945,7 @@ Subcase 13: MAC_VLAN_PPPOE_IPV4_UDP_PAY_non_src_dst_port
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -954,7 +954,7 @@ Subcase 13: MAC_VLAN_PPPOE_IPV4_UDP_PAY_non_src_dst_port
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
@@ -963,7 +963,7 @@ Subcase 13: MAC_VLAN_PPPOE_IPV4_UDP_PAY_non_src_dst_port
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -971,14 +971,14 @@ Subcase 13: MAC_VLAN_PPPOE_IPV4_UDP_PAY_non_src_dst_port
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 14: MAC_VLAN_PPPOE_IPV4_TCP_PAY
 ---------------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -992,7 +992,7 @@ Subcase 14: MAC_VLAN_PPPOE_IPV4_TCP_PAY
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -1001,7 +1001,7 @@ Subcase 14: MAC_VLAN_PPPOE_IPV4_TCP_PAY
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
@@ -1010,7 +1010,7 @@ Subcase 14: MAC_VLAN_PPPOE_IPV4_TCP_PAY
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=27,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=19)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -1018,14 +1018,14 @@ Subcase 14: MAC_VLAN_PPPOE_IPV4_TCP_PAY
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 15: MAC_VLAN_PPPOE_IPV4_TCP_PAY_non_src_dst_port
 --------------------------------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -1039,7 +1039,7 @@ Subcase 15: MAC_VLAN_PPPOE_IPV4_TCP_PAY_non_src_dst_port
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -1048,7 +1048,7 @@ Subcase 15: MAC_VLAN_PPPOE_IPV4_TCP_PAY_non_src_dst_port
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
@@ -1057,7 +1057,7 @@ Subcase 15: MAC_VLAN_PPPOE_IPV4_TCP_PAY_non_src_dst_port
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -1065,14 +1065,14 @@ Subcase 15: MAC_VLAN_PPPOE_IPV4_TCP_PAY_non_src_dst_port
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 16: MAC_VLAN_PPPOE_IPV6_PAY_IP_address
 ----------------------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -1086,7 +1086,7 @@ Subcase 16: MAC_VLAN_PPPOE_IPV6_PAY_IP_address
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -1095,13 +1095,13 @@ Subcase 16: MAC_VLAN_PPPOE_IPV6_PAY_IP_address
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)],iface="ens786f0",count=1)
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -1109,14 +1109,14 @@ Subcase 16: MAC_VLAN_PPPOE_IPV6_PAY_IP_address
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 17: MAC_VLAN_PPPOE_IPV6_UDP_PAY
 ---------------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -1130,7 +1130,7 @@ Subcase 17: MAC_VLAN_PPPOE_IPV6_UDP_PAY
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -1139,7 +1139,7 @@ Subcase 17: MAC_VLAN_PPPOE_IPV6_UDP_PAY
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
@@ -1147,7 +1147,7 @@ Subcase 17: MAC_VLAN_PPPOE_IPV6_UDP_PAY
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=27,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=19)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -1155,14 +1155,14 @@ Subcase 17: MAC_VLAN_PPPOE_IPV6_UDP_PAY
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 18: MAC_VLAN_PPPOE_IPV6_UDP_PAY_non_src_dst_port
 --------------------------------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / udp / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / udp / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -1176,7 +1176,7 @@ Subcase 18: MAC_VLAN_PPPOE_IPV6_UDP_PAY_non_src_dst_port
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / udp / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / udp / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -1185,7 +1185,7 @@ Subcase 18: MAC_VLAN_PPPOE_IPV6_UDP_PAY_non_src_dst_port
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
@@ -1193,7 +1193,7 @@ Subcase 18: MAC_VLAN_PPPOE_IPV6_UDP_PAY_non_src_dst_port
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -1201,14 +1201,14 @@ Subcase 18: MAC_VLAN_PPPOE_IPV6_UDP_PAY_non_src_dst_port
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 19: MAC_VLAN_PPPOE_IPV6_TCP_PAY
 ---------------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -1222,7 +1222,7 @@ Subcase 19: MAC_VLAN_PPPOE_IPV6_TCP_PAY
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -1231,7 +1231,7 @@ Subcase 19: MAC_VLAN_PPPOE_IPV6_TCP_PAY
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
@@ -1239,7 +1239,7 @@ Subcase 19: MAC_VLAN_PPPOE_IPV6_TCP_PAY
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=27,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=19)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -1247,14 +1247,14 @@ Subcase 19: MAC_VLAN_PPPOE_IPV6_TCP_PAY
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 20: MAC_VLAN_PPPOE_IPV6_TCP_PAY_non_src_dst_port
 --------------------------------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / tcp / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / tcp / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -1268,7 +1268,7 @@ Subcase 20: MAC_VLAN_PPPOE_IPV6_TCP_PAY_non_src_dst_port
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / tcp / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / tcp / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -1277,7 +1277,7 @@ Subcase 20: MAC_VLAN_PPPOE_IPV6_TCP_PAY_non_src_dst_port
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
@@ -1285,7 +1285,7 @@ Subcase 20: MAC_VLAN_PPPOE_IPV6_TCP_PAY_non_src_dst_port
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -1293,7 +1293,7 @@ Subcase 20: MAC_VLAN_PPPOE_IPV6_TCP_PAY_non_src_dst_port
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Test case: PPPoE control
 ========================
@@ -1303,7 +1303,7 @@ Subcase 1: MAC_PPPOE_LCP_PAY
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -1317,7 +1317,7 @@ Subcase 1: MAC_PPPOE_LCP_PAY
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -1326,14 +1326,14 @@ Subcase 1: MAC_PPPOE_LCP_PAY
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0xc021)/PPP_LCP()/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:53",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0xc021)/PPP_LCP()/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=4)/PPP(proto=0xc021)/PPP_LCP()/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -1341,14 +1341,14 @@ Subcase 1: MAC_PPPOE_LCP_PAY
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 2: MAC_PPPOE_IPCP_PAY
 -----------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -1362,7 +1362,7 @@ Subcase 2: MAC_PPPOE_IPCP_PAY
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -1371,14 +1371,14 @@ Subcase 2: MAC_PPPOE_IPCP_PAY
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x8021)/PPP_IPCP()/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:53",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x8021)/PPP_IPCP()/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=4)/PPP(proto=0x8021)/PPP_IPCP()/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -1386,14 +1386,14 @@ Subcase 2: MAC_PPPOE_IPCP_PAY
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 3: MAC_VLAN_PPPOE_LCP_PAY
 ---------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -1407,7 +1407,7 @@ Subcase 3: MAC_VLAN_PPPOE_LCP_PAY
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -1416,7 +1416,7 @@ Subcase 3: MAC_VLAN_PPPOE_LCP_PAY
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0xc021)/PPP_LCP()/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0xc021)/PPP_LCP()/Raw("x" * 80)],iface="ens786f0",count=1)
@@ -1424,7 +1424,7 @@ Subcase 3: MAC_VLAN_PPPOE_LCP_PAY
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=4)/PPP(proto=0xc021)/PPP_LCP()/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -1432,14 +1432,14 @@ Subcase 3: MAC_VLAN_PPPOE_LCP_PAY
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
 
 Subcase 4: MAC_VLAN_PPPOE_IPCP_PAY
 ----------------------------------
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -1453,7 +1453,7 @@ Subcase 4: MAC_VLAN_PPPOE_IPCP_PAY
 
 2. create a rule::
 
-     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -1462,7 +1462,7 @@ Subcase 4: MAC_VLAN_PPPOE_IPCP_PAY
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x8021)/PPP_IPCP()/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check port 1 receive the packets.
+   check port 2 receive the packets.
    send mismatched packets::
 
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x8021)/PPP_IPCP()/Raw("x" * 80)],iface="ens786f0",count=1)
@@ -1470,7 +1470,7 @@ Subcase 4: MAC_VLAN_PPPOE_IPCP_PAY
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=4)/PPP(proto=0x8021)/PPP_IPCP()/Raw("x" * 80)],iface="ens786f0",count=1)
      sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="ens786f0",count=1)
 
-   check the packets are not to port 1.
+   check the packets are not to port 2.
 
 4. verify rules can be destroyed::
 
@@ -1478,4 +1478,4 @@ Subcase 4: MAC_VLAN_PPPOE_IPCP_PAY
      testpmd> flow list 0
 
    check the rule not exists in the list.
-   send matched packets, check the packets are not to port 1.
+   send matched packets, check the packets are not to port 2.
