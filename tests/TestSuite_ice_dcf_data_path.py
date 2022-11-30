@@ -250,7 +250,7 @@ class DcfDataPathTest(TestCase):
             % self.wrong_mac
         )
         rule = (
-            "flow create 0 ingress pattern eth dst is %s / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / tcp src is 25 dst is 23 / end actions vf original 1 / end"
+            "flow create 0 ingress pattern eth dst is %s / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / tcp src is 25 dst is 23 / end actions port_representor port_id 0 / end"
             % self.wrong_mac
         )
 
