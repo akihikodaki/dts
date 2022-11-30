@@ -181,6 +181,8 @@ Test Case 3: packed virtqueue vm2vm non-mergeable path test
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
+    testpmd>set fwd rxonly
+    testpmd>start
 
 3. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -255,7 +257,7 @@ Test Case 4: packed virtqueue vm2vm inorder non-mergeable path test
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --rx-offloads=0x10 --nb-cores=1 --txd=256 --rxd=256
     testpmd>set burst 1
     testpmd>start tx_first 27
@@ -284,7 +286,7 @@ Test Case 4: packed virtqueue vm2vm inorder non-mergeable path test
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci \
-    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
+    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --rx-offloads=0x10 --nb-cores=1 --txd=256 --rxd=256
     testpmd>set burst 1
     testpmd>start tx_first 27
@@ -457,6 +459,8 @@ Test Case 7: split virtqueue vm2vm non-mergeable path test
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256 --enable-hw-vlan-strip
+    testpmd>set fwd rxonly
+    testpmd>start
 
 3. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -585,6 +589,8 @@ Test Case 9: split virtqueue vm2vm vector_rx path test
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=0,vectorized=1,queue_size=256 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
+    testpmd>set fwd rxonly
+    testpmd>start
 
 3. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -768,13 +774,13 @@ Test Case 12: packed virtqueue vm2vm vectorized-tx path multi-queues test indire
 
 1. Launch vhost by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd/app/dpdk-testpmd -l 1-2 -n 4 --no-pci \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
 
 2. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd/app/dpdk-testpmd -n 4 -l 7-8 --no-pci --file-prefix=virtio1 --force-max-simd-bitwidth=512 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 --no-pci --file-prefix=virtio1 --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=1,vectorized=1,queue_size=256 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
     testpmd>set fwd rxonly
