@@ -176,7 +176,7 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0 18:01.1
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf,representor=vf[1] --file-prefix=dcf -- -i
 
 Launch another testpmd on the VF1, and start mac forward ::
 
@@ -187,7 +187,7 @@ Launch another testpmd on the VF1, and start mac forward ::
 
 Set switch rule to VF1 `0000:18:01.1` from DCF ::
 
-    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions vf id 1 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions represented_port ethdev_port_id 1 / end
 
 Send a scapy packet to VF1 ::
 
@@ -228,7 +228,7 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0 18:01.1
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf,representor=vf[1] --file-prefix=dcf -- -i
 
 Launch another testpmd on the VF1, and start mac forward ::
 
@@ -239,7 +239,7 @@ Launch another testpmd on the VF1, and start mac forward ::
 
 Set switch rule to VF1 0000:18:01.1 from DCF ::
 
-    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions vf id 1 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions represented_port ethdev_port_id 1 / end
 
 Send a scapy packet to VF1 ::
 
@@ -277,7 +277,7 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0 18:01.1
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf,representor=vf[1] --file-prefix=dcf -- -i
 
 Launch another testpmd on the VF1, and start mac forward ::
 
@@ -288,7 +288,7 @@ Launch another testpmd on the VF1, and start mac forward ::
 
 Set switch rule to VF1 0000:18:01.1 from DCF ::
 
-    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions vf id 1 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions represented_port ethdev_port_id 1 / end
 
 Send a scapy packet to VF1 ::
 
@@ -353,7 +353,7 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0 18:01.1
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf,representor=vf[1-2] --file-prefix=dcf -- -i
 
 Launch another testpmd on the VF1 and VF2, and start mac forward ::
 
@@ -369,8 +369,8 @@ Launch another testpmd on the VF1 and VF2, and start mac forward ::
 
 Set switch rule to VF1 0000:18:01.1 from DCF ::
 
-    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions vf id 1 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.4 dst is 192.168.0.5 / end actions vf id 1 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.4 dst is 192.168.0.5 / end actions represented_port ethdev_port_id 1 / end
 
 Send a scapy packet to VF1 ::
 
@@ -421,9 +421,9 @@ Set a VF as trust ::
 Launch dpdk on the VF, request DCF mode ::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0 18:01.1 18:01.2
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf --file-prefix=dcf -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-10 -n 4 -a 18:01.0,cap=dcf,representor=vf[1-2] --file-prefix=dcf -- -i
 
-Launch another testpmd on the VF1, and start mac forward ::
+Launch another testpmd on the VF1 and VF2, and start mac forward ::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 11-14 -n 4 -a 18:01.1 -a 18:01.2 --file-prefix=vf -- -i
     set verbose 1
@@ -432,7 +432,7 @@ Launch another testpmd on the VF1, and start mac forward ::
 
 Set switch rule to VF1 0000:18:01.1 and VF2 0000:18:01.2 from DCF ::
 
-    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions vf id 1 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions represented_port ethdev_port_id 1 / end
 
 Send a scapy packet to VF1 and VF2 ::
 
@@ -1112,7 +1112,7 @@ The common steps launch two testpmds and kill DCF process, then relaunch two tes
 ..note:: 
 
     For <EAL options>, you can use "-c 0x6 -n 4", you can also refer to testpmd doc for other setings.
-    For <DUT port pci device id>, you can use "0000:3b:01.0,cap=dcf --file-prefix=dcf" for this test plan.
+    For <DUT port pci device id>, you can use "0000:3b:01.0,cap=dcf,representor=vf[1] --file-prefix=dcf" for this test plan.
   
 2. Launch another ``testpmd`` application on the VF1 of DUT as follows::
 
@@ -1134,7 +1134,7 @@ The common steps launch two testpmds and kill DCF process, then relaunch two tes
 
 5. Validate a switch rule to VF1 in DCF testpmd::
 
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1142,7 +1142,7 @@ The common steps launch two testpmds and kill DCF process, then relaunch two tes
 
 6. Create a switch rule to VF1 in DCF testpmd and list rules::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1191,7 +1191,7 @@ Test Steps
 ..note:: 
 
     For <EAL options>, you can use "-c 0x6 -n 4", you can also refer to testpmd doc for other setings.
-    For <DUT port pci device id>, you can use "0000:3b:01.0,cap=dcf --file-prefix=dcf" for this test plan.
+    For <DUT port pci device id>, you can use "0000:3b:01.0,cap=dcf,representor=vf[1] --file-prefix=dcf" for this test plan.
 
 3. Send a matched packet in scapy to VF1, DCF flow rule is still valid and check the VF1 of DUT can receive the packet.
 
@@ -1216,7 +1216,7 @@ the VF1 of DUT::
 
 5. Validate a switch rule to VF1 in DCF testpmd::
 
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1224,7 +1224,7 @@ the VF1 of DUT::
 
 6. Create a switch rule to VF1 in DCF testpmd and list rules::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1270,7 +1270,7 @@ Test Steps
 
 3. Validate a switch rule to VF1 in DCF testpmd::
 
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1278,7 +1278,7 @@ Test Steps
 
 4. Create a switch rule to VF1 in DCF testpmd and list rules::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1326,7 +1326,7 @@ Test Steps
 
 3. Validate a switch rule to VF1 in DCF testpmd::
 
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1334,7 +1334,7 @@ Test Steps
 
 4. Create a switch rule to VF1 in DCF testpmd and list rules::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1380,7 +1380,7 @@ Test Steps
    
 3. Validate a switch rule to VF1 in DCF testpmd::
 
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1388,7 +1388,7 @@ Test Steps
 
 4. Create a switch rule to VF1 in DCF testpmd and list rules::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1434,7 +1434,7 @@ Test Steps
 
 3. Validate a switch rule to VF1 in DCF testpmd::
 
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1442,7 +1442,7 @@ Test Steps
 
 4. Create a switch rule to VF1 in DCF testpmd and list rules::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1478,7 +1478,7 @@ The common steps launch one testpmd and kill DCF process, then relaunch one test
 ..note:: 
 
     For <EAL options>, you can use "-c 0x6 -n 4", you can also refer to testpmd doc for other setings.
-    For <DUT port pci device id>, you can use"-a 3b:01.0,cap=dcf -a 3b:01.1 --file-prefix=dcf" for this test plan.
+    For <DUT port pci device id>, you can use"-a 3b:01.0,cap=dcf,representor=vf[1] -a 3b:01.1 --file-prefix=dcf" for this test plan.
 
 2. Set verbose::
     
@@ -1491,7 +1491,7 @@ The common steps launch one testpmd and kill DCF process, then relaunch one test
 
 4. Validate a switch rule to VF1::
 
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1499,7 +1499,7 @@ The common steps launch one testpmd and kill DCF process, then relaunch one test
 
 5. Create a switch rule to VF1 and list rules::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1542,7 +1542,7 @@ Test Steps
 ..note:: 
 
     For <EAL options>, you can use "-c 0x6 -n 4", you can also refer to testpmd doc for other setings.
-    For <DUT port pci device id>, you can use"-a 3b:01.0,cap=dcf -a 3b:01.1 --file-prefix=dcf" for this test plan.
+    For <DUT port pci device id>, you can use"-a 3b:01.0,cap=dcf,representor=vf[1] -a 3b:01.1 --file-prefix=dcf" for this test plan.
 
 3. Set verbose::
     
@@ -1574,7 +1574,7 @@ DUT::
 
 7. Validate a switch rule to VF1::
 
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1582,7 +1582,7 @@ DUT::
 
 8. Create a switch rule to VF1 and list rules::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1628,7 +1628,7 @@ Test Steps
 
 3. Validate a switch rule to VF1::
 
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1636,7 +1636,7 @@ Test Steps
 
 4. Create a switch rule to VF1 and list rules::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1676,7 +1676,7 @@ Test Steps
     testpmd> stop 
     testpmd> port stop 0
     testpmd> port detach 0
-    testpmd> port attach 3b:01.0,cap=dcf
+    testpmd> port attach 3b:01.0,cap=dcf,representor=vf[1]
     testpmd> port reset 0
     testpmd> port start 0
     testpmd> start
@@ -1684,7 +1684,7 @@ Test Steps
 
 3. Validate a switch rule to VF1::
 
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1692,7 +1692,7 @@ Test Steps
 
 4. Create a switch rule to VF1 and list rules::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1738,7 +1738,7 @@ Test Steps
 
 3. Validate a switch rule to VF1::
 
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1746,7 +1746,7 @@ Test Steps
 
 4. Create a switch rule to VF1 and list rules::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1769,7 +1769,7 @@ DUT::
 
     testpmd> port 1/queue 0: received 1 packets
   src=00:11:22:33:44:55 - dst=C6:44:32:0A:EC:E1 - type=0x0800 - length=98 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
-  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN   
+  ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
 
 Test Case 10: one_testpmd_dcf_reset_mac
 ---------------------------------------
@@ -1792,7 +1792,7 @@ Test Steps
 
 3. Validate a switch rule to VF1::
 
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
@@ -1800,7 +1800,7 @@ Test Steps
 
 4. Create a switch rule to VF1 and list rules::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id 1 / end
 
    Get the message::
 
