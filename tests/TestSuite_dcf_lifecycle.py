@@ -239,11 +239,13 @@ class TestDcfLifeCycle(TestCase):
         )
         allowlist = {
             "pf1_vf0_dcf": f"-a {pf1_vf0},cap=dcf",
+            "pf1_vf0_dcf_repre_vf1": f"-a {pf1_vf0},cap=dcf,representor=vf[1]",
             "pf1_vf1_dcf": f"-a {pf1_vf1},cap=dcf",
             "pf1_vf0_pf2_vf0_dcf": f"-a {pf1_vf0},cap=dcf -a {pf2_vf0},cap=dcf",
             "pf1_vf1_vf2": f"-a {pf1_vf1} -a {pf1_vf2}",
             "pf1_vf1": f"-a {pf1_vf1}",
             "pf2_vf0_dcf": f"-a {pf2_vf0},cap=dcf",
+            "pf2_vf0_dcf_repre_vf1": f"-a {pf2_vf0},cap=dcf,representor=vf[1]",
             "pf1_vf0": f"-a {pf1_vf0}",
             "pf1_vf0_dcf_vf1": f"-a {pf1_vf0},cap=dcf -a {pf1_vf1}",
         }
@@ -278,11 +280,11 @@ class TestDcfLifeCycle(TestCase):
             "{port} "
             "priority 0 "
             "ingress pattern eth / ipv4 src is {ip_src} dst is {ip_dst} / end "
-            "actions vf id {vf_id} / end"
+            "actions represented_port ethdev_port_id {vf_id} / end"
         ).format(
             **{
                 "port": dut_port_id,
-                "vf_id": 1,
+                "vf_id": dut_port_id + 1,
                 "ip_src": self.get_ip_layer()["ipv4"]["src"],
                 "ip_dst": self.get_ip_layer()["ipv4"]["dst"],
             }
@@ -664,7 +666,7 @@ class TestDcfLifeCycle(TestCase):
         except_content = None
         try:
             self.vf_set_trust()
-            pmd_opts = [["pf1_vf0_dcf", "dcf"], ["pf1_vf1", "vf"]]
+            pmd_opts = [["pf1_vf0_dcf_repre_vf1", "dcf"], ["pf1_vf1", "vf"]]
             self.run_test_pre(pmd_opts)
             self.vf_dcf_testpmd_set_flow_rule()
             self.check_vf_pmd2_traffic("close_vf_dcf_testpmd")
@@ -684,7 +686,7 @@ class TestDcfLifeCycle(TestCase):
         except_content = None
         try:
             self.vf_set_trust()
-            pmd_opts = [["pf1_vf0_dcf", "dcf"], ["pf1_vf1", "vf"]]
+            pmd_opts = [["pf1_vf0_dcf_repre_vf1", "dcf"], ["pf1_vf1", "vf"]]
             self.run_test_pre(pmd_opts)
             self.vf_dcf_testpmd_set_flow_rule()
             self.check_vf_pmd2_traffic("vf_set_trust_off")
@@ -704,7 +706,7 @@ class TestDcfLifeCycle(TestCase):
         except_content = None
         try:
             self.vf_set_trust()
-            pmd_opts = [["pf1_vf0_dcf", "dcf"], ["pf1_vf1", "vf"]]
+            pmd_opts = [["pf1_vf0_dcf_repre_vf1", "dcf"], ["pf1_vf1", "vf"]]
             self.run_test_pre(pmd_opts)
             self.vf_dcf_testpmd_set_flow_rule()
             self.check_vf_pmd2_traffic(
@@ -760,7 +762,7 @@ class TestDcfLifeCycle(TestCase):
         except_content = None
         try:
             self.vf_set_trust()
-            pmd_opts = [["pf1_vf0_dcf", "dcf"], ["pf1_vf1", "vf"]]
+            pmd_opts = [["pf1_vf0_dcf_repre_vf1", "dcf"], ["pf1_vf1", "vf"]]
             self.run_test_pre(pmd_opts)
             self.vf_dcf_testpmd_set_flow_rule()
             self.check_vf_pmd2_traffic("vf_set_mac_addr", flag=True)
@@ -1642,7 +1644,7 @@ class TestDcfLifeCycle(TestCase):
         except_content = None
         try:
             self.vf_set_trust()
-            pmd_opts = [["pf1_vf0_dcf", "dcf"], ["pf1_vf1", "vf"]]
+            pmd_opts = [["pf1_vf0_dcf_repre_vf1", "dcf"], ["pf1_vf1", "vf"]]
             self.run_test_pre(pmd_opts)
             self.vf_dcf_testpmd_set_flow_rule()
             self.check_vf_traffic(
@@ -1668,7 +1670,7 @@ class TestDcfLifeCycle(TestCase):
         except_content = None
         try:
             self.vf_set_trust()
-            pmd_opts = [["pf1_vf0_dcf", "dcf"], ["pf1_vf1", "vf"]]
+            pmd_opts = [["pf1_vf0_dcf_repre_vf1", "dcf"], ["pf1_vf1", "vf"]]
             self.run_test_pre(pmd_opts)
             self.vf_dcf_testpmd_set_flow_rule()
             self.check_vf_traffic("vf_dcf_reset_device")
@@ -1690,7 +1692,7 @@ class TestDcfLifeCycle(TestCase):
         except_content = None
         try:
             self.vf_set_trust()
-            pmd_opts = [["pf1_vf0_dcf", "dcf"], ["pf1_vf1", "vf"]]
+            pmd_opts = [["pf1_vf0_dcf_repre_vf1", "dcf"], ["pf1_vf1", "vf"]]
             self.run_test_pre(pmd_opts)
             self.vf_dcf_testpmd_set_flow_rule()
             self.check_vf_traffic("vf_dcf_reset_port_detach")
@@ -1712,7 +1714,7 @@ class TestDcfLifeCycle(TestCase):
         except_content = None
         try:
             self.vf_set_trust()
-            pmd_opts = [["pf1_vf0_dcf", "dcf"], ["pf1_vf1", "vf"]]
+            pmd_opts = [["pf1_vf0_dcf_repre_vf1", "dcf"], ["pf1_vf1", "vf"]]
             self.run_test_pre(pmd_opts)
             self.vf_dcf_testpmd_set_flow_rule()
             self.check_vf_traffic("vf_dcf_reset_mtu")
@@ -1734,7 +1736,7 @@ class TestDcfLifeCycle(TestCase):
         except_content = None
         try:
             self.vf_set_trust()
-            pmd_opts = [["pf1_vf0_dcf", "dcf"], ["pf1_vf1", "vf"]]
+            pmd_opts = [["pf1_vf0_dcf_repre_vf1", "dcf"], ["pf1_vf1", "vf"]]
             self.run_test_pre(pmd_opts)
             self.vf_dcf_testpmd_set_flow_rule()
             self.check_vf_traffic("vf_dcf_set_mac_addr")
