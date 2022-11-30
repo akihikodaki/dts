@@ -16,7 +16,7 @@ Virtio-pmd <-> Vhost-user <-> Testpmd <-> Vhost-user <-> Virtio-pmd
 Test Case 1: VM2VM vhost-user/virtio-pmd with vector_rx path
 ============================================================
 
-1. Bind one physical nic port to vfio-pci, then launch the testpmd by below commands::
+1. Launch the testpmd by below commands::
 
     rm -rf vhost-net*
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
@@ -71,7 +71,7 @@ Test Case 1: VM2VM vhost-user/virtio-pmd with vector_rx path
 Test Case 2: VM2VM vhost-user/virtio-pmd with normal path
 =========================================================
 
-1. Bind one physical nic port to vfio-pci, then launch the testpmd by below commands::
+1. Launch the testpmd by below commands::
 
     rm -rf vhost-net*
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
@@ -126,7 +126,7 @@ Test Case 2: VM2VM vhost-user/virtio-pmd with normal path
 Test Case 3: VM2VM vhost-user/virtio1.0-pmd with vector_rx path
 ===============================================================
 
-1. Bind one physical nic port to vfio-pci, then launch the testpmd by below commands::
+1. Launch the testpmd by below commands::
 
     rm -rf vhost-net*
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
@@ -181,7 +181,7 @@ Test Case 3: VM2VM vhost-user/virtio1.0-pmd with vector_rx path
 Test Case 4: VM2VM vhost-user/virtio1.0-pmd with normal path
 ============================================================
 
-1. Bind one physical nic port to vfio-pci, then launch the testpmd by below commands::
+1. Launch the testpmd by below commands::
 
     rm -rf vhost-net*
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
@@ -236,7 +236,7 @@ Test Case 4: VM2VM vhost-user/virtio1.0-pmd with normal path
 Test Case 5: VM2VM vhost-user/virtio-pmd mergeable path with payload valid check
 ================================================================================
 
-1. Bind virtio with vfio-pci driver, launch the testpmd by below commands::
+1. Launch the testpmd by below commands::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -311,7 +311,7 @@ Test Case 5: VM2VM vhost-user/virtio-pmd mergeable path with payload valid check
 Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid check
 ===================================================================================
 
-1. Bind virtio with vfio-pci driver, launch the testpmd by below commands::
+1. Launch the testpmd by below commands::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -386,7 +386,7 @@ Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid ch
 Test Case 7: VM2VM vhost-user/virtio1.1-pmd mergeable path with payload valid check
 ===================================================================================
 
-1. Bind virtio with vfio-pci driver, launch the testpmd by below commands::
+1. Launch the testpmd by below commands::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -461,7 +461,7 @@ Test Case 7: VM2VM vhost-user/virtio1.1-pmd mergeable path with payload valid ch
 Test Case 8: VM2VM vhost-user/virtio1.1-pmd with normal path
 ============================================================
 
-1. Bind one physical nic port to vfio-pci, then launch the testpmd by below commands::
+1. Launch the testpmd by below commands::
 
     rm -rf vhost-net*
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
