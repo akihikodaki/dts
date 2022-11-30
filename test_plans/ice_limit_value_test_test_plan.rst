@@ -500,8 +500,8 @@ Prerequisites
 
 8. Launch dpdk on VF0 and VF1, and VF0 request DCF mode::
 
-     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -- -i
-     testpmd> set portlist 1
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf,representor=vf[1] -a 0000:18:01.1 -- -i
+     testpmd> set portlist 2
      testpmd> set fwd rxonly
      testpmd> set verbose 1
      testpmd> start
@@ -531,17 +531,17 @@ increased, so we can create a total of 32500 switch filter rules on a DCF.
 
 1. create 32500 rules with the same pattern, but different input set::
 
-     testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.0 / end actions vf id 1 / end
-     testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.0 / end actions represented_port ethdev_port_id 1 / end
+     testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions represented_port ethdev_port_id 1 / end
      ......
-     testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.127.114 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.127.114 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rules exist in the list.
 
 2. create one more rule::
 
-     testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.127.178 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.127.178 / end actions represented_port ethdev_port_id 1 / end
 
    check the rule can not be created successfully, and
    testpmd provide a friendly output, showing::
