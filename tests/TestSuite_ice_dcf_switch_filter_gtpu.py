@@ -28,7 +28,7 @@ mac_ipv4_gtpu_basic = {
 
 tv_mac_ipv4_gtpu_teid_with_mask = {
     "name": "tv_mac_ipv4_gtpu_teid_with_mask",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu"].replace(
@@ -38,7 +38,7 @@ tv_mac_ipv4_gtpu_teid_with_mask = {
                 "GTP_U_Header()", "GTP_U_Header(teid=0x12345688)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -47,21 +47,21 @@ tv_mac_ipv4_gtpu_teid_with_mask = {
                 "GTP_U_Header()", "GTP_U_Header(teid=0x12345677)"
             )
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_teid_without_mask = {
     "name": "tv_mac_ipv4_gtpu_teid_without_mask",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu"].replace(
                 "GTP_U_Header()", "GTP_U_Header(teid=0x12345678)"
             )
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -73,59 +73,59 @@ tv_mac_ipv4_gtpu_teid_without_mask = {
                 "GTP_U_Header()", "GTP_U_Header(teid=0x12345688)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_dst = {
     "name": "tv_mac_ipv4_gtpu_dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.1.2 / udp / gtpu / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.1.2 / udp / gtpu / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu"].replace("IP()", 'IP(dst="192.168.1.2")')
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu"].replace("IP()", 'IP(dst="192.168.1.22")')
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_src = {
     "name": "tv_mac_ipv4_gtpu_src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 / udp / gtpu / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 / udp / gtpu / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu"].replace("IP()", 'IP(src="192.168.1.1")')
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu"].replace("IP()", 'IP(src="192.168.1.11")')
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_src_dst = {
     "name": "tv_mac_ipv4_gtpu_src_dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / gtpu / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / gtpu / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu"].replace(
                 "IP()", 'IP(src="192.168.1.1", dst="192.168.1.2")'
             )
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -140,21 +140,21 @@ tv_mac_ipv4_gtpu_src_dst = {
                 "IP()", 'IP(src="192.168.1.11", dst="192.168.1.22")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_teid_dst = {
     "name": "tv_mac_ipv4_gtpu_teid_dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.1.2 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.1.2 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu"]
             .replace("IP()", 'IP(dst="192.168.1.2")')
             .replace("GTP_U_Header()", "GTP_U_Header(teid=0x12345678)")
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -169,21 +169,21 @@ tv_mac_ipv4_gtpu_teid_dst = {
             .replace("IP()", 'IP(dst="192.168.1.22")')
             .replace("GTP_U_Header()", "GTP_U_Header(teid=0x12345677)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_teid_src = {
     "name": "tv_mac_ipv4_gtpu_teid_src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu"]
             .replace("IP()", 'IP(src="192.168.1.1")')
             .replace("GTP_U_Header()", "GTP_U_Header(teid=0x12345678)")
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -198,21 +198,21 @@ tv_mac_ipv4_gtpu_teid_src = {
             .replace("IP()", 'IP(src="192.168.1.11")')
             .replace("GTP_U_Header()", "GTP_U_Header(teid=0x12345678)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_all = {
     "name": "tv_mac_ipv4_gtpu_all",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu"]
             .replace("IP()", 'IP(src="192.168.1.1", dst="192.168.1.2")')
             .replace("GTP_U_Header()", "GTP_U_Header(teid=0x12345678)")
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -230,7 +230,7 @@ tv_mac_ipv4_gtpu_all = {
             .replace("IP()", 'IP(src="192.168.1.11", dst="192.168.1.22")')
             .replace("GTP_U_Header()", "GTP_U_Header(teid=0x12345677)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
@@ -263,7 +263,7 @@ sv_mac_ipv6_gtpu = [
 
 tv_mac_ipv4_gtpu_eh_ipv4_teid_with_mask = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_teid_with_mask",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_nonfrag"].replace(
@@ -279,7 +279,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_teid_with_mask = {
                 "GTP_U_Header()", "GTP_U_Header(teid=0x12345688)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 4},
     },
     "mismatched": {
@@ -291,14 +291,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_teid_with_mask = {
                 "GTP_U_Header()", "GTP_U_Header(teid=0x12345677)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_teid_without_mask = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_teid_without_mask",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc / ipv4 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc / ipv4 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_nonfrag"].replace(
@@ -308,7 +308,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_teid_without_mask = {
                 "GTP_U_Header()", "GTP_U_Header(teid=0x12345678)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -326,14 +326,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_teid_without_mask = {
                 "GTP_U_Header()", "GTP_U_Header(teid=0x12345688)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_qfi = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_qfi",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_nonfrag"].replace(
@@ -343,7 +343,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_qfi = {
                 "GTPPDUSessionContainer()", "GTPPDUSessionContainer(QFI=0x34)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -355,14 +355,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_qfi = {
                 "GTPPDUSessionContainer(QFI=0x34)", "GTPPDUSessionContainer(QFI=0x33)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_l3dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_nonfrag"].replace(
@@ -373,7 +373,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_l3dst = {
                 "IP(frag=6)", 'IP(frag=6, dst="192.168.1.2")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -386,14 +386,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_l3dst = {
                 "IP(frag=6)", 'IP(frag=6, dst="192.168.1.22")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_l3src = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_l3src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_nonfrag"].replace(
@@ -404,7 +404,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_l3src = {
                 "IP(frag=6)", 'IP(frag=6, src="192.168.1.1")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -417,14 +417,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_l3src = {
                 "IP(frag=6)", 'IP(frag=6, src="192.168.1.11")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_l3src_l3dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_l3src_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_nonfrag"].replace(
@@ -435,7 +435,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_l3src_l3dst = {
                 "IP(frag=6)", 'IP(frag=6, src="192.168.1.1", dst="192.168.1.2")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -462,14 +462,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_l3src_l3dst = {
                 "IP(frag=6)", 'IP(frag=6, src="192.168.1.11", dst="192.168.1.22")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_teid_l3src_l3dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_teid_l3src_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_nonfrag"]
@@ -482,7 +482,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_teid_l3src_l3dst = {
             .replace("IP(frag=6)", 'IP(frag=6, src="192.168.1.1", dst="192.168.1.2")')
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345678)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -515,14 +515,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_teid_l3src_l3dst = {
             .replace("IP(frag=6)", 'IP(frag=6, src="192.168.1.11", dst="192.168.1.22")')
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345677)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_qfi_l3src_l3dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_qfi_l3src_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_nonfrag"]
@@ -536,7 +536,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_qfi_l3src_l3dst = {
             .replace("GTPPDUSessionContainer()", "GTPPDUSessionContainer(QFI=0x34)")
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345678)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -563,14 +563,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_qfi_l3src_l3dst = {
             .replace("IP(frag=6)", 'IP(frag=6, src="192.168.1.11", dst="192.168.1.22")')
             .replace("GTPPDUSessionContainer()", "GTPPDUSessionContainer(QFI=0x33)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_all = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_all",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_nonfrag"]
@@ -584,7 +584,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_all = {
             .replace("GTPPDUSessionContainer()", "GTPPDUSessionContainer(QFI=0x34)")
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345678)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -630,7 +630,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_all = {
             .replace("GTPPDUSessionContainer()", "GTPPDUSessionContainer(QFI=0x33)")
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345677)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
@@ -688,7 +688,7 @@ sv_mac_ipv6_gtpu_eh_ipv6 = [
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_with_mask = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_with_mask",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 / udp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 / udp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"].replace(
@@ -698,7 +698,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_with_mask = {
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345688)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -707,21 +707,21 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_with_mask = {
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345677)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_without_mask = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_without_mask",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc / ipv4 / udp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc / ipv4 / udp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"].replace(
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345678)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -733,21 +733,21 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_without_mask = {
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345688)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_qfi = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_qfi",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / udp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / udp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"].replace(
                 "GTPPDUSessionContainer()", "GTPPDUSessionContainer(QFI=0x34)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -756,14 +756,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_qfi = {
                 "GTPPDUSessionContainer()", "GTPPDUSessionContainer(QFI=0x33)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / udp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"].replace(
@@ -771,7 +771,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst = {
                 'GTPPDUSessionContainer()/IP(dst="192.168.1.2")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -781,14 +781,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst = {
                 'GTPPDUSessionContainer()/IP(dst="192.168.1.22")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / udp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / udp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"].replace(
@@ -796,7 +796,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.1")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -806,14 +806,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.11")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src_l3dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"].replace(
@@ -821,7 +821,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src_l3dst = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.1", dst="192.168.1.2")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -839,14 +839,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src_l3dst = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.11", dst="192.168.1.22")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src_l4dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / udp dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / udp dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"].replace(
@@ -854,7 +854,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src_l4dst = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.1")/UDP(dport=23)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -872,14 +872,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src_l4dst = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.11")/UDP(dport=13)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src_l4src = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src_l4src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / udp src is 22 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / udp src is 22 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"].replace(
@@ -887,7 +887,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src_l4src = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.1")/UDP(sport=22)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -905,14 +905,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l3src_l4src = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.11")/UDP(sport=12)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst_l4src = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst_l4src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / udp src is 22 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / udp src is 22 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"].replace(
@@ -920,7 +920,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst_l4src = {
                 'GTPPDUSessionContainer()/IP(dst="192.168.1.2")/UDP(sport=22)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -938,14 +938,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst_l4src = {
                 'GTPPDUSessionContainer()/IP(dst="192.168.1.22")/UDP(sport=12)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst_l4dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / udp dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / udp dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"].replace(
@@ -953,7 +953,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst_l4dst = {
                 'GTPPDUSessionContainer()/IP(dst="192.168.1.2")/UDP(dport=23)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -971,14 +971,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l3dst_l4dst = {
                 'GTPPDUSessionContainer()/IP(dst="192.168.1.22")/UDP(dport=13)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_l4dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"].replace(
@@ -986,7 +986,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l4dst = {
                 "GTPPDUSessionContainer()/IP()/UDP(dport=23)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -996,14 +996,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l4dst = {
                 "GTPPDUSessionContainer()/IP()/UDP(dport=13)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_l4src = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_l4src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp src is 22 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp src is 22 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"].replace(
@@ -1011,7 +1011,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l4src = {
                 "GTPPDUSessionContainer()/IP()/UDP(sport=22)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1021,14 +1021,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l4src = {
                 "GTPPDUSessionContainer()/IP()/UDP(sport=12)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_l4src_l4dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_l4src_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp src is 22 dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"].replace(
@@ -1036,7 +1036,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l4src_l4dst = {
                 "GTPPDUSessionContainer()/IP()/UDP(sport=22, dport=23)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1054,14 +1054,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l4src_l4dst = {
                 "GTPPDUSessionContainer()/IP()/UDP(sport=12, dport=13)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_l3src_l3dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_l3src_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"]
@@ -1071,7 +1071,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_l3src_l3dst = {
             )
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345678)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1095,14 +1095,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_l3src_l3dst = {
             )
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345677)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_qfi_l3src_l3dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_qfi_l3src_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"].replace(
@@ -1110,7 +1110,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_qfi_l3src_l3dst = {
                 'GTPPDUSessionContainer(QFI=0x34)/IP(src="192.168.1.1", dst="192.168.1.2")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1128,14 +1128,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_qfi_l3src_l3dst = {
                 'GTPPDUSessionContainer(QFI=0x33)/IP(src="192.168.1.11", dst="192.168.1.22")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_l4src_l4dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_l4src_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 / udp src is 22 dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"]
@@ -1145,7 +1145,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_l4src_l4dst = {
             )
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345678)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1169,14 +1169,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_teid_l4src_l4dst = {
             )
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345677)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_qfi_l4src_l4dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_qfi_l4src_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / udp src is 22 dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"].replace(
@@ -1184,7 +1184,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_qfi_l4src_l4dst = {
                 "GTPPDUSessionContainer(QFI=0x34)/IP()/UDP(sport=22, dport=23)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1202,14 +1202,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_qfi_l4src_l4dst = {
                 "GTPPDUSessionContainer(QFI=0x33)/IP()/UDP(sport=12, dport=13)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_l3_l4 = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_l3_l4",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 22 dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"].replace(
@@ -1217,7 +1217,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l3_l4 = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=22, dport=23)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1251,14 +1251,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_l3_l4 = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.11", dst="192.168.1.22")/UDP(sport=12, dport=13)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_udp_all = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_all",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 22 dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_udp"]
@@ -1268,7 +1268,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_all = {
             )
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345678)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1298,7 +1298,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_udp_all = {
             )
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345677)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
@@ -1429,7 +1429,7 @@ sv_mac_ipv6_gtpu_eh_ipv6_udp = [
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_with_mask = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_with_mask",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 / tcp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 / tcp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"].replace(
@@ -1439,7 +1439,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_with_mask = {
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345688)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -1448,21 +1448,21 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_with_mask = {
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345677)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_without_mask = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_without_mask",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc / ipv4 / tcp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc / ipv4 / tcp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"].replace(
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345678)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1474,21 +1474,21 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_without_mask = {
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345688)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_qfi = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_qfi",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / tcp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / tcp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"].replace(
                 "GTPPDUSessionContainer()", "GTPPDUSessionContainer(QFI=0x34)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1497,14 +1497,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_qfi = {
                 "GTPPDUSessionContainer()", "GTPPDUSessionContainer(QFI=0x33)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / tcp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"].replace(
@@ -1512,7 +1512,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst = {
                 'GTPPDUSessionContainer()/IP(dst="192.168.1.2")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1522,14 +1522,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst = {
                 'GTPPDUSessionContainer()/IP(dst="192.168.1.22")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / tcp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / tcp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"].replace(
@@ -1537,7 +1537,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.1")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1547,14 +1547,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.11")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src_l3dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"].replace(
@@ -1562,7 +1562,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src_l3dst = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.1", dst="192.168.1.2")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1580,14 +1580,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src_l3dst = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.11", dst="192.168.1.22")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src_l4dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / tcp dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / tcp dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"].replace(
@@ -1595,7 +1595,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src_l4dst = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.1")/TCP(dport=23)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1613,14 +1613,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src_l4dst = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.11")/TCP(dport=13)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src_l4src = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src_l4src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / tcp src is 22 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / tcp src is 22 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"].replace(
@@ -1628,7 +1628,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src_l4src = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.1")/TCP(sport=22)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1646,14 +1646,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3src_l4src = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.11")/TCP(sport=12)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst_l4src = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst_l4src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / tcp src is 22 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / tcp src is 22 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"].replace(
@@ -1661,7 +1661,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst_l4src = {
                 'GTPPDUSessionContainer()/IP(dst="192.168.1.2")/TCP(sport=22)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1679,14 +1679,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst_l4src = {
                 'GTPPDUSessionContainer()/IP(dst="192.168.1.22")/TCP(sport=12)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst_l4dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / tcp dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / tcp dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"].replace(
@@ -1694,7 +1694,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst_l4dst = {
                 'GTPPDUSessionContainer()/IP(dst="192.168.1.2")/TCP(dport=23)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1712,14 +1712,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3dst_l4dst = {
                 'GTPPDUSessionContainer()/IP(dst="192.168.1.22")/TCP(dport=13)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"].replace(
@@ -1727,7 +1727,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4dst = {
                 "GTPPDUSessionContainer()/IP()/TCP(dport=23)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1737,14 +1737,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4dst = {
                 "GTPPDUSessionContainer()/IP()/TCP(dport=13)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4src = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp src is 22 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp src is 22 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"].replace(
@@ -1752,7 +1752,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4src = {
                 "GTPPDUSessionContainer()/IP()/TCP(sport=22)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1762,14 +1762,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4src = {
                 "GTPPDUSessionContainer()/IP()/TCP(sport=12)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4src_l4dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4src_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp src is 22 dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"].replace(
@@ -1777,7 +1777,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4src_l4dst = {
                 "GTPPDUSessionContainer()/IP()/TCP(sport=22, dport=23)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1795,14 +1795,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l4src_l4dst = {
                 "GTPPDUSessionContainer()/IP()/TCP(sport=12, dport=13)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_l3src_l3dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_l3src_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"]
@@ -1812,7 +1812,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_l3src_l3dst = {
             )
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345678)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1836,14 +1836,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_l3src_l3dst = {
             )
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345677)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_qfi_l3src_l3dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_qfi_l3src_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"].replace(
@@ -1851,7 +1851,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_qfi_l3src_l3dst = {
                 'GTPPDUSessionContainer(QFI=0x34)/IP(src="192.168.1.1", dst="192.168.1.2")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1869,14 +1869,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_qfi_l3src_l3dst = {
                 'GTPPDUSessionContainer(QFI=0x33)/IP(src="192.168.1.11", dst="192.168.1.22")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_l4src_l4dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_l4src_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 / tcp src is 22 dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 / tcp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"]
@@ -1886,7 +1886,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_l4src_l4dst = {
             )
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345678)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1910,14 +1910,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_teid_l4src_l4dst = {
             )
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345677)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_qfi_l4src_l4dst = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_qfi_l4src_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / tcp src is 22 dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / tcp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"].replace(
@@ -1925,7 +1925,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_qfi_l4src_l4dst = {
                 "GTPPDUSessionContainer(QFI=0x34)/IP()/TCP(sport=22, dport=23)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1943,14 +1943,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_qfi_l4src_l4dst = {
                 "GTPPDUSessionContainer(QFI=0x33)/IP()/TCP(sport=12, dport=13)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3_l4 = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3_l4",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 22 dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"].replace(
@@ -1958,7 +1958,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3_l4 = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=22, dport=23)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -1992,14 +1992,14 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_l3_l4 = {
                 'GTPPDUSessionContainer()/IP(src="192.168.1.11", dst="192.168.1.22")/TCP(sport=12, dport=13)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_eh_ipv4_tcp_all = {
     "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_all",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 22 dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_eh_ipv4_tcp"]
@@ -2009,7 +2009,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_all = {
             )
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345678)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -2039,7 +2039,7 @@ tv_mac_ipv4_gtpu_eh_ipv4_tcp_all = {
             )
             .replace("GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345677)"),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
@@ -2169,7 +2169,7 @@ sv_mac_ipv6_gtpu_eh_ipv6_tcp = [
 
 tv_mac_ipv4_gtpu_ipv4_teid_with_mask = {
     "name": "tv_mac_ipv4_gtpu_ipv4_teid_with_mask",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_nonfrag"].replace(
@@ -2185,7 +2185,7 @@ tv_mac_ipv4_gtpu_ipv4_teid_with_mask = {
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345688)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 4},
     },
     "mismatched": {
@@ -2197,14 +2197,14 @@ tv_mac_ipv4_gtpu_ipv4_teid_with_mask = {
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345677)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_teid_without_mask = {
     "name": "tv_mac_ipv4_gtpu_ipv4_teid_without_mask",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / ipv4 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / ipv4 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_nonfrag"].replace(
@@ -2214,7 +2214,7 @@ tv_mac_ipv4_gtpu_ipv4_teid_without_mask = {
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345678)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -2232,14 +2232,14 @@ tv_mac_ipv4_gtpu_ipv4_teid_without_mask = {
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345688)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_l3dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_nonfrag"].replace(
@@ -2249,7 +2249,7 @@ tv_mac_ipv4_gtpu_ipv4_l3dst = {
                 "IP(frag=6)", 'IP(frag=6, dst="192.168.1.2")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -2261,14 +2261,14 @@ tv_mac_ipv4_gtpu_ipv4_l3dst = {
                 "IP(frag=6)", 'IP(frag=6, dst="192.168.1.22")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_l3src = {
     "name": "tv_mac_ipv4_gtpu_ipv4_l3src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_nonfrag"].replace(
@@ -2278,7 +2278,7 @@ tv_mac_ipv4_gtpu_ipv4_l3src = {
                 "IP(frag=6)", 'IP(frag=6, src="192.168.1.1")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -2290,14 +2290,14 @@ tv_mac_ipv4_gtpu_ipv4_l3src = {
                 "IP(frag=6)", 'IP(frag=6, src="192.168.1.11")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_l3src_l3dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_l3src_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_nonfrag"].replace(
@@ -2308,7 +2308,7 @@ tv_mac_ipv4_gtpu_ipv4_l3src_l3dst = {
                 "IP(frag=6)", 'IP(frag=6, src="192.168.1.1", dst="192.168.1.2")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -2335,14 +2335,14 @@ tv_mac_ipv4_gtpu_ipv4_l3src_l3dst = {
                 "IP(frag=6)", 'IP(frag=6, src="192.168.1.11", dst="192.168.1.22")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_all = {
     "name": "tv_mac_ipv4_gtpu_ipv4_all",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_nonfrag"].replace(
@@ -2354,7 +2354,7 @@ tv_mac_ipv4_gtpu_ipv4_all = {
                 'GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(frag=6, src="192.168.1.1", dst="192.168.1.2")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -2384,7 +2384,7 @@ tv_mac_ipv4_gtpu_ipv4_all = {
                 'GTP_U_Header(gtp_type=255, teid=0x12345677)/IP(frag=6, src="192.168.1.11", dst="192.168.1.22")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
@@ -2439,7 +2439,7 @@ sv_mac_ipv6_gtpu_ipv6 = [
 
 tv_mac_ipv4_gtpu_ipv4_udp_teid_with_mask = {
     "name": "tv_mac_ipv4_gtpu_ipv4_udp_teid_with_mask",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 / udp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 / udp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_udp"].replace(
@@ -2449,7 +2449,7 @@ tv_mac_ipv4_gtpu_ipv4_udp_teid_with_mask = {
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345688)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -2458,21 +2458,21 @@ tv_mac_ipv4_gtpu_ipv4_udp_teid_with_mask = {
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345677)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_udp_teid_without_mask = {
     "name": "tv_mac_ipv4_gtpu_ipv4_udp_teid_without_mask",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / ipv4 / udp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / ipv4 / udp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_udp"].replace(
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345678)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -2484,21 +2484,21 @@ tv_mac_ipv4_gtpu_ipv4_udp_teid_without_mask = {
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345688)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_udp_l3dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_udp_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / udp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_udp"].replace(
                 "GTP_U_Header()/IP()", 'GTP_U_Header()/IP(dst="192.168.1.2")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -2507,21 +2507,21 @@ tv_mac_ipv4_gtpu_ipv4_udp_l3dst = {
                 "GTP_U_Header()/IP()", 'GTP_U_Header()/IP(dst="192.168.1.22")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_udp_l3src = {
     "name": "tv_mac_ipv4_gtpu_ipv4_udp_l3src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / udp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / udp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_udp"].replace(
                 "GTP_U_Header()/IP()", 'GTP_U_Header()/IP(src="192.168.1.1")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -2530,14 +2530,14 @@ tv_mac_ipv4_gtpu_ipv4_udp_l3src = {
                 "GTP_U_Header()/IP()", 'GTP_U_Header()/IP(src="192.168.1.11")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_udp_l3src_l3dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_udp_l3src_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_udp"].replace(
@@ -2545,7 +2545,7 @@ tv_mac_ipv4_gtpu_ipv4_udp_l3src_l3dst = {
                 'GTP_U_Header()/IP(src="192.168.1.1", dst="192.168.1.2")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -2563,14 +2563,14 @@ tv_mac_ipv4_gtpu_ipv4_udp_l3src_l3dst = {
                 'GTP_U_Header()/IP(src="192.168.1.11", dst="192.168.1.22")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_udp_l3src_l4dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_udp_l3src_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / udp dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / udp dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_udp"].replace(
@@ -2578,7 +2578,7 @@ tv_mac_ipv4_gtpu_ipv4_udp_l3src_l4dst = {
                 'GTP_U_Header()/IP(src="192.168.1.1")/UDP(dport=23)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -2596,14 +2596,14 @@ tv_mac_ipv4_gtpu_ipv4_udp_l3src_l4dst = {
                 'GTP_U_Header()/IP(src="192.168.1.11")/UDP(dport=13)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_udp_l3src_l4src = {
     "name": "tv_mac_ipv4_gtpu_ipv4_udp_l3src_l4src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / udp src is 22 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / udp src is 22 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_udp"].replace(
@@ -2611,7 +2611,7 @@ tv_mac_ipv4_gtpu_ipv4_udp_l3src_l4src = {
                 'GTP_U_Header()/IP(src="192.168.1.1")/UDP(sport=22)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -2629,14 +2629,14 @@ tv_mac_ipv4_gtpu_ipv4_udp_l3src_l4src = {
                 'GTP_U_Header()/IP(src="192.168.1.11")/UDP(sport=12)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_udp_l3dst_l4src = {
     "name": "tv_mac_ipv4_gtpu_ipv4_udp_l3dst_l4src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / udp src is 22 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / udp src is 22 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_udp"].replace(
@@ -2644,7 +2644,7 @@ tv_mac_ipv4_gtpu_ipv4_udp_l3dst_l4src = {
                 'GTP_U_Header()/IP(dst="192.168.1.2")/UDP(sport=22)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -2662,14 +2662,14 @@ tv_mac_ipv4_gtpu_ipv4_udp_l3dst_l4src = {
                 'GTP_U_Header()/IP(dst="192.168.1.22")/UDP(sport=12)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_udp_l3dst_l4dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_udp_l3dst_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / udp dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / udp dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_udp"].replace(
@@ -2677,7 +2677,7 @@ tv_mac_ipv4_gtpu_ipv4_udp_l3dst_l4dst = {
                 'GTP_U_Header()/IP(dst="192.168.1.2")/UDP(dport=23)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -2695,21 +2695,21 @@ tv_mac_ipv4_gtpu_ipv4_udp_l3dst_l4dst = {
                 'GTP_U_Header()/IP(dst="192.168.1.22")/UDP(dport=13)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_udp_l4dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_udp_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_udp"].replace(
                 "GTP_U_Header()/IP()/UDP()", "GTP_U_Header()/IP()/UDP(dport=23)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -2718,21 +2718,21 @@ tv_mac_ipv4_gtpu_ipv4_udp_l4dst = {
                 "GTP_U_Header()/IP()/UDP()", "GTP_U_Header()/IP()/UDP(dport=13)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_udp_l4src = {
     "name": "tv_mac_ipv4_gtpu_ipv4_udp_l4src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp src is 22 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp src is 22 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_udp"].replace(
                 "GTP_U_Header()/IP()/UDP()", "GTP_U_Header()/IP()/UDP(sport=22)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -2741,14 +2741,14 @@ tv_mac_ipv4_gtpu_ipv4_udp_l4src = {
                 "GTP_U_Header()/IP()/UDP()", "GTP_U_Header()/IP()/UDP(sport=12)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_udp_l4src_l4dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_udp_l4src_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp src is 22 dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_udp"].replace(
@@ -2756,7 +2756,7 @@ tv_mac_ipv4_gtpu_ipv4_udp_l4src_l4dst = {
                 "GTP_U_Header()/IP()/UDP(sport=22, dport=23)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -2774,14 +2774,14 @@ tv_mac_ipv4_gtpu_ipv4_udp_l4src_l4dst = {
                 "GTP_U_Header()/IP()/UDP(sport=12, dport=13)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_udp_teid_l3src_l3dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_udp_teid_l3src_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_udp"].replace(
@@ -2789,7 +2789,7 @@ tv_mac_ipv4_gtpu_ipv4_udp_teid_l3src_l3dst = {
                 'GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(src="192.168.1.1", dst="192.168.1.2")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -2807,14 +2807,14 @@ tv_mac_ipv4_gtpu_ipv4_udp_teid_l3src_l3dst = {
                 'GTP_U_Header(gtp_type=255, teid=0x12345677)/IP(src="192.168.1.11", dst="192.168.1.22")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_udp_teid_l4src_l4dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_udp_teid_l4src_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 / udp src is 22 dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_udp"].replace(
@@ -2822,7 +2822,7 @@ tv_mac_ipv4_gtpu_ipv4_udp_teid_l4src_l4dst = {
                 "GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/UDP(sport=22, dport=23)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -2840,7 +2840,7 @@ tv_mac_ipv4_gtpu_ipv4_udp_teid_l4src_l4dst = {
                 "GTP_U_Header(gtp_type=255, teid=0x12345677)/IP()/UDP(sport=12, dport=13)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
@@ -2848,7 +2848,7 @@ tv_mac_ipv4_gtpu_ipv4_udp_teid_l4src_l4dst = {
 
 tv_mac_ipv4_gtpu_ipv4_udp_l3_l4 = {
     "name": "tv_mac_ipv4_gtpu_ipv4_udp_l3_l4",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 22 dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_udp"].replace(
@@ -2856,7 +2856,7 @@ tv_mac_ipv4_gtpu_ipv4_udp_l3_l4 = {
                 'GTP_U_Header()/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=22, dport=23)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -2874,7 +2874,7 @@ tv_mac_ipv4_gtpu_ipv4_udp_l3_l4 = {
                 'GTP_U_Header()/IP(src="192.168.1.11", dst="192.168.1.22")/UDP(sport=12, dport=13)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
@@ -2988,7 +2988,7 @@ sv_mac_ipv6_gtpu_ipv6_udp = [sv_mac_ipv6_gtpu_ipv6_udp_1, sv_mac_ipv6_gtpu_ipv6_
 
 tv_mac_ipv4_gtpu_ipv4_tcp_teid_with_mask = {
     "name": "tv_mac_ipv4_gtpu_ipv4_tcp_teid_with_mask",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 / tcp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 / tcp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_tcp"].replace(
@@ -2998,7 +2998,7 @@ tv_mac_ipv4_gtpu_ipv4_tcp_teid_with_mask = {
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345688)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 2},
     },
     "mismatched": {
@@ -3007,21 +3007,21 @@ tv_mac_ipv4_gtpu_ipv4_tcp_teid_with_mask = {
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345677)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_tcp_teid_without_mask = {
     "name": "tv_mac_ipv4_gtpu_ipv4_tcp_teid_without_mask",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / ipv4 / tcp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / ipv4 / tcp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_tcp"].replace(
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345678)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -3033,21 +3033,21 @@ tv_mac_ipv4_gtpu_ipv4_tcp_teid_without_mask = {
                 "GTP_U_Header()", "GTP_U_Header(gtp_type=255, teid=0x12345688)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_tcp_l3dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_tcp_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / tcp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_tcp"].replace(
                 "GTP_U_Header()/IP()", 'GTP_U_Header()/IP(dst="192.168.1.2")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -3056,21 +3056,21 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l3dst = {
                 "GTP_U_Header()/IP()", 'GTP_U_Header()/IP(dst="192.168.1.22")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_tcp_l3src = {
     "name": "tv_mac_ipv4_gtpu_ipv4_tcp_l3src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / tcp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / tcp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_tcp"].replace(
                 "GTP_U_Header()/IP()", 'GTP_U_Header()/IP(src="192.168.1.1")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -3079,14 +3079,14 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l3src = {
                 "GTP_U_Header()/IP()", 'GTP_U_Header()/IP(src="192.168.1.11")'
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_tcp_l3src_l3dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_tcp_l3src_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_tcp"].replace(
@@ -3094,7 +3094,7 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l3src_l3dst = {
                 'GTP_U_Header()/IP(src="192.168.1.1", dst="192.168.1.2")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -3112,14 +3112,14 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l3src_l3dst = {
                 'GTP_U_Header()/IP(src="192.168.1.11", dst="192.168.1.22")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_tcp_l3src_l4dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_tcp_l3src_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / tcp dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / tcp dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_tcp"].replace(
@@ -3127,7 +3127,7 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l3src_l4dst = {
                 'GTP_U_Header()/IP(src="192.168.1.1")/TCP(dport=23)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -3145,14 +3145,14 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l3src_l4dst = {
                 'GTP_U_Header()/IP(src="192.168.1.11")/TCP(dport=13)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_tcp_l3src_l4src = {
     "name": "tv_mac_ipv4_gtpu_ipv4_tcp_l3src_l4src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / tcp src is 22 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / tcp src is 22 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_tcp"].replace(
@@ -3160,7 +3160,7 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l3src_l4src = {
                 'GTP_U_Header()/IP(src="192.168.1.1")/TCP(sport=22)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -3178,14 +3178,14 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l3src_l4src = {
                 'GTP_U_Header()/IP(src="192.168.1.11")/TCP(sport=12)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_tcp_l3dst_l4src = {
     "name": "tv_mac_ipv4_gtpu_ipv4_tcp_l3dst_l4src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / tcp src is 22 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / tcp src is 22 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_tcp"].replace(
@@ -3193,7 +3193,7 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l3dst_l4src = {
                 'GTP_U_Header()/IP(dst="192.168.1.2")/TCP(sport=22)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -3211,14 +3211,14 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l3dst_l4src = {
                 'GTP_U_Header()/IP(dst="192.168.1.22")/TCP(sport=12)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_tcp_l3dst_l4dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_tcp_l3dst_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / tcp dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / tcp dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_tcp"].replace(
@@ -3226,7 +3226,7 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l3dst_l4dst = {
                 'GTP_U_Header()/IP(dst="192.168.1.2")/TCP(dport=23)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -3244,21 +3244,21 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l3dst_l4dst = {
                 'GTP_U_Header()/IP(dst="192.168.1.22")/TCP(dport=13)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_tcp_l4dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_tcp_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_tcp"].replace(
                 "GTP_U_Header()/IP()/TCP()", "GTP_U_Header()/IP()/TCP(dport=23)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -3267,21 +3267,21 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l4dst = {
                 "GTP_U_Header()/IP()/TCP()", "GTP_U_Header()/IP()/TCP(dport=13)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_tcp_l4src = {
     "name": "tv_mac_ipv4_gtpu_ipv4_tcp_l4src",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp src is 22 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp src is 22 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_tcp"].replace(
                 "GTP_U_Header()/IP()/TCP()", "GTP_U_Header()/IP()/TCP(sport=22)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -3290,14 +3290,14 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l4src = {
                 "GTP_U_Header()/IP()/TCP()", "GTP_U_Header()/IP()/TCP(sport=12)"
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_tcp_l4src_l4dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_tcp_l4src_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp src is 22 dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_tcp"].replace(
@@ -3305,7 +3305,7 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l4src_l4dst = {
                 "GTP_U_Header()/IP()/TCP(sport=22, dport=23)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -3323,14 +3323,14 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l4src_l4dst = {
                 "GTP_U_Header()/IP()/TCP(sport=12, dport=13)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_tcp_teid_l3src_l3dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_tcp_teid_l3src_l3dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_tcp"].replace(
@@ -3338,7 +3338,7 @@ tv_mac_ipv4_gtpu_ipv4_tcp_teid_l3src_l3dst = {
                 'GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(src="192.168.1.1", dst="192.168.1.2")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -3356,14 +3356,14 @@ tv_mac_ipv4_gtpu_ipv4_tcp_teid_l3src_l3dst = {
                 'GTP_U_Header(gtp_type=255, teid=0x12345677)/IP(src="192.168.1.11", dst="192.168.1.22")',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_tcp_teid_l4src_l4dst = {
     "name": "tv_mac_ipv4_gtpu_ipv4_tcp_teid_l4src_l4dst",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 / tcp src is 22 dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 / tcp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_tcp"].replace(
@@ -3371,7 +3371,7 @@ tv_mac_ipv4_gtpu_ipv4_tcp_teid_l4src_l4dst = {
                 "GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/TCP(sport=22, dport=23)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -3389,14 +3389,14 @@ tv_mac_ipv4_gtpu_ipv4_tcp_teid_l4src_l4dst = {
                 "GTP_U_Header(gtp_type=255, teid=0x12345677)/IP()/TCP(sport=12, dport=13)",
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
 
 tv_mac_ipv4_gtpu_ipv4_tcp_l3_l4 = {
     "name": "tv_mac_ipv4_gtpu_ipv4_tcp_l3_l4",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 22 dst is 23 / end actions vf id 1 / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
     "matched": {
         "scapy_str": [
             mac_ipv4_gtpu_basic["ipv4_gtpu_ipv4_tcp"].replace(
@@ -3404,7 +3404,7 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l3_l4 = {
                 'GTP_U_Header()/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=22, dport=23)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 1},
     },
     "mismatched": {
@@ -3422,7 +3422,7 @@ tv_mac_ipv4_gtpu_ipv4_tcp_l3_l4 = {
                 'GTP_U_Header()/IP(src="192.168.1.11", dst="192.168.1.22")/TCP(sport=12, dport=13)',
             ),
         ],
-        "param": {"expect_port": 1, "expect_queues": "null"},
+        "param": {"expect_port": 2, "expect_queues": "null"},
         "expect_results": {"expect_pkts": 0},
     },
 }
@@ -3606,7 +3606,7 @@ class ICEDCFSwitchFilterGTPUTest(TestCase):
         all_eal_param = self.dut.create_eal_parameters(
             cores="1S/4C/1T",
             ports=[vf0_pci, vf1_pci],
-            port_options={vf0_pci: "cap=dcf"},
+            port_options={vf0_pci: "cap=dcf,representor=[1]"},
         )
         command = self.path + all_eal_param + " -- -i"
         return command
@@ -3618,7 +3618,7 @@ class ICEDCFSwitchFilterGTPUTest(TestCase):
         command = self.create_testpmd_command()
         self.dut.send_expect(command, "testpmd> ", 30)
         self.testpmd_status = "running"
-        self.dut.send_expect("set portlist 1", "testpmd> ", 15)
+        self.dut.send_expect("set portlist 2", "testpmd> ", 15)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
         self.dut.send_expect("set verbose 1", "testpmd> ", 15)
 
