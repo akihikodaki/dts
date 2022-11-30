@@ -133,8 +133,8 @@ Prerequisites
 
 9. Launch dpdk on VF0 and VF1, and VF0 request DCF mode::
 
-     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -- -i
-     testpmd> set portlist 1
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf,representor=[1] -a 0000:18:01.1 -- -i
+     testpmd> set portlist 2
      testpmd> set fwd rxonly
      testpmd> set verbose 1
      testpmd> start
@@ -157,17 +157,17 @@ take 'MAC_IPV4_GTPU_TEID_with_mask' for example:
 
 1.validate and create rule::
 
-   flow validate 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions vf id 1 / end
+   flow validate 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions represented_port ethdev_port_id 1 / end
    Flow rule validated
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions represented_port ethdev_port_id 1 / end
    Flow rule #0 created
 
-2.send 2 matched pkts and check port 1 received 2 pkts::
+2.send 2 matched pkts and check port 2 received 2 pkts::
 
    p1 = Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header(teid=0x12345678)/Raw("x" *20)
    p2 = Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header(teid=0x12345688)/Raw("x" *20)
 
-   ---------------------- Forward statistics for port 1  ----------------------
+   ---------------------- Forward statistics for port 2  ----------------------
    RX-packets: 2              RX-dropped: 0             RX-total: 2
    TX-packets: 0              TX-dropped: 0             TX-total: 0
    ----------------------------------------------------------------------------
@@ -177,11 +177,11 @@ take 'MAC_IPV4_GTPU_TEID_with_mask' for example:
    TX-packets: 0              TX-dropped: 0             TX-total: 0
    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-3.send 1 mismatched pkts and check port 1 not received pkts::
+3.send 1 mismatched pkts and check port 2 not received pkts::
 
    p = Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header(teid=0x12345677)/Raw("x" *20)
 
-   ---------------------- Forward statistics for port 1  ----------------------
+   ---------------------- Forward statistics for port 2  ----------------------
    RX-packets: 0              RX-dropped: 0             RX-total: 0
    TX-packets: 0              TX-dropped: 0             TX-total: 0
    ----------------------------------------------------------------------------
@@ -191,12 +191,12 @@ take 'MAC_IPV4_GTPU_TEID_with_mask' for example:
    TX-packets: 0              TX-dropped: 0             TX-total: 0
    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-4.destory rule and re-send step 2 matched pkts check port 1 not received pkts::
+4.destory rule and re-send step 2 matched pkts check port 2 not received pkts::
 
    p1 = Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header(teid=0x12345678)/Raw("x" *20)
    p2 = Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header(teid=0x12345688)/Raw("x" *20)
 
-   ---------------------- Forward statistics for port 1  ----------------------
+   ---------------------- Forward statistics for port 2  ----------------------
    RX-packets: 0              RX-dropped: 0             RX-total: 0
    TX-packets: 0              TX-dropped: 0             TX-total: 0
    ----------------------------------------------------------------------------
@@ -217,7 +217,7 @@ subcase 1: MAC_IPV4_GTPU_TEID_with_mask
 :::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -232,7 +232,7 @@ subcase 2: MAC_IPV4_GTPU_TEID_without_mask
 ::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -247,7 +247,7 @@ subcase 3: MAC_IPV4_GTPU_dst
 ::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 dst is 192.168.1.2 / udp / gtpu / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 dst is 192.168.1.2 / udp / gtpu / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -261,7 +261,7 @@ subcase 4: MAC_IPV4_GTPU_src
 ::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 / udp / gtpu / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 / udp / gtpu / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -275,7 +275,7 @@ subcase 5: MAC_IPV4_GTPU_src_dst
 ::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / gtpu / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / gtpu / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -291,7 +291,7 @@ subcase 6: MAC_IPV4_GTPU_teid_dst
 :::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 dst is 192.168.1.2 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 dst is 192.168.1.2 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -307,7 +307,7 @@ subcase 7: MAC_IPV4_GTPU_teid_src
 :::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -324,7 +324,7 @@ subcase 8: MAC_IPV4_GTPU_ALL
 ::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -394,7 +394,7 @@ subcase 1: MAC_IPV4_GTPU_EH_IPV4_TEID_with_mask
 :::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -409,7 +409,7 @@ subcase 2: MAC_IPV4_GTPU_EH_IPV4_TEID_without_mask
 ::::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc / ipv4 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc / ipv4 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -424,7 +424,7 @@ subcase 3: MAC_IPV4_GTPU_EH_IPV4_QFI
 ::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -438,7 +438,7 @@ subcase 4: MAC_IPV4_GTPU_EH_IPV4_L3DST
 ::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -454,7 +454,7 @@ subcase 5: MAC_IPV4_GTPU_EH_IPV4_L3SRC
 ::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -470,7 +470,7 @@ subcase 6: MAC_IPV4_GTPU_EH_IPV4_L3SRC_L3DST
 ::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -488,7 +488,7 @@ subcase 7: MAC_IPV4_GTPU_EH_IPV4_TEID_L3SRC_L3DST
 :::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu  teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu  teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -506,7 +506,7 @@ subcase 8: MAC_IPV4_GTPU_EH_IPV4_QFI_L3SRC_L3DST
 ::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -525,7 +525,7 @@ subcase 9: MAC_IPV4_GTPU_EH_IPV4_ALL
 ::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu  teid is 0x12345678 teid mask 0x00000001 / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu  teid is 0x12345678 teid mask 0x00000001 / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -551,7 +551,7 @@ subcase 1: MAC_IPV4_GTPU_EH_IPV4_UDP_TEID_with_mask
 :::::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 / udp / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 / udp / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -566,7 +566,7 @@ subcase 2: MAC_IPV4_GTPU_EH_IPV4_UDP_TEID_without_mask
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc / ipv4 / udp / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc / ipv4 / udp / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -581,7 +581,7 @@ subcase 3: MAC_IPV4_GTPU_EH_IPV4_UDP_QFI
 ::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / udp / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / udp / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -595,7 +595,7 @@ subcase 4: MAC_IPV4_GTPU_EH_IPV4_UDP_L3DST
 ::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / udp / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -609,7 +609,7 @@ subcase 5: MAC_IPV4_GTPU_EH_IPV4_UDP_L3SRC
 ::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / udp / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / udp / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -623,7 +623,7 @@ subcase 6: MAC_IPV4_GTPU_EH_IPV4_UDP_L3SRC_L3DST
 ::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -639,7 +639,7 @@ subcase 7: MAC_IPV4_GTPU_EH_IPV4_UDP_L3SRC_L4DST
 ::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / udp dst is 23 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / udp dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -655,7 +655,7 @@ subcase 8: MAC_IPV4_GTPU_EH_IPV4_UDP_L3SRC_L4SRC
 ::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / udp src is 22 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 / udp src is 22 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -672,7 +672,7 @@ subcase 9: MAC_IPV4_GTPU_EH_IPV4_UDP_L3DST_L4SRC
 ::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / udp src is 22 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / udp src is 22 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -688,7 +688,7 @@ subcase 10: MAC_IPV4_GTPU_EH_IPV4_UDP_L3DST_L4DST
 :::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / udp dst is 23 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.1.2 / udp dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -704,7 +704,7 @@ subcase 11: MAC_IPV4_GTPU_EH_IPV4_UDP_L4DST
 :::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp dst is 23 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -718,7 +718,7 @@ subcase 12: MAC_IPV4_GTPU_EH_IPV4_UDP_L4SRC
 :::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp src is 22 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp src is 22 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -732,7 +732,7 @@ subcase 13: MAC_IPV4_GTPU_EH_IPV4_UDP_L4SRC_L4DST
 :::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp src is 22 dst is 23 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -748,7 +748,7 @@ subcase 14: MAC_IPV4_GTPU_EH_IPV4_UDP_TEID_L3SRC_L3DST
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -764,7 +764,7 @@ subcase 15: MAC_IPV4_GTPU_EH_IPV4_UDP_QFI_L3SRC_L3DST
 :::::::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -780,7 +780,7 @@ subcase 16: MAC_IPV4_GTPU_EH_IPV4_UDP_TEID_L4SRC_L4DST
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 / udp src is 22 dst is 23 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc / ipv4 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -796,7 +796,7 @@ subcase 17: MAC_IPV4_GTPU_EH_IPV4_UDP_QFI_L4SRC_L4DST
 :::::::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / udp src is 22 dst is 23 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -812,7 +812,7 @@ subcase 18: MAC_IPV4_GTPU_EH_IPV4_UDP_L3_l4
 :::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 22 dst is 23 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -832,7 +832,7 @@ subcase 19: MAC_IPV4_GTPU_EH_IPV4_UDP_ALL
 :::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 22 dst is 23 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / gtp_psc qfi is 0x34 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -926,7 +926,7 @@ subcase 1: MAC_IPV4_GTPU_IPV4_TEID_with_mask
 ::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -942,7 +942,7 @@ subcase 2: MAC_IPV4_GTPU_IPV4_TEID_without_mask
 :::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / ipv4 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / ipv4 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -958,7 +958,7 @@ subcase 3: MAC_IPV4_GTPU_IPV4_L3DST
 :::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -974,7 +974,7 @@ subcase 4: MAC_IPV4_GTPU_IPV4_L3SRC
 :::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -990,7 +990,7 @@ subcase 4: MAC_IPV4_GTPU_IPV4_L3SRC_L3DST
 :::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1008,7 +1008,7 @@ subcase 5: MAC_IPV4_GTPU_IPV4_ALL
 :::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1032,7 +1032,7 @@ subcase 1: MAC_IPV4_GTPU_IPV4_UDP_TEID_with_mask
 ::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 / udp / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 / udp / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1048,7 +1048,7 @@ subcase 2: MAC_IPV4_GTPU_IPV4_UDP_TEID_without_mask
 :::::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / ipv4 / udp / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / ipv4 / udp / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1065,7 +1065,7 @@ subcase 3: MAC_IPV4_GTPU_IPV4_UDP_L3DST
 :::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / udp / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1081,7 +1081,7 @@ subcase 4: MAC_IPV4_GTPU_IPV4_UDP_L3SRC
 :::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / udp / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / udp / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1097,7 +1097,7 @@ subcase 5: MAC_IPV4_GTPU_IPV4_UDP_L3SRC_L3DST
 :::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1115,7 +1115,7 @@ subcase 6: MAC_IPV4_GTPU_IPV4_UDP_L3SRC_L4DST
 :::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / udp dst is 23 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / udp dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1133,7 +1133,7 @@ subcase 7: MAC_IPV4_GTPU_IPV4_UDP_L3SRC_L4SRC
 :::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / udp src is 22 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 / udp src is 22 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1151,7 +1151,7 @@ subcase 8: MAC_IPV4_GTPU_IPV4_UDP_L3DST_L4SRC
 :::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / udp src is 22 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / udp src is 22 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1169,7 +1169,7 @@ subcase 9: MAC_IPV4_GTPU_IPV4_UDP_L3DST_L4DST
 :::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / udp dst is 23 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.1.2 / udp dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1187,7 +1187,7 @@ subcase 10: MAC_IPV4_GTPU_IPV4_UDP_L4DST
 ::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp dst is 23 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1203,7 +1203,7 @@ subcase 11: MAC_IPV4_GTPU_IPV4_UDP_L4SRC
 ::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp src is 22 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp src is 22 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1219,7 +1219,7 @@ subcase 12: MAC_IPV4_GTPU_IPV4_UDP_L4SRC_L4DST
 ::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp src is 22 dst is 23 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1237,7 +1237,7 @@ subcase 13: MAC_IPV4_GTPU_IPV4_UDP_TIED_L3SRC_L3DST
 :::::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1256,7 +1256,7 @@ subcase 14: MAC_IPV4_GTPU_IPV4_UDP_TEID_L4SRC_L4DST
 :::::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 / udp src is 22 dst is 23 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1275,7 +1275,7 @@ subcase 15: MAC_IPV4_GTPU_IPV4_UDP_L3_L4
 ::::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 22 dst is 23 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
@@ -1293,7 +1293,7 @@ subcase 16: MAC_IPV4_GTPU_IPV4_UDP_ALL
 ::::::::::::::::::::::::::::::::::::::
 rule::
 
-   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 22 dst is 23 / end actions vf id 1 / end
+   flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 teid mask 0x00000001 / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 22 dst is 23 / end actions represented_port ethdev_port_id 1 / end
 
 matched packets::
 
