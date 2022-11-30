@@ -23,7 +23,7 @@ tv_max_rule_number = {
         "scapy_str": [],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 1},
+            "param": {"expect_port": 2},
         },
         "expect_results": {"expect_pkts": 32500},
     },
@@ -33,7 +33,7 @@ tv_max_rule_number = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 1},
+            "param": {"expect_port": 2},
         },
         "expect_results": {"expect_pkts": 0},
     },
@@ -1166,7 +1166,7 @@ class TestICELimitValue(TestCase):
             for j in range(0, 255):
                 if not rule_count > 32500:
                     flows.write(
-                        "flow create 0 ingress pattern eth / ipv4 src is 192.168.%d.%d / end actions vf id 1 / end \n"
+                        "flow create 0 ingress pattern eth / ipv4 src is 192.168.%d.%d / end actions represented_port ethdev_port_id 1 / end \n"
                         % (i, j)
                     )
                     matched_scapy_str = (
@@ -1188,7 +1188,7 @@ class TestICELimitValue(TestCase):
         all_eal_param = self.dut.create_eal_parameters(
             cores="1S/4C/1T",
             ports=[vf0_pci, vf1_pci],
-            port_options={vf0_pci: "cap=dcf"},
+            port_options={vf0_pci: "cap=dcf,representor=vf[1]"},
         )
         command = (
             self.path
@@ -1197,7 +1197,7 @@ class TestICELimitValue(TestCase):
         )
         out = self.dut.send_expect(command, "testpmd> ", 360)
         self.testpmd_status = "running"
-        self.dut.send_expect("set portlist 1", "testpmd> ", 15)
+        self.dut.send_expect("set portlist 2", "testpmd> ", 15)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
         # check the rule list with 32500 rules
         rule_list_num = list(range(0, 32500))
@@ -1212,7 +1212,7 @@ class TestICELimitValue(TestCase):
         for i in range(m, 255):
             for j in range(t, 255):
                 rule = (
-                    "flow create 0 ingress pattern eth / ipv4 src is 192.168.%d.%d / end actions vf id 1 / end \n"
+                    "flow create 0 ingress pattern eth / ipv4 src is 192.168.%d.%d / end actions represented_port ethdev_port_id 1 / end \n"
                     % (i, j)
                 )
                 matched_packet = (
