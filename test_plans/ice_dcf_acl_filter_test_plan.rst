@@ -1,5 +1,5 @@
 .. SPDX-License-Identifier: BSD-3-Clause
-   Copyright(c) 2020 Intel Corporation
+   Copyright(c) 2020-2022 Intel Corporation
 
 ==================
 ICE DCF ACL filter
@@ -90,7 +90,7 @@ Prerequisites
 
 or launch one testpmd on VF0 and VF1::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:86:01.0,cap=dcf -a 86:01.1 --file-prefix=vf0 --log-level="ice,7" -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:86:01.0,cap=dcf,representor=vf[1] -a 86:01.1 --file-prefix=vf0 --log-level="ice,7" -- -i
 
 Common steps of basic cases
 ===========================
@@ -134,9 +134,9 @@ Then the ACL filter can filter the packet with dst mac address.
 
 1. rule::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / end actions vf id 1 / end
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:66 / ipv4 / end actions vf id 1 / end
-    flow create 0 ingress pattern eth dst is 00:11:22:33:66:55 / ipv4 / end actions vf id 1 / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:66 / ipv4 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:66:55 / ipv4 / end actions represented_port ethdev_port_id 1 / end
     flow create 0 ingress pattern eth dst spec 00:11:22:33:44:55 dst mask ff:ff:ff:ff:ff:00 / ipv4 / end actions drop / end
 
 2. matched packets::
@@ -223,9 +223,9 @@ Subcase 6: src mac + dst mac + src ipv4 + dst ipv4(only 2port NIC support)
 --------------------------------------------------------------------------
 1. rule::
 
-    flow create 0 ingress pattern eth dst is 33:00:00:00:00:01 / ipv4 / end actions vf id 1 / end
-    flow create 0 ingress pattern eth dst is 33:00:00:00:00:02 / ipv4 / end actions vf id 1 / end
-    flow create 0 ingress pattern eth dst is 33:00:00:00:00:03 / ipv4 / end actions vf id 1 / end
+    flow create 0 ingress pattern eth dst is 33:00:00:00:00:01 / ipv4 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 ingress pattern eth dst is 33:00:00:00:00:02 / ipv4 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 ingress pattern eth dst is 33:00:00:00:00:03 / ipv4 / end actions represented_port ethdev_port_id 1 / end
     flow create 0 ingress pattern eth src spec 00:11:22:33:44:55 src mask ff:ff:ff:ff:ff:00 dst spec 33:00:00:00:00:02 dst mask ff:ff:ff:ff:ff:fe \
     / ipv4 src spec 192.168.0.1 src mask 255.255.255.0 dst spec 192.168.0.2 dst mask 255.255.0.255 / end actions drop / end
 
@@ -277,9 +277,9 @@ Then the ACL filter can filter the packet with dst mac address.
 
 1. rule::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / tcp / end actions vf id 1 / end
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:66 / ipv4 / tcp / end actions vf id 1 / end
-    flow create 0 ingress pattern eth dst is 00:11:22:33:66:55 / ipv4 / tcp / end actions vf id 1 / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / tcp / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:66 / ipv4 / tcp / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:66:55 / ipv4 / tcp / end actions represented_port ethdev_port_id 1 / end
     flow create 0 ingress pattern eth dst spec 00:11:22:33:44:55 dst mask ff:ff:ff:ff:ff:00 / ipv4 / tcp / end actions drop / end
 
 2. matched packets::
@@ -383,9 +383,9 @@ Subcase 8: src mac + dst mac + src ip + dst ip + src port + dst port(only 2ports
 ---------------------------------------------------------------------------------------------
 1. rule::
 
-    flow create 0 ingress pattern eth dst is 00:01:23:45:67:89 / ipv4 / tcp / end actions vf id 1 / end
-    flow create 0 ingress pattern eth dst is 5E:8E:8B:4D:89:06 / ipv4 / tcp / end actions vf id 1 / end
-    flow create 0 ingress pattern eth dst is 5E:8E:8B:4D:90:05 / ipv4 / tcp / end actions vf id 1 / end
+    flow create 0 ingress pattern eth dst is 00:01:23:45:67:89 / ipv4 / tcp / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 ingress pattern eth dst is 5E:8E:8B:4D:89:06 / ipv4 / tcp / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 ingress pattern eth dst is 5E:8E:8B:4D:90:05 / ipv4 / tcp / end actions represented_port ethdev_port_id 1 / end
     flow create 0 ingress pattern eth src spec 00:11:22:33:44:55 src mask ff:ff:ff:ff:ff:00 dst spec 00:01:23:45:67:89 dst mask ff:ff:ff:ff:00:ff \
     / ipv4 src spec 192.168.0.1 src mask 255.255.255.0 dst spec 192.168.0.2 dst mask 255.255.0.255 \
     / tcp src spec 8010 src mask 65520 dst spec 8017 dst mask 65520 / end actions drop / end
@@ -878,15 +878,15 @@ Test Case 11: switch/acl/fdir/rss rules combination
 
 2. create rules::
 
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.20 / tcp / end actions vf id 1 / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.20 / tcp / end actions vf id 1 / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.3 dst is 192.168.0.20 / tcp / end actions vf id 1 / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.4 dst is 192.168.0.20 / tcp / end actions vf id 1 / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.20 / tcp / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.20 / tcp / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.3 dst is 192.168.0.20 / tcp / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.4 dst is 192.168.0.20 / tcp / end actions represented_port ethdev_port_id 1 / end
     flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.2 src mask 255.255.255.254 / tcp / end actions drop / end
     flow create 0 ingress pattern eth / ipv4 dst spec 192.168.0.21 dst mask 255.255.0.255 / tcp / end actions drop / end
-    flow create 1 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.20 / tcp src is 22 dst is 23 / end actions queue index 3 / mark / end
-    flow create 1 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.20 / tcp src is 22 dst is 23 / end actions queue index 3 / mark / end
-    flow create 1 ingress pattern eth / ipv4 src is 192.168.1.1 dst is 192.168.0.20 / tcp src is 22 dst is 23 / end actions queue index 3 / mark / end
+    flow create 2 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.20 / tcp src is 22 dst is 23 / end actions queue index 3 / mark / end
+    flow create 2 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.20 / tcp src is 22 dst is 23 / end actions queue index 3 / mark / end
+    flow create 2 ingress pattern eth / ipv4 src is 192.168.1.1 dst is 192.168.0.20 / tcp src is 22 dst is 23 / end actions queue index 3 / mark / end
 
 3. check the rule list::
 
@@ -898,7 +898,7 @@ Test Case 11: switch/acl/fdir/rss rules combination
     3       0       0       i--     ETH IPV4 TCP => VF
     4       0       0       i--     ETH IPV4 TCP => DROP
     5       0       0       i--     ETH IPV4 TCP => DROP
-    testpmd> flow list 1
+    testpmd> flow list 2
     ID      Group   Prio    Attr    Rule
     0       0       0       i--     ETH IPV4 TCP => QUEUE MARK
     1       0       0       i--     ETH IPV4 TCP => QUEUE MARK
@@ -915,14 +915,14 @@ Test Case 11: switch/acl/fdir/rss rules combination
     sendp(Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.1.1", dst="192.168.0.20")/TCP(sport=22,dport=23)/Raw(load="x"*30), iface="enp216s0f0")
     sendp(Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:89")/IP(src="192.168.1.1", dst="192.168.0.21")/TCP(sport=22,dport=23)/Raw(load="x"*30), iface="enp216s0f0")
 
-5. check packet 1 is received by port 1 and redirected to queue 3 with FDIR matched ID=0x0.
-   packet 2 is received by port 1 and distributed by RSS without mark ID.
-   packet 3 is dropped by port 1.
-   packet 4 is dropped by port 1.
-   packet 5 is received by port 1 and distributed by RSS without mark ID.
-   packet 6 is can't received by port 0 and port 1.
-   packet 7 is received by port 1 and redirected to queue 3 with FDIR matched ID=0x0.
-   packet 8 is dropped by port 1.
+5. check packet 1 is received by port 2 and redirected to queue 3 with FDIR matched ID=0x0.
+   packet 2 is received by port 2 and distributed by RSS without mark ID.
+   packet 3 is dropped by port 2.
+   packet 4 is dropped by port 2.
+   packet 5 is received by port 2 and distributed by RSS without mark ID.
+   packet 6 is can't received by port 0 and port 2.
+   packet 7 is received by port 2 and redirected to queue 3 with FDIR matched ID=0x0.
+   packet 8 is dropped by port 2.
 
 6. delete rule ID 4 from port 0 and list the rules::
 
@@ -941,5 +941,5 @@ Test Case 11: switch/acl/fdir/rss rules combination
     sendp(Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:88")/IP(src="192.168.0.2", dst="192.168.0.20")/TCP(sport=22,dport=23)/Raw(load="x"*30), iface="enp216s0f0")
     sendp(Ether(src="00:11:22:33:44:55", dst="00:01:23:45:67:88")/IP(src="192.168.0.3", dst="192.168.0.20")/TCP(sport=22,dport=23)/Raw(load="x"*30), iface="enp216s0f0")
 
-8. check packet 1 is received by port 1 and redirected to queue 3 with FDIR matched ID=0x0.
-   packet 2 is received by port 1 and distributed by RSS without mark ID.
+8. check packet 1 is received by port 2 and redirected to queue 3 with FDIR matched ID=0x0.
+   packet 2 is received by port 2 and distributed by RSS without mark ID.
