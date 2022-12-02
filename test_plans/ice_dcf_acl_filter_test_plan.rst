@@ -522,14 +522,14 @@ while we can create 256 ipv4-udp/ipv4-tcp/ipv4-sctp rules at most.
     sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.1.0", dst="192.168.100.2")/UDP(sport=8010,dport=8017)/Raw(load='X'*30)], iface="enp134s0f1")
 
    check the packet can't be received by VF1. stop the forward::
- 
+
     ---------------------- Forward statistics for port 1  ----------------------
     RX-packets: 0              RX-dropped: 0             RX-total: 0
     TX-packets: 0              TX-dropped: 0             TX-total: 0
     ----------------------------------------------------------------------------
 
 8. delete the rule 256 and 257::
- 
+
     flow destroy 0 rule 256
     flow destroy 0 rule 257
 
@@ -542,7 +542,7 @@ while we can create 256 ipv4-udp/ipv4-tcp/ipv4-sctp rules at most.
 9. create the rule in the step6 again,
    check the rule can be created as acl rule successfully.
    list the rules, there are rule 0-256 listed.
- 
+
 10.send packet2 again, check the packet dropped. stop the forward::
 
     ---------------------- Forward statistics for port 1  ----------------------
@@ -565,7 +565,7 @@ Test Case 6: max entry number ipv4-other
     flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.255.255 / end actions drop / end
 
 3. create 64 ipv4-other ACL rules::
- 
+
     flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.1 src mask 255.255.0.255 / end actions drop / end
     flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.2 src mask 255.255.0.255 / end actions drop / end
     flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.3 src mask 255.255.0.255 / end actions drop / end
@@ -599,12 +599,12 @@ Test Case 6: max entry number ipv4-other
     sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.0.2", dst="192.168.1.2")/Raw(load='X'*30)], iface="enp134s0f1")
 
    check the packet can't be received by vf1. stop forward::
- 
+
     ---------------------- Forward statistics for port 1  ----------------------
     RX-packets: 0              RX-dropped: 0             RX-total: 0
     TX-packets: 0              TX-dropped: 0             TX-total: 0
     ----------------------------------------------------------------------------
- 
+
 8. delete the rule 64 and 65::
 
     flow destroy 0 rule 64
