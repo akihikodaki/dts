@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright(c) 2020 Intel Corporation
+# Copyright(c) 2020-2022 Intel Corporation
 #
 
 import copy
@@ -540,9 +540,9 @@ tv_mac_ipv4_pay_src_mac = {
 tv_mac_ipv4_pay_dst_mac = {
     "name": "test_mac_ipv4_pay_dst_mac",
     "rules": [
-        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / end actions vf id 1 / end",
-        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:66 / ipv4 / end actions vf id 1 / end",
-        "flow create 0 ingress pattern eth dst is 00:11:22:33:66:55 / ipv4 / end actions vf id 1 / end",
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:66 / ipv4 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:66:55 / ipv4 / end actions represented_port ethdev_port_id 1 / end",
         "flow create 0 ingress pattern eth dst spec 00:11:22:33:44:55 dst mask ff:ff:ff:ff:ff:00 / ipv4 / end actions drop / end",
     ],
     "scapy_str": MAC_IPV4_PAY_DST_MAC,
@@ -573,9 +573,9 @@ tv_mac_ipv4_pay_src_dst_ip = {
 tv_mac_ipv4_pay_src_dst_mac_src_dst_ip = {
     "name": "test_mac_ipv4_pay_src_dst_mac_src_dst_ip",
     "rules": [
-        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:01 / ipv4 / end actions vf id 1 / end",
-        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:02 / ipv4 / end actions vf id 1 / end",
-        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:03 / ipv4 / end actions vf id 1 / end",
+        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:01 / ipv4 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:02 / ipv4 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:03 / ipv4 / end actions represented_port ethdev_port_id 1 / end",
         "flow create 0 ingress pattern eth src spec 00:11:22:33:44:55 src mask ff:ff:ff:ff:ff:00 dst spec 33:00:00:00:00:02 dst mask ff:ff:ff:ff:ff:fe / ipv4 src spec 192.168.0.1 src mask 255.255.255.0 dst spec 192.168.0.2 dst mask 255.255.0.255 / end actions drop / end",
     ],
     "scapy_str": MAC_IPV4_PAY_SRC_DST_MAC_SRC_DST_IP,
@@ -592,9 +592,9 @@ tv_mac_ipv4_tcp_src_mac = {
 tv_mac_ipv4_tcp_dst_mac = {
     "name": "test_mac_ipv4_tcp_dst_mac",
     "rules": [
-        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / tcp / end actions vf id 1 / end",
-        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:66 / ipv4 / tcp / end actions vf id 1 / end",
-        "flow create 0 ingress pattern eth dst is 00:11:22:33:66:55 / ipv4 / tcp / end actions vf id 1 / end",
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / tcp / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:66 / ipv4 / tcp / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:66:55 / ipv4 / tcp / end actions represented_port ethdev_port_id 1 / end",
         "flow create 0 ingress pattern eth dst spec 00:11:22:33:44:55 dst mask ff:ff:ff:ff:ff:00 / ipv4 / tcp / end actions drop / end",
     ],
     "scapy_str": MAC_IPV4_TCP_DST_MAC,
@@ -639,9 +639,9 @@ tv_mac_ipv4_tcp_src_dst_ip_src_dst_port = {
 tv_mac_ipv4_tcp_src_dst_mac_src_dst_ip_src_dst_port = {
     "name": "test_mac_ipv4_tcp_src_dst_mac_src_dst_ip_src_dst_port",
     "rules": [
-        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:01 / ipv4 / end actions vf id 1 / end",
-        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:02 / ipv4 / end actions vf id 1 / end",
-        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:03 / ipv4 / end actions vf id 1 / end",
+        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:01 / ipv4 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:02 / ipv4 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:03 / ipv4 / end actions represented_port ethdev_port_id 1 / end",
         "flow create 0 priority 0 ingress pattern eth src spec 00:11:22:33:44:55 src mask ff:ff:ff:ff:ff:00 dst spec 33:00:00:00:00:02 dst mask ff:ff:ff:ff:ff:fe / ipv4 src spec 192.168.0.1 src mask 255.255.255.0 dst spec 192.168.0.2 dst mask 255.255.0.255 / tcp src spec 8010 src mask 65520 dst spec 8017 dst mask 65520 / end actions drop / end",
     ],
     "scapy_str": MAC_IPV4_TCP_SRC_DST_MAC_SRC_DST_IP_SRC_DST_PORT,
@@ -658,9 +658,9 @@ tv_mac_ipv4_udp_src_mac = {
 tv_mac_ipv4_udp_dst_mac = {
     "name": "test_mac_ipv4_udp_dst_mac",
     "rules": [
-        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / udp / end actions vf id 1 / end",
-        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:66 / ipv4 / udp / end actions vf id 1 / end",
-        "flow create 0 ingress pattern eth dst is 00:11:22:33:66:55 / ipv4 / udp / end actions vf id 1 / end",
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / udp / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:66 / ipv4 / udp / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:66:55 / ipv4 / udp / end actions represented_port ethdev_port_id 1 / end",
         "flow create 0 ingress pattern eth dst spec 00:11:22:33:44:55 dst mask ff:ff:ff:ff:ff:00 / ipv4 / udp / end actions drop / end",
     ],
     "scapy_str": MAC_IPV4_UDP_DST_MAC,
@@ -705,9 +705,9 @@ tv_mac_ipv4_udp_src_dst_ip_src_dst_port = {
 tv_mac_ipv4_udp_src_dst_mac_src_dst_ip_src_dst_port = {
     "name": "test_mac_ipv4_udp_src_dst_mac_src_dst_ip_src_dst_port",
     "rules": [
-        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:01 / ipv4 / udp / end actions vf id 1 / end",
-        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:02 / ipv4 / udp / end actions vf id 1 / end",
-        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:03 / ipv4 / udp / end actions vf id 1 / end",
+        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:01 / ipv4 / udp / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:02 / ipv4 / udp / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 33:00:00:00:00:03 / ipv4 / udp / end actions represented_port ethdev_port_id 1 / end",
         "flow create 0 priority 0 ingress pattern eth src spec 00:11:22:33:44:55 src mask ff:ff:ff:ff:ff:00 dst spec 33:00:00:00:00:03 dst mask ff:ff:ff:ff:ff:fe / ipv4 src spec 192.168.0.1 src mask 255.255.255.0 dst spec 192.168.0.2 dst mask 255.255.0.255 / udp src spec 8010 src mask 65520 dst spec 8017 dst mask 65520 / end actions drop / end",
     ],
     "scapy_str": MAC_IPV4_UDP_SRC_DST_MAC_SRC_DST_IP_SRC_DST_PORT,
@@ -930,28 +930,36 @@ class ICEDCFACLFilterTest(TestCase):
         Run before each test case.
         """
 
-    def create_testpmd_command(self, param):
+    def create_testpmd_command(self, param="", repre_vf=False):
         """
         Create testpmd command
         """
-        # Prepare testpmd EAL and parameters
-        all_eal_param = self.dut.create_eal_parameters(
-            cores="1S/4C/1T",
-            ports=[self.vf0_pci, self.vf1_pci],
-            port_options={self.vf0_pci: "cap=dcf"},
-        )
+        if repre_vf:
+            all_eal_param = self.dut.create_eal_parameters(
+                cores="1S/4C/1T",
+                ports=[self.vf0_pci, self.vf1_pci],
+                port_options={self.vf0_pci: "cap=dcf,representor=vf[1]"},
+            )
+        else:
+            # Prepare testpmd EAL and parametes
+            all_eal_param = self.dut.create_eal_parameters(
+                cores="1S/4C/1T",
+                ports=[self.vf0_pci, self.vf1_pci],
+                port_options={self.vf0_pci: "cap=dcf"},
+            )
         command = self.path + all_eal_param + "--log-level='ice,7'" + " -- -i" + param
         return command
 
-    def launch_testpmd(self, param=""):
+    def launch_testpmd(self, param="", repre_vf=False):
         """
         launch testpmd with the command
         """
         time.sleep(5)
-        command = self.create_testpmd_command(param)
+        command = self.create_testpmd_command(param, repre_vf)
+        port_id = 2 if repre_vf else 1
         out = self.dut.send_expect(command, "testpmd> ", 20)
         self.testpmd_status = "running"
-        self.dut.send_expect("set portlist 1", "testpmd> ", 15)
+        self.dut.send_expect("set portlist {}".format(port_id), "testpmd> ", 15)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
         self.dut.send_expect("set verbose 1", "testpmd> ", 15)
         self.pmd_output.execute_cmd("start")
@@ -1115,15 +1123,17 @@ class ICEDCFACLFilterTest(TestCase):
         else:
             return destroy_list
 
-    def common_process(self, vectors, launch_testpmd=True):
+    def common_process(self, vectors, launch_testpmd=True, repre_vf=False):
 
         if launch_testpmd:
             # launch testpmd
-            self.launch_testpmd()
+            self.launch_testpmd(repre_vf=repre_vf)
 
         test_results = {}
         for test_vector in vectors:
             try:
+                if repre_vf:
+                    test_vector["check_param"]["port_id"] = 2
                 self.dut.send_expect("flow flush 0", "testpmd> ", 120)
 
                 # create a rule
@@ -1169,19 +1179,19 @@ class ICEDCFACLFilterTest(TestCase):
         if self.nic == "ICE_25G-E810C_SFP":
             self.common_process(vectors_ipv4_pay_4ports)
         else:
-            self.common_process(vectors_ipv4_pay_2ports)
+            self.common_process(vectors_ipv4_pay_2ports, repre_vf=True)
 
     def test_mac_ipv4_tcp(self):
         if self.nic == "ICE_25G-E810C_SFP":
             self.common_process(vectors_ipv4_tcp_4ports)
         else:
-            self.common_process(vectors_ipv4_tcp_2ports)
+            self.common_process(vectors_ipv4_tcp_2ports, repre_vf=True)
 
     def test_mac_ipv4_udp(self):
         if self.nic == "ICE_25G-E810C_SFP":
             self.common_process(vectors_ipv4_udp_4ports)
         else:
-            self.common_process(vectors_ipv4_udp_2ports)
+            self.common_process(vectors_ipv4_udp_2ports, repre_vf=True)
 
     def test_mac_ipv4_sctp(self):
         if self.nic == "ICE_25G-E810C_SFP":
@@ -1289,7 +1299,7 @@ class ICEDCFACLFilterTest(TestCase):
 
         # start testpmd with creating 512 ACL rules
         param = " --cmdline-file=%s" % (self.dut_file_dir + src_file)
-        out_testpmd = self.launch_testpmd(param)
+        out_testpmd = self.launch_testpmd(param=param)
         self.check_dcf_status(out_testpmd, stats=True)
         rule_list = self.dut.send_expect("flow list 0", "testpmd> ", 15)
         self.verify("159" in rule_list, "160 rules failed to be created")
@@ -1341,7 +1351,7 @@ class ICEDCFACLFilterTest(TestCase):
 
         # start testpmd with creating 255 ACL rules
         param = " --cmdline-file=%s" % (self.dut_file_dir + src_file)
-        out_testpmd = self.launch_testpmd(param)
+        out_testpmd = self.launch_testpmd(param=param)
         self.check_dcf_status(out_testpmd, stats=True)
         rule_list = self.dut.send_expect("flow list 0", "testpmd> ", 15)
         self.verify("254" in rule_list, "255 rules failed to be created")
@@ -1636,23 +1646,23 @@ class ICEDCFACLFilterTest(TestCase):
         create switch, acl and fdir rules simultaneously.
         """
         param = " --rxq=16 --txq=16"
-        out_testpmd = self.launch_testpmd(param)
+        out_testpmd = self.launch_testpmd(repre_vf=True, param=param)
         self.check_dcf_status(out_testpmd, stats=True)
         rules = {
             "switch": [
-                "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.20 / tcp / end actions vf id 1 / end",
-                "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.20 / tcp / end actions vf id 1 / end",
-                "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.3 dst is 192.168.0.20 / tcp / end actions vf id 1 / end",
-                "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.4 dst is 192.168.0.20 / tcp / end actions vf id 1 / end",
+                "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.20 / tcp / end actions represented_port ethdev_port_id 1 / end",
+                "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.20 / tcp / end actions represented_port ethdev_port_id 1 / end",
+                "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.3 dst is 192.168.0.20 / tcp / end actions represented_port ethdev_port_id 1 / end",
+                "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.4 dst is 192.168.0.20 / tcp / end actions represented_port ethdev_port_id 1 / end",
             ],
             "acl": [
                 "flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.2 src mask 255.255.255.254 / tcp / end actions drop / end",
                 "flow create 0 ingress pattern eth / ipv4 dst spec 192.168.0.21 dst mask 255.255.0.255 / tcp / end actions drop / end",
             ],
             "fdir": [
-                "flow create 1 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.20 / tcp src is 22 dst is 23 / end actions queue index 3 / mark / end",
-                "flow create 1 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.20 / tcp src is 22 dst is 23 / end actions queue index 3 / mark / end",
-                "flow create 1 ingress pattern eth / ipv4 src is 192.168.1.1 dst is 192.168.0.20 / tcp src is 22 dst is 23 / end actions queue index 3 / mark / end",
+                "flow create 2 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.20 / tcp src is 22 dst is 23 / end actions queue index 3 / mark / end",
+                "flow create 2 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.20 / tcp src is 22 dst is 23 / end actions queue index 3 / mark / end",
+                "flow create 2 ingress pattern eth / ipv4 src is 192.168.1.1 dst is 192.168.0.20 / tcp src is 22 dst is 23 / end actions queue index 3 / mark / end",
             ],
         }
         switch_rule_list = self.create_other_filter_rule(
@@ -1662,7 +1672,7 @@ class ICEDCFACLFilterTest(TestCase):
         acl_rule_list = self.create_acl_filter_rule(rules["acl"], check_stats=True)
         self.check_filter_rule_list(0, switch_rule_list + acl_rule_list)
         fdir_rule_list = self.create_other_filter_rule(rules["fdir"], check_stats=True)
-        self.check_filter_rule_list(1, fdir_rule_list)
+        self.check_filter_rule_list(2, fdir_rule_list)
 
         packets = {
             "drop": [
@@ -1687,7 +1697,7 @@ class ICEDCFACLFilterTest(TestCase):
         rfc.check_drop(
             out_drop,
             pkt_num=len(packets["drop"]),
-            check_param={"port_id": 1, "drop": 1},
+            check_param={"port_id": 2, "drop": 1},
             stats=True,
         )
 
@@ -1695,19 +1705,19 @@ class ICEDCFACLFilterTest(TestCase):
         rfc.check_iavf_fdir_mark(
             out_mark,
             pkt_num=len(packets["mark"]),
-            check_param={"port_id": 1, "queue": 3, "mark_id": 0},
+            check_param={"port_id": 2, "queue": 3, "mark_id": 0},
         )
 
         out_rss = self.send_pkts_getouput(pkts=packets["rss"])
         rfc.check_iavf_fdir_mark(
             out_rss,
             pkt_num=len(packets["rss"]),
-            check_param={"port_id": 1, "passthru": 1},
+            check_param={"port_id": 2, "passthru": 1},
         )
 
         out_noreceived = self.send_pkts_getouput(pkts=packets["noreceived"])
         rfc.check_iavf_fdir_mark(
-            out_noreceived, pkt_num=0, check_param={"port_id": 1, "passthru": 1}
+            out_noreceived, pkt_num=0, check_param={"port_id": 2, "passthru": 1}
         )
 
         self.dut.send_expect("flow destroy 0 rule 4", "testpmd> ", 15)
@@ -1719,12 +1729,12 @@ class ICEDCFACLFilterTest(TestCase):
 
         out_mark = self.send_pkts_getouput(pkts=packets["mark"])
         rfc.check_iavf_fdir_mark(
-            out_mark, pkt_num=1, check_param={"port_id": 1, "queue": 3, "mark_id": 0}
+            out_mark, pkt_num=1, check_param={"port_id": 2, "queue": 3, "mark_id": 0}
         )
 
         out_rss = self.send_pkts_getouput(pkts=packets["rss"])
         rfc.check_iavf_fdir_mark(
-            out_rss, pkt_num=1, check_param={"port_id": 1, "passthru": 1}
+            out_rss, pkt_num=1, check_param={"port_id": 2, "passthru": 1}
         )
 
     def check_dcf_status(self, out_testpmd, stats=True):
