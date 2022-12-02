@@ -1,5 +1,5 @@
 .. SPDX-License-Identifier: BSD-3-Clause
-   Copyright(c) 2021 Intel Corporation
+   Copyright(c) 2021-2022 Intel Corporation
 
 ================================
 ICE Support Flow Priority in DCF
@@ -72,7 +72,7 @@ Prerequisites
 
 11. launch testpmd::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -a 0000:18:01.2 -a 0000:18:01.3 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf,representor=[1-3] -a 0000:18:01.1 -a 0000:18:01.2 -a 0000:18:01.3 -- -i
 
     testpmd> set fwd rxonly
 
@@ -87,7 +87,9 @@ Prerequisites
 
 test steps for supported pattern
 ================================
-1. validate rules: two rules have same pattern, input set but different priority and action(priority 0 -> to vf 1, priority 1 -> to vf 2).
+
+Note::
+1. validate rules: two rules have same pattern, input set but different priority and action(priority 0 -> represented_port ethdev_port_id 1, priority 1 ->  represented_port ethdev_port_id 2).
 2. create rules and list rules.
 3. send matched packets, check vf 1 receive the packets for hiting the priority 0.
 4. send mismatched packets, check the packets are not received by vf 1 or 2.
@@ -300,10 +302,10 @@ test case 01: MAC_PAY (this case is not supported in dpdk-21.05)
 ================================================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth src is 00:00:00:00:00:01 dst is 00:11:22:33:44:55 type is 0x0800 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth src is 00:00:00:00:00:01 dst is 00:11:22:33:44:55 type is 0x0800 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth src is 00:00:00:00:00:01 dst is 00:11:22:33:44:55 type is 0x0800 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth src is 00:00:00:00:00:01 dst is 00:11:22:33:44:55 type is 0x0800 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth src is 00:00:00:00:00:01 dst is 00:11:22:33:44:55 type is 0x0800 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth src is 00:00:00:00:00:01 dst is 00:11:22:33:44:55 type is 0x0800 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth src is 00:00:00:00:00:01 dst is 00:11:22:33:44:55 type is 0x0800 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth src is 00:00:00:00:00:01 dst is 00:11:22:33:44:55 type is 0x0800 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -320,10 +322,10 @@ test case 02: MAC_IPV4_FRAG
 ===========================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 2 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 2 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 2 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 2 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 2 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 2 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 2 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 2 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -342,10 +344,10 @@ test case 03: MAC_IPV4_PAY
 ===============================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 6 tos is 4 ttl is 2 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 6 tos is 4 ttl is 2 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 6 tos is 4 ttl is 2 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 6 tos is 4 ttl is 2 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 6 tos is 4 ttl is 2 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 6 tos is 4 ttl is 2 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 6 tos is 4 ttl is 2 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 6 tos is 4 ttl is 2 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -365,10 +367,10 @@ test case 04: MAC_IPV4_UDP_PAY
 ===============================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -389,10 +391,10 @@ test case 05: MAC_IPV4_TCP_PAY
 ===============================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -413,10 +415,10 @@ test case 06: MAC_IPV4_IGMP
 ===========================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 proto is 0x02 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 proto is 0x02 / end actions vf id 1 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 proto is 0x02 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 proto is 0x02 / end actions vf id 1 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 proto is 0x02 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 proto is 0x02 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 proto is 0x02 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 proto is 0x02 / end actions represented_port ethdev_port_id 1 / end
 
 matched pkts::
 
@@ -432,10 +434,10 @@ test case 07: MAC_IPV6_srcip_dstip
 ==================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -454,10 +456,10 @@ test case 08: MAC_IPV6_dstip_tc
 ===============================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -478,10 +480,10 @@ test case 09: MAC_IPV6_UDP_PAY
 ==============================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / udp src is 25 dst is 23 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / udp src is 25 dst is 23 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / udp src is 25 dst is 23 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / udp src is 25 dst is 23 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -500,10 +502,10 @@ test case 10: MAC_IPV6_TCP
 ==========================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / tcp src is 25 dst is 23 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / tcp src is 25 dst is 23 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / tcp src is 25 dst is 23 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / tcp src is 25 dst is 23 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -522,10 +524,10 @@ test case 11: MAC_IPV4_NVGRE_IPV4_PAY
 =====================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -548,10 +550,10 @@ test case 12: MAC_IPV4_NVGRE_IPV4_UDP_PAY
 =========================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 50 dst is 23 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 50 dst is 23 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 50 dst is 23 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 50 dst is 23 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 50 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 50 dst is 23 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 50 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 50 dst is 23 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -571,10 +573,10 @@ test case 13: MAC_IPV4_NVGRE_IPV4_TCP
 =====================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -594,10 +596,10 @@ test case 14: MAC_IPV4_NVGRE_MAC_IPV4_PAY
 =========================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -622,10 +624,10 @@ test case 15: MAC_IPV4_NVGRE_MAC_IPV4_UDP_PAY
 =============================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 /  eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / udp src is 25 dst is 23 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 /  eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / udp src is 25 dst is 23 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 /  eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / udp src is 25 dst is 23 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 /  eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / udp src is 25 dst is 23 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 /  eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 /  eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 /  eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 /  eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -646,10 +648,10 @@ test case 16: MAC_IPV4_NVGRE_MAC_IPV4_TCP
 =========================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -670,10 +672,10 @@ test case 17: MAC_IPV4_PFCP_NODE
 ================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -690,10 +692,10 @@ test case 18: MAC_IPV4_PFCP_SESSION
 ===================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 1 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 / udp / pfcp s_field is 1 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 1 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 / udp / pfcp s_field is 1 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 / udp / pfcp s_field is 1 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 / udp / pfcp s_field is 1 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -710,10 +712,10 @@ test case 19: MAC_IPV6_PFCP_NODE
 ================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv6 / udp / pfcp s_field is 0 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv6 / udp / pfcp s_field is 0 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv6 / udp / pfcp s_field is 0 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv6 / udp / pfcp s_field is 0 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv6 / udp / pfcp s_field is 0 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv6 / udp / pfcp s_field is 0 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv6 / udp / pfcp s_field is 0 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv6 / udp / pfcp s_field is 0 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -730,10 +732,10 @@ test case 20: MAC_IPV6_PFCP_SESSION
 ===================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv6 / udp / pfcp s_field is 1 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv6 / udp / pfcp s_field is 1 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv6 / udp / pfcp s_field is 1 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv6 / udp / pfcp s_field is 1 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv6 / udp / pfcp s_field is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv6 / udp / pfcp s_field is 1 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv6 / udp / pfcp s_field is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv6 / udp / pfcp s_field is 1 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -750,10 +752,10 @@ test case 21: IP multicast
 ==========================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -768,10 +770,10 @@ test case 22: L2 multicast
 ==========================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst spec 01:00:5e:00:00:00 dst mask ff:ff:ff:80:00:00 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst spec 01:00:5e:00:00:00 dst mask ff:ff:ff:80:00:00 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst spec 01:00:5e:00:00:00 dst mask ff:ff:ff:80:00:00 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst spec 01:00:5e:00:00:00 dst mask ff:ff:ff:80:00:00 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst spec 01:00:5e:00:00:00 dst mask ff:ff:ff:80:00:00 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst spec 01:00:5e:00:00:00 dst mask ff:ff:ff:80:00:00 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst spec 01:00:5e:00:00:00 dst mask ff:ff:ff:80:00:00 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst spec 01:00:5e:00:00:00 dst mask ff:ff:ff:80:00:00 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -786,10 +788,10 @@ test case 23: ethertype filter_PPPOD
 ====================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth type is 0x8863 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth type is 0x8863 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth type is 0x8863 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth type is 0x8863 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth type is 0x8863 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth type is 0x8863 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth type is 0x8863 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth type is 0x8863 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -804,10 +806,10 @@ test case 24: ethertype filter_PPPOE
 ====================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth type is 0x8864 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth type is 0x8864 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth type is 0x8864 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth type is 0x8864 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth type is 0x8864 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth type is 0x8864 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth type is 0x8864 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth type is 0x8864 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -822,10 +824,10 @@ test case 25: ethertype filter_IPV6
 ====================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth type is 0x86dd / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth type is 0x86dd / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth type is 0x86dd / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth type is 0x86dd / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth type is 0x86dd / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth type is 0x86dd / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth type is 0x86dd / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth type is 0x86dd / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -841,10 +843,10 @@ test case 26: UDP port filter_DHCP discovery
 ============================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 / udp src is 68 dst is 67 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 / udp src is 68 dst is 67 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 / udp src is 68 dst is 67 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 / udp src is 68 dst is 67 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 / udp src is 68 dst is 67 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 / udp src is 68 dst is 67 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 / udp src is 68 dst is 67 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 / udp src is 68 dst is 67 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -860,10 +862,10 @@ test case 27: UDP port filter_DHCP offer
 ========================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 / udp src is 67 dst is 68 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 / udp src is 67 dst is 68 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 / udp src is 67 dst is 68 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 / udp src is 67 dst is 68 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 / udp src is 67 dst is 68 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 / udp src is 67 dst is 68 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 / udp src is 67 dst is 68 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 / udp src is 67 dst is 68 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -879,10 +881,10 @@ test case 28: UDP port filter_VXLAN
 ===================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 / udp dst is 4789 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 / udp dst is 4789 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 / udp dst is 4789 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 / udp dst is 4789 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 / udp dst is 4789 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 / udp dst is 4789 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 / udp dst is 4789 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 / udp dst is 4789 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -897,10 +899,10 @@ test case 29: MAC_VLAN filter
 ==============================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -916,10 +918,10 @@ test case 30: VLAN filter
 ==========================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -934,10 +936,10 @@ test case 31: MAC_IPV4_L2TPv3
 =============================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -954,10 +956,10 @@ test case 32: MAC_IPV6_L2TPv3
 =============================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / l2tpv3oip session_id is 1 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / l2tpv3oip session_id is 1 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / l2tpv3oip session_id is 1 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / l2tpv3oip session_id is 1 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / l2tpv3oip session_id is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / l2tpv3oip session_id is 1 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / l2tpv3oip session_id is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / l2tpv3oip session_id is 1 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -974,10 +976,10 @@ test case 33: MAC_IPV4_ESP
 ===========================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -994,10 +996,10 @@ test case 34: MAC_IPV6_ESP
 ===========================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / esp spi is 1 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / esp spi is 1 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / esp spi is 1 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / esp spi is 1 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / esp spi is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / esp spi is 1 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / esp spi is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / esp spi is 1 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1014,10 +1016,10 @@ test case 35: MAC_IPV4_AH
 ===========================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / ah spi is 1 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 / ah spi is 1 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / ah spi is 1 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 / ah spi is 1 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / ah spi is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 / ah spi is 1 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / ah spi is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 / ah spi is 1 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1034,10 +1036,10 @@ test case 36: MAC_IPV6_AH
 ===========================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / ah spi is 1 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / ah spi is 1 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / ah spi is 1 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / ah spi is 1 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / ah spi is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / ah spi is 1 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / ah spi is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / ah spi is 1 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1054,10 +1056,10 @@ test case 37: MAC_IPV4_NAT-T-ESP
 ================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / udp / esp spi is 1 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 / udp / esp spi is 1 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / udp / esp spi is 1 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 / udp / esp spi is 1 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / udp / esp spi is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 / udp / esp spi is 1 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / udp / esp spi is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.2 / udp / esp spi is 1 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1074,10 +1076,10 @@ test case 38: MAC_IPV6_NAT-T-ESP
 ================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / udp / esp spi is 1 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / udp / esp spi is 1 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / udp / esp spi is 1 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / udp / esp spi is 1 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / udp / esp spi is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / udp / esp spi is 1 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / udp / esp spi is 1 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / udp / esp spi is 1 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1094,10 +1096,10 @@ test case 39: MAC_VLAN_PPPOE_IPV4_PAY_session_id_proto_id
 =========================================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1115,10 +1117,10 @@ test case 40: MAC_VLAN_PPPOE_IPV6_PAY_session_id_proto_id
 =========================================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1136,10 +1138,10 @@ test case 41: MAC_PPPOE_IPV4_PAY_session_id_proto_id
 ====================================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1156,10 +1158,10 @@ test case 42: MAC_PPPOE_IPV6_PAY_session_id_proto_id
 ====================================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1176,10 +1178,10 @@ test case 43: MAC_PPPOE_IPV4_PAY_IP_address
 ===========================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1195,10 +1197,10 @@ test case 44: MAC_PPPOE_IPV4_UDP_PAY
 ===========================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1216,10 +1218,10 @@ test case 45: MAC_PPPOE_IPV4_UDP_PAY_non_src_dst_port
 =====================================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1237,10 +1239,10 @@ test case 46: MAC_PPPOE_IPV4_TCP_PAY
 =====================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1258,10 +1260,10 @@ test case 47: MAC_PPPOE_IPV4_TCP_PAY_non_src_dst_port
 ======================================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1279,10 +1281,10 @@ test case 48: MAC_PPPOE_IPV6_PAY_IP_address
 ===========================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1299,10 +1301,10 @@ test case 49: MAC_PPPOE_IPV6_UDP_PAY
 ====================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1319,10 +1321,10 @@ test case 50: MAC_PPPOE_IPV6_UDP_PAY_non_src_dst_port
 =====================================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1340,10 +1342,10 @@ test case 51: MAC_PPPOE_IPV6_TCP_PAY
 =====================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1360,10 +1362,10 @@ test case 52: MAC_PPPOE_IPV6_TCP_PAY_non_src_dst_port
 =====================================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1381,10 +1383,10 @@ test case 53: MAC_VLAN_PPPOE_IPV4_PAY_IP_address
 =================================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1401,10 +1403,10 @@ test case 54: MAC_VLAN_PPPOE_IPV4_UDP_PAY
 =========================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1423,10 +1425,10 @@ test case 55: MAC_VLAN_PPPOE_IPV4_UDP_PAY_non_src_dst_port
 ==========================================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1445,10 +1447,10 @@ test case 56: MAC_VLAN_PPPOE_IPV4_TCP_PAY
 =========================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1467,10 +1469,10 @@ test case 57: MAC_VLAN_PPPOE_IPV4_TCP_PAY_non_src_dst_port
 ==========================================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1489,10 +1491,10 @@ test case 58: MAC_VLAN_PPPOE_IPV6_PAY_IP_address
 ================================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1508,10 +1510,10 @@ test case 59: MAC_VLAN_PPPOE_IPV6_UDP_PAY
 =========================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1529,10 +1531,10 @@ test case 60: MAC_VLAN_PPPOE_IPV6_UDP_PAY_non_src_dst_port
 ==========================================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / udp / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / udp / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / udp / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / udp / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / udp / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / udp / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / udp / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / udp / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1550,10 +1552,10 @@ test case 61: MAC_VLAN_PPPOE_IPV6_TCP_PAY
 =========================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1571,10 +1573,10 @@ test case 62: MAC_VLAN_PPPOE_IPV6_TCP_PAY_non_src_dst_port
 ==========================================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / tcp / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / tcp / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / tcp / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / tcp / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / tcp / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / tcp / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / tcp / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / tcp / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1592,10 +1594,10 @@ test case 63: MAC_PPPOE_LCP_PAY
 ===============================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1612,10 +1614,10 @@ test case 64: MAC_PPPOE_IPCP_PAY
 ================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1632,10 +1634,10 @@ test case 65: MAC_VLAN_PPPOE_LCP_PAY
 ====================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1653,10 +1655,10 @@ test case 66: MAC_VLAN_PPPOE_IPCP_PAY
 =====================================
 rules::
 
-    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions vf id 1 / end
-    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions vf id 2 / end
+    flow validate 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions represented_port ethdev_port_id 1 / end
+    flow validate 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions represented_port ethdev_port_id 2 / end
 
 matched pkts::
 
@@ -1675,9 +1677,9 @@ test case: negative test cases
 
 1. create rules, check all these rules can not be created::
 
-    flow create 0 priority 2 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions vf id 1 / end
-    flow create 0 priority a ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions vf id 1 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions vf id 4 / end
+    flow create 0 priority 2 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority a ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions represented_port ethdev_port_id 4 / end
 
 
 test case: exclusive test cases
@@ -1686,8 +1688,8 @@ subcase 1: same pattern/input set/action different priority
 -----------------------------------------------------------
 1. create same pattern, input set and action but different priority, check these two rules can be created::
 
-    flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions vf id 2 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions represented_port ethdev_port_id 2 / end
 
 2. send matched pkts and check vf2 receive this pkt::
 
@@ -1701,8 +1703,8 @@ subcase 2: same pattern/input set/priority different action
 -----------------------------------------------------------
 1. create same pattern, input set and priority but different action, check these two rules can be created::
 
-    flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions vf id 2 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions represented_port ethdev_port_id 2 / end
 
 2. send matched pkts and check both vf1 and vf2 receive this pkt::
 
@@ -1716,12 +1718,12 @@ subcase 3: some rules overlap
 -----------------------------
 1. create rules::
 
-    flow create 0 priority 1 ingress pattern eth / vlan / vlan / pppoes / pppoe_proto_id is 0x21 / end actions vf id 1 / end
-    flow create 0 priority 1 ingress pattern eth / vlan / vlan tci is 2 / end actions vf id 1 / end
-    flow create 0 priority 0 ingress pattern eth / vlan / vlan / pppoes seid is 1 / ipv4 / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 00:00:00:01:03:03 / vlan / vlan / end actions vf id 2 / end
-    flow create 0 priority 0 ingress pattern eth dst is 00:00:00:01:03:03 / end actions vf id 3 / end
-    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / vlan tci is 2 / end actions vf id 3 / end
+    flow create 0 priority 1 ingress pattern eth / vlan / vlan / pppoes / pppoe_proto_id is 0x21 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 1 ingress pattern eth / vlan / vlan tci is 2 / end actions represented_port ethdev_port_id 1 / end
+    flow create 0 priority 0 ingress pattern eth / vlan / vlan / pppoes seid is 1 / ipv4 / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 00:00:00:01:03:03 / vlan / vlan / end actions represented_port ethdev_port_id 2 / end
+    flow create 0 priority 0 ingress pattern eth dst is 00:00:00:01:03:03 / end actions represented_port ethdev_port_id 3 / end
+    flow create 0 priority 0 ingress pattern eth / vlan tci is 1 / vlan tci is 2 / end actions represented_port ethdev_port_id 3 / end
 
 2. check all the rules exist in the list::
 
