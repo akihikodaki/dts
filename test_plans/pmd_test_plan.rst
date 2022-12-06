@@ -73,6 +73,43 @@ Test Case: Packet Checking
    which will be forwarded by the DUT. The test checks if the packets are correctly forwarded and
    if both RX and TX packet sizes match by `show port all stats`
 
+Test Case: Checksum checking
+============================
+
+1. Start testpmd with rxfreet=0 and set forward mode to csum::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 -a 0000:18:00.0 -a 0000:1b:00.0 --file-prefix=dpdk_2179994_20221121150432    -- -i --portmask=0x3 --enable-rx-cksum --disable-rss --rxd=1024 --txd=1024 --rxfreet=0
+    testpmd> set fwd csum
+    testpmd> start
+
+2. The tester sends 4 messages with error checksum, and check whether the message is correctly forwarded by DUT::
+
+    sendp([Ether(dst=00:11:22:33:44:55, src="52:00:00:00:00:00")/IP(len=46)/UDP(chksum=0x1)/Raw(load="P"*18)], iface="ens9", count=4)
+
+3. Stop testpmd and check whether the l4 checksum error reported by the Rx port is equal to 4.
+
+    ---------------------- Forward statistics for port 0  ----------------------
+    RX-packets: 0              RX-dropped: 0             RX-total: 0
+    Bad-ipcsum: 0              Bad-l4csum: 0             Bad-outer-l4csum: 0
+    Bad-outer-ipcsum: 0
+    TX-packets: 4              TX-dropped: 0             TX-total: 4
+    ----------------------------------------------------------------------------
+
+    ---------------------- Forward statistics for port 1  ----------------------
+    RX-packets: 4              RX-dropped: 0             RX-total: 4
+    Bad-ipcsum: 0              Bad-l4csum: 4             Bad-outer-l4csum: 0
+    Bad-outer-ipcsum: 0
+    TX-packets: 0              TX-dropped: 0             TX-total: 0
+    ----------------------------------------------------------------------------
+
+    +++++++++++++++ Accumulated forward statistics for all ports+++++++++++++++
+    RX-packets: 4              RX-dropped: 0             RX-total: 4
+    TX-packets: 4              TX-dropped: 0             TX-total: 4
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+4. change the value of "rxfreet"(0, 8, 16, 32, 64, 128), and start testpmd, repeat step 1-3, check the result is same.
+
+
 Test Case: Packet Checking in scalar mode
 =========================================
 
