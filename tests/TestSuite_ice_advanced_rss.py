@@ -3231,6 +3231,10 @@ mac_ipv6_udp_ipv6 = {
             "action": "check_hash_different",
         },
         {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)',
+            "action": "check_hash_same",
+        },
+        {
             "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"],
             "action": "save_hash",
         },
@@ -3241,10 +3245,6 @@ mac_ipv6_udp_ipv6 = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
             "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)',
-            "action": "check_hash_same",
         },
     ],
     "post-test": [
@@ -3966,6 +3966,10 @@ mac_ipv6_tcp_ipv6 = {
             "action": "check_hash_different",
         },
         {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=32,dport=33)/("X"*480)',
+            "action": "check_hash_same",
+        },
+        {
             "send_packet": eval(
                 str(mac_ipv6_tcp_toeplitz_basic_pkt["ipv6-next-proto-tcp"]).replace(
                     "IPv6ExtHdrDestOpt", "IPv6ExtHdrSegmentRouting"
@@ -3980,10 +3984,6 @@ mac_ipv6_tcp_ipv6 = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
             "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=32,dport=33)/("X"*480)',
-            "action": "check_hash_same",
         },
     ],
     "post-test": [
@@ -4649,6 +4649,10 @@ mac_ipv6_sctp_ipv6 = {
             "action": "check_hash_different",
         },
         {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=32,dport=33)/("X"*480)',
+            "action": "check_hash_same",
+        },
+        {
             "send_packet": eval(
                 str(mac_ipv6_sctp_toeplitz_basic_pkt["ipv6-next-proto-sctp"]).replace(
                     "IPv6ExtHdrDestOpt", "IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting"
@@ -4663,10 +4667,6 @@ mac_ipv6_sctp_ipv6 = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
             "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=32,dport=33)/("X"*480)',
-            "action": "check_hash_same",
         },
     ],
     "post-test": [
@@ -5846,6 +5846,7 @@ class AdvancedRSSTest(TestCase):
         self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6)
 
     def test_mac_ipv6_udp(self):
+
         self.switch_testpmd(symmetric=False)
         self.pmd_output.execute_cmd("rx_vxlan_port add 4789 0")
         self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_udp)
