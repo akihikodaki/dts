@@ -1,5 +1,5 @@
 .. SPDX-License-Identifier: BSD-3-Clause
-   Copyright(c) 2021 Intel Corporation
+   Copyright(c) 2021-2022 Intel Corporation
 
 =========================
 ICE support QinQ protocol
@@ -80,7 +80,7 @@ Prerequisites
 
 12. For test cases for DCF switch filter(01-06), use below cmd to launch testpmd::
 
-     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -a 0000:18:01.2 -a 0000:18:01.3 -- -i
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf,representor=[1] -a 0000:18:01.1 -a 0000:18:01.2 -a 0000:18:01.3 -- -i
      testpmd> set fwd rxonly
      testpmd> set verbose 1
      testpmd> start
@@ -139,7 +139,7 @@ subcase: dest mac
 -----------------
 1. create a rule::
 
-    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / end actions vf id 1 / end
+    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / end actions represented_port ethdev_port_id1 / end
     testpmd> flow list 0
 
    check the rule exists in the list.
@@ -170,7 +170,7 @@ subcase: src ip
 ---------------
 1. create a rule::
 
-    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / ipv4 src is 196.222.232.221 / end actions vf id 1 / end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / ipv4 src is 196.222.232.221 / end actions represented_port ethdev_port_id1 / end
     testpmd> flow list 0
 
    check the rule exists in the list.
@@ -201,7 +201,7 @@ subcase: dst ip
 ---------------
 1. create a rule::
 
-    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / ipv4 dst is 196.222.232.221 / end actions vf id 1 / end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / ipv4 dst is 196.222.232.221 / end actions represented_port ethdev_port_id1 / end
     testpmd> flow list 0
 
    check the rule exists in the list.
@@ -235,7 +235,7 @@ subcase: dest mac
 -----------------
 1. create a rule::
 
-    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 / end actions vf id 1 / end
+    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 / end actions represented_port ethdev_port_id1 / end
     testpmd> flow list 0
 
    check the rule exists in the list.
@@ -266,7 +266,7 @@ subcase: src ip
 ---------------
 1. create a rule::
 
-    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / ipv6 src is 1111:2222:3333:4444:5555:6666:7777:8888 / end actions vf id 1 / end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / ipv6 src is 1111:2222:3333:4444:5555:6666:7777:8888 / end actions represented_port ethdev_port_id1 / end
     testpmd> flow list 0
 
    check the rule exists in the list.
@@ -297,7 +297,7 @@ subcase: dst ip
 ---------------
 1. create a rule::
 
-    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / end actions vf id 1 / end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / end actions represented_port ethdev_port_id1 / end
     testpmd> flow list 0
 
    check the rule exists in the list.
@@ -330,7 +330,7 @@ Test case 03: DCF switch for MAC_QINQ_PPPOE_PAY
 
 1. create a rule::
 
-    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / end actions vf id 1 / end
+    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / end actions represented_port ethdev_port_id1 / end
     testpmd> flow list 0
 
    check the rule exists in the list.
@@ -368,7 +368,7 @@ Test case 04: DCF switch for MAC_QINQ_PPPOE_PAY_Proto
 
 1. create a rule::
 
-    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / pppoe_proto_id is 0x0057 / end actions vf id 1 / end
+    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id1 / end
     testpmd> flow list 0
 
    check the rule exists in the list.
@@ -403,7 +403,7 @@ subcase: dest mac
 -----------------
 1. create a rule::
 
-    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv4 / end actions vf id 1 / end
+    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv4 / end actions represented_port ethdev_port_id1 / end
     testpmd> flow list 0
 
    check the rule exists in the list.
@@ -435,7 +435,7 @@ subcase: src ip
 ---------------
 1. create a rule::
 
-    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv4 src is 196.222.232.221 / end actions vf id 1 / end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv4 src is 196.222.232.221 / end actions represented_port ethdev_port_id1 / end
     testpmd> flow list 0
 
    check the rule exists in the list.
@@ -467,7 +467,7 @@ subcase: dst ip
 ---------------
 1. create a rule::
 
-    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv4 dst is 196.222.232.221 / end actions vf id 1 / end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv4 dst is 196.222.232.221 / end actions represented_port ethdev_port_id1 / end
     testpmd> flow list 0
 
    check the rule exists in the list.
@@ -502,7 +502,7 @@ subcase: dest mac
 -----------------
 1. create a rule::
 
-    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv6 / end actions vf id 1 / end
+    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv6 / end actions represented_port ethdev_port_id1 / end
     testpmd> flow list 0
 
    check the rule exists in the list.
@@ -534,7 +534,7 @@ subcase: src ip
 ---------------
 1. create a rule::
 
-    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv6 src is 1111:2222:3333:4444:5555:6666:7777:8888 / end actions vf id 1 / end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv6 src is 1111:2222:3333:4444:5555:6666:7777:8888 / end actions represented_port ethdev_port_id1 / end
     testpmd> flow list 0
 
    check the rule exists in the list.
@@ -566,7 +566,7 @@ subcase: dst ip
 ---------------
 1. create a rule::
 
-    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / end actions vf id 1 / end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / end actions represented_port ethdev_port_id1 / end
     testpmd> flow list 0
 
    check the rule exists in the list.
@@ -1577,7 +1577,7 @@ Common Steps
 ..note:: 
 
     For <EAL options>, you can use "-c 0x6 -n 4", you can also refer to testpmd doc for other setings.
-    For <DUT port pci device id>, you can use "0000:3b:01.0,cap=dcf -a 0000:3b:01.1" for this test plan.
+    For <DUT port pci device id>, you can use "0000:3b:01.0,cap=dcf,representor=[1] -a 0000:3b:01.1" for this test plan.
 
 2. Set verbose::
     
@@ -1622,7 +1622,7 @@ Test Steps
 ~~~~~~~~~~
 1. Validate a rule::
    
-     testpmd> flow validate 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id1 / end
 
    Get the message::
 
@@ -1630,7 +1630,7 @@ Test Steps
 
 2. Create a rule and list rules::
 
-     testpmd> flow create 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 src is <ipv4 src> dst is <ipv4 dst> / end actions represented_port ethdev_port_id1 / end
      
    Get the message::
 
@@ -1643,7 +1643,7 @@ Test Steps
    ID      Group   Prio    Attr    Rule
    0       0       0       i--     ETH VLAN VLAN IPV4 => VF
 
-3. Send matched packet in scapy on tester, check the port 1 of DUT received this packet.
+3. Send matched packet in scapy on tester, check the port 2 of DUT received this packet.
 
 Tester::
 
@@ -1651,11 +1651,11 @@ Tester::
 
 DUT::
 
-    testpmd> port 1/queue 0: received 1 packets
+    testpmd> port 2/queue 0: received 1 packets
   src=A4:BF:01:4D:6F:32 - dst=00:11:22:33:44:55 - type=0x8100 - length=122 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - Receive queue=0x0
   ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
 
-4. Send mismatched packet in scapy on tester, check the port 1 of DUT could not receive this packet.
+4. Send mismatched packet in scapy on tester, check the port 2 of DUT could not receive this packet.
 
 Tester::
 
@@ -1680,7 +1680,7 @@ Tester::
      testpmd> flow list 0
 
    Check the rule not exists in the list.
-   Send matched packets in step 3, check the packets are not to port 1.
+   Send matched packets in step 3, check the packets are not to port 2.
 
 Test Case 2: MAC_QINQ_IPV6
 --------------------------
@@ -1690,7 +1690,7 @@ Test Steps
 ~~~~~~~~~~
 1. Validate a rule::
    
-     testpmd> flow validate 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / end actions represented_port ethdev_port_id1 / end
 
    Get the message::
 
@@ -1698,7 +1698,7 @@ Test Steps
 
 2. Create a rule and list rules::
 
-     testpmd> flow create 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / end actions represented_port ethdev_port_id1 / end
 
    Get the message::
 
@@ -1711,7 +1711,7 @@ Test Steps
    ID      Group   Prio    Attr    Rule
    0       0       0       i--     ETH VLAN VLAN IPV6 => VF
 
-3. Send matched packet in scapy on tester, check the port 1 of DUT received this packet.
+3. Send matched packet in scapy on tester, check the port 2 of DUT received this packet.
 
 Tester::
 
@@ -1719,11 +1719,11 @@ Tester::
 
 DUT::
 
-    testpmd> port 1/queue 0: received 1 packets
+    testpmd> port 2/queue 0: received 1 packets
   src=00:00:00:00:00:00 - dst=00:11:22:33:44:55 - type=0x8100 - length=142 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV6_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV6  - l2_len=18 - inner_l2_len=4 - inner_l3_len=40 - Receive queue=0x0
   ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
 
-4. Send mismatched packet in scapy on tester, check the port 1 of DUT could not receive this packet.
+4. Send mismatched packet in scapy on tester, check the port 2 of DUT could not receive this packet.
 
 Tester::
 
@@ -1748,7 +1748,7 @@ Tester::
      testpmd> flow list 0
 
    Check the rule not exists in the list.
-   Send matched packets in step 3, check the packets are not to port 1.
+   Send matched packets in step 3, check the packets are not to port 2.
 
 Test Case 3: MAC_QINQ_IPV4_UDP
 ------------------------------
@@ -1758,7 +1758,7 @@ Test steps
 ~~~~~~~~~~
 1. Validate a rule::
    
-     testpmd> flow validate 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 / udp src is <sport> dst is <dport> / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 / udp src is <sport> dst is <dport> / end actions represented_port ethdev_port_id1 / end
 
    Get the message::
 
@@ -1766,7 +1766,7 @@ Test steps
 
 2. Create a rule and list rules::
 
-     testpmd> flow create 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 / udp src is <sport> dst is <dport> / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 / udp src is <sport> dst is <dport> / end actions represented_port ethdev_port_id1 / end
 
    Get the message::
 
@@ -1779,7 +1779,7 @@ Test steps
    ID      Group   Prio    Attr    Rule
    0       0       0       i--     ETH VLAN VLAN IPV4 UDP => VF
 
-3. Send matched packet in scapy on tester, check the port 1 of DUT received this packet.
+3. Send matched packet in scapy on tester, check the port 2 of DUT received this packet.
 
 Tester::
 
@@ -1787,11 +1787,11 @@ Tester::
 
 DUT::
 
-    testpmd> port 1/queue 0: received 1 packets
+    testpmd> port 2/queue 0: received 1 packets
   src=00:00:00:00:00:00 - dst=00:11:22:33:44:55 - type=0x8100 - length=130 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_UDP  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4 INNER_L4_UDP  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - inner_l4_len=8 - Receive queue=0x0
   ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
 
-4. Send mismatched packet in scapy on tester, check the port 1 of DUT could not receive this packet.
+4. Send mismatched packet in scapy on tester, check the port 2 of DUT could not receive this packet.
 
 Tester::
 
@@ -1816,7 +1816,7 @@ Tester::
      testpmd> flow list 0
 
    Check the rule not exists in the list.
-   Send matched packets in step 3, check the packets are not to port 1.
+   Send matched packets in step 3, check the packets are not to port 2.
 
 Test Case 4: MAC_QINQ_IPV4_TCP
 ------------------------------
@@ -1826,7 +1826,7 @@ Test Steps
 ~~~~~~~~~~
 1. Validate a rule::
    
-     testpmd> flow validate 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 / tcp src is <sport> dst is <dport> / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 / tcp src is <sport> dst is <dport> / end actions represented_port ethdev_port_id1 / end
 
    Get the message::
 
@@ -1834,7 +1834,7 @@ Test Steps
 
 2. Create a rule and list rules::
 
-     testpmd> flow create 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 / tcp src is <sport> dst is <dport> / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv4 / tcp src is <sport> dst is <dport> / end actions represented_port ethdev_port_id1 / end
 
    Get the message::
 
@@ -1847,7 +1847,7 @@ Test Steps
    ID      Group   Prio    Attr    Rule
    0       0       0       i--     ETH VLAN VLAN IPV4 TCP => VF
 
-3. Send matched packet in scapy on tester, check the port 1 of DUT received this packet.
+3. Send matched packet in scapy on tester, check the port 2 of DUT received this packet.
 
 Tester::
 
@@ -1855,11 +1855,11 @@ Tester::
 
 DUT::
 
-    testpmd> port 1/queue 0: received 1 packets
+    testpmd> port 2/queue 0: received 1 packets
   src=00:00:00:00:00:00 - dst=00:11:22:33:44:55 - type=0x8100 - length=142 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_TCP  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4 INNER_L4_TCP  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - inner_l4_len=20 - Receive queue=0x0
   ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
 
-4. Send mismatched packet in scapy on tester, check the port 1 of DUT could not receive this packet.
+4. Send mismatched packet in scapy on tester, check the port 2 of DUT could not receive this packet.
 
 Tester::
 
@@ -1884,7 +1884,7 @@ Tester::
      testpmd> flow list 0
 
    Check the rule not exists in the list.
-   Send matched packets in step 3, check the packets are not to port 1.
+   Send matched packets in step 3, check the packets are not to port 2.
 
 #Pipeline mode
 
@@ -1896,7 +1896,7 @@ Test Steps
 ~~~~~~~~~~
 1. Validate a rule::
    
-     testpmd> flow validate 0 priority 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / udp src is <sport> dst is <dport> / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / udp src is <sport> dst is <dport> / end actions represented_port ethdev_port_id1 / end
 
    Get the message::
 
@@ -1904,7 +1904,7 @@ Test Steps
 
 2. Create a rule and list rules::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / udp src is <sport> dst is <dport> / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / udp src is <sport> dst is <dport> / end actions represented_port ethdev_port_id1 / end
 
    Get the message::
 
@@ -1917,7 +1917,7 @@ Test Steps
    ID      Group   Prio    Attr    Rule
    0       0       0       i--     ETH VLAN VLAN IPV6 UDP => VF
 
-3. Send matched packet in scapy on tester, check the port 1 of DUT received this packet.
+3. Send matched packet in scapy on tester, check the port 2 of DUT received this packet.
 
 Tester::
 
@@ -1925,11 +1925,11 @@ Tester::
 
 DUT::
 
-    testpmd> port 1/queue 0: received 1 packets
+    testpmd> port 2/queue 0: received 1 packets
   src=00:00:00:00:00:00 - dst=00:11:22:33:44:55 - type=0x8100 - length=150 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV6_EXT_UNKNOWN L4_UDP  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV6 INNER_L4_UDP  - l2_len=18 - inner_l2_len=4 - inner_l3_len=40 - inner_l4_len=8 - Receive queue=0x0
   ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
 
-4. Send mismatched packet in scapy on tester, check the port 1 of DUT could not receive this packet.
+4. Send mismatched packet in scapy on tester, check the port 2 of DUT could not receive this packet.
 
 Tester::
 
@@ -1954,7 +1954,7 @@ Tester::
      testpmd> flow list 0
 
    Check the rule not exists in the list.
-   Send matched packets in step 3, check the packets are not to port 1.
+   Send matched packets in step 3, check the packets are not to port 2.
 
 Test case 6: MAC_QINQ_IPV6_TCP
 ------------------------------
@@ -1964,7 +1964,7 @@ Test steps
 ~~~~~~~~~~
 1. Validate a rule::
    
-     testpmd> flow validate 0 priority 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / tcp src is <sport> dst is <dport> / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / tcp src is <sport> dst is <dport> / end actions represented_port ethdev_port_id1 / end
 
    Get the message::
 
@@ -1972,7 +1972,7 @@ Test steps
 
 2. Create a rule and list rules::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / tcp src is <sport> dst is <dport> / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth dst is <dst mac> / vlan tci is <outer vlan tci> / vlan tci is <inner vlan tci> / ipv6 dst is <ipv6 dst> / tcp src is <sport> dst is <dport> / end actions represented_port ethdev_port_id1 / end
 
    Get the message::
 
@@ -1985,7 +1985,7 @@ Test steps
    ID      Group   Prio    Attr    Rule
    0       0       0       i--     ETH VLAN VLAN IPV6 TCP => VF
    
-3. Send matched packet in scapy on tester, check the port 1 of DUT received this packet.
+3. Send matched packet in scapy on tester, check the port 2 of DUT received this packet.
 
 Tester::
 
@@ -1993,11 +1993,11 @@ Tester::
 
 DUT::
 
-    testpmd> port 1/queue 0: received 1 packets
+    testpmd> port 2/queue 0: received 1 packets
   src=00:00:00:00:00:00 - dst=00:11:22:33:44:55 - type=0x8100 - length=162 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV6_EXT_UNKNOWN L4_TCP  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV6 INNER_L4_TCP  - l2_len=18 - inner_l2_len=4 - inner_l3_len=40 - inner_l4_len=20 - Receive queue=0x0
   ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
 
-4. Send mismatched packet in scapy on tester, check the port 1 of DUT could not receive this packet.
+4. Send mismatched packet in scapy on tester, check the port 2 of DUT could not receive this packet.
 
 Tester::
 
@@ -2022,6 +2022,6 @@ Tester::
      testpmd> flow list 0
 
    Check the rule not exists in the list.
-   Send matched packets in step 3, check the packets are not to port 1.
+   Send matched packets in step 3, check the packets are not to port 2.
 
 
