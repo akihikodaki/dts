@@ -108,7 +108,21 @@ Enable the IPv4/UDP/TCP/SCTP HW checksum offload on port 0::
     TX threshold registers: pthresh=32 hthresh=8 wthresh=8
 
 Configure the traffic generator to send the multiple packets for the following
-combination: IPv4/UDP, IPv4/TCP, IPv4/SCTP, IPv6/UDP, IPv6/TCP.
+combination:
+
+  +----------------+----------------------------------------+
+  | packet type    | packet organization                    |
+  +================+========================================+
+  |                | Ether / IPv4 / UDP / payload           |
+  |                +----------------------------------------+
+  |                | Ether / IPv4 / TCP / payload           |
+  |                +----------------------------------------+
+  | packets        | Ether / IPv4 / SCTP / payload          |
+  | for checksum   +----------------------------------------+
+  | offload test   | Ether / IPv6 / UDP / payload           |
+  |                +----------------------------------------+
+  |                | Ether / IPv6 / TCP / payload           |
+  +----------------+----------------------------------------+
 
 Send packets with incorrect checksum,
 verify dpdk can rx it and report the checksum error,
@@ -249,7 +263,19 @@ Enable the IPv4/UDP/TCP/SCTP SW checksum offload on port 0::
     TX threshold registers: pthresh=32 hthresh=8 wthresh=8
 
 Configure the traffic generator to send the multiple packets for the following
-combination: IPv4/UDP, IPv4/TCP, IPv6/UDP, IPv6/TCP.
+combination:
+
+  +----------------+----------------------------------------+
+  | packet type    | packet organization                    |
+  +================+========================================+
+  |                | Ether / IPv4 / UDP / payload           |
+  |                +----------------------------------------+
+  | packets        | Ether / IPv4 / TCP / payload           |
+  | for checksum   +----------------------------------------+
+  | offload test   | Ether / IPv6 / UDP / payload           |
+  |                +----------------------------------------+
+  |                | Ether / IPv6 / TCP / payload           |
+  +----------------+----------------------------------------+
 
 Send packets with incorrect checksum,
 verify dpdk can rx it and report the checksum error,
