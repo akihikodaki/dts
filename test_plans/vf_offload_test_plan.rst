@@ -119,6 +119,101 @@ be validated as pass by the tester.
 The IPv4 source address will not be changed by testpmd.
 
 
+Test Case: HW tunneling checksum offload check
+==============================================
+In DPDK 22.11 release, Intel® Ethernet 800 Series NIC with ICE supports HW
+checksum offload for tunneling packets for checking both inner and outer
+checksum. For the packets involved in this case, a ICE COMMON DDP Package
+is required.
+
+Start testpmd and enable checksum offload on rx port.
+
+Setup the ``csum`` forwarding mode::
+
+  testpmd> set fwd csum
+  Set csum packet forwarding mode
+
+Enable the IPv4/UDP/TCP/SCTP HW checksum offload on port 0::
+
+  testpmd> port stop all
+  testpmd> csum set ip hw 0
+  testpmd> csum set tcp hw 0
+  testpmd> csum set udp hw 0
+  testpmd> csum set sctp hw 0
+  testpmd> csum set outer-ip hw 0
+  testpmd> csum set outer-udp hw 0
+  testpmd> csum parse-tunnel on 0
+  testpmd> port start all
+  testpmd> set promisc 0 on
+  testpmd> start
+    csum packet forwarding - CRC stripping disabled - packets/burst=32
+    nb forwarding cores=1 - nb forwarding ports=10
+    RX queues=1 - RX desc=128 - RX free threshold=64
+    RX threshold registers: pthresh=8 hthresh=8 wthresh=4
+    TX queues=1 - TX desc=512 - TX free threshold=0
+    TX threshold registers: pthresh=32 hthresh=8 wthresh=8
+
+Configure the traffic generator to send the multiple packets for the following
+combination with inner package of:
+
+  +----------------+----------------------------------------+
+  | packet type    | packet organization                    |
+  +================+========================================+
+  |                | IPv4 / UDP / payload                   |
+  |                +----------------------------------------+
+  |                | IPv4 / TCP / payload                   |
+  |                +----------------------------------------+
+  | inner packets  | IPv4 / SCTP / payload                  |
+  | for checksum   +----------------------------------------+
+  | offload test   | IPv6 / UDP / payload                   |
+  |                +----------------------------------------+
+  |                | IPv6 / TCP / payload                   |
+  |                +----------------------------------------+
+  |                | IPv6 / SCTP / payload                  |
+  +----------------+----------------------------------------+
+
+And outer or tunneling package of :
+
+  +----------------+----------------------------------------+
+  | packet type    | packet organization                    |
+  +================+========================================+
+  |                | Ether / IPv4 / UDP / VXLAN / Ether     |
+  |                +----------------------------------------+
+  |                | Ether / IPv6 / UDP / VXLAN / Ether     |
+  |                +----------------------------------------+
+  |                | Ether / IPv4 / GRE                     |
+  | outer and      +----------------------------------------+
+  | tunneling      | Ether / IPv4 / GRE / Ether             |
+  | packets        +----------------------------------------+
+  | for checksum   | Ether / IPv6 / GRE                     |
+  | offload test   +----------------------------------------+
+  |                | Ether / IPv6 / GRE / Ether             |
+  |                +----------------------------------------+
+  |                | Ether / IPv4 / NVGRE                   |
+  |                +----------------------------------------+
+  |                | Ether / IPv4 / NVGRE / Ether           |
+  |                +----------------------------------------+
+  |                | Ether / IPv6 / NVGRE                   |
+  |                +----------------------------------------+
+  |                | Ether / IPv6 / NVGRE / Ether           |
+  |                +----------------------------------------+
+  |                | Ether / IPv4 / UDP / GTPU              |
+  |                +----------------------------------------+
+  |                | Ether / IPv6 / UDP / GTPU              |
+  +----------------+----------------------------------------+
+  
+Notice that VxLAN needs DCF to configure, so testing of VxLAN may need to perform
+on DCF.
+
+Send packets with incorrect checksum on outer IPv4, outer UDP (if exists), inner
+IP, inner L4, verify dpdk can rx it and report the checksum error,
+verify that the same number of packet are correctly received on the traffic
+generator side. And IPv4 checksum, TCP checksum, UDP checksum, SCTP checksum need
+be validated as pass by the tester.
+
+The IPv4 source address will not be changed by testpmd.
+
+
 Test Case: SW checksum offload check
 ====================================
 
@@ -195,6 +290,91 @@ and checksum on rx port. The test commands is below::
   # Enable TSO on tx port
   testpmd> tso set 800 1
 
+For tunneling cases on Intel® Ethernet 800 Series NIC with ICE, add tunneling support
+on csum and enable tunnel tso as below::
+
+  # Enable hw checksum for tunneling on rx port
+  testpmd> port stop all
+  testpmd> csum set outer-ip hw 0
+  testpmd> csum set outer-udp hw 0
+  testpmd> csum parse-tunnel on 0
+  testpmd> port start all
+  testpmd> tunnel_tso set 800 1
+
+Configure the traffic generator to send the multiple packets for the following
+combination:
+
+  +----------------+----------------------------------------+
+  | packet type    | packet organization                    |
+  +================+========================================+
+  |                | Ether / IPv4 / TCP / payload len 128   |
+  |                +----------------------------------------+
+  |                | Ether / IPv4 / TCP / payload len 800   |
+  |                +----------------------------------------+
+  |                | Ether / IPv4 / TCP / payload len 801   |
+  |                +----------------------------------------+
+  |                | Ether / IPv4 / TCP / payload len 1700  |
+  | non-tunneling  +----------------------------------------+
+  | packets for    | Ether / IPv4 / TCP / payload len 2500  |
+  | TSO test       +----------------------------------------+
+  |                | Ether / IPv6 / TCP / payload len 128   |
+  |                +----------------------------------------+
+  |                | Ether / IPv6 / TCP / payload len 800   |
+  |                +----------------------------------------+
+  |                | Ether / IPv6 / TCP / payload len 801   |
+  |                +----------------------------------------+
+  |                | Ether / IPv6 / TCP / payload len 1700  |
+  |                +----------------------------------------+
+  |                | Ether / IPv6 / TCP / payload len 2500  |
+  +----------------+----------------------------------------+
+  |                | Ether / IPv4 / UDP / VXLAN / Ether     |
+  |                +----------------------------------------+
+  |                | Ether / IPv6 / UDP / VXLAN / Ether     |
+  |                +----------------------------------------+
+  |                | Ether / IPv4 / GRE                     |
+  | outer and      +----------------------------------------+
+  | tunneling      | Ether / IPv4 / GRE / Ether             |
+  | packets        +----------------------------------------+
+  | for tso test   | Ether / IPv6 / GRE                     |
+  |                +----------------------------------------+
+  |                | Ether / IPv6 / GRE / Ether             |
+  |                +----------------------------------------+
+  |                | Ether / IPv4 / NVGRE                   |
+  |                +----------------------------------------+
+  |                | Ether / IPv4 / NVGRE / Ether           |
+  |                +----------------------------------------+
+  |                | Ether / IPv6 / NVGRE                   |
+  |                +----------------------------------------+
+  |                | Ether / IPv6 / NVGRE / Ether           |
+  |                +----------------------------------------+
+  |                | Ether / IPv4 / UDP / GTPU              |
+  |                +----------------------------------------+
+  |                | Ether / IPv6 / UDP / GTPU              |
+  +----------------+----------------------------------------+
+  |                | IPv4 / TCP / payload len 128           |
+  |                +----------------------------------------+
+  |                | IPv4 / TCP / payload len 800           |
+  |                +----------------------------------------+
+  |                | IPv4 / TCP / payload len 801           |
+  |                +----------------------------------------+
+  |                | IPv4 / TCP / payload len 1700          |
+  |                +----------------------------------------+
+  | inner packets  | IPv4 / TCP / payload len 2500          |
+  | for TSO test   +----------------------------------------+
+  |                | IPv6 / TCP / payload len 128           |
+  |                +----------------------------------------+
+  |                | IPv6 / TCP / payload len 800           |
+  |                +----------------------------------------+
+  |                | IPv6 / TCP / payload len 801           |
+  |                +----------------------------------------+
+  |                | IPv6 / TCP / payload len 1700          |
+  |                +----------------------------------------+
+  |                | IPv6 / TCP / payload len 2500          |
+  +----------------+----------------------------------------+
+  
+Notice that VxLAN needs DCF to configure, so testing of VxLAN may need to perform
+on DCF.
+
 
 Test case: csum fwd engine, use TSO
 ===================================
@@ -244,3 +424,56 @@ Test IPv4() in scapy::
 Test IPv6() in scapy::
 
     sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/UDP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s")
+
+
+Test case: csum fwd engine, use tunnel TSO
+==========================================
+In DPDK 22.11 release, Intel® Ethernet 800 Series NIC with ICE supports HW
+TSO for tunneling packets. For the packets involved in this case, a ICE COMMON
+DDP Package is required.
+
+This test uses ``Scapy`` to send out one large tunneled TCP package. The dut
+forwards package with tunnel TSO enable on tx port while rx port turns checksum
+on. After package send out by TSO on tx port, the tester receives multiple small
+TCP package.
+
+Turn off tx port by ethtool on tester::
+
+  ethtool -K <tx port> rx off tx off tso off gso off gro off lro off
+  ip l set <tx port> up
+
+Capture package rx port on tester::
+
+  tcpdump -n -e -i <rx port> -s 0 -w /tmp/cap
+
+Launch the userland ``testpmd`` application on DUT as follows::
+
+  testpmd> set verbose 1
+  # Enable hw checksum on rx port
+  testpmd> port stop all
+  testpmd> csum set ip hw 0
+  testpmd> csum set tcp hw 0
+  testpmd> csum set udp hw 0
+  testpmd> csum set sctp hw 0
+  testpmd> csum set outer-ip hw 0
+  testpmd> csum set outer-udp hw 0
+  testpmd> csum parse-tunnel on 0
+  testpmd> set promisc 0 on
+  testpmd> port start all
+
+  # Enable TSO on tx port
+  testpmd> tunnel_tso set 800 1
+  # Set fwd engine and start
+
+  testpmd> set fwd csum
+  testpmd> start
+
+Test IPv4() in scapy::
+
+  for one_outer_packet in outer_packet_list:
+    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/one_outer_packet/IP(src="192.168.1.1",dst="192.168.1.2")/UDP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s")
+
+Test IPv6() in scapy::
+
+  for one_outer_packet in outer_packet_list:
+    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/one_outer_packet/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/UDP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s")
