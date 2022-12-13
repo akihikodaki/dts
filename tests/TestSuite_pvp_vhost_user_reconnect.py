@@ -160,7 +160,7 @@ class TestPVPVhostUserReconnect(TestCase):
         if packed is True:
             setting_args = "%s,packed=on" % setting_args
         for i in range(self.vm_num):
-            vm_info = VM(self.dut, "vm%d" % i, "vhost_sample_copy")
+            vm_info = VM(self.dut, "vm%d" % i, "vhost_sample")
             vm_params = {}
             vm_params["driver"] = "vhost-user"
             vm_params["opt_path"] = "./vhost-net%d" % (i)

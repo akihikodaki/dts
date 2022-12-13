@@ -171,7 +171,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         start qemus
         """
         for i in range(vm_num):
-            vm_info = VM(self.dut, "vm%d" % i, "vhost_sample_copy")
+            vm_info = VM(self.dut, "vm%d" % i, "vhost_sample")
             vm_info.load_config()
             vm_params = {}
             vm_params["driver"] = "vhost-user"

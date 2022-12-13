@@ -154,7 +154,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         """
         start qemus
         """
-        self.vm = VM(self.dut, "vm0", self.suite_name)
+        self.vm = VM(self.dut, "vm0", "vhost_sample")
         self.vm.load_config()
         vm_params = {}
         vm_params["driver"] = "vhost-user"

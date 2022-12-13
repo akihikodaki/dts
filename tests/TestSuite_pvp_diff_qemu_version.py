@@ -171,7 +171,7 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         """
         start vm
         """
-        self.vm = VM(self.dut, "vm0", "pvp_diff_qemu_version")
+        self.vm = VM(self.dut, "vm0", self.suite_name)
         vm_params = {}
         vm_params["driver"] = "vhost-user"
         vm_params["opt_path"] = "%s/vhost-net" % self.base_dir
