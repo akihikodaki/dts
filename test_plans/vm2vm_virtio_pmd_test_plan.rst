@@ -13,13 +13,15 @@ Test flow
 =========
 Virtio-pmd <-> Vhost-user <-> Testpmd <-> Vhost-user <-> Virtio-pmd
 
-Test Case 1: VM2VM vhost-user/virtio-pmd with vector_rx path
-============================================================
+Test Case 1: VM2VM vhost-user/virtio0.95-pmd with vector_rx path
+================================================================
 
 1. Launch the testpmd by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -47,15 +49,15 @@ Test Case 1: VM2VM vhost-user/virtio-pmd with vector_rx path
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=true,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :12
 
-3. On VM1, bind vdev with vfio-pci driver,then run testpmd, set rxonly for virtio1, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
+3. On VM1, bind vdev with vfio-pci driver,then run testpmd, set rxonly for virtio1, [0000:00:04.0] is [Bus,Device,Function] of virtio-net::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -a 0000:xx.00,vectorized=1 -- -i --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -a 0000:00:04.0,vectorized=1 -- -i --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
-4. On VM2, bind vdev with vfio-pci driver,then run testpmd, set txonly for virtio2 and send 64B packets, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
+4. On VM2, bind vdev with vfio-pci driver,then run testpmd, set txonly for virtio2 and send 64B packets, [0000:00:04.0] is [Bus,Device,Function] of virtio-net::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -a 0000:xx.00,vectorized=1 -- -i --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -a 0000:00:04.0,vectorized=1 -- -i --txd=1024 --rxd=1024
     testpmd>set fwd txonly
     testpmd>set txpkts 64
     testpmd>start tx_first 32
@@ -68,13 +70,15 @@ Test Case 1: VM2VM vhost-user/virtio-pmd with vector_rx path
     RX-pps:            xxx
     TX-pps:            xxx
 
-Test Case 2: VM2VM vhost-user/virtio-pmd with normal path
-=========================================================
+Test Case 2: VM2VM vhost-user/virtio0.95-pmd with normal path
+=============================================================
 
 1. Launch the testpmd by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -129,7 +133,9 @@ Test Case 3: VM2VM vhost-user/virtio1.0-pmd with vector_rx path
 1. Launch the testpmd by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -157,15 +163,15 @@ Test Case 3: VM2VM vhost-user/virtio1.0-pmd with vector_rx path
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :12
 
-3. On VM1, bind vdev with vfio-pci driver,then run testpmd, set rxonly for virtio1, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
+3. On VM1, bind vdev with vfio-pci driver,then run testpmd, set rxonly for virtio1, [0000:00:04.0] is [Bus,Device,Function] of virtio-net::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -a 0000:xx.00,vectorized=1 -- -i --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -a 0000:00:04.0,vectorized=1 -- -i --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
-4. On VM2, bind vdev with vfio-pci driver,then run testpmd, set txonly for virtio2, [0000:xx.00] is [Bus,Device,Function] of virtio-net::
+4. On VM2, bind vdev with vfio-pci driver,then run testpmd, set txonly for virtio2, [0000:00:04.0] is [Bus,Device,Function] of virtio-net::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -a 0000:xx.00,vectorized=1 -- -i --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -a 0000:00:04.0,vectorized=1 -- -i --txd=1024 --rxd=1024
     testpmd>set fwd txonly
     testpmd>set txpkts 64
     testpmd>start tx_first 32
@@ -184,7 +190,9 @@ Test Case 4: VM2VM vhost-user/virtio1.0-pmd with normal path
 1. Launch the testpmd by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -233,12 +241,14 @@ Test Case 4: VM2VM vhost-user/virtio1.0-pmd with normal path
     RX-pps:            xxx
     TX-pps:            xxx
 
-Test Case 5: VM2VM vhost-user/virtio-pmd mergeable path with payload valid check
-================================================================================
+Test Case 5: VM2VM vhost-user/virtio0.95-pmd mergeable path with payload valid check
+====================================================================================
 
 1. Launch the testpmd by below commands::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -313,7 +323,9 @@ Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid ch
 
 1. Launch the testpmd by below commands::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -388,7 +400,9 @@ Test Case 7: VM2VM vhost-user/virtio1.1-pmd mergeable path with payload valid ch
 
 1. Launch the testpmd by below commands::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -464,7 +478,9 @@ Test Case 8: VM2VM vhost-user/virtio1.1-pmd with normal path
 1. Launch the testpmd by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
