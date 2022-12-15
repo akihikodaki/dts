@@ -25,7 +25,11 @@ from framework.exception import VerifyFailure
 from framework.pmd_output import PmdOutput
 from framework.project_dpdk import DPDKdut
 from framework.settings import DRIVERS, HEADER_SIZE
-from framework.test_case import TestCase, check_supported_nic
+from framework.test_case import (
+    TestCase,
+    check_supported_nic,
+    skip_unsupported_host_driver,
+)
 from framework.virt_dut import VirtDut
 
 MAX_VLAN = 4095
@@ -221,41 +225,6 @@ class TestGeneric_flow_api(TestCase):
             self.session_secondary.send_expect("start", "testpmd> ")
             self.session_third.send_expect("start", "testpmd> ")
         return out_pf
-
-    def launch_start_testpmd(
-        self,
-        queue="",
-        pkt_filter_mode="",
-        report_hash="",
-        disable_rss=False,
-        fwd="",
-        verbose="",
-    ):
-        """
-        Launch and start testpmd
-        """
-        param = ""
-        eal_param = ""
-        if queue:
-            param += "--rxq={} --txq={} ".format(queue, queue)
-        if pkt_filter_mode:
-            param += "--pkt-filter-mode={} ".format(pkt_filter_mode)
-        if disable_rss:
-            param += "--disable-rss "
-        if report_hash:
-            param += "--pkt-filter-report-hash={} ".format(report_hash)
-        self.pmdout.start_testpmd(
-            "{}".format(self.cores), param=param, eal_param=eal_param
-        )
-        if fwd:
-            self.pmdout.execute_cmd(
-                "set fwd rxonly",
-            )
-        if verbose:
-            self.pmdout.execute_cmd("set verbose 1")
-        self.pmdout.execute_cmd("start")
-        self.pmdout.execute_cmd("show port info all")
-        self.pmdout.wait_link_status_up(self.dut_ports[0])
 
     def compare_memory_rules(self, expectedRules):
         """
@@ -2043,7 +2012,249 @@ class TestGeneric_flow_api(TestCase):
             "Invalid",
         )
 
+    support_nic = [
+        "I40E_10G-SFP_XL710",
+        "I40E_25G-25G_SFP28",
+        "I40E_40G-QSFP_A",
+        "I40E_10G-10G_BASE_T_BC",
+        "I40E_40G-QSFP_B",
+        "I40E_10G-SFP_X722",
+        "I40E_10G-10G_BASE_T_X722",
+    ]
+
+    @check_supported_nic(support_nic)
     def test_fdir_for_vlan(self):
+        """
+        only supported by i40e
+        """
+        # start testpmd on pf
+        self.pmdout.start_testpmd(
+            "%s" % self.pf_cores,
+            "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE + 1, MAX_QUEUE + 1),
+            "-a %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci,
+        )
+        self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
+        self.dut.send_expect("set verbose 1", "testpmd> ", 120)
+        self.dut.send_expect("start", "testpmd> ", 120)
+        time.sleep(2)
+        # Get the firmware version information
+        try:
+            fwversion, _, _ = self.pmdout.get_firmware_version(
+                self.dut_ports[0]
+            ).split()
+        except ValueError:
+            # nic IXGBE, IGC
+            fwversion = self.pmdout.get_firmware_version(self.dut_ports[0]).split()
+        # Because the kernel forces enable Qinq and cannot be closed,
+        # the dpdk can only add 'extend on' to make the single VLAN filter work normally.
+        if self.kdriver == "i40e" and fwversion >= "8.40":
+            self.dut.send_expect("vlan set extend on 0", "testpmd> ")
+        self.dut.send_expect("show port info all", "testpmd> ", 120)
+
+        # create the flow rules
+        basic_flow_actions = [
+            {"create": "create", "flows": ["vlan", "ipv4"], "actions": ["queue"]},
+            {
+                "create": "create",
+                "flows": ["vlan", "ipv4", "udp"],
+                "actions": ["queue"],
+            },
+            {
+                "create": "create",
+                "flows": ["vlan", "ipv4", "tcp"],
+                "actions": ["queue"],
+            },
+            {
+                "create": "create",
+                "flows": ["vlan", "ipv4", "sctp"],
+                "actions": ["queue"],
+            },
+            {
+                "create": "create",
+                "flows": ["vlan", "ipv4", "sctp"],
+                "actions": ["drop"],
+            },
+            {"create": "create", "flows": ["vlan", "ipv6"], "actions": ["queue"]},
+            {
+                "create": "create",
+                "flows": ["vlan", "ipv6", "udp"],
+                "actions": ["queue"],
+            },
+            {
+                "create": "create",
+                "flows": ["vlan", "ipv6", "tcp"],
+                "actions": ["queue"],
+            },
+            {
+                "create": "create",
+                "flows": ["vlan", "ipv6", "sctp"],
+                "actions": ["queue"],
+            },
+            {
+                "create": "create",
+                "flows": ["vlan", "ipv6", "sctp"],
+                "actions": ["drop"],
+            },
+            {"create": "validate", "flows": ["vlan", "ipv4"], "actions": ["queue"]},
+            {
+                "create": "validate",
+                "flows": ["vlan", "ipv4", "udp"],
+                "actions": ["queue"],
+            },
+            {
+                "create": "validate",
+                "flows": ["vlan", "ipv4", "tcp"],
+                "actions": ["queue"],
+            },
+            {
+                "create": "validate",
+                "flows": ["vlan", "ipv4", "sctp"],
+                "actions": ["queue"],
+            },
+            {
+                "create": "validate",
+                "flows": ["vlan", "ipv4", "sctp"],
+                "actions": ["drop"],
+            },
+            {"create": "validate", "flows": ["vlan", "ipv6"], "actions": ["queue"]},
+            {
+                "create": "validate",
+                "flows": ["vlan", "ipv6", "udp"],
+                "actions": ["queue"],
+            },
+            {
+                "create": "validate",
+                "flows": ["vlan", "ipv6", "tcp"],
+                "actions": ["queue"],
+            },
+            {
+                "create": "validate",
+                "flows": ["vlan", "ipv6", "sctp"],
+                "actions": ["queue"],
+            },
+            {
+                "create": "validate",
+                "flows": ["vlan", "ipv6", "sctp"],
+                "actions": ["drop"],
+            },
+        ]
+        extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
+        extra_packet = extrapkt_rulenum["extrapacket"]
+        # send the packets with dst/src ip and dst/src port.
+        self.sendpkt(
+            pktstr='Ether(dst="%s")/Dot1Q(vlan=%s)/IP(src="192.168.0.1", dst="192.168.0.2", proto=3)/Raw("x" * 20)'
+            % (self.pf_mac, extra_packet[0]["vlan"])
+        )
+        self.verify_result(
+            "pf",
+            expect_rxpkts="1",
+            expect_queue=extrapkt_rulenum["queue"][0],
+            verify_mac=self.pf_mac,
+        )
+        self.sendpkt(
+            'Ether(dst="%s")/Dot1Q(vlan=%s)/IP(src="192.168.0.1", dst="192.168.0.2", tos=3)/UDP()/Raw("x" * 20)'
+            % (self.pf_mac, extra_packet[1]["vlan"])
+        )
+        self.verify_result(
+            "pf",
+            expect_rxpkts="1",
+            expect_queue=extrapkt_rulenum["queue"][1],
+            verify_mac=self.pf_mac,
+        )
+        self.sendpkt(
+            'Ether(dst="%s")/Dot1Q(vlan=%s)/IP(src="192.168.0.1", dst="192.168.0.2", ttl=3)/TCP()/Raw("x" * 20)'
+            % (self.pf_mac, extra_packet[2]["vlan"])
+        )
+        self.verify_result(
+            "pf",
+            expect_rxpkts="1",
+            expect_queue=extrapkt_rulenum["queue"][2],
+            verify_mac=self.pf_mac,
+        )
+        self.sendpkt(
+            'Ether(dst="%s")/Dot1Q(vlan=%s)/IP(src="192.168.0.1", dst="192.168.0.2", tos=3, ttl=3)/SCTP()/Raw("x" * 20)'
+            % (self.pf_mac, extra_packet[3]["vlan"])
+        )
+        self.verify_result(
+            "pf",
+            expect_rxpkts="1",
+            expect_queue=extrapkt_rulenum["queue"][3],
+            verify_mac=self.pf_mac,
+        )
+        self.sendpkt(
+            'Ether(dst="%s")/Dot1Q(vlan=%s)/IP(src="192.168.0.1", dst="192.168.0.2", ttl=3)/TCP()/Raw("x" * 20)'
+            % (self.pf_mac, extra_packet[3]["vlan"])
+        )
+        self.verify_result(
+            "pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac
+        )
+        self.sendpkt(
+            'Ether(dst="%s")/Dot1Q(vlan=%s)/IP()/UDP()/Raw("x" * 20)'
+            % (self.pf_mac, extra_packet[2]["vlan"])
+        )
+        self.verify_result(
+            "pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac
+        )
+        self.sendpkt(
+            'Ether(dst="%s")/Dot1Q(vlan=%s)/IP(src="192.168.0.5", dst="192.168.0.6", tos=3, ttl=3)/SCTP(sport=44,dport=45,tag=1)/Raw("x" * 20)'
+            % (self.pf_mac, extra_packet[4]["vlan"])
+        )
+        self.verify_result(
+            "pf", expect_rxpkts="0", expect_queue="NULL", verify_mac=self.pf_mac
+        )
+        self.sendpkt(
+            'Ether(dst="%s")/Dot1Q(vlan=%s)/IPv6(src="2001::1", dst="2001::2", tc=1, nh=5, hlim=10)/Raw("x" * 20)'
+            % (self.pf_mac, extra_packet[5]["vlan"])
+        )
+        self.verify_result(
+            "pf",
+            expect_rxpkts="1",
+            expect_queue=extrapkt_rulenum["queue"][5],
+            verify_mac=self.pf_mac,
+        )
+        self.sendpkt(
+            'Ether(dst="%s")/Dot1Q(vlan=%s)/IPv6(src="2001::1", dst="2001::2", tc=2, hlim=20)/UDP(sport=22,dport=23)/Raw("x" * 20)'
+            % (self.pf_mac, extra_packet[6]["vlan"])
+        )
+        self.verify_result(
+            "pf",
+            expect_rxpkts="1",
+            expect_queue=extrapkt_rulenum["queue"][6],
+            verify_mac=self.pf_mac,
+        )
+        self.sendpkt(
+            'Ether(dst="%s")/Dot1Q(vlan=%s)/IPv6(src="2001::1", dst="2001::2", tc=2, hlim=20)/TCP(sport=32,dport=33)/Raw("x" * 20)'
+            % (self.pf_mac, extra_packet[7]["vlan"])
+        )
+        self.verify_result(
+            "pf",
+            expect_rxpkts="1",
+            expect_queue=extrapkt_rulenum["queue"][7],
+            verify_mac=self.pf_mac,
+        )
+        self.sendpkt(
+            'Ether(dst="%s")/Dot1Q(vlan=%s)/IPv6(src="2001::1", dst="2001::2", tc=4, nh=132, hlim=40)/SCTP(sport=44,dport=45,tag=1)/SCTPChunkData(data="X" * 20)'
+            % (self.pf_mac, extra_packet[8]["vlan"])
+        )
+        self.verify_result(
+            "pf",
+            expect_rxpkts="1",
+            expect_queue=extrapkt_rulenum["queue"][8],
+            verify_mac=self.pf_mac,
+        )
+        self.sendpkt(
+            'Ether(dst="%s")/Dot1Q(vlan=%s)/IPv6(src="2001::1", dst="2001::2", tc=4, nh=132, hlim=40)/SCTP(sport=44,dport=45,tag=1)/SCTPChunkData(data="X" * 20)'
+            % (self.pf_mac, extra_packet[9]["vlan"])
+        )
+        self.verify_result(
+            "pf", expect_rxpkts="0", expect_queue="NULL", verify_mac=self.pf_mac
+        )
+
+        rule_num = extrapkt_rulenum["rulenum"]
+        self.verify_rulenum(rule_num)
+
+    @skip_unsupported_host_driver(["vfio-pci"])
+    def test_fdir_for_vlan_dpdk_pf_dpdk_vf(self):
         """
         only supported by i40e
         """
@@ -2077,7 +2288,7 @@ class TestGeneric_flow_api(TestCase):
         time.sleep(2)
         # start testpmd on vf0
         self.session_secondary.send_expect(
-            "%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -a %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect"
+            "%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -a %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss"
             % (self.app_path, self.sriov_vfs_port[0].pci),
             "testpmd>",
             120,
@@ -2088,7 +2299,7 @@ class TestGeneric_flow_api(TestCase):
         time.sleep(2)
         # start testpmd on vf1
         self.session_third.send_expect(
-            "%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -a %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect"
+            "%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -a %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss"
             % (self.app_path, self.sriov_vfs_port[1].pci),
             "testpmd>",
             120,
@@ -2373,9 +2584,10 @@ class TestGeneric_flow_api(TestCase):
         rule_num = extrapkt_rulenum["rulenum"]
         self.verify_rulenum(rule_num)
 
-    def test_fdir_for_ipv4(self):
+    @skip_unsupported_host_driver(["vfio-pci"])
+    def test_fdir_for_ipv4_dpdk_pf_dpdk_vf(self):
         """
-        only supported by i40e and ixgbe
+        only supported by i40e
         """
         self.verify(
             self.nic
@@ -2671,12 +2883,223 @@ class TestGeneric_flow_api(TestCase):
             rule_num = extrapkt_rulenum["rulenum"]
             self.verify_rulenum(rule_num)
 
+    def test_fdir_for_ipv4(self):
+        """
+        only supported by i40e and ixgbe
+        """
+        self.verify(
+            self.nic
+            in [
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+            ],
+            "%s nic not support fdir ipv4 filter" % self.nic,
+        )
+        # i40e
+        if self.nic in [
+            "I40E_10G-SFP_XL710",
+            "I40E_25G-25G_SFP28",
+            "I40E_40G-QSFP_A",
+            "I40E_40G-QSFP_B",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_X722",
+            "I40E_10G-10G_BASE_T_BC",
+        ]:
+            # start testpmd on pf
+            self.pmdout.start_testpmd(
+                "%s" % self.pf_cores,
+                "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE + 1, MAX_QUEUE + 1),
+                "-a %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem"
+                % self.pf_pci,
+            )
+            self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
+            self.dut.send_expect("set verbose 1", "testpmd> ", 120)
+            self.dut.send_expect("start", "testpmd> ", 120)
+            time.sleep(2)
+
+            # validate and create the flow rules
+            basic_flow_actions = [
+                {
+                    "create": "validate",
+                    "flows": ["ipv4", "sip", "dip", "proto"],
+                    "actions": ["queue"],
+                },
+                {
+                    "create": "validate",
+                    "flows": ["ipv4", "sip", "dip", "ttl", "udp", "sport", "dport"],
+                    "actions": ["queue"],
+                },
+                {
+                    "create": "validate",
+                    "flows": ["ipv4", "sip", "dip", "tos", "tcp", "sport", "dport"],
+                    "actions": ["queue"],
+                },
+                {
+                    "create": "validate",
+                    "flows": [
+                        "vlan",
+                        "ipv4",
+                        "sip",
+                        "dip",
+                        "tos",
+                        "ttl",
+                        "sctp",
+                        "sport",
+                        "dport",
+                        "tag",
+                    ],
+                    "actions": ["queue"],
+                },
+                {
+                    "create": "validate",
+                    "flows": [
+                        "vlan",
+                        "ipv4",
+                        "sip",
+                        "dip",
+                        "tos",
+                        "ttl",
+                        "sctp",
+                        "sport",
+                        "dport",
+                        "tag",
+                    ],
+                    "actions": ["drop"],
+                },
+                {
+                    "create": "validate",
+                    "flows": [
+                        "vlan",
+                        "ipv4",
+                        "sip",
+                        "dip",
+                        "tos",
+                        "ttl",
+                        "sctp",
+                        "sport",
+                        "dport",
+                        "tag",
+                    ],
+                    "actions": ["passthru", "flag"],
+                },
+                {
+                    "create": "validate",
+                    "flows": ["ipv4", "sip", "dip", "ttl", "udp", "sport", "dport"],
+                    "actions": ["queue", "flag"],
+                },
+                {
+                    "create": "validate",
+                    "flows": ["ipv4", "sip", "dip", "tos", "tcp", "sport", "dport"],
+                    "actions": ["queue", "mark"],
+                },
+                {
+                    "create": "validate",
+                    "flows": ["ipv4", "sip", "dip", "proto"],
+                    "actions": ["passthru", "mark"],
+                },
+                {
+                    "create": "create",
+                    "flows": ["ipv4", "sip", "dip", "proto"],
+                    "actions": ["queue"],
+                },
+                {
+                    "create": "create",
+                    "flows": ["ipv4", "sip", "dip", "ttl", "udp", "sport", "dport"],
+                    "actions": ["queue"],
+                },
+                {
+                    "create": "create",
+                    "flows": ["ipv4", "sip", "dip", "tos", "tcp", "sport", "dport"],
+                    "actions": ["queue"],
+                },
+                {
+                    "create": "create",
+                    "flows": [
+                        "vlan",
+                        "ipv4",
+                        "sip",
+                        "dip",
+                        "tos",
+                        "ttl",
+                        "sctp",
+                        "sport",
+                        "dport",
+                        "tag",
+                    ],
+                    "actions": ["queue"],
+                },
+                {
+                    "create": "create",
+                    "flows": [
+                        "vlan",
+                        "ipv4",
+                        "sip",
+                        "dip",
+                        "tos",
+                        "ttl",
+                        "sctp",
+                        "sport",
+                        "dport",
+                        "tag",
+                    ],
+                    "actions": ["drop"],
+                },
+                {
+                    "create": "create",
+                    "flows": [
+                        "vlan",
+                        "ipv4",
+                        "sip",
+                        "dip",
+                        "tos",
+                        "ttl",
+                        "sctp",
+                        "sport",
+                        "dport",
+                        "tag",
+                    ],
+                    "actions": ["passthru", "flag"],
+                },
+                {
+                    "create": "create",
+                    "flows": ["ipv4", "sip", "dip", "ttl", "udp", "sport", "dport"],
+                    "actions": ["queue", "flag"],
+                },
+                {
+                    "create": "create",
+                    "flows": ["ipv4", "sip", "dip", "tos", "tcp", "sport", "dport"],
+                    "actions": ["queue", "mark"],
+                },
+                {
+                    "create": "create",
+                    "flows": ["ipv4", "sip", "dip", "proto"],
+                    "actions": ["passthru", "mark"],
+                },
+            ]
+            extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
+            extra_packet = extrapkt_rulenum["extrapacket"]
+            self.sendpkt(
+                'Ether(dst="%s")/IP(src="192.168.0.3", dst="192.168.0.4", proto=%s)/Raw("x" * 20)'
+                % (self.pf_mac, extra_packet[0]["proto"])
+            )
+            self.verify_result(
+                "pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac
+            )
+            rule_num = extrapkt_rulenum["rulenum"]
+            self.verify_rulenum(rule_num)
         # ixgbe
         else:
             self.pmdout.start_testpmd(
                 "%s" % self.cores,
-                "--pkt-filter-mode=perfect --disable-rss --rxq=%d --txq=%d"
-                % (MAX_QUEUE + 1, MAX_QUEUE + 1),
+                "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE + 1, MAX_QUEUE + 1),
             )
             self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
             self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -2799,9 +3222,10 @@ class TestGeneric_flow_api(TestCase):
                 rule_num = extrapkt_rulenum["rulenum"]
                 self.verify_rulenum(rule_num)
 
-    def test_fdir_for_ipv6(self):
+    @skip_unsupported_host_driver(["vfio-pci"])
+    def test_fdir_for_ipv6_dpdk_pf_dpdk_vf(self):
         """
-        only supported by i40e and ixgbe
+        only supported by i40e
         """
         self.verify(
             self.nic
@@ -3108,12 +3532,203 @@ class TestGeneric_flow_api(TestCase):
             rule_num = extrapkt_rulenum["rulenum"]
             self.verify_rulenum(rule_num)
 
+    def test_fdir_for_ipv6(self):
+        """
+        only supported by i40e and ixgbe
+        """
+        self.verify(
+            self.nic
+            in [
+                "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-X550T",
+                "I40E_10G-SFP_XL710",
+                "I40E_25G-25G_SFP28",
+                "I40E_40G-QSFP_A",
+                "I40E_10G-10G_BASE_T_BC",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
+                "IGC-I225_LM",
+                "IGC-I226_LM",
+            ],
+            "%s nic not support fdir ipv6 filter" % self.nic,
+        )
+        # i40e
+        if self.nic in [
+            "I40E_10G-SFP_XL710",
+            "I40E_25G-25G_SFP28",
+            "I40E_40G-QSFP_A",
+            "I40E_40G-QSFP_B",
+            "I40E_10G-SFP_X722",
+            "I40E_10G-10G_BASE_T_X722",
+            "I40E_10G-10G_BASE_T_BC",
+        ]:
+            self.pmdout.start_testpmd(
+                "%s" % self.pf_cores,
+                "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE + 1, MAX_QUEUE + 1),
+                "-a %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem"
+                % self.pf_pci,
+            )
+            self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
+            self.dut.send_expect("set verbose 1", "testpmd> ", 120)
+            self.dut.send_expect("start", "testpmd> ", 120)
+            time.sleep(2)
+
+            # create the flow rules
+            basic_flow_actions = [
+                {
+                    "create": "validate",
+                    "flows": ["vlan", "ipv6", "sip", "dip", "proto", "tc", "hop"],
+                    "actions": ["queue"],
+                },
+                {
+                    "create": "validate",
+                    "flows": [
+                        "vlan",
+                        "ipv6",
+                        "sip",
+                        "dip",
+                        "tc",
+                        "hop",
+                        "udp",
+                        "sport",
+                        "dport",
+                    ],
+                    "actions": ["queue"],
+                },
+                {
+                    "create": "validate",
+                    "flows": [
+                        "vlan",
+                        "ipv6",
+                        "sip",
+                        "dip",
+                        "tc",
+                        "hop",
+                        "tcp",
+                        "sport",
+                        "dport",
+                    ],
+                    "actions": ["queue"],
+                },
+                {
+                    "create": "validate",
+                    "flows": [
+                        "vlan",
+                        "ipv6",
+                        "sip",
+                        "dip",
+                        "tc",
+                        "hop",
+                        "sctp",
+                        "sport",
+                        "dport",
+                        "tag",
+                    ],
+                    "actions": ["queue"],
+                },
+                {
+                    "create": "validate",
+                    "flows": [
+                        "vlan",
+                        "ipv6",
+                        "sip",
+                        "dip",
+                        "tc",
+                        "hop",
+                        "sctp",
+                        "sport",
+                        "dport",
+                        "tag",
+                    ],
+                    "actions": ["drop"],
+                },
+                {
+                    "create": "create",
+                    "flows": ["vlan", "ipv6", "sip", "dip", "proto", "tc", "hop"],
+                    "actions": ["queue"],
+                },
+                {
+                    "create": "create",
+                    "flows": [
+                        "vlan",
+                        "ipv6",
+                        "sip",
+                        "dip",
+                        "tc",
+                        "hop",
+                        "udp",
+                        "sport",
+                        "dport",
+                    ],
+                    "actions": ["queue"],
+                },
+                {
+                    "create": "create",
+                    "flows": [
+                        "vlan",
+                        "ipv6",
+                        "sip",
+                        "dip",
+                        "tc",
+                        "hop",
+                        "tcp",
+                        "sport",
+                        "dport",
+                    ],
+                    "actions": ["queue"],
+                },
+                {
+                    "create": "create",
+                    "flows": [
+                        "vlan",
+                        "ipv6",
+                        "sip",
+                        "dip",
+                        "tc",
+                        "hop",
+                        "sctp",
+                        "sport",
+                        "dport",
+                        "tag",
+                    ],
+                    "actions": ["queue"],
+                },
+                {
+                    "create": "create",
+                    "flows": [
+                        "vlan",
+                        "ipv6",
+                        "sip",
+                        "dip",
+                        "tc",
+                        "hop",
+                        "sctp",
+                        "sport",
+                        "dport",
+                        "tag",
+                    ],
+                    "actions": ["drop"],
+                },
+            ]
+            extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
+            extra_packet = extrapkt_rulenum["extrapacket"]
+            self.sendpkt(
+                'Ether(dst="%s")/Dot1Q(vlan=%s)/IPv6(src="2001::1", dst="2001::2", tc=2, hlim=20)/UDP(sport=22,dport=23)/Raw("x" * 20)'
+                % (self.pf_mac, extra_packet[1]["vlan"])
+            )
+            self.verify_result(
+                "pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac
+            )
+            rule_num = extrapkt_rulenum["rulenum"]
+            self.verify_rulenum(rule_num)
+
         # ixgbe signature
         else:
             self.pmdout.start_testpmd(
                 "%s" % self.cores,
-                "--pkt-filter-mode=signature --disable-rss --rxq=%d --txq=%d"
-                % (MAX_QUEUE + 1, MAX_QUEUE + 1),
+                "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE + 1, MAX_QUEUE + 1),
             )
             self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
             self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -3442,26 +4057,14 @@ class TestGeneric_flow_api(TestCase):
                 rule_num = extrapkt_rulenum["rulenum"]
                 self.verify_rulenum(rule_num + 1)
 
-    support_nic = [
-        "I40E_10G-SFP_XL710",
-        "I40E_25G-25G_SFP28",
-        "I40E_40G-QSFP_A",
-        "I40E_10G-10G_BASE_T_BC",
-        "I40E_40G-QSFP_B",
-        "I40E_10G-SFP_X722",
-        "I40E_10G-10G_BASE_T_X722",
-    ]
-
     @check_supported_nic(support_nic)
     def test_fdir_wrong_parameters(self):
         """
         Test case: Intel® Ethernet 700 Series fdir wrong parameters
         """
-
         self.pmdout.start_testpmd(
             "%s" % self.pf_cores,
-            "--disable-rss --rxq=%d --txq=%d --pkt-filter-mode=perfect"
-            % (MAX_QUEUE + 1, MAX_QUEUE + 1),
+            "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE + 1, MAX_QUEUE + 1),
             "-a %s --socket-mem 1024,1024 --file-prefix=pf " % self.pf_pci,
         )
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
@@ -3511,29 +4114,6 @@ class TestGeneric_flow_api(TestCase):
         )
         self.dut.send_expect("quit", "# ")
         time.sleep(2)
-
-        self.dut.generate_sriov_vfs_by_port(self.dut_ports[0], 1, self.kdriver)
-        self.vf_port = self.dut.ports_info[self.dut_ports[0]]["vfs_port"][0]
-        self.vf_port.bind_driver(driver="vfio-pci")
-        self.vf_port_pci = self.dut.ports_info[self.dut_ports[0]]["sriov_vfs_pci"][0]
-        # start testpmd on vf0
-        self.pmdout.start_testpmd(
-            "default",
-            "--rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect",
-            eal_param="-a %s --socket-mem 1024,1024 --file-prefix=vf"
-            % self.vf_port_pci,
-        )
-        self.dut.send_expect("start", "testpmd>")
-        time.sleep(2)
-        # create a rule on vf that has invalid queue ID
-        self.dut.send_expect(
-            "flow validate 0 ingress transfer pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 3 / vf id is 0 / end actions queue index 4 / end",
-            "error",
-        )
-        self.dut.send_expect(
-            "flow create 0 ingress transfer pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 3 / vf id is 0 / end actions queue index 4 / end",
-            "error",
-        )
 
     def test_fdir_for_flexbytes(self):
         """
@@ -3761,8 +4341,7 @@ class TestGeneric_flow_api(TestCase):
         else:
             self.pmdout.start_testpmd(
                 "%s" % self.cores,
-                "--pkt-filter-mode=perfect --disable-rss --rxq=%d --txq=%d"
-                % (MAX_QUEUE + 1, MAX_QUEUE + 1),
+                "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE + 1, MAX_QUEUE + 1),
             )
             self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
             self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -3794,8 +4373,7 @@ class TestGeneric_flow_api(TestCase):
             # the second flexbytes rule should be created after the testpmd reset, because the flexbytes rule is global bit masks
             self.pmdout.start_testpmd(
                 "%s" % self.cores,
-                "--pkt-filter-mode=perfect --disable-rss --rxq=%d --txq=%d"
-                % (MAX_QUEUE + 1, MAX_QUEUE + 1),
+                "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE + 1, MAX_QUEUE + 1),
             )
             self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
             self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -3840,8 +4418,7 @@ class TestGeneric_flow_api(TestCase):
             # signature mode
             self.pmdout.start_testpmd(
                 "%s" % self.cores,
-                "--pkt-filter-mode=signature --disable-rss --rxq=%d --txq=%d"
-                % (MAX_QUEUE + 1, MAX_QUEUE + 1),
+                "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE + 1, MAX_QUEUE + 1),
             )
             self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
             self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -3891,8 +4468,7 @@ class TestGeneric_flow_api(TestCase):
 
                 self.pmdout.start_testpmd(
                     "%s" % self.cores,
-                    "--pkt-filter-mode=signature --disable-rss --rxq=%d --txq=%d"
-                    % (MAX_QUEUE + 1, MAX_QUEUE + 1),
+                    "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE + 1, MAX_QUEUE + 1),
                 )
                 self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
                 self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -4160,8 +4736,7 @@ class TestGeneric_flow_api(TestCase):
 
         self.pmdout.start_testpmd(
             "%s" % self.cores,
-            "--pkt-filter-mode=perfect-mac-vlan --disable-rss --rxq=%d --txq=%d"
-            % (MAX_QUEUE + 1, MAX_QUEUE + 1),
+            "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE + 1, MAX_QUEUE + 1),
         )
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -4232,8 +4807,7 @@ class TestGeneric_flow_api(TestCase):
 
         self.pmdout.start_testpmd(
             "%s" % self.cores,
-            "--pkt-filter-mode=perfect-tunnel --disable-rss --rxq=%d --txq=%d"
-            % (MAX_QUEUE + 1, MAX_QUEUE + 1),
+            "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE + 1, MAX_QUEUE + 1),
         )
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -4284,8 +4858,7 @@ class TestGeneric_flow_api(TestCase):
 
         self.pmdout.start_testpmd(
             "%s" % self.cores,
-            "--pkt-filter-mode=perfect-tunnel --disable-rss --rxq=%d --txq=%d"
-            % (MAX_QUEUE + 1, MAX_QUEUE + 1),
+            "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE + 1, MAX_QUEUE + 1),
         )
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -4319,7 +4892,102 @@ class TestGeneric_flow_api(TestCase):
         rule_num = extrapkt_rulenum["rulenum"]
         self.verify_rulenum(rule_num)
 
+    @check_supported_nic(support_nic)
     def test_tunnel_filter_vxlan(self):
+        """
+        only supported by i40e
+        """
+        self.pmdout.start_testpmd(
+            "%s" % self.pf_cores,
+            "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE + 1, MAX_QUEUE + 1),
+            "-a %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci,
+        )
+        self.dut.send_expect("rx_vxlan_port add 4789 0", "testpmd> ", 120)
+        self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
+        self.dut.send_expect("set verbose 1", "testpmd> ", 120)
+        self.dut.send_expect("start", "testpmd> ", 120)
+        time.sleep(2)
+
+        # create the flow rules
+        basic_flow_actions = [
+            {
+                "create": "create",
+                "flows": ["ipv4", "udp", "vxlan", "ineth"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "create",
+                "flows": ["ipv4", "udp", "vxlan", "vni", "ineth"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "create",
+                "flows": ["ipv4", "udp", "vxlan", "ineth", "invlan"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "create",
+                "flows": ["ipv4", "udp", "vxlan", "vni", "ineth", "invlan"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "create",
+                "flows": ["dst_mac", "ipv4", "udp", "vxlan", "vni", "ineth"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "validate",
+                "flows": ["ipv4", "udp", "vxlan", "ineth"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "validate",
+                "flows": ["ipv4", "udp", "vxlan", "vni", "ineth"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "validate",
+                "flows": ["ipv4", "udp", "vxlan", "ineth", "invlan"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "validate",
+                "flows": ["ipv4", "udp", "vxlan", "vni", "ineth", "invlan"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "validate",
+                "flows": ["dst_mac", "ipv4", "udp", "vxlan", "vni", "ineth"],
+                "actions": ["pf", "queue"],
+            },
+        ]
+        extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
+        extra_packet = extrapkt_rulenum["extrapacket"]
+
+        self.sendpkt(
+            'Ether(dst="%s")/IP()/UDP()/VXLAN()/Ether(dst="%s")/Dot1Q(vlan=11)/IP()/TCP()/Raw("x" * 20)'
+            % (self.outer_mac, self.inner_mac)
+        )
+        self.verify_result(
+            "pf",
+            expect_rxpkts="1",
+            expect_queue=extrapkt_rulenum["queue"][0],
+            verify_mac=self.outer_mac,
+        )
+
+        self.sendpkt(
+            'Ether(dst="%s")/IP()/UDP()/VXLAN(vni=5)/Ether(dst="%s")/IP()/TCP()/Raw("x" * 20)'
+            % (self.outer_mac, self.wrong_mac)
+        )
+        self.verify_result(
+            "pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac
+        )
+
+        rule_num = extrapkt_rulenum["rulenum"]
+        self.verify_rulenum(rule_num)
+
+    @skip_unsupported_host_driver(["vfio-pci"])
+    def test_tunnel_filter_vxlan_dpdk_pf_dpdk_vf(self):
         """
         only supported by i40e
         """
@@ -4491,7 +5159,101 @@ class TestGeneric_flow_api(TestCase):
         rule_num = extrapkt_rulenum["rulenum"]
         self.verify_rulenum(rule_num)
 
+    @check_supported_nic(support_nic)
     def test_tunnel_filter_nvgre(self):
+        """
+        only supported by i40e
+        """
+        self.pmdout.start_testpmd(
+            "%s" % self.pf_cores,
+            "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE + 1, MAX_QUEUE + 1),
+            "-a %s --file-prefix=pf --socket-mem 1024,1024  --legacy-mem" % self.pf_pci,
+        )
+        self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
+        self.dut.send_expect("set verbose 1", "testpmd> ", 120)
+        self.dut.send_expect("start", "testpmd> ", 120)
+        time.sleep(2)
+
+        # create the flow rules
+        basic_flow_actions = [
+            {
+                "create": "create",
+                "flows": ["ipv4", "nvgre", "ineth"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "create",
+                "flows": ["ipv4", "nvgre", "tni", "ineth"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "create",
+                "flows": ["ipv4", "nvgre", "ineth", "invlan"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "create",
+                "flows": ["ipv4", "nvgre", "tni", "ineth", "invlan"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "create",
+                "flows": ["dst_mac", "ipv4", "nvgre", "tni", "ineth"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "validate",
+                "flows": ["ipv4", "nvgre", "ineth"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "validate",
+                "flows": ["ipv4", "nvgre", "tni", "ineth"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "validate",
+                "flows": ["ipv4", "nvgre", "ineth", "invlan"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "validate",
+                "flows": ["ipv4", "nvgre", "tni", "ineth", "invlan"],
+                "actions": ["pf", "queue"],
+            },
+            {
+                "create": "validate",
+                "flows": ["dst_mac", "ipv4", "nvgre", "tni", "ineth"],
+                "actions": ["pf", "queue"],
+            },
+        ]
+        extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
+        extra_packet = extrapkt_rulenum["extrapacket"]
+
+        self.sendpkt(
+            'Ether(dst="%s")/IP()/NVGRE()/Ether(dst="%s")/Dot1Q(vlan=1)/IP()/TCP()/Raw("x" * 20)'
+            % (self.outer_mac, self.inner_mac)
+        )
+        self.verify_result(
+            "pf",
+            expect_rxpkts="1",
+            expect_queue=extrapkt_rulenum["queue"][0],
+            verify_mac=self.outer_mac,
+        )
+
+        self.sendpkt(
+            'Ether(dst="%s")/IP()/NVGRE(TNI=%s)/Ether(dst="%s")/IP()/TCP()/Raw("x" * 20)'
+            % (self.outer_mac, extra_packet[4]["tni"], self.wrong_mac)
+        )
+        self.verify_result(
+            "pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac
+        )
+
+        rule_num = extrapkt_rulenum["rulenum"]
+        self.verify_rulenum(rule_num)
+
+    @skip_unsupported_host_driver(["vfio-pci"])
+    def test_tunnel_filter_nvgre_dpdk_pf_dpdk_vf(self):
         """
         only supported by i40e
         """
@@ -5114,169 +5876,6 @@ class TestGeneric_flow_api(TestCase):
             self.verify(packet_flag == 1, "packet pass assert error")
         else:
             self.verify(False, "%s not support this test" % self.nic)
-
-    @check_supported_nic(["IXGBE_10G-82599_SFP"])
-    def test_fdir_for_match_report(self):
-        """
-        Test case: IXGBE fdir for Control levels of FDir match reporting
-        only supported by ixgbe
-        """
-        fdir_scanner = re.compile("FDIR matched hash=(0x\w+) ID=(0x\w+)")
-        pkt0 = 'Ether(dst="{}")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw("x" * 20)'.format(
-            self.pf_mac
-        )
-        pkt1 = 'Ether(dst="{}")/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 20)'.format(
-            self.pf_mac
-        )
-        rule0 = "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions queue index 1 / mark id 1 / end"
-        rule1 = "flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions queue index 2 / mark id 2 / end"
-
-        self.logger.info("Sub-case1: ``--pkt-filter-report-hash=none`` mode")
-        pkt_filter_report_hash = "none"
-        self.launch_start_testpmd(
-            queue=MAX_QUEUE + 1,
-            pkt_filter_mode="perfect",
-            report_hash=pkt_filter_report_hash,
-            disable_rss=True,
-            fwd="rxonly",
-            verbose="1",
-        )
-
-        # Send the matched packet with Scapy on the traffic generator and check that no FDir information is printed
-        self.sendpkt(pktstr=pkt0)
-        self.verify_result(
-            "pf",
-            expect_rxpkts="1",
-            expect_queue="0",
-            verify_mac=self.pf_mac,
-            check_fdir="non-exist",
-        )
-
-        # Add flow filter rule, and send the matched packet again.
-        # No FDir information is printed, but it can be seen that the packet went to queue 1
-        self.pmdout.execute_cmd(rule0)
-        self.sendpkt(pktstr=pkt0)
-        self.verify_result(
-            "pf",
-            expect_rxpkts="1",
-            expect_queue="1",
-            verify_mac=self.pf_mac,
-            check_fdir="non-exist",
-        )
-        self.pmdout.quit()
-
-        self.logger.info("Sub-case2: ``--pkt-filter-report-hash=match`` mode")
-        pkt_filter_report_hash = "match"
-        self.launch_start_testpmd(
-            queue=MAX_QUEUE + 1,
-            pkt_filter_mode="perfect",
-            report_hash=pkt_filter_report_hash,
-            disable_rss=True,
-            fwd="rxonly",
-            verbose="1",
-        )
-
-        # Send the matched packet with Scapy on the traffic generator and check that no FDir information is printed
-        self.sendpkt(pktstr=pkt0)
-        self.verify_result(
-            "pf",
-            expect_rxpkts="1",
-            expect_queue="0",
-            verify_mac=self.pf_mac,
-            check_fdir="non-exist",
-        )
-
-        # Add flow filter rule, and send the matched packet again.
-        # the match is indicated (``RTE_MBUF_F_FDIR``), and its details (hash, id) printed
-        self.pmdout.execute_cmd(rule0)
-        self.sendpkt(pktstr=pkt0)
-        self.verify_result(
-            "pf",
-            expect_rxpkts="1",
-            expect_queue="1",
-            verify_mac=self.pf_mac,
-            check_fdir="exist",
-        )
-
-        # Add flow filter rule by using different scr,dst, and send the matched pkt1 packet again.
-        # the match is indicated (``RTE_MBUF_F_FDIR``), and its details (hash, id) printed
-        self.pmdout.execute_cmd(rule1)
-        self.sendpkt(pktstr=pkt1)
-        self.verify_result(
-            "pf",
-            expect_rxpkts="1",
-            expect_queue="2",
-            verify_mac=self.pf_mac,
-            check_fdir="exist",
-        )
-
-        # Remove rule1 and send the matched pkt0 packet again. Check that no FDir information is printed
-        self.pmdout.execute_cmd("flow destroy 0 rule 0")
-        self.sendpkt(pktstr=pkt0)
-        self.verify_result(
-            "pf",
-            expect_rxpkts="1",
-            expect_queue="0",
-            verify_mac=self.pf_mac,
-            check_fdir="non-exist",
-        )
-
-        # Remove rule2, and send the match pkt1 packet again. Check that no FDir information is printed
-        self.pmdout.execute_cmd("flow destroy 0 rule 1")
-        self.sendpkt(pktstr=pkt1)
-        self.verify_result(
-            "pf",
-            expect_rxpkts="1",
-            expect_queue="0",
-            verify_mac=self.pf_mac,
-            check_fdir="non-exist",
-        )
-        self.pmdout.quit()
-
-        self.logger.info("Sub-case3: ``--pkt-filter-report-hash=always`` mode")
-        pkt_filter_report_hash = "always"
-        self.launch_start_testpmd(
-            queue=MAX_QUEUE + 1,
-            pkt_filter_mode="perfect",
-            report_hash=pkt_filter_report_hash,
-            disable_rss=True,
-            fwd="rxonly",
-            verbose="1",
-        )
-
-        # Send matched pkt0 packet with Scapy on the traffic generator and check the output (FDIR id=0x0)
-        self.sendpkt(pktstr=pkt0)
-        out1 = self.verify_result(
-            "pf",
-            expect_rxpkts="1",
-            expect_queue="0",
-            verify_mac=self.pf_mac,
-            check_fdir="exist",
-        )
-
-        # Add flow filter rule, and send the matched pkt0 packet again.
-        # the filter ID is different, and the packet goes to queue 1Add flow filter rule, and send the matched packet again.
-        self.pmdout.execute_cmd(rule0)
-        self.sendpkt(pktstr=pkt0)
-        out2 = self.verify_result(
-            "pf",
-            expect_rxpkts="1",
-            expect_queue="1",
-            verify_mac=self.pf_mac,
-            check_fdir="exist",
-        )
-
-        # check fdir id is different
-        self.logger.info(
-            "FDIR ID1="
-            + fdir_scanner.search(out1).group(0)
-            + "; FDIR ID2="
-            + fdir_scanner.search(out2).group(0)
-        )
-        self.verify(
-            fdir_scanner.search(out1).group(0) != fdir_scanner.search(out2).group(0),
-            "Sub-case3.3: FDIR ID should be different",
-        )
 
     def tear_down(self):
         """
