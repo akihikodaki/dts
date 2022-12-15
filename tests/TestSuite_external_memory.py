@@ -12,7 +12,7 @@ import time
 
 import framework.utils as utils
 from framework.pmd_output import PmdOutput
-from framework.test_case import TestCase
+from framework.test_case import TestCase, skip_unsupported_host_driver
 
 
 class TestExternalMemory(TestCase):
@@ -62,6 +62,7 @@ class TestExternalMemory(TestCase):
 
             self.dut.bind_interfaces_linux(driver="vfio-pci")
 
+    @skip_unsupported_host_driver(["vfio-pci"])
     def test_IGB_UIO_xmem(self):
         """
         Verifier IGB_UIO and anonymous memory allocation
@@ -75,6 +76,7 @@ class TestExternalMemory(TestCase):
         )
         self.verifier_result()
 
+    @skip_unsupported_host_driver(["vfio-pci"])
     def test_IGB_UIO_xmemhuage(self):
         """
         Verifier IGB_UIO and anonymous hugepage memory allocation

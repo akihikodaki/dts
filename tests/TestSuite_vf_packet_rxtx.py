@@ -7,7 +7,7 @@ import time
 
 from framework.packet import Packet
 from framework.pmd_output import PmdOutput
-from framework.test_case import TestCase
+from framework.test_case import TestCase, skip_unsupported_host_driver
 from framework.virt_common import VM
 
 VM_CORES_MASK = "all"
@@ -164,6 +164,7 @@ class TestVfPacketRxtx(TestCase):
         self.packet_rx_tx(driver="")
 
     ######2. test case for dpdk pf and dpdk vf 2pf_2vf_1vm scenario packet rx tx.
+    @skip_unsupported_host_driver(["vfio-pci"])
     def test_dpdk_2pf_2vf_1vm(self):
 
         self.packet_rx_tx(driver="igb_uio")
@@ -266,6 +267,7 @@ class TestVfPacketRxtx(TestCase):
         self.setup_3vf_2vm_env(driver="")
         self.vf_reset()
 
+    @skip_unsupported_host_driver(["vfio-pci"])
     def test_dpdk_pf_vf_reset(self):
         self.setup_3vf_2vm_env(driver="igb_uio")
         self.vf_reset()

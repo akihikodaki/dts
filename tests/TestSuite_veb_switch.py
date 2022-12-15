@@ -17,7 +17,7 @@ from framework.packet import Packet
 from framework.pmd_output import PmdOutput
 from framework.project_dpdk import DPDKdut
 from framework.settings import HEADER_SIZE
-from framework.test_case import TestCase
+from framework.test_case import TestCase, skip_unsupported_host_driver
 from framework.utils import RED
 from framework.virt_dut import VirtDut
 
@@ -384,6 +384,7 @@ class TestVEBSwitching(TestCase):
             "VF1 didn't receive packets from VF0, the vlan filter doen't work",
         )
 
+    @skip_unsupported_host_driver(["vfio-pci"])
     def test_VEB_switching_inter_vfs_and_pf(self):
         """
         DPDK PF, then create 2VFs, PF in the host running dpdk testpmd, VFs

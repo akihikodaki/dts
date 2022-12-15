@@ -13,7 +13,7 @@ import time
 
 import framework.utils as utils
 from framework.packet import Packet
-from framework.test_case import TestCase
+from framework.test_case import TestCase, skip_unsupported_host_driver
 from framework.virt_common import VM
 
 
@@ -288,6 +288,7 @@ class TestVfInterruptPmd(TestCase):
             "lcore %s not sleeps" % self.core_user,
         )
 
+    @skip_unsupported_host_driver(["vfio-pci"])
     def test_nic_interrupt_PF_igb_uio(self):
         """
         Check Interrupt for PF with igb_uio driver

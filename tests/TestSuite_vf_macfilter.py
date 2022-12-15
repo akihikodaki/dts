@@ -7,7 +7,7 @@ import time
 
 from framework.pmd_output import PmdOutput
 from framework.settings import DPDK_DCFMODE_SETTING, load_global_setting
-from framework.test_case import TestCase
+from framework.test_case import TestCase, skip_unsupported_host_driver
 from framework.virt_common import VM
 
 VM_CORES_MASK = "all"
@@ -229,6 +229,7 @@ class TestVfMacFilter(TestCase):
         self.setup_2pf_2vf_1vm_env(False, driver="")
         self.send_packet_and_verify()
 
+    @skip_unsupported_host_driver(["vfio-pci"])
     def test_dpdk_2pf_2vf_1vm_mac_add_filter(self):
         """
         test case for dpdk pf and dpdk vf 2pf_2vf_1vm MAC filter scenario.
@@ -253,6 +254,7 @@ class TestVfMacFilter(TestCase):
         self.setup_2pf_2vf_1vm_env(False, driver="igb_uio")
         self.send_packet_and_verify()
 
+    @skip_unsupported_host_driver(["vfio-pci"])
     def test_dpdk_2pf_2vf_1vm_iplink_macfilter(self):
         """
         test case for dpdk pf and dpdk vf 2pf_2vf_1vm MAC filter scenario.

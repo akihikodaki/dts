@@ -13,7 +13,7 @@ import time
 
 import framework.utils as utils
 from framework.pmd_output import PmdOutput
-from framework.test_case import TestCase
+from framework.test_case import TestCase, skip_unsupported_host_driver
 
 
 class TestQinqFilter(TestCase):
@@ -208,6 +208,7 @@ class TestQinqFilter(TestCase):
 
         self.dut.send_expect("quit", "#")
 
+    @skip_unsupported_host_driver(["vfio-pci"])
     def test_qinq_packet_filter_VF_queues(self):
         """
         qinq filter packet received by assign VF queues
@@ -303,6 +304,7 @@ class TestQinqFilter(TestCase):
 
         self.verify(not error_message, error_message)
 
+    @skip_unsupported_host_driver(["vfio-pci"])
     def test_qinq_filter_with_diffierent_tpid(self):
         """
         qinq filter packet with different tpid  received by assign VF queues

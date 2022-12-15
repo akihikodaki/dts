@@ -13,7 +13,7 @@ from scapy.utils import hexstr, rdpcap, wrpcap
 
 from framework.exception import VerifyFailure
 from framework.packet import Packet
-from framework.test_case import TestCase
+from framework.test_case import TestCase, skip_unsupported_host_driver
 
 
 class TestIPPipeline(TestCase):
@@ -605,6 +605,7 @@ class TestIPPipeline(TestCase):
         cmd = "^C"
         self.dut.send_expect(cmd, "# ", 20)
 
+    @skip_unsupported_host_driver(["vfio-pci"])
     def test_pfdpdk_vf_l2fwd_pipeline(self):
         """
         VF l2fwd pipeline, PF bound to DPDK driver
