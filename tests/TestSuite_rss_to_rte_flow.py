@@ -1173,9 +1173,7 @@ class TestRSS_to_Rteflow(TestCase):
             ],
             "NIC Unsupported: " + str(self.nic),
         )
-        self.pmdout.start_testpmd(
-            "%s" % self.cores, "--rxq=8 --txq=8 --pkt-filter-mode=perfect"
-        )
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=8 --txq=8")
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
@@ -1833,9 +1831,7 @@ class TestRSS_to_Rteflow(TestCase):
                 "--rxq=4 --txq=4 --disable-rss --port-topology=chained",
             )
         else:
-            self.pmdout.start_testpmd(
-                "%s" % self.cores, "--rxq=8 --txq=8 --pkt-filter-mode=perfect"
-            )
+            self.pmdout.start_testpmd("%s" % self.cores, "--rxq=8 --txq=8")
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
