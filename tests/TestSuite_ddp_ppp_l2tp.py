@@ -55,7 +55,7 @@ class TestDdpPppL2tp(TestCase):
         """
         self.dut_testpmd.start_testpmd(
             "Default",
-            "--pkt-filter-mode=perfect --port-topology=chained \
+            "--port-topology=chained \
             --txq=%s --rxq=%s"
             % (self.PF_QUEUE, self.PF_QUEUE),
         )
@@ -295,60 +295,6 @@ class TestDdpPppL2tp(TestCase):
                 result = "difq"
             self.verify(result == chk, "Faild to verify RSS when key word change!!!")
 
-    def run_fd_test(self, crlwords, flowtype, pctype, keywords, qchecks):
-        """
-        Use dynamic flowtype/pctype mapping, use default or dynamic change
-        control words to set flow director input configuration for new
-        protocol, setup raw flow type filter for flow director, check flow
-        director could work.
-        crlwords: control words of keyword
-        flowtype: define flow type 23~63 values for PPPoE and PPPoL2TPv2 packet
-                  types as test plan table.
-        pctype: profile defines below 14~21 pctypes for PPPoE and PPPoL2TPv2
-                packet types.
-        keywords: keywords have Session ID, S-Port, D-Port, IP SA, IP DA and
-                  etc.
-        qchecks: define sameq and difq. If change keywords, direct packets to
-                 queue 0, otherwise direct packets to same queue.
-        """
-
-        self.pctype_flowtype_mapping(flowtype, pctype)
-        if crlwords is not None:
-            self.dut_testpmd.execute_cmd("port stop all")
-            time.sleep(1)
-            self.dut_testpmd.execute_cmd(
-                "port config 0 pctype %s fdir_inset clear all" % pctype
-            )
-            for word in crlwords:
-                self.dut_testpmd.execute_cmd(
-                    "port config 0 pctype %s fdir_inset set field %s" % (pctype, word)
-                )
-            self.dut_testpmd.execute_cmd("port start all")
-        self.dut_testpmd.execute_cmd("start")
-        qnum = self.send_and_verify(flowtype, "def", "fd")
-        self.verify(qnum == 0, "Receive packet from wrong queue!!!")
-        self.raw_packet_generate(flowtype)
-        queue = random.randint(1, self.PF_QUEUE - 1)
-        self.dut_testpmd.execute_cmd(
-            "flow_director_filter 0 mode raw add flow %d fwd queue %d \
-            fd_id 1 packet /tmp/test.raw"
-            % (flowtype, queue)
-        )
-        qnum = self.send_and_verify(flowtype, "def", "fd")
-        qdef = qnum
-        self.verify(qnum == queue, "Receive packet from wrong queue!!!")
-        for word, chk in zip(keywords, qchecks):
-            qnum = self.send_and_verify(flowtype, word, "fd")
-            if qnum == qdef:
-                result = "sameq"
-            elif qnum == 0:
-                result = "difq"
-            self.verify(
-                result == chk,
-                "Faild to verify flow director when \
-                key word change!!!",
-            )
-
     def test_rss_pppoe(self):
         """
         PPPoE is supported by NVM with profile updated. Download profile then
@@ -480,112 +426,6 @@ class TestDdpPppL2tp(TestCase):
         keywords = ["dport", "sport"]
         qchecks = ["difq", "sameq"]
         self.run_rss_test(crlwords, 23, 18, keywords, qchecks)
-
-    def test_fd_pppoe(self):
-        """
-        PPPoE is supported by NVM with profile updated. Download profile then
-        set flowtype/pctype mapping, default flow director input set are MAC
-        SA, session ID, setup raw flow type filter for flow director, check
-        flow director could work when sending matched packets to configured
-        queue, otherwise direct packets to queue 0.
-        """
-        crlwords = None
-        keywords = ["src_mac", "session_id", "dst_mac"]
-        qchecks = ["difq", "difq", "sameq"]
-        self.run_fd_test(crlwords, 30, 17, keywords, qchecks)
-
-    def test_fd_l2tp(self):
-        """
-        L2TPv2 PAY is supported by NVM with profile updated. Download profile
-        then set flowtype/pctype mapping, default flow director input set are
-        MAC SA, session ID, setup raw flow type filter for flow director, check
-        flow director could work when sending matched packets to configured
-        queue, otherwise direct packets to queue 0.
-        """
-        crlwords = None
-        keywords = ["src_mac", "session_id", "dst_mac"]
-        qchecks = ["difq", "difq", "sameq"]
-        self.run_fd_test(crlwords, 26, 21, keywords, qchecks)
-
-    def test_fd_pppoe_ipv4(self):
-        """
-        PPPoE IPv4 is supported by NVM with profile updated. Download
-        profile then set flowtype/pctype mapping, default flow director input
-        set are IPv4 SA, IPv4 DA, S-Port, D-Port, setup raw flow type filter
-        for flow director, check flow director could work when sending matched
-        packets to configured queue, otherwise direct packets to queue 0.
-        """
-        crlwords = None
-        keywords = ["src_ip", "dst_ip", "sport", "dport", "session_id"]
-        qchecks = ["difq", "difq", "difq", "difq", "sameq"]
-        self.run_fd_test(crlwords, 28, 15, keywords, qchecks)
-
-    def test_fd_pppoe_ipv6(self):
-        """
-        PPPoE IPv6 is supported by NVM with profile updated. Download
-        profile then set flowtype/pctype mapping, default flow director input
-        set are IPv6 SA, IPv6 DA, S-Port, D-Port, setup raw flow type filter
-        for flow director, check flow director could work when sending matched
-        packets to configured queue, otherwise direct packets to queue 0.
-        """
-        crlwords = None
-        keywords = ["src_ipv6", "dst_ipv6", "sport", "dport", "session_id"]
-        qchecks = ["difq", "difq", "difq", "difq", "sameq"]
-        self.run_fd_test(crlwords, 29, 16, keywords, qchecks)
-
-    def test_fd_pppol2tp_ipv4(self):
-        """
-        PPPoL2TPv2 IPv4 is supported by NVM with profile updated. Download
-        profile then set flowtype/pctype mapping, default flow director input
-        set are IPv4 SA, IPv4 DA, S-Port, D-Port, setup raw flow type filter
-        for flow director, check flow director could work when sending matched
-        packets to configured queue, otherwise direct packets to queue 0.
-        """
-        crlwords = None
-        keywords = ["src_ip", "dst_ip", "sport", "dport"]
-        qchecks = ["difq", "difq", "difq", "difq"]
-        self.run_fd_test(crlwords, 23, 18, keywords, qchecks)
-
-    def test_fd_pppol2tp_ipv6(self):
-        """
-        PPPoL2TPv2 IPv6 is supported by NVM with profile updated. Download
-        profile then set flowtype/pctype mapping, default flow director input
-        set are IPv6 SA, IPv6 DA, S-Port, D-Port, setup raw flow type filter
-        for flow director, check flow director could work when sending matched
-        packets to configured queue, otherwise direct packets to queue 0.
-        """
-        crlwords = None
-        keywords = ["src_ipv6", "dst_ipv6", "sport", "dport"]
-        qchecks = ["difq", "difq", "difq", "difq"]
-        self.run_fd_test(crlwords, 24, 19, keywords, qchecks)
-
-    def test_fd_pppol2tp_ipv4_dstip(self):
-        """
-        PPPoL2TPv2 IPv4 is supported by NVM with profile updated. Download
-        profile then set flowtype/pctype mapping, dynamic to change flow
-        director input set configuration for IPv4 DA words 27~28, setup
-        raw flow type filter for flow director, check flow director could
-        work when sending matched IPv4 DA packets to configured queue,
-        otherwise direct packets to queue 0.
-        """
-        crlwords = list(range(27, 29))
-        keywords = ["src_ip", "sport", "dport", "dst_ip"]
-        qchecks = ["sameq", "sameq", "sameq", "difq"]
-        self.run_fd_test(crlwords, 23, 18, keywords, qchecks)
-
-    def test_fd_pppol2tp_ipv6_dstipv6(self):
-        """
-        PPPoL2TPv2 IPv6 is supported by NVM with profile updated. Download
-        profile then set flowtype/pctype mapping, dynamic to change flow
-        director input set configuration for IPv6 DA words 21~28, setup
-        raw flow type filter for flow director, check flow director could
-        work when sending matched IPv6 DA packets to configured queue,
-        otherwise direct packets to queue 0.
-        """
-        crlwords = list(range(21, 29))
-        keywords = ["src_ipv6", "sport", "dport", "dst_ipv6"]
-        qchecks = ["sameq", "sameq", "sameq", "difq"]
-        self.run_fd_test(crlwords, 24, 19, keywords, qchecks)
 
     def tear_down(self):
         self.dut_testpmd.execute_cmd("stop")
