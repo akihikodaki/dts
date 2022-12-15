@@ -2,15 +2,6 @@
 # Copyright(c) 2022 Intel Corporation
 #
 
-"""
-DPDK Test suite.
-
-Test cases for vm2vm virtio-user
-This suite include split virtqueue vm2vm in-order mergeable, in-order non-mergeable,
-mergeable, non-mergeable, vector_rx path test
-and packed virtqueue vm2vm in-order mergeable, in-order non-mergeable,
-mergeable, non-mergeable path test
-"""
 import re
 
 from framework.packet import Packet
@@ -21,15 +12,16 @@ from framework.test_case import TestCase
 class TestVM2VMVirtioUserCbdma(TestCase):
     def set_up_all(self):
         self.memory_channel = self.dut.get_memory_channels()
-        self.dump_virtio_pcap = "/tmp/pdump-virtio-rx.pcap"
-        self.dump_vhost_pcap = "/tmp/pdump-vhost-rx.pcap"
+        self.base_dir = self.dut.base_dir.replace("~", "/root")
+        self.src_dump_virtio_pcap = "%s/pdump-virtio-rx.pcap" % self.base_dir
+        self.dst_dump_virtio_pcap = "/tmp/pdump-virtio-rx.pcap"
         self.app_pdump = self.dut.apps_name["pdump"]
         self.dut_ports = self.dut.get_ports()
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.cores_list = self.dut.get_core_list(config="all", socket=self.ports_socket)
         self.vhost_core_list = self.cores_list[0:9]
         self.virtio0_core_list = self.cores_list[10:13]
-        self.virtio1_core_list = self.cores_list[13:15]
+        self.virtio1_core_list = self.cores_list[13:16]
         self.vhost_user = self.dut.new_session(suite="vhost-user")
         self.virtio_user0 = self.dut.new_session(suite="virtio-user0")
         self.virtio_user1 = self.dut.new_session(suite="virtio-user1")
@@ -48,9 +40,8 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         """
         self.nopci = True
         self.queue_num = 1
-        self.dut.send_expect("rm -rf ./vhost-net*", "#")
-        self.dut.send_expect("rm -rf %s" % self.dump_virtio_pcap, "#")
-        self.dut.send_expect("rm -rf %s" % self.dump_vhost_pcap, "#")
+        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
+        self.dut.send_expect("rm -rf %s" % self.src_dump_virtio_pcap, "#")
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT %s" % self.pdump_name, "#")
 
@@ -266,7 +257,7 @@ class TestVM2VMVirtioUserCbdma(TestCase):
             + "-l 1-2 -n 4 --file-prefix=virtio-user1 -v -- "
             + "--pdump  'device_id=net_virtio_user1,queue=*,rx-dev=%s,mbuf-size=8000'"
         )
-        self.pdump_user.send_expect(command_line % (self.dump_virtio_pcap), "Port")
+        self.pdump_user.send_expect(command_line % (self.src_dump_virtio_pcap), "Port")
 
     def check_virtio_user1_stats(self, check_dict):
         """
@@ -302,10 +293,10 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         """
         self.pdump_user.send_expect("^c", "# ", 60)
         self.dut.session.copy_file_from(
-            src=self.dump_virtio_pcap, dst=self.dump_virtio_pcap
+            src=self.src_dump_virtio_pcap, dst=self.dst_dump_virtio_pcap
         )
         pkt = Packet()
-        pkts = pkt.read_pcapfile(self.dump_virtio_pcap)
+        pkts = pkt.read_pcapfile(self.dst_dump_virtio_pcap)
         for key, value in check_dict.items():
             count = 0
             for i in range(len(pkts)):
@@ -328,32 +319,35 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         """
         Test Case 1: VM2VM split ring non-mergeable path multi-queues payload check with cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
-        lcore_dma = "lcore%s@%s," "lcore%s@%s" % (
-            self.vhost_core_list[1],
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4)
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s" % (
             self.cbdma_list[0],
-            self.vhost_core_list[1],
-            self.cbdma_list[1],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+        )
+        dmas2 = "txq1@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
         )
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0;txq1;rxq0]'"
-            + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0;rxq0;rxq1]'"
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = (
-            " --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
-            + " --lcore-dma=[%s]" % lcore_dma
+            " --nb-cores=2 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
         )
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=self.cbdma_list[0:1],
             iova_mode="va",
         )
-
         virtio1_eal_param = "--vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,mrg_rxbuf=0,in_order=0,queue_size=4096"
         virtio1_param = (
-            " --enable-hw-vlan-strip --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096"
+            " --enable-hw-vlan-strip --nb-cores=2 --rxq=2 --txq=2 --txd=4096 --rxd=4096"
         )
         self.start_virtio_testpmd_with_vhost_net1(
             cores=self.virtio1_core_list,
@@ -364,7 +358,7 @@ class TestVM2VMVirtioUserCbdma(TestCase):
 
         virtio0_eal_param = "--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net0,queues=2,server=1,mrg_rxbuf=0,in_order=0,queue_size=4096"
         virtio0_param = (
-            " --enable-hw-vlan-strip --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096"
+            " --enable-hw-vlan-strip --nb-cores=2 --rxq=2 --txq=2 --txd=4096 --rxd=4096"
         )
         self.start_virtio_testpmd_with_vhost_net0(
             cores=self.virtio0_core_list,
@@ -377,22 +371,41 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         self.check_virtio_user1_stats(check_dict)
         self.check_packet_payload_valid(check_dict)
 
-        if not self.check_2M_env:
-            self.vhost_user_pmd.execute_cmd("quit", "#", 60)
-            self.clear_virtio_user1_stats()
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.start_pdump_to_capture_pkt()
+        self.vhost_user_pmd.execute_cmd("quit", "#", 60)
+        self.clear_virtio_user1_stats()
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[1],
+        )
+        dmas2 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[2],
+            self.cbdma_list[2],
+            self.cbdma_list[3],
+            self.cbdma_list[3],
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
+        )
+        vhost_param = (
+            " --nb-cores=2 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            eal_param=vhost_eal_param,
+            param=vhost_param,
+            ports=self.cbdma_list,
+            iova_mode="va",
+        )
+        self.start_pdump_to_capture_pkt()
 
-            self.send_502_960byte_and_64_64byte_pkts()
-            check_dict = {960: 502, 64: 64}
-            self.check_virtio_user1_stats(check_dict)
-            self.check_packet_payload_valid(check_dict)
+        self.send_502_960byte_and_64_64byte_pkts()
+        check_dict = {960: 502, 64: 64}
+        self.check_virtio_user1_stats(check_dict)
+        self.check_packet_payload_valid(check_dict)
 
     def test_split_ping_inorder_non_mergeable_path_multi_queues_payload_check_with_cbdma_enable(
         self,
@@ -400,39 +413,30 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         """
         Test Case 2: VM2VM split ring inorder non-mergeable path multi-queues payload check with cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=5)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
-            % (
-                self.vhost_core_list[1],
-                self.cbdma_list[0],
-                self.vhost_core_list[1],
-                self.cbdma_list[1],
-                self.vhost_core_list[1],
-                self.cbdma_list[2],
-                self.vhost_core_list[1],
-                self.cbdma_list[3],
-                self.vhost_core_list[1],
-                self.cbdma_list[4],
-            )
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4)
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+        )
+        dmas2 = "txq1@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
         )
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0;txq1;rxq0]'"
-            + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0;rxq0;rxq1]'"
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = (
-            " --nb-cores=1  --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
-            + " --lcore-dma=[%s]" % lcore_dma
+            " --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
         )
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=self.cbdma_list[0:1],
             iova_mode="va",
         )
 
@@ -458,22 +462,41 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         self.check_virtio_user1_stats(check_dict)
         self.check_packet_payload_valid(check_dict)
 
-        if not self.check_2M_env:
-            self.vhost_user_pmd.execute_cmd("quit", "#", 60)
-            self.clear_virtio_user1_stats()
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.start_pdump_to_capture_pkt()
+        self.vhost_user_pmd.execute_cmd("quit", "#", 60)
+        self.clear_virtio_user1_stats()
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[1],
+        )
+        dmas2 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[2],
+            self.cbdma_list[2],
+            self.cbdma_list[3],
+            self.cbdma_list[3],
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
+        )
+        vhost_param = (
+            " --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            eal_param=vhost_eal_param,
+            param=vhost_param,
+            ports=self.cbdma_list,
+            iova_mode="va",
+        )
+        self.start_pdump_to_capture_pkt()
 
-            self.send_502_64byte_and_64_4640byte_pkts()
-            check_dict = {64: 502, 4640: 0}
-            self.check_virtio_user1_stats(check_dict)
-            self.check_packet_payload_valid(check_dict)
+        self.send_502_64byte_and_64_4640byte_pkts()
+        check_dict = {64: 502, 4640: 0}
+        self.check_virtio_user1_stats(check_dict)
+        self.check_packet_payload_valid(check_dict)
 
     def test_split_ring_verctorized_path_multi_queues_payload_check_with_cbdma_enabled(
         self,
@@ -482,47 +505,29 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         Test Case 3: VM2VM split ring vectorized path multi-queues payload check with cbdma enable
         """
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=8)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
-            % (
-                self.vhost_core_list[1],
-                self.cbdma_list[0],
-                self.vhost_core_list[1],
-                self.cbdma_list[1],
-                self.vhost_core_list[1],
-                self.cbdma_list[2],
-                self.vhost_core_list[1],
-                self.cbdma_list[3],
-                self.vhost_core_list[1],
-                self.cbdma_list[4],
-                self.vhost_core_list[1],
-                self.cbdma_list[5],
-                self.vhost_core_list[1],
-                self.cbdma_list[6],
-                self.vhost_core_list[1],
-                self.cbdma_list[7],
-            )
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+        )
+        dmas2 = "txq1@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
         )
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0;txq1;rxq0]'"
-            + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0;rxq0;rxq1]'"
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = (
             " --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
-            + " --lcore-dma=[%s]" % lcore_dma
         )
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=self.cbdma_list[0:1],
             iova_mode="va",
         )
 
@@ -548,22 +553,41 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         self.check_virtio_user1_stats(check_dict)
         self.check_packet_payload_valid(check_dict)
 
-        if not self.check_2M_env:
-            self.vhost_user_pmd.execute_cmd("quit", "#", 60)
-            self.clear_virtio_user1_stats()
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.start_pdump_to_capture_pkt()
+        self.vhost_user_pmd.execute_cmd("quit", "#", 60)
+        self.clear_virtio_user1_stats()
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[2],
+            self.cbdma_list[3],
+        )
+        dmas2 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[4],
+            self.cbdma_list[5],
+            self.cbdma_list[6],
+            self.cbdma_list[7],
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
+        )
+        vhost_param = (
+            " --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            eal_param=vhost_eal_param,
+            param=vhost_param,
+            ports=self.cbdma_list,
+            iova_mode="va",
+        )
+        self.start_pdump_to_capture_pkt()
 
-            self.send_448_64byte_and_54_4640byte_pkts()
-            check_dict = {64: 448, 4640: 0}
-            self.check_virtio_user1_stats(check_dict)
-            self.check_packet_payload_valid(check_dict)
+        self.send_448_64byte_and_54_4640byte_pkts()
+        check_dict = {64: 448, 4640: 0}
+        self.check_virtio_user1_stats(check_dict)
+        self.check_packet_payload_valid(check_dict)
 
     def test_split_ring_inorder_mergeable_path_test_non_indirect_descriptor_with_cbdma_enabled(
         self,
@@ -571,36 +595,28 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         """
         Test Case 4: VM2VM split ring inorder mergeable path test non-indirect descriptor with cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
-            % (
-                self.vhost_core_list[1],
-                self.cbdma_list[0],
-                self.vhost_core_list[1],
-                self.cbdma_list[1],
-                self.vhost_core_list[1],
-                self.cbdma_list[2],
-                self.vhost_core_list[1],
-                self.cbdma_list[3],
-            )
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=8)
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+        )
+        dmas2 = "txq0@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
         )
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0;txq1;rxq0]'"
-            + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0;rxq0;rxq1]'"
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
-        vhost_param = (
-            " --nb-cores=1 --txq=2 --rxq=2 --txd=256 --rxd=256 --no-flush-rx"
-            + " --lcore-dma=[%s]" % lcore_dma
-        )
+        vhost_param = " --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx"
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=self.cbdma_list[0:2],
             iova_mode="va",
         )
 
@@ -626,69 +642,78 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         self.check_virtio_user1_stats(check_dict)
         self.check_packet_payload_valid(check_dict)
 
-        if not self.check_2M_env:
-            self.vhost_user_pmd.execute_cmd("quit", "#", 60)
-            self.virtio_user1_pmd.execute_cmd("quit", "#", 60)
-            self.virtio_user0_pmd.execute_cmd("quit", "#", 60)
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.start_virtio_testpmd_with_vhost_net1(
-                cores=self.virtio1_core_list,
-                eal_param=virtio1_eal_param,
-                param=virtio1_param,
-            )
-            self.start_pdump_to_capture_pkt()
-
-            self.start_virtio_testpmd_with_vhost_net0(
-                cores=self.virtio0_core_list,
-                eal_param=virtio0_eal_param,
-                param=virtio0_param,
-            )
-
-            self.send_502_64byte_and_64_8000byte_pkts()
-            check_dict = {64: 502, 8000: 2}
-            self.check_virtio_user1_stats(check_dict)
-            self.check_packet_payload_valid(check_dict)
-
-    def test_split_ring_mergeable_path_test_indirect_descriptor_with_cbdma_enable(self):
-        """
-        Test Case 5: VM2VM split ring mergeable path test indirect descriptor with cbdma enable
-        """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
-            % (
-                self.vhost_core_list[1],
-                self.cbdma_list[0],
-                self.vhost_core_list[1],
-                self.cbdma_list[1],
-                self.vhost_core_list[1],
-                self.cbdma_list[2],
-                self.vhost_core_list[1],
-                self.cbdma_list[3],
-            )
+        self.vhost_user_pmd.execute_cmd("quit", "#", 60)
+        self.virtio_user1_pmd.execute_cmd("quit", "#", 60)
+        self.virtio_user0_pmd.execute_cmd("quit", "#", 60)
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[2],
+            self.cbdma_list[3],
+        )
+        dmas2 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[4],
+            self.cbdma_list[5],
+            self.cbdma_list[6],
+            self.cbdma_list[7],
         )
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0;rxq0;rxq1]'"
-            + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0;txq1;rxq0]'"
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
-        vhost_param = (
-            " --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx"
-            + " --lcore-dma=[%s]" % lcore_dma
-        )
+        vhost_param = " --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx"
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             ports=self.cbdma_list,
+            iova_mode="va",
+        )
+        self.start_virtio_testpmd_with_vhost_net1(
+            cores=self.virtio1_core_list,
+            eal_param=virtio1_eal_param,
+            param=virtio1_param,
+        )
+        self.start_pdump_to_capture_pkt()
+
+        self.start_virtio_testpmd_with_vhost_net0(
+            cores=self.virtio0_core_list,
+            eal_param=virtio0_eal_param,
+            param=virtio0_param,
+        )
+
+        self.send_502_64byte_and_64_8000byte_pkts()
+        check_dict = {64: 502, 8000: 2}
+        self.check_virtio_user1_stats(check_dict)
+        self.check_packet_payload_valid(check_dict)
+
+    def test_split_ring_mergeable_path_test_indirect_descriptor_with_cbdma_enable(self):
+        """
+        Test Case 5: VM2VM split ring mergeable path test indirect descriptor with cbdma enable
+        """
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=8)
+        dmas1 = "txq0@%s;txq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+        )
+        dmas2 = "txq0@%s;rxq1@%s;rxq0@%s" % (
+            self.cbdma_list[1],
+            self.cbdma_list[1],
+            self.cbdma_list[1],
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
+        )
+        vhost_param = " --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx"
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            eal_param=vhost_eal_param,
+            param=vhost_param,
+            ports=self.cbdma_list[0:2],
             iova_mode="va",
         )
 
@@ -714,37 +739,50 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         self.check_virtio_user1_stats(check_dict)
         self.check_packet_payload_valid(check_dict)
 
-        if not self.check_2M_env:
-            self.vhost_user_pmd.execute_cmd("quit", "#", 60)
-            self.virtio_user1_pmd.execute_cmd("quit", "#", 60)
-            self.virtio_user0_pmd.execute_cmd("quit", "#", 60)
-            vhost_eal_param = (
-                "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0;txq1;rxq0;rxq1]'"
-                + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0;txq1;rxq0;rxq1]'"
-            )
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.start_virtio_testpmd_with_vhost_net1(
-                cores=self.virtio1_core_list,
-                eal_param=virtio1_eal_param,
-                param=virtio1_param,
-            )
-            self.start_pdump_to_capture_pkt()
-            self.start_virtio_testpmd_with_vhost_net0(
-                cores=self.virtio0_core_list,
-                eal_param=virtio0_eal_param,
-                param=virtio0_param,
-            )
+        self.vhost_user_pmd.execute_cmd("quit", "#", 60)
+        self.virtio_user1_pmd.execute_cmd("quit", "#", 60)
+        self.virtio_user0_pmd.execute_cmd("quit", "#", 60)
+        dmas1 = "txq0@%s;txq0@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[2],
+            self.cbdma_list[3],
+        )
+        dmas2 = "txq0@%s;txq0@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[4],
+            self.cbdma_list[5],
+            self.cbdma_list[6],
+            self.cbdma_list[7],
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
+        )
+        vhost_param = " --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx"
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            eal_param=vhost_eal_param,
+            param=vhost_param,
+            ports=self.cbdma_list,
+            iova_mode="va",
+        )
+        self.start_virtio_testpmd_with_vhost_net1(
+            cores=self.virtio1_core_list,
+            eal_param=virtio1_eal_param,
+            param=virtio1_param,
+        )
+        self.start_pdump_to_capture_pkt()
+        self.start_virtio_testpmd_with_vhost_net0(
+            cores=self.virtio0_core_list,
+            eal_param=virtio0_eal_param,
+            param=virtio0_param,
+        )
 
-            self.send_502_64byte_and_64_8000byte_pkts()
-            check_dict = {64: 502, 8000: 10}
-            self.check_virtio_user1_stats(check_dict)
-            self.check_packet_payload_valid(check_dict)
+        self.send_502_64byte_and_64_8000byte_pkts()
+        check_dict = {64: 502, 8000: 10}
+        self.check_virtio_user1_stats(check_dict)
+        self.check_packet_payload_valid(check_dict)
 
     def test_packed_ring_non_mergeable_path_multi_queues_payload_check_with_cbdma_enable(
         self,
@@ -753,19 +791,25 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         Test Case 6: VM2VM packed ring non-mergeable path multi-queues payload check with cbdma enable
         """
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
-        lcore_dma = "lcore%s@%s," "lcore%s@%s" % (
-            self.vhost_core_list[1],
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (
             self.cbdma_list[0],
-            self.vhost_core_list[1],
+            self.cbdma_list[1],
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+        )
+        dmas2 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[0],
             self.cbdma_list[1],
         )
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0;txq1;rxq0;rxq1]'"
-            + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0;txq1;rxq0;rxq1]'"
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = (
             " --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
-            + " --lcore-dma=[%s]" % lcore_dma
         )
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -801,26 +845,39 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         self.check_virtio_user1_stats(check_dict)
         self.check_packet_payload_valid(check_dict)
 
-        if not self.check_2M_env:
-            self.vhost_user_pmd.execute_cmd("quit", "#", 60)
-            self.clear_virtio_user1_stats()
-            vhost_eal_param = (
-                "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0;rxq0;rxq1]'"
-                + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0;txq1;rxq0]'"
-            )
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.start_pdump_to_capture_pkt()
+        self.vhost_user_pmd.execute_cmd("quit", "#", 60)
+        self.clear_virtio_user1_stats()
+        dmas1 = "txq0@%s;txq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+        )
+        dmas2 = "txq0@%s;rxq1@%s;rxq0@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[0],
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
+        )
+        vhost_param = (
+            " --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            eal_param=vhost_eal_param,
+            param=vhost_param,
+            ports=self.cbdma_list,
+            iova_mode="va",
+        )
+        self.start_pdump_to_capture_pkt()
 
-            self.send_448_64byte_and_54_4640byte_pkts()
-            check_dict = {64: 448, 4640: 0}
-            self.check_virtio_user1_stats(check_dict)
-            self.check_packet_payload_valid(check_dict)
+        self.send_448_64byte_and_54_4640byte_pkts()
+        check_dict = {64: 448, 4640: 0}
+        self.check_virtio_user1_stats(check_dict)
+        self.check_packet_payload_valid(check_dict)
 
     def test_packed_ring_mergeable_path_multi_queues_payload_check_with_cbdma_enabled(
         self,
@@ -828,21 +885,30 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         """
         Test Case 7: VM2VM packed ring mergeable path multi-queues payload check with cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
-        lcore_dma = "lcore%s@%s," % (self.vhost_core_list[1], self.cbdma_list[0])
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=8)
+        dmas1 = "txq0@%s;txq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+        )
+        dmas2 = "txq0@%s;rxq1@%s;rxq0@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+        )
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0;rxq0;rxq1]'"
-            + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0;txq1;rxq0]'"
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = (
             " --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
-            + " --lcore-dma=[%s]" % lcore_dma
         )
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=self.cbdma_list[0:1],
             iova_mode="va",
         )
 
@@ -868,26 +934,41 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         self.check_virtio_user1_stats(check_dict)
         self.check_packet_payload_valid(check_dict)
 
-        if not self.check_2M_env:
-            self.vhost_user_pmd.execute_cmd("quit", "#", 60)
-            self.clear_virtio_user1_stats()
-            vhost_eal_param = (
-                "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0;txq1;rxq0;rxq1]'"
-                + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0;txq1;rxq0;rxq1]'"
-            )
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.start_pdump_to_capture_pkt()
+        self.vhost_user_pmd.execute_cmd("quit", "#", 60)
+        self.clear_virtio_user1_stats()
+        dmas1 = "txq0@%s;txq0@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[2],
+            self.cbdma_list[3],
+        )
+        dmas2 = "txq0@%s;txq0@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[4],
+            self.cbdma_list[5],
+            self.cbdma_list[6],
+            self.cbdma_list[7],
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
+        )
+        vhost_param = (
+            " --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            eal_param=vhost_eal_param,
+            param=vhost_param,
+            ports=self.cbdma_list,
+            iova_mode="va",
+        )
+        self.start_pdump_to_capture_pkt()
 
-            self.send_54_4640byte_and_448_64byte_pkts()
-            check_dict = {4640: 54, 64: 448}
-            self.check_virtio_user1_stats(check_dict)
-            self.check_packet_payload_valid(check_dict)
+        self.send_54_4640byte_and_448_64byte_pkts()
+        check_dict = {4640: 54, 64: 448}
+        self.check_virtio_user1_stats(check_dict)
+        self.check_packet_payload_valid(check_dict)
 
     def test_packed_ring_inorder_mergeable_path_multi_queues_payload_check_with_cbdma_enabled(
         self,
@@ -895,39 +976,30 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         """
         Test Case 8: VM2VM packed ring inorder mergeable path multi-queues payload check with cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=5)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
-            % (
-                self.vhost_core_list[1],
-                self.cbdma_list[0],
-                self.vhost_core_list[1],
-                self.cbdma_list[1],
-                self.vhost_core_list[1],
-                self.cbdma_list[2],
-                self.vhost_core_list[1],
-                self.cbdma_list[3],
-                self.vhost_core_list[1],
-                self.cbdma_list[4],
-            )
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4)
+        dmas1 = "txq0@%s;txq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+        )
+        dmas2 = "txq0@%s;rxq1@%s;rxq0@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
         )
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0;rxq0;rxq1]'"
-            + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0;txq1;rxq0]'"
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = (
-            " --nb-cores=1 --txd=4096 --rxd=4096 --txq=2 --rxq=2 --no-flush-rx"
-            + " --lcore-dma=[%s]" % lcore_dma
+            " --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
         )
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=self.cbdma_list[0:1],
             iova_mode="va",
         )
 
@@ -953,22 +1025,41 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         self.check_virtio_user1_stats(check_dict)
         self.check_packet_payload_valid(check_dict)
 
-        if not self.check_2M_env:
-            self.vhost_user_pmd.execute_cmd("quit", "#", 60)
-            self.clear_virtio_user1_stats()
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.start_pdump_to_capture_pkt()
+        self.vhost_user_pmd.execute_cmd("quit", "#", 60)
+        self.clear_virtio_user1_stats()
+        dmas1 = "txq0@%s;txq0@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[2],
+            self.cbdma_list[3],
+        )
+        dmas2 = "txq0@%s;txq0@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[2],
+            self.cbdma_list[3],
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
+        )
+        vhost_param = (
+            " --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            eal_param=vhost_eal_param,
+            param=vhost_param,
+            ports=self.cbdma_list,
+            iova_mode="va",
+        )
+        self.start_pdump_to_capture_pkt()
 
-            self.send_54_4640byte_and_448_64byte_pkts()
-            check_dict = {4640: 54, 64: 448}
-            self.check_virtio_user1_stats(check_dict)
-            self.check_packet_payload_valid(check_dict)
+        self.send_54_4640byte_and_448_64byte_pkts()
+        check_dict = {4640: 54, 64: 448}
+        self.check_virtio_user1_stats(check_dict)
+        self.check_packet_payload_valid(check_dict)
 
     def test_packed_ring_inorder_non_mergeable_path_multi_queues_payload_check_with_cbdma_enabled(
         self,
@@ -976,48 +1067,22 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         """
         Test Case 9: VM2VM packed ring inorder non-mergeable path multi-queues payload check with cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=8)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
-            % (
-                self.vhost_core_list[1],
-                self.cbdma_list[0],
-                self.vhost_core_list[1],
-                self.cbdma_list[1],
-                self.vhost_core_list[1],
-                self.cbdma_list[2],
-                self.vhost_core_list[1],
-                self.cbdma_list[3],
-                self.vhost_core_list[1],
-                self.cbdma_list[4],
-                self.vhost_core_list[1],
-                self.cbdma_list[5],
-                self.vhost_core_list[1],
-                self.cbdma_list[6],
-                self.vhost_core_list[1],
-                self.cbdma_list[7],
-            )
-        )
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4)
+        dmas1 = "txq0@%s;txq0@%s" % (self.cbdma_list[0], self.cbdma_list[1])
+        dmas2 = "txq1@%s;rxq1@%s" % (self.cbdma_list[0], self.cbdma_list[1])
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0;rxq0]'"
-            + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq1;rxq1]'"
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = (
             " --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
-            + " --lcore-dma=[%s]" % lcore_dma
         )
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=self.cbdma_list[0:2],
             iova_mode="va",
         )
 
@@ -1043,22 +1108,41 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         self.check_virtio_user1_stats(check_dict)
         self.check_packet_payload_valid(check_dict)
 
-        if not self.check_2M_env:
-            self.vhost_user_pmd.execute_cmd("quit", "#", 60)
-            self.clear_virtio_user1_stats()
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.start_pdump_to_capture_pkt()
+        self.vhost_user_pmd.execute_cmd("quit", "#", 60)
+        self.clear_virtio_user1_stats()
+        dmas1 = "txq0@%s;txq0@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[2],
+            self.cbdma_list[3],
+        )
+        dmas2 = "txq0@%s;txq0@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[2],
+            self.cbdma_list[3],
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
+        )
+        vhost_param = (
+            " --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            eal_param=vhost_eal_param,
+            param=vhost_param,
+            ports=self.cbdma_list,
+            iova_mode="va",
+        )
+        self.start_pdump_to_capture_pkt()
 
-            self.send_448_64byte_and_54_4640byte_pkts()
-            check_dict = {64: 448, 4640: 0}
-            self.check_virtio_user1_stats(check_dict)
-            self.check_packet_payload_valid(check_dict)
+        self.send_448_64byte_and_54_4640byte_pkts()
+        check_dict = {64: 448, 4640: 0}
+        self.check_virtio_user1_stats(check_dict)
+        self.check_packet_payload_valid(check_dict)
 
     def test_packed_ring_vectorized_rx_path_multi_queues_payload_check_with_cbdma_enabled(
         self,
@@ -1066,48 +1150,22 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         """
         Test Case 10: VM2VM packed ring vectorized-rx path multi-queues payload check with cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=8)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
-            % (
-                self.vhost_core_list[1],
-                self.cbdma_list[0],
-                self.vhost_core_list[1],
-                self.cbdma_list[1],
-                self.vhost_core_list[1],
-                self.cbdma_list[2],
-                self.vhost_core_list[1],
-                self.cbdma_list[3],
-                self.vhost_core_list[2],
-                self.cbdma_list[4],
-                self.vhost_core_list[2],
-                self.cbdma_list[5],
-                self.vhost_core_list[2],
-                self.cbdma_list[6],
-                self.vhost_core_list[2],
-                self.cbdma_list[7],
-            )
-        )
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4)
+        dmas1 = "txq0@%s;txq0@%s" % (self.cbdma_list[0], self.cbdma_list[0])
+        dmas2 = "txq1@%s;rxq1@%s" % (self.cbdma_list[0], self.cbdma_list[0])
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0;rxq0]'"
-            + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq1;rxq1]'"
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = (
             " --nb-cores=2 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
-            + " --lcore-dma=[%s]" % lcore_dma
         )
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=self.cbdma_list[0:1],
             iova_mode="va",
         )
 
@@ -1133,22 +1191,41 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         self.check_virtio_user1_stats(check_dict)
         self.check_packet_payload_valid(check_dict)
 
-        if not self.check_2M_env:
-            self.vhost_user_pmd.execute_cmd("quit", "#", 60)
-            self.clear_virtio_user1_stats()
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.start_pdump_to_capture_pkt()
+        self.vhost_user_pmd.execute_cmd("quit", "#", 60)
+        self.clear_virtio_user1_stats()
+        dmas1 = "txq0@%s;txq0@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[2],
+            self.cbdma_list[3],
+        )
+        dmas2 = "txq0@%s;txq0@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[2],
+            self.cbdma_list[3],
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
+        )
+        vhost_param = (
+            " --nb-cores=2 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            eal_param=vhost_eal_param,
+            param=vhost_param,
+            ports=self.cbdma_list,
+            iova_mode="va",
+        )
+        self.start_pdump_to_capture_pkt()
 
-            self.send_448_64byte_and_54_4640byte_pkts()
-            check_dict = {64: 448, 4640: 0}
-            self.check_virtio_user1_stats(check_dict)
-            self.check_packet_payload_valid(check_dict)
+        self.send_448_64byte_and_54_4640byte_pkts()
+        check_dict = {64: 448, 4640: 0}
+        self.check_virtio_user1_stats(check_dict)
+        self.check_packet_payload_valid(check_dict)
 
     def test_packed_ring_vectorized_path_multi_queues_payload_check_with_cbdma_enabled(
         self,
@@ -1157,47 +1234,31 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         Test Case 11: VM2VM packed ring vectorized path multi-queues payload check test with ring size is not power of 2 with cbdma enable
         """
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=8)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
-            % (
-                self.vhost_core_list[1],
-                self.cbdma_list[0],
-                self.vhost_core_list[1],
-                self.cbdma_list[1],
-                self.vhost_core_list[1],
-                self.cbdma_list[2],
-                self.vhost_core_list[1],
-                self.cbdma_list[3],
-                self.vhost_core_list[1],
-                self.cbdma_list[4],
-                self.vhost_core_list[1],
-                self.cbdma_list[5],
-                self.vhost_core_list[1],
-                self.cbdma_list[6],
-                self.vhost_core_list[1],
-                self.cbdma_list[7],
-            )
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+        )
+        dmas2 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
+            self.cbdma_list[0],
         )
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0;txq1;rxq0;rxq1]'"
-            + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0;txq1;rxq0;rxq1]'"
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = (
             " --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
-            + " --lcore-dma=[%s]" % lcore_dma
         )
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=self.cbdma_list[0:1],
             iova_mode="va",
         )
 
@@ -1223,26 +1284,41 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         self.check_virtio_user1_stats(check_dict)
         self.check_packet_payload_valid(check_dict)
 
-        if not self.check_2M_env:
-            self.vhost_user_pmd.execute_cmd("quit", "#", 60)
-            self.clear_virtio_user1_stats()
-            vhost_eal_param = (
-                "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[rxq0]'"
-                + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq1]'"
-            )
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.start_pdump_to_capture_pkt()
+        self.vhost_user_pmd.execute_cmd("quit", "#", 60)
+        self.clear_virtio_user1_stats()
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+        )
+        dmas2 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[2],
+            self.cbdma_list[3],
+            self.cbdma_list[2],
+            self.cbdma_list[3],
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
+        )
+        vhost_param = (
+            " --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
+        )
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            eal_param=vhost_eal_param,
+            param=vhost_param,
+            ports=self.cbdma_list[0:4],
+            iova_mode="va",
+        )
+        self.start_pdump_to_capture_pkt()
 
-            self.send_448_64byte_and_54_4640byte_pkts()
-            check_dict = {64: 448, 4640: 0}
-            self.check_virtio_user1_stats(check_dict)
-            self.check_packet_payload_valid(check_dict)
+        self.send_448_64byte_and_54_4640byte_pkts()
+        check_dict = {64: 448, 4640: 0}
+        self.check_virtio_user1_stats(check_dict)
+        self.check_packet_payload_valid(check_dict)
 
     def test_pakced_packed_ring_vectorized_tx_path_multi_queues_test_indirect_descriptor_with_cbdma_enabled(
         self,
@@ -1250,48 +1326,20 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         """
         Test Case 12: VM2VM packed ring vectorized-tx path multi-queues test indirect descriptor and payload check with cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=8)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
-            % (
-                self.vhost_core_list[1],
-                self.cbdma_list[0],
-                self.vhost_core_list[1],
-                self.cbdma_list[1],
-                self.vhost_core_list[1],
-                self.cbdma_list[2],
-                self.vhost_core_list[1],
-                self.cbdma_list[3],
-                self.vhost_core_list[1],
-                self.cbdma_list[4],
-                self.vhost_core_list[1],
-                self.cbdma_list[5],
-                self.vhost_core_list[1],
-                self.cbdma_list[6],
-                self.vhost_core_list[1],
-                self.cbdma_list[7],
-            )
-        )
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4)
+        dmas1 = "rxq0@%s" % (self.cbdma_list[0])
+        dmas2 = "txq1@%s" % (self.cbdma_list[0])
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[rxq0]'"
-            + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq1]'"
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
-        vhost_param = (
-            " --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx"
-            + " --lcore-dma=[%s]" % lcore_dma
-        )
+        vhost_param = " --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx"
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=self.cbdma_list[0:1],
             iova_mode="va",
         )
 
@@ -1317,37 +1365,50 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         self.check_virtio_user1_stats(check_dict)
         self.check_packet_payload_valid(check_dict)
 
-        if not self.check_2M_env:
-            self.vhost_user_pmd.execute_cmd("quit", "#", 60)
-            self.virtio_user1_pmd.execute_cmd("quit", "#", 60)
-            self.virtio_user0_pmd.execute_cmd("quit", "#", 60)
-            vhost_eal_param = (
-                "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[rxq0;rxq1]'"
-                + " --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0;txq1]'"
-            )
-            self.start_vhost_testpmd(
-                cores=self.vhost_core_list,
-                eal_param=vhost_eal_param,
-                param=vhost_param,
-                ports=self.cbdma_list,
-                iova_mode="pa",
-            )
-            self.start_virtio_testpmd_with_vhost_net1(
-                cores=self.virtio1_core_list,
-                eal_param=virtio1_eal_param,
-                param=virtio1_param,
-            )
-            self.start_pdump_to_capture_pkt()
-            self.start_virtio_testpmd_with_vhost_net0(
-                cores=self.virtio0_core_list,
-                eal_param=virtio0_eal_param,
-                param=virtio0_param,
-            )
+        self.vhost_user_pmd.execute_cmd("quit", "#", 60)
+        self.virtio_user1_pmd.execute_cmd("quit", "#", 60)
+        self.virtio_user0_pmd.execute_cmd("quit", "#", 60)
+        dmas1 = "txq0@%s;txq0@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[2],
+            self.cbdma_list[3],
+        )
+        dmas2 = "txq0@%s;txq0@%s;rxq0@%s;rxq1@%s" % (
+            self.cbdma_list[0],
+            self.cbdma_list[1],
+            self.cbdma_list[2],
+            self.cbdma_list[3],
+        )
+        vhost_eal_param = (
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
+        )
+        vhost_param = " --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx"
+        self.start_vhost_testpmd(
+            cores=self.vhost_core_list,
+            eal_param=vhost_eal_param,
+            param=vhost_param,
+            ports=self.cbdma_list,
+            iova_mode="va",
+        )
+        self.start_virtio_testpmd_with_vhost_net1(
+            cores=self.virtio1_core_list,
+            eal_param=virtio1_eal_param,
+            param=virtio1_param,
+        )
+        self.start_pdump_to_capture_pkt()
+        self.start_virtio_testpmd_with_vhost_net0(
+            cores=self.virtio0_core_list,
+            eal_param=virtio0_eal_param,
+            param=virtio0_param,
+        )
 
-            self.send_502_64byte_and_64_8000byte_pkts()
-            check_dict = {64: 502, 8000: 10}
-            self.check_virtio_user1_stats(check_dict)
-            self.check_packet_payload_valid(check_dict)
+        self.send_502_64byte_and_64_8000byte_pkts()
+        check_dict = {64: 502, 8000: 10}
+        self.check_virtio_user1_stats(check_dict)
+        self.check_packet_payload_valid(check_dict)
 
     def test_packed_ring_vectorized_tx_path_test_batch_processing_with_cbdma_enabled(
         self,
@@ -1355,43 +1416,15 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         """
         Test Case 13: VM2VM packed ring vectorized-tx path test batch processing with cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=8)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
-            % (
-                self.vhost_core_list[1],
-                self.cbdma_list[0],
-                self.vhost_core_list[1],
-                self.cbdma_list[1],
-                self.vhost_core_list[1],
-                self.cbdma_list[2],
-                self.vhost_core_list[1],
-                self.cbdma_list[3],
-                self.vhost_core_list[1],
-                self.cbdma_list[4],
-                self.vhost_core_list[1],
-                self.cbdma_list[5],
-                self.vhost_core_list[1],
-                self.cbdma_list[6],
-                self.vhost_core_list[1],
-                self.cbdma_list[7],
-            )
-        )
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        dmas1 = "txq0@%s;rxq0@%s" % (self.cbdma_list[0], self.cbdma_list[0])
+        dmas2 = "txq0@%s;rxq0@%s" % (self.cbdma_list[0], self.cbdma_list[0])
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net0,queues=1,client=1,dmas=[txq0;rxq0]'"
-            + " --vdev 'net_vhost1,iface=vhost-net1,queues=1,client=1,dmas=[txq0;rxq0]'"
+            "--vdev 'net_vhost0,iface=vhost-net0,queues=1,client=1,dmas=[%s]' "
+            "--vdev 'net_vhost1,iface=vhost-net1,queues=1,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
-        vhost_param = (
-            " --nb-cores=1 --txd=256 --rxd=256 --txq=1 --rxq=1 --no-flush-rx"
-            + " --lcore-dma=[%s]" % lcore_dma
-        )
+        vhost_param = " --nb-cores=1 --txd=256 --rxd=256 --no-flush-rx"
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
@@ -1401,7 +1434,7 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         )
 
         virtio1_eal_param = "--force-max-simd-bitwidth=512 --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,server=1,packed_vq=1,mrg_rxbuf=1,in_order=1,vectorized=1,queue_size=256"
-        virtio1_param = " --nb-cores=1 --rxq=1 --txq=1 --txd=256 --rxd=256"
+        virtio1_param = " --nb-cores=1 --txd=256 --rxd=256"
         self.start_virtio_testpmd_with_vhost_net1(
             cores=self.virtio1_core_list,
             eal_param=virtio1_eal_param,
@@ -1410,7 +1443,7 @@ class TestVM2VMVirtioUserCbdma(TestCase):
         self.start_pdump_to_capture_pkt()
 
         virtio0_eal_param = "--force-max-simd-bitwidth=512 --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net0,queues=1,server=1,packed_vq=1,mrg_rxbuf=1,in_order=1,vectorized=1,queue_size=256"
-        virtio0_param = " --nb-cores=1 --rxq=1 --txq=1 --txd=256 --rxd=256"
+        virtio0_param = " --nb-cores=1 --txd=256 --rxd=256"
         self.start_virtio_testpmd_with_vhost_net0(
             cores=self.virtio0_core_list,
             eal_param=virtio0_eal_param,
