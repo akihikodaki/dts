@@ -53,7 +53,7 @@ class TestDdpL2tpv3(TestCase):
         """
         self.dut_testpmd.start_testpmd(
             "Default",
-            "--pkt-filter-mode=perfect --port-topology=chained \
+            "--port-topology=chained \
             --txq=%s --rxq=%s --disable-rss"
             % (self.PF_QUEUE, self.PF_QUEUE),
         )
