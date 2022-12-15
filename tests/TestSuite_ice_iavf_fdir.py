@@ -11933,12 +11933,12 @@ class TestICEIAVFFdir(TestCase):
             "test_mac_ipv6_multicast_protocol",
         ]:
             self.pmd_output.execute_cmd("mcast_addr remove 0 11:22:33:44:55:66")
-        self.destroy_env()
-        self.dut.kill_all()
         if getattr(self, "session_secondary", None):
             self.dut.close_session(self.session_secondary)
         if getattr(self, "session_third", None):
             self.dut.close_session(self.session_third)
+        self.destroy_env()
+        self.dut.kill_all()
 
         if self.running_case in [
             "test_pfcp_vlan_strip_off_sw_checksum",
