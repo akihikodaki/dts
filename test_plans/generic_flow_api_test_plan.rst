@@ -17,7 +17,7 @@ Prerequisites
 
 3. bind the pf to dpdk driver::
 
-    ./usertools/dpdk-devbind.py -b igb_uio 05:00.0
+    ./usertools/dpdk-devbind.py -b vfio-pci 05:00.0
  
 Note: validate the rules first before create it in each case.
 All the rules that can be validated correctly should be created successfully.
@@ -70,7 +70,7 @@ Test case: Intel® Ethernet 700 Series fdir for L2 payload
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -104,7 +104,7 @@ Test case: Intel® Ethernet 700 Series fdir for flexbytes
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -179,6 +179,72 @@ Test case: Intel® Ethernet 700 Series fdir for flexbytes
 Test case: Intel® Ethernet 700 Series fdir for ipv4
 ===================================================
 
+Subcase1: fdir for ipv4 (DPDK PF)
+---------------------------------
+
+1. Launch the app ``testpmd`` with the following arguments::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss
+    testpmd> set fwd rxonly
+    testpmd> set verbose 1
+    testpmd> start
+
+2. validate and create the filter rules::
+
+    testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 157.141.168.166 src is 86.233.197.55 proto is 255  / end actions queue index 2 /  end
+    testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 144.91.80.195 src is 244.178.159.128 ttl is 131 / udp dst is 63365 src is 62851  / end actions queue index 2 /  end
+    testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 38.114.30.109 src is 42.1.193.75 tos is 93 / tcp dst is 9460 src is 58942  / end actions queue index 3 /  end
+    testpmd> flow validate 0 ingress pattern eth / vlan tci is 3691 / ipv4 dst is 58.172.170.63 src is 203.118.95.141 tos is 211 ttl is 56 / sctp dst is 51725 src is 43652 tag is 1  / end actions queue index 8 /  end
+    testpmd> flow validate 0 ingress pattern eth / vlan tci is 434 / ipv4 dst is 71.116.114.22 src is 173.153.191.177 tos is 2 ttl is 37 / sctp dst is 17941 src is 38115 tag is 1  / end actions drop /  end
+    testpmd> flow validate 0 ingress pattern eth / vlan tci is 3287 / ipv4 dst is 219.249.106.92 src is 42.187.118.192 tos is 25 ttl is 161 / sctp dst is 5762 src is 58896 tag is 1  / end actions passthru / flag /  end
+    testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 29.191.154.55 src is 69.31.207.25 ttl is 134 / udp dst is 997 src is 42348  / end actions queue index 1 / flag /  end
+    testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 53.166.31.5 src is 158.221.82.64 tos is 90 / tcp dst is 28429 src is 36277  / end actions queue index 7 / mark id 3 /  end
+    testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 195.39.132.177 src is 65.239.163.18 proto is 255  / end actions passthru / mark id 3 /  end
+
+    testpmd> flow create 0 ingress pattern eth / ipv4 dst is 33.178.41.216 src is 157.159.41.179 proto is 255  / end actions queue index 1 /  end
+    testpmd> flow create 0 ingress pattern eth / ipv4 dst is 141.4.179.232 src is 38.102.237.108 ttl is 47 / udp dst is 50235 src is 55057  / end actions queue index 2 /  end
+    testpmd> flow create 0 ingress pattern eth / ipv4 dst is 109.167.0.48 src is 2.233.109.45 tos is 130 / tcp dst is 20779 src is 64541  / end actions queue index 3 /  end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 1881 / ipv4 dst is 100.140.14.188 src is 210.226.229.15 tos is 105 ttl is 190 / sctp dst is 62829 src is 39503 tag is 1  / end actions queue index 4 /  end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 3893 / ipv4 dst is 141.77.203.35 src is 99.49.193.226 tos is 227 ttl is 22 / sctp dst is 33682 src is 22991 tag is 1  / end actions drop /  end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 1575 / ipv4 dst is 160.99.116.93 src is 123.114.110.144 tos is 21 ttl is 72 / sctp dst is 31363 src is 34136 tag is 1  / end actions passthru / flag /  end
+    testpmd> flow create 0 ingress pattern eth / ipv4 dst is 213.99.143.236 src is 55.130.28.195 ttl is 201 / udp dst is 25119 src is 31609  / end actions queue index 5 / flag /  end
+    testpmd> flow create 0 ingress pattern eth / ipv4 dst is 224.12.140.222 src is 118.34.141.171 tos is 41 / tcp dst is 32602 src is 17691  / end actions queue index 6 / mark id 3 /  end
+    testpmd> flow create 0 ingress pattern eth / ipv4 dst is 124.168.113.3 src is 253.237.216.240 proto is 255  / end actions passthru / mark id 3 /  end
+
+3. send packets::
+
+    pkt1 = Ether(dst='3c:fd:fe:9c:5b:b8')/IP(dst='33.178.41.216', src='157.159.41.179', proto=255)/Raw('x' * 20)
+    pkt2 = Ether(dst='3c:fd:fe:9c:5b:b8')/IP(dst='141.4.179.232', src='38.102.237.108', ttl=47)/UDP(dport=50235, sport=55057)/Raw('x' * 20)
+    pkt3 = Ether(dst='3c:fd:fe:9c:5b:b8')/IP(dst='109.167.0.48', src='2.233.109.45', tos=130)/TCP(dport=20779, sport=64541)/Raw('x' * 20)
+    pkt4 = Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=1881)/IP(dst='100.140.14.188', src='210.226.229.15', tos=105, ttl=190)/SCTP(dport=62829, sport=39503, tag=1)/Raw('x' * 20)
+    pkt5 = Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=3893)/IP(dst='141.77.203.35', src='99.49.193.226', tos=227, ttl=22)/SCTP(dport=33682, sport=22991, tag=1)/Raw('x' * 20)
+    pkt6 = Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=1575)/IP(dst='160.99.116.93', src='123.114.110.144', tos=21, ttl=72)/SCTP(dport=31363, sport=34136, tag=1)/Raw('x' * 20)
+    pkt7 = Ether(dst='3c:fd:fe:9c:5b:b8')/IP(dst='213.99.143.236', src='55.130.28.195', ttl=201)/UDP(dport=25119, sport=31609)/Raw('x' * 20)
+    pkt8 = Ether(dst='3c:fd:fe:9c:5b:b8')/IP(dst='224.12.140.222', src='118.34.141.171', tos=41)/TCP(dport=32602, sport=17691)/Raw('x' * 20)
+    pkt9 = Ether(dst='3c:fd:fe:9c:5b:b8')/IP(dst='124.168.113.3', src='253.237.216.240', proto=255)/Raw('x' * 20)
+    pkt10 = Ether(dst="3c:fd:fe:9c:5b:b8")/IP(src="192.168.0.3", dst="192.168.0.4", proto=255)/Raw("x" * 20)
+
+    verify packet
+    pkt1 to queue 1, pkt2 to queue 2, pkt3 to queue 3, pkt4 to queue 4, pkt5 can't be received,
+    pkt6/9/10 to queue 0, pkt7 to queue 5, pkt8 to queue 6.
+
+4. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+    ID      Group   Prio    Attr    Rule
+    0       0       0       i--     ETH IPV4 => QUEUE
+    1       0       0       i--     ETH IPV4 UDP => QUEUE
+    2       0       0       i--     ETH IPV4 TCP => QUEUE
+    3       0       0       i--     ETH VLAN IPV4 SCTP => QUEUE
+    4       0       0       i--     ETH VLAN IPV4 SCTP => DROP
+    5       0       0       i--     ETH VLAN IPV4 SCTP => PASSTHRU FLAG
+    6       0       0       i--     ETH IPV4 UDP => QUEUE FLAG
+    7       0       0       i--     ETH IPV4 TCP => QUEUE MARK
+    8       0       0       i--     ETH IPV4 => PASSTHRU MARK
+
+Subcase2: fdir for ipv4 (DPDK PF + DPDK VF)
+-------------------------------------------
+
    Prerequisites:
    
    add two vfs on dpdk pf, then bind the vfs to vfio-pci::
@@ -188,17 +254,17 @@ Test case: Intel® Ethernet 700 Series fdir for ipv4
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e0000 -n 4 -a 05:02.0 --file-prefix=vf0 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e0000 -n 4 -a 05:02.0 --file-prefix=vf0 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e00000 -n 4 -a 05:02.1 --file-prefix=vf1 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e00000 -n 4 -a 05:02.1 --file-prefix=vf1 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -284,6 +350,56 @@ Test case: Intel® Ethernet 700 Series fdir for ipv4
 Test case: Intel® Ethernet 700 Series fdir for ipv6
 ===================================================
 
+Subcase1: fdir for ipv6 (DPDK PF)
+---------------------------------
+
+1. Launch the app ``testpmd`` with the following arguments::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss
+    testpmd> set fwd rxonly
+    testpmd> set verbose 1
+    testpmd> start
+
+2. validate and create the filter rules::
+
+    testpmd> flow validate 0 ingress pattern eth / vlan tci is 1615 / ipv6 src is f47e:d08c:3856:2e75:2f6b:7b92:c5ee:8f3c dst is 3d29:55bc:c137:3bd9:32b6:afe7:2db6:358f proto is 255 tc is 31 hop is 47  / end actions queue index 0 /  end
+    testpmd> flow validate 0 ingress pattern eth / vlan tci is 2144 / ipv6 src is 776c:1445:230:8421:7813:c142:5eab:3224 dst is 32c0:348d:90c:cd0a:5e7:f950:6db9:f686 tc is 70 hop is 185 / udp dst is 18871 src is 40861  / end actions queue index 7 /  end
+    testpmd> flow validate 0 ingress pattern eth / vlan tci is 827 / ipv6 src is 79a1:1122:ab30:112:bbc4:f043:a68b:2261 dst is 14a4:d730:69d1:d6b3:f39a:6f9c:398e:e510 tc is 245 hop is 72 / tcp dst is 63094 src is 13170  / end actions queue index 15 /  end
+    testpmd> flow validate 0 ingress pattern eth / vlan tci is 1063 / ipv6 src is cb74:80d7:c1fd:b5ad:1016:1b4d:29a6:24f1 dst is 22c9:69f:a52d:6826:3f95:5ac:be54:f88c tc is 216 hop is 180 / sctp dst is 2661 src is 24787 tag is 1  / end actions queue index 1 /  end
+    testpmd> flow validate 0 ingress pattern eth / vlan tci is 2212 / ipv6 src is a457:e86a:a531:d6d1:af33:c06a:b1f6:e96f dst is f13b:3245:f84f:af9c:42b7:cd48:63c:c168 tc is 243 hop is 11 / sctp dst is 31788 src is 10570 tag is 1  / end actions drop /  end
+
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 120 / ipv6 src is 3a69:6b77:3c17:87b:dad1:3559:c2d4:f8f9 dst is f15e:7045:9ce9:c217:5cda:8710:6704:1166 proto is 255 tc is 63 hop is 175  / end actions queue index 1 /  end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 1438 / ipv6 src is 3d0a:40ca:7efa:6501:f13e:5559:a3da:fab dst is 23f5:1:fe7d:c59e:160b:22ec:f102:82c5 tc is 107 hop is 34 / udp dst is 46416 src is 57148  / end actions queue index 2 /  end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 78 / ipv6 src is 4701:9a42:995:f2c:b75a:87eb:8dde:991d dst is 24ec:dd03:991d:5fb6:5e07:47ba:531a:e897 tc is 180 hop is 137 / tcp dst is 3940 src is 52731  / end actions queue index 3 /  end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 59 / ipv6 src is caeb:64ff:2216:5334:16df:e93c:c5f5:9680 dst is 46a:6625:57f9:915:19a6:ecc7:3131:f702 tc is 52 hop is 253 / sctp dst is 48514 src is 49861 tag is 1  / end actions queue index 4 /  end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 4014 / ipv6 src is a484:b7d9:ee51:e67c:d668:6304:f612:b814 dst is 8ff1:1185:2084:454d:ff90:a7b1:675d:31c4 tc is 248 hop is 22 / sctp dst is 54472 src is 48229 tag is 1  / end actions drop /  end
+
+
+3. send packets::
+
+    pkt1 = Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=120)/IPv6(src='3a69:6b77:3c17:87b:dad1:3559:c2d4:f8f9', dst='f15e:7045:9ce9:c217:5cda:8710:6704:1166', nh=255, tc=63, hlim=175)/Raw('x' * 20)
+    pkt2 = Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=1438)/IPv6(src='3d0a:40ca:7efa:6501:f13e:5559:a3da:fab', dst='23f5:1:fe7d:c59e:160b:22ec:f102:82c5', tc=107, hlim=34)/UDP(dport=46416, sport=57148)/Raw('x' * 20)
+    pkt3 = Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=78)/IPv6(src='4701:9a42:995:f2c:b75a:87eb:8dde:991d', dst='24ec:dd03:991d:5fb6:5e07:47ba:531a:e897', tc=180, hlim=137)/TCP(dport=3940, sport=52731)/Raw('x' * 20)
+    pkt4 = Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=59)/IPv6(src='caeb:64ff:2216:5334:16df:e93c:c5f5:9680', dst='46a:6625:57f9:915:19a6:ecc7:3131:f702', tc=52, hlim=253, nh=132)/SCTP(dport=48514, sport=49861, tag=1)/Raw('x' * 20)
+    pkt5 = Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=1438)/IPv6(src="2001::1", dst="2001::2", tc=2, hlim=20)/UDP(sport=22,dport=23)/Raw("x" * 20)
+    pkt6 = Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=2734)/IPv6(src="2001::1", dst="2001::2", tc=2, hlim=20)/UDP(sport=22,dport=23)/Raw("x" * 20)
+
+    verify packet
+    pkt1 to queue 1, pkt2 to queue 2, pkt3 to queue 3, pkt4 to queue 4, pkt5 can't be received,	pkt6 to queue 0.
+
+4. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+    ID      Group   Prio    Attr    Rule
+    0       0       0       i--     ETH VLAN IPV6 => QUEUE
+    1       0       0       i--     ETH VLAN IPV6 UDP => QUEUE
+    2       0       0       i--     ETH VLAN IPV6 TCP => QUEUE
+    3       0       0       i--     ETH VLAN IPV6 SCTP => QUEUE
+    4       0       0       i--     ETH VLAN IPV6 SCTP => DROP
+
+Subcase2: fdir for ipv6 (DPDK PF + DPDK VF)
+-------------------------------------------
+
    Prerequisites:
 
    add two vfs on dpdk pf, then bind the vfs to vfio-pci::
@@ -293,17 +409,17 @@ Test case: Intel® Ethernet 700 Series fdir for ipv6
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e0000 -n 4 -a 05:02.0 --file-prefix=vf0 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e0000 -n 4 -a 05:02.0 --file-prefix=vf0 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e00000 -n 4 -a 05:02.1 --file-prefix=vf1 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e00000 -n 4 -a 05:02.1 --file-prefix=vf1 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -369,6 +485,76 @@ Test case: Intel® Ethernet 700 Series fdir for ipv6
 Test case: Intel® Ethernet 700 Series fdir for vlan
 ===================================================
 
+Subcase1: fdir for vlan (DPDK PF)
+---------------------------------
+
+1. Launch the app ``testpmd`` with the following arguments::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 --legacy-mem -- -i --rxq=16 --txq=16 --disable-rss
+    testpmd> set fwd rxonly
+    testpmd> set verbose 1
+    testpmd> start
+
+    if the i40e firmware version >= 8.4 the dpdk can only add 'extend on' to make the single VLAN filter work normally:
+    testpmd> vlan set extend on 0
+
+2. create and validated filter rules::
+
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 91 / ipv4  / end actions queue index 1 /  end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 1978 / ipv4 / udp  / end actions queue index 2 /  end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 2391 / ipv4 / tcp  / end actions queue index 3 /  end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 4028 / ipv4 / sctp  / end actions queue index 4 /  end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 986 / ipv4 / sctp  / end actions drop /  end
+
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 2477 / ipv6  / end actions queue index 1 /  end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 3407 / ipv6 / udp  / end actions queue index 2 /  end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 2283 / ipv6 / tcp  / end actions queue index 3 /  end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 2709 / ipv6 / sctp  / end actions queue index 4 /  end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 3734 / ipv6 / sctp  / end actions drop /  end
+
+3. send the packets::
+
+    pkt1 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=91)/IP()/Raw('x' * 20)]
+    pkt2 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=91)/IP(src="192.168.0.1", dst="192.168.0.2", proto=3)/Raw("x" * 20)]
+
+    pkt3 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=1978)/IP()/UDP()/Raw('x' * 20)]
+    pkt4 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=1978)/IP(src="192.168.0.1", dst="192.168.0.2", tos=3)/UDP()/Raw("x" * 20)]
+
+    pkt5 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=2391)/IP()/TCP()/Raw('x' * 20)]
+    pkt6 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=2391)/IP(src="192.168.0.1", dst="192.168.0.2", ttl=3)/TCP()/Raw("x" * 20)]
+
+    pkt7 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=4028)/IP()/SCTP()/Raw('x' * 20)]
+    pkt8 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=4028)/IP(src="192.168.0.1", dst="192.168.0.2", tos=3, ttl=3)/SCTP()/Raw("x" * 20)]
+
+    pkt9 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=2391)/IP()/UDP()/Raw("x" * 20)]
+    pkt10 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=4028)/IP(src="192.168.0.1", dst="192.168.0.2", ttl=3)/TCP()/Raw("x" * 20)]
+
+    pkt13 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=986)/IP()/SCTP()/Raw('x' * 20)]
+    pkt14 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=986)/IP(src="192.168.0.5", dst="192.168.0.6", tos=3, ttl=3)/SCTP(sport=44,dport=45,tag=1)/Raw("x" * 20)]
+
+    pkt17 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=2477)/IPv6(src='cb5:c4a9:8855:e022:c66a:a5dc:f2b8:a4d9', dst='922c:9e24:a730:2c66:9b65:c00a:cfed:986')/Raw('x' * 20)]
+    pkt18 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=2477)/IPv6(src="2001::1", dst="2001::2", tc=1, nh=5, hlim=10)/Raw("x" * 20)]
+    pkt19 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=3407)/IPv6(src='4cff:139f:dad7:cb9f:bb6d:3e28:42b2:99b', dst='cb9e:cd92:b178:d273:de4d:c9fa:9952:5088')/UDP()/Raw('x' * 20)]
+    pkt20 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=3407)/IPv6(src="2001::1", dst="2001::2", tc=2, hlim=20)/UDP(sport=22,dport=23)/Raw("x" * 20)]
+    pkt21 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=2283)/IPv6(src='5548:dace:bc41:5829:ee11:1944:a56:18f9', dst='9ef3:710f:b492:778c:f87a:455f:4508:893e')/TCP()/Raw('x' * 20)]
+    pkt22 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=2283)/IPv6(src="2001::1", dst="2001::2", tc=2, hlim=20)/TCP(sport=32,dport=33)/Raw("x" * 20)]
+    pkt23 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=2709)/IPv6(src='7d7d:ca46:bd95:676e:b680:b7e9:4c21:d7cc', dst='c7bc:8b28:a48a:a7eb:bfd0:3313:1548:7579', nh=132)/SCTP()/Raw('x' * 20)]
+    pkt24 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=2709)/IPv6(src="2001::1", dst="2001::2", tc=4, nh=132, hlim=40)/SCTP(sport=44,dport=45,tag=1)/SCTPChunkData(data="X" * 20)]
+
+    pkt27 = [Ether(dst='3c:fd:fe:9c:5b:b8')/Dot1Q(vlan=3734)/IPv6(src='1529:7d1c:6f:914a:2fe2:269f:3b16:3f60', dst='fd68:fd59:bb7c:12d4:3b19:20b2:1ef3:7100', nh=132)/SCTP()/Raw('x' * 20)]
+    pkt28 = [Ether(dst="3c:fd:fe:9c:5b:b8")/Dot1Q(vlan=3734)/IPv6(src="2001::1", dst="2001::2", tc=4, nh=132, hlim=40)/SCTP(sport=44,dport=45,tag=1)/SCTPChunkData(data="X" * 20)]
+
+    verify packet
+    pkt1,pkt2 to queue 1, pkt3,pkt4 to queue 2, pkt5,pkt6 to queue 3,
+    pkt7,pkt8 to queue 4, pkt9,pkt10 to queue 0, pkt13, pkt14 can't be received by pf,
+    pkt17,pkt18 to queue 1, pkt19,pkt20 to queue 2, pkt21,pkt22 to queue 3,
+    pkt23,pkt24 to queue 4, pkt27, pkt28 can't be received by pf.
+
+4. verify rules can be listed and destroyed.
+
+Subcase2: fdir for vlan (DPDK PF + DPDK VF)
+-------------------------------------------
+
 Prerequisites:
 
    add 2 vf on dpdk pf, then bind the vf to vfio-pci::
@@ -383,12 +569,15 @@ Prerequisites:
     testpmd> set verbose 1
     testpmd> start
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e0000 -n 4 -a 05:02.0 --file-prefix=vf0 --socket-mem=1024,1024 --legacy-mem -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect
+    if the i40e firmware version >= 8.4 the dpdk can only add 'extend on' to make the single VLAN filter work normally:
+    testpmd> vlan set extend on 0
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e0000 -n 4 -a 05:02.0 --file-prefix=vf0 --socket-mem=1024,1024 --legacy-mem -- -i --rxq=4 --txq=4 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e00000 -n 4 -a 05:02.1 --file-prefix=vf1 --socket-mem=1024,1024 --legacy-mem -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1e00000 -n 4 -a 05:02.1 --file-prefix=vf1 --socket-mem=1024,1024 --legacy-mem -- -i --rxq=4 --txq=4 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -505,12 +694,13 @@ Prerequisites:
     testpmd> flow flush 0
     testpmd> flow list 0
 
+
 Test case: Intel® Ethernet 700 Series fdir wrong parameters
 ===========================================================
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -548,15 +738,6 @@ Test case: Intel® Ethernet 700 Series fdir wrong parameters
    it shows "Caught error type 11 (specific action): cause: 0x7ffc7bb9a338,
    Invalid queue ID for FDIR".
 
-   If create a rule on vf that has invalid queue ID::
-
-    testpmd> flow validate 0 ingress transfer pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 3 / vf id is 0 / end actions queue index 4 / end
-    testpmd> flow create 0 ingress transfer pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 3 / vf id is 0 / end actions queue index 4 / end
-
-   it shows "Caught error type 11 (specific action): cause: 0x7ffc7bb9a338,
-   Invalid queue ID for FDIR".
-
-
 Note:
 
 /// not support IP fragment ///
@@ -564,6 +745,56 @@ Note:
 
 Test case: Intel® Ethernet 700 Series tunnel vxlan
 ==================================================
+
+Subcase1: tunnel vxlan (DPDK PF)
+--------------------------------
+
+1. Launch the app ``testpmd`` with the following arguments::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 --legacy-mem  -- -i --rxq=16 --txq=16 --disable-rss
+    testpmd> rx_vxlan_port add 4789 0
+    testpmd> set fwd rxonly
+    testpmd> set verbose 1
+    testpmd> start
+
+2. create filter rules::
+
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth dst is 00:11:22:33:44:66  / end actions pf / queue index 1 /  end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / vxlan vni is 794 / eth dst is 00:11:22:33:44:66  / end actions pf / queue index 2 /  end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth dst is 00:11:22:33:44:66 / vlan tci is 3478  / end actions pf / queue index 3 /  end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / vxlan vni is 2611 / eth dst is 00:11:22:33:44:66 / vlan tci is 2434  / end actions pf / queue index 4 /  end
+    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / udp / vxlan vni is 1909 / eth dst is 00:11:22:33:44:66  / end actions pf / queue index 5 /  end
+
+    testpmd> flow validate 0 ingress pattern eth / ipv4 / udp / vxlan / eth dst is 00:11:22:33:44:66  / end actions pf / queue index 2 /  end
+    testpmd> flow validate 0 ingress pattern eth / ipv4 / udp / vxlan vni is 423 / eth dst is 00:11:22:33:44:66  / end actions pf / queue index 5 /  end
+    testpmd> flow validate 0 ingress pattern eth / ipv4 / udp / vxlan / eth dst is 00:11:22:33:44:66 / vlan tci is 2503  / end actions pf / queue index 4 /  end
+    testpmd> flow validate 0 ingress pattern eth / ipv4 / udp / vxlan vni is 330 / eth dst is 00:11:22:33:44:66 / vlan tci is 1503  / end actions pf / queue index 8 /  end
+    testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / udp / vxlan vni is 513 / eth dst is 00:11:22:33:44:66  / end actions pf / queue index 9 /  end
+
+3. send packets::
+
+    pkt1 = Ether(dst='3c:fd:fe:9c:5b:b8')/IP()/UDP()/VXLAN()/Ether(dst='00:11:22:33:44:66')/Raw('x' * 20)
+    pkt2 = Ether(dst='3c:fd:fe:9c:5b:b8')/IP()/UDP()/VXLAN(vni=794, flags=8)/Ether(dst='00:11:22:33:44:66')/Raw('x' * 20)
+    pkt3 = Ether(dst='3c:fd:fe:9c:5b:b8')/IP()/UDP()/VXLAN()/Ether(dst='00:11:22:33:44:66')/Dot1Q(vlan=3478)/Raw('x' * 20)
+    pkt4 = Ether(dst='3c:fd:fe:9c:5b:b8')/IP()/UDP()/VXLAN(vni=2611, flags=8)/Ether(dst='00:11:22:33:44:66')/Dot1Q(vlan=2434)/Raw('x' * 20)
+    pkt5 = Ether(dst='00:11:22:33:44:55')/IP()/UDP()/VXLAN(vni=1909, flags=8)/Ether(dst='00:11:22:33:44:66')/Raw('x' * 20)
+    pkt6 = Ether(dst="00:11:22:33:44:55")/IP()/UDP()/VXLAN()/Ether(dst="00:11:22:33:44:66")/Dot1Q(vlan=11)/IP()/TCP()/Raw("x" * 20)
+    pkt7 = Ether(dst="00:11:22:33:44:55")/IP()/UDP()/VXLAN(vni=5)/Ether(dst="00:11:22:33:44:77")/IP()/TCP()/Raw("x" * 20)
+
+    verify pkt1 received by pf queue 1, pkt2 to pf queue 2, pkt3 to pf queue 3, pkt4 to pf queue 4, pkt5 to pf queue 5, pkt6 to pf queue 1, pkt7 to pf queue 0.
+
+4. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+    ID      Group   Prio    Attr    Rule
+    0       0       0       i--     ETH IPV4 UDP VXLAN ETH => PF QUEUE
+    1       0       0       i--     ETH IPV4 UDP VXLAN ETH => PF QUEUE
+    2       0       0       i--     ETH IPV4 UDP VXLAN ETH VLAN => PF QUEUE
+    3       0       0       i--     ETH IPV4 UDP VXLAN ETH VLAN => PF QUEUE
+    4       0       0       i--     ETH IPV4 UDP VXLAN ETH => PF QUEUE
+
+Subcase2: tunnel vxlan (DPDK PF + DPDK VF)
+------------------------------------------
 
    Prerequisites:
 
@@ -664,9 +895,57 @@ Test case: Intel® Ethernet 700 Series tunnel vxlan
     testpmd> flow flush 0
     testpmd> flow list 0
 
-
 Test case: Intel® Ethernet 700 Series tunnel nvgre
 ==================================================
+
+Subcase1: tunnel nvgre (DPDK PF)
+--------------------------------
+
+1. Launch the app ``testpmd`` with the following arguments::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -a 05:00.0 --file-prefix=pf --socket-mem=1024,1024 --legacy-mem  -- -i --rxq=16 --txq=16 --disable-rss
+    testpmd> set fwd rxonly
+    testpmd> set verbose 1
+    testpmd> start
+
+2. create filter rules::
+
+    testpmd> flow create 0 ingress pattern eth / ipv4 / nvgre / eth dst is 00:11:22:33:44:66  / end actions pf / queue index 1 /  end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / nvgre tni is 2835 / eth dst is 00:11:22:33:44:66  / end actions pf / queue index 2 /  end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / nvgre / eth dst is 00:11:22:33:44:66 / vlan tci is 1009  / end actions pf / queue index 3 /  end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / nvgre tni is 2570 / eth dst is 00:11:22:33:44:66 / vlan tci is 170  / end actions pf / queue index 4 /  end
+    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / nvgre tni is 568 / eth dst is 00:11:22:33:44:66  / end actions pf / queue index 5 /  end
+
+    testpmd> flow validate 0 ingress pattern eth / ipv4 / nvgre / eth dst is 00:11:22:33:44:66  / end actions pf / queue index 11 /  end
+    testpmd> flow validate 0 ingress pattern eth / ipv4 / nvgre tni is 1987 / eth dst is 00:11:22:33:44:66  / end actions pf / queue index 0 /  end
+    testpmd> flow validate 0 ingress pattern eth / ipv4 / nvgre / eth dst is 00:11:22:33:44:66 / vlan tci is 266  / end actions pf / queue index 8 /  end
+    testpmd> flow validate 0 ingress pattern eth / ipv4 / nvgre tni is 3114 / eth dst is 00:11:22:33:44:66 / vlan tci is 1776  / end actions pf / queue index 9 /  end
+    testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 / nvgre tni is 836 / eth dst is 00:11:22:33:44:66  / end actions pf / queue index 1 /  end
+
+3. send packets::
+
+    pkt1 = Ether(dst='3c:fd:fe:9c:5b:b8')/IP()/GRE(key_present=1,proto=0x6558,key=0x00000100)/Ether(dst='00:11:22:33:44:66')/Raw('x' * 20)
+    pkt2 = Ether(dst='3c:fd:fe:9c:5b:b8')/IP()/GRE(key_present=1,proto=0x6558,key=725760)/Ether(dst='00:11:22:33:44:66')/Raw('x' * 20)
+    pkt3 = Ether(dst='3c:fd:fe:9c:5b:b8')/IP()/GRE(key_present=1,proto=0x6558,key=0x00000100)/Ether(dst='00:11:22:33:44:66')/Dot1Q(vlan=1009)/Raw('x' * 20)
+    pkt4 = Ether(dst='3c:fd:fe:9c:5b:b8')/IP()/GRE(key_present=1,proto=0x6558,key=657920)/Ether(dst='00:11:22:33:44:66')/Dot1Q(vlan=170)/Raw('x' * 20)
+    pkt5 = Ether(dst='00:11:22:33:44:55')/IP()/GRE(key_present=1,proto=0x6558,key=145408)/Ether(dst='00:11:22:33:44:66')/Raw('x' * 20)
+    pkt6 = Ether(dst="00:11:22:33:44:55")/IP()/GRE(key_present=1,proto=0x6558,key=0x00000100)/Ether(dst="00:11:22:33:44:66")/Dot1Q(vlan=1)/IP()/TCP()/Raw("x" * 20)
+    pkt7 = Ether(dst="00:11:22:33:44:55")/IP()/GRE(key_present=1,proto=0x6558,key=145408)/Ether(dst="00:11:22:33:44:77")/IP()/TCP()/Raw("x" * 20)
+
+    verify pkt1 received by pf queue 1, pkt2 to pf queue 2, pkt3 to pf queue 3, pkt4 to pf queue 4, pkt5 to pf queue 5, pkt6 to pf queue 1, pkt7 to pf queue 0.
+
+4. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+    ID      Group   Prio    Attr    Rule
+    0       0       0       i--     ETH IPV4 NVGRE ETH => PF QUEUE
+    1       0       0       i--     ETH IPV4 NVGRE ETH => PF QUEUE
+    2       0       0       i--     ETH IPV4 NVGRE ETH VLAN => PF QUEUE
+    3       0       0       i--     ETH IPV4 NVGRE ETH VLAN => PF QUEUE
+    4       0       0       i--     ETH IPV4 NVGRE ETH => PF QUEUE
+
+Subcase2: tunnel nvgre (DPDK PF + DPDK VF)
+------------------------------------------
 
    Prerequisites:
 
@@ -772,7 +1051,6 @@ Test case: Intel® Ethernet 700 Series tunnel nvgre
     
     testpmd> flow flush 0
     testpmd> flow list 0
-
 
 Test case: IXGBE SYN
 ====================
@@ -921,7 +1199,7 @@ Test case: IXGBE fdir for ipv4
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -1023,7 +1301,7 @@ Test case: IXGBE fdir for signature(ipv4/ipv6)
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=signature
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -1176,7 +1454,7 @@ Test case: IXGBE fdir for mac/vlan(support by x540, x552, x550)
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect-mac-vlan
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -1201,130 +1479,13 @@ Test case: IXGBE fdir for mac/vlan(support by x540, x552, x550)
     testpmd> flow flush 0
     testpmd> flow list 0
 
-Test case: IXGBE fdir for Control levels of FDir match reporting(supported by 82599)
-====================================================================================
-
-The status of FDir filter matching for each packet can be reported by the
-hardware through the RX descriptor of each received packet, and this information
-is copied into the packet mbuf, that can be examined by the application.
-
-There are three different reporting modes, that can be set in testpmd using the
-``--pkt-filter-report-hash`` command line argument:
-
-
-Sub-case: ``--pkt-filter-report-hash=none`` mode
-------------------------------------------------
-
-In this mode FDir reporting mode, matches are never reported.
-Start the ``testpmd`` application as follows::
-
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect --pkt-filter-report-hash=none
-    testpmd> set verbose 1
-    testpmd> set fwd rxonly
-    testpmd> start
-
-Send the matched packet with Scapy on the traffic generator and check that no FDir information is printed::
-
-    packet: pkt0=Ether(dst="90:E2:BA:AC:99:FC")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)
-    testpmd> port 0/queue 0: received 1 packets
-    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=60 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4  -  sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
-    ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
-
-Add flow filter rule, and send the matched packet again.
-No Dir information is printed, but it can be seen that the packet goes to queue 1::
-
-    testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions queue index 1 / mark id 1 / end
-    testpmd> port 0/queue 1: received 1 packets
-    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=60 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x1
-    ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
-    testpmd>  quit
-
-Sub-case: ``--pkt-filter-report-hash=match`` mode
--------------------------------------------------
-
-In this mode FDir reporting mode, FDir information is printed for packets that match a filter.
-Start the ``testpmd`` application as follows::
-
-   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect --pkt-filter-report-hash=match
-    testpmd> set verbose 1
-    testpmd> set fwd rxonly
-    testpmd> start
-
-Send pkt0 packet with Scapy on the traffic generator and check that no FDir information is printed::
-
-    packet: pkt0=Ether(dst="90:E2:BA:AC:99:FC")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)
-    testpmd> port 0/queue 0: received 1 packets
-    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=60 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
-    ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
-
-Add flow filter rule, and send the pkt0 packet again.
-This time, the match is indicated (``RTE_MBUF_F_RX_FDIR``), and its details (hash, id) printed ::
-
-    testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions queue index 1 / mark id 1 / end
-    testpmd> port 0/queue 1: received 1 packets
-    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=60 - nb_segs=1 - FDIR matched hash=0x2f3 ID=0x1  - hw ptype: L2_ETHER L3_IPV4  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x1
-    ol_flags: RTE_MBUF_F_RX_FDIR RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
-
-Add flow filter rule by using different src,dst, and send the matched pkt1 packet again.
-This time, the match is indicated (``RTE_MBUF_F_RX_FDIR``), and its details (hash, id) printed ::
-
-    packet: pkt1=Ether(dst="90:E2:BA:AC:99:FC")/IP(src="192.168.1.1", dst="192.168.1.2")/Raw('x' * 20)
-    testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions queue index 2 / mark id 2 / end
-    testpmd> port 0/queue 2: received 1 packets
-    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=64 - nb_segs=1 - FDIR matched hash=0x2f3 ID=0x2  - hw ptype: L2_ETHER L3_IPV4  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x2
-    ol_flags: RTE_MBUF_F_RX_FDIR RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
-
-Remove rule1 and send the matched pkt0 packet again. Check that no FDir information is printed::
-
-    testpmd> flow destroy 0 rule 0
-    Flow rule #0 destroyed
-    testpmd> port 0/queue 0: received 1 packets
-    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=60 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
-    ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
-
-Remove rule2, and send the match pkt1 packet again. Check that no FDir information is printed::
-
-    testpmd> flow destroy 0 rule 1
-    Flow rule #1 destroyed
-    testpmd> port 0/queue 0: received 1 packets
-    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=60 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
-    ol_flags: RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
-    testpmd>  quit
-
-Sub-case: ``--pkt-filter-report-hash=always`` mode
---------------------------------------------------
-
-In this mode FDir reporting mode, FDir information is printed for every received packet.
-Start the ``testpmd`` application as follows::
-
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect --pkt-filter-report-hash=always
-    testpmd> set verbose 1
-    testpmd> set fwd rxonly
-    testpmd> start
-
-
-Send matched pkt0 packet with Scapy on the traffic generator and check the output (FDIR id=0x0)::
-
-    packet: pkt0=Ether(dst="90:E2:BA:AC:99:FC")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)
-    testpmd> port 0/queue 0: received 1 packets
-    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=60 - nb_segs=1 - FDIR matched hash=0x2f3 ID=0x0  - hw ptype: L2_ETHER L3_IPV4  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
-    ol_flags: RTE_MBUF_F_RX_FDIR RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
-
-Add flow filter rule, and send the matched pkt0 packet again.
-This time, the filter ID is different, and the packet goes to queue 1 ::
-
-    testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions queue index 1 / mark id 1 / end
-    testpmd> port 0/queue 1: received 1 packets
-    src=00:0C:29:B3:0E:82 - dst=90:E2:BA:AC:99:FC - type=0x0800 - length=60 - nb_segs=1 - FDIR matched hash=0x2f3 ID=0x1  - hw ptype: L2_ETHER L3_IPV4  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x1
-    ol_flags: RTE_MBUF_F_RX_FDIR RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
-    testpmd>  quit
 
 Test case: IXGBE fdir for tunnel (vxlan and nvgre)(support by x540, x552, x550)
 ===============================================================================
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss --pkt-filter-mode=perfect-tunnel
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -2116,7 +2277,7 @@ Test case: Intel® Ethernet 700 Series fdir for l2 mac
         Verify second rule can not be created.
 
 Test case: Dual vlan(QinQ)
-=================================
+==========================
 
 1. config testpmd on DUT
 
@@ -2293,7 +2454,7 @@ Verify that the packets are not received (RX-packets do not increased)on the
 queue 1.
 
 Test Case: jumbo framesize filter
-===================================
+=================================
 
 This case is designed for NIC (82599, I350, 82576 and 82580). Since
 ``Testpmd`` could transmits packets with jumbo frame size , it also could
@@ -2330,7 +2491,7 @@ the packet are not received on the queue 2::
     testpmd> stop
 
 Test Case: 64 queues
-========================
+====================
 
 This case is designed for NIC(82599). Default use 64 queues for test
 
