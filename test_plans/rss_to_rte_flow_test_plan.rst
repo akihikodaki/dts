@@ -557,7 +557,7 @@ Test case: Flow directory rule and RSS rule combination (I40E)
 
 1. Start the testpmd::
 
-    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=16 --txq=16 --pkt-filter-mode=perfect
+    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=16 --txq=16
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -921,7 +921,7 @@ Test case: Flow directory rule and RSS rule combination
 
 1. Start the testpmd::
 
-    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=16 --txq=16 --pkt-filter-mode=perfect
+    ./<build_target>/app/dpdk-testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=16 --txq=16
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
