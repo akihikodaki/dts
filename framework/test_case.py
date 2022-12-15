@@ -606,3 +606,25 @@ def check_supported_nic(nics):
         return wrapper
 
     return decorator
+
+
+def skip_unsupported_host_driver(drivers):
+    """
+    Skip case which are not supported by the host driver(vfio-pci/igb_uio etc.)
+    """
+    if isinstance(drivers, str):
+        drivers = [drivers]
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            test_case = args[0]
+            if test_case.drivername in drivers:
+                raise VerifySkip(
+                    "{} do not support this case".format(test_case.drivername)
+                )
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
