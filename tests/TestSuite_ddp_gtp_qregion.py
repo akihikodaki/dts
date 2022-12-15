@@ -56,7 +56,7 @@ class TestDdpGtpQregion(TestCase):
         """
         self.dut_testpmd.start_testpmd(
             "Default",
-            "--pkt-filter-mode=perfect --port-topology=chained \
+            "--port-topology=chained \
             --txq=%s --rxq=%s"
             % (self.PF_QUEUE, self.PF_QUEUE),
         )
@@ -288,62 +288,6 @@ class TestDdpGtpQregion(TestCase):
             "Failed update flow type to pctype mapping!!!",
         )
 
-    def run_fd_test(self, crlwords, flowtype, pctype, keywords, qchecks):
-        """
-        Use dynamic flowtype/pctype mapping, use default or dynamic change
-        control words to set flow director input configuration for new
-        protocol, setup raw flow type filter for flow director, check flow
-        director could work.
-        crlwords: control words of keyword
-        flowtype: define flow type 23~63 values for GTP packet types as test
-                  plan table.
-        pctype: profile defines below 10~25 pctypes for GTP packet types.
-        keywords: keywords have Session ID, S-Port, D-Port, IP SA, IP DA and
-                  etc.
-        qchecks: define sameq and difq. If change keywords, direct packets to
-                 queue 0, otherwise direct packets to same queue.
-        """
-
-        self.flowtype_pctype_mapping(flowtype, pctype)
-        if crlwords is not None:
-            self.dut_testpmd.execute_cmd("port stop all")
-            time.sleep(1)
-            self.dut_testpmd.execute_cmd(
-                "port config 0 pctype %s fdir_inset clear all" % pctype
-            )
-            for word in crlwords:
-                self.dut_testpmd.execute_cmd(
-                    "port config 0 pctype %s fdir_inset set field %s" % (pctype, word)
-                )
-            self.dut_testpmd.execute_cmd("port start all")
-        self.dut_testpmd.execute_cmd("set fwd rxonly")
-        self.dut_testpmd.execute_cmd("set verbose 1")
-        self.dut_testpmd.execute_cmd("start")
-        self.dut_testpmd.wait_link_status_up(self.dut_ports[0])
-        qnum = self.send_verify_fd(flowtype, keywords, "word_opt")
-        self.verify(qnum == 0, "Receive packet from wrong queue!!!")
-        self.raw_packet_generate(flowtype)
-        queue = random.randint(1, self.PF_QUEUE - 1)
-        self.dut_testpmd.execute_cmd(
-            "flow_director_filter 0 mode raw add flow %d fwd queue %d \
-            fd_id 1 packet /tmp/test_gtp.raw"
-            % (flowtype, queue)
-        )
-        qnum = self.send_verify_fd(flowtype, keywords, "word_opt")
-        qdef = qnum
-        self.verify(qnum == queue, "Receive packet from wrong queue!!!")
-        for word, chk in zip(keywords, qchecks):
-            qnum = self.send_verify_fd(flowtype, word, "chg_sufword_opt")
-            if qnum == qdef:
-                result = "sameq"
-            elif qnum == 0:
-                result = "difq"
-            self.verify(
-                result == chk,
-                "Faild to verify flow director when \
-                key word change!!!",
-            )
-
     def run_gtp_test(self, crlwords, flowtype, pctype, qmin, qmax, keyword):
         """
         Use dynamic flowtype/pctype mapping, queue region, dynamic change
@@ -522,88 +466,6 @@ class TestDdpGtpQregion(TestCase):
         """
         crlwords = list(range(21, 29))
         self.run_gtp_test(crlwords, 23, 23, 10, 25, "dst_ipv6")
-
-    def test_fd_gtpu_ipv4(self):
-        """
-        GTP is supported by NVM with profile updated. Download profile then
-        set queue region/flowtype/pctype mapping, default flow director input
-        set configuration is teid, setup raw flow type filter for flow
-        director check flow director could work when sending matched teid
-        packets to configured queue, otherwise direct packets to queue 0.
-        """
-        crlwords = None
-        keywords = ["src_ip", "dst_ip", "sport", "dport", "teid"]
-        qchecks = ["sameq", "sameq", "sameq", "sameq", "difq"]
-        self.run_fd_test(crlwords, 26, 22, keywords, qchecks)
-
-    def test_fd_gtpu_ipv4_dstip(self):
-        """
-        GTP is supported by NVM with profile updated. Download profile then
-        set queue region/flowtype/pctype mapping, dynamic to change flow
-        director input set configuration for dst IPv4 words 27~28, setup
-        raw flow type filter for flow director, check flow director could
-        work when sending matched dst IPv4 packets to configured queue,
-        otherwise direct packets to queue 0.
-        """
-        crlwords = list(range(27, 29))
-        keywords = ["src_ip", "sport", "dport", "dst_ip"]
-        qchecks = ["sameq", "sameq", "sameq", "difq"]
-        self.run_fd_test(crlwords, 26, 22, keywords, qchecks)
-
-    def test_fd_gtpu_ipv4_srcip(self):
-        """
-        GTP is supported by NVM with profile updated. Download profile then
-        set queue region/flowtype/pctype mapping, dynamic to change flow
-        director input set configuration for src IPv4 words 15~16, setup
-        raw flow type filter for flow director, check flow director could
-        work when sending matched src IPv4 packets to configured queue,
-        otherwise direct packets to queue 0.
-        """
-        crlwords = list(range(15, 17))
-        keywords = ["dst_ip", "sport", "dport", "src_ip"]
-        qchecks = ["sameq", "sameq", "sameq", "difq"]
-        self.run_fd_test(crlwords, 26, 22, keywords, qchecks)
-
-    def test_fd_gtpu_ipv6(self):
-        """
-        GTP is supported by NVM with profile updated. Download profile then
-        set queue region/flowtype/pctype mapping, default flow director input
-        set configuration is teid, setup raw flow type filter for flow
-        director check flow director could work when sending matched teid
-        packets to configured queue, otherwise direct packets to queue 0.
-        """
-        crlwords = None
-        keywords = ["src_ipv6", "dst_ipv6", "sport", "dport", "teid"]
-        qchecks = ["sameq", "sameq", "sameq", "sameq", "difq"]
-        self.run_fd_test(crlwords, 23, 23, keywords, qchecks)
-
-    def test_fd_gtpu_ipv6_dstipv6(self):
-        """
-        GTP is supported by NVM with profile updated. Download profile then
-        set queue region/flowtype/pctype mapping, dynamic to change flow
-        director input set configuration for dst IPv6 words 21~28, setup
-        raw flow type filter for flow director, check flow director could
-        work when sending matched dst IPv6 packets to configured queue,
-        otherwise direct packets to queue 0.
-        """
-        crlwords = list(range(21, 29))
-        keywords = ["src_ipv6", "sport", "dport", "teid", "dst_ipv6"]
-        qchecks = ["sameq", "sameq", "sameq", "sameq", "difq"]
-        self.run_fd_test(crlwords, 23, 23, keywords, qchecks)
-
-    def test_fd_gtpu_ipv6_srcipv6(self):
-        """
-        GTP is supported by NVM with profile updated. Download profile then
-        set queue region/flowtype/pctype mapping, dynamic to change flow
-        director input set configuration for src IPv6 words 13~20, setup
-        raw flow type filter for flow director, check flow director could
-        work when sending matched src IPv6 packets to configured queue,
-        otherwise direct packets to queue 0.
-        """
-        crlwords = list(range(13, 21))
-        keywords = ["dst_ipv6", "sport", "dport", "teid", "src_ipv6"]
-        qchecks = ["sameq", "sameq", "sameq", "sameq", "difq"]
-        self.run_fd_test(crlwords, 23, 23, keywords, qchecks)
 
     def test_outer_64pre_dst_contrl_gtpcq(self):
         """
