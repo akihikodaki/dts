@@ -103,7 +103,6 @@ any DDP functionality*
 
     ./<build>/app/dpdk-testpmd -c f -n 4 -a
     <PCI address of device> -- -i --port-topology=chained --txq=64 --rxq=64
-    --pkt-filter-mode=perfect
 
    For testpmd commands refer: https://doc.dpdk.org/guides/testpmd_app_ug/
 
