@@ -41,6 +41,7 @@ The following are the test plans for the DPDK DTS automated test system.
     ice_fdir_test_plan
     ice_rx_timestamp_test_plan
     ice_ip_fragment_rte_flow_test_plan
+    ice_iavf_flow_subscribe_test_plan
     ice_iavf_ip_fragment_rte_flow_test_plan
     ice_iavf_packet_pacing_test_plan
     ice_iavf_rss_configure_test_plan
