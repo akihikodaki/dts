@@ -29,6 +29,7 @@ device that is controlled by the Scapy packet generator.
 The Ethernet interface identifier of the port that Scapy will use must be known.
 On tester, all offload feature should be disabled on tx port, and start rx port capture::
 
+  ifconfig <tx port> mtu 9000
   ethtool -K <tx port> rx off tx off tso off gso off gro off lro off
   ip l set <tx port> up
   tcpdump -n -e -i <rx port> -s 0 -w /tmp/cap
@@ -38,10 +39,10 @@ On DUT, run pmd with parameter "--enable-rx-cksum". Then enable TSO on tx port
 and checksum on rx port. The test commands is below::
 
   #enable hw checksum on rx port
-  tx_checksum set ip hw 0
-  tx_checksum set udp hw 0
-  tx_checksum set tcp hw 0
-  tx_checksum set sctp hw 0
+  csum set ip hw 0
+  csum set udp hw 0
+  csum set tcp hw 0
+  csum set sctp hw 0
   set fwd csum
 
   # enable TSO on tx port
@@ -70,16 +71,21 @@ Launch the userland ``testpmd`` application on DUT as follows::
    --burst=32 --rxfreet=64 --mbcache=128 --portmask=0x3 --txpt=36 --txht=0 --txwt=0
    --txfreet=32 --txrst=32 --enable-rx-cksum
      testpmd> set verbose 1
-
+     # should stop ports before set csum and start ports after the settings
+     testpmd> port stop all
    # enable hw checksum on rx port
-   testpmd> tx_checksum set ip hw 0
-   testpmd> tx_checksum set udp hw 0
-   testpmd> tx_checksum set tcp hw 0
-   testpmd> tx_checksum set sctp hw 0
+   testpmd> csum set ip hw 0
+   testpmd> csum set udp hw 0
+   testpmd> csum set tcp hw 0
+   testpmd> csum set sctp hw 0
+   testpmd> csum set outer-ip hw 0
+   testpmd> csum parse-tunnel on 0
    # enable TSO on tx port
    testpmd> tso set 800 1
    # set fwd engine and start
    testpmd> set fwd csum
+   testpmd> port start all
+   testpmd> set promisc all off
    testpmd> start
 
 Test IPv4() in scapy::
@@ -92,6 +98,7 @@ Test IPv6() in scapy::
 
 Test case: csum fwd engine, use TSO tunneling
 =============================================
+not support nic: IXGBE_10G-82599_SFP, IGC-I225_LM, IGC-I226_LM.
 
 This test uses ``Scapy`` to send out one large TCP package. The dut forwards package
 with TSO enable on tx port while rx port turns checksum on. After package send out
@@ -113,17 +120,37 @@ Launch the userland ``testpmd`` application on DUT as follows::
    --txfreet=32 --txrst=32 --enable-rx-cksum
      testpmd> set verbose 1
 
+     testpmd> port stop all
    # enable hw checksum on rx port
-   testpmd> tx_checksum set ip hw 0
-   testpmd> tx_checksum set udp hw 0
-   testpmd> tx_checksum set tcp hw 0
-   testpmd> tx_checksum set sctp hw 0
-   testpmd> tx_checksum set vxlan hw 0
-   testpmd> tx_checksum set nvgre hw 0
+   testpmd> csum set ip hw 0
+   testpmd> csum set udp hw 0
+   testpmd> csum set tcp hw 0
+   testpmd> csum set sctp hw 0
+   testpmd> csum set outer-ip hw 0
+   #Intel® Ethernet 700 Series not support outer udp
+   testpmd> csum set outer-udp hw 0
+   testpmd> csum parse-tunnel on 0
+
+   # enable hw checksum on tx port
+   testpmd> csum set ip hw 1
+   testpmd> csum set udp hw 1
+   testpmd> csum set tcp hw 1
+   testpmd> csum set sctp hw 1
+   #csum set outer-ip must be set to hw if outer L3 is IPv4
+   testpmd> csum set outer-ip hw 1
+   #csum parse-tunnel must be set so that tunneled packets are recognized
+   testpmd> csum parse-tunnel on 1
+   #Intel® Ethernet 700 Series not support outer udp
+   testpmd> csum set outer-udp hw 1
+
    # enable TSO on tx port
-   testpmd> tso set 800 1
+   testpmd> tunnel_tso set 800 1
+   # enable VXLAN protocol on ports
+   testpmd> rx_vxlan_port add 4789 0
    # set fwd engine and start
    testpmd> set fwd csum
+   testpmd> port start all
+   testpmd> set promisc all off
    testpmd> start
 
 Test vxlan() in scapy::
@@ -132,7 +159,7 @@ Test vxlan() in scapy::
 
 Test nvgre() in scapy::
 
-    sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2",proto=47)/NVGRE()/Ether(dst=%s,src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport="1021",dport="1021")/("X"*%s)], iface="%s")
+    sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2",proto=47)/GRE(key_present=1,proto=0x6558,key=0x00001000)/Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")
 
 Test case: TSO performance
 ==========================

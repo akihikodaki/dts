@@ -167,7 +167,7 @@ class TestTSO(TestCase):
 
     def test_tso(self):
         """
-        TSO IPv4 TCP, IPv6 TCP, VXLan testing
+        TSO IPv4 TCP, IPv6 TCP
         """
         tx_interface = self.tester.get_interface(
             self.tester.get_local_port(self.dut_ports[0])
@@ -212,20 +212,6 @@ class TestTSO(TestCase):
 
         self.dut.send_expect(
             "csum parse-tunnel on %d" % self.dut_ports[0], "testpmd> ", 120
-        )
-
-        self.dut.send_expect("csum set ip hw %d" % self.dut_ports[1], "testpmd> ", 120)
-        self.dut.send_expect("csum set udp hw %d" % self.dut_ports[1], "testpmd> ", 120)
-        self.dut.send_expect("csum set tcp hw %d" % self.dut_ports[1], "testpmd> ", 120)
-        if self.nic not in ["cavium_a063", "cavium_a064"]:
-            self.dut.send_expect(
-                "csum set sctp hw %d" % self.dut_ports[1], "testpmd> ", 120
-            )
-            self.dut.send_expect(
-                "csum set outer-ip hw %d" % self.dut_ports[1], "testpmd> ", 120
-            )
-        self.dut.send_expect(
-            "csum parse-tunnel on %d" % self.dut_ports[1], "testpmd> ", 120
         )
 
         self.dut.send_expect("tso set 800 %d" % self.dut_ports[1], "testpmd> ", 120)
@@ -307,7 +293,7 @@ class TestTSO(TestCase):
 
     def test_tso_tunneling(self):
         """
-        TSO IPv4 TCP, IPv6 TCP, VXLan testing
+        TSO tunneling, VXLan testing, Nvgre testing
         """
         tx_interface = self.tester.get_interface(
             self.tester.get_local_port(self.dut_ports[0])
