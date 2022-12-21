@@ -2769,11 +2769,114 @@ will not hang and provide a friendly output.
 
 Test case: negative cases
 =========================
+Note: some of the error messages may be different.
 
-Subcase 1: can not create rule on vf 1
---------------------------------------
+Subcase 1: can not create to vf rule on a representor
+-----------------------------------------------------
 
-1. create rule on vf 1::
+1. create rule on representor 1 which is at port 1::
+
+     testpmd> flow create 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+
+   Failed to create flow, report message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 1
+
+   there is no rule listed.
+
+Subcase 2: can not create to vf rule on a vf
+--------------------------------------------
+
+1. create rule on vf 1 which is at port 3::
+
+     testpmd> flow create 3 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+
+   Failed to create flow, report message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 3
+
+   there is no rule listed.
+
+Subcase 3: can not create to vf rule to a vf
+--------------------------------------------
+
+1. create rule on vf 0 which is at port 0, to vf 1 which is at port 3::
+
+     testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 3 / end
+
+   Failed to create flow, report message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 0
+
+   there is no rule listed.
+
+Subcase 4: can not create to vf rule to self dcf
+------------------------------------------------
+
+1. create rule on vf 0 which is at port 0, to vf 1 which is at port 3::
+
+     testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 0 / end
+
+   Failed to create flow, report message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 0
+
+   there is no rule listed.
+
+Subcase 5: can not create to vf rule to another dcf
+---------------------------------------------------
+
+1. create rule on vf 0 which is at port 0, to vf 1 which is at port 3::
+
+     testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 5 / end
+
+   Failed to create flow, report message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 0
+
+   there is no rule listed.
+
+Subcase 6: can not create to vf rule to a representor of another pf
+-------------------------------------------------------------------
+
+1. create rule on vf 0 of pf 0 which is at port 0, to representor 1 of pf 1 which is at port 6::
+
+     testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 6 / end
+
+   Failed to create flow, report message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 0
+
+   there is no rule listed.
+
+Subcase 7: can not create vf original rule on a representor
+-----------------------------------------------------------
+
+1. create rule on representor 1 which is at port 1::
 
      testpmd> flow create 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 1 / end
 
@@ -2787,8 +2890,76 @@ Subcase 1: can not create rule on vf 1
 
    there is no rule listed.
 
-Subcase 2: unsupported pattern in os default package
-----------------------------------------------------
+Subcase 8: can not create vf original rule on a vf
+--------------------------------------------------
+
+1. create rule on vf 1 which is at port 3::
+
+     testpmd> flow create 3 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 1 / end
+
+   Failed to create flow, report message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 3
+
+   there is no rule listed.
+
+Subcase 9: can not create vf original rule to a vf
+--------------------------------------------------
+
+1. create rule on vf 0 which is at port 0, to vf 1 which is at port 3::
+
+     testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 3 / end
+
+   Failed to create flow, report message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 0
+
+   there is no rule listed.
+
+Subcase 10: can not create vf original rule to a representor
+------------------------------------------------------------
+
+1. create rule on vf 0 which is at port 0, to vf 1 which is at port 3::
+
+     testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 1 / end
+
+   Failed to create flow, report message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 0
+
+   there is no rule listed.
+
+Subcase 11: can not create vf original rule to another dcf
+----------------------------------------------------------
+
+1. create rule on vf 0 which is at port 0, to vf 1 which is at port 3::
+
+     testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 5 / end
+
+   Failed to create flow, report message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 0
+
+   there is no rule listed.
+
+Subcase 12: unsupported pattern in os default package
+-----------------------------------------------------
 
 1. load os default package and launch testpmd as step 3-8 in Prerequisites.
 
@@ -2811,8 +2982,8 @@ Subcase 2: unsupported pattern in os default package
 
    check the rule not exists in the list.
 
-Subcase 3: unsupported input set
---------------------------------
+Subcase 13: unsupported input set
+---------------------------------
 
 1. create an nvgre rule with unsupported input set field [inner tos]::
 
@@ -2828,8 +2999,8 @@ Subcase 3: unsupported input set
 
    check the rule not exists in the list.
 
-Subcase 4: duplicated rules
----------------------------
+Subcase 14: duplicated rules
+----------------------------
 
 1. create a rule::
 
@@ -2848,8 +3019,8 @@ Subcase 4: duplicated rules
 
    check only the first rule exists in the list.
 
-Subcase 5: void action
-----------------------
+Subcase 15: void action
+-----------------------
 
 1. create a rule with void action::
 
@@ -2865,8 +3036,8 @@ Subcase 5: void action
 
    check the rule not exists in the list.
 
-Subcase 6: unsupported action
------------------------------
+Subcase 16: unsupported action
+------------------------------
 
 1. create a rule with void action::
 
@@ -2882,12 +3053,47 @@ Subcase 6: unsupported action
 
    check the rule not exists in the list.
 
-Subcase 7: void input set value
--------------------------------
+Subcase 17: deprecated action
+-----------------------------
+
+1. create a rule with void action::
+
+     testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions vf id 1 / end
+
+   Failed to create flow, report message::
+
+     Invalid action type: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+Subcase 18: invalid port id
+---------------------------
+
+1. create a rule with invalid port id 10::
+
+     testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 20 / end
+
+   Failed to create flow, report message::
+
+     ice_flow_create(): Failed to create flow
+     port_flow_complain(): Caught PMD error type 16 (specific action): cause: 0x7fff2c460900, Invalid ethdev_port_id: Invalid argument
+
+2. check the rule list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+Subcase 19: void input set value
+--------------------------------
 
 1. create a rule with void input set value::
 
-     testpmd> flow create 0 ingress pattern eth / ipv4 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / ipv4 / end actions represented_port ethdev_port_id 1 / end
 
    Failed to create flow, report message::
 
@@ -2899,8 +3105,8 @@ Subcase 7: void input set value
 
    check the rule not exists in the list.
 
-Subcase 9: delete a non-existing rule
--------------------------------------
+Subcase 20: delete a non-existing rule
+--------------------------------------
 
 1. check the rule list::
 
@@ -2920,7 +3126,7 @@ Subcase 9: delete a non-existing rule
 
    check no error reports.
 
-Subcase 10: add long switch rule
+Subcase 21: add long switch rule
 --------------------------------
 
 Description: A recipe has 5 words, one of which is reserved for switch ID,
@@ -2992,8 +3198,178 @@ Subcase 1: can not create to vf rule on a representor
 
    there is no rule listed.
 
-Subcase 2: unsupported patterns in os default
----------------------------------------------
+Subcase 2: can not create to vf rule on a vf
+--------------------------------------------
+
+1. validate rule on representor 1 which is at port 3::
+
+     testpmd> flow validate 3 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end
+
+   get the error message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. list the rule::
+
+     testpmd> flow list 3
+
+   there is no rule listed.
+
+Subcase 3: can not create to vf rule to a vf
+--------------------------------------------
+
+1. validate rule on vf 0 which is at port 0, to vf 1 which is at port 3::
+
+     testpmd> flow validate 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 3 / end
+
+   get the error message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. list the rule::
+
+     testpmd> flow list 0
+
+   there is no rule listed.
+
+Subcase 4: can not create to vf rule to self dcf
+------------------------------------------------
+
+1. validate rule on vf 0 which is at port 0, to vf 1 which is at port 3::
+
+     testpmd> flow validate 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 0 / end
+
+   get the error message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. list the rule::
+
+     testpmd> flow list 0
+
+   there is no rule listed.
+
+Subcase 5: can not create to vf rule to another dcf
+---------------------------------------------------
+
+1. validate rule on vf 0 which is at port 0, to vf 1 which is at port 3::
+
+     testpmd> flow validate 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 5 / end
+
+   get the error message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. list the rule::
+
+     testpmd> flow list 0
+
+   there is no rule listed.
+
+Subcase 6: can not create to vf rule to a representor of another pf
+-------------------------------------------------------------------
+
+1. validate rule on vf 0 of pf 0 which is at port 0, to representor 1 of pf 1 which is at port 6::
+
+     testpmd> flow validate 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 6 / end
+
+   get the error message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. list the rule::
+
+     testpmd> flow list 0
+
+   there is no rule listed.
+
+Subcase 7: can not create vf original rule on a representor
+-----------------------------------------------------------
+
+1. validate rule on representor 1 which is at port 1::
+
+     testpmd> flow validate 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 1 / end
+
+   Failed to create flow, report message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 1
+
+   there is no rule listed.
+
+Subcase 8: can not create vf original rule on a vf
+--------------------------------------------------
+
+1. validate rule on vf 1 which is at port 3::
+
+     testpmd> flow validate 3 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 1 / end
+
+   Failed to create flow, report message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 3
+
+   there is no rule listed.
+
+Subcase 9: can not create vf original rule to a vf
+--------------------------------------------------
+
+1. validate rule on vf 0 which is at port 0, to vf 1 which is at port 3::
+
+     testpmd> flow validate 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 3 / end
+
+   Failed to create flow, report message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 0
+
+   there is no rule listed.
+
+Subcase 10: can not create vf original rule to a representor
+------------------------------------------------------------
+
+1. validate rule on vf 0 which is at port 0, to vf 1 which is at port 3::
+
+     testpmd> flow validate 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 1 / end
+
+   Failed to create flow, report message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 0
+
+   there is no rule listed.
+
+Subcase 11: can not create vf original rule to another dcf
+----------------------------------------------------------
+
+1. validate rule on vf 0 which is at port 0, to vf 1 which is at port 3::
+
+     testpmd> flow validate 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 5 / end
+
+   Failed to create flow, report message::
+
+     Failed to create parser engine.: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 0
+
+   there is no rule listed.
+
+Subcase 12: unsupported patterns in os default
+----------------------------------------------
 
 1. load os default package and launch testpmd as step 3-8 in Prerequisites.
 
@@ -3016,8 +3392,8 @@ Subcase 2: unsupported patterns in os default
 
    check the rule not exists in the list.
 
-Subcase 3: unsupported input set
---------------------------------
+Subcase 13: unsupported input set
+---------------------------------
 
 1. validate an nvgre rule with unsupported input set field [inner tos]::
 
@@ -3033,8 +3409,8 @@ Subcase 3: unsupported input set
 
    check the rule not exists in the list.
 
-Subcase 4: void action
-----------------------
+Subcase 14: void action
+-----------------------
 
 1. validate a rule with void action::
 
@@ -3050,8 +3426,8 @@ Subcase 4: void action
 
    check the rule not exists in the list.
 
-Subcase 5: unsupported action
------------------------------
+Subcase 15: unsupported action
+------------------------------
 
 1. validate a rule with void action::
 
@@ -3067,8 +3443,25 @@ Subcase 5: unsupported action
 
    check the rule not exists in the list.
 
-Subcase 6: void input set value
--------------------------------
+Subcase 16: deprecated action
+-----------------------------
+
+1. validate a rule with deprecated action::
+
+     testpmd> flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions vf id 1 / end
+
+   Failed to create flow, report message::
+
+     Invalid action type: Invalid argument
+
+2. check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+Subcase 17: void input set value
+--------------------------------
 
 1. validate a rule with void input set value::
 
@@ -3084,8 +3477,25 @@ Subcase 6: void input set value
 
    check the rule not exists in the list.
 
-Subcase 8: long switch rule
+Subcase 18: invalid port id
 ---------------------------
+
+1. validate a rule with invalid port id 10::
+
+     testpmd> flow validate 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 10 / end
+
+   get the error message::
+
+     Invalid port id: Invalid argument
+
+3. check the rule list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+Subcase 19: long switch rule
+----------------------------
 
 1. validate a rule with input set length longer than 32 bytes::
 
