@@ -2559,21 +2559,112 @@ class ICEDCFSwitchFilterTest(TestCase):
         # launch testpmd
         self.launch_testpmd()
         rules = {
-            "cannot create rule on vf 1": "flow create 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
-            "unsupported input set": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 tos is 4 / end actions represented_port ethdev_port_id 1 / end",
-            "invalid vf id": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 5 / end",
+            "cannot create to vf rule on a representor": "flow create 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+            "cannot create to vf rule on a vf": "flow create 3 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+            "cannot create to vf rule to a vf": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 3 / end",
+            "cannot create to vf rule to another dcf": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 4 / end",
+            "cannot create to vf rule to a representor of another pf": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 5 / end",
+            "cannot create vf original rule on a representor": "flow create 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 1 / end",
+            "cannot create vf original rule on a vf": "flow create 3 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 1 / end",
+            "cannot create vf original rule to a vf": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 3 / end",
+            "cannot create vf original rule to a representor": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 1 / end",
+            "cannot create vf original rule to another dcf": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 4 / end",
+            "unsupported input set": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 tos is 4 / end actions port_representor port_id 1 / end",
+            "invalid port id": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 20 / end",
             "void action": "flow create 0 ingress pattern eth / ipv4 / udp src is 25 dst is 23 / end actions end",
             "void input set value": "flow create 0 ingress pattern eth / ipv4 / end actions represented_port ethdev_port_id 1 end",
         }
-        # cannot create rule on vf 1
+        # cannot create to vf rule on a representor
         self.validate_switch_filter_rule(
-            rules["cannot create rule on vf 1"], check_stats=False
+            rules["cannot create to vf rule on a representor"], check_stats=False
         )
         self.check_switch_filter_rule_list(1, [])
         self.create_switch_filter_rule(
-            rules["cannot create rule on vf 1"], check_stats=False
+            rules["cannot create to vf rule on a representor"], check_stats=False
         )
         self.check_switch_filter_rule_list(1, [])
+
+        # cannot create to vf rule on a vf
+        self.validate_switch_filter_rule(
+            rules["cannot create to vf rule on a vf"], check_stats=False
+        )
+        self.check_switch_filter_rule_list(3, [])
+        self.create_switch_filter_rule(
+            rules["cannot create to vf rule on a vf"], check_stats=False
+        )
+        self.check_switch_filter_rule_list(3, [])
+
+        # cannot create to vf rule to a vf
+        self.validate_switch_filter_rule(
+            rules["cannot create to vf rule to a vf"], check_stats=False
+        )
+        self.check_switch_filter_rule_list(0, [])
+        self.create_switch_filter_rule(
+            rules["cannot create to vf rule to a vf"], check_stats=False
+        )
+        self.check_switch_filter_rule_list(0, [])
+
+        # cannot create to vf rule to another dcf
+        self.validate_switch_filter_rule(
+            rules["cannot create to vf rule to another dcf"], check_stats=False
+        )
+        self.check_switch_filter_rule_list(0, [])
+        self.create_switch_filter_rule(
+            rules["cannot create to vf rule to another dcf"], check_stats=False
+        )
+        self.check_switch_filter_rule_list(0, [])
+
+        # cannot create to vf rule to a representor of another pf
+        self.validate_switch_filter_rule(
+            rules["cannot create to vf rule to a representor of another pf"],
+            check_stats=False,
+        )
+        self.check_switch_filter_rule_list(0, [])
+        self.create_switch_filter_rule(
+            rules["cannot create to vf rule to a representor of another pf"],
+            check_stats=False,
+        )
+        self.check_switch_filter_rule_list(0, [])
+
+        # cannot create vf original rule on a representor
+        self.validate_switch_filter_rule(
+            rules["cannot create vf original rule on a representor"], check_stats=False
+        )
+        self.check_switch_filter_rule_list(0, [])
+        self.create_switch_filter_rule(
+            rules["cannot create vf original rule on a representor"], check_stats=False
+        )
+        self.check_switch_filter_rule_list(0, [])
+
+        # cannot create vf original rule on a vf
+        self.validate_switch_filter_rule(
+            rules["cannot create vf original rule on a vf"], check_stats=False
+        )
+        self.check_switch_filter_rule_list(0, [])
+        self.create_switch_filter_rule(
+            rules["cannot create vf original rule on a vf"], check_stats=False
+        )
+        self.check_switch_filter_rule_list(0, [])
+
+        # cannot create vf original rule to a vf
+        self.validate_switch_filter_rule(
+            rules["cannot create vf original rule to a vf"], check_stats=False
+        )
+        self.check_switch_filter_rule_list(0, [])
+        self.create_switch_filter_rule(
+            rules["cannot create vf original rule to a vf"], check_stats=False
+        )
+        self.check_switch_filter_rule_list(0, [])
+
+        # cannot create vf original rule to a representor
+        self.validate_switch_filter_rule(
+            rules["cannot create vf original rule to a representor"], check_stats=False
+        )
+        self.check_switch_filter_rule_list(0, [])
+        self.create_switch_filter_rule(
+            rules["cannot create vf original rule to a representor"], check_stats=False
+        )
+        self.check_switch_filter_rule_list(0, [])
 
         # unsupported input set
         self.validate_switch_filter_rule(
@@ -2607,10 +2698,10 @@ class ICEDCFSwitchFilterTest(TestCase):
         self.create_switch_filter_rule(rules["void input set value"], check_stats=False)
         self.check_switch_filter_rule_list(0, [])
 
-        # invalid vf id
-        # self.validate_switch_filter_rule(rules["invalid vf id"], check_stats=False)
+        # invalid port id
+        # self.validate_switch_filter_rule(rules["invalid port id"], check_stats=False)
         # self.check_switch_filter_rule_list(0, [])
-        self.create_switch_filter_rule(rules["invalid vf id"], check_stats=False)
+        self.create_switch_filter_rule(rules["invalid port id"], check_stats=False)
         self.check_switch_filter_rule_list(0, [])
 
         # delete non-existing rule
