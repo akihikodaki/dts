@@ -16,16 +16,19 @@ from framework.utils import BLUE, GREEN, RED
 
 tv_mac_pay = {
     "name": "tv_mac_pay",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 dst is 00:11:22:33:44:55 type is 0x0800 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 dst is 00:11:22:33:44:55 type is 0x0800 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth src is 00:00:00:00:00:01 dst is 00:11:22:33:44:55 type is 0x0800 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(src="00:00:00:00:00:01",dst="00:11:22:33:44:55")/IP()/Raw("x" *80)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -35,24 +38,27 @@ tv_mac_pay = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv4_frag = {
     "name": "tv_mac_ipv4_frag",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 2 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 2 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 2 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=2,frag=5)/("X"*480)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -64,24 +70,27 @@ tv_mac_ipv4_frag = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv4_pay = {
     "name": "tv_mac_ipv4_pay",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 6 tos is 4 ttl is 2 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 6 tos is 4 ttl is 2 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 6 tos is 4 ttl is 2 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=2)/TCP()/("X"*480)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -94,24 +103,27 @@ tv_mac_ipv4_pay = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv4_udp_pay = {
     "name": "tv_mac_ipv4_udp_pay",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/UDP(sport=25,dport=23)/("X"*480)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -125,24 +137,27 @@ tv_mac_ipv4_udp_pay = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv4_tcp_pay = {
     "name": "tv_mac_ipv4_tcp_pay",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/TCP(sport=25,dport=23)/("X"*480)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -156,22 +171,25 @@ tv_mac_ipv4_tcp_pay = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv4_igmp = {
     "name": "tv_mac_ipv4_igmp",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 proto is 0x02 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 proto is 0x02 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 proto is 0x02 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP()/IGMP()/Raw("X"*480)'],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -180,15 +198,18 @@ tv_mac_ipv4_igmp = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv6_srcip_dstip = {
     "name": "tv_mac_ipv6_srcip_dstip",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
@@ -196,9 +217,9 @@ tv_mac_ipv6_srcip_dstip = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 2},
+        "expect_results": {"expect_pkts": [2, 2]},
     },
     "mismatched": {
         "scapy_str": [
@@ -209,15 +230,18 @@ tv_mac_ipv6_srcip_dstip = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv6_dstip_tc = {
     "name": "tv_mac_ipv6_dstip_tc",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/("X"*480)',
@@ -225,9 +249,9 @@ tv_mac_ipv6_dstip_tc = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 2},
+        "expect_results": {"expect_pkts": [2, 2]},
     },
     "mismatched": {
         "scapy_str": [
@@ -240,24 +264,27 @@ tv_mac_ipv6_dstip_tc = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv6_udp_pay = {
     "name": "tv_mac_ipv6_udp_pay",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=25,dport=23)/("X"*480)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -269,24 +296,27 @@ tv_mac_ipv6_udp_pay = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv6_tcp = {
     "name": "tv_mac_ipv6_tcp",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / tcp src is 25 dst is 23 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=25,dport=23)/("X"*480)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -298,15 +328,18 @@ tv_mac_ipv6_tcp = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv4_nvgre_ipv4_pay = {
     "name": "tv_mac_ipv4_nvgre_ipv4_pay",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)',
@@ -314,9 +347,9 @@ tv_mac_ipv4_nvgre_ipv4_pay = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 2},
+        "expect_results": {"expect_pkts": [2, 2]},
     },
     "mismatched": {
         "scapy_str": [
@@ -331,24 +364,27 @@ tv_mac_ipv4_nvgre_ipv4_pay = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv4_nvgre_ipv4_udp_pay = {
     "name": "tv_mac_ipv4_nvgre_ipv4_udp_pay",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 50 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 50 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 50 dst is 23 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=50,dport=23)/Raw("x"*80)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -361,24 +397,27 @@ tv_mac_ipv4_nvgre_ipv4_udp_pay = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv4_nvgre_ipv4_tcp = {
     "name": "tv_mac_ipv4_nvgre_ipv4_tcp",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/TCP(sport=25,dport=23)/Raw("x"*80)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -391,15 +430,18 @@ tv_mac_ipv4_nvgre_ipv4_tcp = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv4_nvgre_mac_ipv4_pay = {
     "name": "tv_mac_ipv4_nvgre_mac_ipv4_pay",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)',
@@ -407,9 +449,9 @@ tv_mac_ipv4_nvgre_mac_ipv4_pay = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 2},
+        "expect_results": {"expect_pkts": [2, 2]},
     },
     "mismatched": {
         "scapy_str": [
@@ -426,24 +468,27 @@ tv_mac_ipv4_nvgre_mac_ipv4_pay = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv4_nvgre_mac_ipv4_udp_pay = {
     "name": "tv_mac_ipv4_nvgre_mac_ipv4_udp_pay",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 /  eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 /  eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 /  eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / udp src is 25 dst is 23 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/UDP(sport=25,dport=23)/Raw("x"*80)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -457,24 +502,27 @@ tv_mac_ipv4_nvgre_mac_ipv4_udp_pay = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv4_nvgre_mac_ipv4_tcp = {
     "name": "tv_mac_ipv4_nvgre_mac_ipv4_tcp",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / tcp src is 25 dst is 23 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/TCP(sport=25,dport=23)/Raw("x"*80)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -488,24 +536,27 @@ tv_mac_ipv4_nvgre_mac_ipv4_tcp = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_vlan_pppoe_ipv4_pay_session_id_proto_id = {
     "name": "tv_mac_vlan_pppoe_ipv4_pay_session_id_proto_id",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP()/Raw("x" * 80)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -516,24 +567,27 @@ tv_mac_vlan_pppoe_ipv4_pay_session_id_proto_id = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_vlan_pppoe_ipv6_pay_session_id_proto_id = {
     "name": "tv_mac_vlan_pppoe_ipv6_pay_session_id_proto_id",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6()/Raw("x" * 80)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -544,24 +598,27 @@ tv_mac_vlan_pppoe_ipv6_pay_session_id_proto_id = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_pppoe_ipv4_pay_session_id_proto_id = {
     "name": "tv_mac_pppoe_ipv4_pay_session_id_proto_id",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP()/Raw("x" * 80)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -571,24 +628,27 @@ tv_mac_pppoe_ipv4_pay_session_id_proto_id = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_pppoe_ipv6_pay_session_id_proto_id = {
     "name": "tv_mac_pppoe_ipv6_pay_session_id_proto_id",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6()/Raw("x" * 80)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -598,101 +658,116 @@ tv_mac_pppoe_ipv6_pay_session_id_proto_id = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_ip_multicast = {
     "name": "tv_ip_multicast",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": ['Ether()/IP(dst="239.0.0.0")/TCP()/Raw("x"*80)'],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": ['Ether()/IP(dst="128.0.0.0")/TCP()/Raw("x"*80)'],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_l2_multicast = {
     "name": "tv_l2_multicast",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth dst spec 01:00:5e:00:00:00 dst mask ff:ff:ff:80:00:00 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth dst spec 01:00:5e:00:00:00 dst mask ff:ff:ff:80:00:00 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst spec 01:00:5e:00:00:00 dst mask ff:ff:ff:80:00:00 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": ['Ether(dst="01:00:5e:7f:00:00")/IP()/TCP()/Raw("x"*80)'],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": ['Ether(dst="01:00:5e:ff:00:00")/IP()/TCP()/Raw("x"*80)'],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_ethertype_filter_pppod = {
     "name": "tv_ethertype_filter_pppod",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth type is 0x8863 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth type is 0x8863 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth type is 0x8863 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:55")/PPPoED()/PPP()/IP()/Raw("x" *80)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": ['Ether(dst="00:11:22:33:44:55")/PPPoE()/PPP()/IP()/Raw("x" *80)'],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_ethertype_filter_pppoe = {
     "name": "tv_ethertype_filter_pppoe",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth type is 0x8864 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth type is 0x8864 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth type is 0x8864 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": ['Ether(dst="00:11:22:33:44:55")/PPPoE()/PPP()/IP()/Raw("x"*80)'],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": ['Ether(dst="00:11:22:33:44:55")/PPPoED()/PPP()/IP()/Raw("x"*80)'],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_ethertype_filter_ipv6 = {
     "name": "tv_ethertype_filter_ipv6",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth type is 0x86dd / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth type is 0x86dd / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth type is 0x86dd / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", tc=3)/TCP(dport=23)/("X"*480)',
@@ -700,32 +775,35 @@ tv_ethertype_filter_ipv6 = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 2},
+        "expect_results": {"expect_pkts": [2, 2]},
     },
     "mismatched": {
         "scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP()/TCP(dport=23)/("X"*480)'],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_udp_port_filter_dhcp_discovery = {
     "name": "tv_udp_port_filter_dhcp_discovery",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp src is 68 dst is 67 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 / udp src is 68 dst is 67 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 / udp src is 68 dst is 67 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:55")/IP()/UDP(sport=68,dport=67)/BOOTP(chaddr="3c:fd:fe:b2:43:90")/DHCP(options=[("message-type","discover"),"end"])/Raw("X"*480)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -734,24 +812,27 @@ tv_udp_port_filter_dhcp_discovery = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_udp_port_filter_dhcp_offer = {
     "name": "tv_udp_port_filter_dhcp_offer",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp src is 67 dst is 68 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 / udp src is 67 dst is 68 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 / udp src is 67 dst is 68 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:55")/IP()/UDP(sport=67,dport=68)/BOOTP(chaddr="3c:fd:fe:b2:43:90",yiaddr="192.168.1.0")/DHCP(options=[("message-type","offer"),"end"])/Raw("X"*480)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -760,24 +841,27 @@ tv_udp_port_filter_dhcp_offer = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_udp_port_filter_vxlan = {
     "name": "tv_udp_port_filter_vxlan",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp dst is 4789 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 / udp dst is 4789 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 / udp dst is 4789 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3",frag=5)/TCP()/Raw("x"*80)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -785,24 +869,27 @@ tv_udp_port_filter_vxlan = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_vlan_filter = {
     "name": "tv_mac_vlan_filter",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1)/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=2)/TCP()/Raw("X"*480)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -811,24 +898,27 @@ tv_mac_vlan_filter = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_vlan_filter = {
     "name": "tv_vlan_filter",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / vlan tci is 1 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / vlan tci is 1 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / vlan tci is 1 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1)/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=2)/TCP()/Raw("X"*480)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -836,24 +926,27 @@ tv_vlan_filter = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv4_l2tpv3 = {
     "name": "tv_mac_ipv4_l2tpv3",
-    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             "Ether(dst='00:11:22:33:44:12')/IP(src='192.168.0.2', proto=115)/L2TP(b'\\x00\\x00\\x00\\x01')/('X'*480)"
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -863,24 +956,27 @@ tv_mac_ipv4_l2tpv3 = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv6_l2tpv3 = {
     "name": "tv_mac_ipv6_l2tpv3",
-    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / l2tpv3oip session_id is 1 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / l2tpv3oip session_id is 1 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / l2tpv3oip session_id is 1 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             "Ether(dst='00:11:22:33:44:13')/IPv6(dst='1111:2222:3333:4444:5555:6666:7777:8888', nh=115)/L2TP(b'\\x00\\x00\\x00\\x01')/('X'*480)"
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -890,24 +986,27 @@ tv_mac_ipv6_l2tpv3 = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv4_esp = {
     "name": "tv_mac_ipv4_esp",
-    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:13")/IP(src="192.168.0.2", proto=50)/ESP(spi=1)/("X"*480)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -917,24 +1016,27 @@ tv_mac_ipv4_esp = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv6_esp = {
     "name": "tv_mac_ipv6_esp",
-    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / esp spi is 1 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / esp spi is 1 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / esp spi is 1 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888", nh=50)/ESP(spi=1)/("X"*480)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -944,24 +1046,27 @@ tv_mac_ipv6_esp = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv4_ah = {
     "name": "tv_mac_ipv4_ah",
-    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / ah spi is 1 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / ah spi is 1 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / ah spi is 1 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:13")/IP(src="192.168.0.2", proto=51)/AH(spi=1)/("X"*480)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -971,24 +1076,27 @@ tv_mac_ipv4_ah = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv6_ah = {
     "name": "tv_mac_ipv6_ah",
-    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / ah spi is 1 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / ah spi is 1 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / ah spi is 1 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888", nh=51)/AH(spi=1)/("X"*480)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -998,24 +1106,27 @@ tv_mac_ipv6_ah = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv4_nat_t_esp = {
     "name": "tv_mac_ipv4_nat_t_esp",
-    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / udp / esp spi is 1 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / udp / esp spi is 1 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / udp / esp spi is 1 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:13")/IP(src="192.168.0.2")/UDP(dport=4500)/ESP(spi=1)/("X"*480)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -1025,24 +1136,27 @@ tv_mac_ipv4_nat_t_esp = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv6_nat_t_esp = {
     "name": "tv_mac_ipv6_nat_t_esp",
-    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / udp / esp spi is 1 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / udp / esp spi is 1 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / udp / esp spi is 1 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500)/ESP(spi=1)/("X"*480)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -1052,9 +1166,9 @@ tv_mac_ipv6_nat_t_esp = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
@@ -1078,6 +1192,7 @@ tv_actions_vf_id_0 = {
 tv_add_existing_rules_but_with_different_vfs = {
     "name": "tv_add_existing_rules_but_with_different_vfs",
     "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 0 / end",
         "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
         "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 2 / end",
     ],
@@ -1087,9 +1202,9 @@ tv_add_existing_rules_but_with_different_vfs = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": [3, 4], "expect_queues": "null"},
+            "param": {"expect_port": [0, 3, 4], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": [1, 1]},
+        "expect_results": {"expect_pkts": [1, 1, 1]},
     },
     "mismatched": {},
 }
@@ -1226,14 +1341,17 @@ tv_max_rule_number = {
 
 tv_mac_ipv4_pfcp_node = {
     "name": "tv_mac_ipv4_pfcp_node",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": ['Ether(dst="00:11:22:33:44:11")/IP()/UDP(dport=8805)/PFCP(S=0)'],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -1243,22 +1361,25 @@ tv_mac_ipv4_pfcp_node = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv4_pfcp_session = {
     "name": "tv_mac_ipv4_pfcp_session",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 1 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 1 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 1 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": ['Ether(dst="00:11:22:33:44:11")/IP()/UDP(dport=8805)/PFCP(S=1)'],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -1268,24 +1389,27 @@ tv_mac_ipv4_pfcp_session = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv6_pfcp_node = {
     "name": "tv_mac_ipv6_pfcp_node",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv6 / udp / pfcp s_field is 0 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv6 / udp / pfcp s_field is 0 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv6 / udp / pfcp s_field is 0 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:11")/IPv6()/UDP(dport=8805)/PFCP(S=0)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -1295,24 +1419,27 @@ tv_mac_ipv6_pfcp_node = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
 tv_mac_ipv6_pfcp_session = {
     "name": "tv_mac_ipv6_pfcp_session",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv6 / udp / pfcp s_field is 1 / end actions represented_port ethdev_port_id 1 / end",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv6 / udp / pfcp s_field is 1 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv6 / udp / pfcp s_field is 1 / end actions port_representor port_id 0 / end",
+    ],
     "matched": {
         "scapy_str": [
             'Ether(dst="00:11:22:33:44:11")/IPv6()/UDP(dport=8805)/PFCP(S=1)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 1},
+        "expect_results": {"expect_pkts": [1, 1]},
     },
     "mismatched": {
         "scapy_str": [
@@ -1322,9 +1449,9 @@ tv_mac_ipv6_pfcp_session = {
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
-            "param": {"expect_port": 3, "expect_queues": "null"},
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
         },
-        "expect_results": {"expect_pkts": 0},
+        "expect_results": {"expect_pkts": [0, 0]},
     },
 }
 
@@ -2031,7 +2158,8 @@ class ICEDCFSwitchFilterTest(TestCase):
         command = self.create_testpmd_command()
         self.testpmd_status = "running"
         out = self.dut.send_expect(command, "testpmd> ", 30)
-        self.dut.send_expect("set portlist 3", "testpmd> ", 15)
+        self.dut.send_expect("set portlist 0,3", "testpmd> ", 15)
+        self.dut.send_expect("set promisc 0 off", "testpmd> ", 15)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
         self.dut.send_expect("set verbose 1", "testpmd> ", 15)
 
@@ -2548,7 +2676,8 @@ class ICEDCFSwitchFilterTest(TestCase):
         command = self.path + all_eal_param + " -- -i"
         out = self.dut.send_expect(command, "testpmd> ", 30)
         self.testpmd_status = "running"
-        self.dut.send_expect("set portlist 3,4", "testpmd> ", 15)
+        self.dut.send_expect("set portlist 0,3,4", "testpmd> ", 15)
+        self.dut.send_expect("set promisc 0 off", "testpmd> ", 15)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
         self.dut.send_expect("set verbose 1", "testpmd> ", 15)
         # create rules with same pattern but to different vfs
@@ -2562,7 +2691,7 @@ class ICEDCFSwitchFilterTest(TestCase):
         # destroy rule 0 and send matched packets
         self.destroy_switch_filter_rule(0, rule_list[0])
         rule_list.pop(0)
-        # check only rule 1 exists in the list
+        # check only rule 1,2 exists in the list
         self.check_switch_filter_rule_list(0, rule_list)
         # send matched packets and check
         destroy_dict = copy.deepcopy(matched_dic)
@@ -2571,10 +2700,18 @@ class ICEDCFSwitchFilterTest(TestCase):
         # destroy rule 1 and send matched packets
         self.destroy_switch_filter_rule(0, rule_list[0])
         rule_list.pop(0)
-        # check no rule exists in the list
+        # check only rule 1 exists in the list
         self.check_switch_filter_rule_list(0, rule_list)
         # send matched packets and check
         destroy_dict["expect_results"]["expect_pkts"][1] = 0
+        self.send_and_check_packets(destroy_dict)
+        # destroy rule 2 and send matched packets
+        self.destroy_switch_filter_rule(0, rule_list[0])
+        rule_list.pop(0)
+        # check no rule exists in the list
+        self.check_switch_filter_rule_list(0, rule_list)
+        # send matched packets and check
+        destroy_dict["expect_results"]["expect_pkts"][2] = 0
         self.send_and_check_packets(destroy_dict)
 
     def test_add_existing_rules_with_the_same_vfs(self):
@@ -2846,7 +2983,12 @@ class ICEDCFSwitchFilterTest(TestCase):
         self.check_switch_filter_rule_list(0, [])
         # send matched packets and check
         destroy_dict = copy.deepcopy(matched_dic)
-        destroy_dict["expect_results"]["expect_pkts"] = 0
+        if isinstance(destroy_dict["expect_results"]["expect_pkts"], list):
+            destroy_dict["expect_results"]["expect_pkts"] = [0] * len(
+                destroy_dict["expect_results"]["expect_pkts"]
+            )
+        else:
+            destroy_dict["expect_results"]["expect_pkts"] = 0
         self.send_and_check_packets(destroy_dict)
 
     def test_dcf_stop_start(self):
@@ -2867,7 +3009,12 @@ class ICEDCFSwitchFilterTest(TestCase):
         self.dut.send_expect("port start 0", "testpmd> ")
         # send matched packets, port 1 can not receive the packets.
         destroy_dict = copy.deepcopy(matched_dic)
-        destroy_dict["expect_results"] = {"expect_pkts": 0}
+        if isinstance(destroy_dict["expect_results"]["expect_pkts"], list):
+            destroy_dict["expect_results"] = {
+                "expect_pkts": [0] * len(destroy_dict["expect_results"]["expect_pkts"])
+            }
+        else:
+            destroy_dict["expect_results"] = {"expect_pkts": 0}
         self.send_and_check_packets(destroy_dict)
 
     @skip_unsupported_pkg(["os default", "wireless"])
