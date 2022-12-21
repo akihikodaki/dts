@@ -94,7 +94,6 @@ The following are the test plans for the DPDK DTS automated test system.
     ipv4_reassembly_test_plan
     ixgbe_vf_get_extra_queue_information_test_plan
     jumboframes_test_plan
-    kni_test_plan
     l2fwd_cryptodev_func_test_plan
     l2fwd_test_plan
     l2tp_esp_coverage_test_plan
