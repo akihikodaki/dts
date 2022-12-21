@@ -1256,13 +1256,10 @@ class TestICELimitValue(TestCase):
 
     def tear_down(self):
         # destroy all flow rule on port 0
-        self.dut.kill_all()
-        self.destroy_env()
         if getattr(self, "session_secondary", None):
             self.dut.close_session(self.session_secondary)
-        if getattr(self, "session_third", None):
-            self.dut.close_session(self.session_third)
+        self.destroy_env()
+        self.dut.kill_all()
 
     def tear_down_all(self):
         self.dut.kill_all()
-        self.destroy_env()
