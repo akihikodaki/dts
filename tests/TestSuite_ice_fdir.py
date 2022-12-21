@@ -4517,4 +4517,5 @@ class TestICEFdir(TestCase):
             self.launch_testpmd_with_mark()
 
     def tear_down_all(self):
+        self.pmd_output.quit()
         self.dut.kill_all()
