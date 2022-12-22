@@ -66,7 +66,6 @@ class TestMesonTests(TestCase):
         skip = []
         timeout = []
         failed = []
-
         self.verify(
             bool(self.meson_auto_test),
             f"Test failed the meson no test results were obtained.",
@@ -99,24 +98,19 @@ class TestMesonTests(TestCase):
                 sub_timeout = "[" + ",".join(timeout) + "] sub case time out. "
             self.verify(False, f"Test failed. {sub_fail}{sub_timeout}")
 
-    def check_scp_file_valid_between_dut(self):
-        out = self.tester.send_command(
-            f"scp root@{self.dut_ip}:/root/{self.dut_pathlog} {self.base_output}",
-            timeout=15,
+    def meson_param(self, case_name):
+        return (
+            self.get_suite_cfg().get(case_name, "")
+            + " "
+            + self.get_suite_cfg().get("param", "")
         )
-        if "Are you sure you want to continue connecting" in out:
-            out = self.tester.send_command("yes", timeout=20)
-        for item in range(30):
-            if "password" in out:
-                self.tester.send_command(self.dut.get_password(), timeout=20)
-                break
 
-        out = self.tester.send_command(
-            f"ls -l {self.base_output}/{self.dut_pathlog}", "# "
-        )
-        self.verify(
-            "No such file or directory" not in out, "No test result log was obtained!"
-        )
+    def copy_file_from_dut(self):
+        if os.path.exists(os.path.join(self.base_output, self.dut_pathlog)):
+            os.remove(os.path.join(self.base_output, self.dut_pathlog))
+
+        src_pathlog = f"~/tmp/{self.dut_pathlog}"
+        self.dut.session.copy_file_from(src_pathlog, self.base_output)
 
     def insmod_kni(self):
         out = self.dut.send_expect("lsmod | grep rte_kni", "# ")
@@ -141,68 +135,64 @@ class TestMesonTests(TestCase):
         self.check_sub_case()
 
     def test_fasts(self):
+        param = self.meson_param("fast-tests")
         # init file name
         self.dut_pathlog = "fast-test.log"
         self.delete_exists_files()
         self.insmod_kni()
         # config test case list in conf/meson_tests.cfg
-        caselist = self.get_suite_cfg()["fast-tests"]
-        cmds = f'meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:fast-tests {caselist} -t {self.ratio} --test-args="-c 0xff" |tee /root/{self.dut_pathlog}'
+        cmds = f"meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:fast-tests {param} |tee ~/tmp/{self.dut_pathlog}"
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
         self.logger.info(out)
-        self.check_scp_file_valid_between_dut()
+        self.copy_file_from_dut()
         self.check_meson_test_result()
 
     def test_driver(self):
+        param = self.meson_param("driver-tests")
         # init file name
         self.dut_pathlog = "driver-test.log"
         self.delete_exists_files()
-        # config test case list in conf/meson_tests.cfg
-        caselist = self.get_suite_cfg()["driver-tests"]
-        cmds = f'meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:driver-tests {caselist} -t {self.ratio} --test-args="-c 0xff" |tee /root/{self.dut_pathlog}'
+        cmds = f"meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:driver-tests {param} |tee ~/tmp/{self.dut_pathlog}"
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
         self.logger.info(out)
-        self.check_scp_file_valid_between_dut()
+        self.copy_file_from_dut()
         self.check_meson_test_result()
 
     def test_debug(self):
+        param = self.meson_param("debug-tests")
         self.dut_pathlog = "test-debug.log"
         # delete exists files
         self.delete_exists_files()
-        # config test case list in conf/meson_tests.cfg
-        caselist = self.get_suite_cfg()["debug-tests"]
-        cmds = f'meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:debug-tests {caselist} -t {self.ratio} --test-args="-c 0xff" |tee /root/{self.dut_pathlog}'
+        cmds = f"meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:debug-tests {param} |tee ~/tmp/{self.dut_pathlog}"
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
         self.logger.info(out)
-        self.check_scp_file_valid_between_dut()
+        self.copy_file_from_dut()
         self.check_meson_test_result()
 
     def test_extra(self):
+        param = self.meson_param("extra-tests")
         self.dut_pathlog = "extra-test.log"
         # delete exists files
         self.delete_exists_files()
-        # config test case list in conf/meson_tests.cfg
-        caselist = self.get_suite_cfg()["extra-tests"]
-        cmds = f'meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:extra-tests {caselist} -t {self.ratio} --test-args="-c 0xff" |tee /root/{self.dut_pathlog}'
+        cmds = f"meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:extra-tests {param} |tee ~/tmp/{self.dut_pathlog}"
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
         self.logger.info(out)
-        self.check_scp_file_valid_between_dut()
+        self.copy_file_from_dut()
         self.check_meson_test_result()
         self.logger.warning(
             "Extra-tests are know issues which are recorded in DPDK commit and meson.build (detail see test plan)"
         )
 
     def test_perf(self):
+        param = self.meson_param("perf-tests")
         # init file name
         self.dut_pathlog = "perf-test.log"
         # delete exists files
         self.delete_exists_files()
-        # config test case list in conf/meson_tests.cfg
-        caselist = self.get_suite_cfg()["perf-tests"]
-        cmds = f'meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:perf-tests {caselist} -t {self.ratio} --test-args="-c 0xff" |tee /root/{self.dut_pathlog}'
+        cmds = f"meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:perf-tests {param} |tee ~/tmp/{self.dut_pathlog}"
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
         self.logger.info(out)
-        self.check_scp_file_valid_between_dut()
+        self.copy_file_from_dut()
         self.check_meson_test_result()
 
     def tear_down(self):
