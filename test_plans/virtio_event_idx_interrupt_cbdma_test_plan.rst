@@ -118,8 +118,8 @@ vhost uses the asynchronous operations with CBDMA channels.
 	-smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu2004.img \
 	-monitor unix:/tmp/vm2_monitor.sock,server,nowait \
 	-device e1000,netdev=nttsip1 -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
-	-chardev socket,id=char1,path=./vhost-net \
-	-netdev type=vhost-user,id=mynet1,chardev=char1,vhostforce \
+	-chardev socket,id=char1,path=./vhost-net,server \
+	-netdev type=vhost-user,id=mynet1,chardev=char1,vhostforce,queues=16 \
 	-device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on \
 	-vnc :11 -daemonize
 
@@ -202,8 +202,8 @@ uses the asynchronous operations with CBDMA channels.
 	-smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu2004.img \
 	-monitor unix:/tmp/vm2_monitor.sock,server,nowait \
 	-device e1000,netdev=nttsip1 -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
-	-chardev socket,id=char1,path=./vhost-net \
-	-netdev type=vhost-user,id=mynet1,chardev=char1,vhostforce \
+	-chardev socket,id=char1,path=./vhost-net,server \
+	-netdev type=vhost-user,id=mynet1,chardev=char1,vhostforce,queues=16 \
 	-device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on \
 	-vnc :11 -daemonize
 
