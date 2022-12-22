@@ -205,7 +205,6 @@ class Crb(object):
         """
         Mount hugepage file system on CRB.
         """
-        self.send_expect("umount `awk '/hugetlbfs/ { print $2 }' /proc/mounts`", "# ")
         out = self.send_expect("awk '/hugetlbfs/ { print $2 }' /proc/mounts", "# ")
         # if no hugetlbfs mounted, then above command will return " [PEXPECT]#"
         # so strip the unexptectd " [PEXPECT]#", to proceed to mount the hugetlbfs
