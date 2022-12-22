@@ -126,10 +126,10 @@ Test Case 2: wake up split ring vhost-user cores with event idx interrupt mode 1
 
 6. Check vhost related cores are waked up with l3fwd-power log, such as following::
 
-    L3FWD_POWER: lcore 0 is waked up from rx interrupt on port 0 queue 0
+    L3FWD_POWER: lcore 1 is waked up from rx interrupt on port 0 queue 0
     ...
     ...
-    L3FWD_POWER: lcore 15 is waked up from rx interrupt on port 0 queue 15
+    L3FWD_POWER: lcore 16 is waked up from rx interrupt on port 0 queue 15
 
 Test Case 3: wake up split ring vhost-user cores by multi virtio-net in VMs with event idx interrupt mode
 =========================================================================================================
@@ -299,10 +299,10 @@ Test Case 5: wake up packed ring vhost-user cores with event idx interrupt mode 
 
 6. Check vhost related cores are waked up with l3fwd-power log, such as following::
 
-    L3FWD_POWER: lcore 0 is waked up from rx interrupt on port 0 queue 0
+    L3FWD_POWER: lcore 1 is waked up from rx interrupt on port 0 queue 0
     ...
     ...
-    L3FWD_POWER: lcore 15 is waked up from rx interrupt on port 0 queue 15
+    L3FWD_POWER: lcore 16 is waked up from rx interrupt on port 0 queue 15
 
 Test Case 6: wake up packed ring vhost-user cores by multi virtio-net in VMs with event idx interrupt mode
 ==========================================================================================================
