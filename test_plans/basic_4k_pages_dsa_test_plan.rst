@@ -1,9 +1,9 @@
 .. SPDX-License-Identifier: BSD-3-Clause
    Copyright(c) 2022 Intel Corporation
 
-==============================================
+=============================================
 Basic 4k-pages test with DSA driver test plan
-==============================================
+=============================================
 
 Description
 ===========
@@ -21,10 +21,11 @@ and packed ring vhost-user/virtio-net mergeable and non-mergeable path.
 4. Multi-queues number dynamic change in vm2vm vhost-user/virtio-net with split ring and packed ring.
 5. Vhost-user using 1G hugepges and virtio-user using 4k-pages.
 
-Note:
-1. When DMA devices are bound to vfio driver, VA mode is the default and recommended. For PA mode, page by page mapping may
-exceed IOMMU's max capability, better to use 1G guest hugepage.
-2. DPDK local patch that about vhost pmd is needed when testing Vhost asynchronous data path with testpmd.
+.. note::
+
+   1.When DMA devices are bound to vfio driver, VA mode is the default and recommended. For PA mode, page by page mapping may
+   exceed IOMMU's max capability, better to use 1G guest hugepage.
+   2.DPDK local patch that about vhost pmd is needed when testing Vhost asynchronous data path with testpmd.
 
 Prerequisites
 =============
@@ -41,7 +42,7 @@ General set up
 	CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static x86_64-native-linuxapp-gcc
 	ninja -C x86_64-native-linuxapp-gcc -j 110
 
-3. Get the PCI device ID and DSA device ID of DUT, for example, 0000:6a:00.0 is PCI device ID, 0000:6a:01.0 - 0000:f6:01.0 are DSA device IDs::
+3. Get the PCI device of DUT, for example, 0000:6a:00.0 is NIC port, 0000:6a:01.0 - 0000:f6:01.0 are DSA devices::
 
 	<dpdk dir># ./usertools/dpdk-devbind.py -s
 
@@ -74,14 +75,14 @@ Common steps
 ------------
 1. Bind 1 NIC port to vfio-pci::
 
-	<dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci <DUT port pci device id>
+	<dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci <nic_pci>
 	For example:
-	<dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci 0000:00:4f.1
+	<dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci 0000:6a:00.0
 
 2.Bind DSA devices to DPDK vfio-pci driver::
 
-	<dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci <DUT port DSA device id>
-	For example, bind 2 DMA devices to vfio-pci driver:
+	<dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci <dsa_pci>
+	For example, bind 2 DSA devices to vfio-pci driver:
 	<dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci 0000:e7:01.0 0000:ec:01.0
 
 .. note::
@@ -93,18 +94,18 @@ Common steps
 
 3. Bind DSA devices to kernel idxd driver, and configure Work Queue (WQ)::
 
-	<dpdk dir># ./usertools/dpdk-devbind.py -b idxd <numDevices * 2>
-	<dpdk dir># ./drivers/dma/dma/idxd/dpdk_idxd_cfg.py -q <numWq> <numDevices>
+	<dpdk dir># ./usertools/dpdk-devbind.py -b idxd <dsa_pci>
+	<dpdk dir># ./drivers/dma/idxd/dpdk_idxd_cfg.py -q <wq_num> <dsa_idx>
 
 .. note::
 
 	Better to reset WQ when need operate DSA devices that bound to idxd drvier:
-	<dpdk dir># ./drivers/dma/idxd/dpdk_idxd_cfg.py --reset <numDevices>
+	<dpdk dir># ./drivers/dma/idxd/dpdk_idxd_cfg.py --reset <dsa_idx>
 	You can check it by 'ls /dev/dsa'
-	numDevices: number of devices, where 0<=numDevices<=7, corresponding to 0000:6a:01.0 - 0000:f6:01.0
-	numWq: Number of workqueues per DSA endpoint, where 1<=numWq<=8
+	dsa_idx: Index of DSA devices, where 0<=dsa_idx<=7, corresponding to 0000:6a:01.0 - 0000:f6:01.0
+	wq_num: Number of workqueues per DSA endpoint, where 1<=wq_num<=8
 
-	For example, bind 2 DMA devices to idxd driver and configure WQ:
+	For example, bind 2 DSA devices to idxd driver and configure WQ:
 
 	<dpdk dir># ./usertools/dpdk-devbind.py -b idxd 6a:01.0 6f:01.0
 	<dpdk dir># ./drivers/dma/idxd/dpdk_idxd_cfg.py -q 1 0
@@ -112,10 +113,10 @@ Common steps
 	Check WQ by 'ls /dev/dsa' and can find "wq0.0 wq1.0 wq1.1 wq1.2 wq1.3"
 
 Test Case 1: PVP split ring multi-queues with 4K-pages and dsa dpdk driver
-------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 This case tests split ring with multi-queues can work normally in 4k-pages environment when vhost uses the asynchronous operations with dsa dpdk driver.
 
-1. Bind 2 dsa device and one nic port to vfio-pci like common step 1-2::
+1. Bind 2 DSA device and 1 NIC port to vfio-pci like common step 1-2::
 
 	<dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci 6a:00.0
 	<dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci e7:01.0 ec:01.0
@@ -172,10 +173,10 @@ This case tests split ring with multi-queues can work normally in 4k-pages envir
 10. Rerun step 4-6.
 
 Test Case 2: PVP packed ring multi-queues with 4K-pages and dsa dpdk driver
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------
 This case tests packed ring with multi-queues can work normally in 4k-pages environment when vhost uses the asynchronous operations with dsa dpdk driver.
 
-1. Bind 2 dsa device and one nic port to vfio-pci like common step 1-2::
+1. Bind 2 DSA device and 1 NIC port to vfio-pci like common step 1-2::
 
 	<dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci 6a:00.0
 	<dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci f1:01.0 f6:01.0
@@ -232,10 +233,10 @@ This case tests packed ring with multi-queues can work normally in 4k-pages envi
 10.Rerun step 4-6.
 
 Test Case 3: VM2VM split ring vhost-user/virtio-net 4K-pages and dsa dpdk driver test with tcp traffic
---------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------
 This case test the function of Vhost tx offload in the topology of vhost-user/virtio-net split ring mergeable path by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous operations with dsa dpdk driver in 4k-pages environment.
 
-1. Bind 1 dsa device to vfio-pci like common step 2::
+1. Bind 1 DSA device to vfio-pci like common step 2::
 
 	<dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci f1:01.0
 
@@ -291,11 +292,11 @@ This case test the function of Vhost tx offload in the topology of vhost-user/vi
 	testpmd>show port xstats all
 
 Test Case 4: VM2VM packed ring vhost-user/virtio-net 4K-pages and dsa dpdk driver test with tcp traffic
----------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------
 This case test the function of Vhost tx offload in the topology of vhost-user/virtio-net packed ring mergeable path 
 by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous operations with dsa dpdk driver in 4k-pages environment.
 
-1. Bind 1 dsa device to vfio-pci like common step 2::
+1. Bind 1 DSA device to vfio-pci like common step 2::
 
 	<dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci f1:01.0
  
@@ -346,12 +347,14 @@ by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous o
 	<VM1># iperf -s -i 1
 	<VM2># iperf -c 1.1.1.2 -i 1 -t 60
 
-6. Check that 2VMs can receive and send big packets to each other through vhost log. Port 0 should have tx packets above 1522, Port 1 should have rx packets above 1522::
+6. Check that 2VMs can receive and send big packets to each other through vhost log::
 
 	testpmd>show port xstats all
+        Port 0 should have tx packets above 1518
+        Port 1 should have rx packets above 1518
 
 Test Case 5: VM2VM vhost/virtio-net split packed ring multi queues with 1G/4k-pages and dsa dpdk driver
----------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------
 This case uses iperf and scp to test the payload of large packet (larger than 1MB) is valid after packets forwarding in 
 vm2vm vhost-user/virtio-net multi-queues mergeable path when vhost uses the asynchronous operations with dsa dpdk driver.
 And one virtio-net is split ring, the other is packed ring. The vhost run in 1G hugepages and the virtio-user run in 4k-pages environment.
@@ -417,7 +420,7 @@ And one virtio-net is split ring, the other is packed ring. The vhost run in 1G 
 8. Relaunch vm1 and rerun step 4-7.
 
 Test Case 6: VM2VM vhost/virtio-net split ring multi queues with 1G/4k-pages and dsa dpdk driver
----------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
 This case uses iperf and scp to test the payload of large packet (larger than 1MB) is valid after packets forwarding in
 vm2vm vhost-user/virtio-net split ring mergeable path when vhost uses the asynchronous operations with
 dsa dpdk driver. The vhost run in 1G hugepages and the virtio-user run in 4k-pages environment.
@@ -507,10 +510,10 @@ dsa dpdk driver. The vhost run in 1G hugepages and the virtio-user run in 4k-pag
 11. Rerun step 6-7.
 
 Test Case 7: PVP split ring multi-queues with 4K-pages and dsa kernel driver
---------------------------------------------------------------------------------
+----------------------------------------------------------------------------
 This case tests split ring with multi-queues can work normally in 4k-pages environment when vhost uses the asynchronous operations with dsa kernel driver.
 
-1. Bind one nic port to vfio-pci and 2 dsa device to idxd like common step 1 and 3::
+1. Bind 1 NIC port to vfio-pci and 2 DSA device to idxd like common step 1 and 3::
 
 	<dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci 6a:00.0
 
@@ -563,10 +566,10 @@ This case tests split ring with multi-queues can work normally in 4k-pages envir
 8. Rerun step 4-6.
 
 Test Case 8: PVP packed ring multi-queues with 4K-pages and dsa kernel driver
----------------------------------------------------------------------------------
+-----------------------------------------------------------------------------
 This case tests split ring with multi-queues can work normally in 4k-pages environment when vhost uses the asynchronous operations with dsa kernel driver.
 
-1. Bind one nic port to vfio-pci and 2 dsa device to idxd like common step 1 and 3::
+1. Bind 1 NIC port to vfio-pci and 2 DSA device to idxd like common step 1 and 3::
 
 	<dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci 6a:00.0
 
@@ -619,12 +622,12 @@ This case tests split ring with multi-queues can work normally in 4k-pages envir
 8. Rerun step 4-6.
 
 Test Case 9: VM2VM split ring vhost-user/virtio-net 4K-pages and dsa kernel driver test with tcp traffic
----------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------
 This case test the function of Vhost tx offload in the topology of vhost-user/virtio-net split ring mergeable path
 by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous operations with dsa dpdk driver
 in 4k-pages environment.
 
-1. Bind 1 dsa device to idxd like common step 2::
+1. Bind 1 DSA device to idxd like common step 2::
 
 	ls /dev/dsa #check wq configure, reset if exist
 	<dpdk dir># ./usertools/dpdk-devbind.py -u 6a:01.0
@@ -679,17 +682,19 @@ in 4k-pages environment.
 	<VM1># iperf -s -i 1
 	<VM2># iperf -c 1.1.1.2 -i 1 -t 60
 
-7. Check that 2VMs can receive and send big packets to each other through vhost log. Port 0 should have tx packets above 1522, Port 1 should have rx packets above 1522::
+7. Check that 2VMs can receive and send big packets to each other through vhost log::
 
 	testpmd>show port xstats all
+        Port 0 should have tx packets above 1518
+        Port 1 should have rx packets above 151518
 
 Test Case 10: VM2VM packed ring vhost-user/virtio-net 4K-pages and dsa kernel driver test with tcp traffic
------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
 This case test the function of Vhost tx offload in the topology of vhost-user/virtio-net packed ring mergeable path
 by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous operations with dsa dpdk driver
 in 4k-pages environment.
 
-1. Bind 2 dsa device to idxd like common step 2::
+1. Bind 2 DSA device to idxd like common step 2::
 
 	ls /dev/dsa #check wq configure, reset if exist
 	<dpdk dir># ./usertools/dpdk-devbind.py -u 6a:01.0 6f:01.0
@@ -745,17 +750,19 @@ in 4k-pages environment.
 	<VM1># iperf -s -i 1
 	<VM2># iperf -c 1.1.1.2 -i 1 -t 60
 
-7. Check that 2VMs can receive and send big packets to each other through vhost log. Port 0 should have tx packets above 1522, Port 1 should have rx packets above 1522::
+7. Check that 2VMs can receive and send big packets to each other through vhost log::
 
 	testpmd>show port xstats all
+        Port 0 should have tx packets above 1518
+        Port 1 should have rx packets above 1518
 
 Test Case 11: VM2VM vhost/virtio-net split packed ring multi queues with 1G/4k-pages and dsa kernel driver
------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
 This case uses iperf and scp to test the payload of large packet (larger than 1MB) is valid after packets forwarding in
 vm2vm vhost-user/virtio-net split and packed ring mergeable path when vhost uses the asynchronous operations with
 dsa kernel driver. The vhost run in 1G hugepages and the virtio-user run in 4k-pages environment.
 
-1. Bind 8 dsa device to idxd like common step 3::
+1. Bind 8 DSA device to idxd like common step 3::
 
 	ls /dev/dsa #check wq configure, reset if exist
 	<dpdk dir># ./usertools/dpdk-devbind.py -u 6a:01.0 6f:01.0 74:01.0 79:01.0 e7:01.0 ec:01.0 f1:01.0 f6:01.0
@@ -827,7 +834,7 @@ dsa kernel driver. The vhost run in 1G hugepages and the virtio-user run in 4k-p
 8. Relaunch vm1 and rerun step 4-7.
 
 Test Case 12: VM2VM vhost/virtio-net split ring multi queues with 1G/4k-pages and dsa kernel driver
------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 This case uses iperf and scp to test the payload of large packet (larger than 1MB) is valid after packets forwarding in
 vm2vm vhost-user/virtio-net split ring mergeable path when vhost uses the asynchronous operations with
 dsa kernel driver. The vhost run in 1G hugepages and the virtio-user run in 4k-pages environment.
