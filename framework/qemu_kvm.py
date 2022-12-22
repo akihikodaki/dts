@@ -1241,7 +1241,7 @@ class QEMUKvm(VirtBase):
                 By default VM will start with the daemonize status.
                 Not support starting it on the stdin now.
         """
-        if "daemon" in list(options.keys()) and options["enable"] == "no":
+        if "enable" in list(options.keys()) and options["enable"] == "no":
             pass
         else:
             daemon_boot_line = "-daemonize"
@@ -1376,6 +1376,10 @@ class QEMUKvm(VirtBase):
         self.__send_qemu_cmd(qemu_boot_line, dut_id=self.host_dut.dut_id)
 
         self.__get_pci_mapping()
+
+        # pin VM threads with host CPU cores
+        lcores = self.vcpus_pinned_to_vm.split(" ")
+        self.pin_threads(lcores=lcores)
 
         # query status
         self.update_status()
@@ -2004,13 +2008,32 @@ class QEMUKvm(VirtBase):
     def pin_threads(self, lcores):
         """
         Pin thread to assigned cores
+        If threads <= lcores, like: threads=[427756, 427757], lcores=[48, 49, 50]:
+        taskset -pc 48 427756
+        taskset -pc 49 427757
+
+        If threads > lcores, like threads=[427756, 427757, 427758, 427759, 427760], lcores=[48,49,50]
+        taskset -pc 48 427756
+        taskset -pc 49 427757
+        taskset -pc 50 427758
+        taskset -pc 48 427759
+        taskset -pc 49 427760
         """
-        thread_reg = r"CPU #(\d+): .* thread_id=(\d+)"
+        thread_reg = r"CPU #\d+: thread_id=(\d+)"
         output = self.__monitor_session("info", "cpus")
-        thread_cores = re.findall(thread_reg, output)
-        cores_map = list(zip(thread_cores, lcores))
-        for thread_info, core_id in cores_map:
-            cpu_id, thread_id = thread_info
-            self.host_session.send_expect(
-                "taskset -pc %d %s" % (core_id, thread_id), "#"
+        threads = re.findall(thread_reg, output)
+        if len(threads) <= len(lcores):
+            map = list(zip(threads, lcores))
+        else:
+            self.host_logger.warning(
+                "lcores is less than VM's threads, 1 lcore will pin multiple VM's threads"
             )
+            lcore_len = len(lcores)
+            for item in threads:
+                thread_idx = threads.index(item)
+                if thread_idx >= lcore_len:
+                    lcore_idx = thread_idx % lcore_len
+                    lcores.append(lcores[lcore_idx])
+            map = list(zip(threads, lcores))
+        for thread, lcore in map:
+            self.host_session.send_expect("taskset -pc %s %s" % (lcore, thread), "#")
