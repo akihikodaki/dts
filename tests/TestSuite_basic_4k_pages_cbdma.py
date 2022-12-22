@@ -2,11 +2,6 @@
 # Copyright(c) 2022 Intel Corporation
 #
 
-"""
-DPDK Test suite.
-vhost/virtio-user pvp with 4K pages.
-"""
-
 import os
 import random
 import re
@@ -111,8 +106,7 @@ class TestBasic4kPagesCbdma(TestCase):
         """
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "# ")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        self.dut.send_expect("rm -rf /tmp/vhost-net*", "# ")
-        self.umount_tmpfs_for_4k()
+        self.dut.send_expect("rm -rf /root/dpdk/vhost-net*", "# ")
         # Prepare the result table
         self.table_header = ["Frame"]
         self.table_header.append("Mode")
@@ -124,17 +118,9 @@ class TestBasic4kPagesCbdma(TestCase):
         self.vm = []
         self.packed = False
 
-    def start_vm(self, packed=False, queues=1, server=False):
-        if packed:
-            packed_param = ",packed=on"
-        else:
-            packed_param = ""
-
-        if server:
-            server = ",server"
-        else:
-            server = ""
-
+    def start_vm0(self, packed=False, queues=1, server=False):
+        packed_param = ",packed=on" if packed else ""
+        server = ",server" if server else ""
         self.qemu_cmd0 = (
             f"taskset -c {self.vm0_lcore} {self.vm0_qemu_path} -name vm0 -enable-kvm "
             f"-pidfile /tmp/.vm0.pid -daemonize -monitor unix:/tmp/vm0_monitor.sock,server,nowait "
@@ -149,6 +135,20 @@ class TestBasic4kPagesCbdma(TestCase):
             f"-device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 -vnc :{self.vm0_vnc} "
         )
 
+        self.vm0_session = self.dut.new_session(suite="vm0_session")
+        cmd0 = self.qemu_cmd0 % (
+            self.dut.get_ip_address(),
+            self.virtio_mac1,
+        )
+        self.vm0_session.send_expect(cmd0, "# ")
+        time.sleep(10)
+        self.vm0_dut = self.connect_vm0()
+        self.verify(self.vm0_dut is not None, "vm start fail")
+        self.vm_session = self.vm0_dut.new_session(suite="vm_session")
+
+    def start_vm1(self, packed=False, queues=1, server=False):
+        packed_param = ",packed=on" if packed else ""
+        server = ",server" if server else ""
         self.qemu_cmd1 = (
             f"taskset -c {self.vm1_lcore} {self.vm1_qemu_path} -name vm1 -enable-kvm "
             f"-pidfile /tmp/.vm1.pid -daemonize -monitor unix:/tmp/vm1_monitor.sock,server,nowait "
@@ -162,17 +162,6 @@ class TestBasic4kPagesCbdma(TestCase):
             f"-chardev socket,path=/tmp/vm1_qga0.sock,server,nowait,id=vm1_qga0 -device virtio-serial "
             f"-device virtserialport,chardev=vm1_qga0,name=org.qemu.guest_agent.0 -vnc :{self.vm1_vnc} "
         )
-
-        self.vm0_session = self.dut.new_session(suite="vm0_session")
-        cmd0 = self.qemu_cmd0 % (
-            self.dut.get_ip_address(),
-            self.virtio_mac1,
-        )
-        self.vm0_session.send_expect(cmd0, "# ")
-        time.sleep(10)
-        self.vm0_dut = self.connect_vm0()
-        self.verify(self.vm0_dut is not None, "vm start fail")
-        self.vm_session = self.vm0_dut.new_session(suite="vm_session")
 
         self.vm1_session = self.dut.new_session(suite="vm1_session")
         cmd1 = self.qemu_cmd1 % (
@@ -379,7 +368,7 @@ class TestBasic4kPagesCbdma(TestCase):
 
     def check_ping_between_vms(self):
         ping_out = self.vm0_dut.send_expect(
-            "ping {} -c 4".format(self.virtio_ip2), "#", 20
+            "ping {} -c 4".format(self.virtio_ip2), "#", 60
         )
         self.logger.info(ping_out)
 
@@ -459,10 +448,10 @@ class TestBasic4kPagesCbdma(TestCase):
         rx_info = re.search("rx_q0_size_1519_max_packets:\s*(\d*)", out_rx)
 
         self.verify(
-            int(rx_info.group(1)) > 0, "Port 1 not receive packet greater than 1522"
+            int(rx_info.group(1)) > 0, "Port 1 not receive packet greater than 1518"
         )
         self.verify(
-            int(tx_info.group(1)) > 0, "Port 0 not forward packet greater than 1522"
+            int(tx_info.group(1)) > 0, "Port 0 not forward packet greater than 1518"
         )
 
     def mount_tmpfs_for_4k(self, number=1):
@@ -497,12 +486,12 @@ class TestBasic4kPagesCbdma(TestCase):
         Test Case 1: Basic test vhost-user/virtio-user split ring vhost async operation using 4K-pages and cbdma enable
         """
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
-        lcore_dma = "lcore%s@%s," % (self.vhost_core_list[1], self.cbdma_list[0])
-        vhost_eal_param = "--no-huge -m 1024 --vdev 'net_vhost0,iface=./vhost-net,queues=1,dmas=[txq0;rxq0]'"
-        vhost_param = " --no-numa --socket-num=%s --lcore-dma=[%s]" % (
-            self.ports_socket,
-            lcore_dma,
+        dmas = "txq0@%s;rxq0@%s" % (self.cbdma_list[0], self.cbdma_list[0])
+        vhost_eal_param = (
+            "--no-huge -m 1024 --vdev 'net_vhost0,iface=./vhost-net,queues=1,dmas=[%s]'"
+            % dmas
         )
+        vhost_param = "--no-numa --socket-num=%s " % self.ports_socket
         ports = [self.dut.ports_info[0]["pci"]]
         for i in self.cbdma_list:
             ports.append(i)
@@ -529,12 +518,12 @@ class TestBasic4kPagesCbdma(TestCase):
         Test Case 2: Basic test vhost-user/virtio-user packed ring vhost async operation using 4K-pages and cbdma enable
         """
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
-        lcore_dma = "lcore%s@%s," % (self.vhost_core_list[1], self.cbdma_list[0])
-        vhost_eal_param = "--no-huge -m 1024 --vdev 'net_vhost0,iface=./vhost-net,queues=1,dmas=[txq0;rxq0]'"
-        vhost_param = " --no-numa --socket-num=%s --lcore-dma=[%s]" % (
-            self.ports_socket,
-            lcore_dma,
+        dmas = "txq0@%s;rxq0@%s" % (self.cbdma_list[0], self.cbdma_list[0])
+        vhost_eal_param = (
+            "--no-huge -m 1024 --vdev 'net_vhost0,iface=./vhost-net,queues=1,dmas=[%s]'"
+            % dmas
         )
+        vhost_param = "--no-numa --socket-num=%s " % self.ports_socket
         ports = [self.dut.ports_info[0]["pci"]]
         for i in self.cbdma_list:
             ports.append(i)
@@ -561,18 +550,16 @@ class TestBasic4kPagesCbdma(TestCase):
         Test Case 3: VM2VM vhost-user/virtio-net split ring vhost async operation test with tcp traffic using 4K-pages and cbdma enable
         """
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
-        lcore_dma = "lcore%s@%s," "lcore%s@%s" % (
-            self.vhost_core_list[1],
-            self.cbdma_list[0],
-            self.vhost_core_list[2],
-            self.cbdma_list[1],
-        )
+        dmas1 = "txq0@%s;rxq0@%s" % (self.cbdma_list[0], self.cbdma_list[0])
+        dmas2 = "txq0@%s;rxq0@%s" % (self.cbdma_list[1], self.cbdma_list[1])
         vhost_eal_param = (
             "--no-huge -m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,queues=1,tso=1,dmas=[txq0;rxq0]'"
-            + " --vdev 'net_vhost1,iface=./vhost-net1,queues=1,tso=1,dmas=[txq0;rxq0]'"
+            + "--vdev 'net_vhost0,iface=./vhost-net0,queues=1,tso=1,dmas=[%s],dma-ring-size=2048'"
+            % dmas1
+            + " --vdev 'net_vhost1,iface=./vhost-net1,queues=1,tso=1,dmas=[%s],dma-ring-size=2048'"
+            % dmas2
         )
-        vhost_param = " --nb-cores=2 --txd=1024 --rxd=1024 --lcore-dma=[%s]" % lcore_dma
+        vhost_param = "--nb-cores=2 --txd=1024 --rxd=1024"
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
@@ -581,7 +568,8 @@ class TestBasic4kPagesCbdma(TestCase):
         )
         self.vhost_user_pmd.execute_cmd("start")
 
-        self.start_vm(packed=False, queues=1, server=False)
+        self.start_vm0(packed=False, queues=1, server=False)
+        self.start_vm1(packed=False, queues=1, server=False)
         self.config_vm_ip()
         self.check_ping_between_vms()
         self.start_iperf()
@@ -599,18 +587,16 @@ class TestBasic4kPagesCbdma(TestCase):
         Test Case 4: VM2VM vhost-user/virtio-net packed ring vhost async operation test with tcp traffic using 4K-pages and cbdma enable
         """
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
-        lcore_dma = "lcore%s@%s," "lcore%s@%s" % (
-            self.vhost_core_list[1],
-            self.cbdma_list[0],
-            self.vhost_core_list[2],
-            self.cbdma_list[1],
-        )
+        dmas1 = "txq0@%s;rxq0@%s" % (self.cbdma_list[0], self.cbdma_list[0])
+        dmas2 = "txq0@%s;rxq0@%s" % (self.cbdma_list[1], self.cbdma_list[1])
         vhost_eal_param = (
             "--no-huge -m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,queues=1,tso=1,dmas=[txq0;rxq0]'"
-            + " --vdev 'net_vhost1,iface=./vhost-net1,queues=1,tso=1,dmas=[txq0;rxq0]'"
+            + "--vdev 'net_vhost0,iface=./vhost-net0,queues=1,tso=1,dmas=[%s],dma-ring-size=2048'"
+            % dmas1
+            + " --vdev 'net_vhost1,iface=./vhost-net1,queues=1,tso=1,dmas=[%s],dma-ring-size=2048'"
+            % dmas2
         )
-        vhost_param = " --nb-cores=2 --txd=1024 --rxd=1024 --lcore-dma=[%s]" % lcore_dma
+        vhost_param = "--nb-cores=2 --txd=1024 --rxd=1024"
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
@@ -619,7 +605,8 @@ class TestBasic4kPagesCbdma(TestCase):
         )
         self.vhost_user_pmd.execute_cmd("start")
 
-        self.start_vm(packed=True, queues=1, server=False)
+        self.start_vm0(packed=True, queues=1, server=False)
+        self.start_vm1(packed=True, queues=1, server=False)
         self.config_vm_ip()
         self.check_ping_between_vms()
         self.start_iperf()
@@ -634,68 +621,55 @@ class TestBasic4kPagesCbdma(TestCase):
         """
         Test Case 5: vm2vm vhost/virtio-net split ring multi queues using 4K-pages and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4, allow_diff_socket=True)
+        dmas1 = (
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "txq6@%s;"
+            "txq7@%s"
             % (
-                self.vhost_core_list[1],
                 self.cbdma_list[0],
-                self.vhost_core_list[1],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
                 self.cbdma_list[1],
-                self.vhost_core_list[1],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+            )
+        )
+        dmas2 = (
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "txq6@%s;"
+            "txq7@%s"
+            % (
                 self.cbdma_list[2],
-                self.vhost_core_list[1],
+                self.cbdma_list[2],
+                self.cbdma_list[2],
+                self.cbdma_list[2],
                 self.cbdma_list[3],
-                self.vhost_core_list[1],
-                self.cbdma_list[4],
-                self.vhost_core_list[1],
-                self.cbdma_list[5],
-                self.vhost_core_list[2],
-                self.cbdma_list[6],
-                self.vhost_core_list[2],
-                self.cbdma_list[7],
-                self.vhost_core_list[3],
-                self.cbdma_list[8],
-                self.vhost_core_list[3],
-                self.cbdma_list[9],
-                self.vhost_core_list[3],
-                self.cbdma_list[10],
-                self.vhost_core_list[3],
-                self.cbdma_list[11],
-                self.vhost_core_list[3],
-                self.cbdma_list[12],
-                self.vhost_core_list[3],
-                self.cbdma_list[13],
-                self.vhost_core_list[3],
-                self.cbdma_list[14],
-                self.vhost_core_list[3],
-                self.cbdma_list[15],
+                self.cbdma_list[3],
+                self.cbdma_list[3],
+                self.cbdma_list[3],
             )
         )
         vhost_eal_param = (
             "--no-huge -m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7]'"
-            + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7]'"
+            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,dmas=[%s]'"
+            % dmas1
+            + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,dmas=[%s]'"
+            % dmas2
         )
-        vhost_param = (
-            " --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 --lcore-dma=[%s]"
-            % lcore_dma
-        )
+        vhost_param = "--nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8"
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
@@ -704,7 +678,8 @@ class TestBasic4kPagesCbdma(TestCase):
         )
         self.vhost_user_pmd.execute_cmd("start")
 
-        self.start_vm(packed=False, queues=8, server=True)
+        self.start_vm0(packed=False, queues=8, server=True)
+        self.start_vm1(packed=False, queues=8, server=True)
         self.config_vm_ip()
         self.config_vm_combined(combined=8)
         self.check_scp_file_valid_between_vms()
@@ -712,79 +687,70 @@ class TestBasic4kPagesCbdma(TestCase):
         self.get_iperf_result()
 
         self.vhost_user_pmd.quit()
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
+        dmas1 = (
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
             % (
-                self.vhost_core_list[1],
                 self.cbdma_list[0],
-                self.vhost_core_list[1],
-                self.cbdma_list[1],
-                self.vhost_core_list[1],
-                self.cbdma_list[2],
-                self.vhost_core_list[1],
-                self.cbdma_list[3],
-                self.vhost_core_list[2],
                 self.cbdma_list[0],
-                self.vhost_core_list[2],
-                self.cbdma_list[2],
-                self.vhost_core_list[2],
-                self.cbdma_list[4],
-                self.vhost_core_list[2],
-                self.cbdma_list[5],
-                self.vhost_core_list[2],
-                self.cbdma_list[6],
-                self.vhost_core_list[2],
-                self.cbdma_list[7],
-                self.vhost_core_list[3],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
                 self.cbdma_list[1],
-                self.vhost_core_list[3],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+            )
+        )
+        dmas2 = (
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                self.cbdma_list[2],
+                self.cbdma_list[2],
+                self.cbdma_list[2],
+                self.cbdma_list[2],
+                self.cbdma_list[2],
+                self.cbdma_list[2],
                 self.cbdma_list[3],
-                self.vhost_core_list[3],
-                self.cbdma_list[8],
-                self.vhost_core_list[3],
-                self.cbdma_list[9],
-                self.vhost_core_list[3],
-                self.cbdma_list[10],
-                self.vhost_core_list[3],
-                self.cbdma_list[11],
-                self.vhost_core_list[3],
-                self.cbdma_list[12],
-                self.vhost_core_list[3],
-                self.cbdma_list[13],
-                self.vhost_core_list[3],
-                self.cbdma_list[14],
-                self.vhost_core_list[4],
-                self.cbdma_list[15],
+                self.cbdma_list[3],
+                self.cbdma_list[3],
+                self.cbdma_list[3],
+                self.cbdma_list[3],
+                self.cbdma_list[3],
             )
         )
         vhost_eal_param = (
             "--no-huge -m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7]'"
-            + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7]'"
+            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,dmas=[%s],dma-ring-size=1024'"
+            % dmas1
+            + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,dmas=[%s],dma-ring-size=1024'"
+            % dmas2
         )
-        vhost_param = (
-            " --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 --lcore-dma=[%s]"
-            % lcore_dma
-        )
+        vhost_param = "--nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8"
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
@@ -803,7 +769,7 @@ class TestBasic4kPagesCbdma(TestCase):
             + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=4'"
             + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=4'"
         )
-        vhost_param = " --nb-cores=4 --txd=1024 --rxd=1024 --rxq=4 --txq=4"
+        vhost_param = "--nb-cores=4 --txd=1024 --rxd=1024 --rxq=4 --txq=4"
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
@@ -845,68 +811,35 @@ class TestBasic4kPagesCbdma(TestCase):
         """
         Test Case 6: vm2vm vhost/virtio-net packed ring multi queues using 4K-pages and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2, allow_diff_socket=True)
+        dmas = (
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "txq6@%s;"
+            "txq7@%s"
             % (
-                self.vhost_core_list[1],
                 self.cbdma_list[0],
-                self.vhost_core_list[1],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
                 self.cbdma_list[1],
-                self.vhost_core_list[1],
-                self.cbdma_list[2],
-                self.vhost_core_list[1],
-                self.cbdma_list[3],
-                self.vhost_core_list[1],
-                self.cbdma_list[4],
-                self.vhost_core_list[1],
-                self.cbdma_list[5],
-                self.vhost_core_list[2],
-                self.cbdma_list[6],
-                self.vhost_core_list[2],
-                self.cbdma_list[7],
-                self.vhost_core_list[3],
-                self.cbdma_list[8],
-                self.vhost_core_list[3],
-                self.cbdma_list[9],
-                self.vhost_core_list[3],
-                self.cbdma_list[10],
-                self.vhost_core_list[3],
-                self.cbdma_list[11],
-                self.vhost_core_list[3],
-                self.cbdma_list[12],
-                self.vhost_core_list[3],
-                self.cbdma_list[13],
-                self.vhost_core_list[3],
-                self.cbdma_list[14],
-                self.vhost_core_list[3],
-                self.cbdma_list[15],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
             )
         )
         vhost_eal_param = (
             "--no-huge -m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7]'"
-            + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7]'"
+            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,tso=1,dmas=[%s]'"
+            % dmas
+            + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,tso=1,dmas=[%s]'"
+            % dmas
         )
-        vhost_param = (
-            " --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 --lcore-dma=[%s]"
-            % lcore_dma
-        )
+        vhost_param = "--nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8"
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
@@ -915,7 +848,8 @@ class TestBasic4kPagesCbdma(TestCase):
         )
         self.vhost_user_pmd.execute_cmd("start")
 
-        self.start_vm(packed=True, queues=8, server=True)
+        self.start_vm0(packed=True, queues=8, server=True)
+        self.start_vm1(packed=True, queues=8, server=True)
         self.config_vm_ip()
         self.config_vm_combined(combined=8)
         self.check_ping_between_vms()
@@ -931,68 +865,43 @@ class TestBasic4kPagesCbdma(TestCase):
         """
         Test Case 7: vm2vm vhost/virtio-net split ring multi queues using 1G/4k-pages and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4, allow_diff_socket=True)
+        dmas = (
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
             % (
-                self.vhost_core_list[1],
                 self.cbdma_list[0],
-                self.vhost_core_list[1],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
                 self.cbdma_list[1],
-                self.vhost_core_list[1],
-                self.cbdma_list[2],
-                self.vhost_core_list[1],
-                self.cbdma_list[3],
-                self.vhost_core_list[2],
-                self.cbdma_list[4],
-                self.vhost_core_list[2],
-                self.cbdma_list[5],
-                self.vhost_core_list[2],
-                self.cbdma_list[6],
-                self.vhost_core_list[2],
-                self.cbdma_list[7],
-                self.vhost_core_list[3],
-                self.cbdma_list[8],
-                self.vhost_core_list[3],
-                self.cbdma_list[9],
-                self.vhost_core_list[3],
-                self.cbdma_list[10],
-                self.vhost_core_list[3],
-                self.cbdma_list[11],
-                self.vhost_core_list[4],
-                self.cbdma_list[12],
-                self.vhost_core_list[4],
-                self.cbdma_list[13],
-                self.vhost_core_list[4],
-                self.cbdma_list[14],
-                self.vhost_core_list[4],
-                self.cbdma_list[15],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
             )
         )
         vhost_eal_param = (
             "-m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]'"
-            + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]'"
+            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,tso=1,dmas=[%s],dma-ring-size=1024'"
+            % dmas
+            + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,tso=1,dmas=[%s],dma-ring-size=1024'"
+            % dmas
         )
-        vhost_param = (
-            " --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 --lcore-dma=[%s]"
-            % lcore_dma
-        )
+        vhost_param = "--nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8"
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
@@ -1001,7 +910,8 @@ class TestBasic4kPagesCbdma(TestCase):
         )
         self.vhost_user_pmd.execute_cmd("start")
 
-        self.start_vm(packed=False, queues=8, server=True)
+        self.start_vm0(packed=False, queues=8, server=True)
+        self.start_vm1(packed=False, queues=8, server=True)
         self.config_vm_ip()
         self.config_vm_combined(combined=8)
         self.check_ping_between_vms()
@@ -1010,79 +920,50 @@ class TestBasic4kPagesCbdma(TestCase):
         self.get_iperf_result()
 
         self.vhost_user_pmd.quit()
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
+        dmas = (
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "txq6@%s;"
+            "txq7@%s;"
+            "rxq0@%s;"
+            "rxq1@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
             % (
-                self.vhost_core_list[1],
                 self.cbdma_list[0],
-                self.vhost_core_list[1],
-                self.cbdma_list[1],
-                self.vhost_core_list[1],
-                self.cbdma_list[2],
-                self.vhost_core_list[1],
-                self.cbdma_list[3],
-                self.vhost_core_list[2],
                 self.cbdma_list[0],
-                self.vhost_core_list[2],
-                self.cbdma_list[2],
-                self.vhost_core_list[2],
-                self.cbdma_list[4],
-                self.vhost_core_list[2],
-                self.cbdma_list[5],
-                self.vhost_core_list[2],
-                self.cbdma_list[6],
-                self.vhost_core_list[2],
-                self.cbdma_list[7],
-                self.vhost_core_list[3],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
                 self.cbdma_list[1],
-                self.vhost_core_list[3],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+                self.cbdma_list[1],
+                self.cbdma_list[2],
+                self.cbdma_list[2],
+                self.cbdma_list[2],
+                self.cbdma_list[2],
                 self.cbdma_list[3],
-                self.vhost_core_list[3],
-                self.cbdma_list[8],
-                self.vhost_core_list[3],
-                self.cbdma_list[9],
-                self.vhost_core_list[3],
-                self.cbdma_list[10],
-                self.vhost_core_list[3],
-                self.cbdma_list[11],
-                self.vhost_core_list[3],
-                self.cbdma_list[12],
-                self.vhost_core_list[3],
-                self.cbdma_list[13],
-                self.vhost_core_list[3],
-                self.cbdma_list[14],
-                self.vhost_core_list[4],
-                self.cbdma_list[15],
+                self.cbdma_list[3],
+                self.cbdma_list[3],
+                self.cbdma_list[3],
             )
         )
         vhost_eal_param = (
             "--no-huge -m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]'"
-            + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]'"
+            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,tso=1,dmas=[%s]'"
+            % dmas
+            + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,tso=1,dmas=[%s]'"
+            % dmas
         )
-        vhost_param = (
-            " --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 --lcore-dma=[%s]"
-            % lcore_dma
-        )
+        vhost_param = "--nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8"
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
@@ -1099,74 +980,77 @@ class TestBasic4kPagesCbdma(TestCase):
         self.vm1.stop()
         self.vhost_user_pmd.quit()
 
-    def test_vm2vm_packed_ring_multi_queues_using_1G_and_4k_pages_and_cbdma_enable(
+    def test_vm2vm_split_packed_ring_multi_queues_using_1G_and_4k_pages_and_cbdma_enable(
         self,
     ):
         """
         Test Case 8: vm2vm vhost/virtio-net split packed ring multi queues with 1G/4k-pages and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s"
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=8, allow_diff_socket=True)
+        dmas1 = (
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
             % (
-                self.vhost_core_list[1],
                 self.cbdma_list[0],
-                self.vhost_core_list[1],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
+                self.cbdma_list[0],
                 self.cbdma_list[1],
-                self.vhost_core_list[1],
+                self.cbdma_list[1],
                 self.cbdma_list[2],
-                self.vhost_core_list[1],
+                self.cbdma_list[2],
                 self.cbdma_list[3],
-                self.vhost_core_list[2],
+                self.cbdma_list[3],
+                self.cbdma_list[3],
+                self.cbdma_list[3],
+            )
+        )
+        dmas2 = (
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
                 self.cbdma_list[4],
-                self.vhost_core_list[2],
+                self.cbdma_list[4],
+                self.cbdma_list[4],
+                self.cbdma_list[4],
                 self.cbdma_list[5],
-                self.vhost_core_list[2],
+                self.cbdma_list[5],
                 self.cbdma_list[6],
-                self.vhost_core_list[2],
+                self.cbdma_list[6],
                 self.cbdma_list[7],
-                self.vhost_core_list[3],
-                self.cbdma_list[8],
-                self.vhost_core_list[3],
-                self.cbdma_list[9],
-                self.vhost_core_list[3],
-                self.cbdma_list[10],
-                self.vhost_core_list[3],
-                self.cbdma_list[11],
-                self.vhost_core_list[4],
-                self.cbdma_list[12],
-                self.vhost_core_list[4],
-                self.cbdma_list[13],
-                self.vhost_core_list[4],
-                self.cbdma_list[14],
-                self.vhost_core_list[4],
-                self.cbdma_list[15],
+                self.cbdma_list[7],
+                self.cbdma_list[7],
+                self.cbdma_list[7],
             )
         )
         vhost_eal_param = (
             "-m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]'"
-            + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]'"
+            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,dmas=[%s]'"
+            % dmas1
+            + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,dmas=[%s]'"
+            % dmas2
         )
-        vhost_param = (
-            " --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 --lcore-dma=[%s]"
-            % lcore_dma
-        )
+        vhost_param = "--nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8"
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
@@ -1175,7 +1059,8 @@ class TestBasic4kPagesCbdma(TestCase):
         )
         self.vhost_user_pmd.execute_cmd("start")
 
-        self.start_vm(packed=True, queues=8, server=True)
+        self.start_vm0(packed=False, queues=8, server=True)
+        self.start_vm1(packed=True, queues=8, server=True)
         self.config_vm_ip()
         self.config_vm_combined(combined=8)
         self.check_ping_between_vms()
