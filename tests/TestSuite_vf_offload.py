@@ -216,6 +216,32 @@ class TestVfOffload(TestCase):
         dut.send_expect("csum set sctp sw %d" % port, "testpmd>")
         dut.send_expect("port start all", "testpmd>")
 
+    def tso_enable(self, port, dut):
+        dut.send_expect("port stop %d" % port, "testpmd>")
+        dut.send_expect("csum set ip hw %d" % port, "testpmd>")
+        dut.send_expect("csum set udp hw %d" % port, "testpmd>")
+        dut.send_expect("csum set tcp hw %d" % port, "testpmd>")
+        dut.send_expect("csum set sctp hw %d" % port, "testpmd>")
+        dut.send_expect("csum set outer-ip hw %d" % port, "testpmd>")
+        dut.send_expect("csum set outer-udp hw %d" % port, "testpmd>")
+        dut.send_expect("csum parse-tunnel on %d" % port, "testpmd>")
+        dut.send_expect("tso set 800 %d" % port, "testpmd>")
+        dut.send_expect("port start %d" % port, "testpmd>")
+
+    def tso_enable_tunnel(self, port, dut):
+        dut.send_expect("port stop %d" % port, "testpmd>")
+        dut.send_expect("csum set ip hw %d" % port, "testpmd>")
+        dut.send_expect("csum set udp hw %d" % port, "testpmd>")
+        dut.send_expect("csum set tcp hw %d" % port, "testpmd>")
+        dut.send_expect("csum set sctp hw %d" % port, "testpmd>")
+        dut.send_expect("csum set outer-ip hw %d" % port, "testpmd>")
+        dut.send_expect("csum set outer-udp hw %d" % port, "testpmd>")
+        dut.send_expect("csum parse-tunnel on %d" % port, "testpmd>")
+        dut.send_expect("rx_vxlan_port add 4789 %d" % port, "testpmd>")
+        dut.send_expect("tso set 800 %d" % port, "testpmd>")
+        dut.send_expect("tunnel_tso set 800 %d" % port, "testpmd>")
+        dut.send_expect("port start %d" % port, "testpmd>")
+
     def checksum_validate(self, packets_sent, packets_expected):
         """
         Validate the checksum.
@@ -852,6 +878,166 @@ class TestVfOffload(TestCase):
                         int(tx_outlist[num]) == loading_size % 800,
                         "the packet segmentation incorrect, %s" % tx_outlist,
                     )
+
+    @check_supported_nic(
+        ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]
+    )
+    @skip_unsupported_pkg(["os default"])
+    def test_tso_tunnel(self):
+        """
+        TSO tunneled IPv4 TCP, IPv6 TCP testing.
+        """
+        tx_interface = self.tester.get_interface(
+            self.tester.get_local_port(self.vm0_dut_ports[0])
+        )
+        rx_interface = self.tester.get_interface(
+            self.tester.get_local_port(self.vm0_dut_ports[1])
+        )
+
+        self.loading_sizes = [128, 800, 801, 1700, 2500]
+
+        self.tester.send_expect(
+            "ethtool -K %s rx off tx off tso off gso off gro off lro off"
+            % tx_interface,
+            "# ",
+        )
+        self.tester.send_expect("ip l set %s up" % tx_interface, "# ")
+        self.dut.send_expect(
+            "ifconfig %s mtu %s" % (self.dut.ports_info[0]["intf"], TSO_MTU), "# "
+        )
+        self.dut.send_expect(
+            "ifconfig %s mtu %s" % (self.dut.ports_info[1]["intf"], TSO_MTU), "# "
+        )
+
+        self.portMask = utils.create_mask([self.vm0_dut_ports[0]])
+        self.launch_testpmd(
+            dcf_flag=self.dcf_mode,
+            param="--portmask=0x3 "
+            + "--enable-rx-cksum "
+            + "--max-pkt-len=%s" % TSO_MTU,
+        )
+
+        mac = self.vm0_testpmd.get_port_mac(0)
+        self.vm0_testpmd.execute_cmd("set verbose 1", "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("set fwd csum", "testpmd>", 120)
+        self.vm0_testpmd.execute_cmd("set promisc 0 on", "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("set promisc 1 on", "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("csum mac-swap off 0", "testpmd>")
+        self.vm0_testpmd.execute_cmd("csum mac-swap off 1", "testpmd>")
+        self.tso_enable_tunnel(self.vm0_dut_ports[0], self.vm_dut_0)
+        self.tso_enable_tunnel(self.vm0_dut_ports[1], self.vm_dut_0)
+        self.vm0_testpmd.execute_cmd("start")
+        self.vm0_testpmd.wait_link_status_up(self.vm0_dut_ports[0])
+        self.vm0_testpmd.wait_link_status_up(self.vm0_dut_ports[1])
+
+        pkts_outer = {
+            "IP/UDP/VXLAN/ETH": 'IP(src = "192.168.1.1", dst = "192.168.1.2") / UDP(sport = 4789, dport = 4789) / VXLAN() / Ether()',
+            "IP/UDP/VXLAN-GPE": 'IP(src = "192.168.1.1", dst = "192.168.1.2") / UDP(sport = 4790, dport = 4790) / VXLAN()',
+            "IP/UDP/VXLAN-GPE/ETH": 'IP(src = "192.168.1.1", dst = "192.168.1.2") / UDP(sport = 4790, dport = 4790) / VXLAN() / Ether()',
+            "IPv6/UDP/VXLAN/ETH": 'IPv6(src = "FE80:0:0:0:200:1FF:FE00:200", dst = "3555:5555:6666:6666:7777:7777:8888:8888") / UDP(sport = 4789, dport = 4789) / VXLAN() / Ether()',
+            "IPv6/UDP/VXLAN-GPE": 'IPv6(src = "FE80:0:0:0:200:1FF:FE00:200", dst = "3555:5555:6666:6666:7777:7777:8888:8888") / UDP(sport = 4790, dport = 4790) / VXLAN()',
+            "IPv6/UDP/VXLAN-GPE/ETH": 'IPv6(src = "FE80:0:0:0:200:1FF:FE00:200", dst = "3555:5555:6666:6666:7777:7777:8888:8888") / UDP(sport = 4790, dport = 4790) / VXLAN() / Ether()',
+            "IP/GRE": 'IP(src = "192.168.1.1", dst = "192.168.1.2", proto = 47) / GRE()',
+            "IP/GRE/ETH": 'IP(src = "192.168.1.1", dst = "192.168.1.2", proto = 47) / GRE() / Ether()',
+            "IP/NVGRE/ETH": 'IP(src = "192.168.1.1", dst = "192.168.1.2", proto = 47) / GRE(key_present=1, proto=0x6558, key=0x00000100) / Ether()',
+            "IPv6/GRE": 'IPv6(src = "FE80:0:0:0:200:1FF:FE00:200", dst = "3555:5555:6666:6666:7777:7777:8888:8888", nh = 47) / GRE()',
+            "IPv6/GRE/ETH": 'IPv6(src = "FE80:0:0:0:200:1FF:FE00:200", dst = "3555:5555:6666:6666:7777:7777:8888:8888", nh = 47) / GRE() / Ether()',
+            "IPv6/NVGRE/ETH": 'IPv6(src = "FE80:0:0:0:200:1FF:FE00:200", dst = "3555:5555:6666:6666:7777:7777:8888:8888", nh = 47) / GRE(key_present=1, proto=0x6558, key=0x00000100) / Ether()',
+            "IP/UDP/GTPU": 'IP(src = "192.168.1.1", dst = "192.168.1.2") / UDP(dport = 2152) / GTP_U_Header(gtp_type=255, teid=0x123456)',
+            "IPv6/UDP/GTPU": 'IPv6(src = "FE80:0:0:0:200:1FF:FE00:200", dst = "3555:5555:6666:6666:7777:7777:8888:8888") / UDP(dport = 2152) / GTP_U_Header(gtp_type=255, teid=0x123456)',
+        }
+
+        self.tester.scapy_foreground()
+        time.sleep(5)
+
+        for key_outer in pkts_outer:
+            for loading_size in self.loading_sizes:
+                # IPv4 tcp test
+                out = self.vm0_testpmd.execute_cmd(
+                    "clear port info all", "testpmd> ", 120
+                )
+                self.tcpdump_start_sniffing([tx_interface, rx_interface])
+                if "GTPU" in key_outer:
+                    self.tester.scapy_append(
+                        "from scapy.contrib.gtp import GTP_U_Header"
+                    )
+                self.tester.scapy_append(
+                    (
+                        'sendp([Ether(dst="%s",src="52:00:00:00:00:00")/'
+                        + pkts_outer[key_outer]
+                        + '/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")'
+                    )
+                    % (mac, loading_size, tx_interface)
+                )
+                out = self.tester.scapy_execute()
+                out = self.vm0_testpmd.execute_cmd("show port stats all")
+                print(out)
+                self.tcpdump_stop_sniff()
+                rx_stats = self.number_of_packets(rx_interface)
+                tx_stats = self.number_of_packets(tx_interface)
+                tx_outlist = self.number_of_bytes(rx_interface)
+                self.logger.info(tx_outlist)
+                if loading_size <= 800:
+                    self.verify(
+                        rx_stats == tx_stats and int(tx_outlist[0]) == loading_size,
+                        f"{key_outer} tunnel IPV4 RX or TX packet number not correct",
+                    )
+                else:
+                    num = loading_size // 800
+                    for i in range(num):
+                        self.verify(
+                            int(tx_outlist[i]) == 800,
+                            "the packet segmentation incorrect, %s" % tx_outlist,
+                        )
+                    if loading_size % 800 != 0:
+                        self.verify(
+                            int(tx_outlist[num]) == loading_size % 800,
+                            "the packet segmentation incorrect, %s" % tx_outlist,
+                        )
+
+            for loading_size in self.loading_sizes:
+                # IPv6 tcp test
+                out = self.vm0_testpmd.execute_cmd(
+                    "clear port info all", "testpmd> ", 120
+                )
+                self.tcpdump_start_sniffing([tx_interface, rx_interface])
+                if "GTPU" in key_outer:
+                    self.tester.scapy_append(
+                        "from scapy.contrib.gtp import GTP_U_Header"
+                    )
+                self.tester.scapy_append(
+                    (
+                        'sendp([Ether(dst="%s", src="52:00:00:00:00:00")/'
+                        + pkts_outer[key_outer]
+                        + '/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")'
+                    )
+                    % (mac, loading_size, tx_interface)
+                )
+                out = self.tester.scapy_execute()
+                out = self.vm0_testpmd.execute_cmd("show port stats all")
+                print(out)
+                self.tcpdump_stop_sniff()
+                rx_stats = self.number_of_packets(rx_interface)
+                tx_stats = self.number_of_packets(tx_interface)
+                tx_outlist = self.number_of_bytes(rx_interface)
+                self.logger.info(tx_outlist)
+                if loading_size <= 800:
+                    self.verify(
+                        rx_stats == tx_stats and int(tx_outlist[0]) == loading_size,
+                        f"{key_outer} tunnel IPV6 RX or TX packet number not correct",
+                    )
+                else:
+                    num = loading_size // 800
+                    for i in range(num):
+                        self.verify(
+                            int(tx_outlist[i]) == 800,
+                            "the packet segmentation incorrect, %s" % tx_outlist,
+                        )
+                    if loading_size % 800 != 0:
+                        self.verify(
+                            int(tx_outlist[num]) == loading_size % 800,
+                            "the packet segmentation incorrect, %s" % tx_outlist,
+                        )
 
     def tear_down(self):
         self.vm0_testpmd.execute_cmd("quit", "# ")
