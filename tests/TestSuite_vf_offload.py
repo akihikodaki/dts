@@ -6,8 +6,19 @@ import re
 import string
 import time
 
+from scapy.contrib.lldp import LLDPDU, LLDPDUManagementAddress
+from scapy.contrib.mpls import MPLS
+from scapy.contrib.nsh import NSH
+from scapy.layers.inet import ICMP, IP, TCP, UDP
+from scapy.layers.inet6 import IPv6, IPv6ExtHdrFragment, IPv6ExtHdrRouting
+from scapy.layers.l2 import ARP, GRE, Dot1Q, Ether
+from scapy.layers.sctp import SCTP
+from scapy.layers.vxlan import VXLAN
+from scapy.packet import Raw
+
 import framework.utils as utils
 from framework.crb import Crb
+from framework.packet import Packet
 from framework.pmd_output import PmdOutput
 from framework.settings import DPDK_DCFMODE_SETTING, HEADER_SIZE, load_global_setting
 from framework.test_case import TestCase, check_supported_nic, skip_unsupported_pkg
@@ -687,6 +698,25 @@ class TestVfOffload(TestCase):
         self.tester.send_expect('echo "Cleaning buffer"', "#")
         time.sleep(1)
 
+    def tcpdump_analyse_sniff(self, iface):
+        """
+        Analyse the tcpdump captured packets. Returning the number of
+        packets and the bytes of packets payload.
+        """
+        packet = Packet()
+        pkts = packet.read_pcapfile("tcpdump_{0}.pcap".format(iface), self.tester)
+        pkts = [
+            p
+            for p in pkts
+            if len(p.layers()) >= 3
+            and p.layers()[1] in {IP, IPv6}
+            and p.layers()[2] in {IP, IPv6, UDP, TCP, SCTP, GRE, MPLS}
+            and Raw in p
+        ]
+        rx_packet_count = len(pkts)
+        rx_packet_size = [len(p[Raw]) for p in pkts]
+        return rx_packet_count, rx_packet_size
+
     def tcpdump_command(self, command):
         """
         Send a tcpdump related command and return an integer from the output.
@@ -973,26 +1003,25 @@ class TestVfOffload(TestCase):
                 out = self.vm0_testpmd.execute_cmd("show port stats all")
                 print(out)
                 self.tcpdump_stop_sniff()
-                rx_stats = self.number_of_packets(rx_interface)
-                tx_stats = self.number_of_packets(tx_interface)
-                tx_outlist = self.number_of_bytes(rx_interface)
-                self.logger.info(tx_outlist)
+                rx_stats, payload_size_list = self.tcpdump_analyse_sniff(rx_interface)
+                tx_stats, _ = self.tcpdump_analyse_sniff(tx_interface)
+                self.logger.info(payload_size_list)
                 if loading_size <= 800:
                     self.verify(
-                        rx_stats == tx_stats and int(tx_outlist[0]) == loading_size,
+                        rx_stats == tx_stats and payload_size_list[0] == loading_size,
                         f"{key_outer} tunnel IPV4 RX or TX packet number not correct",
                     )
                 else:
                     num = loading_size // 800
                     for i in range(num):
                         self.verify(
-                            int(tx_outlist[i]) == 800,
-                            "the packet segmentation incorrect, %s" % tx_outlist,
+                            payload_size_list[i] == 800,
+                            "the packet segmentation incorrect, %s" % payload_size_list,
                         )
                     if loading_size % 800 != 0:
                         self.verify(
-                            int(tx_outlist[num]) == loading_size % 800,
-                            "the packet segmentation incorrect, %s" % tx_outlist,
+                            payload_size_list[num] == loading_size % 800,
+                            "the packet segmentation incorrect, %s" % payload_size_list,
                         )
 
             for loading_size in self.loading_sizes:
@@ -1017,26 +1046,25 @@ class TestVfOffload(TestCase):
                 out = self.vm0_testpmd.execute_cmd("show port stats all")
                 print(out)
                 self.tcpdump_stop_sniff()
-                rx_stats = self.number_of_packets(rx_interface)
-                tx_stats = self.number_of_packets(tx_interface)
-                tx_outlist = self.number_of_bytes(rx_interface)
-                self.logger.info(tx_outlist)
+                rx_stats, payload_size_list = self.tcpdump_analyse_sniff(rx_interface)
+                tx_stats, _ = self.tcpdump_analyse_sniff(tx_interface)
+                self.logger.info(payload_size_list)
                 if loading_size <= 800:
                     self.verify(
-                        rx_stats == tx_stats and int(tx_outlist[0]) == loading_size,
+                        rx_stats == tx_stats and payload_size_list[0] == loading_size,
                         f"{key_outer} tunnel IPV6 RX or TX packet number not correct",
                     )
                 else:
                     num = loading_size // 800
                     for i in range(num):
                         self.verify(
-                            int(tx_outlist[i]) == 800,
-                            "the packet segmentation incorrect, %s" % tx_outlist,
+                            payload_size_list[i] == 800,
+                            "the packet segmentation incorrect, %s" % payload_size_list,
                         )
                     if loading_size % 800 != 0:
                         self.verify(
-                            int(tx_outlist[num]) == loading_size % 800,
-                            "the packet segmentation incorrect, %s" % tx_outlist,
+                            payload_size_list[num] == loading_size % 800,
+                            "the packet segmentation incorrect, %s" % payload_size_list,
                         )
 
     def tear_down(self):
