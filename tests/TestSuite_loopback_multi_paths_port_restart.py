@@ -2,12 +2,6 @@
 # Copyright(c) 2010-2019 Intel Corporation
 #
 
-"""
-DPDK Test suite.
-Benchmark Vhost loopback for 7 RX/TX PATHs.
-Includes Mergeable, Normal, Vector_RX,Inorder_mergeable,
-Inorder_no_mergeable, VIRTIO1.1_mergeable, VIRTIO1.1_normal Path.
-"""
 import re
 import time
 
@@ -204,7 +198,7 @@ class TestLoopbackPortRestart(TestCase):
 
     def test_loopback_test_with_packed_ring_mergeable_path(self):
         """
-        performance for [frame_sizes] and restart port on virtio1.1 mergeable path
+        Test Case 1: loopback test with packed ring mergeable path
         """
         pmd_arg = {
             "version": "packed_vq=1,in_order=0,mrg_rxbuf=1 ",
@@ -219,7 +213,7 @@ class TestLoopbackPortRestart(TestCase):
 
     def test_loopback_test_with_packed_ring_nonmergeable_path(self):
         """
-        performance for [frame_sizes] and restart port ob virtio1.1 normal path
+        Test Case 2: loopback test with packed ring non-mergeable path
         """
         pmd_arg = {
             "version": "packed_vq=1,in_order=0,mrg_rxbuf=0 ",
@@ -233,6 +227,9 @@ class TestLoopbackPortRestart(TestCase):
         self.result_table_print()
 
     def test_lookback_test_with_packed_ring_inorder_mergeable_path(self):
+        """
+        Test Case 3: loopback test with packed ring inorder mergeable path
+        """
         pmd_arg = {
             "version": "packed_vq=1,mrg_rxbuf=1,in_order=1",
             "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
@@ -246,7 +243,7 @@ class TestLoopbackPortRestart(TestCase):
 
     def test_lookback_test_with_packed_ring_inorder_nonmergeable_path(self):
         """
-        performance for [frame_sizes] and restart port on inorder mergeable path
+        Test Case 4: loopback test with packed ring inorder non-mergeable path
         """
         pmd_arg = {
             "version": "packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1",
@@ -261,7 +258,7 @@ class TestLoopbackPortRestart(TestCase):
 
     def test_lookback_test_with_packed_ring_vectorized_path(self):
         """
-        performance for [frame_sizes] and restart port on inorder mergeable path
+        Test Case 10: loopback test with packed ring vectorized path
         """
         pmd_arg = {
             "version": "packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1",
@@ -276,7 +273,7 @@ class TestLoopbackPortRestart(TestCase):
 
     def test_lookback_test_with_split_ring_inorder_mergeable_path(self):
         """
-        performance for [frame_sizes] and restart port on inorder normal path
+        Test Case 5: loopback test with split ring inorder mergeable path
         """
         pmd_arg = {
             "version": "packed_vq=0,in_order=1,mrg_rxbuf=1",
@@ -291,7 +288,7 @@ class TestLoopbackPortRestart(TestCase):
 
     def test_lookback_test_with_split_ring_inorder_nonmergeable_path(self):
         """
-        performance for [frame_sizes] and restart port on virtio normal path
+        Test Case 6: loopback test with split ring inorder non-mergeable path
         """
         pmd_arg = {
             "version": "packed_vq=0,in_order=1,mrg_rxbuf=0 ",
@@ -306,7 +303,7 @@ class TestLoopbackPortRestart(TestCase):
 
     def test_lookback_test_with_split_ring_mergeable_path(self):
         """
-        performance for [frame_sizes] and restart port on virtio normal path
+        Test Case 7: loopback test with split ring mergeable path
         """
         pmd_arg = {
             "version": "packed_vq=0,in_order=0,mrg_rxbuf=1",
@@ -321,11 +318,11 @@ class TestLoopbackPortRestart(TestCase):
 
     def test_lookback_test_with_split_ring_nonmergeable_path(self):
         """
-        performance for [frame_sizes] and restart port on virtio normal path
+        Test Case 8: loopback test with split ring non-mergeable path
         """
         pmd_arg = {
             "version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
-            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip ",
+            "path": "--rx-offloads=0x0 --enable-hw-vlan-strip ",
         }
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
@@ -336,7 +333,7 @@ class TestLoopbackPortRestart(TestCase):
 
     def test_loopback_test_with_split_ring_vector_rx_path(self):
         """
-        performance for frame_sizes and restart port on virtio vector rx
+        Test Case 9: loopback test with split ring vector_rx path
         """
         pmd_arg = {
             "version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
