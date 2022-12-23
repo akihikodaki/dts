@@ -2,13 +2,6 @@
 # Copyright(c) 2022 Intel Corporation
 #
 
-"""
-DPDK Test suite.
-
-dpdk gro lib test suite.
-In this suite, in order to check the performance of gso lib, will use one
-hostcpu to start qemu and only have one vcpu
-"""
 import re
 import time
 
@@ -119,6 +112,8 @@ class TestDPDKGROLibCbdma(TestCase):
 
     def set_testpmd_params(self):
         self.vhost_user.send_expect("set fwd csum", "testpmd> ", 120)
+        self.vhost_user.send_expect("csum mac-swap off 0", "testpmd> ", 120)
+        self.vhost_user.send_expect("csum mac-swap off 1", "testpmd> ", 120)
         self.vhost_user.send_expect("stop", "testpmd> ", 120)
         self.vhost_user.send_expect("port stop 0", "testpmd> ", 120)
         self.vhost_user.send_expect("port stop 1", "testpmd> ", 120)
@@ -222,26 +217,20 @@ class TestDPDKGROLibCbdma(TestCase):
         """
         self.config_kernel_nic_host()
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
-        lcore_dma = (
-            "lcore%s@%s,"
-            "lcore%s@%s,"
-            "lcore%s@%s,"
+        dmas = (
+            "txq0@%s;"
+            "txq1@%s;"
+            "rxq0@%s;"
+            "rxq1@%s"
             % (
-                self.vhost_core_list[1],
                 self.cbdma_list[0],
-                self.vhost_core_list[1],
+                self.cbdma_list[0],
                 self.cbdma_list[1],
-                self.vhost_core_list[2],
                 self.cbdma_list[1],
             )
         )
-        param = (
-            "--txd=1024 --rxd=1024 --txq=2 --rxq=2 --nb-cores=2 --lcore-dma=[%s]"
-            % lcore_dma
-        )
-        eal_param = (
-            "--vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[txq0;txq1;rxq0;rxq1]'"
-        )
+        param = "--txd=1024 --rxd=1024 --txq=2 --rxq=2 --nb-cores=2"
+        eal_param = "--vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[%s]'" % dmas
         ports = self.cbdma_list
         ports.append(self.pci)
         self.vhost_pmd.start_testpmd(
