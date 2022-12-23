@@ -65,33 +65,34 @@ Test Case1: DPDK GRO test with two queues and cbdma channels using tcp/ipv4 traf
 -----------------------------------------------------------------------------------
 This case tests dpdk gro lib with TCP/IPv4 traffic when vhost uses the asynchronous operations with CBDMA channels.
 
-1. Connect two nic port directly, put nic2 into another namesapce and turn on the tso of this nic port by below cmds::
+1. Connect 2 NIC port directly, put NIC2 into another namesapce and turn on the tso of this NIC port by below commands::
 
     ip netns del ns1
     ip netns add ns1
-    ip link set enp26s0f0 netns ns1       # [enp216s0f0] is the name of nic2
+    ip link set enp26s0f0 netns ns1       # [enp216s0f0] is the name of NIC2
     ip netns exec ns1 ifconfig enp26s0f0 1.1.1.8 up
     ip netns exec ns1 ethtool -K enp26s0f0 tso on
 
-2. Bind 2 CBDMA channels and nic1 to vfio-pci, launch vhost-user with testpmd and set flush interval to 1::
+2. Bind 2 CBDMA channels and NIC1 to vfio-pci, launch vhost-user with testpmd and set flush interval to 1::
 
-    ./usertools/dpdk-devbind.py -b vfio-pci xx:xx.x
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29-31 -n 4 \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[txq0;txq1;rxq0;rxq1]' \
-    -- -i --txd=1024 --rxd=1024 --txq=2 --rxq=2 --nb-cores=2 --lcore-dma=[lcore30@0000:00:04.0,lcore30@0000:00:04.1,lcore31@0000:00:04.1]
-    testpmd> set fwd csum
-    testpmd> stop
-    testpmd> port stop 0
-    testpmd> port stop 1
-    testpmd> csum set tcp hw 0
-    testpmd> csum set ip hw 0
-    testpmd> csum set tcp hw 1
-    testpmd> csum set ip hw 1
-    testpmd> set port 0 gro on
-    testpmd> set gro flush 1
-    testpmd> port start 0
-    testpmd> port start 1
-    testpmd> start
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 29-31 -n 4 --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.0;rxq0@0000:00:04.1;rxq1@0000:00:04.1]' \
+    -- -i --txd=1024 --rxd=1024 --txq=2 --rxq=2 --nb-cores=2
+    testpmd>set fwd csum
+    testpmd>csum mac-swap off 0
+    testpmd>csum mac-swap off 1
+    testpmd>stop
+    testpmd>port stop 0
+    testpmd>port stop 1
+    testpmd>csum set tcp hw 0
+    testpmd>csum set ip hw 0
+    testpmd>csum set tcp hw 1
+    testpmd>csum set ip hw 1
+    testpmd>set port 0 gro on
+    testpmd>set gro flush 1
+    testpmd>port start 0
+    testpmd>port start 1
+    testpmd>start
 
 3.  Set up vm with virto device and using kernel virtio-net driver::
 
@@ -101,7 +102,7 @@ This case tests dpdk gro lib with TCP/IPv4 traffic when vhost uses the asynchron
 	-chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 -device virtio-serial \
 	-device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 -pidfile /tmp/.vm0.pid -daemonize \
 	-monitor unix:/tmp/vm0_monitor.sock,server,nowait \
-	-netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 -device e1000,netdev=nttsip1 \
+	-netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 -device e1000,netdev=nttsip1 \
 	-chardev socket,id=char0,path=./vhost-net \
 	-netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=2 \
 	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on,mq=on,vectors=15 -vnc :4
