@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright(c) 2020 Intel Corporation
+# Copyright(c) 2020-2022 Intel Corporation
 #
 
 import re
@@ -10,7 +10,7 @@ import framework.utils as utils
 from framework.crb import Crb
 from framework.pmd_output import PmdOutput
 from framework.settings import DPDK_DCFMODE_SETTING, HEADER_SIZE, load_global_setting
-from framework.test_case import TestCase
+from framework.test_case import TestCase, check_supported_nic, skip_unsupported_pkg
 from framework.utils import GREEN, RED
 from framework.virt_common import VM
 from nics.net_device import NetDevice
@@ -196,6 +196,18 @@ class TestVfOffload(TestCase):
         dut.send_expect("csum set sctp hw %d" % port, "testpmd>")
         dut.send_expect("port start all", "testpmd>")
 
+    def checksum_enablehw_tunnel(self, port, dut):
+        dut.send_expect("port stop %d" % port, "testpmd>")
+        dut.send_expect("csum set ip hw %d" % port, "testpmd>")
+        dut.send_expect("csum set udp hw %d" % port, "testpmd>")
+        dut.send_expect("csum set tcp hw %d" % port, "testpmd>")
+        dut.send_expect("csum set sctp hw %d" % port, "testpmd>")
+        dut.send_expect("csum set outer-ip hw %d" % port, "testpmd>")
+        dut.send_expect("csum set outer-udp hw %d" % port, "testpmd>")
+        dut.send_expect("csum parse-tunnel on %d" % port, "testpmd>")
+        dut.send_expect("rx_vxlan_port add 4789 %d" % port, "testpmd>")
+        dut.send_expect("port start %d" % port, "testpmd>")
+
     def checksum_enablesw(self, port, dut):
         dut.send_expect("port stop all", "testpmd>")
         dut.send_expect("csum set ip sw %d" % port, "testpmd>")
@@ -366,6 +378,204 @@ class TestVfOffload(TestCase):
         self.verify(bad_l4csum == 5, "Bad-l4csum check error")
 
         self.verify(len(result) == 0, ",".join(list(result.values())))
+
+    def checksum_validate_tunnel(self, packets_sent, packets_expected):
+        """
+        Validate the checksum.
+        """
+        tx_interface = self.tester.get_interface(
+            self.tester.get_local_port(self.dut_ports[0])
+        )
+        rx_interface = self.tester.get_interface(
+            self.tester.get_local_port(self.dut_ports[1])
+        )
+        sniff_src = self.vm0_testpmd.get_port_mac(0)
+        checksum_pattern = re.compile("chksum.*=.*(0x[0-9a-z]+)")
+        sniff_src = "52:00:00:00:00:00"
+        chksum = dict()
+        # self.tester.send_expect("scapy", ">>> ")
+
+        for packet_type in list(packets_expected.keys()):
+            self.tester.send_expect("scapy", ">>> ")
+            self.tester.send_expect("p = %s" % packets_expected[packet_type], ">>>")
+            out = self.tester.send_expect("p.show2()", ">>>")
+            chksums = checksum_pattern.findall(out)
+            expected_chksum = chksums
+            chksum[packet_type] = chksums
+            print(packet_type, ": ", chksums)
+
+            self.tester.send_expect("exit()", "#")
+
+            self.tester.scapy_background()
+            inst = self.tester.tcpdump_sniff_packets(
+                intf=rx_interface,
+                count=len(packets_sent),
+                filters=[{"layer": "ether", "config": {"src": sniff_src}}],
+            )
+
+            # Send packet.
+            self.tester.scapy_foreground()
+
+            self.tester.scapy_append(
+                'sendp([%s], iface="%s")' % (packets_sent[packet_type], tx_interface)
+            )
+            self.tester.scapy_execute()
+            out = self.tester.scapy_get_result()
+            p = self.tester.load_tcpdump_sniff_packets(inst)
+            nr_packets = len(p)
+            print(p)
+            packets_received = [
+                p[i].sprintf(
+                    "%IP.chksum%;%UDP.chksum%;%IP:2.chksum%;%UDP:2.chksum%;%TCP.chksum%;%SCTP.chksum%"
+                )
+                for i in range(nr_packets)
+            ]
+
+            packets_received = [
+                item
+                for item in packets_received[0].replace("??", "").split(";")
+                if item != ""
+            ]
+            self.logger.debug(f"packets_received=>{packets_received}")
+            self.logger.debug(f"expected_chksum=>{expected_chksum}")
+            self.verify(
+                len(expected_chksum) == len(packets_received),
+                f"The chksum type {packet_type} length of the actual result is inconsistent with the expected length!",
+            )
+            self.verify(
+                packets_received == expected_chksum,
+                f"The actually received chksum {packet_type} is inconsistent with the expectation",
+            )
+
+    @check_supported_nic(
+        ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]
+    )
+    @skip_unsupported_pkg(["os default"])
+    def test_checksum_offload_tunnel_enable(self):
+        """
+        Enable HW checksum offload.
+        Send packet with inner and outer incorrect checksum,
+        can rx it and report the checksum error,
+        verify forwarded packets have correct checksum.
+        """
+        self.launch_testpmd(
+            dcf_flag=self.dcf_mode,
+            param="--portmask=%s " % (self.portMask) + "--enable-rx-cksum " + "",
+        )
+        self.vm0_testpmd.execute_cmd("set fwd csum")
+        self.vm0_testpmd.execute_cmd("set promisc 1 on")
+        self.vm0_testpmd.execute_cmd("set promisc 0 on")
+        self.vm0_testpmd.execute_cmd("csum mac-swap off 0", "testpmd>")
+        self.vm0_testpmd.execute_cmd("csum mac-swap off 1", "testpmd>")
+        time.sleep(2)
+        port_id_0 = 0
+        mac = self.vm0_testpmd.get_port_mac(0)
+        sndIP = "10.0.0.1"
+        sndIPv6 = "::1"
+        expIP = sndIP
+        expIPv6 = sndIPv6
+
+        pkts_outer = {
+            "IP/UDP/VXLAN-GPE": f'IP(src = "{sndIP}") / UDP(sport = 4790, dport = 4790, chksum = 0xff) / VXLAN()',
+            "IP/UDP/VXLAN-GPE/ETH": f'IP(src = "{sndIP}") / UDP(sport = 4790, dport = 4790, chksum = 0xff) / VXLAN() / Ether()',
+            "IPv6/UDP/VXLAN-GPE": f'IPv6(src = "{sndIPv6}") / UDP(sport = 4790, dport = 4790, chksum = 0xff) / VXLAN()',
+            "IPv6/UDP/VXLAN-GPE/ETH": f'IPv6(src = "{sndIPv6}") / UDP(sport = 4790, dport = 4790, chksum = 0xff) / VXLAN() / Ether()',
+            "IP/GRE": f'IP(src = "{sndIP}", proto = 47, chksum = 0xff) / GRE()',
+            "IP/GRE/ETH": f'IP(src = "{sndIP}", proto = 47, chksum = 0xff) / GRE() / Ether()',
+            "IP/NVGRE/ETH": f'IP(src = "{sndIP}", proto = 47, chksum = 0xff) / GRE(key_present=1, proto=0x6558, key=0x00000100) / Ether()',
+            "IPv6/GRE": f'IPv6(src = "{sndIPv6}", nh = 47) / GRE()',
+            "IPv6/GRE/ETH": f'IPv6(src = "{sndIPv6}", nh = 47) / GRE() / Ether()',
+            "IPv6/NVGRE/ETH": f'IPv6(src = "{sndIPv6}", nh = 47) / GRE(key_present=1, proto=0x6558, key=0x00000100) / Ether()',
+            "IP/UDP/GTPU": f'IP(src = "{sndIP}", chksum = 0xff) / UDP(dport = 2152, chksum = 0xff) / GTP_U_Header(gtp_type=255, teid=0x123456)',
+            "IPv6/UDP/GTPU": f'IPv6(src = "{sndIPv6}") / UDP(dport = 2152, chksum = 0xff) / GTP_U_Header(gtp_type=255, teid=0x123456)',
+        }
+        pkts_inner = {
+            "IP/UDP": f'IP(src = "{sndIP}", chksum = 0xff) / UDP(sport = 29999, dport = 30000, chksum = 0xff) / Raw("x" * 100)',
+            "IP/TCP": f'IP(src = "{sndIP}", chksum = 0xff) / TCP(sport = 29999, dport = 30000, chksum = 0xff) / Raw("x" * 100)',
+            "IP/SCTP": f'IP(src = "{sndIP}", chksum = 0xff) / SCTP(sport = 29999, dport = 30000, chksum = 0x0) / Raw("x" * 128)',
+            "IPv6/UDP": f'IPv6(src = "{sndIPv6}") / UDP(sport = 29999, dport = 30000, chksum = 0xff) / Raw("x" * 100)',
+            "IPv6/TCP": f'IPv6(src = "{sndIPv6}") / TCP(sport = 29999, dport = 30000, chksum = 0xff) / Raw("x" * 100)',
+            "IPv6/SCTP": f'IPv6(src = "{sndIPv6}") / SCTP(sport = 29999, dport = 30000, chksum = 0x0) / Raw("x" * 128)',
+        }
+
+        if self.dcf_mode == "enable":
+            pkts_outer[
+                "IP/UDP/VXLAN/ETH"
+            ] = f'IP(src = "{sndIP}") / UDP(sport = 4789, dport = 4789, chksum = 0xff) / VXLAN() / Ether()'
+            pkts_outer[
+                "IPv6/UDP/VXLAN/ETH"
+            ] = f'IPv6(src = "{sndIPv6}") / UDP(sport = 4789, dport = 4789, chksum = 0xff) / VXLAN() / Ether()'
+
+        pkts = {
+            key_outer
+            + "/"
+            + key_inner: f'Ether(dst="{mac}", src="52:00:00:00:00:00") / '
+            + p_outer
+            + " / "
+            + p_inner
+            for key_outer, p_outer in pkts_outer.items()
+            for key_inner, p_inner in pkts_inner.items()
+        }
+
+        pkts_outer_ref = {
+            "IP/UDP/VXLAN-GPE": f'IP(src = "{expIP}") / UDP(sport = 4790, dport = 4790) / VXLAN()',
+            "IP/UDP/VXLAN-GPE/ETH": f'IP(src = "{expIP}") / UDP(sport = 4790, dport = 4790) / VXLAN() / Ether()',
+            "IPv6/UDP/VXLAN-GPE": f'IPv6(src = "{expIPv6}") / UDP(sport = 4790, dport = 4790) / VXLAN()',
+            "IPv6/UDP/VXLAN-GPE/ETH": f'IPv6(src = "{expIPv6}") / UDP(sport = 4790, dport = 4790) / VXLAN() / Ether()',
+            "IP/GRE": f'IP(src = "{expIP}", proto = 47) / GRE()',
+            "IP/GRE/ETH": f'IP(src = "{expIP}", proto = 47) / GRE() / Ether()',
+            "IP/NVGRE/ETH": f'IP(src = "{expIP}", proto = 47) / GRE(key_present=1, proto=0x6558, key=0x00000100) / Ether()',
+            "IPv6/GRE": f'IPv6(src = "{expIPv6}", nh = 47) / GRE()',
+            "IPv6/GRE/ETH": f'IPv6(src = "{expIPv6}", nh = 47) / GRE() / Ether()',
+            "IPv6/NVGRE/ETH": f'IPv6(src = "{expIPv6}", nh = 47) / GRE(key_present=1, proto=0x6558, key=0x00000100) / Ether()',
+            "IP/UDP/GTPU": f'IP(src = "{expIP}") / UDP(dport = 2152) / GTP_U_Header(gtp_type=255, teid=0x123456)',
+            "IPv6/UDP/GTPU": f'IPv6(src = "{expIPv6}") / UDP(dport = 2152) / GTP_U_Header(gtp_type=255, teid=0x123456)',
+        }
+        pkts_inner_ref = {
+            "IP/UDP": f'IP(src = "{expIP}") / UDP(sport = 29999, dport = 30000) / Raw("x" * 100)',
+            "IP/TCP": f'IP(src = "{expIP}") / TCP(sport = 29999, dport = 30000) / Raw("x" * 100)',
+            "IP/SCTP": f'IP(src = "{expIP}") / SCTP(sport = 29999, dport = 30000) / Raw("x" * 128)',
+            "IPv6/UDP": f'IPv6(src = "{expIPv6}") / UDP(sport = 29999, dport = 30000) / Raw("x" * 100)',
+            "IPv6/TCP": f'IPv6(src = "{expIPv6}") / TCP(sport = 29999, dport = 30000) / Raw("x" * 100)',
+            "IPv6/SCTP": f'IPv6(src = "{expIPv6}") / SCTP(sport = 29999, dport = 30000) / Raw("x" * 128)',
+        }
+
+        if self.dcf_mode == "enable":
+            pkts_outer_ref[
+                "IP/UDP/VXLAN/ETH"
+            ] = f'IP(src = "{sndIP}") / UDP(sport = 4789, dport = 4789) / VXLAN() / Ether()'
+            pkts_outer_ref[
+                "IPv6/UDP/VXLAN/ETH"
+            ] = f'IPv6(src = "{sndIPv6}") / UDP(sport = 4789, dport = 4789) / VXLAN() / Ether()'
+
+        pkts_ref = {
+            key_outer
+            + "/"
+            + key_inner: f'Ether(dst="{mac}", src="52:00:00:00:00:00") / '
+            + p_outer
+            + " / "
+            + p_inner
+            for key_outer, p_outer in pkts_outer_ref.items()
+            for key_inner, p_inner in pkts_inner_ref.items()
+        }
+
+        self.checksum_enablehw_tunnel(0, self.vm_dut_0)
+        self.checksum_enablehw_tunnel(1, self.vm_dut_0)
+
+        self.vm0_testpmd.execute_cmd("start")
+        self.vm0_testpmd.wait_link_status_up(0)
+        self.vm0_testpmd.wait_link_status_up(1)
+        self.checksum_validate_tunnel(pkts, pkts_ref)
+        # Validate checksum on the receive packet
+        out = self.vm0_testpmd.execute_cmd("stop")
+        bad_outer_ipcsum = self.vm0_testpmd.get_pmd_value("Bad-outer-ipcsum:", out)
+        bad_outer_l4csum = self.vm0_testpmd.get_pmd_value("Bad-outer-l4csum:", out)
+        bad_inner_ipcsum = self.vm0_testpmd.get_pmd_value("Bad-ipcsum:", out)
+        bad_inner_l4csum = self.vm0_testpmd.get_pmd_value("Bad-l4csum:", out)
+        self.verify(bad_outer_ipcsum == 42, "Bad-outer-ipcsum check error")
+        self.verify(bad_outer_l4csum == 66, "Bad-outer-l4csum check error")
+        self.verify(bad_inner_ipcsum == 42, "Bad-ipcsum check error")
+        self.verify(bad_inner_l4csum == 84, "Bad-l4csum check error")
 
     def test_checksum_offload_disable(self):
         """
