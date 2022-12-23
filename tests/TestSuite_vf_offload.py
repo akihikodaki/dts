@@ -461,20 +461,10 @@ class TestVfOffload(TestCase):
             p = self.tester.load_tcpdump_sniff_packets(inst)
             nr_packets = len(p)
             print(p)
-            packets_received = [
-                p[i].sprintf(
-                    "%IP.chksum%;%UDP.chksum%;%IP:2.chksum%;%UDP:2.chksum%;%TCP.chksum%;%SCTP.chksum%"
-                )
-                for i in range(nr_packets)
-            ]
-
-            packets_received = [
-                item
-                for item in packets_received[0].replace("??", "").split(";")
-                if item != ""
-            ]
-            self.logger.debug(f"packets_received=>{packets_received}")
-            self.logger.debug(f"expected_chksum=>{expected_chksum}")
+            chksums = checksum_pattern.findall(p[0].show2(dump=True))
+            packets_received = chksums
+            self.logger.debug(f"packets_received: {packets_received}")
+            self.logger.debug(f"expected_chksum: {expected_chksum}")
             self.verify(
                 len(expected_chksum) == len(packets_received),
                 f"The chksum type {packet_type} length of the actual result is inconsistent with the expected length!",
@@ -609,10 +599,16 @@ class TestVfOffload(TestCase):
         bad_outer_l4csum = self.vm0_testpmd.get_pmd_value("Bad-outer-l4csum:", out)
         bad_inner_ipcsum = self.vm0_testpmd.get_pmd_value("Bad-ipcsum:", out)
         bad_inner_l4csum = self.vm0_testpmd.get_pmd_value("Bad-l4csum:", out)
-        self.verify(bad_outer_ipcsum == 42, "Bad-outer-ipcsum check error")
-        self.verify(bad_outer_l4csum == 66, "Bad-outer-l4csum check error")
-        self.verify(bad_inner_ipcsum == 42, "Bad-ipcsum check error")
-        self.verify(bad_inner_l4csum == 84, "Bad-l4csum check error")
+        if self.dcf_mode == "enable":
+            self.verify(bad_outer_ipcsum == 24, "Bad-outer-ipcsum check error")
+            self.verify(bad_outer_l4csum == 48, "Bad-outer-l4csum check error")
+            self.verify(bad_inner_ipcsum == 42, "Bad-ipcsum check error")
+            self.verify(bad_inner_l4csum == 84, "Bad-l4csum check error")
+        else:
+            self.verify(bad_outer_ipcsum == 24, "Bad-outer-ipcsum check error")
+            self.verify(bad_outer_l4csum == 36, "Bad-outer-l4csum check error")
+            self.verify(bad_inner_ipcsum == 36, "Bad-ipcsum check error")
+            self.verify(bad_inner_l4csum == 72, "Bad-l4csum check error")
 
     def test_checksum_offload_disable(self):
         """
