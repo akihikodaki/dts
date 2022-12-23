@@ -265,7 +265,7 @@ class TestVfOffload(TestCase):
             (
                 ip_checksum,
                 tcp_checksum,
-                udp_checksup,
+                udp_checksum,
                 sctp_checksum,
             ) = packet_received.split(";")
             print(
@@ -273,8 +273,8 @@ class TestVfOffload(TestCase):
                 ip_checksum,
                 "tcp_checksum:, ",
                 tcp_checksum,
-                "udp_checksup: ",
-                udp_checksup,
+                "udp_checksum: ",
+                udp_checksum,
                 "sctp_checksum: ",
                 sctp_checksum,
             )
@@ -284,9 +284,9 @@ class TestVfOffload(TestCase):
             if tcp_checksum != "??":
                 packet_type = "TCP"
                 l4_checksum = tcp_checksum
-            elif udp_checksup != "??":
+            elif udp_checksum != "??":
                 packet_type = "UDP"
-                l4_checksum = udp_checksup
+                l4_checksum = udp_checksum
             elif sctp_checksum != "??":
                 packet_type = "SCTP"
                 l4_checksum = sctp_checksum
@@ -439,7 +439,7 @@ class TestVfOffload(TestCase):
             command = ("tcpdump -w tcpdump_{0}.pcap -i {0} 2>tcpdump_{0}.out &").format(
                 iface
             )
-            self.tester.send_expect("rm -f tcpdump_{0}.pcap", "#").format(iface)
+            self.tester.send_expect("rm -f tcpdump_{0}.pcap".format(iface), "#")
             self.tester.send_expect(command, "#")
 
     def tcpdump_stop_sniff(self):
@@ -478,8 +478,8 @@ class TestVfOffload(TestCase):
         Execute scanner to return results
         """
         scanner_result = self.tester.send_expect(scanner, "#")
-        fially_result = re.findall(r"length( \d+)", scanner_result)
-        return list(fially_result)
+        finally_result = re.findall(r"length( \d+)", scanner_result)
+        return list(finally_result)
 
     def number_of_bytes(self, iface):
         """
