@@ -23,7 +23,28 @@ from framework.test_case import TestCase
 ETHER_HEADER_LEN = 18
 IP_HEADER_LEN = 20
 RANDOM_IP_POOL = ["192.168.10.222/0"]
-prefix_list = ["rx_good_packets", "tx_good_packets", "rx_good_bytes", "tx_good_bytes"]
+prefix_list = [
+    "rx_good_packets",
+    "tx_good_packets",
+    "rx_good_bytes",
+    "tx_good_bytes",
+    "tx_size_64_packets",
+    "tx_size_65_to_127_packets",
+    "tx_size_128_to_255_packets",
+    "tx_size_256_to_511_packets",
+    "tx_size_512_to_1023_packets",
+    "tx_size_1024_to_1522_packets",
+    "tx_size_1523_to_max_packets",
+    "rx_size_64_packets",
+    "rx_size_65_to_127_packets",
+    "rx_size_128_to_255_packets",
+    "rx_size_256_to_511_packets",
+    "rx_size_512_to_1023_packets",
+    "rx_size_1024_to_1522_packets",
+    "rx_size_1523_to_max_packets",
+    "rx_size_1024_to_max_packets",  # ixgbe
+    "tx_size_1024_to_max_packets",  # ixgbe
+]
 
 
 class TestStatsChecks(TestCase):
@@ -77,6 +98,10 @@ class TestStatsChecks(TestCase):
             port_id,
             f'Ether(dst=dutmac, src="52:00:00:00:00:00")/IP()/Raw(load="\x50"*{padding})',
         )
+        self.send_scapy_packet(
+            port_id,
+            f'Ether(dst=dutmac, src="52:00:00:00:00:00")/IP()/Raw(load="\x50"*1500)',
+        )
         return out
 
     def send_pkt_with_random_ip(self, port, count, if_vf=False):
@@ -99,6 +124,21 @@ class TestStatsChecks(TestCase):
                     self.tester.get_local_port(self.dut_ports[0])
                 ),
             )
+        tester_intf = self.tester.get_interface(
+            self.tester.get_local_port(self.dut_ports[0])
+        )
+        # enable tester mtu
+        tester_port = self.tester.get_local_port(self.dut_ports[0])
+        self.netobj = self.tester.ports_info[tester_port]["port"]
+        self.netobj.enable_jumbo(framesize=3000)
+        # add judement on rx and tx bytes, not same on if add crc 4 bytes
+        packets_length = [65, 128, 256, 512, 1024, 1523]
+        for i in range(count):
+            for len in packets_length:
+                src_ip = self.get_random_ip()
+                packet1 = f'sendp([Ether(dst="{mac}", src="02:00:00:00:00:00")/IP(src="{src_ip}", dst="192.168.0.{i}")/("X"*{len})], iface="{tester_intf}")'
+                self.tester.scapy_append(packet1)
+        self.tester.scapy_execute()
 
     def send_packet_of_size_to_tx_port(self, pktsize, received=True):
         """
@@ -110,9 +150,8 @@ class TestStatsChecks(TestCase):
         rx_pkts_ori, rx_err_ori, rx_bytes_ori = [
             int(_) for _ in self.get_port_status_tx(self.rx_port)
         ]
-
-        out = self.send_packet_of_size_to_port(self.tx_port, pktsize)
-
+        self.used_tester_port = self.tester.get_local_port(self.dut_ports[1])
+        out = self.send_packet_of_size_to_port(self.used_tester_port, pktsize)
         sleep(5)
 
         tx_pkts, tx_err, tx_bytes = [
@@ -139,7 +178,7 @@ class TestStatsChecks(TestCase):
                 tx_bytes_difference == rx_bytes_difference,
                 "different number of bytes sent and received",
             )
-            self.verify(tx_err_difference == 0, "unexpected tx error")
+            self.verify(tx_err_difference == 1, "unexpected tx error")
             self.verify(rx_err_difference == 0, "unexpected rx error")
         else:
             self.verify(
@@ -175,7 +214,7 @@ class TestStatsChecks(TestCase):
         return xstats_data
 
     def verify_results(
-        self, xstats_data, rx_port, tx_port, stats_data={}, if_zero=False
+        self, xstats_data, rx_port, tx_port, if_vf, stats_data={}, if_zero=False
     ):
         if if_zero:
             for port in xstats_data.keys():
@@ -190,7 +229,7 @@ class TestStatsChecks(TestCase):
                 == stats_data[rx_port]["RX-packets"]
                 == xstats_data[tx_port]["tx_good_packets"]
                 == stats_data[tx_port]["TX-packets"]
-                == 100,
+                == 700,
                 "pkt recieve or transport count error!",
             )
             self.verify(
@@ -200,24 +239,98 @@ class TestStatsChecks(TestCase):
                 == stats_data[tx_port]["TX-bytes"],
                 "pkt recieve or transport bytes error!",
             )
+        # add judement on rx and tx bytes, not same on if add crc 4 bytes
+        if not if_vf and not if_zero:
+            self.verify(
+                xstats_data[rx_port]["rx_size_64_packets"] == 100,
+                "rx_size_64_packets pkt recieve or transport bytes error!",
+            )
+            self.verify(
+                xstats_data[rx_port]["rx_size_65_to_127_packets"] == 100,
+                "rx_size_65_to_127_packets pkt recieve or transport bytes error!",
+            )
+            self.verify(
+                xstats_data[rx_port]["rx_size_128_to_255_packets"] == 100,
+                "rx_size_128_to_255_packets pkt recieve or transport bytes error!",
+            )
+            self.verify(
+                xstats_data[rx_port]["rx_size_256_to_511_packets"] == 100,
+                "rx_size_256_to_511_packets pkt recieve or transport bytes error!",
+            )
+            self.verify(
+                xstats_data[rx_port]["rx_size_512_to_1023_packets"] == 100,
+                "rx_size_512_to_1023_packets pkt recieve or transport bytes error!",
+            )
+            if self.kdriver == "ixgbe":
+                self.verify(
+                    xstats_data[rx_port]["rx_size_1024_to_max_packets"] == 200,
+                    "rx_size_1024_to_max_packets pkt recieve or transport bytes error!",
+                )
+            else:
+                self.verify(
+                    xstats_data[rx_port]["rx_size_1024_to_1522_packets"] == 100,
+                    "rx_size_1024_to_1522_packets pkt recieve or transport bytes error!",
+                )
+                self.verify(
+                    xstats_data[rx_port]["rx_size_1523_to_max_packets"] == 100,
+                    "rx_size_1523_to_max_packets pkt recieve or transport bytes error!",
+                )
+            self.verify(
+                xstats_data[tx_port]["tx_size_64_packets"] == 100,
+                "tx_size_64_packets pkt recieve or transport bytes error!",
+            )
+            self.verify(
+                xstats_data[tx_port]["tx_size_65_to_127_packets"] == 100,
+                "tx_size_65_to_127_packets pkt recieve or transport bytes error!",
+            )
+            self.verify(
+                xstats_data[tx_port]["tx_size_128_to_255_packets"] == 100,
+                "tx_size_128_to_255_packets pkt recieve or transport bytes error!",
+            )
+            self.verify(
+                xstats_data[tx_port]["tx_size_256_to_511_packets"] == 100,
+                "tx_size_256_to_511_packets pkt recieve or transport bytes error!",
+            )
+            self.verify(
+                xstats_data[tx_port]["tx_size_512_to_1023_packets"] == 100,
+                "tx_size_512_to_1023_packets pkt recieve or transport bytes error!",
+            )
+            if self.kdriver == "ixgbe":
+                self.verify(
+                    xstats_data[tx_port]["tx_size_1024_to_max_packets"] == 200,
+                    "tx_size_1024_to_max_packets pkt recieve or transport bytes error!",
+                )
+            else:
+                self.verify(
+                    xstats_data[tx_port]["tx_size_1024_to_1522_packets"] == 100,
+                    "tx_size_1024_to_1522_packets pkt recieve or transport bytes error!",
+                )
+                self.verify(
+                    xstats_data[tx_port]["tx_size_1523_to_max_packets"] == 100,
+                    "tx_size_1523_to_max_packets pkt recieve or transport bytes error!",
+                )
 
     def xstats_check(self, rx_port, tx_port, if_vf=False):
         self.exec("port config all rss all")
         self.exec("set fwd mac")
         self.exec("clear port xstats all")
         org_xstats = self.get_xstats([rx_port, tx_port])
-        self.verify_results(org_xstats, rx_port, tx_port, if_zero=True)
+        self.verify_results(org_xstats, rx_port, tx_port, if_vf, if_zero=True)
         final_xstats, stats_data = self.sendpkt_get_xstats(rx_port, tx_port, if_vf)
-        self.verify_results(final_xstats, rx_port, tx_port, stats_data=stats_data)
+        self.verify_results(
+            final_xstats, rx_port, tx_port, if_vf, stats_data=stats_data
+        )
         self.exec("clear port stats all")
         clear_stats = self.get_xstats([rx_port, tx_port])
-        self.verify_results(clear_stats, rx_port, tx_port, if_zero=True)
+        self.verify_results(clear_stats, rx_port, tx_port, if_vf, if_zero=True)
 
         final_xstats, stats_data = self.sendpkt_get_xstats(rx_port, tx_port, if_vf)
-        self.verify_results(final_xstats, rx_port, tx_port, stats_data=stats_data)
+        self.verify_results(
+            final_xstats, rx_port, tx_port, if_vf, stats_data=stats_data
+        )
         self.exec("clear port xstats all")
         clear_xstats = self.get_xstats([rx_port, tx_port])
-        self.verify_results(clear_xstats, rx_port, tx_port, if_zero=True)
+        self.verify_results(clear_xstats, rx_port, tx_port, if_vf, if_zero=True)
         self.pmdout.quit()
 
     def sendpkt_get_xstats(self, rx_port, tx_port, if_vf):
@@ -257,11 +370,20 @@ class TestStatsChecks(TestCase):
         This is to clear up environment before the case run.
         """
         self.dut.kill_all()
+        # enable tester mtu
+        tester_port_0 = self.tester.get_local_port(self.dut_ports[0])
+        tester_port_1 = self.tester.get_local_port(self.dut_ports[1])
+        self.netobj_0 = self.tester.ports_info[tester_port_0]["port"]
+        self.netobj_1 = self.tester.ports_info[tester_port_1]["port"]
+        self.netobj_0.enable_jumbo(framesize=3000)
+        self.netobj_1.enable_jumbo(framesize=3000)
 
     def tear_down(self):
         """
         Run after each test case.
         """
+        self.netobj_0.enable_jumbo(framesize=1518)
+        self.netobj_1.enable_jumbo(framesize=1518)
         self.dut.kill_all()
         if self._suite_result.test_case == "test_xstats_check_vf":
             self.dut.destroy_sriov_vfs_by_port(self.dut_ports[0])
@@ -300,7 +422,7 @@ class TestStatsChecks(TestCase):
         self.pmdout.quit()
 
     def test_xstats_check_pf(self):
-        self.pmdout.start_testpmd("default", "--rxq=4 --txq=4")
+        self.pmdout.start_testpmd("default", "--rxq=4 --txq=4 --max-pkt-len=9000")
         self.xstats_check(self.rx_port, self.tx_port)
 
     def test_xstats_check_vf(self):
@@ -310,5 +432,13 @@ class TestStatsChecks(TestCase):
         self.vf_port = self.dut.ports_info[self.dut_ports[0]]["vfs_port"][0]
         self.vf_port.bind_driver(driver="vfio-pci")
         self.vf_port_pci = self.dut.ports_info[self.dut_ports[0]]["sriov_vfs_pci"][0]
-        self.launch_testpmd(dcf_flag=self.dcf_mode, param="--txq=4 --rxq=4")
+        if self.kdriver == "ixgbe":
+            self.dut.send_expect(
+                f'ifconfig {self.dut.ports_info[0]["intf"]} mtu 3000', "# "
+            )
+            self.launch_testpmd(dcf_flag=self.dcf_mode, param="--txq=4 --rxq=4")
+        else:
+            self.launch_testpmd(
+                dcf_flag=self.dcf_mode, param="--txq=4 --rxq=4 --max-pkt-len=9000"
+            )
         self.xstats_check(0, 0, if_vf=True)
