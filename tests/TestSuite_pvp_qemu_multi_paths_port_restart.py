@@ -101,8 +101,10 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
             )
         elif path == "vector_rx":
             command = (
-                self.path + "-c 0x3 -n 3 -- -i " + "--nb-cores=1 --txd=1024 --rxd=1024"
-            )
+                self.path
+                + "-c 0x3 -n 3 -a %s,vectorized=1 -- -i "
+                + "--nb-cores=1 --txd=1024 --rxd=1024"
+            ) % self.vm_dut.get_port_pci(0)
         self.vm_dut.send_expect(command, "testpmd> ", 30)
         self.vm_dut.send_expect("set fwd mac", "testpmd> ", 30)
         self.vm_dut.send_expect("start", "testpmd> ", 30)
