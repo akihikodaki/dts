@@ -35,6 +35,7 @@ The following are the test plans for the DPDK DTS automated test system.
     ice_dcf_switch_filter_pppoe_test_plan
     ice_dcf_switch_filter_gtpu_test_plan
     ice_dcf_flow_priority_test_plan
+    ice_header_split_perf_test_plan.rst
     ice_flow_priority_test_plan
     ice_dcf_qos_test_plan
     ice_enable_basic_hqos_on_pf_test_plan
