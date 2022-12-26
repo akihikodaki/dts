@@ -2,13 +2,6 @@
 # Copyright(c) 2019 Intel Corporation
 #
 
-"""
-DPDK Test suite.
-
-Vhost reconnect two VM test suite.
-Becase this suite will use the reconnet feature, the VM will start as
-server mode, so the qemu version should greater than 2.7
-"""
 import re
 import time
 
@@ -21,11 +14,9 @@ from framework.virt_common import VM
 
 class TestPVPVhostUserReconnect(TestCase):
     def set_up_all(self):
-
         # Get and verify the ports
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
-
         # Get the port's socket
         self.pf = self.dut_ports[0]
         netdev = self.dut.ports_info[self.pf]["port"]
@@ -38,7 +29,6 @@ class TestPVPVhostUserReconnect(TestCase):
             self.socket_mem = "1024"
         else:
             self.socket_mem = "1024,1024"
-
         self.reconnect_times = 5
         self.vm_num = 1
         self.frame_sizes = [64, 1518]
@@ -67,7 +57,7 @@ class TestPVPVhostUserReconnect(TestCase):
         self.dut.send_expect("rm -rf ./vhost-net*", "# ")
         self.vhost_user = self.dut.new_session(suite="vhost-user")
 
-    def launch_testpmd_as_vhost_user(self):
+    def launch_testpmd_as_vhost_user(self, no_pci=False):
         """
         launch the testpmd as vhost user
         """
@@ -78,32 +68,20 @@ class TestPVPVhostUserReconnect(TestCase):
                 i,
             )
         testcmd = self.dut.base_dir + "/%s" % self.path
-        eal_params = self.dut.create_eal_parameters(
-            cores=self.cores, prefix="vhost", ports=[self.pci_info]
-        )
+
+        if not no_pci:
+            eal_params = self.dut.create_eal_parameters(
+                cores=self.cores, prefix="vhost", ports=[self.pci_info]
+            )
+        else:
+            eal_params = self.dut.create_eal_parameters(
+                cores=self.cores, no_pci=True, prefix="vhost"
+            )
         para = " -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024"
         self.vhostapp_testcmd = testcmd + eal_params + vdev_info + para
         self.vhost_user.send_expect(self.vhostapp_testcmd, "testpmd> ", 40)
-        self.vhost_user.send_expect("set fwd mac", "testpmd> ", 40)
-        self.vhost_user.send_expect("start", "testpmd> ", 40)
-
-    def launch_testpmd_as_vhost_user_with_no_pci(self):
-        """
-        launch the testpmd as vhost user
-        """
-        vdev_info = ""
-        for i in range(self.vm_num):
-            vdev_info += "--vdev 'net_vhost%d,iface=vhost-net%d,client=1,queues=1' " % (
-                i,
-                i,
-            )
-        testcmd = self.dut.base_dir + "/%s" % self.path
-        eal_params = self.dut.create_eal_parameters(
-            cores=self.cores, no_pci=True, prefix="vhost"
-        )
-        para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
-        self.vhostapp_testcmd = testcmd + eal_params + vdev_info + para
-        self.vhost_user.send_expect(self.vhostapp_testcmd, "testpmd> ", 40)
+        if not no_pci:
+            self.vhost_user.send_expect("set fwd mac", "testpmd> ", 40)
         self.vhost_user.send_expect("start", "testpmd> ", 40)
 
     def check_link_status_after_testpmd_start(self, dut_info):
@@ -288,7 +266,8 @@ class TestPVPVhostUserReconnect(TestCase):
             )
             Mpps = pps / 1000000.0
             if self.running_case in [
-                "test_perf_packed_ring_reconnet_two_vms",
+                "test_perf_packed_ring_reconnet_two_vms_from_vms",
+                "test_perf_packed_ring_reconnet_two_vms_from_vhost_user",
                 "test_perf_split_ring_reconnet_two_vms",
             ]:
                 check_speed = 2 if frame_size == 64 else 0.5
@@ -337,7 +316,9 @@ class TestPVPVhostUserReconnect(TestCase):
 
     def test_perf_split_ring_reconnet_one_vm(self):
         """
-        test reconnect stability test of one vm
+        Test Case 1: vhost-user/virtio-pmd pvp split ring reconnect from vhost-user
+        Test Case 2: vhost-user/virtio-pmd pvp split ring reconnect from VM
+        Test Case 3: vhost-user/virtio-pmd pvp split ring reconnect stability test
         """
         self.header_row = [
             "Mode",
@@ -358,7 +339,7 @@ class TestPVPVhostUserReconnect(TestCase):
         vm_cycle = 1
         # reconnet from vhost
         self.logger.info("now reconnect from vhost")
-        for i in range(self.reconnect_times):
+        for _ in range(self.reconnect_times):
             self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
             self.launch_testpmd_as_vhost_user()
             self.reconnect_data = self.send_and_verify(vm_cycle, "reconnet from vhost")
@@ -366,7 +347,7 @@ class TestPVPVhostUserReconnect(TestCase):
 
         # reconnet from qemu
         self.logger.info("now reconnect from vm")
-        for i in range(self.reconnect_times):
+        for _ in range(self.reconnect_times):
             self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
             self.start_vms()
             self.vm_testpmd_start()
@@ -376,7 +357,9 @@ class TestPVPVhostUserReconnect(TestCase):
 
     def test_perf_split_ring_reconnet_two_vms(self):
         """
-        test reconnect stability test of two vms
+        Test Case 4: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect from vhost-user
+        Test Case 5: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect from VMs
+        Test Case 6: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect stability test
         """
         self.header_row = [
             "Mode",
@@ -397,7 +380,7 @@ class TestPVPVhostUserReconnect(TestCase):
         vm_cycle = 1
         # reconnet from vhost
         self.logger.info("now reconnect from vhost")
-        for i in range(self.reconnect_times):
+        for _ in range(self.reconnect_times):
             self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
             self.launch_testpmd_as_vhost_user()
             self.reconnect_data = self.send_and_verify(vm_cycle, "reconnet from vhost")
@@ -405,7 +388,7 @@ class TestPVPVhostUserReconnect(TestCase):
 
         # reconnet from qemu
         self.logger.info("now reconnect from vm")
-        for i in range(self.reconnect_times):
+        for _ in range(self.reconnect_times):
             self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
             self.start_vms()
             self.vm_testpmd_start()
@@ -415,13 +398,15 @@ class TestPVPVhostUserReconnect(TestCase):
 
     def test_perf_split_ring_vm2vm_virtio_net_reconnet_two_vms(self):
         """
-        test the iperf traffice can resume after reconnet
+        Test Case 7: vhost-user/virtio-net VM2VM split ring reconnect from vhost-user
+        Test Case 8: vhost-user/virtio-net VM2VM split ring reconnect from VMs
+        Test Case 9: vhost-user/virtio-net VM2VM split ring reconnect stability test
         """
         self.header_row = ["Mode", "[M|G]bits/sec", "Cycle"]
         self.result_table_create(self.header_row)
         self.vm_num = 2
         vm_cycle = 0
-        self.launch_testpmd_as_vhost_user_with_no_pci()
+        self.launch_testpmd_as_vhost_user(no_pci=True)
         self.start_vms(bind_dev=False)
         self.config_vm_intf()
         self.start_iperf()
@@ -430,9 +415,9 @@ class TestPVPVhostUserReconnect(TestCase):
         vm_cycle = 1
         # reconnet from vhost
         self.logger.info("now reconnect from vhost")
-        for i in range(self.reconnect_times):
+        for _ in range(self.reconnect_times):
             self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
-            self.launch_testpmd_as_vhost_user_with_no_pci()
+            self.launch_testpmd_as_vhost_user(no_pci=True)
             self.start_iperf()
             self.reconnect_data = self.iperf_result_verify(
                 vm_cycle, "reconnet from vhost"
@@ -442,7 +427,7 @@ class TestPVPVhostUserReconnect(TestCase):
         # reconnet from VM
         self.logger.info("now reconnect from vm")
         vm_tmp = list()
-        for i in range(self.reconnect_times):
+        for _ in range(self.reconnect_times):
             self.vm_dut[0].send_expect("rm iperf_server.log", "# ", 10)
             self.vm_dut[1].send_expect("rm iperf_client.log", "# ", 10)
             self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
@@ -453,9 +438,10 @@ class TestPVPVhostUserReconnect(TestCase):
             self.check_reconnect_perf()
         self.result_table_print()
 
-    def test_perf_packed_ring_reconnet_one_vm(self):
+    def test_perf_packed_ring_reconnet_one_vm_from_vhost_user(self):
         """
-        test reconnect stability test of one vm
+        Test Case 10: vhost-user/virtio-pmd pvp packed ring reconnect from vhost-user
+        Test Case 12: vhost-user/virtio-pmd pvp packed ring reconnect stability test
         """
         self.header_row = [
             "Mode",
@@ -476,15 +462,38 @@ class TestPVPVhostUserReconnect(TestCase):
         vm_cycle = 1
         # reconnet from vhost
         self.logger.info("now reconnect from vhost")
-        for i in range(self.reconnect_times):
+        for _ in range(self.reconnect_times):
             self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
             self.launch_testpmd_as_vhost_user()
             self.reconnect_data = self.send_and_verify(vm_cycle, "reconnet from vhost")
             self.check_reconnect_perf()
+        self.result_table_print()
 
+    def test_perf_packed_ring_reconnet_one_vm_from_vm(self):
+        """
+        Test Case 11: vhost-user/virtio-pmd pvp packed ring reconnect from VM
+        Test Case 12: vhost-user/virtio-pmd pvp packed ring reconnect stability test
+        """
+        self.header_row = [
+            "Mode",
+            "FrameSize(B)",
+            "Throughput(Mpps)",
+            "LineRate(%)",
+            "Cycle",
+            "Queue Number",
+        ]
+        self.result_table_create(self.header_row)
+        vm_cycle = 0
+        self.vm_num = 1
+        self.launch_testpmd_as_vhost_user()
+        self.start_vms(packed=True)
+        self.vm_testpmd_start()
+        self.before_data = self.send_and_verify(vm_cycle, "reconnet one vm")
+
+        vm_cycle = 1
         # reconnet from qemu
         self.logger.info("now reconnect from vm")
-        for i in range(self.reconnect_times):
+        for _ in range(self.reconnect_times):
             self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
             self.start_vms(packed=True)
             self.vm_testpmd_start()
@@ -492,9 +501,10 @@ class TestPVPVhostUserReconnect(TestCase):
             self.check_reconnect_perf()
         self.result_table_print()
 
-    def test_perf_packed_ring_reconnet_two_vms(self):
+    def test_perf_packed_ring_reconnet_two_vms_from_vhost_user(self):
         """
-        test reconnect stability test of two vms
+        Test Case 13: vhost-user/virtio-pmd pvp packed ring with multi VMs reconnect from vhost-user
+        Test Case 15: vhost-user/virtio-pmd pvp packed ring with multi VMs reconnect stability test
         """
         self.header_row = [
             "Mode",
@@ -515,14 +525,38 @@ class TestPVPVhostUserReconnect(TestCase):
         vm_cycle = 1
         # reconnet from vhost
         self.logger.info("now reconnect from vhost")
-        for i in range(self.reconnect_times):
+        for _ in range(self.reconnect_times):
             self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
             self.launch_testpmd_as_vhost_user()
             self.reconnect_data = self.send_and_verify(vm_cycle, "reconnet from vhost")
             self.check_reconnect_perf()
+        self.result_table_print()
+
+    def test_perf_packed_ring_reconnet_two_vms_from_vms(self):
+        """
+        Test Case 14: vhost-user/virtio-pmd pvp packed ring with multi VMs reconnect from VMs
+        Test Case 15: vhost-user/virtio-pmd pvp packed ring with multi VMs reconnect stability test
+        """
+        self.header_row = [
+            "Mode",
+            "FrameSize(B)",
+            "Throughput(Mpps)",
+            "LineRate(%)",
+            "Cycle",
+            "Queue Number",
+        ]
+        self.result_table_create(self.header_row)
+        vm_cycle = 0
+        self.vm_num = 2
+        self.launch_testpmd_as_vhost_user()
+        self.start_vms(packed=True)
+        self.vm_testpmd_start()
+        self.before_data = self.send_and_verify(vm_cycle, "reconnet two vm")
+
+        vm_cycle = 1
         # reconnet from qemu
         self.logger.info("now reconnect from vm")
-        for i in range(self.reconnect_times):
+        for _ in range(self.reconnect_times):
             self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
             self.start_vms(packed=True)
             self.vm_testpmd_start()
@@ -530,15 +564,16 @@ class TestPVPVhostUserReconnect(TestCase):
             self.check_reconnect_perf()
         self.result_table_print()
 
-    def test_perf_packed_ring_virtio_net_reconnet_two_vms(self):
+    def test_perf_packed_ring_virtio_net_reconnet_two_vms_from_vhost_user(self):
         """
-        test the iperf traffice can resume after reconnet
+        Test Case 16: vhost-user/virtio-net VM2VM packed ring reconnect from vhost-user
+        Test Case 18: vhost-user/virtio-net VM2VM packed ring reconnect stability test
         """
         self.header_row = ["Mode", "[M|G]bits/sec", "Cycle"]
         self.result_table_create(self.header_row)
         self.vm_num = 2
         vm_cycle = 0
-        self.launch_testpmd_as_vhost_user_with_no_pci()
+        self.launch_testpmd_as_vhost_user(no_pci=True)
         self.start_vms(packed=True, bind_dev=False)
         self.config_vm_intf()
         self.start_iperf()
@@ -547,18 +582,35 @@ class TestPVPVhostUserReconnect(TestCase):
         vm_cycle = 1
         # reconnet from vhost
         self.logger.info("now reconnect from vhost")
-        for i in range(self.reconnect_times):
+        for _ in range(self.reconnect_times):
             self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
-            self.launch_testpmd_as_vhost_user_with_no_pci()
+            self.launch_testpmd_as_vhost_user(no_pci=True)
             self.start_iperf()
             self.reconnect_data = self.iperf_result_verify(
                 vm_cycle, "reconnet from vhost"
             )
             self.check_reconnect_perf()
+        self.result_table_print()
 
+    def test_perf_packed_ring_virtio_net_reconnet_two_vms_from_vms(self):
+        """
+        Test Case 17: vhost-user/virtio-net VM2VM packed ring reconnect from VMs
+        Test Case 18: vhost-user/virtio-net VM2VM packed ring reconnect stability test
+        """
+        self.header_row = ["Mode", "[M|G]bits/sec", "Cycle"]
+        self.result_table_create(self.header_row)
+        self.vm_num = 2
+        vm_cycle = 0
+        self.launch_testpmd_as_vhost_user(no_pci=True)
+        self.start_vms(packed=True, bind_dev=False)
+        self.config_vm_intf()
+        self.start_iperf()
+        self.before_data = self.iperf_result_verify(vm_cycle, "before reconnet")
+
+        vm_cycle = 1
         # reconnet from VM
         self.logger.info("now reconnect from vm")
-        for i in range(self.reconnect_times):
+        for _ in range(self.reconnect_times):
             self.vm_dut[0].send_expect("rm iperf_server.log", "# ", 10)
             self.vm_dut[1].send_expect("rm iperf_client.log", "# ", 10)
             self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
@@ -570,9 +622,9 @@ class TestPVPVhostUserReconnect(TestCase):
         self.result_table_print()
 
     def tear_down(self):
-        #
-        # Run after each test case.
-        #
+        """
+        Run after each test case.
+        """
         try:
             self.stop_all_apps()
         except Exception as e:
