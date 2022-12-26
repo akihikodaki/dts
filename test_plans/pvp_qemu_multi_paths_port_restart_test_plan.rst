@@ -19,27 +19,27 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 Test Case 1: pvp test with virtio 0.95 mergeable path
 =====================================================
 
-1. Bind one port to vfio-pci, then launch testpmd by below command::
+1. Bind 1 NIC port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 \
-    --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
-    -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 -a 0000:af:00.0 \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=1' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch VM with mrg_rxbuf feature on::
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 2 -m 4096 \
+    qemu-system-x86_64 -name vm0 -enable-kvm -cpu host -smp 2 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.2 -daemonize \
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+    -net user,hostfwd=tcp:127.0.0.1:6000-:22 \
     -chardev socket,id=char0,path=./vhost-net \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=true,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
     -vnc :10
 
 3. On VM, bind virtio net to vfio-pci and run testpmd::
@@ -66,26 +66,26 @@ Test Case 1: pvp test with virtio 0.95 mergeable path
 Test Case 2: pvp test with virtio 0.95 normal path
 ==================================================
 
-1. Bind one port to vfio-pci, then launch testpmd by below command::
+1. Bind 1 NIC port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 \
-    --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
-    -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 -a 0000:af:00.0 \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=1' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch VM with mrg_rxbuf feature off::
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 2 -m 4096 \
+    qemu-system-x86_64 -name vm0 -enable-kvm -cpu host -smp 2 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.2 -daemonize \
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6000-:22 \
     -chardev socket,id=char0,path=./vhost-net \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024 \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=true,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024 \
     -vnc :10
 
 3. On VM, bind virtio net to vfio-pci and run testpmd with tx-offloads::
@@ -112,31 +112,31 @@ Test Case 2: pvp test with virtio 0.95 normal path
 Test Case 3: pvp test with virtio 0.95 vrctor_rx path
 =====================================================
 
-1. Bind one port to vfio-pci, then launch testpmd by below command::
+1. Bind 1 NIC port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 \
-    --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
-    -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 -a 0000:af:00.0 \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=1' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch VM with mrg_rxbuf feature off::
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 2 -m 4096 \
+    qemu-system-x86_64 -name vm0 -enable-kvm -cpu host -smp 2 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.2 -daemonize \
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6000-:22 \
     -chardev socket,id=char0,path=./vhost-net \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024 \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=true,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024 \
     -vnc :10
 
 3. On VM, bind virtio net to vfio-pci and run testpmd without ant tx-offloads::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -- -i \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -a 0000:04:00.0,vectorized=1 -- -i \
     --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -158,23 +158,23 @@ Test Case 3: pvp test with virtio 0.95 vrctor_rx path
 Test Case 4: pvp test with virtio 1.0 mergeable path
 ====================================================
 
-1. Bind one port to vfio-pci, then launch testpmd by below command::
+1. Bind 1 NIC port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 \
-    --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
-    -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 -a 0000:af:00.0 \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=1' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch VM with 1 virtio, note: we need add "disable-modern=false" to enable virtio 1.0::
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 2 -m 4096 \
+    qemu-system-x86_64 -name vm0 -enable-kvm -cpu host -smp 2 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.2 -daemonize \
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6000-:22 \
     -chardev socket,id=char0,path=./vhost-net \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
@@ -204,23 +204,23 @@ Test Case 4: pvp test with virtio 1.0 mergeable path
 Test Case 5: pvp test with virtio 1.0 normal path
 =================================================
 
-1. Bind one port to vfio-pci, then launch testpmd by below command::
+1. Bind 1 NIC port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 \
-    --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
-    -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 -a 0000:af:00.0 \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=1' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch VM with 1 virtio, note: we need add "disable-modern=false" to enable virtio 1.0::
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 2 -m 4096 \
+    qemu-system-x86_64 -name vm0 -enable-kvm -cpu host -smp 2 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.2 -daemonize \
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6000-:22 \
     -chardev socket,id=char0,path=./vhost-net \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024 \
@@ -250,23 +250,23 @@ Test Case 5: pvp test with virtio 1.0 normal path
 Test Case 6: pvp test with virtio 1.0 vrctor_rx path
 ====================================================
 
-1. Bind one port to vfio-pci, then launch testpmd by below command::
+1. Bind 1 NIC port to vfio-pci, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 \
-    --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
-    -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xe -n 4 -a 0000:af:00.0 \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=1' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
 2. Launch VM with 1 virtio, note: we need add "disable-modern=false" to enable virtio 1.0::
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 2 -m 4096 \
+    qemu-system-x86_64 -name vm0 -enable-kvm -cpu host -smp 2 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.2 -daemonize \
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6000-:22 \
     -chardev socket,id=char0,path=./vhost-net \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024 \
@@ -274,7 +274,7 @@ Test Case 6: pvp test with virtio 1.0 vrctor_rx path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd without tx-offloads::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -- -i \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -a 0000:04:00.0,vectorized=1 -- -i \
     --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
