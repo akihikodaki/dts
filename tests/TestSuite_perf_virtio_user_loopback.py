@@ -118,7 +118,7 @@ class TestPerfVirtioUserLoopback(TestCase):
             eal_param += " --single-file-segments"
         if "vectorized_path" in self.running_case:
             eal_param += " --force-max-simd-bitwidth=512"
-        param = "{} --rss-ip --nb-cores={} --rxq={} --txq={} --txd={} --rxd={}".format(
+        param = "{} --nb-cores={} --rxq={} --txq={} --txd={} --rxd={}".format(
             args["path"],
             self.nb_cores,
             self.queue_number,
@@ -313,11 +313,11 @@ class TestPerfVirtioUserLoopback(TestCase):
 
     def test_perf_loopback_packed_ring_inorder_mergeable(self):
         """
-        performance for Vhost PVP virtio 1.1 inorder mergeable Path.
+        Test Case 3: loopback test with packed ring inorder mergeable path
         """
         virtio_pmd_arg = {
             "version": "in_order=1,packed_vq=1,mrg_rxbuf=1",
-            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+            "path": "",
         }
         self.test_target = "packed_ring_inorder_mergeable"
         self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
@@ -333,12 +333,12 @@ class TestPerfVirtioUserLoopback(TestCase):
 
     def test_perf_loopback_packed_ring_inorder_non_mergeable(self):
         """
-        performance for Vhost PVP virtio1.1 inorder non-mergeable Path.
+        Test Case 4: loopback test with packed ring inorder non-mergeable path
         """
         self.test_target = "packed_ring_inorder_non-mergeable"
         virtio_pmd_arg = {
             "version": "in_order=1,packed_vq=1,mrg_rxbuf=0",
-            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+            "path": "",
         }
         self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
             self.test_target
@@ -353,11 +353,11 @@ class TestPerfVirtioUserLoopback(TestCase):
 
     def test_perf_loopback_packed_ring_mergeable(self):
         """
-        performance for Vhost PVP virtio 1.1 Mergeable Path.
+        Test Case 1: loopback test with packed ring mergeable path.
         """
         virtio_pmd_arg = {
             "version": "in_order=0,packed_vq=1,mrg_rxbuf=1",
-            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+            "path": "",
         }
         self.test_target = "packed_ring_mergeable"
         self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
@@ -373,12 +373,12 @@ class TestPerfVirtioUserLoopback(TestCase):
 
     def test_perf_loopback_packed_ring_non_mergeable(self):
         """
-        performance for Vhost PVP virtio1.1 non-mergeable Path.
+        Test Case 2: loopback test with packed ring non-mergeable path.
         """
         self.test_target = "packed_ring_non-mergeable"
         virtio_pmd_arg = {
             "version": "in_order=0,packed_vq=1,mrg_rxbuf=0",
-            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+            "path": "",
         }
         self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
             self.test_target
@@ -393,12 +393,12 @@ class TestPerfVirtioUserLoopback(TestCase):
 
     def test_perf_loopback_split_ring_inorder_mergeable(self):
         """
-        performance for Vhost PVP In_order Mergeable Path.
+        Test Case 8: loopback test with split ring inorder mergeable path
         """
         self.test_target = "split_ring_inorder_mergeable"
         virtio_pmd_arg = {
             "version": "packed_vq=0,in_order=1,mrg_rxbuf=1",
-            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+            "path": "",
         }
         self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
             self.test_target
@@ -413,12 +413,12 @@ class TestPerfVirtioUserLoopback(TestCase):
 
     def test_perf_loopback_split_ring_inorder_non_mergeable(self):
         """
-        performance for Vhost PVP Inorder Non-mergeable Path.
+        Test Case 9: loopback test with split ring inorder non-mergeable path.
         """
         self.test_target = "split_ring_inorder_non-mergeable"
         virtio_pmd_arg = {
             "version": "packed_vq=0,in_order=1,mrg_rxbuf=0",
-            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+            "path": "",
         }
         self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
             self.test_target
@@ -433,12 +433,12 @@ class TestPerfVirtioUserLoopback(TestCase):
 
     def test_perf_loopback_split_ring_mergeable(self):
         """
-        performance for Vhost PVP Mergeable Path.
+        Test Case 5: loopback test with split ring mergeable path.
         """
         self.test_target = "split_ring_mergeable"
         virtio_pmd_arg = {
             "version": "packed_vq=0,in_order=0,mrg_rxbuf=1",
-            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+            "path": "",
         }
         self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
             self.test_target
@@ -453,12 +453,12 @@ class TestPerfVirtioUserLoopback(TestCase):
 
     def test_perf_loopback_split_ring_non_mergeable(self):
         """
-        performance for Vhost PVP Non-mergeable Path.
+        Test Case 6: loopback test with split ring non-mergeable path
         """
         self.test_target = "split_ring_non-mergeable"
         virtio_pmd_arg = {
             "version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
-            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip",
+            "path": "--tx-offloads=0x0",
         }
         self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
             self.test_target
@@ -473,12 +473,12 @@ class TestPerfVirtioUserLoopback(TestCase):
 
     def test_perf_loopback_split_ring_vector_rx(self):
         """
-        performance for Vhost PVP Vector_RX Path
+        Test Case 7: loopback test with split ring vector_rx path
         """
         self.test_target = "split_ring_vector_rx"
         virtio_pmd_arg = {
-            "version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
-            "path": "--tx-offloads=0x0",
+            "version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
+            "path": "",
         }
         self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
             self.test_target
@@ -498,7 +498,7 @@ class TestPerfVirtioUserLoopback(TestCase):
         self.test_target = "packed_ring_vectorized_path"
         virtio_pmd_arg = {
             "version": "packed_vq=1,in_order=1,mrg_rxbuf=0,vectorized=1",
-            "path": "--tx-offloads=0x0",
+            "path": "",
         }
         self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
             self.test_target
