@@ -87,11 +87,12 @@ class DPDKdut(Dut):
 
     def setup_modules_linux(self, target, drivername, drivermode):
         if drivername == "vfio-pci":
-            self.send_expect("rmmod vfio_pci", "#")
-            self.send_expect("rmmod vfio_iommu_type1", "#")
-            self.send_expect("rmmod vfio", "#")
-            self.send_expect("modprobe vfio", "#")
-            self.send_expect("modprobe vfio-pci", "#")
+            if not self.is_container:
+                self.send_expect("rmmod vfio_pci", "#")
+                self.send_expect("rmmod vfio_iommu_type1", "#")
+                self.send_expect("rmmod vfio", "#")
+                self.send_expect("modprobe vfio", "#")
+                self.send_expect("modprobe vfio-pci", "#")
             if drivermode == "noiommu":
                 self.send_expect(
                     "echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode",
@@ -263,26 +264,32 @@ class DPDKdut(Dut):
             self.send_expect("export PKG_CONFIG_LIBDIR=%s" % pkg_path, "# ")
 
         self.send_expect("rm -rf " + target, "#")
-        out = self.send_expect(
-            "CC=%s meson -Denable_kmods=True -Dlibdir=lib %s --default-library=%s %s"
-            % (toolchain, extra_options, default_library, target),
-            "[~|~\]]# ",
-            build_time,
-        )
+        if self.is_container:
+            meson_build_cmd = (
+                "CC=%s meson -Denable_kmods=False -Dlibdir=lib %s --default-library=%s %s"
+                % (toolchain, extra_options, default_library, target)
+            )
+        else:
+            meson_build_cmd = (
+                "CC=%s meson -Denable_kmods=True -Dlibdir=lib %s --default-library=%s %s"
+                % (toolchain, extra_options, default_library, target)
+            )
+        out = self.send_expect(meson_build_cmd, "[~|~\]]# ", build_time)
         assert "FAILED" not in out, "meson setup failed ..."
 
         out = self.send_expect("ninja -C %s" % target, "[~|~\]]# ", build_time)
         assert "FAILED" not in out, "ninja complie failed ..."
 
         # copy kmod file to the folder same as make
-        out = self.send_expect(
-            "find ./%s/kernel/ -name *.ko" % target, "# ", verify=True
-        )
-        self.send_expect("mkdir -p %s/kmod" % target, "# ")
-        if not isinstance(out, int) and len(out) > 0:
-            kmod = out.split("\r\n")
-            for mod in kmod:
-                self.send_expect("cp %s %s/kmod/" % (mod, target), "# ")
+        if not self.is_container:
+            out = self.send_expect(
+                "find ./%s/kernel/ -name *.ko" % target, "# ", verify=True
+            )
+            self.send_expect("mkdir -p %s/kmod" % target, "# ")
+            if not isinstance(out, int) and len(out) > 0:
+                kmod = out.split("\r\n")
+                for mod in kmod:
+                    self.send_expect("cp %s %s/kmod/" % (mod, target), "# ")
 
     def build_install_dpdk_freebsd_meson(self, target, extra_options):
         # meson build same as linux
@@ -342,7 +349,7 @@ class DPDKdut(Dut):
                     self.session.copy_file_to("dep/" + p, dst_dir)
 
             # copy QMP file to dut
-            if ":" not in self.session.name:
+            if "virtdut" not in self.session.name:
                 out = self.send_expect("ls -d ~/QMP", "# ", verify=True)
                 if isinstance(out, int):
                     self.send_expect("mkdir -p ~/QMP", "# ")
@@ -575,7 +582,8 @@ class DPDKtester(Tester):
             out = self.send_expect("tar zxfm tclclient.tgz", "# ")
             assert "Error" not in out
 
-        self.send_expect("modprobe uio", "# ")
+        if not self.is_container:
+            self.send_expect("modprobe uio", "# ")
 
         self.tester_prerequisites()
 

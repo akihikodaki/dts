@@ -244,6 +244,11 @@ class QEMUKvm(VirtBase):
         else:
             self.host_logger.warning("Hardware virtualization disabled on host!!!")
             return False
+        if self.host_is_container:
+            if self.host_session.send_expect("ls /dev/kvm || ls /sys/module/kvm", "# "):
+                return True
+            else:
+                return False
 
         out = self.host_session.send_expect("lsmod | grep kvm", "# ")
         if "kvm" in out and "kvm_intel" in out:
@@ -256,8 +261,9 @@ class QEMUKvm(VirtBase):
         """
         Load the virtual module of kernel to enable the virtual ability.
         """
-        self.host_session.send_expect("modprobe kvm", "# ")
-        self.host_session.send_expect("modprobe kvm_intel", "# ")
+        if not self.host_is_container:
+            self.host_session.send_expect("modprobe kvm", "# ")
+            self.host_session.send_expect("modprobe kvm_intel", "# ")
         return True
 
     def disk_image_is_ok(self, image):
@@ -596,7 +602,7 @@ class QEMUKvm(VirtBase):
         host_addr = field(opt_hostfwd, 1)
         if not host_addr:
             addr = str(self.host_dut.get_ip_address())
-            host_addr = get_host_ip(addr)
+            host_addr = get_host_ip(addr).split(":")[0]
 
         # get the host port in the option
         host_port = field(opt_hostfwd, 2).split("-")[0]

@@ -62,6 +62,7 @@ class Crb(object):
             self.alt_session.init_log(self.logger)
         else:
             self.alt_session = None
+        self.is_container = self._is_container()
 
     def get_ip_address(self):
         """
@@ -211,8 +212,20 @@ class Crb(object):
         out = out.strip(" [PEXPECT]#")
         # only mount hugepage when no hugetlbfs mounted
         if not len(out):
-            self.send_expect("mkdir -p /mnt/huge", "# ")
-            self.send_expect("mount -t hugetlbfs nodev /mnt/huge", "# ")
+            if self.is_container:
+                raise ValueError(
+                    "container hugepage not mount, please check hugepage config"
+                )
+            else:
+                self.send_expect("mkdir -p /mnt/huge", "# ")
+                self.send_expect("mount -t hugetlbfs nodev /mnt/huge", "# ")
+                out = self.send_expect(
+                    "awk '/hugetlbfs/ { print $2 }' /proc/mounts", "# "
+                )
+                if not len(out.strip(" [PEXPECT]#")):
+                    raise ValueError(
+                        "hugepage config error, please check hugepage config"
+                    )
 
     def strip_hugepage_path(self):
         mounts = self.send_expect("cat /proc/mounts |grep hugetlbfs", "# ")
@@ -1035,3 +1048,16 @@ class Crb(object):
         link_status_matcher = r"Link detected: (\w+)"
         link_status = re.search(link_status_matcher, out).groups()[0]
         return "Up" if link_status == "yes" else "Down"
+
+    def _is_container(self):
+        if self.send_expect("export |grep -i CONTAINER ", "# "):
+            return True
+        elif self.send_expect("df -h / |grep overlay ", "# "):
+            return True
+        elif self.send_expect(
+            "systemd-detect-virt -c|egrep '(systemd-nspawn|lxc|docker|podman|rkt|wsl|container-other)$' ",
+            "# ",
+        ):
+            return True
+        else:
+            return False

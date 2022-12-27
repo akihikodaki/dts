@@ -106,6 +106,12 @@ class LibvirtKvm(VirtBase):
             self.host_logger.warning("Hardware virtualization " "disabled on host!!!")
             return False
 
+        if self.host_is_container:
+            if self.host_session.send_expect("ls /dev/kvm || ls /sys/module/kvm"):
+                return True
+            else:
+                return False
+
         out = self.host_session.send_expect("lsmod | grep kvm", "# ")
         if "kvm" not in out or "kvm_intel" not in out:
             return False
@@ -117,8 +123,9 @@ class LibvirtKvm(VirtBase):
         return True
 
     def load_virtual_mod(self):
-        self.host_session.send_expect("modprobe kvm", "# ")
-        self.host_session.send_expect("modprobe kvm_intel", "# ")
+        if not self.host_is_container:
+            self.host_session.send_expect("modprobe kvm", "# ")
+            self.host_session.send_expect("modprobe kvm_intel", "# ")
 
     def unload_virtual_mod(self):
         self.host_session.send_expect("rmmod kvm_intel", "# ")

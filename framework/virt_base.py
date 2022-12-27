@@ -55,6 +55,8 @@ class VirtBase(object):
         # init the host resource pool for VM
         self.virt_pool = self.host_dut.virt_pool
 
+        self.host_is_container = dut.is_container
+
         if not self.has_virtual_ability():
             if not self.enable_virtual_ability():
                 raise Exception("Dut [ %s ] cannot have the virtual ability!!!")
