@@ -448,6 +448,19 @@ mac_vlan_ipv4_pay_packets = {
     ],
 }
 
+mac_vlan_ipv4_pay_l3dst_packets = {
+    "match": {
+        "mac_vlan_ipv4_pay": [
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.3")/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.2")/Raw("x" * 80)',
+        ],
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)'
+    ],
+}
+
 mac_vlan_ipv4_pay = {
     "sub_casename": "mac_vlan_ipv4_pay",
     "port_id": 0,
@@ -478,12 +491,83 @@ mac_vlan_ipv4_pay = {
     ],
 }
 
+mac_vlan_ipv4_pay_l3dst = {
+    "sub_casename": "mac_vlan_ipv4_pay_l3dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv4_pay_l3dst_packets["match"][
+                "mac_vlan_ipv4_pay"
+            ][0],
+            "action": {"save_hash": "mac_vlan_ipv4_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv4_pay_l3dst_packets["match"][
+                "mac_vlan_ipv4_pay"
+            ][1],
+            "action": {"check_hash_different": "mac_vlan_ipv4_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv4_pay_l3dst_packets["match"][
+                "mac_vlan_ipv4_pay"
+            ][2],
+            "action": {"check_hash_same": "mac_vlan_ipv4_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv4_pay_l3dst_packets["mismatch"][0],
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_vlan_ipv4_pay_l3dst_packets["match"][
+                "mac_vlan_ipv4_pay"
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_vlan_ipv4_pay_list = [
+    mac_vlan_ipv4_pay,
+    mac_vlan_ipv4_pay_l3dst,
+]
+
 mac_vlan_ipv4_udp_pay_packets = {
     "match": {
         "mac_vlan_ipv4_udp_pay": [
             'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)',
             'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)',
             'Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.4")/UDP(sport=19,dport=99)/Raw("x" * 80)',
+        ]
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+        'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+    ],
+}
+
+mac_vlan_ipv4_udp_l3src_packets = {
+    "match": {
+        "mac_vlan_ipv4_udp_pay": [
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.4")/UDP(sport=19,dport=99)/Raw("x" * 80)',
+        ]
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+        'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+    ],
+}
+
+mac_vlan_ipv4_udp_l4dst_packets = {
+    "match": {
+        "mac_vlan_ipv4_udp_pay": [
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=24)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.4")/UDP(sport=19,dport=23)/Raw("x" * 80)',
         ]
     },
     "mismatch": [
@@ -530,12 +614,108 @@ mac_vlan_ipv4_udp_pay = {
     ],
 }
 
+mac_vlan_ipv4_udp_l3src = {
+    "sub_casename": "mac_vlan_ipv4_udp_l3src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv4 / udp / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv4_udp_l3src_packets["match"][
+                "mac_vlan_ipv4_udp_pay"
+            ][0],
+            "action": {"save_hash": "mac_vlan_ipv4_udp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv4_udp_l3src_packets["match"][
+                "mac_vlan_ipv4_udp_pay"
+            ][1],
+            "action": {"check_hash_different": "mac_vlan_ipv4_udp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv4_udp_l3src_packets["match"][
+                "mac_vlan_ipv4_udp_pay"
+            ][2],
+            "action": {"check_hash_same": "mac_vlan_ipv4_udp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv4_udp_l3src_packets["mismatch"],
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_vlan_ipv4_udp_l3src_packets["match"][
+                "mac_vlan_ipv4_udp_pay"
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_vlan_ipv4_udp_l4dst = {
+    "sub_casename": "mac_vlan_ipv4_udp_l4dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv4_udp_l4dst_packets["match"][
+                "mac_vlan_ipv4_udp_pay"
+            ][0],
+            "action": {"save_hash": "mac_vlan_ipv4_udp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv4_udp_l4dst_packets["match"][
+                "mac_vlan_ipv4_udp_pay"
+            ][1],
+            "action": {"check_hash_different": "mac_vlan_ipv4_udp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv4_udp_l4dst_packets["match"][
+                "mac_vlan_ipv4_udp_pay"
+            ][2],
+            "action": {"check_hash_same": "mac_vlan_ipv4_udp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv4_udp_l4dst_packets["mismatch"],
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_vlan_ipv4_udp_l4dst_packets["match"][
+                "mac_vlan_ipv4_udp_pay"
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_vlan_ipv4_udp_pay_list = [
+    mac_vlan_ipv4_udp_pay,
+    mac_vlan_ipv4_udp_l3src,
+    mac_vlan_ipv4_udp_l4dst,
+]
+
 mac_vlan_ipv4_tcp_pay_packets = {
     "match": {
         "mac_vlan_ipv4_tcp_pay": [
             'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)',
             'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)',
             'Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.4")/TCP(sport=19,dport=99)/Raw("x" * 80)',
+        ]
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+        'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+    ],
+}
+
+mac_vlan_ipv4_tcp_l3src_l4src_packets = {
+    "match": {
+        "mac_vlan_ipv4_tcp_pay": [
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.4")/TCP(sport=25,dport=99)/Raw("x" * 80)',
         ]
     },
     "mismatch": [
@@ -582,12 +762,72 @@ mac_vlan_ipv4_tcp_pay = {
     ],
 }
 
+mac_vlan_ipv4_tcp_l3src_l4src = {
+    "sub_casename": "mac_vlan_ipv4_tcp_l3src_l4src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv4 / tcp / end actions rss types ipv4-tcp l3-src-only l4-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv4_tcp_l3src_l4src_packets["match"][
+                "mac_vlan_ipv4_tcp_pay"
+            ][0],
+            "action": {"save_hash": "mac_vlan_ipv4_tcp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv4_tcp_l3src_l4src_packets["match"][
+                "mac_vlan_ipv4_tcp_pay"
+            ][1],
+            "action": {"check_hash_different": "mac_vlan_ipv4_tcp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv4_tcp_l3src_l4src_packets["match"][
+                "mac_vlan_ipv4_tcp_pay"
+            ][2],
+            "action": {"check_hash_same": "mac_vlan_ipv4_tcp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv4_tcp_l3src_l4src_packets["mismatch"],
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_vlan_ipv4_tcp_l3src_l4src_packets["match"][
+                "mac_vlan_ipv4_tcp_pay"
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_vlan_ipv4_tcp_pay_list = [
+    mac_vlan_ipv4_tcp_pay,
+    mac_vlan_ipv4_tcp_l3src_l4src,
+]
+
 mac_vlan_ipv4_sctp_pay_packets = {
     "match": {
         "mac_vlan_ipv4_sctp_pay": [
             'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=25,dport=23)/Raw("x" * 80)',
             'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=25,dport=23)/Raw("x" * 80)',
             'Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.5")/SCTP(sport=19,dport=99)/Raw("x" * 80)',
+        ]
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+        'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/SCTP(sport=25,dport=23)/Raw("x" * 80)',
+    ],
+}
+
+mac_vlan_ipv4_sctp_all_packets = {
+    "match": {
+        "mac_vlan_ipv4_sctp_pay": [
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=25,dport=23)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.2")/SCTP(sport=25,dport=23)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.4")/SCTP(sport=25,dport=23)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=19,dport=23)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=25,dport=99)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=25,dport=23)/Raw("x" * 80)',
         ]
     },
     "mismatch": [
@@ -634,6 +874,49 @@ mac_vlan_ipv4_sctp_pay = {
     ],
 }
 
+mac_vlan_ipv4_sctp_all = {
+    "sub_casename": "mac_vlan_ipv4_sctp_all",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv4 / sctp / end actions rss types ipv4-sctp end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv4_sctp_all_packets["match"][
+                "mac_vlan_ipv4_sctp_pay"
+            ][0],
+            "action": {"save_hash": "mac_vlan_ipv4_sctp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv4_sctp_all_packets["match"][
+                "mac_vlan_ipv4_sctp_pay"
+            ][1:5],
+            "action": {"check_hash_different": "mac_vlan_ipv4_sctp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv4_sctp_all_packets["match"][
+                "mac_vlan_ipv4_sctp_pay"
+            ][5],
+            "action": {"check_hash_same": "mac_vlan_ipv4_sctp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv4_sctp_all_packets["mismatch"],
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_vlan_ipv4_sctp_all_packets["match"][
+                "mac_vlan_ipv4_sctp_pay"
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_vlan_ipv4_sctp_list = [
+    mac_vlan_ipv4_sctp_pay,
+    mac_vlan_ipv4_sctp_all,
+]
+
 mac_vlan_ipv6_pay_packets = {
     "match": {
         "mac_vlan_ipv6_pay": [
@@ -647,6 +930,18 @@ mac_vlan_ipv6_pay_packets = {
     ],
 }
 
+mac_vlan_ipv6_pay_l3src_packets = {
+    "match": {
+        "mac_vlan_ipv6_pay": [
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=2,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("y" * 80)',
+        ]
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)'
+    ],
+}
 mac_vlan_ipv6_pay = {
     "sub_casename": "mac_vlan_ipv6_pay",
     "port_id": 0,
@@ -677,12 +972,69 @@ mac_vlan_ipv6_pay = {
     ],
 }
 
+mac_vlan_ipv6_pay_l3src = {
+    "sub_casename": "mac_vlan_ipv6_pay_l3src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv6 / end actions rss types ipv6 l3-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv6_pay_l3src_packets["match"][
+                "mac_vlan_ipv6_pay"
+            ][0],
+            "action": {"save_hash": "mac_vlan_ipv6_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv6_pay_l3src_packets["match"][
+                "mac_vlan_ipv6_pay"
+            ][1],
+            "action": {"check_hash_different": "mac_vlan_ipv6_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv6_pay_l3src_packets["match"][
+                "mac_vlan_ipv6_pay"
+            ][2],
+            "action": {"check_hash_same": "mac_vlan_ipv6_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv6_pay_l3src_packets["mismatch"],
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_vlan_ipv6_pay_l3src_packets["match"][
+                "mac_vlan_ipv6_pay"
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_vlan_ipv6_pay_list = [
+    mac_vlan_ipv6_pay,
+    mac_vlan_ipv6_pay_l3src,
+]
+
 mac_vlan_ipv6_udp_pay_packets = {
     "match": {
         "mac_vlan_ipv6_udp_pay": [
             'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)',
             'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)',
             'Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=23,dport=99)/Raw("x" * 80)',
+        ]
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+        'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+    ],
+}
+
+mac_vlan_ipv6_udp_l4src_packets = {
+    "match": {
+        "mac_vlan_ipv6_udp_pay": [
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=19,dport=23)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=25,dport=99)/Raw("x" * 80)',
         ]
     },
     "mismatch": [
@@ -729,12 +1081,69 @@ mac_vlan_ipv6_udp_pay = {
     ],
 }
 
+mac_vlan_ipv6_udp_l4src = {
+    "sub_casename": "mac_vlan_ipv6_udp_l4src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv6 / udp / end actions rss types ipv6-udp l4-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv6_udp_l4src_packets["match"][
+                "mac_vlan_ipv6_udp_pay"
+            ][0],
+            "action": {"save_hash": "mac_vlan_ipv6_udp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv6_udp_l4src_packets["match"][
+                "mac_vlan_ipv6_udp_pay"
+            ][1],
+            "action": {"check_hash_different": "mac_vlan_ipv6_udp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv6_udp_l4src_packets["match"][
+                "mac_vlan_ipv6_udp_pay"
+            ][2],
+            "action": {"check_hash_same": "mac_vlan_ipv6_udp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv6_udp_l4src_packets["mismatch"],
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_vlan_ipv6_udp_l4src_packets["match"][
+                "mac_vlan_ipv6_udp_pay"
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_vlan_ipv6_udp_pay_list = [
+    mac_vlan_ipv6_udp_pay,
+    mac_vlan_ipv6_udp_l4src,
+]
+
 mac_vlan_ipv6_tcp_pay_packets = {
     "match": {
         "mac_vlan_ipv6_tcp_pay": [
             'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)',
             'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)',
             'Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/TCP(sport=19,dport=99)/Raw("x" * 80)',
+        ]
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+        'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+    ],
+}
+
+mac_vlan_ipv6_tcp_l3dst_packets = {
+    "match": {
+        "mac_vlan_ipv6_tcp_pay": [
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=19,dport=99)/Raw("x" * 80)',
         ]
     },
     "mismatch": [
@@ -781,12 +1190,70 @@ mac_vlan_ipv6_tcp_pay = {
     ],
 }
 
+mac_vlan_ipv6_tcp_l3dst = {
+    "sub_casename": "mac_vlan_ipv6_tcp_l3dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv6 / tcp / end actions rss types ipv6-tcp l3-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv6_tcp_l3dst_packets["match"][
+                "mac_vlan_ipv6_tcp_pay"
+            ][0],
+            "action": {"save_hash": "mac_vlan_ipv6_tcp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv6_tcp_l3dst_packets["match"][
+                "mac_vlan_ipv6_tcp_pay"
+            ][1],
+            "action": {"check_hash_different": "mac_vlan_ipv6_tcp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv6_tcp_l3dst_packets["match"][
+                "mac_vlan_ipv6_tcp_pay"
+            ][2],
+            "action": {"check_hash_same": "mac_vlan_ipv6_tcp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv6_tcp_l3dst_packets["mismatch"],
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_vlan_ipv6_tcp_l3dst_packets["match"][
+                "mac_vlan_ipv6_tcp_pay"
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_vlan_ipv6_tcp_pay_list = [
+    mac_vlan_ipv6_tcp_pay,
+    mac_vlan_ipv6_tcp_l3dst,
+]
+
 mac_vlan_ipv6_sctp_pay_packets = {
     "match": {
         "mac_vlan_ipv6_sctp_pay": [
             'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/SCTP(sport=25,dport=23)/Raw("x" * 80)',
             'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/SCTP(sport=25,dport=23)/Raw("x" * 80)',
             'Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/SCTP(sport=25,dport=99)/Raw("x" * 80)',
+        ]
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=25,dport=23)/Raw("x" * 80)',
+        'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+    ],
+}
+
+mac_vlan_ipv6_sctp_l3dst_l4dst_packets = {
+    "match": {
+        "mac_vlan_ipv6_sctp_pay": [
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/SCTP(sport=25,dport=23)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/SCTP(sport=25,dport=23)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/SCTP(sport=25,dport=99)/Raw("x" * 80)',
+            'Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=2,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/SCTP(sport=19,dport=23)/Raw("x" * 80)',
         ]
     },
     "mismatch": [
@@ -832,6 +1299,49 @@ mac_vlan_ipv6_sctp_pay = {
         },
     ],
 }
+
+mac_vlan_ipv6_sctp_l3dst_l4dst = {
+    "sub_casename": "mac_vlan_ipv6_sctp_l3dst_l4dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv6 / sctp / end actions rss types ipv6-sctp l3-dst-only l4-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv6_sctp_l3dst_l4dst_packets["match"][
+                "mac_vlan_ipv6_sctp_pay"
+            ][0],
+            "action": {"save_hash": "mac_vlan_ipv6_sctp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv6_sctp_l3dst_l4dst_packets["match"][
+                "mac_vlan_ipv6_sctp_pay"
+            ][1:3],
+            "action": {"check_hash_different": "mac_vlan_ipv6_sctp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv6_sctp_l3dst_l4dst_packets["match"][
+                "mac_vlan_ipv6_sctp_pay"
+            ][3],
+            "action": {"check_hash_same": "mac_vlan_ipv6_sctp_pay_match"},
+        },
+        {
+            "send_packet": mac_vlan_ipv6_sctp_l3dst_l4dst_packets["mismatch"],
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_vlan_ipv6_sctp_l3dst_l4dst_packets["match"][
+                "mac_vlan_ipv6_sctp_pay"
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_vlan_ipv6_sctp_pay_list = [
+    mac_vlan_ipv6_sctp_pay,
+    mac_vlan_ipv6_sctp_l3dst_l4dst,
+]
 
 
 class Advanced_rss_vlan_ah_l2tp_pfcp(TestCase):
@@ -1027,32 +1537,32 @@ class Advanced_rss_vlan_ah_l2tp_pfcp(TestCase):
 
     def test_mac_vlan_ipv4_pay(self):
         self.switch_testpmd(symmetric=False)
-        self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv4_pay)
+        self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv4_pay_list)
 
     def test_mac_vlan_ipv4_udp_pay(self):
         self.switch_testpmd(symmetric=False)
-        self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv4_udp_pay)
+        self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv4_udp_pay_list)
 
     def test_mac_vlan_ipv4_tcp_pay(self):
         self.switch_testpmd(symmetric=False)
-        self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv4_tcp_pay)
+        self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv4_tcp_pay_list)
 
     def test_mac_vlan_ipv4_sctp_pay(self):
         self.switch_testpmd(symmetric=False)
-        self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv4_sctp_pay)
+        self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv4_sctp_list)
 
     def test_mac_vlan_ipv6_pay(self):
         self.switch_testpmd(symmetric=False)
-        self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv6_pay)
+        self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv6_pay_list)
 
     def test_mac_vlan_ipv6_udp_pay(self):
         self.switch_testpmd(symmetric=False)
-        self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv6_udp_pay)
+        self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv6_udp_pay_list)
 
     def test_mac_vlan_ipv6_tcp_pay(self):
         self.switch_testpmd(symmetric=False)
-        self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv6_tcp_pay)
+        self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv6_tcp_pay_list)
 
     def test_mac_vlan_ipv6_sctp_pay(self):
         self.switch_testpmd(symmetric=False)
-        self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv6_sctp_pay)
+        self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv6_sctp_pay_list)
