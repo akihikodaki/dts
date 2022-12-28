@@ -96,7 +96,7 @@ operations with CBDMA channels.
     ifconfig [ens3] 1.1.1.2
     tcpdump -i [ens3]
 
-6. Rerun step4 and step5 10 times to check event idx workable after driver reload.
+6. Rerun step4 and step5 100 times to check event idx workable after driver reload.
 
 Test Case 2: Split ring 16 queues virtio-net event idx interrupt mode test with cbdma enable
 --------------------------------------------------------------------------------------------
@@ -180,7 +180,7 @@ with CBDMA channels.
     ifconfig [ens3] 1.1.1.2
     tcpdump -i [ens3]
 
-6. Rerun step4 and step5 10 times to check event idx workable after driver reload.
+6. Rerun step4 and step5 100 times to check event idx workable after driver reload.
 
 Test Case 4: Packed ring 16 queues virtio-net event idx interrupt mode test with cbdma enable
 ---------------------------------------------------------------------------------------------
