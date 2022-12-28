@@ -628,17 +628,11 @@ class TestVfOffload(TestCase):
         packets and the bytes of packets payload.
         """
         packet = Packet()
-        pkts = packet.read_pcapfile("tcpdump_{0}.pcap".format(iface), self.tester)
-        pkts = [
-            p
-            for p in pkts
-            if len(p.layers()) >= 3
-            and p.layers()[1] in {IP, IPv6}
-            and p.layers()[2] in {IP, IPv6, UDP, TCP, SCTP, GRE, MPLS}
-            and Raw in p
-        ]
+        pkts = self.filter_packets(
+            packet.read_pcapfile("tcpdump_{0}.pcap".format(iface), self.tester)
+        )
         rx_packet_count = len(pkts)
-        rx_packet_size = [len(p[Raw]) for p in pkts]
+        rx_packet_size = [len(p[Raw].load) for p in pkts]
         return rx_packet_count, rx_packet_size
 
     def tcpdump_command(self, command):
