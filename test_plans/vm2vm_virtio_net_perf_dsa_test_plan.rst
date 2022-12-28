@@ -1,17 +1,23 @@
 .. SPDX-License-Identifier: BSD-3-Clause
    Copyright(c) 2022 Intel Corporation
 
-======================================================
+=====================================================
 VM2VM vhost-user/virtio-net with DSA driver test plan
-======================================================
+=====================================================
 
 Description
 ===========
 
 Vhost asynchronous data path leverages DMA devices to offload memory copies from the CPU and it is implemented in an asynchronous way.
-In addition, vhost supports M:N mapping between vrings and DMA virtual channels. Specifically, one vring can use multiple different DMA
-channels and one DMA channel can be shared by multiple vrings at the same time.Vhost enqueue and dequeue operation with CBDMA channels is supported
-in both split and packed ring.
+Asynchronous data path is enabled per tx/rx queue, and users need to specify the DMA device used by the tx/rx queue. Each tx/rx queue
+only supports to use one DMA device, but one DMA device can be shared among multiple tx/rx queues of different vhostpmd ports.
+
+Two PMD parameters are added:
+- dmas:	specify the used DMA device for a tx/rx queue(Default: no queues enable asynchronous data path)
+- dma-ring-size: DMA ring size.(Default: 4096).
+
+Here is an example:
+--vdev 'eth_vhost0,iface=./s0,dmas=[txq0@0000:00.01.0;rxq0@0000:00.01.1],dma-ring-size=4096'
 
 This document provides the test plan for testing the following features when Vhost-user using asynchronous data path with
 DSA driver (kernel IDXD driver and DPDK vfio-pci driver) in VM2VM virtio-net topology.
@@ -31,6 +37,7 @@ Note:
 3.When DMA devices are bound to vfio driver, VA mode is the default and recommended. For PA mode, page by page mapping may
 exceed IOMMU's max capability, better to use 1G guest hugepage.
 4.DPDK local patch that about vhost pmd is needed when testing Vhost asynchronous data path with testpmd.
+
 
 Prerequisites
 =============
@@ -95,7 +102,7 @@ Common steps
 2. Bind DSA devices to kernel idxd driver, and configure Work Queue (WQ)::
 
 	<dpdk dir># ./usertools/dpdk-devbind.py -b idxd <numDevices * 2>
-	<dpdk dir># ./drivers/dma/idxd/dpdk_idxd_cfg.py -q <numWq> <numDevices>
+	<dpdk dir># ./drivers/dma/idxd/dpdk_idxd_cfg.py -q <numWq>
 
 .. note::
 
@@ -113,7 +120,7 @@ Common steps
 	Check WQ by 'ls /dev/dsa' and can find "wq0.0 wq1.0 wq1.1 wq1.2 wq1.3"
 
 Test Case 1: VM2VM vhost-user/virtio-net split ring test TSO with dsa dpdk driver
------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
 This case test the function of Vhost tx offload in the topology of vhost-user/virtio-net split ring mergeable path 
 by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous enqueue and dequeue operations with dsa dpdk driver.
 
@@ -124,9 +131,9 @@ by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous e
 2. Launch the Vhost testpmd by below commands::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost -a 0000:e7:01.0,max_queues=2 \
-	--vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1,dmas=[txq0;rxq0]' \
-	--vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1,dmas=[txq0;rxq0]' \
-	--iova=va -- -i --nb-cores=2 --txd=1024 --rxd=1024 --rxq=1 --txq=1 --lcore-dma=[lcore2@0000:e7:01.0-q0,lcore3@0000:e7:01.0-q1]
+	--vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1,dmas=[txq0@0000:e7:01.0-q0;rxq0@0000:e7:01.0-q0]' \
+	--vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1,dmas=[txq0@0000:e7:01.0-q1;rxq0@0000:e7:01.0-q1]' \
+	--iova=va -- -i --nb-cores=2 --txd=1024 --rxd=1024 --rxq=1 --txq=1
 	testpmd>start
 
 3. Launch VM1 and VM2 with split ring mergeable path and tso on::
@@ -155,13 +162,13 @@ by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous e
 
 4. On VM1, set virtio device IP and run arp protocal::
 
-	<VM1># ifconfig ens5 1.1.1.2
-	<VM1># arp -s 1.1.1.8 52:54:00:00:00:02
+	ifconfig ens5 1.1.1.2
+	arp -s 1.1.1.8 52:54:00:00:00:02
 
 5. On VM2, set virtio device IP and run arp protocal::
 
-	<VM2># ifconfig ens5 1.1.1.8
-	<VM2># arp -s 1.1.1.2 52:54:00:00:00:01
+	ifconfig ens5 1.1.1.8
+	arp -s 1.1.1.2 52:54:00:00:00:01
 
 6. Check the iperf performance between two VMs by below commands::
 
@@ -173,7 +180,7 @@ by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous e
 	testpmd>show port xstats all
 
 Test Case 2: VM2VM vhost-user/virtio-net split ring mergeable path 8 queues test with large packet payload with dsa dpdk driver
----------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------
 This case uses iperf and scp to test the payload of large packet (larger than 1MB) is valid after packets forwarding in 
 vm2vm vhost-user/virtio-net split ring mergeable path when vhost uses the asynchronous enqueue and dequeue operations with dsa dpdk driver.
 The dynamic change of multi-queues number, iova as VA and PA mode also test.
@@ -185,9 +192,9 @@ The dynamic change of multi-queues number, iova as VA and PA mode also test.
 2. Launch the Vhost testpmd by below commands::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost -a 0000:f1:01.0,max_queues=4 \
-	--vdev 'net_vhost0,iface=vhost-net0,queues=8,client=1,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--vdev 'net_vhost1,iface=vhost-net1,queues=8,client=1,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 --lcore-dma=[lcore2@0000:f1:01.0-q0,lcore3@0000:f1:01.0-q1,lcore4@0000:f1:01.0-q2,lcore5@0000:f1:01.0-q3]
+	--vdev 'net_vhost0,iface=vhost-net0,queues=8,client=1,tso=1,dmas=[txq0@0000:f1:01.0-q0;txq1@0000:f1:01.0-q0;txq2@0000:f1:01.0-q1;txq3@0000:f1:01.0-q1;txq4@0000:f1:01.0-q2;txq5@0000:f1:01.0-q2;txq6@0000:f1:01.0-q3;txq7@0000:f1:01.0-q3;rxq0@0000:f1:01.0-q0;rxq1@0000:f1:01.0-q0;rxq2@0000:f1:01.0-q1;rxq3@0000:f1:01.0-q1;rxq4@0000:f1:01.0-q2;rxq5@0000:f1:01.0-q2;rxq6@0000:f1:01.0-q3;rxq7@0000:f1:01.0-q3]' \
+	--vdev 'net_vhost1,iface=vhost-net1,queues=8,client=1,tso=1,dmas=[txq0@0000:f1:01.0-q0;txq1@0000:f1:01.0-q0;txq2@0000:f1:01.0-q1;txq3@0000:f1:01.0-q1;txq4@0000:f1:01.0-q2;txq5@0000:f1:01.0-q2;txq6@0000:f1:01.0-q3;txq7@0000:f1:01.0-q3;rxq0@0000:f1:01.0-q0;rxq1@0000:f1:01.0-q0;rxq2@0000:f1:01.0-q1;rxq3@0000:f1:01.0-q1;rxq4@0000:f1:01.0-q2;rxq5@0000:f1:01.0-q2;rxq6@0000:f1:01.0-q3;rxq7@0000:f1:01.0-q3]' \
+	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
 	testpmd>start
 
 3. Launch VM1 and VM2 using qemu 7.0.0::
@@ -216,15 +223,15 @@ The dynamic change of multi-queues number, iova as VA and PA mode also test.
 
 4. On VM1, set virtio device IP and run arp protocal::
 
-	<VM1># ethtool -L ens5 combined 8
-	<VM1># ifconfig ens5 1.1.1.2
-	<VM1># arp -s 1.1.1.8 52:54:00:00:00:02
+	ethtool -L ens5 combined 8
+	ifconfig ens5 1.1.1.2
+	arp -s 1.1.1.8 52:54:00:00:00:02
 
 5. On VM2, set virtio device IP and run arp protocal::
 
-	<VM2># ethtool -L ens5 combined 8
-	<VM2># ifconfig ens5 1.1.1.8
-	<VM2># arp -s 1.1.1.2 52:54:00:00:00:01
+	ethtool -L ens5 combined 8
+	ifconfig ens5 1.1.1.8
+	arp -s 1.1.1.2 52:54:00:00:00:01
 
 6. Scp 1MB file form VM1 to VM2::
 
@@ -237,11 +244,10 @@ The dynamic change of multi-queues number, iova as VA and PA mode also test.
 
 8. Quit and relaunch vhost w/ diff dsa channels::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost -a 0000:f1:01.0,max_queues=4  -a 0000:f6:01.0,max_queues=4 \
-	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 \
-	--lcore-dma=[lcore2@0000:f1:01.0-q0,lcore3@0000:f1:01.0-q0,lcore3@0000:f1:01.0-q1,lcore3@0000:f1:01.0-q2,lcore4@0000:f1:01.0-q3,lcore4@0000:f6:01.0-q0,lcore4@0000:f6:01.0-q1,lcore4@0000:f6:01.0-q2,lcore5@0000:f6:01.0-q0,lcore5@0000:f6:01.0-q1,lcore5@0000:f6:01.0-q2,lcore5@0000:f6:01.0-q3]
+	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost -a 0000:f1:01.0,max_queues=8  -a 0000: :01.0,max_queues=8 \
+	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,tso=1,legacy-ol-flags=1,dmas=[txq0@0000:f1:01.0-q0;txq1@0000:f1:01.0-q0;txq2@0000:f1:01.0-q0;txq3@0000:f1:01.0-q0;txq4@0000:f1:01.0-q1;txq5@0000:f1:01.0-q2;rxq2@0000:f1:01.0-q3;rxq3@0000:f1:01.0-q4;rxq4@0000:f1:01.0-q5;rxq5@0000:f1:01.0-q5;rxq6@0000:f1:01.0-q5;rxq7@0000:f1:01.0-q5]' \
+	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,tso=1,legacy-ol-flags=1,dmas=[txq0@0000:f6:01.0-q0;txq1@0000:f6:01.0-q0;txq2@0000:f6:01.0-q0;txq3@0000:f6:01.0-q0;txq4@0000:f6:01.0-q1;txq5@0000:f6:01.0-q2;rxq2@0000:f6:01.0-q3;rxq3@0000:f6:01.0-q4;rxq4@0000:f6:01.0-q5;rxq5@0000:f6:01.0-q5;rxq6@0000:f6:01.0-q5;rxq7@0000:f6:01.0-q5]' \
+	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
 	testpmd>start
 
 9. Rerun step 6-7.
@@ -249,9 +255,9 @@ The dynamic change of multi-queues number, iova as VA and PA mode also test.
 10. Quit and relaunch vhost w/ iova=pa::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost -a 0000:f1:01.0,max_queues=4 \
-	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--iova=pa -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 --lcore-dma=[lcore2@0000:f1:01.0-q0,lcore3@0000:f1:01.0-q1,lcore4@0000:f1:01.0-q2,lcore5@0000:f1:01.0-q3]
+	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,tso=1,dmas=[txq0@0000:f1:01.0-q0;txq1@0000:f1:01.0-q0;txq2@0000:f1:01.0-q0;txq3@0000:f1:01.0-q0;txq4@0000:f1:01.0-q0;txq5@0000:f1:01.0-q0;rxq2@0000:f1:01.0-q1;rxq3@0000:f1:01.0-q1;rxq4@0000:f1:01.0-q1;rxq5@0000:f1:01.0-q1;rxq6@0000:f1:01.0-q1;rxq7@0000:f1:01.0-q1]' \
+	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,tso=1,dmas=[txq0@0000:f1:01.0-q2;txq1@0000:f1:01.0-q2;txq2@0000:f1:01.0-q2;txq3@0000:f1:01.0-q2;txq4@0000:f1:01.0-q2;txq5@0000:f1:01.0-q2;rxq2@0000:f1:01.0-q3;rxq3@0000:f1:01.0-q3;rxq4@0000:f1:01.0-q3;rxq5@0000:f1:01.0-q3;rxq6@0000:f1:01.0-q3;rxq7@0000:f1:01.0-q3]' \
+	--iova=pa -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
 	testpmd>start
 
 11. Rerun step 6-7.
@@ -274,22 +280,22 @@ The dynamic change of multi-queues number, iova as VA and PA mode also test.
 
 16. Quit vhost ports and relaunch vhost ports with 1 queues::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --no-pci --vdev 'net_vhost0,iface=vhost-net0,client=1,tso=1,queues=4' \
-	--vdev 'net_vhost1,iface=vhost-net1,client=1,tso=1,queues=4'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=1 --txq=1
-	testpmd>start
+	 <dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --no-pci --vdev 'net_vhost0,iface=vhost-net0,client=1,tso=1,queues=4' \
+	 --vdev 'net_vhost1,iface=vhost-net1,client=1,tso=1,queues=4'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=1 --txq=1
+	 testpmd>start
 
 17. On VM1, set virtio device::
 
-	<VM1># ethtool -L ens5 combined 1
+	ethtool -L ens5 combined 1
 
 18. On VM2, set virtio device::
 
-	<VM2># ethtool -L ens5 combined 1
+	ethtool -L ens5 combined 1
 
 19. Rerun step 6-7.
 
 Test Case 3: VM2VM vhost-user/virtio-net split ring non-mergeable path 8 queues test with large packet payload with dsa dpdk driver
-------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------
 This case uses iperf and scp to test the payload of large packet (larger than 1MB) is valid after packets forwarding in
 vm2vm vhost-user/virtio-net split ring non-mergeable path when vhost uses the asynchronous enqueue and dequeue operations with dsa dpdk driver.
 The dynamic change of multi-queues number also test.
@@ -300,10 +306,10 @@ The dynamic change of multi-queues number also test.
 
 2. Launch the Vhost sample by below commands::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost -a 0000:f1:01.0,max_queues=4 \
-	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 --lcore-dma=[lcore2@0000:f1:01.0-q0,lcore3@0000:f1:01.0-q1,lcore4@0000:f1:01.0-q2,lcore5@0000:f1:01.0-q3]
+	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost -a 0000:f1:01.0,max_queues=8 \
+	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@0000:f1:01.0-q0;txq1@0000:f1:01.0-q0;txq2@0000:f1:01.0-q0;txq3@0000:f1:01.0-q0;txq4@0000:f1:01.0-q1;txq5@0000:f1:01.0-q1;txq6@0000:f1:01.0-q1;txq7@0000:f1:01.0-q1;rxq0@0000:f1:01.0-q2;rxq1@0000:f1:01.0-q2;rxq2@0000:f1:01.0-q2;rxq3@0000:f1:01.0-q2;rxq4@0000:f1:01.0-q3;rxq5@0000:f1:01.0-q3;rxq6@0000:f1:01.0-q3;rxq7@0000:f1:01.0-q3]' \
+	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@0000:f1:01.0-q4;txq1@0000:f1:01.0-q4;txq2@0000:f1:01.0-q4;txq3@0000:f1:01.0-q4;txq4@0000:f1:01.0-q5;txq5@0000:f1:01.0-q5;txq6@0000:f1:01.0-q5;txq7@0000:f1:01.0-q5;rxq0@0000:f1:01.0-q6;rxq1@0000:f1:01.0-q6;rxq2@0000:f1:01.0-q6;rxq3@0000:f1:01.0-q6;rxq4@0000:f1:01.0-q7;rxq5@0000:f1:01.0-q7;rxq6@0000:f1:01.0-q7;rxq7@0000:f1:01.0-q7]' \
+	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
 	testpmd>start
 
 3. Launch VM1 and VM2::
@@ -353,17 +359,17 @@ The dynamic change of multi-queues number also test.
 
 8. Quit vhost ports and relaunch vhost ports w/o dsa channels::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --no-pci --vdev 'net_vhost0,iface=vhost-net0,client=1,tso=1,queues=8' \
-	--vdev 'net_vhost1,iface=vhost-net1,client=1,tso=1,queues=8'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --no-pci --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8' \
+	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
 	testpmd>start
 
 9. Rerun step 6-7.
 
 10. Quit vhost ports and relaunch vhost ports with 1 queues::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --no-pci --vdev 'net_vhost0,iface=vhost-net0,client=1,tso=1,queues=8' \
-	--vdev 'net_vhost1,iface=vhost-net1,client=1,tso=1,queues=8'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=1 --txq=1
-	testpmd>start
+	 <dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --no-pci --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8' \
+	 --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=1 --txq=1
+	 testpmd>start
 
 11. On VM1, set virtio device::
 
@@ -376,7 +382,7 @@ The dynamic change of multi-queues number also test.
 13. Rerun step 6-7.
 
 Test Case 4: VM2VM vhost-user/virtio-net packed ring test TSO with dsa dpdk driver
------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
 This case test the function of Vhost tx offload in the topology of vhost-user/virtio-net packed ring mergeable path 
 by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous enqueue and dequeue operations with dsa dpdk driver.
 
@@ -387,9 +393,9 @@ by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous e
 2. Launch the Vhost sample by below commands::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 --file-prefix=vhost -a 0000:f1:01.0,max_queues=2 \
-	--vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1,dmas=[txq0;rxq0]' \
-	--vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1,dmas=[txq0;rxq0]' \
-	--iova=va -- -i --nb-cores=2 --txd=1024 --rxd=1024 --lcore-dma=[lcore3@0000:f1:01.0-q0,lcore4@0000:f1:01.0-q1]
+	--vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1,dmas=[txq0@0000:f1:01.0-q0;rxq0@0000:f1:01.0-q1]' \
+	--vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1,dmas=[txq0@0000:f1:01.0-q0;rxq0@0000:f1:01.0-q1]' \
+	--iova=va -- -i --nb-cores=2 --txd=1024 --rxd=1024
 	testpmd>start
 
 3. Launch VM1 and VM2 with qemu::
@@ -436,7 +442,7 @@ by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous e
 	testpmd>show port xstats all
 
 Test Case 5: VM2VM vhost-user/virtio-net packed ring mergeable path 8 queues test with large packet payload with dsa dpdk driver
----------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
 This case uses iperf and scp to test the payload of large packet (larger than 1MB) is valid after packets forwarding in 
 vm2vm vhost-user/virtio-net packed ring mergeable path when vhost uses the asynchronous enqueue and dequeue operations with dsa dpdk driver.
 The dynamic change of multi-queues number also test.
@@ -447,11 +453,10 @@ The dynamic change of multi-queues number also test.
 
 2. Launch the Vhost sample by below commands::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost -a 0000:f1:01.0,max_queues=4 -a 0000:f6:01.0,max_queues=4 \
-	--vdev 'net_vhost0,iface=vhost-net0,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--vdev 'net_vhost1,iface=vhost-net1,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 \
-	--lcore-dma=[lcore2@0000:f1:01.0-q0,lcore2@0000:f1:01.0-q1,lcore3@0000:f1:01.0-q2,lcore3@0000:f1:01.0-q3,lcore4@0000:f6:01.0-q0,lcore4@0000:f6:01.0-q1,lcore5@0000:f6:01.0-q2,lcore5@0000:f6:01.0-q3]
+	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost -a 0000:f1:01.0,max_queues=4 \
+	--vdev 'net_vhost0,iface=vhost-net0,queues=8,tso=1,dmas=[txq0@0000:f1:01.0-q0;txq1@0000:f1:01.0-q0;txq2@0000:f1:01.0-q1;txq3@0000:f1:01.0-q1;txq4@0000:f1:01.0-q2;txq5@0000:f1:01.0-q2;txq6@0000:f1:01.0-q3;txq7@0000:f1:01.0-q3;rxq0@0000:f1:01.0-q0;rxq1@0000:f1:01.0-q0;rxq2@0000:f1:01.0-q1;rxq3@0000:f1:01.0-q1;rxq4@0000:f1:01.0-q2;rxq5@0000:f1:01.0-q2;rxq6@0000:f1:01.0-q3;rxq7@0000:f1:01.0-q3]' \
+	--vdev 'net_vhost1,iface=vhost-net1,queues=8,tso=1,dmas=[txq0@0000:f1:01.0-q0;txq1@0000:f1:01.0-q0;txq2@0000:f1:01.0-q1;txq3@0000:f1:01.0-q1;txq4@0000:f1:01.0-q2;txq5@0000:f1:01.0-q2;txq6@0000:f1:01.0-q3;txq7@0000:f1:01.0-q3;rxq0@0000:f1:01.0-q0;rxq1@0000:f1:01.0-q0;rxq2@0000:f1:01.0-q1;rxq3@0000:f1:01.0-q1;rxq4@0000:f1:01.0-q2;rxq5@0000:f1:01.0-q2;rxq6@0000:f1:01.0-q3;rxq7@0000:f1:01.0-q3]' \
+	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
 	testpmd>start
 
 3. Launch VM1 and VM2 with qemu::
@@ -502,7 +507,7 @@ The dynamic change of multi-queues number also test.
 8. Rerun step 6-7 five times.
 
 Test Case 6: VM2VM vhost-user/virtio-net packed ring non-mergeable path 8 queues test with large packet payload with dsa dpdk driver
--------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
 This case uses iperf and scp to test the payload of large packet (larger than 1MB) is valid after packets forwarding in 
 vm2vm vhost-user/virtio-net packed ring non-mergeable path when vhost uses the asynchronous enqueue and dequeue operations with dsa dpdk driver.
 The dynamic change of multi-queues number also test.
@@ -513,11 +518,10 @@ The dynamic change of multi-queues number also test.
 
 2. Launch the Vhost sample by below commands::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost -a 0000:f1:01.0 \
-	--vdev 'net_vhost0,iface=vhost-net0,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--vdev 'net_vhost1,iface=vhost-net1,queues=8,tso=1,dmas=[txq2;txq3;txq4;txq5;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5]' \
-	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 \
-	--lcore-dma=[lcore2@0000:f1:01.0-q0,lcore2@0000:f1:01.0-q1,lcore3@0000:f1:01.0-q2,lcore3@0000:f1:01.0-q3,lcore4@0000:f1:01.0-q4,lcore4@0000:f1:01.0-q5,lcore5@0000:f1:01.0-q6,lcore5@0000:f1:01.0-q7]
+	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost -a 0000:f1:01.0,max_queues=8 -a 0000:f6:01.0,max_queues=8 \
+	--vdev 'net_vhost0,iface=vhost-net0,queues=8,tso=1,dmas=[txq0@0000:f1:01.0-q0;txq1@0000:f1:01.0-q1;txq2@0000:f1:01.0-q2;txq3@0000:f1:01.0-q3;txq4@0000:f1:01.0-q4;txq5@0000:f1:01.0-q5;rxq2@0000:f1:01.0-q6;rxq3@0000:f1:01.0-q6;rxq4@0000:f1:01.0-q7;rxq5@0000:f1:01.0-q7;rxq6@0000:f1:01.0-q7;rxq7@0000:f1:01.0-q7]' \
+	--vdev 'net_vhost1,iface=vhost-net1,queues=8,tso=1,dmas=[txq2@0000:f6:01.0-q0;txq3@0000:f6:01.0-q1;txq4@0000:f6:01.0-q2;txq5@0000:f6:01.0-q3;txq6@0000:f6:01.0-q4;txq7@0000:f6:01.0-q5;rxq0@0000:f6:01.0-q6;rxq1@0000:f6:01.0-q6;rxq2@0000:f6:01.0-q7;rxq3@0000:f6:01.0-q7;rxq4@0000:f6:01.0-q7;rxq5@0000:f6:01.0-q7]' \
+	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
 	testpmd>start
 
 3. Launch VM1 and VM2 with qemu::
@@ -531,7 +535,7 @@ The dynamic change of multi-queues number also test.
 	-netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
 	-chardev socket,id=char0,path=./vhost-net0 \
 	-netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
-	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on -vnc :10
+	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=off,guest_tso4=off,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on -vnc :10
 
 	<dpdk dir># taskset -c 8 /usr/local/qemu-7.0.0/bin/qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 8 -m 4096 \
 	-object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -542,7 +546,7 @@ The dynamic change of multi-queues number also test.
 	-netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
 	-chardev socket,id=char0,path=./vhost-net1 \
 	-netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
-	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on -vnc :12
+	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=off,guest_tso4=off,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on -vnc :12
 
 4. On VM1, set virtio device IP and run arp protocal::
 
@@ -567,10 +571,11 @@ The dynamic change of multi-queues number also test.
 
 8. Rerun step 6-7 five times.
 
-Test Case 7: VM2VM vhost-user/virtio-net packed ring test TSO with dsa dpdk driver and pa mode
------------------------------------------------------------------------------------------------
+Test Case 7: VM2VM vhost-user/virtio-net packed ring test dma-ring-size with tcp traffic and dsa dpdk driver
+------------------------------------------------------------------------------------------------------------
 This case test the function of Vhost tx offload in the topology of vhost-user/virtio-net packed ring mergeable path 
-by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous enqueue and dequeue operations with dsa dpdk driver and iova as PA mode.
+by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous enqueue and dequeue operations with dsa dpdk driver
+and the dma ring size is small.
 
 1. Bind 2  dsa device to vfio-pci like common step 1::
 
@@ -579,9 +584,9 @@ by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous e
 2. Launch the Vhost sample with PA mode by below commands::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 --file-prefix=vhost -a 0000:f1:01.0,max_queues=2 \
-	--vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1,dmas=[txq0;rxq0]' \
-	--vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1,dmas=[txq0;rxq0]' \
-	--iova=pa -- -i --nb-cores=2 --txd=1024 --rxd=1024 --lcore-dma=[lcore3@0000:f1:01.0-q0,lcore4@0000:f1:01.0-q1]
+	--vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1,dmas=[txq0@0000:f1:01.0-q0;rxq0@0000:f1:01.0-q0],dma-ring-size=32' \
+	--vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1,dmas=[txq0@0000:f1:01.0-q1;rxq0@0000:f1:01.0-q1],dma-ring-size=32' \
+	--iova=va -- -i --nb-cores=2 --txd=1024 --rxd=1024
 	testpmd>start
 
 3. Launch VM1 and VM2 with qemu::
@@ -627,11 +632,10 @@ by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous e
 
 	testpmd>show port xstats all
 
-Test Case 8: VM2VM vhost-user/virtio-net packed ring mergeable path 8 queues test with large packet payload with dsa dpdk driver and pa mode
----------------------------------------------------------------------------------------------------------------------------------------------
+Test Case 8: VM2VM vhost-user/virtio-net packed ring mergeable path 8 queues test with legacy mode with dsa dpdk driver
+-----------------------------------------------------------------------------------------------------------------------
 This case uses iperf and scp to test the payload of large packet (larger than 1MB) is valid after packets forwarding in 
-vm2vm vhost-user/virtio-net packed ring mergeable path when vhost uses the asynchronous enqueue and dequeue operations with dsa dpdk driver
-and iova as PA mode. 
+vm2vm vhost-user/virtio-net packed ring mergeable path with legacy mode when vhost uses the asynchronous enqueue and dequeue operations with dsa dpdk driver.
 
 1. Bind 1 dsa device to vfio-pci like common step 1::
 
@@ -640,10 +644,10 @@ and iova as PA mode.
 2. Launch the Vhost sample by below commands::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost -a 0000:f1:01.0 \
-	--vdev 'net_vhost0,iface=vhost-net0,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--vdev 'net_vhost1,iface=vhost-net1,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--iova=pa -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 --lcore-dma=[lcore2@0000:f1:01.0-q0,lcore2@0000:f1:01.0-q1,lcore3@0000:f1:01.0-q2,lcore3@0000:f1:01.0-q3,lcore4@0000:f1:01.0-q4,lcore4@0000:f1:01.0-q5,lcore5@0000:f1:01.0-q6,lcore5@0000:f1:01.0-q7]
-	testpmd>start
+	--vdev 'net_vhost0,iface=vhost-net0,queues=8,tso=1,legacy-ol-flags=1,dmas=[txq0@0000:f1:01.0-q0;txq1@0000:f1:01.0-q0;txq2@0000:f1:01.0-q0;txq3@0000:f1:01.0-q0;txq4@0000:f1:01.0-q1;txq5@0000:f1:01.0-q1;txq6@0000:f1:01.0-q1;txq7@0000:f1:01.0-q1;rxq0@0000:f1:01.0-q0;rxq1@0000:f1:01.0-q0;rxq2@0000:f1:01.0-q0;rxq3@0000:f1:01.0-q0;rxq4@0000:f1:01.0-q1;rxq5@0000:f1:01.0-q1;rxq6@0000:f1:01.0-q1;rxq7@0000:f1:01.0-q1]' \
+	--vdev 'net_vhost1,iface=vhost-net1,queues=8,tso=1,legacy-ol-flags=1,dmas=[txq0@0000:f1:01.0-q0;txq1@0000:f1:01.0-q0;txq2@0000:f1:01.0-q0;txq3@0000:f1:01.0-q0;txq4@0000:f1:01.0-q1;txq5@0000:f1:01.0-q1;txq6@0000:f1:01.0-q1;txq7@0000:f1:01.0-q1;rxq0@0000:f1:01.0-q0;rxq1@0000:f1:01.0-q0;rxq2@0000:f1:01.0-q0;rxq3@0000:f1:01.0-q0;rxq4@0000:f1:01.0-q1;rxq5@0000:f1:01.0-q1;rxq6@0000:f1:01.0-q1;rxq7@0000:f1:01.0-q1]' \
+	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    testpmd>start
 
 3. Launch VM1 and VM2 with qemu::
 
@@ -693,7 +697,7 @@ and iova as PA mode.
 8. Rerun step 6-7 five times.
 
 Test Case 9: VM2VM vhost-user/virtio-net split ring test TSO with dsa kernel driver
-------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------
 This case test the function of Vhost tx offload in the topology of vhost-user/virtio-net split ring mergeable path 
 by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous operations with dsa kernel driver.
 
@@ -708,9 +712,9 @@ by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous o
 2. Launch the Vhost sample by below commands::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
-	--vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1,dmas=[txq0;rxq0]' \
-	--vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1,dmas=[txq0;rxq0]' \
-	--iova=va -- -i --nb-cores=2 --txd=1024 --rxd=1024 --rxq=1 --txq=1 --lcore-dma=[lcore2@wq0.0,lcore2@wq0.1,lcore3@wq0.2,lcore3@wq0.3]
+	--vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1,dmas=[txq0@wq0.0;rxq0@wq0.0]' \
+	--vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1,dmas=[txq0@wq0.0;rxq0@wq0.0]' \
+	--iova=va -- -i --nb-cores=2 --txd=1024 --rxd=1024 --rxq=1 --txq=1
 	testpmd>start
 
 3. Launch VM1 and VM2 on socket 1::
@@ -757,7 +761,7 @@ by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous o
 	testpmd>show port xstats all
 
 Test Case 10: VM2VM vhost-user/virtio-net split ring mergeable path 8 queues test with large packet payload with dsa kernel driver
------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------
 This case uses iperf and scp to test the payload of large packet (larger than 1MB) is valid after packets forwarding in 
 vm2vm vhost-user/virtio-net split ring mergeable path when vhost uses the asynchronous enqueue and dequeue operations with dsa kernel driver.
 The dynamic change of multi-queues number also test.
@@ -774,10 +778,9 @@ The dynamic change of multi-queues number also test.
 2. Launch the Vhost sample by below commands::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
-	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 \
-	--lcore-dma=[lcore2@wq0.0,lcore2@wq0.1,lcore2@wq0.2,lcore2@wq0.3,lcore2@wq0.4,lcore2@wq0.5,lcore3@wq0.6,lcore3@wq0.7,lcore4@wq1.0,lcore4@wq1.1,lcore4@wq1.2,lcore4@wq1.3,lcore4@wq1.4,lcore4@wq1.5,lcore4@wq1.6,lcore5@wq1.7]
+	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,tso=1,dmas=[txq0@wq0.0;txq1@wq0.1;txq2@wq0.2;txq3@wq0.3;txq4@wq0.4;txq5@wq0.5;txq6@wq0.6;txq7@wq0.7;rxq0@wq1.0;rxq1@wq1.1;rxq2@wq1.2;rxq3@wq1.3;rxq4@wq1.4;rxq5@wq1.5;rxq6@wq1.6;rxq7@wq1.7]' \
+	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,tso=1,dmas=[txq0@wq1.0;txq1@wq1.1;txq2@wq1.2;txq3@wq1.3;txq4@wq1.4;txq5@wq1.5;txq6@wq1.6;txq7@wq1.7;rxq0@wq0.0;rxq1@wq0.1;rxq2@wq0.2;rxq3@wq0.3;rxq4@wq0.4;rxq5@wq0.5;rxq6@wq0.6;rxq7@wq0.7]' \
+	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
 	testpmd>start
 
 3. Launch VM1 and VM2 using qemu::
@@ -828,9 +831,9 @@ The dynamic change of multi-queues number also test.
 8. Quit and relaunch vhost w/ diff dsa channels::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
-	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 --lcore-dma=[lcore2@wq0.0,lcore3@wq0.1,lcore4@wq0.2,lcore5@wq0.3]
+	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,tso=1,dmas=[txq0@wq0.0;txq1@wq0.0;txq2@wq0.0;txq3@wq0.0;txq4@wq0.1;txq5@wq0.1;rxq2@wq0.1;rxq3@wq0.1;rxq4@wq0.2;rxq5@wq0.2;rxq6@wq0.2;rxq7@wq0.2]' \
+	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,tso=1,dmas=[txq0@wq0.3;txq1@wq0.3;txq2@wq0.3;txq3@wq0.3;txq4@wq0.4;txq5@wq0.4;rxq2@wq0.4;rxq3@wq0.4;rxq4@wq0.5;rxq5@wq0.5;rxq6@wq0.5;rxq7@wq0.5]' \
+	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
 	testpmd>start
 
 9. Rerun step 6-7.
@@ -868,7 +871,7 @@ The dynamic change of multi-queues number also test.
 17. Rerun step 6-7.
 
 Test Case 11: VM2VM vhost-user/virtio-net split ring non-mergeable path 8 queues test with large packet payload with dsa kernel driver
----------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------
 This case uses iperf and scp to test the payload of large packet (larger than 1MB) is valid after packets forwarding in 
 vm2vm vhost-user/virtio-net split ring non-mergeable path when vhost uses the asynchronous enqueue and dequeue operations with dsa kernel driver.
 The dynamic change of multi-queues number also test.
@@ -885,9 +888,9 @@ The dynamic change of multi-queues number also test.
 2. Launch the Vhost sample by below commands::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
-	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 --lcore-dma=[lcore2@wq0.0,lcore2@wq0.1,lcore3@wq0.2,lcore3@wq0.3,lcore4@wq0.4,lcore4@wq0.5,lcore5@wq0.6,lcore5@wq0.7]
+	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@wq0.0;txq1@wq0.0;txq2@wq0.0;txq3@wq0.0;txq4@wq0.1;txq5@wq0.1;rxq2@wq0.1;rxq3@wq0.1;rxq4@wq0.2;rxq5@wq0.2;rxq6@wq0.2;rxq7@wq0.2]' \
+	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@wq1.0;txq1@wq1.0;txq2@wq1.0;txq3@wq1.0;txq4@wq1.1;txq5@wq1.1;rxq2@wq1.1;rxq3@wq1.1;rxq4@wq1.2;rxq5@wq1.2;rxq6@wq1.2;rxq7@wq1.2]' \
+	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
 	testpmd>start
 
 3. Launch VM1 and VM2::
@@ -901,7 +904,7 @@ The dynamic change of multi-queues number also test.
 	-netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
 	-chardev socket,id=char0,path=./vhost-net0,server \
 	-netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
-	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
+	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=off,guest_tso4=off,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
 
 	<dpdk dir># taskset -c 8 /usr/local/qemu-7.0.0/bin/qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 8 -m 4096 \
 	-object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -912,7 +915,7 @@ The dynamic change of multi-queues number also test.
 	-netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
 	-chardev socket,id=char0,path=./vhost-net1,server \
 	-netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
-	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :12
+	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=off,guest_tso4=off,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :12
 
 4. On VM1, set virtio device IP and run arp protocal::
 
@@ -937,16 +940,16 @@ The dynamic change of multi-queues number also test.
 
 8. Quit vhost ports and relaunch vhost ports w/o dsa channels::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,tso=1,queues=8' \
-	--vdev 'net_vhost1,iface=vhost-net1,client=1,tso=1,queues=8'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,legacy-ol-flags=1' \
+	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,legacy-ol-flags=1'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
 	testpmd>start
 
 9. Rerun step 6-7.
 
 10. Quit vhost ports and relaunch vhost ports with 1 queues::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,tso=1,queues=8' \
-	--vdev 'net_vhost1,iface=vhost-net1,client=1,tso=1,queues=8'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=1 --txq=1
+	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8' \
+	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=1 --txq=1
 	testpmd>start
 
 11. On VM1, set virtio device::
@@ -964,21 +967,20 @@ Test Case 12: VM2VM vhost-user/virtio-net packed ring test TSO with dsa kernel d
 This case test the function of Vhost tx offload in the topology of vhost-user/virtio-net packed ring mergeable path
 by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous enqueue and dequeue operations with dsa kernel driver.
 
-1. Bind 2 dsa device to idxd::
+1. Bind 1 dsa device to idxd::
 
 	ls /dev/dsa #check wq configure, reset if exist
 	<dpdk dir># ./usertools/dpdk-devbind.py -u 6a:01.0 6f:01.0
 	<dpdk dir># ./usertools/dpdk-devbind.py -b idxd 6a:01.0 6f:01.0
 	<dpdk dir># ./drivers/dma/idxd/dpdk_idxd_cfg.py -q 1 0
-	<dpdk dir># ./drivers/dma/idxd/dpdk_idxd_cfg.py -q 1 2
 	ls /dev/dsa #check wq configure success
 
 2. Launch the Vhost sample by below commands::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 2-4 -n 4 --file-prefix=vhost \
-	--vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1,dmas=[txq0;rxq0]' \
-	--vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1,dmas=[txq0;rxq0]' \
-	--iova=va -- -i --nb-cores=2 --txd=1024 --rxd=1024 --lcore-dma=[lcore3@wq0.0,lcore4@wq1.0]
+	--vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1,dmas=[txq0@wq0.0;rxq0@wq0.0]' \
+	--vdev 'net_vhost1,iface=vhost-net1,queues=1,tso=1,dmas=[txq0@wq0.0;rxq0@wq0.0]' \
+	--iova=va -- -i --nb-cores=2 --txd=1024 --rxd=1024
 	testpmd>start
 
 3. Launch VM1 and VM2 with qemu::
@@ -1025,24 +1027,24 @@ by verifing the TSO/cksum in the TCP/IP stack when vhost uses the asynchronous e
 	testpmd>show port xstats all
 
 Test Case 13: VM2VM vhost-user/virtio-net packed ring mergeable path 8 queues test with large packet payload with dsa kernel driver
--------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------
 This case uses iperf and scp to test the payload of large packet (larger than 1MB) is valid after packets forwarding in
 vm2vm vhost-user/virtio-net packed ring mergeable path when vhost uses the asynchronous enqueue and dequeue operations with dsa kernel driver.
-The dynamic change of multi-queues number also test.
 
-1. Bind 1 dsa device to idxd like common step 2::
+1. Bind 2 dsa device to idxd like common step 2::
 
 	ls /dev/dsa #check wq configure, reset if exist
 	<dpdk dir># ./usertools/dpdk-devbind.py -u 6a:01.0 6f:01.0 
 	<dpdk dir># ./usertools/dpdk-devbind.py -b idxd 6a:01.0 6f:01.0 
 	<dpdk dir># ./drivers/dma/idxd/dpdk_idxd_cfg.py -q 8 0
+	<dpdk dir># ./drivers/dma/idxd/dpdk_idxd_cfg.py -q 8 1
 
 2. Launch the Vhost sample by below commands::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
-	--vdev 'net_vhost0,iface=vhost-net0,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--vdev 'net_vhost1,iface=vhost-net1,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 --lcore-dma=[lcore2@wq0.0,lcore2@wq0.1,lcore3@wq0.2,lcore3@wq0.3,lcore4@wq0.4,lcore4@wq0.5,lcore5@wq0.6,lcore5@wq0.7]
+	--vdev 'net_vhost0,iface=vhost-net0,queues=8,tso=1,dmas=[txq0@wq0.0;txq1@wq0.1;txq2@wq0.2;txq3@wq0.3;txq4@wq0.4;txq5@wq0.5;rxq2@wq0.2;rxq3@wq0.3;rxq4@wq0.4;rxq5@wq0.5;rxq6@wq0.6;rxq7@wq0.7]' \
+	--vdev 'net_vhost1,iface=vhost-net1,queues=8,tso=1,dmas=[txq0@wq1.0;txq1@wq1.1;txq2@wq1.2;txq3@wq1.3;txq4@wq1.4;txq5@wq1.5;rxq2@wq1.2;rxq3@wq1.3;rxq4@wq1.4;rxq5@wq1.5;rxq6@wq1.6;rxq7@wq1.7]' \
+	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
 	testpmd>start
 
 3. Launch VM1 and VM2 with qemu::
@@ -1093,9 +1095,10 @@ The dynamic change of multi-queues number also test.
 8. Rerun step 6-7 five times.
 
 Test Case 14: VM2VM vhost-user/virtio-net packed ring non-mergeable path 8 queues test with large packet payload with dsa kernel driver
-----------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------
 This case uses iperf and scp to test the payload of large packet (larger than 1MB) is valid after packets forwarding in
 vm2vm vhost-user/virtio-net packed ring mergeable path when vhost uses the asynchronous enqueue and dequeue operations with dsa kernel driver.
+The dynamic change of multi-queues number also test.
 
 1. Bind 2 dsa device to vfio-pci like common step 2::
 
@@ -1109,9 +1112,9 @@ vm2vm vhost-user/virtio-net packed ring mergeable path when vhost uses the async
 2. Launch the Vhost sample by below commands::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost \
-	--vdev 'net_vhost0,iface=vhost-net0,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--vdev 'net_vhost1,iface=vhost-net1,queues=8,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8 --lcore-dma=[lcore2@wq0.0,lcore2@wq0.1,lcore3@wq0.2,lcore3@wq0.3,lcore4@wq1.0,lcore4@wq1.1,lcore5@wq1.2,lcore5@wq1.3]
+	--vdev 'net_vhost0,iface=vhost-net0,queues=8,tso=1,dmas=[txq0@wq0.0;txq1@wq0.0;txq2@wq0.1;txq3@wq0.1;txq4@wq0.2;txq5@wq0.2;txq6@wq0.3;txq7@wq0.3;rxq0@wq0.0;rxq1@wq0.0;rxq2@wq0.1;rxq3@wq0.1;rxq4@wq0.2;rxq5@wq0.2;rxq6@wq0.3;rxq7@wq0.3]' \
+	--vdev 'net_vhost1,iface=vhost-net1,queues=8,tso=1,dmas=[txq0@wq0.0;txq1@wq0.0;txq2@wq0.1;txq3@wq0.1;txq4@wq0.2;txq5@wq0.2;txq6@wq0.3;txq7@wq0.3;rxq0@wq0.0;rxq1@wq0.0;rxq2@wq0.1;rxq3@wq0.1;rxq4@wq0.2;rxq5@wq0.2;rxq6@wq0.3;rxq7@wq0.3]' \
+	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
 	testpmd>start
 
 3. Launch VM1 and VM2 with qemu::
@@ -1161,11 +1164,11 @@ vm2vm vhost-user/virtio-net packed ring mergeable path when vhost uses the async
 
 8. Rerun step 6-7 five times.
 
-Test Case 15: VM2VM vhost-user/virtio-net split ring non-mergeable 16 queues test with large packet payload with dsa dpdk and kernel driver
---------------------------------------------------------------------------------------------------------------------------------------------
+Test Case 15: VM2VM vhost-user/virtio-net split ring non-mergeable 16 queues test with Rx/Tx csum in SW
+-------------------------------------------------------------------------------------------------------
 This case uses iperf and scp to test the payload of large packet (larger than 1MB) is valid after packets forwarding in
 vm2vm vhost-user/virtio-net split ring non-mergeable path when vhost uses the asynchronous operations with dsa dpdk
-and kernel driver. The dynamic change of multi-queues number also test.
+and kernel driver and perform SW checksum in Rx/Tx path.. The dynamic change of multi-queues number also test.
 
 1. Bind 2 dsa device to vfio-pci and 2 dsa device to idxd like common step 1-2::
 
@@ -1182,9 +1185,15 @@ and kernel driver. The dynamic change of multi-queues number also test.
 2. Launch the Vhost sample by below commands::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost -a 0000:f1:01.0 -a 0000:f6:01.0  \
-	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=16,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;txq8;txq9;txq10;txq11;txq12;txq13;txq14;txq15;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7;rxq8;rxq9;rxq10;rxq11;rxq12;rxq13;rxq14;rxq15]' \
-	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=16,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;txq8;txq9;txq10;txq11;txq12;txq13;txq14;txq15;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7;rxq8;rxq9;rxq10;rxq11;rxq12;rxq13;rxq14;rxq15]' \
-	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=16 --txq=16 --lcore-dma=[lcore2@0000:f1:01.0-q0,lcore2@0000:f1:01.0-q1,lcore3@0000:f6:01.0-q0,lcore3@0000:f6:01.0-q1,lcore4@wq0.0,lcore5@wq0.1]
+	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=16,tso=1,dmas=[txq0@0000:f1:01.0-q0;txq1@0000:f1:01.0-q0;txq2@0000:f1:01.0-q0;txq3@0000:f1:01.0-q0;txq4@0000:f1:01.0-q0;txq5@0000:f1:01.0-q0;txq6@0000:f1:01.0-q0;txq7@0000:f1:01.0-q0;txq8@0000:f1:01.0-q0;txq9@0000:f1:01.0-q0;txq10@0000:f1:01.0-q0;txq11@0000:f1:01.0-q0;txq12@0000:f1:01.0-q0;txq13@0000:f1:01.0-q0;txq14@0000:f1:01.0-q0;txq15@0000:f1:01.0-q0;rxq0@wq0.0;rxq1@wq0.0;rxq2@wq0.0;rxq3@wq0.0;rxq4@wq0.0;rxq5@wq0.0;rxq6@wq0.0;rxq7@wq0.0;rxq8@wq0.0;rxq9@wq0.0;rxq10@wq0.0;rxq11@wq0.0;rxq12@wq0.0;rxq13@wq0.0;rxq14@wq0.0;rxq15@wq0.0]' \
+	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=16,tso=1,dmas=[txq0@0000:f1:01.0-q0;txq1@0000:f1:01.0-q1;txq2@0000:f1:01.0-q2;txq3@0000:f1:01.0-q3;txq4@0000:f1:01.0-q4;txq5@0000:f1:01.0-q5;txq6@0000:f1:01.0-q6;txq7@0000:f1:01.0-q7;txq8@0000:f6:01.0-q0;txq9@0000:f6:01.0-q1;txq10@0000:f6:01.0-q2;txq11@0000:f6:01.0-q3;txq12@0000:f6:01.0-q4;txq13@0000:f6:01.0-q5;txq14@0000:f6:01.0-q6;txq15@0000:f6:01.0-q7;rxq0@wq0.0;rxq1@wq0.1;rxq2@wq0.2;rxq3@wq0.3;rxq4@wq0.4;rxq5@wq0.5;rxq6@wq0.6;rxq7@wq0.7;rxq8@wq1.0;rxq9@wq1.1;rxq10@wq1.2;rxq11@wq1.3;rxq12@wq1.4;rxq13@wq1.5;rxq14@wq1.6;rxq15@wq1.7]' \
+	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=16 --txq=16
+	testpmd>set fwd csum
+	testpmd>stop
+	testpmd>port stop all
+	testpmd>port config 0 tx_offload tcp_cksum on
+	testpmd>port config 1 tx_offload tcp_cksum on
+	testpmd>port start all
 	testpmd>start
 
 3. Launch VM1 and VM2::
@@ -1198,7 +1207,7 @@ and kernel driver. The dynamic change of multi-queues number also test.
 	-netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
 	-chardev socket,id=char0,path=./vhost-net0,server \
 	-netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=16 \
-	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
+	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=off,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
 
 	<dpdk dir># taskset -c 8 /usr/local/qemu-7.0.0/bin/qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 8 -m 4096 \
 	-object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -1209,7 +1218,7 @@ and kernel driver. The dynamic change of multi-queues number also test.
 	-netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
 	-chardev socket,id=char0,path=./vhost-net1,server \
 	-netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=16 \
-	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :12
+	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=off,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :12
 
 4. On VM1, set virtio device IP and run arp protocal::
 
@@ -1234,10 +1243,11 @@ and kernel driver. The dynamic change of multi-queues number also test.
 
 8. Quit vhost ports and relaunch vhost ports w/ diff dsa channels::
 
-	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost -a 0000:f1:01.0,max_queues=2 \
-	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=16,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7]' \
-	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=16,tso=1,dmas=[txq10;txq11;txq12;txq13;txq14;txq15;rxq10;rxq11;rxq12;rxq13;rxq14;rxq15]' \
-	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=16 --txq=16 --lcore-dma=[lcore2@0000:f1:01.0-q0,lcore2@wq0.0,lcore3@0000:f1:01.0-q1,lcore3@wq0.1,lcore4@wq1.0,lcore5@wq1.1]
+	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost -a 0000:f1:01.0,max_queues=8 \
+	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=16,tso=1,dmas=[txq0@0000:f1:01.0-q0;txq1@0000:f1:01.0-q0;txq2@0000:f1:01.0-q0;txq3@0000:f1:01.0-q0;txq4@0000:f1:01.0-q2;txq5@0000:f1:01.0-q3;rxq2@0000:f1:01.0-q4;rxq3@0000:f1:01.0-q5;rxq4@0000:f1:01.0-q6;rxq5@0000:f1:01.0-q6;rxq6@0000:f1:01.0-q6;rxq7@0000:f1:01.0-q6]' \
+	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=16,tso=1,dmas=[txq12@wq1.0;txq13@wq1.0;txq14@wq1.0;txq15@wq1.0;rxq12@wq1.1;rxq13@wq1.1;rxq14@wq1.1;rxq15@wq1.1]' \
+	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=16 --txq=16
+	testpmd>set fwd csum
 	testpmd>start
 
 9. rerun step 6-7.
@@ -1246,6 +1256,7 @@ and kernel driver. The dynamic change of multi-queues number also test.
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,tso=1,queues=16' \
 	--vdev 'net_vhost1,iface=vhost-net1,client=1,tso=1,queues=16'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=16 --txq=16
+	testpmd>set fwd csum
 	testpmd>start
 
 11. Rerun step 6-7.
@@ -1254,6 +1265,7 @@ and kernel driver. The dynamic change of multi-queues number also test.
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,tso=1,queues=8' \
 	--vdev 'net_vhost1,iface=vhost-net1,client=1,tso=1,queues=8'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=1 --txq=1
+	testpmd>set fwd csum
 	testpmd>start
 
 13. On VM1, set virtio device::
@@ -1266,11 +1278,11 @@ and kernel driver. The dynamic change of multi-queues number also test.
 
 15. Rerun step 6-7.
 
-Test Case 16: VM2VM vhost-user/virtio-net packed ring mergeable 16 queues test with large packet payload with dsa dpdk and kernel driver
-------------------------------------------------------------------------------------------------------------------------------------------
+Test Case 16: VM2VM vhost-user/virtio-net packed ring mergeable 16 queues test with Rx/Tx csum in SW
+----------------------------------------------------------------------------------------------------
 This case uses iperf and scp to test the payload of large packet (larger than 1MB) is valid after packets forwarding in
 vm2vm vhost-user/virtio-net packed ring mergeable path when vhost uses the asynchronous operations with dsa dpdk
-and kernel driver. The dynamic change of multi-queues number also test.
+and kernel driver and perform SW checksum in Rx/Tx path.. The dynamic change of multi-queues number also test.
 
 1. Bind 2 dsa device to vfio-pci and 2 dsa device to idxd like common step 1-2::
 
@@ -1279,16 +1291,22 @@ and kernel driver. The dynamic change of multi-queues number also test.
 	<dpdk dir># ./usertools/dpdk-devbind.py -u 6a:01.0 6f:01.0 
 	<dpdk dir># ./usertools/dpdk-devbind.py -b idxd 6a:01.0 6f:01.0 
 	<dpdk dir># ./usertools/dpdk-devbind.py -b vfio-pci f1:01.0 f6:01.0
-	<dpdk dir># ./drivers/dma/idxd/dpdk_idxd_cfg.py -q 2 0
-	<dpdk dir># ./drivers/dma/idxd/dpdk_idxd_cfg.py -q 2 1
+	<dpdk dir># ./drivers/dma/idxd/dpdk_idxd_cfg.py -q 8 0
+	<dpdk dir># ./drivers/dma/idxd/dpdk_idxd_cfg.py -q 8 1
 	ls /dev/dsa #check wq configure success
 
 2. Launch the Vhost sample by below commands::
 
 	<dpdk dir># ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost -a 0000:f1:01.0,max_queues=1 -a 0000:f6:01.0,max_queues=1 \
-	--vdev 'net_vhost0,iface=vhost-net0,queues=16,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;txq8;txq9;txq10;txq11;txq12;txq13;txq14;txq15;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7;rxq8;rxq9;rxq10;rxq11;rxq12;rxq13;rxq14;rxq15]' \
-	--vdev 'net_vhost1,iface=vhost-net1,queues=16,tso=1,dmas=[txq0;txq1;txq2;txq3;txq4;txq5;txq6;txq7;txq8;txq9;txq10;txq11;txq12;txq13;txq14;txq15;rxq0;rxq1;rxq2;rxq3;rxq4;rxq5;rxq6;rxq7;rxq8;rxq9;rxq10;rxq11;rxq12;rxq13;rxq14;rxq15]' \
-	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=16 --txq=16 --lcore-dma=[lcore2@0000:f1:01.0-q0,lcore2@wq0.0,lcore3@0000:f6:01.0-q0,lcore3@wq0.1,lcore4@wq1.0,lcore5@wq1.1]
+	--vdev 'net_vhost0,iface=vhost-net0,client=1,queues=16,tso=1,dmas=[txq0@0000:f1:01.0-q0;txq1@0000:f1:01.0-q0;txq2@0000:f1:01.0-q0;txq3@0000:f1:01.0-q0;txq4@0000:f1:01.0-q0;txq5@0000:f1:01.0-q0;txq6@0000:f1:01.0-q0;txq7@0000:f1:01.0-q0;txq8@0000:f1:01.0-q0;txq9@0000:f1:01.0-q0;txq10@0000:f1:01.0-q0;txq11@0000:f1:01.0-q0;txq12@0000:f1:01.0-q0;txq13@0000:f1:01.0-q0;txq14@0000:f1:01.0-q0;txq15@0000:f1:01.0-q0;rxq0@wq0.0;rxq1@wq0.0;rxq2@wq0.0;rxq3@wq0.0;rxq4@wq0.0;rxq5@wq0.0;rxq6@wq0.0;rxq7@wq0.0;rxq8@wq0.0;rxq9@wq0.0;rxq10@wq0.0;rxq11@wq0.0;rxq12@wq0.0;rxq13@wq0.0;rxq14@wq0.0;rxq15@wq0.0]' \
+	--vdev 'net_vhost1,iface=vhost-net1,client=1,queues=16,tso=1,dmas=[txq0@0000:f1:01.0-q0;txq1@0000:f1:01.0-q1;txq2@0000:f1:01.0-q2;txq3@0000:f1:01.0-q3;txq4@0000:f1:01.0-q4;txq5@0000:f1:01.0-q5;txq6@0000:f1:01.0-q6;txq7@0000:f1:01.0-q7;txq8@0000:f6:01.0-q0;txq9@0000:f6:01.0-q1;txq10@0000:f6:01.0-q2;txq11@0000:f6:01.0-q3;txq12@0000:f6:01.0-q4;txq13@0000:f6:01.0-q5;txq14@0000:f6:01.0-q6;txq15@0000:f6:01.0-q7;rxq0@wq0.0;rxq1@wq0.1;rxq2@wq0.2;rxq3@wq0.3;rxq4@wq0.4;rxq5@wq0.5;rxq6@wq0.6;rxq7@wq0.7;rxq8@wq1.0;rxq9@wq1.1;rxq10@wq1.2;rxq11@wq1.3;rxq12@wq1.4;rxq13@wq1.5;rxq14@wq1.6;rxq15@wq1.7]' \
+	--iova=va -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=16 --txq=16
+	testpmd>set fwd csum
+	testpmd>stop
+	testpmd>port stop all
+	testpmd>port config 0 tx_offload tcp_cksum on
+	testpmd>port config 1 tx_offload tcp_cksum on
+	testpmd>port start all
 	testpmd>start
 
 3. Launch VM1 and VM2 with qemu::
@@ -1302,7 +1320,7 @@ and kernel driver. The dynamic change of multi-queues number also test.
 	-netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
 	-chardev socket,id=char0,path=./vhost-net0 \
 	-netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=16 \
-	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on -vnc :10
+	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=off,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on -vnc :10
 
 	<dpdk dir># taskset -c 8 /usr/local/qemu-7.0.0/bin/qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 8 -m 4096 \
 	-object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -1313,19 +1331,19 @@ and kernel driver. The dynamic change of multi-queues number also test.
 	-netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
 	-chardev socket,id=char0,path=./vhost-net1 \
 	-netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=16 \
-	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on -vnc :12
+	-device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=off,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on -vnc :12
 
 4. On VM1, set virtio device IP and run arp protocal::
 
-	<VM1># ethtool -L ens5 combined 16
-	<VM1># ifconfig ens5 1.1.1.2
-	<VM1># arp -s 1.1.1.8 52:54:00:00:00:02
+	ethtool -L ens5 combined 16
+	ifconfig ens5 1.1.1.2
+	arp -s 1.1.1.8 52:54:00:00:00:02
 
 5. On VM2, set virtio device IP and run arp protocal::
 
-	<VM2># ethtool -L ens5 combined 16
-	<VM2># ifconfig ens5 1.1.1.8
-	<VM2># arp -s 1.1.1.2 52:54:00:00:00:01
+	ethtool -L ens5 combined 16
+	ifconfig ens5 1.1.1.8
+	arp -s 1.1.1.2 52:54:00:00:00:01
 
 6. Scp 1MB file form VM1 to VM2::
 
@@ -1337,6 +1355,3 @@ and kernel driver. The dynamic change of multi-queues number also test.
 	<VM2># iperf -c 1.1.1.2 -i 1 -t 60
 
 8. Rerun step 6-7 five times.
-
-
-
