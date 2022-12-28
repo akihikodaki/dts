@@ -400,64 +400,6 @@ class TestVfOffload(TestCase):
 
         self.verify(len(result) == 0, ",".join(list(result.values())))
 
-    def checksum_validate_tunnel(self, packets_sent, packets_expected):
-        """
-        Validate the checksum.
-        """
-        tx_interface = self.tester.get_interface(
-            self.tester.get_local_port(self.dut_ports[0])
-        )
-        rx_interface = self.tester.get_interface(
-            self.tester.get_local_port(self.dut_ports[1])
-        )
-        sniff_src = self.vm0_testpmd.get_port_mac(0)
-        checksum_pattern = re.compile("chksum.*=.*(0x[0-9a-z]+)")
-        sniff_src = "52:00:00:00:00:00"
-        chksum = dict()
-        # self.tester.send_expect("scapy", ">>> ")
-
-        for packet_type in list(packets_expected.keys()):
-            self.tester.send_expect("scapy", ">>> ")
-            self.tester.send_expect("p = %s" % packets_expected[packet_type], ">>>")
-            out = self.tester.send_expect("p.show2()", ">>>")
-            chksums = checksum_pattern.findall(out)
-            expected_chksum = chksums
-            chksum[packet_type] = chksums
-            print(packet_type, ": ", chksums)
-
-            self.tester.send_expect("exit()", "#")
-
-            self.tester.scapy_background()
-            inst = self.tester.tcpdump_sniff_packets(
-                intf=rx_interface,
-                count=len(packets_sent),
-                filters=[{"layer": "ether", "config": {"src": sniff_src}}],
-            )
-
-            # Send packet.
-            self.tester.scapy_foreground()
-
-            self.tester.scapy_append(
-                'sendp([%s], iface="%s")' % (packets_sent[packet_type], tx_interface)
-            )
-            self.tester.scapy_execute()
-            out = self.tester.scapy_get_result()
-            p = self.tester.load_tcpdump_sniff_packets(inst)
-            nr_packets = len(p)
-            print(p)
-            chksums = checksum_pattern.findall(p[0].show2(dump=True))
-            packets_received = chksums
-            self.logger.debug(f"packets_received: {packets_received}")
-            self.logger.debug(f"expected_chksum: {expected_chksum}")
-            self.verify(
-                len(expected_chksum) == len(packets_received),
-                f"The chksum type {packet_type} length of the actual result is inconsistent with the expected length!",
-            )
-            self.verify(
-                packets_received == expected_chksum,
-                f"The actually received chksum {packet_type} is inconsistent with the expectation",
-            )
-
     @check_supported_nic(
         ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]
     )
@@ -576,7 +518,7 @@ class TestVfOffload(TestCase):
         self.vm0_testpmd.execute_cmd("start")
         self.vm0_testpmd.wait_link_status_up(0)
         self.vm0_testpmd.wait_link_status_up(1)
-        self.checksum_validate_tunnel(pkts, pkts_ref)
+        result = self.checksum_validate(pkts, pkts_ref)
         # Validate checksum on the receive packet
         out = self.vm0_testpmd.execute_cmd("stop")
         bad_outer_ipcsum = self.vm0_testpmd.get_pmd_value("Bad-outer-ipcsum:", out)
@@ -593,6 +535,8 @@ class TestVfOffload(TestCase):
             self.verify(bad_outer_l4csum == 36, "Bad-outer-l4csum check error")
             self.verify(bad_inner_ipcsum == 36, "Bad-ipcsum check error")
             self.verify(bad_inner_l4csum == 72, "Bad-l4csum check error")
+
+        self.verify(len(result) == 0, ",".join(list(result.values())))
 
     def test_checksum_offload_disable(self):
         """
