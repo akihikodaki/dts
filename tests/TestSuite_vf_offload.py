@@ -354,7 +354,6 @@ class TestVfOffload(TestCase):
         self.vm0_testpmd.execute_cmd("set promisc 0 on")
 
         time.sleep(2)
-        port_id_0 = 0
         mac = self.vm0_testpmd.get_port_mac(0)
         sndIP = "10.0.0.1"
         sndIPv6 = "::1"
