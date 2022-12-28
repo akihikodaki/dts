@@ -243,7 +243,6 @@ The following are the test plans for the DPDK DTS automated test system.
     eventdev_pipeline_perf_test_plan
     pvp_qemu_multi_paths_port_restart_test_plan
     pvp_vhost_user_reconnect_test_plan
-    pvp_vhost_dsa_test_plan
     pvp_virtio_bonding_test_plan
     pvp_virtio_user_4k_pages_test_plan
     vdev_primary_secondary_test_plan
