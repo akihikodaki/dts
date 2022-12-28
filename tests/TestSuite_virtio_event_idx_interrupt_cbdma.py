@@ -279,7 +279,7 @@ class TestVirtioIdxInterruptCbdma(TestCase):
         self.queues = 1
         self.start_vms(packed=False)
         self.config_virito_net_in_vm()
-        res = self.check_packets_after_reload_virtio_device(reload_times=10)
+        res = self.check_packets_after_reload_virtio_device(reload_times=100)
         self.verify(res is True, "Should increase the wait times of ixia")
         self.stop_all_apps()
 
@@ -406,7 +406,7 @@ class TestVirtioIdxInterruptCbdma(TestCase):
         self.queues = 1
         self.start_vms(packed=True)
         self.config_virito_net_in_vm()
-        res = self.check_packets_after_reload_virtio_device(reload_times=10)
+        res = self.check_packets_after_reload_virtio_device(reload_times=100)
         self.verify(res is True, "Should increase the wait times of ixia")
         self.stop_all_apps()
 
