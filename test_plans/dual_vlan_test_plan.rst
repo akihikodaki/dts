@@ -242,7 +242,9 @@ Enable vlan packet forwarding on port ``0`` first::
 
 Insert VLAN Tag Identifier ``1`` on port ``1``::
 
+    testpmd> port stop all
     testpmd> tx_vlan set 1 1
+    testpmd> port start all
 
 Configure the traffic generator to send VLAN packet without VLAN Tag Identifier
 and send 1 packet on port ``A``. Verify that the packet can been received on port
@@ -250,7 +252,9 @@ and send 1 packet on port ``A``. Verify that the packet can been received on por
 
 Delete the VLAN Tag Identifier ``1`` on port ``1``::
 
+    testpmd> port stop all
     testpmd> tx_vlan reset 1
+    testpmd> port start all
 
 Configure the traffic generator to send VLAN packet without VLAN Tag Identifier
 and send 1 packet on port ``A``. Verify that the packet can been received on port
