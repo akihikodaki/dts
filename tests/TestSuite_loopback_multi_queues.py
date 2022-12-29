@@ -2,13 +2,6 @@
 # Copyright(c) 2010-2019 Intel Corporation
 #
 
-"""
-DPDK Test suite.
-Test vhost/virtio-user loopback multi-queues on 7 tx/rx path.
-Includes Mergeable, Normal, Vector_RX, Inorder mergeable,
-Inorder no-mergeable, Virtio 1.1 mergeable, Virtio 1.1 no-mergeable Path.
-"""
-
 import re
 import time
 
@@ -84,7 +77,7 @@ class TestLoopbackMultiQueues(TestCase):
             prefix="vhost",
             fixed_prefix=True,
         )
-        self.vhost_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
+        self.vhost_pmd.execute_cmd("set fwd mac")
 
     @property
     def check_2M_env(self):
@@ -107,6 +100,10 @@ class TestLoopbackMultiQueues(TestCase):
         param = "{} --nb-cores={} --rxq={} --txq={} --txd=1024 --rxd=1024".format(
             args["path"], self.nb_cores, self.queue_number, self.queue_number
         )
+        if "vectorized_path_and_ring_size" in self.running_case:
+            param = "{} --nb-cores={} --rxq={} --txq={} --txd=1025 --rxd=1025".format(
+                args["path"], self.nb_cores, self.queue_number, self.queue_number
+            )
         self.virtio_user_pmd.start_testpmd(
             cores=self.core_list_user,
             param=param,
@@ -117,23 +114,23 @@ class TestLoopbackMultiQueues(TestCase):
             fixed_prefix=True,
         )
 
-        self.virtio_user_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
-        self.virtio_user_pmd.execute_cmd("start", "testpmd> ", 120)
+        self.virtio_user_pmd.execute_cmd("set fwd mac")
+        self.virtio_user_pmd.execute_cmd("start")
 
     def calculate_avg_throughput(self):
         """
         calculate the average throughput
         """
         results = 0.0
-        self.vhost_pmd.execute_cmd("show port stats all", "testpmd>", 60)
+        self.vhost_pmd.execute_cmd("show port stats all")
         for i in range(10):
-            out = self.vhost_pmd.execute_cmd("show port stats all", "testpmd>", 60)
+            out = self.vhost_pmd.execute_cmd("show port stats all")
             time.sleep(1)
             lines = re.search("Rx-pps:\s*(\d*)", out)
             result = lines.group(1)
             results += float(result)
         Mpps = results / (1000000 * 10)
-        self.verify(Mpps > 5, "port can not receive packets")
+        self.verify(Mpps > 1, "port can not receive packets")
         return Mpps
 
     def update_result_table(self, frame_size, case_info, Mpps):
@@ -151,7 +148,7 @@ class TestLoopbackMultiQueues(TestCase):
         """
         check each queue has receive packets
         """
-        out = self.vhost_pmd.execute_cmd("stop", "testpmd> ", 60)
+        out = self.vhost_pmd.execute_cmd("stop")
         for queue_index in range(0, self.queue_number):
             queue = "Queue= %d" % queue_index
             index = out.find(queue)
@@ -166,19 +163,22 @@ class TestLoopbackMultiQueues(TestCase):
                 % (frame_size, rx_packets, tx_packets),
             )
 
-        self.vhost_pmd.execute_cmd("clear port stats all", "testpmd> ", 60)
+        self.vhost_pmd.execute_cmd("clear port stats all")
 
     def send_and_verify(self, case_info):
         """
         start to send packets and calculate avg throughput
         """
         for frame_size in self.frame_sizes:
-            self.vhost_pmd.execute_cmd("set txpkts %d" % frame_size, "testpmd> ", 30)
-            self.vhost_pmd.execute_cmd("start tx_first 32", "testpmd> ", 30)
+            self.vhost_pmd.execute_cmd("set txpkts %d" % frame_size)
+            self.vhost_pmd.execute_cmd("start tx_first 32")
             Mpps = self.calculate_avg_throughput()
             self.update_result_table(frame_size, case_info, Mpps)
             if self.queue_number > 1:
                 self.check_packets_of_each_queue(frame_size)
+            else:
+                self.vhost_pmd.execute_cmd("stop")
+                self.vhost_pmd.execute_cmd("clear port stats all")
 
     def verify_liner_for_multi_queue(self):
         """
@@ -209,7 +209,7 @@ class TestLoopbackMultiQueues(TestCase):
 
     def test_loopback_multi_queue_virtio11_mergeable(self):
         """
-        performance for Vhost PVP virtio 1.1 Mergeable Path.
+        Test Case 1: loopback with virtio 1.1 mergeable path using 1 queue and 8 queues.
         """
         virtio_pmd_arg = {"version": "in_order=0,packed_vq=1,mrg_rxbuf=1", "path": ""}
         for i in self.verify_queue:
@@ -218,7 +218,7 @@ class TestLoopbackMultiQueues(TestCase):
             self.get_core_mask()
             self.start_vhost_testpmd()
             self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("virtio_1.1 mergeable on")
+            self.send_and_verify("virtio 1.1 mergeable")
             self.close_all_testpmd()
 
         self.result_table_print()
@@ -226,7 +226,7 @@ class TestLoopbackMultiQueues(TestCase):
 
     def test_loopback_multi_queue_virtio11_normal(self):
         """
-        performance for Vhost PVP virtio1.1 Normal Path.
+        Test Case 2: loopback with virtio 1.1 non-mergeable path using 1 queue and 8 queues
         """
         virtio_pmd_arg = {"version": "in_order=0,packed_vq=1,mrg_rxbuf=0", "path": ""}
         for i in self.verify_queue:
@@ -235,7 +235,7 @@ class TestLoopbackMultiQueues(TestCase):
             self.get_core_mask()
             self.start_vhost_testpmd()
             self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("virtio_1.1 normal")
+            self.send_and_verify("virtio 1.1 non-mergeable")
             self.close_all_testpmd()
 
         self.result_table_print()
@@ -243,7 +243,7 @@ class TestLoopbackMultiQueues(TestCase):
 
     def test_loopback_multi_queue_inorder_mergeable(self):
         """
-        performance for Vhost PVP In_order mergeable Path.
+        Test Case 3: loopback with virtio 1.0 inorder mergeable path using 1 queue and 8 queues
         """
         virtio_pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=1", "path": ""}
         for i in self.verify_queue:
@@ -252,7 +252,7 @@ class TestLoopbackMultiQueues(TestCase):
             self.get_core_mask()
             self.start_vhost_testpmd()
             self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("inoder mergeable on")
+            self.send_and_verify("virtio 1.0 inoder mergeable")
             self.close_all_testpmd()
 
         self.result_table_print()
@@ -260,7 +260,7 @@ class TestLoopbackMultiQueues(TestCase):
 
     def test_loopback_multi_queue_inorder_no_mergeable(self):
         """
-        performance for Vhost PVP In_order no_mergeable Path.
+        Test Case 4: loopback with virtio 1.0 inorder non-mergeable path using 1 queue and 8 queues
         """
         virtio_pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=0", "path": ""}
         for i in self.verify_queue:
@@ -269,7 +269,7 @@ class TestLoopbackMultiQueues(TestCase):
             self.get_core_mask()
             self.start_vhost_testpmd()
             self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("inoder mergeable off")
+            self.send_and_verify("virtio 1.0 inoder no mergeable")
             self.close_all_testpmd()
 
         self.result_table_print()
@@ -277,7 +277,7 @@ class TestLoopbackMultiQueues(TestCase):
 
     def test_loopback_mulit_queue_mergeable(self):
         """
-        performance for Vhost PVP Mergeable Path.
+        Test Case 5: loopback with virtio 1.0 mergeable path using 1 queue and 8 queues
         """
         virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=1", "path": ""}
         for i in self.verify_queue:
@@ -288,7 +288,7 @@ class TestLoopbackMultiQueues(TestCase):
             if self.queue_number == 8:
                 virtio_pmd_arg["path"] = "--enable-hw-vlan-strip"
             self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("virito mergeable")
+            self.send_and_verify("virtio 1.0 mergeable")
             self.close_all_testpmd()
 
         self.result_table_print()
@@ -296,7 +296,7 @@ class TestLoopbackMultiQueues(TestCase):
 
     def test_loopback_multi_queue_normal(self):
         """
-        performance for Vhost PVP Normal Path.
+        Test Case 6: loopback with virtio 1.0 non-mergeable path using 1 queue and 8 queues
         """
         virtio_pmd_arg = {
             "version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
@@ -308,7 +308,7 @@ class TestLoopbackMultiQueues(TestCase):
             self.get_core_mask()
             self.start_vhost_testpmd()
             self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("virtio normal")
+            self.send_and_verify("virtio 1.0 non-mergeable")
             self.close_all_testpmd()
 
         self.result_table_print()
@@ -316,7 +316,7 @@ class TestLoopbackMultiQueues(TestCase):
 
     def test_loopback_multi_queue_vector_rx(self):
         """
-        performance for Vhost PVP Vector_RX Path
+        Test Case 7: loopback with virtio 1.0 vector_rx path using 1 queue and 8 queues
         """
         virtio_pmd_arg = {
             "version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
@@ -328,7 +328,7 @@ class TestLoopbackMultiQueues(TestCase):
             self.get_core_mask()
             self.start_vhost_testpmd()
             self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("virito vector rx")
+            self.send_and_verify("virito 1.0 vector rx")
             self.close_all_testpmd()
 
         self.result_table_print()
@@ -336,7 +336,7 @@ class TestLoopbackMultiQueues(TestCase):
 
     def test_loopback_with_virtio11_inorder_mergeable_path_multi_queue(self):
         """
-        performance for Vhost PVP Vector_RX Path
+        Test Case 8: loopback with virtio 1.1 inorder mergeable path using 1 queue and 8 queues
         """
         virtio_pmd_arg = {"version": "packed_vq=1,mrg_rxbuf=1,in_order=1", "path": ""}
         for i in self.verify_queue:
@@ -353,11 +353,11 @@ class TestLoopbackMultiQueues(TestCase):
 
     def test_loopback_with_virtio11_inorder_nonmergeable_path_multi_queue(self):
         """
-        performance for Vhost PVP Vector_RX Path
+        Test Case 9: loopback with virtio 1.1 inorder non-mergeable path using 1 queue and 8 queues
         """
         virtio_pmd_arg = {
             "version": "packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1",
-            "path": "--rx-offloads=0x10 --enable-hw-vlan-strip ",
+            "path": "--rx-offloads=0x10 ",
         }
         for i in self.verify_queue:
             self.nb_cores = i
@@ -373,11 +373,11 @@ class TestLoopbackMultiQueues(TestCase):
 
     def test_loopback_with_virtio11_vectorized_path_multi_queue(self):
         """
-        performance for Vhost PVP Vector_RX Path
+        Test Case 10: loopback with virtio 1.1 vectorized path using 1 queue and 8 queues
         """
         virtio_pmd_arg = {
             "version": "packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1",
-            "path": "--enable-hw-vlan-strip ",
+            "path": "",
         }
         for i in self.verify_queue:
             self.nb_cores = i
@@ -385,8 +385,33 @@ class TestLoopbackMultiQueues(TestCase):
             self.get_core_mask()
             self.start_vhost_testpmd()
             self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("virtio 1.1 inorder non-mergeable")
+            self.send_and_verify("virtio 1.1 vectorized")
             self.close_all_testpmd()
+
+        self.result_table_print()
+        self.verify_liner_for_multi_queue()
+
+    def test_loopback_with_virtio11_vectorized_path_and_ring_size_is_not_power_of_2_multi_queue(
+        self,
+    ):
+        """
+        Test Case 11: loopback with virtio 1.1 vectorized path and ring size is not power of 2 using 1 queue and 8 queues
+        """
+        virtio_pmd_arg = {
+            "version": "packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=1025",
+            "path": "",
+        }
+        for i in self.verify_queue:
+            self.nb_cores = i
+            self.queue_number = i
+            self.get_core_mask()
+            self.start_vhost_testpmd()
+            self.start_virtio_testpmd(virtio_pmd_arg)
+            self.send_and_verify(
+                "virtio 1.1 vectorized and ring size is not power of 2"
+            )
+            self.close_all_testpmd()
+
         self.result_table_print()
         self.verify_liner_for_multi_queue()
 
