@@ -203,6 +203,7 @@ The following are the test plans for the DPDK DTS automated test system.
     power_telemetry_test_plan
     power_throughput_test_plan
     vmdq_test_plan
+    vf_l2fwd_test_plan
     vf_l3fwd_test_plan
     softnic_test_plan
     vm_hotplug_test_plan
