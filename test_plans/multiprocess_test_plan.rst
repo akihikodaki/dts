@@ -969,3 +969,26 @@ Test Case: test_multiprocess_negative_exceed_process_num
     the first and second processes should be launched successfully
     the third process should be launched failed and output should contain the following string:
     'multi-process option proc-id(2) should be less than num-procs(2)'
+
+Test Case: test_multiprocess_negative_action
+============================================
+Subcase 1: test_secondary_process_port_reset
+--------------------------------------------
+test steps
+~~~~~~~~~~
+
+1. Launch the app ``testpmd``, start primary process and secondary process with the following arguments::
+
+   ./dpdk-testpmd -l 1,2 --proc-type=auto -a 0000:17:00.0  --log-level=ice,7 -- -i  --rxq=4 --txq=4 --num-procs=2 --proc-id=0
+   ./dpdk-testpmd -l 3,4 --proc-type=auto -a 0000:17:00.0  --log-level=ice,7 -- -i  --rxq=4 --txq=4 --num-procs=2 --proc-id=1
+
+2. reset port in secondary process::
+
+    secondary process:
+      testpmd> port stop 0
+      testpmd> port reset 0
+
+expected result
+~~~~~~~~~~
+
+   Check that there are no ``core dump`` messages in the output.
