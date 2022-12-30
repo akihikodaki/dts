@@ -28,8 +28,6 @@ class TestLoopbackVirtioUserServerMode(TestCase):
             self.cores_num >= 6, "There has not enought cores to test this case"
         )
         self.dut_ports = self.dut.get_ports()
-        self.unbind_ports = copy.deepcopy(self.dut_ports)
-        self.dut.unbind_interfaces_linux(self.unbind_ports)
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.core_list = self.dut.get_core_list(
             self.core_config, socket=self.ports_socket
