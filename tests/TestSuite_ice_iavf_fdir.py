@@ -8736,7 +8736,7 @@ class TestICEIAVFFdir(TestCase):
         self.pmd_output.execute_cmd("start")
 
     def launch_testpmd(self):
-        self.pmd_output.start_testpmd(
+        out = self.pmd_output.start_testpmd(
             cores="1S/4C/1T",
             param="--rxq={} --txq={}".format(self.q_num, self.q_num),
             eal_param="-a %s -a %s"
@@ -8744,6 +8744,7 @@ class TestICEIAVFFdir(TestCase):
             socket=self.ports_socket,
         )
         self.config_testpmd()
+        return out
 
     def send_packets(self, packets, pf_id=0, count=1):
         self.pkt.update_pkt(packets)
@@ -10794,6 +10795,70 @@ class TestICEIAVFFdir(TestCase):
             out1,
             pkt_num=1,
             check_param={"port_id": 1, "mark_id": 0, "queue": 1},
+            stats=True,
+        )
+
+    def test_stress_kill_vf_process_create_new_rule(self):
+        """
+        create a fdir rule, then kill the process, relaunch testpmd, create the same fdir rule successfully and take work.
+        """
+        rules = [
+            "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 5 / mark / end",
+            "flow create 1 ingress pattern eth / ipv4 src is 192.168.0.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 5 / mark / end",
+        ]
+        pkts = [
+            'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.0",dst="192.1.0.0", tos=4)/TCP(sport=22,dport=23)/Raw("x" * 80)',
+            'Ether(dst="00:11:22:33:44:66")/IP(src="192.168.0.0",dst="192.1.0.0", tos=4)/TCP(sport=22,dport=23)/Raw("x" * 80)',
+        ]
+
+        self.create_fdir_rule(rules, check_stats=True)
+        out0 = self.send_pkts_getouput(pkts=pkts[0])
+        rfc.check_iavf_fdir_mark(
+            out0,
+            pkt_num=1,
+            check_param={"port_id": 0, "mark_id": 0, "queue": 5},
+            stats=True,
+        )
+        out1 = self.send_pkts_getouput(pkts=pkts[1])
+        rfc.check_iavf_fdir_mark(
+            out1,
+            pkt_num=1,
+            check_param={"port_id": 1, "mark_id": 0, "queue": 5},
+            stats=True,
+        )
+        # kill the process
+        self.session_secondary = self.dut.new_session()
+        out_pid = self.session_secondary.send_expect(
+            "ps -ef |grep testpmd |grep -v grep |awk '{print $2}'", "#"
+        )
+
+        kill_comd = "kill -9 %s" % (str(out_pid))
+        self.session_secondary.send_expect(kill_comd, "#")
+        self.dut.close_session(self.session_secondary)
+        # create rule again
+        out = self.launch_testpmd()
+        self.verify(
+            "fail" not in out and "Fail" not in out and "error" not in out,
+            "failed to restart testpmd normally",
+        )
+        out_flow0 = self.dut.send_expect("flow list 0", "testpmd> ")
+        out_flow1 = self.dut.send_expect("flow list 1", "testpmd> ")
+        out_flow = out_flow0 + out_flow1
+        rule_pattern = re.compile("ID.*")
+        flow = rule_pattern.findall(out_flow)
+        self.verify(len(flow) == 0, "failed to clean rule")
+        self.create_fdir_rule(rules, check_stats=True)
+        rfc.check_iavf_fdir_mark(
+            out0,
+            pkt_num=1,
+            check_param={"port_id": 0, "mark_id": 0, "queue": 5},
+            stats=True,
+        )
+        out1 = self.send_pkts_getouput(pkts=pkts[1])
+        rfc.check_iavf_fdir_mark(
+            out1,
+            pkt_num=1,
+            check_param={"port_id": 1, "mark_id": 0, "queue": 5},
             stats=True,
         )
 
