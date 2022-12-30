@@ -1691,6 +1691,29 @@ class TestMultiprocess(TestCase):
         }
         self.rte_flow(mac_ipv4_symmetric, self.multiprocess_rss_data, **pmd_param)
 
+    def test_multiprocess_negative_action(self):
+        """
+        Test Case: test_multiprocess_negative_action
+
+        """
+        # start testpmd multi-process
+        self.launch_multi_testpmd(
+            proc_type="auto",
+            queue_num=4,
+            process_num=2,
+        )
+        for pmd_output in self.pmd_output_list:
+            pmd_output.execute_cmd("stop")
+        # set secondary process port stop
+        try:
+            self.pmd_output_list[1].execute_cmd("port stop 0")
+            self.pmd_output_list[1].execute_cmd("port reset 0")
+        except Exception as ex:
+            out = self.pmd_output_list[1].get_output()
+            self.verify(
+                "core dump" not in out, "Core dump occurred in the secondary process!!!"
+            )
+
     def test_perf_multiprocess_performance(self):
         """
         Benchmark Multiprocess performance.
@@ -1926,4 +1949,3 @@ class TestMultiprocess(TestCase):
         Run after each test suite.
         """
         self.dut.kill_all()
-        pass
