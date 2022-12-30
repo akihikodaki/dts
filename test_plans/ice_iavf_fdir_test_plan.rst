@@ -5078,6 +5078,39 @@ Subcase 7: check profile delete
 6. send the two packets again,
    check the two packets are distributed by RSS without FDIR matched ID.
 
+Subcase 8: Kill VF process and create a new rule
+------------------------------------------------
+
+1. create a rule on vf00 and vf01::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 5 / mark / end
+    flow create 1 ingress pattern eth / ipv4 src is 192.168.0.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 5 / mark / end
+
+2. send matched packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.0",dst="192.1.0.0", tos=4)/TCP(sport=22,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:66")/IP(src="192.168.0.0",dst="192.1.0.0", tos=4)/TCP(sport=22,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
+
+   check the packet is redirected to queue 5 with FDIR matched ID=0x0.
+
+3. kill VF process in another shell::
+
+    ps -ef |grep testpmd #Check the process id
+    kill -9 <pid>
+
+4. testpmd shows::
+
+    testpmd> Killed
+
+   then relaunch testpmd.
+   the port can start normally without error message.
+
+5. check there is not rule listed on vf0 and vf1.
+
+6. repeat step 1-2.
+   check the rule can be created successfully,
+   and the packets can be redirected to queue 5 with FDIR matched ID=0x0.
+
 Test case: PFCP coverage test
 =============================
 Subcase 1: PFCP FDIR vlan strip on HW checksum offload check
