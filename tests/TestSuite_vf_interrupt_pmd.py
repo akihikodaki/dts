@@ -345,7 +345,7 @@ class TestVfInterruptPmd(TestCase):
         )
         self.begin_l3fwd_power_multi_queues(self.dut)
         stroutput = ""
-        for ip in range(2, 10):
+        for ip in range(2, 30):
             self.send_packet_loop(self.vf_mac, self.rx_intf_0, self.dut, ip)
             stroutput = stroutput + self.out2
         for queue in range(self.queues):
@@ -397,7 +397,7 @@ class TestVfInterruptPmd(TestCase):
         )
         self.vm0_dut.send_expect(cmd, "Checking link statusdone", 60)
         stroutput = ""
-        for ip in range(2, 10):
+        for ip in range(2, 30):
             self.send_packet_loop(self.vf0_mac, self.rx_intf_0, self.vm0_dut, ip)
             stroutput = stroutput + self.out2
         self.destroy_vm_env()
