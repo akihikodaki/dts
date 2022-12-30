@@ -141,6 +141,7 @@
                 "I40E_10G-10G_BASE_T_X722",
 	            "I40E_10G-10G_BASE_T_BC",
                 "ICE_25G-E810C_SFP",
+		"ICE_25G-E823C_QSFP",
                 "ICE_100G-E810C_QSFP"
             ],
             "Target": [
@@ -164,6 +165,7 @@
                 "I40E_10G-10G_BASE_T_X722",
                 "I40E_10G-SFP_X722",
                 "ICE_25G-E810C_SFP",
+		"ICE_25G-E823C_QSFP",
                 "ICE_100G-E810C_QSFP"
             ],
             "Target": [
@@ -189,6 +191,7 @@
                 "I40E_10G-10G_BASE_T_X722",
                 "I40E_10G-10G_BASE_T_BC",
                 "ICE_25G-E810C_SFP",
+		"ICE_25G-E823C_QSFP",
                 "ICE_100G-E810C_QSFP",
                 "IGC-I226_LM",
                 "IGC-I225_LM"
@@ -214,6 +217,7 @@
                 "I40E_10G-10G_BASE_T_X722",
                 "I40E_10G-SFP_X722",
                 "ICE_25G-E810C_SFP",
+                "ICE_25G-E823C_QSFP",
                 "ICE_100G-E810C_QSFP"
             ],
             "Target": [
@@ -279,6 +283,7 @@
 		"I40E_10G-10G_BASE_T_BC",
                 "I40E_10G-10G_BASE_T_X722",
                 "ICE_25G-E810C_SFP",
+		"ICE_25G-E823C_QSFP",
                 "ICE_100G-E810C_QSFP"
             ],
             "Target": [
@@ -302,6 +307,7 @@
 		"I40E_10G-10G_BASE_T_BC",
                 "I40E_10G-10G_BASE_T_X722",
                 "ICE_25G-E810C_SFP",
+		"ICE_25G-E823C_QSFP",
                 "ICE_100G-E810C_QSFP"
             ],
             "Target": [
@@ -727,6 +733,7 @@
                 "I40E_40G-QSFP_B",
                 "I40E_25G-25G_SFP28",
 		"ICE_100G-E810C_QSFP",
+		"ICE_25G-E823C_QSFP",
 		"ICE_25G-E810C_SFP",
                 "I40E_10G-X722_A0",
                 "I40E_10G-SFP_X722",
@@ -774,6 +781,7 @@
                 "I40E_25G-25G_SFP28",
 		"ICE_100G-E810C_QSFP",
 		"ICE_25G-E810C_SFP",
+		"ICE_25G-E823C_QSFP",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_X722",
                 "I40E_10G-SFP_X722",
@@ -815,6 +823,7 @@
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
 		        "ICE_25G-E810C_SFP",
+			"ICE_25G-E823C_QSFP",
 		        "ICE_100G-E810C_QSFP",
                 "I40E_40G-QSFP_A",
                 "IXGBE_10G-X550EM_X_10G_T",
@@ -1662,6 +1671,7 @@
             "NIC": [
                 "ICE_100G-E810C_QSFP",
                 "ICE_25G-E810_XXV_SFP",
+		"ICE_25G-E823C_QSFP",
                 "ICE_25G-E810C_SFP"
             ],
             "Target": [
@@ -1678,6 +1688,7 @@
             ],
             "NIC": [
                 "ICE_100G-E810C_QSFP",
+		"ICE_25G-E823C_QSFP",
                 "ICE_25G-E810C_SFP"
             ],
             "Target": [
@@ -2267,6 +2278,7 @@
                 "I40E_10G-10G_BASE_T_X722",
                 "I40E_10G-SFP_X722",
                 "ICE_100G-E810C_QSFP",
+		"ICE_25G-E823C_QSFP",
                 "ICE_25G-E810C_SFP"
             ],
             "Target": [
@@ -2288,6 +2300,7 @@
                 "I40E_10G-10G_BASE_T_X722",
                 "I40E_10G-SFP_X722",
                 "ICE_100G-E810C_QSFP",
+		"ICE_25G-E823C_QSFP",
                 "ICE_25G-E810C_SFP"
             ],
             "Target": [
