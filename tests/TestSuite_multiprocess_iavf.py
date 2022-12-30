@@ -476,7 +476,7 @@ class TestMultiprocessIavf(TestCase):
         )
         pkt_num = kwargs.get("pkt_num")
         res = self.get_pkt_statistic(out, **kwargs)
-        res_num = res["rx-total"]
+        res_num = res["rx-packets"]
         self.verify(
             res_num == pkt_num,
             "fail: got wrong number of packets, expect pakcet number {}, got {}".format(
@@ -1068,6 +1068,7 @@ class TestMultiprocessIavf(TestCase):
             r"Port \d+\s+-\s+rx:\s+(?P<rx>\d+)\s+tx:.*PORTS", out, re.DOTALL
         )
         rx_num = re.findall(r"Client\s+\d\s+-\s+rx:\s+(\d+)", res.group(0))
+        rx_num.sort(reverse=True)
         for i in range(proc_num):
             self.verify(
                 int(rx_num[i]) > 0,
@@ -1676,6 +1677,49 @@ class TestMultiprocessIavf(TestCase):
             ],
         }
         self.rte_flow(mac_ipv4_symmetric, self.multiprocess_rss_data, **pmd_param)
+
+    def test_multiprocess_negative_action(self):
+        """
+        Test Case: test_multiprocess_negative_action
+
+        """
+        # start testpmd multi-process
+        self.launch_multi_testpmd(
+            proc_type="auto",
+            queue_num=4,
+            process_num=2,
+        )
+        for pmd_output in self.pmd_output_list:
+            pmd_output.execute_cmd("stop")
+        # set primary process port stop
+        try:
+            self.pmd_output_list[0].execute_cmd("port stop 0")
+        except Exception as ex:
+            out = ex.output
+            self.logger.error(out)
+            self.verify(
+                "core dump" not in out, "Core dump occurred in the primary process!!!"
+            )
+        for pmd_output in self.pmd_output_list:
+            pmd_output.quit()
+        # start testpmd multi-process
+        self.launch_multi_testpmd(
+            proc_type="auto",
+            queue_num=4,
+            process_num=2,
+        )
+        for pmd_output in self.pmd_output_list:
+            pmd_output.execute_cmd("stop")
+        # reset port in secondary process
+        try:
+            self.pmd_output_list[1].execute_cmd("port stop 0")
+            self.pmd_output_list[1].execute_cmd("port reset 0")
+        except Exception as ex:
+            out = ex.output
+            self.logger.error(out)
+            self.verify(
+                "core dump" not in out, "Core dump occurred in the second process!!!"
+            )
 
     def set_fields(self):
         """set ip protocol field behavior"""
