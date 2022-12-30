@@ -54,9 +54,11 @@ If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
 using vfio, use the following commands to load the vfio driver and bind it
 to the device under test::
 
+   echo 1 > /sys/bus/pci/devices/0000:17:00.0/sriov_numvfs
+   ip link set ens9 vf0 mac 00:11:22:33:44:55
    modprobe vfio
    modprobe vfio-pci
-   usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
+   usertools/dpdk-devbind.py --bind=vfio-pci {vf_pci}
 
 Assuming that a DPDK build has been set up and the multi-process sample
 applications have been built.
@@ -948,3 +950,46 @@ Test Case: test_multiprocess_negative_exceed_process_num
     the first and second processes should be launched successfully
     the third process should be launched failed and output should contain the following string:
     'multi-process option proc-id(2) should be less than num-procs(2)'
+
+Test Case: test_multiprocess_negative_action
+============================================
+Subcase 1: test_secondary_process_port_stop
+-------------------------------------------
+test steps
+~~~~~~~~~~
+
+1. Launch the app ``testpmd``, start 2 process with the following arguments::
+
+   ./dpdk-testpmd -l 1,2 --proc-type=auto -a 0000:17:01.0  --log-level=ice,7 -- -i  --num-procs=2 --proc-id=0
+   ./dpdk-testpmd -l 3,4 --proc-type=auto -a 0000:17:01.0  --log-level=ice,7 -- -i  --num-procs=2 --proc-id=1
+
+2. stop port in primary process::
+
+    primary process:
+      testpmd> port stop 0
+
+expected result
+~~~~~~~~~~~~~~~
+
+   Check that there are no core dump messages in the output.
+
+Subcase 2: test_secondary_process_port_reset
+--------------------------------------------
+test steps
+~~~~~~~~~~
+
+1. Launch the app ``testpmd``, start 2 process with the following arguments::
+
+   ./dpdk-testpmd -l 1,2 --proc-type=auto -a 0000:17:01.0  --log-level=ice,7 -- -i  --num-procs=2 --proc-id=0
+   ./dpdk-testpmd -l 3,4 --proc-type=auto -a 0000:17:01.0  --log-level=ice,7 -- -i  --num-procs=2 --proc-id=1
+
+2. reset port in secondary process::
+
+    secondary process:
+      testpmd> port stop 0
+      testpmd> port reset 0
+
+expected result
+~~~~~~~~~~~~~~~
+
+   Check that there are no core dump messages in the output.
