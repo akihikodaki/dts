@@ -339,7 +339,6 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
         Test Case 1: wake up split ring vhost-user cores with event idx interrupt mode and cbdma enabled 16 queues test
         """
         self.vm_num = 1
-        self.bind_nic_driver(self.dut_ports)
         self.queues = 16
         self.get_core_mask()
         self.nopci = False
@@ -360,7 +359,6 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
         Test Case 2: wake up split ring vhost-user cores by multi virtio-net in VMs with event idx interrupt mode and cbdma enabled test
         """
         self.vm_num = 2
-        self.bind_nic_driver(self.dut_ports)
         self.queues = 1
         self.get_core_mask()
         self.nopci = False
@@ -381,7 +379,6 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
         Test Case 3: wake up packed ring vhost-user cores with event idx interrupt mode and cbdma enabled 16 queues test
         """
         self.vm_num = 1
-        self.bind_nic_driver(self.dut_ports)
         self.queues = 16
         self.get_core_mask()
         self.nopci = False
@@ -400,7 +397,6 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
         Test Case 4: wake up packed ring vhost-user cores by multi virtio-net in VMs with event idx interrupt mode and cbdma enabled test
         """
         self.vm_num = 2
-        self.bind_nic_driver(self.dut_ports)
         self.queues = 1
         self.get_core_mask()
         self.nopci = False
@@ -420,8 +416,6 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
         self.dut.send_expect(f"killall {self.l3fwdpower_name}", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.bind_cbdma_device_to_kernel()
-        if "cbdma" in self.running_case:
-            self.bind_nic_driver(self.dut_ports, self.drivername)
 
     def tear_down_all(self):
         """
