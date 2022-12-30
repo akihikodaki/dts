@@ -73,6 +73,7 @@ NICS = {
     "cavium_a063": "177d:a063",
     "cavium_a064": "177d:a064",
     "ICE_100G-E810C_QSFP": "8086:1592",
+    "ICE_25G-E823C_QSFP": "8086:188b",
     "ICE_25G-E810C_SFP": "8086:1593",
     "ICE_25G-E810_XXV_SFP": "8086:159b",
     "IAVF-ADAPTIVE_VF": "8086:1889",
@@ -102,6 +103,7 @@ ETH_800_SERIES = (
     "ICE_25G-E810C_SFP",
     "ICE_25G-E810_XXV_SFP",
     "IAVF-ADAPTIVE_VF",
+    "ICE_25G-E823C_QSFP",
 )
 
 DRIVERS = {
@@ -156,6 +158,7 @@ DRIVERS = {
     "cavium_a064": "octeontx2-nicvf",
     "ICE_100G-E810C_QSFP": "ice",
     "ICE_25G-E810C_SFP": "ice",
+    "ICE_25G-E823C_QSFP": "ice",
     "ICE_25G-E810_XXV_SFP": "ice",
     "IAVF-ADAPTIVE_VF": "iavf",
     "fastlinq_ql45000": "qede",
