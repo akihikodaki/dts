@@ -405,7 +405,12 @@ tvs_mac_l4_qinq_dcf_pipeline_mode = [tv_mac_qinq_ipv6_udp, tv_mac_qinq_ipv6_tcp]
 
 class TestICEQinq(TestCase):
     @check_supported_nic(
-        ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP", "ICE_25G-E810_XXV_SFP"]
+        [
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
+            "ICE_25G-E810_XXV_SFP",
+            "ICE_25G-E823C_QSFP",
+        ]
     )
     def set_up_all(self):
         """

@@ -2918,7 +2918,12 @@ class ICESwitchFilterPPPOETest(TestCase):
         """
         self.verify(
             self.nic
-            in ["ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP", "ICE_100G-E810C_QSFP"],
+            in [
+                "ICE_25G-E810C_SFP",
+                "ICE_25G-E810_XXV_SFP",
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
+            ],
             "%s nic not support Intel® Ethernet 800 Series switch filter" % self.nic,
         )
         self.dut_ports = self.dut.get_ports(self.nic)

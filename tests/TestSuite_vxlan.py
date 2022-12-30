@@ -276,7 +276,11 @@ class TestVxlan(TestCase):
             self.compile_switch = "CONFIG_RTE_LIBRTE_I40E_INC_VECTOR"
         elif self.nic in ["IXGBE_10G-X550T", "IXGBE_10G-X550EM_X_10G_T"]:
             self.compile_switch = "CONFIG_RTE_IXGBE_INC_VECTOR"
-        elif self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
+        elif self.nic in [
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
+            "ICE_25G-E823C_QSFP",
+        ]:
             print("Intel® Ethernet 700 Series support default none VECTOR")
         else:
             self.verify(False, "%s not support this vxlan" % self.nic)
@@ -679,7 +683,11 @@ class TestVxlan(TestCase):
         """
         verify vxlan packet detection
         """
-        if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
+        if self.nic in [
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
+            "ICE_25G-E823C_QSFP",
+        ]:
             print("Intel® Ethernet 700 Series support default none VECTOR")
             src_vec_model = "n"
         self.eal_para = self.dut.create_eal_parameters(
@@ -718,7 +726,11 @@ class TestVxlan(TestCase):
         """
         verify vxlan packet detection with ipv6 header
         """
-        if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
+        if self.nic in [
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
+            "ICE_25G-E823C_QSFP",
+        ]:
             print("Intel® Ethernet 700 Series support default none VECTOR")
             src_vec_model = "n"
 

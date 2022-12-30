@@ -2036,7 +2036,12 @@ sv_mac_test_drop_action = [
 
 
 class ICEDCFSwitchFilterTest(TestCase):
-    supported_nic = ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]
+    supported_nic = [
+        "ICE_100G-E810C_QSFP",
+        "ICE_25G-E810C_SFP",
+        "ICE_25G-E810_XXV_SFP",
+        "ICE_25G-E823C_QSFP",
+    ]
 
     def bind_nics_driver(self, ports, driver=""):
         # modprobe vfio driver

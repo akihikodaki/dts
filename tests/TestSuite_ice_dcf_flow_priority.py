@@ -1830,7 +1830,12 @@ tv_mac_vlan_pppoe_ipcp_pay = {
 
 
 class ICEDCFFlowPriorityTest(TestCase):
-    supported_nic = ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]
+    supported_nic = [
+        "ICE_100G-E810C_QSFP",
+        "ICE_25G-E810C_SFP",
+        "ICE_25G-E810_XXV_SFP",
+        "ICE_25G-E823C_QSFP",
+    ]
     # enable dcf
     dcf_representor = True
 

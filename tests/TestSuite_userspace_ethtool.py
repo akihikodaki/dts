@@ -579,7 +579,11 @@ class TestUserspaceEthtool(TestCase):
             mtu_threshold = 2026
             offset = 4
         # RTE_ETHER_HDR_LEN + RTE_ETHER_CRC_LEN + ICE_VLAN_TAG_SIZE * 2
-        if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
+        if self.nic in [
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
+            "ICE_25G-E823C_QSFP",
+        ]:
             offset = 8
         for index in range(len(self.ports)):
             port = self.ports[index]
@@ -590,7 +594,11 @@ class TestUserspaceEthtool(TestCase):
             self.tester.send_expect("ifconfig %s mtu 9000" % (intf), "# ")
             for mtu in mtus:
                 # Intel® Ethernet 800 Series should stop port before set mtu
-                if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
+                if self.nic in [
+                    "ICE_25G-E810C_SFP",
+                    "ICE_100G-E810C_QSFP",
+                    "ICE_25G-E823C_QSFP",
+                ]:
                     self.dut.send_expect("stop %s" % index, "EthApp>")
                 # The mtu threshold is 2022,When it is greater than 2022, the open/stop port is required.
                 if mtu > mtu_threshold:
@@ -606,7 +614,11 @@ class TestUserspaceEthtool(TestCase):
                     self.dut.send_expect("open %s" % index, "EthApp>")
                 self.dut.send_expect("mtu %d %d" % (index, mtu), "EthApp>")
 
-                if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
+                if self.nic in [
+                    "ICE_25G-E810C_SFP",
+                    "ICE_100G-E810C_QSFP",
+                    "ICE_25G-E823C_QSFP",
+                ]:
                     self.dut.send_expect("open %s" % index, "EthApp>")
 
                 self.tester.is_interface_up(intf)

@@ -386,7 +386,11 @@ class TestNvgre(TestCase):
             self.compile_switch = "CONFIG_RTE_LIBRTE_I40E_INC_VECTOR"
         elif self.nic in ["IXGBE_10G-X550T", "IXGBE_10G-X550EM_X_10G_T"]:
             self.compile_switch = "CONFIG_RTE_IXGBE_INC_VECTOR"
-        elif self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
+        elif self.nic in [
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
+            "ICE_25G-E823C_QSFP",
+        ]:
             print("Intel® Ethernet 800 Series support default none VECTOR")
         else:
             self.verify(False, "%s not support NVGRE case" % self.nic)
@@ -723,7 +727,11 @@ class TestNvgre(TestCase):
         verify nvgre packet with ipv6
         """
         # packet type detect must used without VECTOR pmd
-        if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
+        if self.nic in [
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
+            "ICE_25G-E823C_QSFP",
+        ]:
             print("Intel® Ethernet 800 Series support default none VECTOR")
             src_vec_model = "n"
 
@@ -815,7 +823,11 @@ class TestNvgre(TestCase):
         verify nvgre packet with ipv4
         """
         # packet type detect must used without VECTOR pmd
-        if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
+        if self.nic in [
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
+            "ICE_25G-E823C_QSFP",
+        ]:
             print("Intel® Ethernet 800 Series support default none VECTOR")
             src_vec_model = "n"
 

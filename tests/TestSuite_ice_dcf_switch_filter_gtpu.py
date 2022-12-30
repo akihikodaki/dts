@@ -3536,7 +3536,12 @@ sv_mac_ipv6_gtpu_ipv6_tcp = [sv_mac_ipv6_gtpu_ipv6_tcp_1, sv_mac_ipv6_gtpu_ipv6_
 
 
 class ICEDCFSwitchFilterGTPUTest(TestCase):
-    supported_nic = ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]
+    supported_nic = [
+        "ICE_100G-E810C_QSFP",
+        "ICE_25G-E810C_SFP",
+        "ICE_25G-E810_XXV_SFP",
+        "ICE_25G-E823C_QSFP",
+    ]
 
     @check_supported_nic(supported_nic)
     @skip_unsupported_pkg(["os default", "wireless"])

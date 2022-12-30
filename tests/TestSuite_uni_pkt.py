@@ -278,6 +278,7 @@ class TestUniPacket(TestCase):
             self.nic
             in [
                 "ICE_25G-E810C_SFP",
+                "ICE_25G-E823C_QSFP",
                 "ICE_100G-E810C_QSFP",
                 "IXGBE_10G-82599_SFP",
                 "I40E_10G-SFP_XL710",
