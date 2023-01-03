@@ -98,7 +98,9 @@ The following are the test plans for the DPDK DTS automated test system.
     l2fwd_test_plan
     l2tp_esp_coverage_test_plan
     l3fwd_test_plan
-    l3fwd_lpm_ipv4_test_plan.rst
+    l3fwd_lpm_ipv4_test_plan
+    l3fwd_lpm_ipv4_rfc2544_test_plan
+    l3fwd_lpm_ipv6_test_plan
     l3fwd_func_test_plan
     l3fwdacl_test_plan
     large_vf_test_plan
@@ -157,6 +159,7 @@ The following are the test plans for the DPDK DTS automated test system.
     eventdev_pipeline_test_plan
     tso_test_plan
     tx_preparation_test_plan
+    testpmd_perf_test_plan
     uni_pkt_test_plan
     userspace_ethtool_test_plan
     vlan_ethertype_config_test_plan
@@ -187,6 +190,11 @@ The following are the test plans for the DPDK DTS automated test system.
     vf_smoke_test_plan
     vf_to_vf_nic_bridge_test_plan
     vf_vlan_test_plan
+    vf_l3fwd_kernelpf_test_plan
+    vf_l3fwd_em_kernelpf_test_plan
+    vf_l3fwd_lpm_ipv4_kernelpf_test_plan
+    vf_l3fwd_lpm_ipv4_rfc2544_kernelpf_test_plan
+    vf_l3fwd_lpm_ipv6_kernelpf_test_plan
     kernelpf_iavf_test_plan
     vhost_multi_queue_qemu_test_plan
     vhost_qemu_mtu_test_plan
