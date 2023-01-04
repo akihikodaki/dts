@@ -55,6 +55,8 @@ mac_ipv4_pfcp_session = {
             "send_packet": mac_ipv4_pfcp_session_packets["match"][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
         #     'send_packet': [i for i in mac_ipv4_pfcp_session_packets['mismatch']],
         #     'action': 'check_no_hash_or_different',
@@ -105,6 +107,8 @@ mac_ipv6_pfcp_session = {
             "send_packet": mac_ipv6_pfcp_session_packets["match"][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
         #     'send_packet': [i for i in mac_ipv6_pfcp_session_packets['mismatch']],
         #     'action': 'check_no_hash_or_different',
@@ -155,6 +159,8 @@ mac_ipv4_l2tpv3 = {
             "send_packet": mac_ipv4_l2tpv3_packets["match"][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
         #     'send_packet': [i for i in mac_ipv4_l2tpv3_packets['mismatch']],
         #     'action': 'check_no_hash_or_different',
@@ -205,6 +211,8 @@ mac_ipv6_l2tpv3 = {
             "send_packet": mac_ipv6_l2tpv3_packets["match"][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
         #     'send_packet': [i for i in mac_ipv6_l2tpv3_packets['mismatch']],
         #     'action': 'check_no_hash_or_different',
@@ -255,6 +263,8 @@ mac_ipv4_esp = {
             "send_packet": mac_ipv4_esp_packets["match"][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
         #     'send_packet': [
         #         i for i in mac_ipv4_esp_packets['mismatch']],
@@ -309,6 +319,8 @@ mac_ipv4_udp_esp = {
             "send_packet": mac_ipv4_udp_esp_packets["match"][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
         #     'send_packet': [i for i in mac_ipv4_udp_esp_packets['mismatch']],
         #     'action': 'check_no_hash_or_different',
@@ -359,6 +371,8 @@ mac_ipv6_esp = {
             "send_packet": mac_ipv6_esp_packets["match"][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
         #     'send_packet': [i for i in mac_ipv6_esp_packets['mismatch']],
         #     'action': 'check_no_hash_or_different',
@@ -412,6 +426,8 @@ mac_ipv6_udp_esp = {
             "send_packet": mac_ipv6_udp_esp_packets["match"][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
         #     'send_packet': [i for i in mac_ipv6_udp_esp_packets['mismatch']],
         #     'action': 'check_no_hash_or_different',
@@ -462,6 +478,8 @@ mac_ipv4_ah = {
             "send_packet": mac_ipv4_ah_packets["match"][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
         #     'send_packet': mac_ipv4_ah_packets['mismatch'],
         #     'action': 'check_no_hash_or_different',
@@ -512,6 +530,8 @@ mac_ipv6_ah = {
             "send_packet": mac_ipv6_ah_packets["match"][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
         #     'send_packet': [i for i in mac_ipv6_ah_packets['mismatch']],
         #     'action': 'check_no_hash_or_different',
@@ -523,9 +543,9 @@ mac_ipv6_ah = {
     ],
 }
 
-mac_vlan_ipv4_pay_packets = {
+mac_vlan_ipv4_vlan_packets = {
     "match": {
-        "mac_vlan_ipv4_pay": [
+        "mac_vlan_ipv4_vlan": [
             'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)'.format(
                 vf0_mac
             ),
@@ -544,37 +564,98 @@ mac_vlan_ipv4_pay_packets = {
     ],
 }
 
-mac_vlan_ipv4_pay = {
-    "sub_casename": "mac_vlan_ipv4_pay",
+mac_vlan_ipv4_vlan = {
+    "sub_casename": "mac_vlan_ipv4_vlan",
     "port_id": 0,
     "rule": "flow create 0 ingress pattern eth / vlan / ipv4 / end actions rss types c-vlan end key_len 0 queues end / end",
     "test": [
         {
-            "send_packet": mac_vlan_ipv4_pay_packets["match"]["mac_vlan_ipv4_pay"][0],
+            "send_packet": mac_vlan_ipv4_vlan_packets["match"]["mac_vlan_ipv4_vlan"][0],
             "action": "save_hash",
         },
         {
-            "send_packet": mac_vlan_ipv4_pay_packets["match"]["mac_vlan_ipv4_pay"][1],
+            "send_packet": mac_vlan_ipv4_vlan_packets["match"]["mac_vlan_ipv4_vlan"][1],
             "action": "check_hash_different",
         },
         {
-            "send_packet": mac_vlan_ipv4_pay_packets["match"]["mac_vlan_ipv4_pay"][2],
+            "send_packet": mac_vlan_ipv4_vlan_packets["match"]["mac_vlan_ipv4_vlan"][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
-        #     'send_packet': mac_vlan_ipv4_pay_packets['mismatch'][0],
-        #     'action': 'check_no_hash_or_different',
+        #     "send_packet": mac_vlan_ipv4_vlan_packets["mismatch"][0],
+        #     "action": "check_no_hash_or_different",
         # },
     ],
     "post-test": [
         {"send_packet": pkt, "action": "check_no_hash_or_different"}
-        for pkt in mac_vlan_ipv4_pay_packets["match"]["mac_vlan_ipv4_pay"]
+        for pkt in mac_vlan_ipv4_vlan_packets["match"]["mac_vlan_ipv4_vlan"]
     ],
 }
 
-mac_vlan_ipv4_udp_pay_packets = {
+mac_vlan_ipv4_l3dst_packets = {
     "match": {
-        "mac_vlan_ipv4_udp_pay": [
+        "mac_vlan_ipv4_l3dst": [
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.3")/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:99", dst="{}",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.2")/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+        ],
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)'.format(
+            vf0_mac
+        )
+    ],
+}
+
+mac_vlan_ipv4_l3dst = {
+    "sub_casename": "mac_vlan_ipv4_l3dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv4_l3dst_packets["match"]["mac_vlan_ipv4_l3dst"][
+                0
+            ],
+            "action": "save_hash",
+        },
+        {
+            "send_packet": mac_vlan_ipv4_l3dst_packets["match"]["mac_vlan_ipv4_l3dst"][
+                1
+            ],
+            "action": "check_hash_different",
+        },
+        {
+            "send_packet": mac_vlan_ipv4_l3dst_packets["match"]["mac_vlan_ipv4_l3dst"][
+                2
+            ],
+            "action": "check_hash_same",
+        },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
+        # {
+        #     "send_packet": mac_vlan_ipv4_l3dst_packets["mismatch"][0],
+        #     "action": "check_no_hash_or_different",
+        # },
+    ],
+    "post-test": [
+        {"send_packet": pkt, "action": "check_no_hash_or_different"}
+        for pkt in mac_vlan_ipv4_l3dst_packets["match"]["mac_vlan_ipv4_l3dst"]
+    ],
+}
+
+mac_vlan_ipv4_pay = [mac_vlan_ipv4_vlan, mac_vlan_ipv4_l3dst]
+
+mac_vlan_ipv4_udp_vlan_packets = {
+    "match": {
+        "mac_vlan_ipv4_udp_vlan": [
             'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)'.format(
                 vf0_mac
             ),
@@ -596,43 +677,171 @@ mac_vlan_ipv4_udp_pay_packets = {
     ],
 }
 
-mac_vlan_ipv4_udp_pay = {
-    "sub_casename": "mac_vlan_ipv4_udp_pay",
+mac_vlan_ipv4_udp_vlan = {
+    "sub_casename": "mac_vlan_ipv4_udp_vlan",
     "port_id": 0,
     "rule": "flow create 0 ingress pattern eth / vlan / ipv4 / udp / end actions rss types c-vlan end key_len 0 queues end / end",
     "test": [
         {
-            "send_packet": mac_vlan_ipv4_udp_pay_packets["match"][
-                "mac_vlan_ipv4_udp_pay"
+            "send_packet": mac_vlan_ipv4_udp_vlan_packets["match"][
+                "mac_vlan_ipv4_udp_vlan"
             ][0],
             "action": "save_hash",
         },
         {
-            "send_packet": mac_vlan_ipv4_udp_pay_packets["match"][
-                "mac_vlan_ipv4_udp_pay"
+            "send_packet": mac_vlan_ipv4_udp_vlan_packets["match"][
+                "mac_vlan_ipv4_udp_vlan"
             ][1],
             "action": "check_hash_different",
         },
         {
-            "send_packet": mac_vlan_ipv4_udp_pay_packets["match"][
-                "mac_vlan_ipv4_udp_pay"
+            "send_packet": mac_vlan_ipv4_udp_vlan_packets["match"][
+                "mac_vlan_ipv4_udp_vlan"
             ][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
-        #     'send_packet': mac_vlan_ipv4_udp_pay_packets['mismatch'],
-        #     'action': 'check_no_hash_or_different',
+        #     "send_packet": mac_vlan_ipv4_udp_vlan_packets["mismatch"],
+        #     "action": "check_no_hash_or_different",
         # },
     ],
     "post-test": [
         {"send_packet": pkt, "action": "check_no_hash_or_different"}
-        for pkt in mac_vlan_ipv4_udp_pay_packets["match"]["mac_vlan_ipv4_udp_pay"]
+        for pkt in mac_vlan_ipv4_udp_vlan_packets["match"]["mac_vlan_ipv4_udp_vlan"]
     ],
 }
 
-mac_vlan_ipv4_tcp_pay_packets = {
+mac_vlan_ipv4_udp_l3src_packets = {
     "match": {
-        "mac_vlan_ipv4_tcp_pay": [
+        "mac_vlan_ipv4_udp_l3src": [
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:99", dst="{}",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.4")/UDP(sport=19,dport=99)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+        ]
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)'.format(
+            vf0_mac
+        ),
+        'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)'.format(
+            vf0_mac
+        ),
+    ],
+}
+
+mac_vlan_ipv4_udp_l3src = {
+    "sub_casename": "mac_vlan_ipv4_udp_l3src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv4 / udp / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv4_udp_l3src_packets["match"][
+                "mac_vlan_ipv4_udp_l3src"
+            ][0],
+            "action": "save_hash",
+        },
+        {
+            "send_packet": mac_vlan_ipv4_udp_l3src_packets["match"][
+                "mac_vlan_ipv4_udp_l3src"
+            ][1],
+            "action": "check_hash_different",
+        },
+        {
+            "send_packet": mac_vlan_ipv4_udp_l3src_packets["match"][
+                "mac_vlan_ipv4_udp_l3src"
+            ][2],
+            "action": "check_hash_same",
+        },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
+        # {
+        #     "send_packet": mac_vlan_ipv4_udp_l3src_packets["mismatch"],
+        #     "action": "check_no_hash_or_different",
+        # },
+    ],
+    "post-test": [
+        {"send_packet": pkt, "action": "check_no_hash_or_different"}
+        for pkt in mac_vlan_ipv4_udp_l3src_packets["match"]["mac_vlan_ipv4_udp_l3src"]
+    ],
+}
+
+mac_vlan_ipv4_udp_l4dst_packets = {
+    "match": {
+        "mac_vlan_ipv4_udp_l4dst": [
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=24)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:99", dst="{}",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.4")/UDP(sport=19,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+        ]
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)'.format(
+            vf0_mac
+        ),
+        'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)'.format(
+            vf0_mac
+        ),
+    ],
+}
+
+mac_vlan_ipv4_udp_l4dst = {
+    "sub_casename": "mac_vlan_ipv4_udp_l4dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv4_udp_l4dst_packets["match"][
+                "mac_vlan_ipv4_udp_l4dst"
+            ][0],
+            "action": "save_hash",
+        },
+        {
+            "send_packet": mac_vlan_ipv4_udp_l4dst_packets["match"][
+                "mac_vlan_ipv4_udp_l4dst"
+            ][1],
+            "action": "check_hash_different",
+        },
+        {
+            "send_packet": mac_vlan_ipv4_udp_l4dst_packets["match"][
+                "mac_vlan_ipv4_udp_l4dst"
+            ][2],
+            "action": "check_hash_same",
+        },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
+        # {
+        #    "send_packet": mac_vlan_ipv4_udp_l4dst_packets["mismatch"],
+        #    "action": "check_no_hash_or_different",
+        # },
+    ],
+    "post-test": [
+        {"send_packet": pkt, "action": "check_no_hash_or_different"}
+        for pkt in mac_vlan_ipv4_udp_l4dst_packets["match"]["mac_vlan_ipv4_udp_l4dst"]
+    ],
+}
+
+mac_vlan_ipv4_udp_pay = [
+    mac_vlan_ipv4_udp_vlan,
+    mac_vlan_ipv4_udp_l3src,
+    mac_vlan_ipv4_udp_l4dst,
+]
+
+mac_vlan_ipv4_tcp_vlan_packets = {
+    "match": {
+        "mac_vlan_ipv4_tcp_vlan": [
             'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)'.format(
                 vf0_mac
             ),
@@ -654,43 +863,118 @@ mac_vlan_ipv4_tcp_pay_packets = {
     ],
 }
 
-mac_vlan_ipv4_tcp_pay = {
-    "sub_casename": "mac_vlan_ipv4_tcp_pay",
+mac_vlan_ipv4_tcp_vlan = {
+    "sub_casename": "mac_vlan_ipv4_tcp_vlan",
     "port_id": 0,
     "rule": "flow create 0 ingress pattern eth / vlan / ipv4 / tcp / end actions rss types c-vlan end key_len 0 queues end / end",
     "test": [
         {
-            "send_packet": mac_vlan_ipv4_tcp_pay_packets["match"][
-                "mac_vlan_ipv4_tcp_pay"
+            "send_packet": mac_vlan_ipv4_tcp_vlan_packets["match"][
+                "mac_vlan_ipv4_tcp_vlan"
             ][0],
             "action": "save_hash",
         },
         {
-            "send_packet": mac_vlan_ipv4_tcp_pay_packets["match"][
-                "mac_vlan_ipv4_tcp_pay"
+            "send_packet": mac_vlan_ipv4_tcp_vlan_packets["match"][
+                "mac_vlan_ipv4_tcp_vlan"
             ][1],
             "action": "check_hash_different",
         },
         {
-            "send_packet": mac_vlan_ipv4_tcp_pay_packets["match"][
-                "mac_vlan_ipv4_tcp_pay"
+            "send_packet": mac_vlan_ipv4_tcp_vlan_packets["match"][
+                "mac_vlan_ipv4_tcp_vlan"
             ][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
-        #     'send_packet': mac_vlan_ipv4_tcp_pay_packets['mismatch'],
-        #     'action': 'check_no_hash_or_different',
+        #     "send_packet": mac_vlan_ipv4_tcp_vlan_packets["mismatch"],
+        #     "action": "check_no_hash_or_different",
         # },
     ],
     "post-test": [
         {"send_packet": pkt, "action": "check_no_hash_or_different"}
-        for pkt in mac_vlan_ipv4_tcp_pay_packets["match"]["mac_vlan_ipv4_tcp_pay"]
+        for pkt in mac_vlan_ipv4_tcp_vlan_packets["match"]["mac_vlan_ipv4_tcp_vlan"]
     ],
 }
 
-mac_vlan_ipv4_sctp_pay_packets = {
+mac_vlan_ipv4_tcp_l3src_l4src_packets = {
     "match": {
-        "mac_vlan_ipv4_sctp_pay": [
+        "mac_vlan_ipv4_tcp_l3src_l4src": [
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=22,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:99", dst="{}",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.4")/TCP(sport=25,dport=99)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+        ]
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)'.format(
+            vf0_mac
+        ),
+        'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)'.format(
+            vf0_mac
+        ),
+    ],
+}
+
+mac_vlan_ipv4_tcp_l3src_l4src = {
+    "sub_casename": "mac_vlan_ipv4_tcp_l3src_l4src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv4 / tcp / end actions rss types ipv4-tcp l3-src-only l4-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv4_tcp_l3src_l4src_packets["match"][
+                "mac_vlan_ipv4_tcp_l3src_l4src"
+            ][0],
+            "action": "save_hash",
+        },
+        {
+            "send_packet": mac_vlan_ipv4_tcp_l3src_l4src_packets["match"][
+                "mac_vlan_ipv4_tcp_l3src_l4src"
+            ][1],
+            "action": "check_hash_different",
+        },
+        {
+            "send_packet": mac_vlan_ipv4_tcp_l3src_l4src_packets["match"][
+                "mac_vlan_ipv4_tcp_l3src_l4src"
+            ][2],
+            "action": "check_hash_different",
+        },
+        {
+            "send_packet": mac_vlan_ipv4_tcp_l3src_l4src_packets["match"][
+                "mac_vlan_ipv4_tcp_l3src_l4src"
+            ][3],
+            "action": "check_hash_same",
+        },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
+        # {
+        #     "send_packet": mac_vlan_ipv4_tcp_l3src_l4src_packets["mismatch"],
+        #     "action": "check_no_hash_or_different",
+        # },
+    ],
+    "post-test": [
+        {"send_packet": pkt, "action": "check_no_hash_or_different"}
+        for pkt in mac_vlan_ipv4_tcp_l3src_l4src_packets["match"][
+            "mac_vlan_ipv4_tcp_l3src_l4src"
+        ]
+    ],
+}
+
+mac_vlan_ipv4_tcp_pay = [mac_vlan_ipv4_tcp_vlan, mac_vlan_ipv4_tcp_l3src_l4src]
+
+mac_vlan_ipv4_sctp_vlan_packets = {
+    "match": {
+        "mac_vlan_ipv4_sctp_vlan": [
             'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=25,dport=23)/Raw("x" * 80)'.format(
                 vf0_mac
             ),
@@ -712,43 +996,134 @@ mac_vlan_ipv4_sctp_pay_packets = {
     ],
 }
 
-mac_vlan_ipv4_sctp_pay = {
-    "sub_casename": "mac_vlan_ipv4_sctp_pay",
+mac_vlan_ipv4_sctp_vlan = {
+    "sub_casename": "mac_vlan_ipv4_sctp_vlan",
     "port_id": 0,
     "rule": "flow create 0 ingress pattern eth / vlan / ipv4 / sctp / end actions rss types c-vlan end key_len 0 queues end / end",
     "test": [
         {
-            "send_packet": mac_vlan_ipv4_sctp_pay_packets["match"][
-                "mac_vlan_ipv4_sctp_pay"
+            "send_packet": mac_vlan_ipv4_sctp_vlan_packets["match"][
+                "mac_vlan_ipv4_sctp_vlan"
             ][0],
             "action": "save_hash",
         },
         {
-            "send_packet": mac_vlan_ipv4_sctp_pay_packets["match"][
-                "mac_vlan_ipv4_sctp_pay"
+            "send_packet": mac_vlan_ipv4_sctp_vlan_packets["match"][
+                "mac_vlan_ipv4_sctp_vlan"
             ][1],
             "action": "check_hash_different",
         },
         {
-            "send_packet": mac_vlan_ipv4_sctp_pay_packets["match"][
-                "mac_vlan_ipv4_sctp_pay"
+            "send_packet": mac_vlan_ipv4_sctp_vlan_packets["match"][
+                "mac_vlan_ipv4_sctp_vlan"
             ][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
-        #     'send_packet': mac_vlan_ipv4_sctp_pay_packets['mismatch'],
-        #     'action': 'check_no_hash_or_different',
+        #     "send_packet": mac_vlan_ipv4_sctp_vlan_packets["mismatch"],
+        #     "action": "check_no_hash_or_different",
         # },
     ],
     "post-test": [
         {"send_packet": pkt, "action": "check_no_hash_or_different"}
-        for pkt in mac_vlan_ipv4_sctp_pay_packets["match"]["mac_vlan_ipv4_sctp_pay"]
+        for pkt in mac_vlan_ipv4_sctp_vlan_packets["match"]["mac_vlan_ipv4_sctp_vlan"]
     ],
 }
 
-mac_vlan_ipv6_pay_packets = {
+mac_vlan_ipv4_sctp_all_packets = {
     "match": {
-        "mac_vlan_ipv6_pay": [
+        "mac_vlan_ipv4_sctp_all": [
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=25,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.2")/SCTP(sport=25,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.4")/SCTP(sport=25,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=19,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=25,dport=99)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:99", dst="{}",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=25,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+        ]
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)'.format(
+            vf0_mac
+        ),
+        'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/SCTP(sport=25,dport=23)/Raw("x" * 80)'.format(
+            vf0_mac
+        ),
+    ],
+}
+
+mac_vlan_ipv4_sctp_all = {
+    "sub_casename": "mac_vlan_ipv4_sctp_all",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv4 / sctp / end actions rss types ipv4-sctp end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv4_sctp_all_packets["match"][
+                "mac_vlan_ipv4_sctp_all"
+            ][0],
+            "action": "save_hash",
+        },
+        {
+            "send_packet": mac_vlan_ipv4_sctp_all_packets["match"][
+                "mac_vlan_ipv4_sctp_all"
+            ][1],
+            "action": "check_hash_different",
+        },
+        {
+            "send_packet": mac_vlan_ipv4_sctp_all_packets["match"][
+                "mac_vlan_ipv4_sctp_all"
+            ][2],
+            "action": "check_hash_different",
+        },
+        {
+            "send_packet": mac_vlan_ipv4_sctp_all_packets["match"][
+                "mac_vlan_ipv4_sctp_all"
+            ][3],
+            "action": "check_hash_different",
+        },
+        {
+            "send_packet": mac_vlan_ipv4_sctp_all_packets["match"][
+                "mac_vlan_ipv4_sctp_all"
+            ][4],
+            "action": "check_hash_different",
+        },
+        {
+            "send_packet": mac_vlan_ipv4_sctp_all_packets["match"][
+                "mac_vlan_ipv4_sctp_all"
+            ][5],
+            "action": "check_hash_same",
+        },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
+        # {
+        #     "send_packet": mac_vlan_ipv4_sctp_all_packets["mismatch"],
+        #     "action": "check_no_hash_or_different",
+        # },
+    ],
+    "post-test": [
+        {"send_packet": pkt, "action": "check_no_hash_or_different"}
+        for pkt in mac_vlan_ipv4_sctp_all_packets["match"]["mac_vlan_ipv4_sctp_all"]
+    ],
+}
+
+mac_vlan_ipv4_sctp_pay = [mac_vlan_ipv4_sctp_vlan, mac_vlan_ipv4_sctp_all]
+
+mac_vlan_ipv6_vlan_packets = {
+    "match": {
+        "mac_vlan_ipv6_vlan": [
             'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)'.format(
                 vf0_mac
             ),
@@ -767,37 +1142,98 @@ mac_vlan_ipv6_pay_packets = {
     ],
 }
 
-mac_vlan_ipv6_pay = {
-    "sub_casename": "mac_vlan_ipv6_pay",
+mac_vlan_ipv6_vlan = {
+    "sub_casename": "mac_vlan_ipv6_vlan",
     "port_id": 0,
     "rule": "flow create 0 ingress pattern eth / vlan / ipv6 / end actions rss types c-vlan end key_len 0 queues end / end",
     "test": [
         {
-            "send_packet": mac_vlan_ipv6_pay_packets["match"]["mac_vlan_ipv6_pay"][0],
+            "send_packet": mac_vlan_ipv6_vlan_packets["match"]["mac_vlan_ipv6_vlan"][0],
             "action": "save_hash",
         },
         {
-            "send_packet": mac_vlan_ipv6_pay_packets["match"]["mac_vlan_ipv6_pay"][1],
+            "send_packet": mac_vlan_ipv6_vlan_packets["match"]["mac_vlan_ipv6_vlan"][1],
             "action": "check_hash_different",
         },
         {
-            "send_packet": mac_vlan_ipv6_pay_packets["match"]["mac_vlan_ipv6_pay"][2],
+            "send_packet": mac_vlan_ipv6_vlan_packets["match"]["mac_vlan_ipv6_vlan"][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
-        #     'send_packet': mac_vlan_ipv6_pay_packets['mismatch'],
-        #     'action': 'check_no_hash_or_different',
+        #     "send_packet": mac_vlan_ipv6_vlan_packets["mismatch"],
+        #     "action": "check_no_hash_or_different",
         # },
     ],
     "post-test": [
         {"send_packet": pkt, "action": "check_no_hash_or_different"}
-        for pkt in mac_vlan_ipv6_pay_packets["match"]["mac_vlan_ipv6_pay"]
+        for pkt in mac_vlan_ipv6_vlan_packets["match"]["mac_vlan_ipv6_vlan"]
     ],
 }
 
-mac_vlan_ipv6_udp_pay_packets = {
+mac_vlan_ipv6_l3src_packets = {
     "match": {
-        "mac_vlan_ipv6_udp_pay": [
+        "mac_vlan_ipv6_l3src": [
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:99", dst="{}",type=0x8100)/Dot1Q(vlan=2,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("y" * 80)'.format(
+                vf0_mac
+            ),
+        ]
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)'.format(
+            vf0_mac
+        )
+    ],
+}
+
+mac_vlan_ipv6_l3src = {
+    "sub_casename": "mac_vlan_ipv6_l3src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv6 / end actions rss types ipv6 l3-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv6_l3src_packets["match"]["mac_vlan_ipv6_l3src"][
+                0
+            ],
+            "action": "save_hash",
+        },
+        {
+            "send_packet": mac_vlan_ipv6_l3src_packets["match"]["mac_vlan_ipv6_l3src"][
+                1
+            ],
+            "action": "check_hash_different",
+        },
+        {
+            "send_packet": mac_vlan_ipv6_l3src_packets["match"]["mac_vlan_ipv6_l3src"][
+                2
+            ],
+            "action": "check_hash_same",
+        },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
+        # {
+        #     "send_packet": mac_vlan_ipv6_l3src_packets["mismatch"],
+        #     "action": "check_no_hash_or_different",
+        # },
+    ],
+    "post-test": [
+        {"send_packet": pkt, "action": "check_no_hash_or_different"}
+        for pkt in mac_vlan_ipv6_l3src_packets["match"]["mac_vlan_ipv6_l3src"]
+    ],
+}
+
+mac_vlan_ipv6_pay = [mac_vlan_ipv6_vlan, mac_vlan_ipv6_l3src]
+
+mac_vlan_ipv6_udp_vlan_packets = {
+    "match": {
+        "mac_vlan_ipv6_udp_vlan": [
             'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)'.format(
                 vf0_mac
             ),
@@ -819,43 +1255,107 @@ mac_vlan_ipv6_udp_pay_packets = {
     ],
 }
 
-mac_vlan_ipv6_udp_pay = {
-    "sub_casename": "mac_vlan_ipv6_udp_pay",
+mac_vlan_ipv6_udp_vlan = {
+    "sub_casename": "mac_vlan_ipv6_udp_vlan",
     "port_id": 0,
     "rule": "flow create 0 ingress pattern eth / vlan / ipv6 / udp / end actions rss types c-vlan end key_len 0 queues end / end",
     "test": [
         {
-            "send_packet": mac_vlan_ipv6_udp_pay_packets["match"][
-                "mac_vlan_ipv6_udp_pay"
+            "send_packet": mac_vlan_ipv6_udp_vlan_packets["match"][
+                "mac_vlan_ipv6_udp_vlan"
             ][0],
             "action": "save_hash",
         },
         {
-            "send_packet": mac_vlan_ipv6_udp_pay_packets["match"][
-                "mac_vlan_ipv6_udp_pay"
+            "send_packet": mac_vlan_ipv6_udp_vlan_packets["match"][
+                "mac_vlan_ipv6_udp_vlan"
             ][1],
             "action": "check_hash_different",
         },
         {
-            "send_packet": mac_vlan_ipv6_udp_pay_packets["match"][
-                "mac_vlan_ipv6_udp_pay"
+            "send_packet": mac_vlan_ipv6_udp_vlan_packets["match"][
+                "mac_vlan_ipv6_udp_vlan"
             ][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
-        #     'send_packet': mac_vlan_ipv6_udp_pay_packets['mismatch'],
-        #     'action': 'check_no_hash_or_different',
+        #     "send_packet": mac_vlan_ipv6_udp_vlan_packets["mismatch"],
+        #     "action": "check_no_hash_or_different",
+        #  },
+    ],
+    "post-test": [
+        {"send_packet": pkt, "action": "check_no_hash_or_different"}
+        for pkt in mac_vlan_ipv6_udp_vlan_packets["match"]["mac_vlan_ipv6_udp_vlan"]
+    ],
+}
+
+mac_vlan_ipv6_udp_l4src_packets = {
+    "match": {
+        "mac_vlan_ipv6_udp_l4src": [
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=19,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:99", dst="{}",type=0x8100)/Dot1Q(vlan=2,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=25,dport=99)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+        ]
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)'.format(
+            vf0_mac
+        ),
+        'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)'.format(
+            vf0_mac
+        ),
+    ],
+}
+
+mac_vlan_ipv6_udp_l4src = {
+    "sub_casename": "mac_vlan_ipv6_udp_l4src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv6 / udp / end actions rss types ipv6-udp l4-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv6_udp_l4src_packets["match"][
+                "mac_vlan_ipv6_udp_l4src"
+            ][0],
+            "action": "save_hash",
+        },
+        {
+            "send_packet": mac_vlan_ipv6_udp_l4src_packets["match"][
+                "mac_vlan_ipv6_udp_l4src"
+            ][1],
+            "action": "check_hash_different",
+        },
+        {
+            "send_packet": mac_vlan_ipv6_udp_l4src_packets["match"][
+                "mac_vlan_ipv6_udp_l4src"
+            ][2],
+            "action": "check_hash_same",
+        },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
+        # {
+        #     "send_packet": mac_vlan_ipv6_udp_l4src_packets["mismatch"],
+        #     "action": "check_no_hash_or_different",
         # },
     ],
     "post-test": [
         {"send_packet": pkt, "action": "check_no_hash_or_different"}
-        for pkt in mac_vlan_ipv6_udp_pay_packets["match"]["mac_vlan_ipv6_udp_pay"]
+        for pkt in mac_vlan_ipv6_udp_l4src_packets["match"]["mac_vlan_ipv6_udp_l4src"]
     ],
 }
 
-mac_vlan_ipv6_tcp_pay_packets = {
+mac_vlan_ipv6_udp_pay = [mac_vlan_ipv6_udp_vlan, mac_vlan_ipv6_udp_l4src]
+
+mac_vlan_ipv6_tcp_vlan_packets = {
     "match": {
-        "mac_vlan_ipv6_tcp_pay": [
+        "mac_vlan_ipv6_tcp_vlan": [
             'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)'.format(
                 vf0_mac
             ),
@@ -877,43 +1377,107 @@ mac_vlan_ipv6_tcp_pay_packets = {
     ],
 }
 
-mac_vlan_ipv6_tcp_pay = {
-    "sub_casename": "mac_vlan_ipv6_tcp_pay",
+mac_vlan_ipv6_tcp_vlan = {
+    "sub_casename": "mac_vlan_ipv6_tcp_vlan",
     "port_id": 0,
     "rule": "flow create 0 ingress pattern eth / vlan / ipv6 / tcp / end actions rss types c-vlan end key_len 0 queues end / end",
     "test": [
         {
-            "send_packet": mac_vlan_ipv6_tcp_pay_packets["match"][
-                "mac_vlan_ipv6_tcp_pay"
+            "send_packet": mac_vlan_ipv6_tcp_vlan_packets["match"][
+                "mac_vlan_ipv6_tcp_vlan"
             ][0],
             "action": "save_hash",
         },
         {
-            "send_packet": mac_vlan_ipv6_tcp_pay_packets["match"][
-                "mac_vlan_ipv6_tcp_pay"
+            "send_packet": mac_vlan_ipv6_tcp_vlan_packets["match"][
+                "mac_vlan_ipv6_tcp_vlan"
             ][1],
             "action": "check_hash_different",
         },
         {
-            "send_packet": mac_vlan_ipv6_tcp_pay_packets["match"][
-                "mac_vlan_ipv6_tcp_pay"
+            "send_packet": mac_vlan_ipv6_tcp_vlan_packets["match"][
+                "mac_vlan_ipv6_tcp_vlan"
             ][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
-        #     'send_packet': mac_vlan_ipv6_tcp_pay_packets['mismatch'],
-        #     'action': 'check_no_hash_or_different',
+        #     "send_packet": mac_vlan_ipv6_tcp_vlan_packets["mismatch"],
+        #     "action": "check_no_hash_or_different",
         # },
     ],
     "post-test": [
         {"send_packet": pkt, "action": "check_no_hash_or_different"}
-        for pkt in mac_vlan_ipv6_tcp_pay_packets["match"]["mac_vlan_ipv6_tcp_pay"]
+        for pkt in mac_vlan_ipv6_tcp_vlan_packets["match"]["mac_vlan_ipv6_tcp_vlan"]
     ],
 }
 
-mac_vlan_ipv6_sctp_pay_packets = {
+mac_vlan_ipv6_tcp_l3dst_packets = {
     "match": {
-        "mac_vlan_ipv6_sctp_pay": [
+        "mac_vlan_ipv6_tcp_l3dst": [
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/TCP(sport=25,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:99", dst="{}",type=0x8100)/Dot1Q(vlan=2,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=19,dport=99)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+        ]
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)'.format(
+            vf0_mac
+        ),
+        'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)'.format(
+            vf0_mac
+        ),
+    ],
+}
+
+mac_vlan_ipv6_tcp_l3dst = {
+    "sub_casename": "mac_vlan_ipv6_tcp_l3dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv6 / tcp / end actions rss types ipv6-tcp l3-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv6_tcp_l3dst_packets["match"][
+                "mac_vlan_ipv6_tcp_l3dst"
+            ][0],
+            "action": "save_hash",
+        },
+        {
+            "send_packet": mac_vlan_ipv6_tcp_l3dst_packets["match"][
+                "mac_vlan_ipv6_tcp_l3dst"
+            ][1],
+            "action": "check_hash_different",
+        },
+        {
+            "send_packet": mac_vlan_ipv6_tcp_l3dst_packets["match"][
+                "mac_vlan_ipv6_tcp_l3dst"
+            ][2],
+            "action": "check_hash_same",
+        },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
+        # {
+        #     "send_packet": mac_vlan_ipv6_tcp_l3dst_packets["mismatch"],
+        #     "action": "check_no_hash_or_different",
+        # },
+    ],
+    "post-test": [
+        {"send_packet": pkt, "action": "check_no_hash_or_different"}
+        for pkt in mac_vlan_ipv6_tcp_l3dst_packets["match"]["mac_vlan_ipv6_tcp_l3dst"]
+    ],
+}
+
+mac_vlan_ipv6_tcp_pay = [mac_vlan_ipv6_tcp_vlan, mac_vlan_ipv6_tcp_l3dst]
+
+mac_vlan_ipv6_sctp_vlan_packets = {
+    "match": {
+        "mac_vlan_ipv6_sctp_vlan": [
             'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/SCTP(sport=25,dport=23)/Raw("x" * 80)'.format(
                 vf0_mac
             ),
@@ -935,39 +1499,114 @@ mac_vlan_ipv6_sctp_pay_packets = {
     ],
 }
 
-mac_vlan_ipv6_sctp_pay = {
-    "sub_casename": "mac_vlan_ipv6_sctp_pay",
+mac_vlan_ipv6_sctp_vlan = {
+    "sub_casename": "mac_vlan_ipv6_sctp_vlan",
     "port_id": 0,
     "rule": "flow create 0 ingress pattern eth / vlan / ipv6 / sctp / end actions rss types c-vlan end key_len 0 queues end / end",
     "test": [
         {
-            "send_packet": mac_vlan_ipv6_sctp_pay_packets["match"][
-                "mac_vlan_ipv6_sctp_pay"
+            "send_packet": mac_vlan_ipv6_sctp_vlan_packets["match"][
+                "mac_vlan_ipv6_sctp_vlan"
             ][0],
             "action": "save_hash",
         },
         {
-            "send_packet": mac_vlan_ipv6_sctp_pay_packets["match"][
-                "mac_vlan_ipv6_sctp_pay"
+            "send_packet": mac_vlan_ipv6_sctp_vlan_packets["match"][
+                "mac_vlan_ipv6_sctp_vlan"
             ][1],
             "action": "check_hash_different",
         },
         {
-            "send_packet": mac_vlan_ipv6_sctp_pay_packets["match"][
-                "mac_vlan_ipv6_sctp_pay"
+            "send_packet": mac_vlan_ipv6_sctp_vlan_packets["match"][
+                "mac_vlan_ipv6_sctp_vlan"
             ][2],
             "action": "check_hash_same",
         },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
         # {
-        #     'send_packet': mac_vlan_ipv6_sctp_pay_packets['mismatch'],
-        #     'action': 'check_no_hash_or_different',
+        #     "send_packet": mac_vlan_ipv6_sctp_vlan_packets["mismatch"],
+        #     "action": "check_no_hash_or_different",
         # },
     ],
     "post-test": [
         {"send_packet": pkt, "action": "check_no_hash_or_different"}
-        for pkt in mac_vlan_ipv6_sctp_pay_packets["match"]["mac_vlan_ipv6_sctp_pay"]
+        for pkt in mac_vlan_ipv6_sctp_vlan_packets["match"]["mac_vlan_ipv6_sctp_vlan"]
     ],
 }
+
+mac_vlan_ipv6_sctp_l3dst_l4dst_packets = {
+    "match": {
+        "mac_vlan_ipv6_sctp_l3dst_l4dst": [
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/SCTP(sport=25,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/SCTP(sport=25,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/SCTP(sport=25,dport=99)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+            'Ether(src="10:22:33:44:55:99", dst="{}",type=0x8100)/Dot1Q(vlan=2,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/SCTP(sport=19,dport=23)/Raw("x" * 80)'.format(
+                vf0_mac
+            ),
+        ]
+    },
+    "mismatch": [
+        'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=25,dport=23)/Raw("x" * 80)'.format(
+            vf0_mac
+        ),
+        'Ether(src="10:22:33:44:55:66", dst="{}",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)'.format(
+            vf0_mac
+        ),
+    ],
+}
+
+mac_vlan_ipv6_sctp_l3dst_l4dst = {
+    "sub_casename": "mac_vlan_ipv6_sctp_l3dst_l4dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / vlan / ipv6 / sctp / end actions rss types ipv6-sctp l3-dst-only l4-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_vlan_ipv6_sctp_l3dst_l4dst_packets["match"][
+                "mac_vlan_ipv6_sctp_l3dst_l4dst"
+            ][0],
+            "action": "save_hash",
+        },
+        {
+            "send_packet": mac_vlan_ipv6_sctp_l3dst_l4dst_packets["match"][
+                "mac_vlan_ipv6_sctp_l3dst_l4dst"
+            ][1],
+            "action": "check_hash_different",
+        },
+        {
+            "send_packet": mac_vlan_ipv6_sctp_l3dst_l4dst_packets["match"][
+                "mac_vlan_ipv6_sctp_l3dst_l4dst"
+            ][2],
+            "action": "check_hash_different",
+        },
+        {
+            "send_packet": mac_vlan_ipv6_sctp_l3dst_l4dst_packets["match"][
+                "mac_vlan_ipv6_sctp_l3dst_l4dst"
+            ][3],
+            "action": "check_hash_same",
+        },
+        # According to testplan, case does not need to test the package of mismatch
+        # If need to test in the future, you can directly uncomment
+        # {
+        #     "send_packet": mac_vlan_ipv6_sctp_l3dst_l4dst_packets["mismatch"],
+        #     "action": "check_no_hash_or_different",
+        # },
+    ],
+    "post-test": [
+        {"send_packet": pkt, "action": "check_no_hash_or_different"}
+        for pkt in mac_vlan_ipv6_sctp_l3dst_l4dst_packets["match"][
+            "mac_vlan_ipv6_sctp_l3dst_l4dst"
+        ]
+    ],
+}
+
+mac_vlan_ipv6_sctp_pay = [mac_vlan_ipv6_sctp_vlan, mac_vlan_ipv6_sctp_l3dst_l4dst]
 
 
 class ICE_advance_iavf_rss_vlan_ah_l2tp_pfcp(TestCase):
