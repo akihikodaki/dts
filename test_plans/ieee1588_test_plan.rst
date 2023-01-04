@@ -68,6 +68,10 @@ The -n command is used to select the number of memory channels. It should match 
 --tx-offloads: for IEEE1588, the full-feature tx path needs to be enabled. Enabling any tx offload will force DPDK utilize full tx path.
 Enabling multiple segment offload is more reasonable for user cases.
 
+If test on ICE, start testpmd with the following parameters::
+
+   -cffffff -n 3 -- -i --tx-offloads=0x00008000 --enable-rx-timestamp
+
 Test Case: Enable IEEE1588 PTP packet reception and generation
 ==============================================================
 

@@ -1293,9 +1293,7 @@
             "NIC": [
                 "IGB_1G-I210_COPPER",
                 "cavium_a034",
-                "cavium_0011",
-                "ICE_25G-E810C_SFP",
-                "ICE_100G-E810C_QSFP"
+                "cavium_0011"
             ],
             "Target": [
                 "ALL"
