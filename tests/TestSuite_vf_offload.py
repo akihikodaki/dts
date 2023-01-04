@@ -646,7 +646,17 @@ class TestVfOffload(TestCase):
             self.tester.get_local_port(self.dut_ports[1])
         )
 
-        self.loading_sizes = [128, 800, 801, 1700, 2500]
+        # Here size_and_count is a list of tuples for the test scopes that
+        # in a tuple (size, count) means, sending packets for count times
+        # for TSO with a payload size of size.
+        self.size_and_count = [
+            (128, 10),
+            (800, 10),
+            (801, 10),
+            (1700, 10),
+            (2500, 10),
+            (8500, 1000),
+        ]
 
         self.tester.send_expect(
             "ethtool -K %s rx off tx off tso off gso off gro off lro off"
@@ -720,13 +730,13 @@ class TestVfOffload(TestCase):
         self.tester.scapy_foreground()
         time.sleep(5)
 
-        for loading_size in self.loading_sizes:
+        for loading_size, packet_count in self.size_and_count:
             # IPv4 tcp test
             out = self.vm0_testpmd.execute_cmd("clear port info all", "testpmd> ", 120)
             self.tcpdump_start_sniffing([tx_interface, rx_interface])
             self.tester.scapy_append(
-                'sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")'
-                % (mac, loading_size, tx_interface)
+                'sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/Raw(RandString(size=%s))], iface="%s", count=%s)'
+                % (mac, loading_size, tx_interface, packet_count)
             )
             out = self.tester.scapy_execute()
             out = self.vm0_testpmd.execute_cmd("show port stats all")
@@ -738,29 +748,49 @@ class TestVfOffload(TestCase):
             self.logger.info(payload_size_list)
             if loading_size <= 800:
                 self.verify(
-                    rx_stats == tx_stats and int(payload_size_list[0]) == loading_size,
+                    # for all packet_count packets, verifying the packet size equals the size we sent.
+                    rx_stats == tx_stats
+                    and all(
+                        [
+                            int(payload_size_list[0]) == loading_size
+                            for j in range(packet_count)
+                        ]
+                    ),
                     "IPV4 RX or TX packet number not correct",
                 )
             else:
                 num = loading_size // 800
                 for i in range(num):
                     self.verify(
-                        int(payload_size_list[i]) == 800,
+                        # i * packet_count + j is the i-th segmentation for j-th packet.
+                        all(
+                            [
+                                int(payload_size_list[i * packet_count + j]) == 800
+                                for j in range(packet_count)
+                            ]
+                        ),
                         "the packet segmentation incorrect, %s" % payload_size_list,
                     )
                 if loading_size % 800 != 0:
                     self.verify(
-                        int(payload_size_list[num]) == loading_size % 800,
+                        # num * packet_count + j is the last segmentation for j-th packet.
+                        all(
+                            [
+                                int(payload_size_list[num * packet_count + j])
+                                == loading_size % 800
+                                for j in range(packet_count)
+                            ]
+                        ),
                         "the packet segmentation incorrect, %s" % payload_size_list,
                     )
 
-        for loading_size in self.loading_sizes:
+        for loading_size, packet_count in self.size_and_count:
             # IPv6 tcp test
             out = self.vm0_testpmd.execute_cmd("clear port info all", "testpmd> ", 120)
             self.tcpdump_start_sniffing([tx_interface, rx_interface])
             self.tester.scapy_append(
-                'sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")'
-                % (mac, loading_size, tx_interface)
+                'sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/Raw(RandString(size=%s))], iface="%s", count=%s)'
+                % (mac, loading_size, tx_interface, packet_count)
             )
             out = self.tester.scapy_execute()
             out = self.vm0_testpmd.execute_cmd("show port stats all")
@@ -772,19 +802,39 @@ class TestVfOffload(TestCase):
             self.logger.info(payload_size_list)
             if loading_size <= 800:
                 self.verify(
-                    rx_stats == tx_stats and int(payload_size_list[0]) == loading_size,
+                    # for all packet_count packets, verifying the packet size equals the size we sent.
+                    rx_stats == tx_stats
+                    and all(
+                        [
+                            int(payload_size_list[j]) == loading_size
+                            for j in range(packet_count)
+                        ]
+                    ),
                     "IPV6 RX or TX packet number not correct",
                 )
             else:
                 num = loading_size // 800
                 for i in range(num):
                     self.verify(
-                        int(payload_size_list[i]) == 800,
+                        # i * packet_count + j is the i-th segmentation for j-th packet.
+                        all(
+                            [
+                                int(payload_size_list[i * packet_count + j]) == 800
+                                for j in range(packet_count)
+                            ]
+                        ),
                         "the packet segmentation incorrect, %s" % payload_size_list,
                     )
                 if loading_size % 800 != 0:
                     self.verify(
-                        int(payload_size_list[num]) == loading_size % 800,
+                        # num * packet_count + j is the last segmentation for j-th packet.
+                        all(
+                            [
+                                int(payload_size_list[num * packet_count + j])
+                                == loading_size % 800
+                                for j in range(packet_count)
+                            ]
+                        ),
                         "the packet segmentation incorrect, %s" % payload_size_list,
                     )
 
@@ -803,7 +853,17 @@ class TestVfOffload(TestCase):
             self.tester.get_local_port(self.vm0_dut_ports[1])
         )
 
-        self.loading_sizes = [128, 800, 801, 1700, 2500]
+        # Here size_and_count is a list of tuples for the test scopes that
+        # in a tuple (size, count) means, sending packets for count times
+        # for TSO with a payload size of size.
+        self.size_and_count = [
+            (128, 10),
+            (800, 10),
+            (801, 10),
+            (1700, 10),
+            (2500, 10),
+            (8500, 1000),
+        ]
 
         self.tester.send_expect(
             "ethtool -K %s rx off tx off tso off gso off gro off lro off"
@@ -860,7 +920,7 @@ class TestVfOffload(TestCase):
         time.sleep(5)
 
         for key_outer in pkts_outer:
-            for loading_size in self.loading_sizes:
+            for loading_size, packet_count in self.size_and_count:
                 # IPv4 tcp test
                 out = self.vm0_testpmd.execute_cmd(
                     "clear port info all", "testpmd> ", 120
@@ -874,9 +934,9 @@ class TestVfOffload(TestCase):
                     (
                         'sendp([Ether(dst="%s",src="52:00:00:00:00:00")/'
                         + pkts_outer[key_outer]
-                        + '/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")'
+                        + '/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/Raw(RandString(size=%s))], iface="%s", count = %s)'
                     )
-                    % (mac, loading_size, tx_interface)
+                    % (mac, loading_size, tx_interface, packet_count)
                 )
                 out = self.tester.scapy_execute()
                 out = self.vm0_testpmd.execute_cmd("show port stats all")
@@ -888,23 +948,43 @@ class TestVfOffload(TestCase):
                 self.logger.info(payload_size_list)
                 if loading_size <= 800:
                     self.verify(
-                        rx_stats == tx_stats and payload_size_list[0] == loading_size,
+                        # for all packet_count packets, verifying the packet size equals the size we sent.
+                        rx_stats == tx_stats
+                        and all(
+                            [
+                                payload_size_list == loading_size
+                                for j in range(packet_count)
+                            ]
+                        ),
                         f"{key_outer} tunnel IPV4 RX or TX packet number not correct",
                     )
                 else:
                     num = loading_size // 800
                     for i in range(num):
                         self.verify(
-                            payload_size_list[i] == 800,
+                            # i * packet_count + j is the i-th segmentation for j-th packet.
+                            all(
+                                [
+                                    payload_size_list[i * packet_count + j] == 800
+                                    for j in range(packet_count)
+                                ]
+                            ),
                             "the packet segmentation incorrect, %s" % payload_size_list,
                         )
                     if loading_size % 800 != 0:
                         self.verify(
-                            payload_size_list[num] == loading_size % 800,
+                            # num * packet_count + j is the last segmentation for j-th packet.
+                            all(
+                                [
+                                    payload_size_list[num * packet_count + j]
+                                    == loading_size % 800
+                                    for j in range(packet_count)
+                                ]
+                            ),
                             "the packet segmentation incorrect, %s" % payload_size_list,
                         )
 
-            for loading_size in self.loading_sizes:
+            for loading_size, packet_count in self.size_and_count:
                 # IPv6 tcp test
                 out = self.vm0_testpmd.execute_cmd(
                     "clear port info all", "testpmd> ", 120
@@ -920,7 +1000,7 @@ class TestVfOffload(TestCase):
                         + pkts_outer[key_outer]
                         + '/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")'
                     )
-                    % (mac, loading_size, tx_interface)
+                    % (mac, loading_size, tx_interface, packet_count)
                 )
                 out = self.tester.scapy_execute()
                 out = self.vm0_testpmd.execute_cmd("show port stats all")
@@ -932,19 +1012,39 @@ class TestVfOffload(TestCase):
                 self.logger.info(payload_size_list)
                 if loading_size <= 800:
                     self.verify(
-                        rx_stats == tx_stats and payload_size_list[0] == loading_size,
+                        # for all packet_count packets, verifying the packet size equals the size we sent.
+                        rx_stats == tx_stats
+                        and all(
+                            [
+                                payload_size_list[j] == loading_size
+                                for j in range(packet_count)
+                            ]
+                        ),
                         f"{key_outer} tunnel IPV6 RX or TX packet number not correct",
                     )
                 else:
                     num = loading_size // 800
                     for i in range(num):
                         self.verify(
-                            payload_size_list[i] == 800,
+                            # i * packet_count + j is the i-th segmentation for j-th packet.
+                            all(
+                                [
+                                    payload_size_list[i * packet_count + j] == 800
+                                    for j in range(packet_count)
+                                ]
+                            ),
                             "the packet segmentation incorrect, %s" % payload_size_list,
                         )
                     if loading_size % 800 != 0:
                         self.verify(
-                            payload_size_list[num] == loading_size % 800,
+                            # num * packet_count + j is the last segmentation for j-th packet.
+                            all(
+                                [
+                                    payload_size_list[num * packet_count + j]
+                                    == loading_size % 800
+                                    for j in range(packet_count)
+                                ]
+                            ),
                             "the packet segmentation incorrect, %s" % payload_size_list,
                         )
 
