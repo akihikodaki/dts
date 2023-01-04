@@ -69,60 +69,6 @@ Set txonly forward, start testpmd
 
 Check tester could receive the packets from application generated
 
-
-Test case: VF MAC filter
-========================
-Disable promisc mode, add a new MAC to VF0 and then start testpmd::
-
-    testpmd> set promisc all off
-    testpmd> mac_addr add 0 00:11:22:33:44:55
-    testpmd> set fwd mac
-    testpmd> start
-
-Use scapy to send 100 random packets with current VF0's MAC, verify the
-packets can be received and forwarded by the VF::
-
-    p=Ether(dst="00:01:23:45:67:89")/IP()/Raw(load='X'*30)
-
-Use scapy to send 100 random packets with new added VF0's MAC, verify the
-packets can be received and forwarded by the VF::
-
-    p=Ether(dst="00:11:22:33:44:55")/IP()/Raw(load='X'*30)
-
-Use scapy to send 100 random packets with a wrong MAC to VF0, verify the
-packets can't be received by the VF.
-
-Remove the MAC 00:11:22:33:44:55::
-
-    testpmd> mac_addr remove 0 00:11:22:33:44:55
-
-Use scapy to send 100 random packets with removed VF0's MAC, verify the
-packets can't be received and forwarded by the VF::
-
-    p=Ether(dst="00:11:22:33:44:55")/IP()/Raw(load='X'*30)
-
-Set the default mac address to other mac, check the mac address has be changed
-to new set mac::
-
-    testpmd> mac_addr set 0 00:01:23:45:67:11
-    testpmd> show port info 0
-
-Use scapy to send 100 random packets with original VF0's MAC, verify the
-packets can't be received and forwarded by the VF::
-
-    p=Ether(dst="00:01:23:45:67:89")/IP()/Raw(load='X'*30)
-
-Use scapy to send 100 random packets with new set VF0's MAC, verify the
-packets can be received and forwarded by the VF::
-
-    p=Ether(dst="00:01:23:45:67:11")/IP()/Raw(load='X'*30)
-
-Reset to original mac address
-
-Note::
-    Not set VF MAC from kernel PF for this case, if set, will print
-    "not permitted error" when add new MAC for VF.
-
 Test case: VF promisc
 =====================
 Enable kernel trust mode::
