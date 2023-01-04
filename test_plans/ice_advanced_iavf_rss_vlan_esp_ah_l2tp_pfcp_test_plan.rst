@@ -598,6 +598,8 @@ Test case: MAC_IPV6_AH
 
 Test case: MAC_VLAN_IPV4_PAY
 ============================
+Subcase: MAC_VLAN_IPV4_VLAN
+---------------------------
 
 1. validate a rule for RSS type of MAC_VLAN_IPV4_PAY::
 
@@ -645,8 +647,59 @@ Test case: MAC_VLAN_IPV4_PAY
    check the rule not exists.
    send the first packet in matched packets, check the hash value of this packet is different with before.
 
+Subcase: MAC_VLAN_IPV4_L3DST
+--------------------------------
+
+1. validate a rule for RSS type of MAC_VLAN_IPV4_PAY::
+
+     testpmd> flow validate 0 ingress pattern eth / vlan / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create a rule for RSS type of MAC_VLAN_IPV4_PAY::
+
+     testpmd> flow create 0 ingress pattern eth / vlan / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets
+
+   * MAC_VLAN_IPV4_PAY packet::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     change the field [l3 dst address], send packets::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.3")/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash value is different from the first packet.
+     change other fields, send packets::
+
+       sendp([Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.2")/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash values are the same as the first packet.
+
+4. destroy the rule::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists.
+   send the matched packets, check the hash values of the packets are not exist.
+
 Test case: MAC_VLAN_IPV4_UDP_PAY
 ================================
+Subcase: MAC_VLAN_IPV4_UDP_VLAN
+-------------------------------
 
 1. validate a rule for RSS type of MAC_VLAN_IPV4_UDP_PAY::
 
@@ -694,8 +747,108 @@ Test case: MAC_VLAN_IPV4_UDP_PAY
    check the rule not exists.
    send the first packet in matched packets, check the hash value of this packet is different with before.
 
+Subcase: MAC_VLAN_IPV4_UDP_L3SRC
+--------------------------------
+
+1. validate a rule for RSS type of MAC_VLAN_IPV4_UDP_PAY::
+
+     testpmd> flow validate 0 ingress pattern eth / vlan / ipv4 / udp / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create a rule for RSS type of MAC_VLAN_IPV4_UDP_PAY::
+
+     testpmd> flow create 0 ingress pattern eth / vlan / ipv4 / udp / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets
+
+   * MAC_VLAN_IPV4_UDP_PAY packet::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     change the field [l3 src address], send packets::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash values are different from the first packet.
+     change other fields, send packets::
+
+       sendp([Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.4")/UDP(sport=19,dport=99)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash values are the same as as the first packet.
+
+4. destroy the rule::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists.
+   send the matched packets, check the hash values of the packets are not exist.
+
+Subcase: MAC_VLAN_IPV4_UDP_L4DST
+--------------------------------
+
+1. validate a rule for RSS type of MAC_VLAN_IPV4_UDP_PAY::
+
+     testpmd> flow validate 0 ingress pattern eth / vlan / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create a rule for RSS type of MAC_VLAN_IPV4_UDP_PAY::
+
+     testpmd> flow create 0 ingress pattern eth / vlan / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets
+
+   * MAC_VLAN_IPV4_UDP_PAY packet::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     change the field [l4 dst address], send packets::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=24)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash values are different from the first packet.
+     change other fields, send packets::
+
+       sendp([Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.4")/UDP(sport=19,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash values are the same as as the first packet.
+
+4. destroy the rule::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists.
+   send the matched packets, check the hash values of the packets are not exist.
+
 Test case: MAC_VLAN_IPV4_TCP_PAY
 ================================
+Subcase: MAC_VLAN_IPV4_TCP_VLAN
+-------------------------------
 
 1. validate a rule for RSS type of MAC_VLAN_IPV4_TCP_PAY::
 
@@ -743,8 +896,60 @@ Test case: MAC_VLAN_IPV4_TCP_PAY
    check the rule not exists.
    send the first packet in matched packets, check the hash value of this packet is different with before.
 
+Subcase: MAC_VLAN_IPV4_TCP_l3SRC_L4SRC
+--------------------------------------
+
+1. validate a rule for RSS type of MAC_VLAN_IPV4_TCP_PAY::
+
+     testpmd> flow validate 0 ingress pattern eth / vlan / ipv4 / tcp / end actions rss types ipv4-tcp l3-src-only l4-src-only end key_len 0 queues end / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create a rule for RSS type of MAC_VLAN_IPV4_TCP_PAY::
+
+     testpmd> flow create 0 ingress pattern eth / vlan / ipv4 / tcp / end actions rss types ipv4-tcp l3-src-only l4-src-only end key_len 0 queues end / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets
+
+   * MAC_VLAN_IPV4_TCP_PAY packet::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     change the field [l3 src address and l4 sport], send packets::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=22,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash values are different from the first packet.
+     change other fields, send packets::
+
+       sendp([Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.4")/TCP(sport=25,dport=99)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash values are the same as as the first packet.
+
+4. destroy the rule::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists.
+   send the matched packets, check the hash values of the packets are not exist.
+
 Test case: MAC_VLAN_IPV4_SCTP_PAY
 =================================
+Subcase: MAC_VLAN_IPV4_SCTP_VLAN
+--------------------------------
 
 1. validate a rule for RSS type of MAC_VLAN_IPV4_SCTP_PAY::
 
@@ -792,8 +997,62 @@ Test case: MAC_VLAN_IPV4_SCTP_PAY
    check the rule not exists.
    send the first packet in matched packets, check the hash value of this packet is different with before.
 
+Subcase: MAC_VLAN_IPV4_SCTP_ALL
+-------------------------------
+
+1. validate a rule for RSS type of MAC_VLAN_IPV4_SCTP_PAY::
+
+     testpmd> flow validate 0 ingress pattern eth / vlan / ipv4 / sctp / end actions rss types ipv4-sctp end key_len 0 queues end / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create a rule for RSS type of MAC_VLAN_IPV4_SCTP_PAY::
+
+     testpmd> flow create 0 ingress pattern eth / vlan / ipv4 / sctp / end actions rss types ipv4-sctp end key_len 0 queues end / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets
+
+   * MAC_VLAN_IPV4_SCTP_PAY packet::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     change the field [ipv4-sctp], send packets::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.3", dst="192.168.1.2")/SCTP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.4")/SCTP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=19,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=25,dport=99)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash values are different from the first packet.
+     change other fields, send packets::
+
+       sendp([Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="192.168.1.1", dst="192.168.1.2")/SCTP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash values are the same as as the first packet.
+
+4. destroy the rule::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists.
+   send the matched packets, check the hash values of the packets are not exist.
+
 Test case: MAC_VLAN_IPV6_PAY
 ============================
+Subcase: MAC_VLAN_IPV6_VLAN
+-------------------------------
 
 1. validate a rule for RSS type of MAC_VLAN_IPV6_PAY::
 
@@ -841,8 +1100,59 @@ Test case: MAC_VLAN_IPV6_PAY
    check the rule not exists.
    send the first packet in matched packets, check the hash value of this packet is different with before.
 
+Subcase: MAC_VLAN_IPV6_L3SRC
+--------------------------------
+
+1. validate a rule for RSS type of MAC_VLAN_IPV6_PAY::
+
+     testpmd> flow validate 0 ingress pattern eth / vlan / ipv6 / end actions rss types ipv6 l3-src-only end key_len 0 queues end / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create a rule for RSS type of MAC_VLAN_IPV6_PAY::
+
+     testpmd> flow create 0 ingress pattern eth / vlan / ipv6 / end actions rss types ipv6 l3-src-only end key_len 0 queues end / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets
+
+   * MAC_VLAN_IPV6_PAY packet::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     change the field [l3 src address], send packets::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash values are different from the first packet.
+     change other fields, send packets::
+
+       sendp([Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=2,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("y" * 80)],iface="ens786f0",count=1)
+
+   check the hash values are the same as the first packet.
+
+4. destroy the rule::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists.
+   send the matched packets, check the hash values of the packets are not exist.
+
 Test case: MAC_VLAN_IPV6_UDP_PAY
 ================================
+Subcase: MAC_VLAN_IPV6_UDP_VLAN
+-------------------------------
 
 1. validate a rule for RSS type of MAC_VLAN_IPV6_UDP_PAY::
 
@@ -890,8 +1200,59 @@ Test case: MAC_VLAN_IPV6_UDP_PAY
    check the rule not exists.
    send the first packet in matched packets, check the hash value of this packet is different with before.
 
+Subcase: MAC_VLAN_IPV6_UDP_L4SRC
+--------------------------------
+
+1. validate a rule for RSS type of MAC_VLAN_IPV6_UDP_PAY::
+
+     testpmd> flow validate 0 ingress pattern eth / vlan / ipv6 / udp / end actions rss types ipv6-udp l4-src-only end key_len 0 queues end / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create a rule for RSS type of MAC_VLAN_IPV6_UDP_PAY::
+
+     testpmd> flow create 0 ingress pattern eth / vlan / ipv6 / udp / end actions rss types ipv6-udp l4-src-only end key_len 0 queues end / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets
+
+   * MAC_VLAN_IPV6_UDP_PAY packet::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     change the field [l4 src address], send packets::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=19,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash values are different from the first packet.
+     change other fields, send packets::
+
+       sendp([Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=2,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=25,dport=99)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash values are the same as the first packet.
+
+4. destroy the rule::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists.
+   send the matched packets, check the hash values of the packets are not exist.
+
 Test case: MAC_VLAN_IPV6_TCP_PAY
 ================================
+Subcase: MAC_VLAN_IPV6_TCP_VLAN
+-------------------------------
 
 1. validate a rule for RSS type of MAC_VLAN_IPV6_TCP_PAY::
 
@@ -939,8 +1300,59 @@ Test case: MAC_VLAN_IPV6_TCP_PAY
    check the rule not exists.
    send the first packet in matched packets, check the hash value of this packet is different with before.
 
+Subcase: MAC_VLAN_IPV6_TCP_L3DST
+--------------------------------
+
+1. validate a rule for RSS type of MAC_VLAN_IPV6_TCP_PAY::
+
+     testpmd> flow validate 0 ingress pattern eth / vlan / ipv6 / tcp / end actions rss types ipv6-tcp l3-dst-only end key_len 0 queues end / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create a rule for RSS type of MAC_VLAN_IPV6_TCP_PAY::
+
+     testpmd> flow create 0 ingress pattern eth / vlan / ipv6 / tcp / end actions rss types ipv6-tcp l3-dst-only end key_len 0 queues end / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets
+
+   * MAC_VLAN_IPV6_TCP_PAY packet::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     change the field [l3 dst address], send packets::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/TCP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash values are different from the first packet.
+     change other fields, send packets::
+
+       sendp([Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=2,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=19,dport=99)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash values are the same as the first packet.
+
+4. destroy the rule::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists.
+   send the matched packets, check the hash values of the packets are not exist.
+
 Test case: MAC_VLAN_IPV6_SCTP_PAY
 =================================
+Subcase: MAC_VLAN_IPV6_SCTP_VLAN
+--------------------------------
 
 1. validate a rule for RSS type of MAC_VLAN_IPV6_SCTP_PAY::
 
@@ -988,6 +1400,55 @@ Test case: MAC_VLAN_IPV6_SCTP_PAY
    check the rule not exists.
    send the first packet in matched packets, check the hash value of this packet is different with before.
 
+Subcase: MAC_VLAN_IPV6_SCTP_L3DST_L4DST
+---------------------------------------
+
+1. validate a rule for RSS type of MAC_VLAN_IPV6_SCTP_PAY::
+
+     testpmd> flow validate 0 ingress pattern eth / vlan / ipv6 / sctp / end actions rss types ipv6-sctp l3-dst-only l4-dst-only end key_len 0 queues end / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create a rule for RSS type of MAC_VLAN_IPV6_SCTP_PAY::
+
+     testpmd> flow create 0 ingress pattern eth / vlan / ipv6 / sctp / end actions rss types ipv6-sctp l3-dst-only l4-dst-only end key_len 0 queues end / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets
+
+   * MAC_VLAN_IPV6_SCTP_PAY packet::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/SCTP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     change the field [l3 dst address and l4 dport], send packets::
+
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/SCTP(sport=25,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+       sendp([Ether(src="10:22:33:44:55:66", dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/SCTP(sport=25,dport=99)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash values are different from the first packet.
+     change other fields, send packets::
+
+       sendp([Ether(src="10:22:33:44:55:99", dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=2,type=0x86dd)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/SCTP(sport=19,dport=23)/Raw("x" * 80)],iface="ens786f0",count=1)
+
+     check the hash values are the same as the first packet.
+
+4. destroy the rule::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists.
+   send the matched packets, check the hash values the packets are not exist.
 
 Test case: negative cases
 =========================
