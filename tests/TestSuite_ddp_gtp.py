@@ -157,7 +157,7 @@ class TestDdpGtp(TestCase):
         """
         self.dut_testpmd.start_testpmd(
             "Default",
-            "--pkt-filter-mode=perfect --port-topology=chained \
+            "--port-topology=chained \
             --txq=%s --rxq=%s"
             % (self.PF_QUEUE, self.PF_QUEUE),
         )

@@ -18,7 +18,6 @@ http://doc.dpdk.org/guides/sample_app_ug/flow_filtering.html
 
 The matching item is dst IP address: "192.168.1.1".
 The match action is entering the queue 1.
-The flow example can specify fdir_mode by '--pkt-filter-mode',if not assign fdir_mode, IXGBE will not support flow example.
 IGB not support flow example.
 ICE support flow example.
 

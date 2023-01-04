@@ -49,12 +49,11 @@ Prerequisites
 5. Login vm0, then bind VF0 device to igb_uio driver.
 
 6. Start testpmd on host and vm0, host supports flow director and cloud
-   filter, VM supports cloud filter. If test PF flow director, need to add 
-   --pkt-filter-mode=perfect on testpmd to enable flow director, set chained 
-   port topology mode, add txq/rxq to enable multi-queues. In general, PF's 
+   filter, VM supports cloud filter.
+   set chained port topology mode, add txq/rxq to enable multi-queues. In general, PF's
    max queue is 64, VF's max queue is 4::
 
-    ./<build>/app/dpdk-testpmd -c f -n 4 -- -i --pkt-filter-mode=perfect --port-topology=chained --txq=64 --rxq=64
+    ./<build>/app/dpdk-testpmd -c f -n 4 -- -i --port-topology=chained --txq=64 --rxq=64
 
 
 Test Case: Load dynamic device personalization 
