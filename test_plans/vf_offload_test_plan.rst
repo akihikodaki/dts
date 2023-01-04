@@ -328,75 +328,83 @@ on csum and enable tunnel tso as below::
   testpmd> tunnel_tso set 800 1
 
 Configure the traffic generator to send the multiple packets for the following
-combination:
+combination, each combination for several times:
 
-  +----------------+----------------------------------------+
-  | packet type    | packet organization                    |
-  +================+========================================+
-  |                | Ether / IPv4 / TCP / payload len 128   |
-  |                +----------------------------------------+
-  |                | Ether / IPv4 / TCP / payload len 800   |
-  |                +----------------------------------------+
-  |                | Ether / IPv4 / TCP / payload len 801   |
-  |                +----------------------------------------+
-  |                | Ether / IPv4 / TCP / payload len 1700  |
-  | non-tunneling  +----------------------------------------+
-  | packets for    | Ether / IPv4 / TCP / payload len 2500  |
-  | TSO test       +----------------------------------------+
-  |                | Ether / IPv6 / TCP / payload len 128   |
-  |                +----------------------------------------+
-  |                | Ether / IPv6 / TCP / payload len 800   |
-  |                +----------------------------------------+
-  |                | Ether / IPv6 / TCP / payload len 801   |
-  |                +----------------------------------------+
-  |                | Ether / IPv6 / TCP / payload len 1700  |
-  |                +----------------------------------------+
-  |                | Ether / IPv6 / TCP / payload len 2500  |
-  +----------------+----------------------------------------+
-  |                | Ether / IPv4 / UDP / VXLAN / Ether     |
-  |                +----------------------------------------+
-  |                | Ether / IPv6 / UDP / VXLAN / Ether     |
-  |                +----------------------------------------+
-  |                | Ether / IPv4 / GRE                     |
-  | outer and      +----------------------------------------+
-  | tunneling      | Ether / IPv4 / GRE / Ether             |
-  | packets        +----------------------------------------+
-  | for tso test   | Ether / IPv6 / GRE                     |
-  |                +----------------------------------------+
-  |                | Ether / IPv6 / GRE / Ether             |
-  |                +----------------------------------------+
-  |                | Ether / IPv4 / NVGRE                   |
-  |                +----------------------------------------+
-  |                | Ether / IPv4 / NVGRE / Ether           |
-  |                +----------------------------------------+
-  |                | Ether / IPv6 / NVGRE                   |
-  |                +----------------------------------------+
-  |                | Ether / IPv6 / NVGRE / Ether           |
-  |                +----------------------------------------+
-  |                | Ether / IPv4 / UDP / GTPU              |
-  |                +----------------------------------------+
-  |                | Ether / IPv6 / UDP / GTPU              |
-  +----------------+----------------------------------------+
-  |                | IPv4 / TCP / payload len 128           |
-  |                +----------------------------------------+
-  |                | IPv4 / TCP / payload len 800           |
-  |                +----------------------------------------+
-  |                | IPv4 / TCP / payload len 801           |
-  |                +----------------------------------------+
-  |                | IPv4 / TCP / payload len 1700          |
-  |                +----------------------------------------+
-  | inner packets  | IPv4 / TCP / payload len 2500          |
-  | for TSO test   +----------------------------------------+
-  |                | IPv6 / TCP / payload len 128           |
-  |                +----------------------------------------+
-  |                | IPv6 / TCP / payload len 800           |
-  |                +----------------------------------------+
-  |                | IPv6 / TCP / payload len 801           |
-  |                +----------------------------------------+
-  |                | IPv6 / TCP / payload len 1700          |
-  |                +----------------------------------------+
-  |                | IPv6 / TCP / payload len 2500          |
-  +----------------+----------------------------------------+
+  +----------------+----------------------------------------+---------------+
+  | packet type    | packet organization                    | packet count  |
+  +================+========================================+===============+
+  |                | Ether / IPv4 / TCP / payload len 128   | 10            |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv4 / TCP / payload len 800   | 10            |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv4 / TCP / payload len 801   | 10            |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv4 / TCP / payload len 1700  | 10            |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv4 / TCP / payload len 2500  | 10            |
+  | non-tunneling  +----------------------------------------+---------------+
+  | packets for    | Ether / IPv4 / TCP / payload len 8500  | 1000          |
+  | TSO test       +----------------------------------------+---------------+
+  |                | Ether / IPv6 / TCP / payload len 128   | 10            |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv6 / TCP / payload len 800   | 10            |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv6 / TCP / payload len 801   | 10            |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv6 / TCP / payload len 1700  | 10            |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv6 / TCP / payload len 2500  | 10            |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv6 / TCP / payload len 8500  | 1000          |
+  +----------------+----------------------------------------+---------------+
+  |                | Ether / IPv4 / UDP / VXLAN / Ether     | N/A           |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv6 / UDP / VXLAN / Ether     | N/A           |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv4 / GRE                     | N/A           |
+  | outer and      +----------------------------------------+---------------+
+  | tunneling      | Ether / IPv4 / GRE / Ether             | N/A           |
+  | packets        +----------------------------------------+---------------+
+  | for tso test   | Ether / IPv6 / GRE                     | N/A           |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv6 / GRE / Ether             | N/A           |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv4 / NVGRE                   | N/A           |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv4 / NVGRE / Ether           | N/A           |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv6 / NVGRE                   | N/A           |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv6 / NVGRE / Ether           | N/A           |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv4 / UDP / GTPU              | N/A           |
+  |                +----------------------------------------+---------------+
+  |                | Ether / IPv6 / UDP / GTPU              | N/A           |
+  +----------------+----------------------------------------+---------------+
+  |                | IPv4 / TCP / payload len 128           | 10            |
+  |                +----------------------------------------+---------------+
+  |                | IPv4 / TCP / payload len 800           | 10            |
+  |                +----------------------------------------+---------------+
+  |                | IPv4 / TCP / payload len 801           | 10            |
+  |                +----------------------------------------+---------------+
+  |                | IPv4 / TCP / payload len 1700          | 10            |
+  |                +----------------------------------------+---------------+
+  |                | IPv4 / TCP / payload len 2500          | 10            |
+  |                +----------------------------------------+---------------+
+  | inner packets  | IPv4 / TCP / payload len 8500          | 1000          |
+  | for TSO test   +----------------------------------------+---------------+
+  |                | IPv6 / TCP / payload len 128           | 10            |
+  |                +----------------------------------------+---------------+
+  |                | IPv6 / TCP / payload len 800           | 10            |
+  |                +----------------------------------------+---------------+
+  |                | IPv6 / TCP / payload len 801           | 10            |
+  |                +----------------------------------------+---------------+
+  |                | IPv6 / TCP / payload len 1700          | 10            |
+  |                +----------------------------------------+---------------+
+  |                | IPv6 / TCP / payload len 2500          | 10            |
+  |                +----------------------------------------+---------------+
+  |                | IPv6 / TCP / payload len 8500          | 1000          |
+  +----------------+----------------------------------------+---------------+
   
 Notice that VxLAN needs DCF to configure, so testing of VxLAN may need to perform
 on DCF.
@@ -445,12 +453,11 @@ Launch the userland ``testpmd`` application on DUT as follows::
 
 Test IPv4() in scapy::
 
-    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s")
+    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/Raw(load=RandString(size=%s))], iface="%s", count = %s)
 
 Test IPv6() in scapy::
 
-    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s")
-
+    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/Raw(load=RandString(size=%s))], iface="%s", count = %s)
 
 Test case: csum fwd engine, use tunnel TSO
 ==========================================
@@ -497,9 +504,9 @@ Launch the userland ``testpmd`` application on DUT as follows::
 Test IPv4() in scapy::
 
   for one_outer_packet in outer_packet_list:
-    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/one_outer_packet/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s")
+    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/one_outer_packet/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/Raw(load=RandString(size=%s))], iface="%s", count = %s)
 
 Test IPv6() in scapy::
 
   for one_outer_packet in outer_packet_list:
-    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/one_outer_packet/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s")
+    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/one_outer_packet/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/Raw(load=RandString(size=%s))], iface="%s", count = %s)
