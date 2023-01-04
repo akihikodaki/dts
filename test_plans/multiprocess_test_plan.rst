@@ -989,6 +989,6 @@ test steps
       testpmd> port reset 0
 
 expected result
-~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
    Check that there are no ``core dump`` messages in the output.
