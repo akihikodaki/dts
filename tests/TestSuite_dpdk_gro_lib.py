@@ -20,18 +20,6 @@ from framework.virt_common import VM
 
 class TestDPDKGROLib(TestCase):
     def set_up_all(self):
-        # This suite will not use the port config in ports.cfg
-        # it will use the port config in vhost_peer_conf.cfg
-        # And it need two interface reconnet in DUT
-
-        # unbind the port which config in ports.cfg
-        self.dut_ports = self.dut.get_ports()
-        self.def_driver = self.dut.ports_info[self.dut_ports[0]][
-            "port"
-        ].get_nic_driver()
-        for i in self.dut_ports:
-            port = self.dut.ports_info[i]["port"]
-            port.bind_driver()
         # get and bind the port in config file
         self.pci = peer.get_pci_info()
         self.pci_drv = peer.get_pci_driver_info()
@@ -46,7 +34,7 @@ class TestDPDKGROLib(TestCase):
         )
         bind_script_path = self.dut.get_dpdk_bind_script()
         self.dut.send_expect(
-            "%s --bind=%s %s" % (bind_script_path, self.def_driver, self.pci), "# "
+            "%s --bind=%s %s" % (bind_script_path, self.drivername, self.pci), "# "
         )
         self.path = self.dut.apps_name["test-pmd"]
         self.testpmd_name = self.path.split("/")[-1]
@@ -76,7 +64,6 @@ class TestDPDKGROLib(TestCase):
         else:
             self.socket_mem = "1024,1024"
         self.base_dir = self.dut.base_dir.replace("~", "/root")
-        self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
 
     def set_up(self):
         #
@@ -425,9 +412,6 @@ class TestDPDKGROLib(TestCase):
         """
         Run after each test suite.
         """
-        for i in self.dut_ports:
-            port = self.dut.ports_info[i]["port"]
-            port.bind_driver(self.def_driver)
         self.dut.send_expect("ip netns del ns1", "# ", 30)
         self.dut.send_expect("./usertools/dpdk-devbind.py -u %s" % (self.pci), "# ", 30)
         self.dut.send_expect(
