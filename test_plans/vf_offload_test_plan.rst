@@ -445,11 +445,11 @@ Launch the userland ``testpmd`` application on DUT as follows::
 
 Test IPv4() in scapy::
 
-    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/UDP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s")
+    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s")
 
 Test IPv6() in scapy::
 
-    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/UDP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s")
+    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s")
 
 
 Test case: csum fwd engine, use tunnel TSO
@@ -497,9 +497,9 @@ Launch the userland ``testpmd`` application on DUT as follows::
 Test IPv4() in scapy::
 
   for one_outer_packet in outer_packet_list:
-    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/one_outer_packet/IP(src="192.168.1.1",dst="192.168.1.2")/UDP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s")
+    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/one_outer_packet/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s")
 
 Test IPv6() in scapy::
 
   for one_outer_packet in outer_packet_list:
-    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/one_outer_packet/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/UDP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s")
+    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/one_outer_packet/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s")
