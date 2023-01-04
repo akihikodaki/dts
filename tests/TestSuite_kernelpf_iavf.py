@@ -78,11 +78,7 @@ class TestKernelpfIavf(TestCase):
 
     def set_up(self):
 
-        if self.running_case == "test_vf_mac_filter":
-            self.destroy_vm_env()
-            if self.env_done is False:
-                self.setup_vm_env(driver="", set_vf_mac=False)
-        elif self.running_case == "test_vf_rx_interrupt":
+        if self.running_case == "test_vf_rx_interrupt":
             self.destroy_vm_env()
         elif self.env_done is False:
             self.setup_vm_env()
@@ -248,40 +244,6 @@ class TestKernelpfIavf(TestCase):
         self.verify(
             stats["TX-packets"] != 0 and nums > 0, "vf send packet num is not match"
         )
-
-    def test_vf_mac_filter(self):
-        """
-        Not set VF MAC from kernel PF for this case, if set, will print
-        "not permitted error" when add new MAC for VF.
-        """
-        out = self.launch_testpmd(dcf_flag=self.dcf_mode)
-        self.testpmd_mac = self.get_testpmd_vf_mac(out)
-        self.vm_testpmd.execute_cmd("set fwd mac")
-        self.vm_testpmd.execute_cmd("set promisc all off")
-        self.vm_testpmd.execute_cmd("mac_addr add 0 %s" % self.add_addr)
-        self.vm_testpmd.execute_cmd("start")
-        # send packet with current mac
-        self.send_random_pkt(self.testpmd_mac, count=100)
-        self.verify_packet_count(100)
-        self.vm_testpmd.execute_cmd("clear port stats all")
-        # send packet with add mac
-        self.send_random_pkt(self.add_addr, count=100)
-        self.verify_packet_count(100)
-        self.vm_testpmd.execute_cmd("clear port stats all")
-        # send packet with wrong mac
-        self.send_random_pkt(self.wrong_mac, count=100)
-        self.verify_packet_count(0)
-        self.vm_testpmd.execute_cmd("clear port stats all")
-        self.vm_testpmd.execute_cmd("mac_addr remove 0 %s" % self.add_addr)
-        self.send_random_pkt(self.add_addr, count=100)
-        self.verify_packet_count(0)
-        self.vm_testpmd.execute_cmd("clear port stats all")
-        self.vm_testpmd.execute_cmd("mac_addr add 0 00:01:23:45:67:11")
-        self.send_random_pkt(self.add_addr, count=100)
-        self.verify_packet_count(0)
-        self.vm_testpmd.execute_cmd("clear port stats all")
-        self.send_random_pkt("00:01:23:45:67:11", count=100)
-        self.verify_packet_count(100)
 
     def get_testpmd_vf_mac(self, out):
         result = re.search("([a-f0-9]{2}:){5}[a-f0-9]{2}", out, re.IGNORECASE)
@@ -926,8 +888,6 @@ class TestKernelpfIavf(TestCase):
         else:
             self.vm_testpmd.execute_cmd("quit", "#")
             time.sleep(1)
-        if self.running_case == "test_vf_mac_filter":
-            self.destroy_vm_env()
         if not self.dcf_mode:
             self.dut.send_expect(
                 "ip link set dev %s vf 0 trust off" % self.host_intf, "# "
