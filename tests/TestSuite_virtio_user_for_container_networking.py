@@ -157,7 +157,7 @@ class TestVirtioUserForContainer(TestCase):
         if self.check_2M_env:
             command_line_user = (
                 "docker run -i -t --privileged -v %s/vhost-net:/tmp/vhost-net "
-                + "-v /mnt/huge:/dev/hugepages "
+                + "-v %s:/dev/hugepages "
                 + "-v %s:%s %s .%s/%s -c %s -n %d "
                 + "-m 1024 --no-pci --file-prefix=container --single-file-segments "
                 + "--vdev=virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,queues=%d "
@@ -166,7 +166,7 @@ class TestVirtioUserForContainer(TestCase):
         else:
             command_line_user = (
                 "docker run -i -t --privileged -v %s/vhost-net:/tmp/vhost-net "
-                + "-v /mnt/huge:/dev/hugepages "
+                + "-v %s:/dev/hugepages "
                 + "-v %s:%s %s .%s/%s -c %s -n %d "
                 + "-m 1024 --no-pci --file-prefix=container "
                 + "--vdev=virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,queues=%d "
@@ -174,6 +174,7 @@ class TestVirtioUserForContainer(TestCase):
             )
         command_line_user = command_line_user % (
             self.container_base_dir,
+            self.dut.hugepage_path,
             self.container_base_dir,
             self.container_base_dir,
             self.docker_image,
