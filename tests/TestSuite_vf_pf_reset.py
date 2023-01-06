@@ -61,12 +61,12 @@ class TestVfPfReset(TestCase):
         self.host_intf_1 = self.dut.ports_info[self.used_dut_port_1]["intf"]
 
         tester_port_0 = self.tester.get_local_port(self.used_dut_port_0)
-        self.tester_intf_0 = self.tester.get_interface(self.used_dut_port_0)
-        self.tester_mac_0 = self.tester.get_mac(self.used_dut_port_0)
+        self.tester_intf_0 = self.tester.get_interface(tester_port_0)
+        self.tester_mac_0 = self.tester.get_mac(tester_port_0)
 
         tester_port_1 = self.tester.get_local_port(self.used_dut_port_1)
-        self.tester_intf_1 = self.tester.get_interface(self.used_dut_port_1)
-        self.tester_mac_1 = self.tester.get_mac(self.used_dut_port_1)
+        self.tester_intf_1 = self.tester.get_interface(tester_port_1)
+        self.tester_mac_1 = self.tester.get_mac(tester_port_1)
 
         self.vf_mac1 = "00:11:22:33:44:11"
         self.vf_mac2 = "00:11:22:33:44:12"
@@ -251,7 +251,8 @@ class TestVfPfReset(TestCase):
         pmd_output.execute_cmd(f"port reset {port}")
         pmd_output.execute_cmd(f"port start {port}")
         pmd_output.execute_cmd("start")
-        pmd_output.execute_cmd(f"show port info {port}")
+        port_info = pmd_output.execute_cmd(f"show port info {port}")
+        return port_info
 
     def setup_vm_env(self):
         """
@@ -1304,6 +1305,106 @@ class TestVfPfReset(TestCase):
         )
         self.vm0_testpmd.quit()
         self.vm1_testpmd.quit()
+
+    def test_pf_reset_trigger_vf_reset(self):
+        """
+        check pf reset and trigger vf reset
+        """
+        # Set mac
+        self.ip_link_set(
+            host_intf=self.host_intf_0,
+            cmd="vf",
+            port=0,
+            types="mac",
+            value=self.vf_mac1,
+        )
+        self.ip_link_set(
+            host_intf=self.host_intf_0,
+            cmd="vf",
+            port=1,
+            types="mac",
+            value=self.vf_mac2,
+        )
+
+        # Set the VLAN id of VF0 and VF1
+        self.ip_link_set(
+            host_intf=self.host_intf_0, cmd="vf", port=0, types="vlan", value="1"
+        )
+        self.ip_link_set(
+            host_intf=self.host_intf_0, cmd="vf", port=1, types="vlan", value="1"
+        )
+
+        # Launch pmd
+        param = "--portmask=0x3" + " --port-topology=paired"
+        self.pmd_output.start_testpmd(
+            cores="1S/4C/1T",
+            ports=[self.sriov_vfs_port[0].pci, self.sriov_vfs_port[1].pci],
+            param=param,
+        )
+
+        # Input pmd command
+        self.pmd_output.execute_cmd("set fwd mac")
+        self.pmd_output.execute_cmd("start")
+        self.pmd_output.execute_cmd("set allmulti all on")
+        self.pmd_output.execute_cmd("set promisc all off")
+        self.pmd_output.execute_cmd("set verbose 1")
+        out = self.pmd_output.execute_cmd("show port info all")
+        # Diable Promiscuous mode and enable Allmulticast mode
+        self.verify(
+            "Promiscuous mode: enabled" not in out, "disable promiscuous mode failed."
+        )
+        self.verify(
+            "Allmulticast mode: disabled" not in out,
+            "enabled allmulticast mode failed.",
+        )
+
+        # The packets can be received
+        # By one VF and can be forward to another VF correctly
+        self.verify_send_packets(
+            self.tester_intf_0,
+            self.vf_mac1,
+            expect_value=1000,
+            count=1000,
+            vlan=1,
+            tx_port=self.tester_intf_0,
+        )
+        # Pf reset
+        self.used_dut_port = self.dut_ports[0]
+        self.domain_id_0 = self.dut.ports_info[self.used_dut_port]["port"].domain_id
+        self.bus_id_0 = self.dut.ports_info[self.used_dut_port]["port"].bus_id
+        self.devfun_id_0 = self.dut.ports_info[self.used_dut_port]["port"].devfun_id
+        reset_cmd = (
+            "echo 1 > /sys/bus/pci/devices/"
+            + self.domain_id_0
+            + "\\:"
+            + self.bus_id_0
+            + "\\:"
+            + self.devfun_id_0
+            + "/reset"
+        )
+        self.dut_new_session.send_expect(reset_cmd, "#")
+        # Check testpmd output "reset event"
+        out = self.pmd_output.get_output()
+        self.verify("reset event" in out, "testpmd did not report reset event")
+        # Send packets and verify again
+        port_info = self.reset_vf_ports(self.pmd_output)
+        # Check Diable Promiscuous mode and enable Allmulticast mode
+        self.verify(
+            "Promiscuous mode: enabled" not in port_info,
+            "disable promiscuous mode failed.",
+        )
+        self.verify(
+            "Allmulticast mode: disabled" not in port_info,
+            "enabled allmulticast mode failed.",
+        )
+        self.verify_send_packets(
+            self.tester_intf_0,
+            self.vf_mac1,
+            expect_value=1000,
+            count=1000,
+            vlan=1,
+            tx_port=self.tester_intf_0,
+        )
 
     def tear_down(self):
         """
