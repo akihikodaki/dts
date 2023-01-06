@@ -630,3 +630,43 @@ test Case 10: vf reset (two vfs passed through to two VM)
 
 8. Reset vf0 and vf1, send the two packets,
    vf0 can forward both of the two type packets to VF1.
+
+test case 11: pf reset trigger vf reset
+=======================================
+
+1. Execute step1-step6 of test case 1.
+
+2. Reset PF::
+
+     echo 1 > /sys/bus/pci/devices/0000:81:00.0/reset
+
+3. Testpmd shows::
+
+     Port 0: reset event
+     Port 1: reset event
+
+4. Reset the vfs::
+
+     testpmd> stop
+     testpmd> port stop all
+     testpmd> port reset all
+     testpmd> port start all
+     testpmd> start
+
+   Send the same 1000 packets with scapy from tester, verify the packets can be
+   received by one VF and can be forward to another VF correctly,
+   check the port info::
+
+     testpmd> show port info all
+
+     ********************* Infos for port 0  *********************
+     MAC address: 00:11:22:33:44:11
+     Promiscuous mode: disabled
+     Allmulticast mode: enabled
+
+     ********************* Infos for port 1  *********************
+     MAC address: 00:11:22:33:44:12
+     Promiscuous mode: disabled
+     Allmulticast mode: enabled
+
+   The info status is consistent to the status before reset.
