@@ -186,6 +186,11 @@ Test case4: VF tagged vlan rx
 Test case5: VF Vlan strip test
 ==============================
 
+.. note::
+   according to dpdk commit 5cbfb386aa3f4c49b3cd9579e4e928cc5ab08d35,if not add parameter "enable-hw-vlan", the vlan
+   offload should be disable.the avx2 behavior is not appropriate, the avx2 and avx512 shouldn't have gap on vlan
+   offload. so add parameter "--enable-hw-vlan" in testpmd to test vlan strip.
+
 1. Start testpmd with mac forward mode::
 
      testpmd> set fwd mac
