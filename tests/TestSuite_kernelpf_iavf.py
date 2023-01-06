@@ -109,6 +109,9 @@ class TestKernelpfIavf(TestCase):
             )
         self.dut.generate_sriov_vfs_by_port(self.used_dut_port, 1, driver=driver)
         self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port]["vfs_port"]
+        self.dut.send_expect("ifconfig %s up" % self.host_intf, "#")
+        res = self.dut.is_interface_up(self.host_intf)
+        self.verify(res, "%s link status is down" % self.host_intf)
         out = self.dut.send_expect("ethtool %s" % self.host_intf, "#")
         self.speed = int(re.findall("Speed: (\d*)", out)[0]) // 1000
         if self.is_eth_series_nic(800):
@@ -130,12 +133,12 @@ class TestKernelpfIavf(TestCase):
             self.dut.send_expect(
                 "ip link set %s vf 0 trust on" % (self.host_intf), "# "
             )
+        time.sleep(1)
         try:
 
             for port in self.sriov_vfs_port:
                 port.bind_driver(self.vf_driver)
 
-            time.sleep(1)
             vf_popt = {"opt_host": self.sriov_vfs_port[0].pci}
 
             # set up VM ENV
@@ -168,8 +171,6 @@ class TestKernelpfIavf(TestCase):
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port)
             self.used_dut_port = None
 
-        self.bind_nic_driver(self.dut_ports, driver=self.drivername)
-
         self.env_done = False
 
     def jumboframes_get_stat(self, portid, rx_tx):
@@ -184,23 +185,28 @@ class TestKernelpfIavf(TestCase):
         else:
             return None
 
-    def send_random_pkt(self, dts, count=1):
+    def send_random_pkt(self, dts, count=1, allow_miss=False):
         tgen_ports = []
         tx_port = self.tester.get_local_port(self.dut_ports[0])
-        rx_port = self.tester.get_local_port(self.dut_ports[1])
+        rx_port = self.tester.get_local_port(self.dut_ports[0])
         tgen_ports.append((tx_port, rx_port))
         src_mac = self.tester.get_mac(tx_port)
         dst_mac = dts
         pkt_param = [("ether", {"dst": dst_mac, "src": src_mac})]
+        self.vm_testpmd.wait_link_status_up(0, timeout=15)
         result = self.tester.check_random_pkts(
-            tgen_ports, pktnum=count, allow_miss=False, params=pkt_param
+            tgen_ports, pktnum=count, allow_miss=allow_miss, params=pkt_param
         )
         return result
+        self.verify(result, "tcpdump not capture %s packets" % count)
 
     def launch_testpmd(self, **kwargs):
         dcf_flag = kwargs.get("dcf_flag")
         param = kwargs.get("param") if kwargs.get("param") else ""
         if dcf_flag == "enable":
+            self.dut.send_expect(
+                "ip link set dev %s vf 0 trust on" % self.host_intf, "# "
+            )
             out = self.vm_testpmd.start_testpmd(
                 "all",
                 param=param,
@@ -283,7 +289,7 @@ class TestKernelpfIavf(TestCase):
         out = self.vm_dut.get_session_output()
         self.verify(self.vf_mac in out, "vf receive pkt fail with current mac")
         # send packet with wrong mac, vf can not receive and forward packet
-        self.send_random_pkt(self.wrong_mac, count=1)
+        self.send_random_pkt(self.wrong_mac, count=1, allow_miss=True)
         out = self.vm_dut.get_session_output()
         self.verify(self.wrong_mac not in out, "vf receive pkt with wrong mac")
 
@@ -296,7 +302,6 @@ class TestKernelpfIavf(TestCase):
         self.send_random_pkt(self.wrong_mac, count=1)
         out = self.vm_dut.get_session_output()
         self.verify(self.wrong_mac in out, "vf receive pkt fail with wrong mac")
-        self.dut.send_expect("ip link set dev %s vf 0 trust off" % self.host_intf, "# ")
 
     def test_vf_multicast(self):
         """
@@ -313,7 +318,7 @@ class TestKernelpfIavf(TestCase):
         self.send_random_pkt(self.vf_mac, count=1)
         out = self.vm_dut.get_session_output()
         self.verify(self.vf_mac in out, "vf receive pkt fail with current mac")
-        self.send_random_pkt(multicast_mac, count=1)
+        self.send_random_pkt(multicast_mac, count=1, allow_miss=True)
         out = self.vm_dut.get_session_output()
         self.verify(multicast_mac not in out, "vf receive pkt with multicast mac")
 
@@ -650,6 +655,7 @@ class TestKernelpfIavf(TestCase):
     def get_tcpdump_package(self):
         time.sleep(1)
         self.tester.send_expect("killall tcpdump", "#")
+        time.sleep(1)
         return self.tester.send_expect(
             "tcpdump -A -nn -e -vv -r getPackageByTcpdump.cap", "#"
         )
@@ -910,3 +916,4 @@ class TestKernelpfIavf(TestCase):
                 % (self.host_intf, self.flag, self.default_stats),
                 "# ",
             )
+        self.bind_nic_driver(self.dut_ports, driver=self.drivername)
