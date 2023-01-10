@@ -406,6 +406,17 @@ class TestUserspaceEthtool(TestCase):
             self.dut.send_expect(
                 "ethtool --eeprom-dump %s raw on > %s" % (intf, ethtool_eeprom), "# "
             )
+            if self.kdriver == "ixgbe":
+                self.dut.send_expect(
+                    "ethtool --eeprom-dump %s length 0x4000 raw on > %s"
+                    % (intf, ethtool_eeprom),
+                    "# ",
+                )
+            else:
+                self.dut.send_expect(
+                    "ethtool --eeprom-dump %s raw on > %s" % (intf, ethtool_eeprom),
+                    "# ",
+                )
             # wait for file ready
             time.sleep(2)
             # dpdk userspcae tools dump eeprom file size different with kernel ethtool dump
