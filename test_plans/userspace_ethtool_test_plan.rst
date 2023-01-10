@@ -76,6 +76,10 @@ Dump eeprom binary by linux's ethtool and dpdk's ethtool separately::
    ethtool --eeprom-dump INTF_0 raw on > ethtool_eeprom_0.bin
    ethtool --eeprom-dump INTF_1 raw on > ethtool_eeprom_1.bin
 
+.. note::
+   In case on ixgbe NIC to read the eeprom, please use 'length' parameter to reduce size to 0x4000.
+   For example: ethtool --eeprom-dump {INTF} length 0x4000.
+
 Retrieve eeprom on specified port using dpdk's ethtool and
 compare csum with the file dumped by ethtool::
 
