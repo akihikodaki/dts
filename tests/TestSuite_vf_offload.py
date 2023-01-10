@@ -752,7 +752,7 @@ class TestVfOffload(TestCase):
                     rx_stats == tx_stats
                     and all(
                         [
-                            int(payload_size_list[0]) == loading_size
+                            int(payload_size_list[j]) == loading_size
                             for j in range(packet_count)
                         ]
                     ),
@@ -887,7 +887,7 @@ class TestVfOffload(TestCase):
         )
 
         mac = self.vm0_testpmd.get_port_mac(0)
-        self.vm0_testpmd.execute_cmd("set verbose 1", "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("set verbose 0", "testpmd> ", 120)
         self.vm0_testpmd.execute_cmd("set fwd csum", "testpmd>", 120)
         self.vm0_testpmd.execute_cmd("set promisc 0 on", "testpmd> ", 120)
         self.vm0_testpmd.execute_cmd("set promisc 1 on", "testpmd> ", 120)
@@ -934,7 +934,7 @@ class TestVfOffload(TestCase):
                     (
                         'sendp([Ether(dst="%s",src="52:00:00:00:00:00")/'
                         + pkts_outer[key_outer]
-                        + '/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/Raw(RandString(size=%s))], iface="%s", count = %s)'
+                        + '/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/Raw(RandString(size=%s))], iface="%s", count=%s)'
                     )
                     % (mac, loading_size, tx_interface, packet_count)
                 )
@@ -952,7 +952,7 @@ class TestVfOffload(TestCase):
                         rx_stats == tx_stats
                         and all(
                             [
-                                payload_size_list == loading_size
+                                int(payload_size_list[j]) == loading_size
                                 for j in range(packet_count)
                             ]
                         ),
@@ -994,11 +994,12 @@ class TestVfOffload(TestCase):
                     self.tester.scapy_append(
                         "from scapy.contrib.gtp import GTP_U_Header"
                     )
+                self.logger.info([mac, loading_size, tx_interface, packet_count])
                 self.tester.scapy_append(
                     (
                         'sendp([Ether(dst="%s", src="52:00:00:00:00:00")/'
                         + pkts_outer[key_outer]
-                        + '/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")'
+                        + '/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s", count=%s)'
                     )
                     % (mac, loading_size, tx_interface, packet_count)
                 )
