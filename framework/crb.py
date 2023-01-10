@@ -1059,5 +1059,7 @@ class Crb(object):
             "# ",
         ):
             return True
+        elif self.get_os_type() == "freebsd":
+            return False
         else:
             return False
