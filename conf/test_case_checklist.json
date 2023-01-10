@@ -3807,5 +3807,41 @@
             "Bug ID": "",
             "Comments": "testpmd not support socket-mem param in freebsd"
         }
+    ],
+    "rxq_chgring_setup":[
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
+                "ICE_25G-E810C_SFP",
+                "ICE_25G-E810_XXV_SFP"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "this NIC not support this case"
+        }
+    ],
+    "txq_chgring_setup":[
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
+                "ICE_25G-E810C_SFP",
+                "ICE_25G-E810_XXV_SFP"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "this NIC not support this case"
+        }
     ]
 }
