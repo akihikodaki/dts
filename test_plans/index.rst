@@ -258,23 +258,6 @@ The following are the test plans for the DPDK DTS automated test system.
     virtio_pvp_regression_test_plan
     virtio_user_as_exceptional_path_test_plan
 
-    unit_tests_cmdline_test_plan
-    unit_tests_crc_test_plan
-    unit_tests_cryptodev_func_test_plan
-    unit_tests_dump_test_plan
-    unit_tests_eal_test_plan
-    unit_tests_event_timer_test_plan
-    unit_tests_kni_test_plan
-    unit_tests_loopback_test_plan
-    unit_tests_lpm_test_plan
-    unit_tests_mbuf_test_plan
-    unit_tests_mempool_test_plan
-    unit_tests_pmd_perf_test_plan
-    unit_tests_power_test_plan
-    unit_tests_qos_test_plan
-    unit_tests_ringpmd_test_plan
-    unit_tests_ring_test_plan
-    unit_tests_timer_test_plan
     meson_tests_test_plan
 
     cmdline_test_plan
