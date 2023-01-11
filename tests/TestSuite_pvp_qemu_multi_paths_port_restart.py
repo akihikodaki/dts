@@ -6,7 +6,7 @@
 DPDK Test suite.
 Benchmark pvp qemu test with 3 RX/TX PATHs,
 includes Mergeable, Normal, Vector_RX.
-Cover virtio 1.0 and virtio 0.95.Also cover
+Cover virtio 1.1 1.0 and virtio 0.95.Also cover
 port restart test with each path
 """
 import re
@@ -109,7 +109,7 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.vm_dut.send_expect("set fwd mac", "testpmd> ", 30)
         self.vm_dut.send_expect("start", "testpmd> ", 30)
 
-    def start_one_vm(self, modem=0, mergeable=0):
+    def start_one_vm(self, modem=0, mergeable=0, packed=0):
         """
         start qemu
         """
@@ -118,22 +118,30 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         vm_params["driver"] = "vhost-user"
         vm_params["opt_path"] = "./vhost-net"
         vm_params["opt_mac"] = self.virtio1_mac
-        if modem == 1 and mergeable == 0:
+        if modem == 1 and mergeable == 0 and packed == 0:
             vm_params[
                 "opt_settings"
             ] = "disable-modern=false,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024"
-        elif modem == 1 and mergeable == 1:
+        elif modem == 1 and mergeable == 1 and packed == 0:
             vm_params[
                 "opt_settings"
             ] = "disable-modern=false,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024"
-        elif modem == 0 and mergeable == 0:
+        elif modem == 0 and mergeable == 0 and packed == 0:
             vm_params[
                 "opt_settings"
             ] = "disable-modern=true,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024"
-        elif modem == 0 and mergeable == 1:
+        elif modem == 0 and mergeable == 1 and packed == 0:
             vm_params[
                 "opt_settings"
             ] = "disable-modern=true,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024"
+        elif modem == 1 and mergeable == 0 and packed == 1:
+            vm_params[
+                "opt_settings"
+            ] = "disable-modern=false,mrg_rxbuf=off,packed=on,rx_queue_size=1024,tx_queue_size=1024"
+        elif modem == 1 and mergeable == 1 and packed == 1:
+            vm_params[
+                "opt_settings"
+            ] = "disable-modern=false,mrg_rxbuf=on,packed=on,rx_queue_size=1024,tx_queue_size=1024"
         self.vm.set_vm_device(**vm_params)
 
         try:
@@ -275,7 +283,7 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
 
     def test_perf_pvp_qemu_mergeable_mac(self):
         """
-        performance for [frame_sizes] and restart port on virtio 0.95 mergeable path
+        Test Case 1: pvp test with virtio 0.95 mergeable path
         """
         self.start_vhost_testpmd()
         self.start_one_vm(modem=0, mergeable=1)
@@ -287,7 +295,7 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
 
     def test_perf_pvp_qemu_normal_mac(self):
         """
-        performance for [frame_sizes] and restart port ob virtio0.95 normal path
+        Test Case 2: pvp test with virtio 0.95 normal path
         """
         self.start_vhost_testpmd()
         self.start_one_vm(modem=0, mergeable=0)
@@ -299,7 +307,7 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
 
     def test_perf_pvp_qemu_vector_rx_mac(self):
         """
-        performance for [frame_sizes] and restart port on virtio0.95 vector_rx
+        Test Case 3: pvp test with virtio 0.95 vrctor_rx path
         """
         self.start_vhost_testpmd()
         self.start_one_vm(modem=0, mergeable=0)
@@ -311,7 +319,7 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
 
     def test_perf_pvp_qemu_modern_mergeable_mac(self):
         """
-        performance for [frame_sizes] and restart port on virtio1.0 mergeable path
+        Test Case 4: pvp test with virtio 1.0 mergeable path
         """
         self.start_vhost_testpmd()
         self.start_one_vm(modem=1, mergeable=1)
@@ -323,7 +331,7 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
 
     def test_perf_pvp_qemu_modern_normal_path(self):
         """
-        performance for [frame_sizes] and restart port on virito1.0 normal path
+        Test Case 5: pvp test with virtio 1.0 normal path
         """
         self.start_vhost_testpmd()
         self.start_one_vm(modem=1, mergeable=0)
@@ -335,7 +343,7 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
 
     def test_perf_pvp_qemu_modern_vector_rx_mac(self):
         """
-        performance for frame_sizes and restart port on virtio1.0 vector rx
+        Test Case 6: pvp test with virtio 1.0 vrctor_rx path
         """
         self.start_vhost_testpmd()
         self.start_one_vm(modem=1, mergeable=0)
@@ -345,9 +353,45 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.result_table_print()
         self.vm.stop()
 
+    def test_perf_pvp_qemu_with_virtio_11_mergeable_mac(self):
+        """
+        Test Case 7: pvp test with virtio 1.1 mergeable path
+        """
+        self.start_vhost_testpmd()
+        self.start_one_vm(modem=1, mergeable=1, packed=1)
+        self.start_vm_testpmd(path="mergeable")
+        self.send_and_verify("virtio1.1 mergeable")
+        self.close_all_testpmd()
+        self.result_table_print()
+        self.vm.stop()
+
+    def test_perf_pvp_qemu_with_virtio_11_normal_path(self):
+        """
+        Test Case 8: pvp test with virtio 1.1 normal path
+        """
+        self.start_vhost_testpmd()
+        self.start_one_vm(modem=1, mergeable=0, packed=1)
+        self.start_vm_testpmd(path="normal")
+        self.send_and_verify("virtio1.1 normal")
+        self.close_all_testpmd()
+        self.result_table_print()
+        self.vm.stop()
+
+    def test_perf_pvp_qemu_with_virtio_11_vector_rx_mac(self):
+        """
+        Test Case 9: pvp test with virtio 1.1 vrctor_rx path
+        """
+        self.start_vhost_testpmd()
+        self.start_one_vm(modem=1, mergeable=0, packed=1)
+        self.start_vm_testpmd(path="vector_rx")
+        self.send_and_verify("virtio1.1 vector_rx")
+        self.close_all_testpmd()
+        self.result_table_print()
+        self.vm.stop()
+
     def test_perf_pvp_qemu_modern_mergeable_mac_restart_100_times(self):
         """
-        restart port 100 times on virtio1.0 mergeable path
+        Test Case 10: pvp test with virtio 1.0 mergeable path restart 100 times
         """
         self.start_vhost_testpmd()
         self.start_one_vm(modem=1, mergeable=1)
