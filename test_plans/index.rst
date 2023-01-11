@@ -50,7 +50,7 @@ The following are the test plans for the DPDK DTS automated test system.
     ice_iavf_rx_timestamp_test_plan
     ice_iavf_fdir_pppol2tpoudp_test_plan
     ice_limit_value_test_test_plan
-    ice_qinq_test_plan
+    ice_dcf_dual_vlan_test_plan
     ice_rss_configure_test_plan
     ice_switch_filter_test_plan
     ice_switch_filter_pppoe_test_plan
