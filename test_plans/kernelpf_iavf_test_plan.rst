@@ -370,3 +370,577 @@ After the packet forwarded, thread on core6 and core 7 will return to sleep::
 
 Send packet flows to VF0 and VF1, check that thread on core6 and core7 will
 keep up awake.
+
+Test case: IAVF DUAL VLAN filtering
+===================================
+
+1. enable vlan filtering on port VF::
+
+    testpmd> set fwd mac
+    Set mac packet forwarding mode
+    testpmd> vlan set filter on 0
+
+2. check the vlan mode is set successfully::
+
+    testpmd> show port info 0
+
+    ********************* Infos for port 0  *********************
+    ......
+    VLAN offload:
+    strip off, filter on, extend off, qinq strip off
+
+3. tester send qinq pkt and single vlan pkt which outer vlan id is 1 to VF::
+
+    sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
+
+4. check the pkts can't be received in VF.
+
+5. add rx_vlan in VF::
+
+    testpmd> rx_vlan add 1 0
+
+6. repeat step 3, check the pkts can be received by VF and fwd to tester::
+
+    testpmd> port 0/queue 0: received 1 packets
+    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=522 - nb_segs=1 - hw ptype: L2_ETHER  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN  - l2_len=18 - inner_l2_len=4 - Receive queue=0x0
+    ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+    port 0/queue 0: received 1 packets
+    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=518 - nb_segs=1 - hw ptype: L2_ETHER  - sw ptype: L2_ETHER_VLAN  - l2_len=18 - Receive queue=0x0
+    ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+    tcpdump -i ens786f0 -nn -e -v
+
+    16:50:38.807158 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype 0x0800,
+    16:50:38.807217 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype 0x0800,
+
+    16:51:06.083084 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 518: vlan 1, p 0, ethertype 0x0800,
+    16:51:06.083127 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 518: vlan 1, p 0, ethertype 0x0800,
+
+7. tester send qinq pkt and single vlan pkt which outer vlan id is 11 to VF::
+
+    sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=11,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=11,type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
+
+8. check the pkts can not be received by VF.
+
+9. remove rx_vlan in VF1::
+
+    testpmd> rx_vlan rm 1 0
+
+10. repeat step 3, check the pkts can not be received by VF.
+
+
+Test case: IAVF DUAL VLAN header stripping
+==========================================
+
+1. enable vlan filtering on port VF::
+
+    testpmd> vlan set filter on 0
+    testpmd> rx_vlan add 1 0
+
+2. check the vlan mode is set successfully::
+
+    testpmd> show port info 0
+
+    ********************* Infos for port 0  *********************
+    ......
+    VLAN offload:
+    strip off, filter on, extend off, qinq strip off
+
+3. enable vlan header stripping on VF::
+
+    testpmd> vlan set strip on 0
+
+4. check the vlan mode is set successfully::
+
+    testpmd> show port info 0
+
+    ********************* Infos for port 0  *********************
+    ......
+    VLAN offload:
+    strip on, filter on, extend off, qinq strip off
+
+5. tester send qinq pkt and single vlan pkt which outer vlan id is 1 to VF::
+
+    sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
+
+6. check the pkts can be received in VF and fwd to tester without outer vlan header::
+
+    testpmd> port 0/queue 10: received 1 packets
+    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=518 - nb_segs=1 - RSS hash=0xc7b627aa - RSS queue=0xa - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN L3_IPV4  - l2_len=18 - l3_len=20 - Tail/CRC: 0x58585858/0x00000000 - Receive queue=0xa
+    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+    port 0/queue 10: received 1 packets
+    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x0800 - length=514 - nb_segs=1 - RSS hash=0xc7b627aa - RSS queue=0xa - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Tail/CRC: 0x58585858/0x00000000 - Receive queue=0xa
+    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+    10:12:38.034948 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+    10:12:38.035025 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 518: vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+
+    10:12:44.806825 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 518: vlan 1, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+    10:12:44.806865 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype IPv4 (0x0800), length 514: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+
+7. disable vlan header stripping on VF1::
+
+    testpmd> vlan set strip off 0
+
+8. check the vlan mode is set successfully::
+
+    testpmd> show port info 0
+
+    ********************* Infos for port 0  *********************
+    ......
+    VLAN offload:
+    strip off, filter on, extend off, qinq strip off
+
+9. repeat step 5, check the pkts can be received in VF and fwd to tester with outer vlan header::
+
+    testpmd> port 0/queue 10: received 1 packets
+    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=522 - nb_segs=1 - RSS hash=0xc7b627aa - RSS queue=0xa - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - Tail/CRC: 0x58585858/0x00000000 - Receive queue=0xa
+    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+    port 0/queue 10: received 1 packets
+    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=518 - nb_segs=1 - RSS hash=0xc7b627aa - RSS queue=0xa - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN L3_IPV4  - l2_len=18 - l3_len=20 - Tail/CRC: 0x58585858/0x00000000 - Receive queue=0xa
+    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+    09:49:08.295172 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+    09:49:08.295239 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+
+    09:49:41.043101 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 518: vlan 1, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+    09:49:41.043166 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 518: vlan 1, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+
+Test case: IAVF DUAL VLAN header insertion
+==========================================
+
+1. enable vlan filtering on port VF::
+
+    testpmd> vlan set filter on 0
+    testpmd> rx_vlan add 11 0
+
+2. set up test environment again::
+
+    echo 1 > /sys/bus/pci/devices/0000:18:00.0/sriov_numvfs
+    ip link set ens785f0 vf 0 mac 00:11:22:33:44:11
+    ip link set dev ens785f0 vf 0 spoofchk off
+    ./usertools/dpdk-devbind.py -b vfio-pci 0000:18:01.0
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0 -- -i --rxq=16 --txq=16
+    testpmd> set fwd mac
+    testpmd> set verbose 1
+
+3. enable vlan header insertion on VF::
+
+    testpmd> port stop 0
+    Stopping ports...
+    Checking link statuses...
+    Done
+    testpmd> tx_vlan set 0 1
+    testpmd> port start 0
+
+4. tester send pkt to VF::
+
+    sendp([Ether(dst="00:11:22:33:44:11",type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=11,type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
+
+5. check the pkts with vlan header can be received in tester::
+
+    testpmd> port 0/queue 13: received 1 packets
+    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x0800 - length=514 - nb_segs=1 - RSS hash=0xcaf4abfd - RSS queue=0xd - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0xd
+    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+    port 0/queue 8: received 1 packets
+    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=518 - nb_segs=1 - RSS hash=0x28099b78 - RSS queue=0x8 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN L3_IPV4  - l2_len=18 - l3_len=20 - Receive queue=0x8
+    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+    10:32:55.566801 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype IPv4 (0x0800), length 514: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+    10:32:55.566856 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 518: vlan 1, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+
+    06:29:32.281896 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 518: vlan 11, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+    06:29:32.281940 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 11, p 0, ethertype 802.1Q, vlan 1, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+
+6. disable vlan header insertion on VF1::
+
+    testpmd> port stop 0
+    Stopping ports...
+    Checking link statuses...
+    Done
+    testpmd> tx_vlan reset 0
+    testpmd> port start 0
+
+7. repeat step 4, check the pkts without vlan tag can be received in tester::
+
+    testpmd> port 0/queue 9: received 1 packets
+    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x0800 - length=514 - nb_segs=1 - RSS hash=0xa63e8869 - RSS queue=0x9 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x9
+    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+    port 0/queue 12: received 1 packets
+    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=518 - nb_segs=1 - RSS hash=0x6f5533bc - RSS queue=0xc - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN L3_IPV4  - l2_len=18 - l3_len=20 - Receive queue=0xc
+    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+    10:34:40.070754 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype IPv4 (0x0800), length 514: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+    10:34:40.070824 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype IPv4 (0x0800), length 514: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+
+    06:36:57.641871 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 518: vlan 11, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+    06:36:57.641909 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 518: vlan 11, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+
+
+Test case: Enable/disable AVF CRC stripping
+===========================================
+
+1. start testpmd with "--disable-crc-strip"::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 20-23 -n 4 -a 0000:18:01.0 -- -i --rxq=16 --txq=16 --disable-crc-strip
+    testpmd> set fwd mac
+    testpmd> set verbose 1
+
+2. send pkts to VF::
+
+    sendp([Ether(dst="00:11:22:33:44:11",type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
+
+3. check VF1 receive this pkts with CRC::
+
+    testpmd> port 0/queue 0: received 1 packets
+    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x0800 - length=514 - nb_segs=1 - RSS hash=0x890d9a70 - RSS queue=0x0 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+    show port stats all
+
+    ######################## NIC statistics for port 0  ########################
+    RX-packets: 1          RX-missed: 0          RX-bytes:  518
+    RX-errors: 0
+    RX-nombuf:  0
+    TX-packets: 1          TX-errors: 0          TX-bytes:  514
+
+    Throughput (since last show)
+    Rx-pps:            0          Rx-bps:            0
+    Tx-pps:            0          Tx-bps:            0
+    ############################################################################
+    clear port stats all
+
+4. enable crc strip in testpmd::
+
+    testpmd> stop
+    testpmd> port stop 0
+    testpmd> port config 0 rx_offload keep_crc off
+    testpmd> port start 0
+    testpmd> start
+
+5. repeat step 2, check VF receive this pkts without CRC::
+
+    testpmd> port 0/queue 2: received 1 packets
+    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x0800 - length=514 - nb_segs=1 - RSS hash=0xa94c21d2 - RSS queue=0x2 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x2
+    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+    show port stats all
+
+    ######################## NIC statistics for port 0  ########################
+    RX-packets: 1          RX-missed: 0          RX-bytes:  514
+    RX-errors: 0
+    RX-nombuf:  0
+    TX-packets: 1          TX-errors: 0          TX-bytes:  514
+
+    Throughput (since last show)
+    Rx-pps:            0          Rx-bps:            0
+    Tx-pps:            0          Tx-bps:            0
+    ############################################################################
+    clear port stats all
+
+6. disable crc strip in testpmd::
+
+    testpmd> stop
+    testpmd> port stop 0
+    testpmd> port config 0 rx_offload keep_crc on
+    testpmd> port start 0
+    testpmd> start
+
+7. repeat step 2, check VF1 receive this pkts with CRC::
+
+    testpmd> port 0/queue 0: received 1 packets
+    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x0800 - length=514 - nb_segs=1 - RSS hash=0x79c10190 - RSS queue=0x0 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+    show port stats all
+
+    ######################## NIC statistics for port 0  ########################
+    RX-packets: 1          RX-missed: 0          RX-bytes:  518
+    RX-errors: 0
+    RX-nombuf:  0
+    TX-packets: 1          TX-errors: 0          TX-bytes:  514
+
+    Throughput (since last show)
+    Rx-pps:            0          Rx-bps:            0
+    Tx-pps:            0          Tx-bps:            0
+    ############################################################################
+    clear port stats all
+
+8. re-launch testpmd without "--disable-crc-strip"::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 20-23 -n 4 -a 0000:18:01.0 -- -i --rxq=16 --txq=16
+    testpmd> set fwd mac
+    testpmd> set verbose 1
+
+9. repeat step 2, check VF receive this pkts without CRC::
+
+    testpmd> port 0/queue 2: received 1 packets
+    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x0800 - length=514 - nb_segs=1 - RSS hash=0x898ada82 - RSS queue=0x2 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x2
+    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+    show port stats all
+
+    ######################## NIC statistics for port 0  ########################
+    RX-packets: 1          RX-missed: 0          RX-bytes:  514
+    RX-errors: 0
+    RX-nombuf:  0
+    TX-packets: 1          TX-errors: 0          TX-bytes:  514
+
+    Throughput (since last show)
+    Rx-pps:            0          Rx-bps:            0
+    Tx-pps:            0          Tx-bps:            0
+    ############################################################################
+
+
+Test case: IAVF CRC strip and Vlan strip co-exists
+==================================================
+
+1. start testpmd with crc strip enable, vlan strip disable::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 20-23 -n 4 -a 0000:18:01.0 -- -i --rxq=16 --txq=16
+    testpmd> set fwd mac
+    testpmd> set verbose 1
+    testpmd> show port info 0
+    ********************* Infos for port 0  *********************
+    MAC address: 00:11:22:33:44:11
+    Device name: 0000:18:01.1
+    Driver name: net_iavf
+    ......
+    VLAN offload:
+      strip off, filter off, extend off, qinq strip off
+
+2. request disable vlan strip::
+
+    testpmd> vlan set strip off 0
+
+3. check the vlan strip still disable::
+
+    testpmd> show port info 0
+    ********************* Infos for port 0  *********************
+    MAC address: 00:11:22:33:44:11
+    Device name: 0000:18:01.1
+    Driver name: net_iavf
+    ......
+    VLAN offload:
+      strip off, filter off, extend off, qinq strip off
+
+4. set vlan filter on and add rx_vlan 1::
+
+    testpmd> vlan set filter on 0
+    testpmd> rx_vlan add 1 0
+    testpmd> start
+
+5. send qinq pkts to check vlan strip is off, crc strip is on::
+
+    sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
+
+    testpmd> port 0/queue 6: received 1 packets
+    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=522 - nb_segs=1 - RSS hash=0xf6521426 - RSS queue=0x6 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - Tail/CRC: 0x58585858/0x00000000 - Receive queue=0x6
+    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+    show port stats all
+
+    ######################## NIC statistics for port 0  ########################
+    RX-packets: 1          RX-missed: 0          RX-bytes:  522
+    RX-errors: 0
+    RX-nombuf:  0
+    TX-packets: 1          TX-errors: 0          TX-bytes:  522
+
+    Throughput (since last show)
+    Rx-pps:            0          Rx-bps:            0
+    Tx-pps:            0          Tx-bps:            0
+    ############################################################################
+
+    09:07:45.863251 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+    09:07:45.863340 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+
+6. request enable vlan strip::
+
+    testpmd> vlan set strip on 0
+
+7. check the vlan strip enable successfully::
+
+    testpmd> show port info 0
+    ********************* Infos for port 0  *********************
+    MAC address: 00:11:22:33:44:11
+    Device name: 0000:18:01.1
+    Driver name: net_iavf
+    ......
+    VLAN offload:
+      strip on, filter off, extend off, qinq strip off
+
+8. repeat step 5, send qinq pkts to check vlan strip is on(tx-4), crc strip is on::
+
+    testpmd> port 0/queue 6: received 1 packets
+    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=518 - nb_segs=1 - RSS hash=0xf6521426 - RSS queue=0x6 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN L3_IPV4  - l2_len=18 - l3_len=20 - Tail/CRC: 0x58585858/0x00000000 - Receive queue=0x6
+    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+    show port stats all
+
+    ######################## NIC statistics for port 0  ########################
+    RX-packets: 1          RX-missed: 0          RX-bytes:  522
+    RX-errors: 0
+    RX-nombuf:  0
+    TX-packets: 1          TX-errors: 0          TX-bytes:  518
+
+    Throughput (since last show)
+    Rx-pps:            0          Rx-bps:            0
+    Tx-pps:            0          Tx-bps:            0
+    ############################################################################
+
+    11:09:03.918907 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+    11:09:03.918952 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 518: vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+
+9. request disable vlan strip::
+
+    testpmd> vlan set strip off 0
+
+10. check the vlan strip disable successfully::
+
+     testpmd> show port info 0
+     ********************* Infos for port 0  *********************
+     MAC address: 00:11:22:33:44:11
+     Device name: 0000:18:01.1
+     Driver name: net_iavf
+     ......
+     VLAN offload:
+       strip off, filter on, extend off, qinq strip off
+
+11. request disable crc strip::
+
+     testpmd> stop
+     testpmd> port stop 0
+     testpmd> port config 0 rx_offload keep_crc on
+     testpmd> port start 0
+     testpmd> start
+
+12. repeat step 5, send qinq pkts to check vlan strip is off, crc strip is off(rx+4)::
+
+     testpmd> port 0/queue 7: received 1 packets
+     src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=522 - nb_segs=1 - RSS hash=0xbc8b1857 - RSS queue=0x7 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - Tail/CRC: 0x58585858/0x6d870bf6 - Receive queue=0x7
+     ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+     show port stats all
+     ######################## NIC statistics for port 0  ########################
+     RX-packets: 1          RX-missed: 0          RX-bytes:  526
+     RX-errors: 0
+     RX-nombuf:  0
+     TX-packets: 1          TX-errors: 0          TX-bytes:  522
+
+     Throughput (since last show)
+     Rx-pps:            0          Rx-bps:            0
+     Tx-pps:            0          Tx-bps:            0
+     ############################################################################
+
+     10:23:57.350934 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     10:23:57.351008 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+
+13. request enable vlan strip::
+
+     testpmd> vlan set strip on 0
+     iavf_execute_vf_cmd(): No response or return failure (-64) for cmd 54
+     iavf_config_vlan_strip_v2(): fail to execute command VIRTCHNL_OP_ENABLE_VLAN_STRIPPING_V2
+     rx_vlan_strip_set(port_pi=0, on=1) failed diag=-5
+
+14. repeat step 5, send qinq pkts to check the vlan strip can not enable::
+
+     testpmd> port 0/queue 7: received 1 packets
+     src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=518 - nb_segs=1 - RSS hash=0xbc8b1857 - RSS queue=0x7 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN L3_IPV4  - l2_len=18 - l3_len=20 - Tail/CRC: 0x58585858/0x6d870bf6 - Receive queue=0x7
+     ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+     show port stats all
+     ######################## NIC statistics for port 0  ########################
+     RX-packets: 1          RX-missed: 0          RX-bytes:  526
+     RX-errors: 0
+     RX-nombuf:  0
+     TX-packets: 1          TX-errors: 0          TX-bytes:  522
+
+     Throughput (since last show)
+     Rx-pps:            0          Rx-bps:            0
+     Tx-pps:            0          Tx-bps:            0
+     ############################################################################
+
+     10:26:08.346936 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     10:26:08.347006 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+
+15. request disable vlan strip::
+
+     vlan set strip off 0
+
+16. check the vlan strip still disable::
+
+     testpmd> show port info 0
+     ********************* Infos for port 0  *********************
+     MAC address: 00:11:22:33:44:11
+     Device name: 0000:18:01.1
+     Driver name: net_iavf
+     ......
+     VLAN offload:
+       strip off, filter on, extend off, qinq strip off
+
+17. request enable crc strip::
+
+     testpmd> stop
+     testpmd> port stop 0
+     testpmd> port config 0 rx_offload keep_crc off
+     testpmd> port start 0
+     testpmd> start
+
+18. repeat step 5, send qinq pkts to check the crc strip enable successfully::
+
+     testpmd> port 0/queue 3: received 1 packets
+     src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=522 - nb_segs=1 - RSS hash=0x2b4ad203 - RSS queue=0x3 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - Receive queue=0x3
+     ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+     port 0/queue 3: sent 1 packets
+     src=00:11:22:33:44:11 - dst=02:00:00:00:00:00 - type=0x8100 - length=522 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - Send queue=0x3
+     ol_flags: PKT_RX_L4_CKSUM_UNKNOWN PKT_RX_IP_CKSUM_UNKNOWN PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+     show port stats all
+     ######################## NIC statistics for port 0  ########################
+     RX-packets: 1          RX-missed: 0          RX-bytes:  522
+     RX-errors: 0
+     RX-nombuf:  0
+     TX-packets: 1          TX-errors: 0          TX-bytes:  522
+
+     Throughput (since last show)
+     Rx-pps:            0          Rx-bps:            0
+     Tx-pps:            0          Tx-bps:            0
+     ############################################################################
+
+     10:29:19.995352 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     10:29:19.995424 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+
