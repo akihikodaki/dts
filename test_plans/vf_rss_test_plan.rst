@@ -168,3 +168,57 @@ Before send packet, config hash reta,512(NICS with kernel driver i40e has 64 ret
 
 after send packet, based on the testpmd output RSS hash value to calculate hash_index, then check whether the
 actual receive queue is the queue configured in the reta.
+
+Test case: test rxq txq number inconsistent
+===========================================
+1. Create one VF from kernel PF::
+
+    echo 1 > /sys/bus/pci/devices/0000\:18\:00.0/sriov_numvfs
+
+2. Bind VFs to vfio-pci::
+
+    ./usertools/dpdk-devbind.py -b vfio-pci 18:01.0
+
+3. Start the testpmd with rxq not equal to txq::
+
+    ./<build_target>/app/dpdk-testpmd -l 1-9 -n 2 -- -i --rxq=4 --txq=8 --nb-core=8
+
+.. note::
+     queue pairs in number of 1, 2, 4, 8, 16, 32, 64, etc.
+     For vf of ixgbe, the maximum number of rxq and txq supported is 4.
+
+4. Set rxonly fwd, enable print, start testpmd::
+
+    testpmd> set fwd rxonly
+    testpmd> set verbose 1
+    testpmd> start
+
+5. Send different hash types' packets with different keywords, then check rx port
+    could receive packets by different queues::
+
+      sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.0.4", dst=RandIP())], iface="eth3")
+
+6. Check the total Rx packets in all the RxQ should be equal to the total HW Rx packets::
+
+    testpmd> show fwd stats all
+    ------- Forward Stats for RX Port= 0/Queue= 0 -> TX Port= 0/Queue= 0 -------
+    RX-packets: 252            TX-packets: 0              TX-dropped: 0
+
+    ------- Forward Stats for RX Port= 0/Queue= 1 -> TX Port= 0/Queue= 1 -------
+    RX-packets: 257            TX-packets: 0              TX-dropped: 0
+
+    ------- Forward Stats for RX Port= 0/Queue= 2 -> TX Port= 0/Queue= 2 -------
+    RX-packets: 259            TX-packets: 0              TX-dropped: 0
+
+    ------- Forward Stats for RX Port= 0/Queue= 3 -> TX Port= 0/Queue= 3 -------
+    RX-packets: 256            TX-packets: 0              TX-dropped: 0
+
+    ---------------------- Forward statistics for port 0  ----------------------
+    RX-packets: 1024           RX-dropped: 0             RX-total: 1024
+    TX-packets: 0              TX-dropped: 0             TX-total: 0
+    ----------------------------------------------------------------------------
+
+    +++++++++++++++ Accumulated forward statistics for all ports+++++++++++++++
+    RX-packets: 1024           RX-dropped: 0             RX-total: 1024
+    TX-packets: 0              TX-dropped: 0             TX-total: 0
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
