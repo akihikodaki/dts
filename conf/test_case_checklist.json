@@ -1709,6 +1709,7 @@
                 "IGB_1G-I210_COPPER",
                 "IXGBE_10G-82599_T3_LOM",
                 "IXGBE_10G-82599_SFP_SF_QP",
+                "IXGBE_10G-82599_SFP",
                 "IXGBE_10G-X540T"
             ],
             "Target": [

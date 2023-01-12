@@ -36,8 +36,13 @@ class TestVfRss(TestCase):
         self.tester.scapy_foreground()
         self.tester.scapy_append('sys.path.append("./")')
         self.tester.scapy_append("from sctp import *")
-        self.vm_dut_0.send_expect("start", "testpmd>")
-        mac = self.vm0_testpmd.get_port_mac(0)
+
+        if self.setup_1pf_1vf_1vm_env_flag == 1:
+            self.vm_dut_0.send_expect("start", "testpmd>")
+            mac = self.vm0_testpmd.get_port_mac(0)
+        else:
+            mac = self.pmd_out.get_port_mac(0)
+
         # send packet with different source and dest ip
         if tran_type == "ipv4-other":
             for i in range(packet_count):
@@ -152,8 +157,11 @@ class TestVfRss(TestCase):
 
         else:
             print("\ntran_type error!\n")
-
-        out = self.vm_dut_0.get_session_output()
+        if self.setup_1pf_1vf_1vm_env_flag == 1:
+            out = self.vm_dut_0.get_session_output()
+        else:
+            out = self.dut.get_session_output()
+            self.dut.send_expect("show fwd stats all", "testpmd>")
         print("*******************************************")
         print(out)
         if not reta_entries:
@@ -195,7 +203,8 @@ class TestVfRss(TestCase):
                 break
             else:
                 pass
-        self.verifyResult()
+        if "pmdrss" in self.running_case:
+            self.verifyResult()
 
     def verifyResult(self):
         """
@@ -265,6 +274,7 @@ class TestVfRss(TestCase):
                 "I40E_25G-25G_SFP28",
                 "IXGBE_10G-X550T",
                 "IXGBE_10G-X550EM_X_10G_T",
+                "IXGBE_10G-82599_SFP",
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
                 "I40E_10G-10G_BASE_T_BC",
@@ -292,13 +302,15 @@ class TestVfRss(TestCase):
         self.host_testpmd = None
         self.setup_1pf_1vf_1vm_env_flag = 0
         self.dcf_mode = load_global_setting(DPDK_DCFMODE_SETTING)
-        self.setup_1pf_1vf_1vm_env(driver="")
 
     def set_up(self):
         """
         Run before each test case.
         """
-        pass
+        if "rxq_txq_inconsistent" in self.running_case:
+            self.destroy_1pf_1vf_1vm_env()
+        elif self.setup_1pf_1vf_1vm_env_flag == 0:
+            self.setup_1pf_1vf_1vm_env(driver="")
 
     def setup_1pf_1vf_1vm_env(self, driver="default"):
 
@@ -362,7 +374,7 @@ class TestVfRss(TestCase):
             port = self.dut.ports_info[port_id]["port"]
             port.bind_driver()
 
-        self.setup_1pf_2vf_1vm_env_flag = 0
+        self.setup_1pf_1vf_1vm_env_flag = 0
 
     def launch_testpmd(self, **kwargs):
         dcf_flag = kwargs.get("dcf_flag")
@@ -374,6 +386,12 @@ class TestVfRss(TestCase):
                 ports=[self.vf0_guest_pci],
                 port_options={self.vf0_guest_pci: "cap=dcf"},
                 socket=self.vm0_ports_socket,
+            )
+        elif self.setup_1pf_1vf_1vm_env_flag == 0:
+            self.pmd_out.start_testpmd(
+                cores="1S/9C/1T",
+                param=param,
+                eal_param="-a %s --file-prefix=vf" % self.vf_port_pci,
             )
         else:
             self.vm0_testpmd.start_testpmd(
@@ -502,6 +520,69 @@ class TestVfRss(TestCase):
 
                 self.send_packet(itf, iptype, queue, 128)
             self.vm_dut_0.send_expect("quit", "# ", 30)
+
+    def test_vf_rss_rxq_txq_inconsistent(self):
+
+        self.pmd_out = PmdOutput(self.dut)
+        self.dut.generate_sriov_vfs_by_port(self.dut_ports[0], 1)
+        self.vf_port = self.dut.ports_info[self.dut_ports[0]]["vfs_port"][0]
+        iptypes = {
+            "ipv4-other": "ip",
+            "ipv4-udp": "udp",
+            "ipv4-tcp": "tcp",
+            "ipv4-sctp": "sctp",
+        }
+        if self.kdriver == "ixgbe":
+            testRxqTxq = [
+                {
+                    "rxq": 2,
+                    "txq": 4,
+                },
+                {
+                    "rxq": 1,
+                    "txq": 2,
+                },
+            ]
+        else:
+            testRxqTxq = [
+                {
+                    "rxq": 4,
+                    "txq": 8,
+                },
+                {
+                    "rxq": 6,
+                    "txq": 8,
+                },
+                {
+                    "rxq": 3,
+                    "txq": 9,
+                },
+                {
+                    "rxq": 4,
+                    "txq": 16,
+                },
+            ]
+        self.vf_port.bind_driver(driver="vfio-pci")
+        self.vf_port_pci = self.dut.ports_info[self.dut_ports[0]]["sriov_vfs_pci"][0]
+        localPort = self.tester.get_local_port(self.dut_ports[0])
+        itf = self.tester.get_interface(localPort)
+        eal_param = "--nb-core=8"
+        # test with different rss queues
+        for i in testRxqTxq:
+            self.launch_testpmd(
+                param="--rxq=%s --txq=%s %s"
+                % (str(i["rxq"]), str(i["txq"]), eal_param),
+            )
+            self.dut.send_expect("set fwd rxonly", "testpmd>")
+            self.dut.send_expect("set verbose 1", "testpmd>")
+            self.dut.send_expect("start", "testpmd>")
+            self.pmd_out.wait_link_status_up("all")
+            queue = i["rxq"]
+            for iptype, rsstype in list(iptypes.items()):
+                self.send_packet(itf, iptype, queue, 64)
+
+            self.dut.send_expect("stop", "testpmd>")
+            self.dut.send_expect("quit", "# ", 30)
 
     def tear_down(self):
         """
