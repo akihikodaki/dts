@@ -162,6 +162,37 @@ Send a packet with multicast destination MAC address to port 0::
      src=52:00:00:00:00:00 - dst=01:00:5E:00:00:00 - type=0x0800 - length=60 - nb_segs=1 - hw    ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_UDP  - sw ptype: L2_ETHER L3_IPV4 L4_UDP  - l2_len=14 - l3_len=20 - l4_len=8 - Receive queue=0x0
      ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
 
+Enable vlan filter and add vlan id::
+
+    testpmd> vlan set filter on 0
+    testpmd> rx_vlan add 4012 0
+
+Send a packet with multicast destination MAC address and vlan tag to port 0::
+
+  sendp([Ether(dst='01:00:5E:00:00:00', src='00:00:20:00:00:00')/Dot1Q(vlan=2960, prio=0)/IP()/UDP()/Raw(load=b'XXXXXXXXXXXXXX')],iface="ens256f0",count=1,inter=0,verbose=False)
+
+Check can receive the packet::
+
+  port 0/queue 0: received 1 packets
+    src=00:00:20:00:00:00 - dst=01:00:5E:00:00:00 - pool=mb_pool_0 - type=0x8100 - length=60 - nb_segs=1 - VLAN tci=0x0 - hw ptype: L2_ETHER L3_IPV4 L4_UDP  - sw ptype: L2_ETHER_VLAN L3_IPV4 L4_UDP  - l2_len=18 - l3_len=20 - l4_len=8 - Receive queue=0x0
+    ol_flags: RTE_MBUF_F_RX_VLAN RTE_MBUF_F_RX_L4_CKSUM_GOOD RTE_MBUF_F_RX_IP_CKSUM_GOOD RTE_MBUF_F_RX_OUTER_L4_CKSUM_UNKNOWN
+
+Send a packet with multicast destination MAC address and wrong vlan tag to port 0::
+
+  sendp([Ether(dst='01:00:5E:00:00:00', src='00:00:20:00:00:00')/Dot1Q(vlan=2959, prio=0)/IP()/UDP()/Raw(load=b'XXXXXXXXXXXXXX')],iface="ens256f0",count=4,inter=0,verbose=False)
+
+Check can't receive the packet.
+
+Disable vlan filter and remove vlan id::
+
+    testpmd> rx_vlan remove 4012 0
+    testpmd> vlan set filter off 0
+
+Send a packet with multicast destination MAC address to port 0::
+
+   port 0/queue 0: received 1 packets
+     src=52:00:00:00:00:00 - dst=01:00:5E:00:00:00 - type=0x0800 - length=60 - nb_segs=1 - hw    ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_UDP  - sw ptype: L2_ETHER L3_IPV4 L4_UDP  - l2_len=14 - l3_len=20 - l4_len=8 - Receive queue=0x0
+     ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
 
 Remove the multicast MAC address from the multicast filter::
 
