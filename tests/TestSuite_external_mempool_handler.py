@@ -63,7 +63,9 @@ class TestExternalMempool(TestCase):
         rx_port = self.tester.get_local_port(self.dut_ports[0])
         tgen_input.append((tx_port, rx_port))
 
-        result = self.tester.check_random_pkts(tgen_input, allow_miss=False)
+        result = self.tester.check_random_pkts(
+            tgen_input, interval=0.05, allow_miss=False
+        )
 
         self.pmdout.quit()
 
