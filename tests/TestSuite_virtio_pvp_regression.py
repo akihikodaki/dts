@@ -286,17 +286,30 @@ class TestVirtioPVPRegression(TestCase):
             opt_args = ""
             if virtio_path in ["mergeable", "normal"]:
                 opt_args = "--enable-hw-vlan-strip"
-            vm_testpmd = (
-                self.app_testpmd_path + " -c 0x7 -n 4 "
-                "-- -i %s --nb-cores=%s "
-                "--rxq=%s --txq=%s --txd=1024 --rxd=1024"
-            )
-            vm_testpmd = vm_testpmd % (
-                opt_args,
-                self.queues_number,
-                self.queues_number,
-                self.queues_number,
-            )
+                vm_testpmd = (
+                    self.app_testpmd_path + " -c 0x7 -n 4 "
+                    "-- -i %s --nb-cores=%s "
+                    "--rxq=%s --txq=%s --txd=1024 --rxd=1024"
+                )
+                vm_testpmd = vm_testpmd % (
+                    opt_args,
+                    self.queues_number,
+                    self.queues_number,
+                    self.queues_number,
+                )
+            else:
+                vm_testpmd = (
+                    self.app_testpmd_path + " -c 0x7 -n 4 -a %s,vectorized=1 "
+                    "-- -i %s --nb-cores=%s "
+                    "--rxq=%s --txq=%s --txd=1024 --rxd=1024"
+                )
+                vm_testpmd = vm_testpmd % (
+                    self.vm_dut.get_port_pci(0),
+                    opt_args,
+                    self.queues_number,
+                    self.queues_number,
+                    self.queues_number,
+                )
             self.vm_dut.send_expect(vm_testpmd, "testpmd> ", 20)
             self.vm_dut.send_expect("set fwd mac", "testpmd> ", 20)
             self.vm_dut.send_expect("start", "testpmd> ")
@@ -456,8 +469,7 @@ class TestVirtioPVPRegression(TestCase):
 
     def test_perf_pvp_regression_with_mergeable_path(self):
         """
-        Test the performance of one vm with virtio 0.95 on mergeable path
-        diff qemu + multi queue + reconnect
+        Test Case 1: pvp test with virtio 0.95 mergeable path
         """
         case_info = "virtio-0.95 mergeable"
         modem = 0
@@ -466,8 +478,7 @@ class TestVirtioPVPRegression(TestCase):
 
     def test_perf_pvp_regression_modern_mergeable_path(self):
         """
-        Test the performance of one vm with virtio 1.0 on mergeable path
-        diff qemu + multi queue + reconnect
+        Test Case 4: pvp test with virtio 1.0 mergeable path
         """
         case_info = "virtio-1.0 mergeable"
         modem = 1
@@ -476,8 +487,7 @@ class TestVirtioPVPRegression(TestCase):
 
     def test_perf_pvp_regression_non_mergeable_path(self):
         """
-        Test the performance of one vm with virtio 0.95 on normal path
-        diff qemu + multi queue + reconnect
+        Test Case 2: pvp test with virtio 0.95 non-mergeable path
         """
         case_info = "virtio-0.95 normal"
         modem = 0
@@ -486,8 +496,7 @@ class TestVirtioPVPRegression(TestCase):
 
     def test_perf_pvp_regression_modern_non_mergeable_path(self):
         """
-        Test the performance of one vm with virtio 1.0 on normal path
-        diff qemu + multi queue + reconnect
+        Test Case 5: pvp test with virtio 1.0 non-mergeable path
         """
         case_info = "virtio-1.0 normal"
         modem = 1
@@ -496,8 +505,7 @@ class TestVirtioPVPRegression(TestCase):
 
     def test_perf_pvp_regression_vector_rx_path(self):
         """
-        Test the performance of one vm with virtio 0.95 on vector_rx path
-        diff qemu + multi queue + reconnect
+        Test Case 3: pvp test with virtio 0.95 vrctor_rx path
         """
         case_info = "virtio-0.95 vector_rx"
         modem = 0
@@ -506,8 +514,7 @@ class TestVirtioPVPRegression(TestCase):
 
     def test_perf_pvp_regression_modern_vector_rx_path(self):
         """
-        Test the performance of one vm with virtio 1.0 on vector_rx path
-        diff qemu + multi queue + reconnect
+        Test Case 6: pvp test with virtio 1.0 vrctor_rx path
         """
         case_info = "virtio-1.0 normal"
         modem = 1
@@ -516,8 +523,7 @@ class TestVirtioPVPRegression(TestCase):
 
     def test_perf_pvp_with_virtio11_mergeable_path(self):
         """
-        Test the performance of one vm with virtio 1.1 on mergeable path
-        diff qemu + multi queue + reconnect
+        Test Case 7: pvp test with virtio 1.1 mergeable path
         """
         case_info = "virtio-1.1 mergeable"
         modem = 1
@@ -526,8 +532,7 @@ class TestVirtioPVPRegression(TestCase):
 
     def test_perf_pvp_with_virtio11_non_mergeable_path(self):
         """
-        Test the performance of one vm with virtio 1.1 on mergeable path
-        diff qemu + multi queue + reconnect
+        Test Case 8: pvp test with virtio 1.1 non-mergeable path
         """
         case_info = "virtio-1.1 normal"
         modem = 1
