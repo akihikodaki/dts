@@ -108,8 +108,7 @@ class TestMesonTests(TestCase):
     def copy_file_from_dut(self):
         if os.path.exists(os.path.join(self.base_output, self.dut_pathlog)):
             os.remove(os.path.join(self.base_output, self.dut_pathlog))
-
-        src_pathlog = f"~/tmp/{self.dut_pathlog}"
+        src_pathlog = f"/tmp/{self.dut_pathlog}"
         self.dut.session.copy_file_from(src_pathlog, self.base_output)
 
     def insmod_kni(self):
@@ -141,7 +140,7 @@ class TestMesonTests(TestCase):
         self.delete_exists_files()
         self.insmod_kni()
         # config test case list in conf/meson_tests.cfg
-        cmds = f"meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:fast-tests {param} |tee ~/tmp/{self.dut_pathlog}"
+        cmds = f"meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:fast-tests {param} |tee /tmp/{self.dut_pathlog}"
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
         self.logger.info(out)
         self.copy_file_from_dut()
@@ -152,7 +151,7 @@ class TestMesonTests(TestCase):
         # init file name
         self.dut_pathlog = "driver-test.log"
         self.delete_exists_files()
-        cmds = f"meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:driver-tests {param} |tee ~/tmp/{self.dut_pathlog}"
+        cmds = f"meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:driver-tests {param} |tee /tmp/{self.dut_pathlog}"
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
         self.logger.info(out)
         self.copy_file_from_dut()
@@ -163,7 +162,7 @@ class TestMesonTests(TestCase):
         self.dut_pathlog = "test-debug.log"
         # delete exists files
         self.delete_exists_files()
-        cmds = f"meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:debug-tests {param} |tee ~/tmp/{self.dut_pathlog}"
+        cmds = f"meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:debug-tests {param} |tee /tmp/{self.dut_pathlog}"
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
         self.logger.info(out)
         self.copy_file_from_dut()
@@ -174,7 +173,7 @@ class TestMesonTests(TestCase):
         self.dut_pathlog = "extra-test.log"
         # delete exists files
         self.delete_exists_files()
-        cmds = f"meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:extra-tests {param} |tee ~/tmp/{self.dut_pathlog}"
+        cmds = f"meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:extra-tests {param} |tee /tmp/{self.dut_pathlog}"
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
         self.logger.info(out)
         self.copy_file_from_dut()
@@ -189,7 +188,7 @@ class TestMesonTests(TestCase):
         self.dut_pathlog = "perf-test.log"
         # delete exists files
         self.delete_exists_files()
-        cmds = f"meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:perf-tests {param} |tee ~/tmp/{self.dut_pathlog}"
+        cmds = f"meson test -C x86_64-native-linuxapp-gcc/ --suite DPDK:perf-tests {param} |tee /tmp/{self.dut_pathlog}"
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
         self.logger.info(out)
         self.copy_file_from_dut()
