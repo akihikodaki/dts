@@ -42,6 +42,7 @@ class TestMetrics(TestCase):
 
     def d_a_con(self, cmd):
         _cmd = [cmd, "# ", 10] if isinstance(cmd, str) else cmd
+        self.dut.alt_session.send_expect("cd %s" % self.dut.base_dir, "# ", 10)
         output = self.dut.alt_session.send_expect(*_cmd)
         output2 = self.dut.alt_session.session.get_session_before(2)
         return output + os.linesep + output2
