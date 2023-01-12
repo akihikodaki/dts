@@ -823,7 +823,11 @@ class PerfTestBase(object):
             command_line += " --rx-queue-size {rxtx} --tx-queue-size {rxtx}".format(
                 rxtx=self.__rxtx_queue_size
             )
-        if self.nic in suppored_nics or self.__mode is SUITE_TYPE.VF:
+        if (
+            self.nic in suppored_nics
+            or self.__mode is SUITE_TYPE.VF
+            or mode == MATCH_MODE.EM
+        ):
             command_line += " --parse-ptype"
         if mode == MATCH_MODE.EM:
             # use exact mode
