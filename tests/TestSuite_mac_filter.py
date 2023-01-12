@@ -8,12 +8,15 @@ Test the support of Allowlist Features by Poll Mode Drivers
 """
 
 import operator
+import random
 import time
 
 import framework.utils as utils
 from framework.packet import Packet
 from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
+
+MAX_VLAN = 4095
 
 
 class TestMacFilter(TestCase):
@@ -56,7 +59,9 @@ class TestMacFilter(TestCase):
             out, "Maximum number of MAC addresses: ([0-9]+)"
         )
 
-    def allowlist_send_packet(self, portid, destMac="00:11:22:33:44:55", count=-1):
+    def allowlist_send_packet(
+        self, portid, destMac="00:11:22:33:44:55", count=-1, pkt_type="UDP", vlan=""
+    ):
         """
         Send 1 packet to portid.
         """
@@ -65,8 +70,13 @@ class TestMacFilter(TestCase):
             count = self.frames_to_send
 
         itf = self.tester.get_interface(self.tester.get_local_port(portid))
-        pkt = Packet(pkt_type="UDP")
-        pkt.config_layer("ether", {"src": "52:00:00:00:00:00", "dst": destMac})
+        if pkt_type == "VLAN_UDP" and vlan is not None:
+            pkt = Packet(pkt_type="VLAN_UDP")
+            pkt.config_layer("vlan", {"vlan": vlan})
+            pkt.config_layer("ether", {"dst": destMac})
+        else:
+            pkt = Packet(pkt_type="UDP")
+            pkt.config_layer("ether", {"src": "52:00:00:00:00:00", "dst": destMac})
         pkt.send_pkt(self.tester, tx_port=itf, count=count)
 
     def test_add_remove_mac_address(self):
@@ -188,6 +198,7 @@ class TestMacFilter(TestCase):
         Remove mac address and check packet can't received
         """
         # initialise first port without promiscuous mode
+        random_vlan = random.randint(1, MAX_VLAN)
         mcast_addr = "01:00:5E:00:00:00"
         portid = self.dutPorts[0]
         self.dut.send_expect(f"set promisc {portid:d} off", "testpmd> ")
@@ -201,7 +212,33 @@ class TestMacFilter(TestCase):
             "received" in out,
             "Packet has not been received when it should have on a broadcast address",
         )
-
+        # enable vlan filter
+        self.dut.send_expect("vlan set filter on 0", "testpmd> ")
+        self.dut.send_expect("rx_vlan add %d 0" % random_vlan, "testpmd> ")
+        # passed vlan id
+        self.allowlist_send_packet(
+            portid, destMac=mcast_addr, pkt_type="VLAN_UDP", vlan=random_vlan
+        )
+        out = self.dut.get_session_output()
+        self.verify("received" in out, "Not receive vlan packet with multicast mac!!!")
+        # wrong vlan id
+        self.allowlist_send_packet(
+            portid, destMac=mcast_addr, pkt_type="VLAN_UDP", vlan=random_vlan - 1
+        )
+        out = self.dut.get_session_output()
+        self.verify(
+            "received" not in out,
+            "Wrong vlan packet can't receive with multicast mac!!!",
+        )
+        # disbale vlan filter and remove vlan id
+        self.dut.send_expect("rx_vlan rm %d 0" % random_vlan, "testpmd> ")
+        self.dut.send_expect("vlan set filter off 0", "testpmd> ")
+        self.allowlist_send_packet(portid, mcast_addr, count=1)
+        out = self.dut.get_session_output()
+        self.verify(
+            "received" in out,
+            "Packet has not been received when it should have on a broadcast address",
+        )
         self.dut.send_expect(f"mcast_addr remove {portid:d} {mcast_addr}", "testpmd>")
         self.allowlist_send_packet(portid, mcast_addr, count=1)
         time.sleep(1)
