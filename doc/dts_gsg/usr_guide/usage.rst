@@ -50,7 +50,7 @@ Here are an example for functional testing:
    drivername=vfio-pci
    build_type=meson
    test_suites=
-        unit_tests_eal:test_version\test_common,
+        meson_tests:test_fasts\test_driver,
    targets=
         x86_64-default-linuxapp-gcc,
    parameters=nic_type=cfg:func=true
