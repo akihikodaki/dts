@@ -39,54 +39,7 @@ Modify the DPDK-l3fwd-power source code and recompile the l3fwd-power::
 Support igb_uio and vfio driver, if used vfio, kernel need 3.6+ and enable vt-d
 in bios. When used vfio, requested to insmod two drivers vfio and vfio-pci.
 
-Test Case1: Check Interrupt for PF with vfio driver on ixgbe and i40e
-=====================================================================
-
-1. Bind NIC PF to vfio-pci drvier::
-
-    modprobe vfio-pci;
-
-    ./usertools/dpdk-devbind.py --bind=vfio-pci 0000:04:00.0
-
-2. start l3fwd-power with PF::
-
-    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -l 1-3 -n 4 -- -P -p 0x01  --config '(0,0,2)'
-
-3. Send packet with packet generator to the pf NIC, check that thread core2 waked up::
-
-    sendp([Ether(dst='pf_mac')/IP()/UDP()/Raw(load='XXXXXXXXXXXXXXXXXX')], iface="tester_intf")
-
-    L3FWD_POWER: lcore 2 is waked up from rx interrupt on port 0 queue 0
-
-4. Check if threads on core 2 have returned to sleep mode::
-
-    L3FWD_POWER: lcore 2 sleeps until interrupt triggers
-
-Test Case2: Check Interrupt for PF with igb_uio driver on ixgbe and i40e
-========================================================================
-
-1. Bind NIC PF to igb_uio drvier::
-
-    modprobe uio;
-    insmod x86_64-native-linuxapp-gcc/kmod/igb_uio.ko;
-
-    ./usertools/dpdk-devbind.py --bind=igb_uio 0000:04:00.0
-
-2. start l3fwd-power with PF::
-
-    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -l 1-3 -n 4 -- -P -p 0x01  --config '(0,0,2)'
-
-3. Send packet with packet generator to the pf NIC, check that thread core2 waked up::
-
-    sendp([Ether(dst='pf_mac')/IP()/UDP()/Raw(load='XXXXXXXXXXXXXXXXXX')], iface="tester_intf")
-
-    L3FWD_POWER: lcore 2 is waked up from rx interrupt on port 0 queue 0
-
-4. Check if threads on core 2 have returned to sleep mode::
-
-    L3FWD_POWER: lcore 2 sleeps until interrupt triggers
-
-Test Case3: Check Interrupt for VF with vfio driver on ixgbe and i40e
+Test Case1: Check Interrupt for VF with vfio driver on ixgbe and i40e
 =====================================================================
 
 1. Generate NIC VF, then bind it to vfio drvier::
@@ -112,7 +65,7 @@ Test Case3: Check Interrupt for VF with vfio driver on ixgbe and i40e
 
     L3FWD_POWER: lcore 2 sleeps until interrupt triggers
 
-Test Case4: VF interrupt pmd in VM with vfio-pci
+Test Case2: VF interrupt pmd in VM with vfio-pci
 ================================================
 
 1. Generate NIC VF, then bind it to vfio drvier::
@@ -160,7 +113,7 @@ Test Case4: VF interrupt pmd in VM with vfio-pci
 
     L3FWD_POWER: lcore 2 sleeps until interrupt triggers
 
-Test Case5: vf multi-queue interrupt with vfio-pci on i40e 
+Test Case3: vf multi-queue interrupt with vfio-pci on i40e
 ==========================================================
 
 1. Generate NIC VF, then bind it to vfio drvier::
@@ -187,7 +140,7 @@ Test Case5: vf multi-queue interrupt with vfio-pci on i40e
     L3FWD_POWER: lcore 3 is waked up from rx interrupt on port 0 queue 2
     L3FWD_POWER: lcore 4 is waked up from rx interrupt on port 0 queue 3
 
-Test Case6: VF multi-queue interrupt in VM with vfio-pci on i40e
+Test Case4: VF multi-queue interrupt in VM with vfio-pci on i40e
 ================================================================
     
 1. Generate NIC VF, then bind it to vfio drvier::
@@ -233,3 +186,4 @@ Test Case6: VF multi-queue interrupt in VM with vfio-pci on i40e
     L3FWD_POWER: lcore 1 is waked up from rx interrupt on port 0 queue 1
     L3FWD_POWER: lcore 2 is waked up from rx interrupt on port 0 queue 2
     L3FWD_POWER: lcore 3 is waked up from rx interrupt on port 0 queue 3
+

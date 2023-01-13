@@ -104,16 +104,50 @@ driver.
 Plug in Port1 cable, check that link up interrupt captured and handled by pmd
 driver.
 
+Test Case3: Check Interrupt for PF with vfio driver on ixgbe and i40e
+=====================================================================
 
-Test Case3: PF interrupt pmd latency test
-=========================================
+1. Bind NIC PF to vfio-pci drvier::
 
-Setup validation scenario the case as test1
-Send burst packet flow to Port0 and Port1, use IXIA capture the maximum
-latency.
+    modprobe vfio-pci;
 
-Compare latency(l3fwd-power PF interrupt pmd with uio) with l3fwd latency.
+    ./usertools/dpdk-devbind.py --bind=vfio-pci 0000:04:00.0
 
-Setup validation scenario the case as test2
-Send burst packet flow to Port0 and Port1, use IXIA capture the maximum
-latency.
+2. start l3fwd-power with PF::
+
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -l 1-4 -n 4 -- -P -p 0x01  --config '(0,0,2)'
+
+3. Send packet with packet generator to the pf NIC, check that thread core2 waked up::
+
+    sendp([Ether(dst='pf_mac')/IP()/UDP()/Raw(load='XXXXXXXXXXXXXXXXXX')], iface="tester_intf")
+
+    L3FWD_POWER: lcore 2 is waked up from rx interrupt on port 0 queue 0
+
+4. Check if threads on core 2 have returned to sleep mode::
+
+    L3FWD_POWER: lcore 2 sleeps until interrupt triggers
+
+Test Case4: Check Interrupt for PF with igb_uio driver on ixgbe and i40e
+========================================================================
+
+1. Bind NIC PF to igb_uio drvier::
+
+    modprobe uio;
+    insmod x86_64-native-linuxapp-gcc/kmod/igb_uio.ko;
+
+    ./usertools/dpdk-devbind.py --bind=igb_uio 0000:04:00.0
+
+2. start l3fwd-power with PF::
+
+    ./x86_64-native-linuxapp-gcc/examples/dpdk-l3fwd-power -l 1-4 -n 4 -- -P -p 0x01  --config '(0,0,2)'
+
+3. Send packet with packet generator to the pf NIC, check that thread core2 waked up::
+
+    sendp([Ether(dst='pf_mac')/IP()/UDP()/Raw(load='XXXXXXXXXXXXXXXXXX')], iface="tester_intf")
+
+    L3FWD_POWER: lcore 2 is waked up from rx interrupt on port 0 queue 0
+
+4. Check if threads on core 2 have returned to sleep mode::
+
+    L3FWD_POWER: lcore 2 sleeps until interrupt triggers
+
