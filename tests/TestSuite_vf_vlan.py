@@ -344,7 +344,8 @@ class TestVfVlan(TestCase):
         self.vm0_dut_ports = self.vm_dut_0.get_ports("any")
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.launch_testpmd(dcf_flag=self.dcf_mode)
+        param = "--enable-hw-vlan" if not self.dcf_mode else ""
+        self.launch_testpmd(dcf_flag=self.dcf_mode, param=param)
         self.vm0_testpmd.execute_cmd("set fwd rxonly")
         self.vm0_testpmd.execute_cmd("set verbose 1")
         self.vm0_testpmd.execute_cmd("vlan set strip on 0")
