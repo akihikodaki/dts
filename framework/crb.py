@@ -1054,12 +1054,12 @@ class Crb(object):
             return True
         elif self.send_expect("df -h / |grep overlay ", "# "):
             return True
+        elif self.get_os_type() == "freebsd":
+            return False
         elif self.send_expect(
             "systemd-detect-virt -c|egrep '(systemd-nspawn|lxc|docker|podman|rkt|wsl|container-other)$' ",
             "# ",
         ):
             return True
-        elif self.get_os_type() == "freebsd":
-            return False
         else:
             return False
