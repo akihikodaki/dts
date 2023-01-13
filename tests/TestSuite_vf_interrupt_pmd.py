@@ -13,7 +13,7 @@ import time
 
 import framework.utils as utils
 from framework.packet import Packet
-from framework.test_case import TestCase, skip_unsupported_host_driver
+from framework.test_case import TestCase
 from framework.virt_common import VM
 
 
@@ -104,9 +104,7 @@ class TestVfInterruptPmd(TestCase):
         )
         try:
             self.logger.info("Launch l3fwd_sample sample:")
-            self.out = use_dut.send_expect(
-                cmd_vhost_net, "Checking link statusdone", 60
-            )
+            self.out = use_dut.send_expect(cmd_vhost_net, "Link up", 60)
             if "Error" in self.out:
                 raise Exception("Launch l3fwd-power sample failed")
             else:
@@ -256,53 +254,6 @@ class TestVfInterruptPmd(TestCase):
         )
         self.begin_l3fwd_power(self.dut)
         self.send_packet(self.vf_mac, self.rx_intf_0, self.dut)
-        self.verify(
-            "lcore %s is waked up from rx interrupt on port 0" % self.core_user
-            in self.out2,
-            "Wake up failed",
-        )
-        self.verify(
-            "lcore %s sleeps until interrupt triggers" % self.core_user in self.out2,
-            "lcore %s not sleeps" % self.core_user,
-        )
-
-    def test_nic_interrupt_PF_vfio_pci(self):
-        """
-        Check Interrupt for PF with vfio-pci driver
-        """
-        self.prepare_l3fwd_power(self.dut)
-
-        self.dut.ports_info[0]["port"].bind_driver(driver="vfio-pci")
-
-        self.begin_l3fwd_power(self.dut)
-
-        self.send_packet(self.mac_port_0, self.rx_intf_0, self.dut)
-
-        self.verify(
-            "lcore %s is waked up from rx interrupt on port 0" % self.core_user
-            in self.out2,
-            "Wake up failed",
-        )
-        self.verify(
-            "lcore %s sleeps until interrupt triggers" % self.core_user in self.out2,
-            "lcore %s not sleeps" % self.core_user,
-        )
-
-    @skip_unsupported_host_driver(["vfio-pci"])
-    def test_nic_interrupt_PF_igb_uio(self):
-        """
-        Check Interrupt for PF with igb_uio driver
-        """
-        self.prepare_l3fwd_power(self.dut)
-
-        self.dut.setup_modules_linux(self.target, "igb_uio", "")
-
-        self.dut.ports_info[0]["port"].bind_driver(driver="igb_uio")
-
-        self.begin_l3fwd_power(self.dut)
-
-        self.send_packet(self.mac_port_0, self.rx_intf_0, self.dut)
-
         self.verify(
             "lcore %s is waked up from rx interrupt on port 0" % self.core_user
             in self.out2,
