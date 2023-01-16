@@ -33,7 +33,9 @@ class TestPmdPcap(TestCase):
         self.dut.restore_interfaces()
         os_type = self.dut.get_os_type()
         if os_type == "freebsd":
-            self.dut.send_expect("kldload contigmem", "#", 20)
+            self.dut.send_expect(
+                "kldload ./%s/kmod/contigmem.ko" % self.target, "#", 20
+            )
         self.path = self.dut.apps_name["test-pmd"]
 
     def create_pcap_file(self, filename, number_of_packets):
