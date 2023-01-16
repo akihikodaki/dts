@@ -36,6 +36,7 @@ class TestVfL2fwd(TestCase):
             len(self.dut_ports) >= self.number_of_ports,
             "Not enough ports for " + self.nic,
         )
+        self.vf_ports = ""
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         # compile
         out = self.dut.build_dpdk_apps("./examples/l2fwd")
@@ -64,7 +65,8 @@ class TestVfL2fwd(TestCase):
         self.verify(len(self.sriov_vfs_port_0) != 0, "VF create failed")
         self.dut.generate_sriov_vfs_by_port(self.dut_ports[1], 1, self.kdriver)
         self.sriov_vfs_port_1 = self.dut.ports_info[self.dut_ports[1]]["vfs_port"]
-        self.vf_ports = [self.sriov_vfs_port_0[0].pci, self.sriov_vfs_port_1[0].pci]
+        self.vf_ports = [self.dut_ports[0], self.dut_ports[1]]
+        self.vf_ports_pci = [self.sriov_vfs_port_0[0].pci, self.sriov_vfs_port_1[0].pci]
         for port in self.sriov_vfs_port_0 + self.sriov_vfs_port_1:
             port.bind_driver(self.drivername)
 
@@ -82,7 +84,9 @@ class TestVfL2fwd(TestCase):
         # the cases use the first two ports
         port_mask = utils.create_mask([self.dut_ports[0], self.dut_ports[1]])
         cores = self.dut.get_core_list(self.core_config, socket=self.ports_socket)
-        eal_params = self.dut.create_eal_parameters(cores=cores, ports=self.vf_ports)
+        eal_params = self.dut.create_eal_parameters(
+            cores=cores, ports=self.vf_ports_pci
+        )
         for queues in self.test_queues:
             command_line = "./%s  %s -- -q %s -p %s &" % (
                 self.app_l2fwd_path,
@@ -133,4 +137,8 @@ class TestVfL2fwd(TestCase):
         """
         Run after each test suite.
         """
-        pass
+        self.dut.kill_all()
+        if self.vf_ports:
+            for item in self.vf_ports:
+                self.dut.destroy_sriov_vfs_by_port(item)
+        self.dut.bind_interfaces_linux(self.drivername)
