@@ -320,11 +320,6 @@ class TestShutdownApi(TestCase):
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port)
             self.used_dut_port = None
 
-        for port in self.ports:
-            self.dut.send_expect(
-                "ethtool -s %s autoneg on " % self.dut.ports_info[port]["intf"], "#"
-            )
-
         self.bind_nic_driver(self.dut_ports, driver=self.used_driver or self.drivername)
 
         if not self.vm_env_done:
@@ -629,7 +624,7 @@ class TestShutdownApi(TestCase):
             for port in self.ports:
                 if len(configs) != 1:
                     self.dut.send_expect(
-                        "ethtool -s %s autoneg off  speed %s duplex %s"
+                        "ethtool -s %s speed %s duplex %s"
                         % (
                             self.dut.ports_info[port]["intf"],
                             config[0],
