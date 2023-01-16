@@ -327,6 +327,8 @@ class PerfTestsCryptodev(TestCase):
         for each_line in out.split("\n"):
             if each_line.find(":") == -1:
                 continue
+            elif "Vulnerability" in each_line:
+                continue
             key, value = each_line.split(":")
             cpu_info[key] = value.strip()
         core, thread = 0, 0
