@@ -93,9 +93,9 @@ class TestQueueStartStop(TestCase):
         """
         try:
             if on:
-                self.dut.send_expect("patch -p0 < %s" % patch_dir, "#")
+                self.dut.send_expect("patch -p0 < %s" % patch_dir, "[~|~\]]# ")
             else:
-                self.dut.send_expect("patch -p0 -R < %s" % patch_dir, "#")
+                self.dut.send_expect("patch -p0 -R < %s" % patch_dir, "[~|~\]]# ")
         except Exception as e:
             raise ValueError("patch_hotfix_dpdk failure: %s" % e)
 
