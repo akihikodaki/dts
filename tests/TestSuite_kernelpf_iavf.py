@@ -1021,6 +1021,7 @@ class TestKernelpfIavf(TestCase):
         """
         Test case: IAVF DUAL VLAN header insertion
         """
+        self.skip_case(not self.dcf_mode, "the case not support this dcf mode")
         out_vlan = 1
         pkt_list = [
             'Ether(dst="%s",type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
