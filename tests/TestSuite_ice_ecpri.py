@@ -342,7 +342,7 @@ class TestICEEcpri(TestCase):
         self.pmd_output.execute_cmd(
             "port config 0 udp_tunnel_port add ecpri {}".format(self.right_ecpri)
         )
-        self.new_session.send_expect("dmesg -c", "#")
+        self.new_session.send_expect("dmesg -c", "[~|~\]]# ")
         self.new_session.send_expect(
             "ip link add vx0 type vxlan id 100 local 1.1.1.1 remote "
             "2.2.2.2 dev {} dstport 0x1234".format(self.pf_interface),
@@ -350,19 +350,19 @@ class TestICEEcpri(TestCase):
         )
         self.new_session.send_expect("ifconfig vx0 up", "#")
         self.new_session.send_expect("ifconfig vx0 down", "#")
-        out = self.new_session.send_expect("dmesg", "#")
+        out = self.new_session.send_expect("dmesg", "[~|~\]]# ")
         self.verify(
             "Cannot config tunnel, the capability is used by DCF" in out,
             "port can used by another thread!",
         )
         # delete eCPRI port config and test
-        self.new_session.send_expect("dmesg -c", "#")
+        self.new_session.send_expect("dmesg -c", "[~|~\]]# ")
         self.pmd_output.execute_cmd(
             "port config 0 udp_tunnel_port rm ecpri {}".format(self.right_ecpri)
         )
         self.new_session.send_expect("ifconfig vx0 up", "#")
         self.new_session.send_expect("ifconfig vx0 down", "# ")
-        out = self.new_session.send_expect("dmesg", "#")
+        out = self.new_session.send_expect("dmesg", "[~|~\]]# ")
         self.verify(
             "Cannot config tunnel, the capability is used by DCF" not in out,
             "port can't used by another thread!",
