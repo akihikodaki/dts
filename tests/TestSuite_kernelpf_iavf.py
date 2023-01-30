@@ -869,7 +869,10 @@ class TestKernelpfIavf(TestCase):
         self.check_vlan_offload(vlan_type="filter", stats="on")
         out = self.send_pkts_getouput(self.tester_intf, pkt_list1)
         receive_pkt = re.findall("dst=%s" % self.vf_mac, out)
-        self.verify(len(receive_pkt) == 0, "Failed error received vlan packet!")
+        if self.default_stats:
+            self.verify(len(receive_pkt) == 0, "Failed error received vlan packet!")
+        else:
+            self.verify(len(receive_pkt) == 2, "Failed error received vlan packet!")
 
         self.vm_testpmd.execute_cmd("rx_vlan add 1 0")
         self.start_tcpdump(self.tester_intf)
@@ -887,7 +890,10 @@ class TestKernelpfIavf(TestCase):
         self.vm_testpmd.execute_cmd("rx_vlan rm 1 0")
         out = self.send_pkts_getouput(self.tester_intf, pkt_list1)
         receive_pkt = re.findall("dst=%s" % self.vf_mac, out)
-        self.verify(len(receive_pkt) == 0, "Failed error received vlan packet!")
+        if self.default_stats:
+            self.verify(len(receive_pkt) == 0, "Failed error received vlan packet!")
+        else:
+            self.verify(len(receive_pkt) == 2, "Failed error received vlan packet!")
 
     @check_supported_nic(ice_nic)
     def test_iavf_dual_vlan_strip(self):
