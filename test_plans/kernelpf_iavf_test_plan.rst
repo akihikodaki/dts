@@ -394,7 +394,7 @@ Test case: IAVF DUAL VLAN filtering
     sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
     sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
 
-4. check the pkts can't be received in VF.
+4. check the pkts can't be received in VF, but if the kernel cannot set ``vf-vlan-pruning``, check can receive 2 pkts in VF.
 
 5. add rx_vlan in VF::
 
@@ -428,7 +428,7 @@ Test case: IAVF DUAL VLAN filtering
 
     testpmd> rx_vlan rm 1 0
 
-10. repeat step 3, check the pkts can not be received by VF.
+10. repeat step 3, check the pkts can not be received by VF, but if the kernel cannot set ``vf-vlan-pruning``, check can receive 2 pkts in VF.
 
 
 Test case: IAVF DUAL VLAN header stripping
