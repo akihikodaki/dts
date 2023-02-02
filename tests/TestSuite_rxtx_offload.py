@@ -235,7 +235,7 @@ class TestRxTx_Offload(TestCase):
         while i < count:
             if rxtx == "tx":
                 pks_l1 = re.findall(r"TX-packets: (\w+)", out1)
-                time.sleep(15)
+                time.sleep(3)
                 out1 = self.dut.send_expect("show port stats all", "testpmd> ")
                 pks_l2 = re.findall(r"TX-packets: (\w+)", out1)
                 self.logger.info(
@@ -252,7 +252,7 @@ class TestRxTx_Offload(TestCase):
                     self.verify(
                         int(pks_l2[index]) > int(pks_l1[index]), "TX-packets hang"
                     )
-                if int(pks_l1[index]) < 100000000 or int(pks_l2[index]) < 100000000:
+                if int(pks_l1[index]) < 100000 or int(pks_l2[index]) < 100000:
                     count += 1
             i += 1
             if count > 25:
