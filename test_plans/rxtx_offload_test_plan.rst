@@ -575,7 +575,7 @@ Test case: Tx offload multi_segs setting
 
 1. Start testpmd with "--tx-offloads=0x00008000" to enable tx_offload multi_segs ::
 
-    ./<build_target>/app/dpdk-testpmd -c 0xf -n 4  -- -i --tx-offloads==0x00008000
+    ./<build_target>/app/dpdk-testpmd -c 0xf -n 4  -- -i --tx-offloads=0x00008000
     testpmd> show port 0 tx_offload configuration
     Tx Offloading Configuration of port 0 :
       Port : MULTI_SEGS
