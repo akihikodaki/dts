@@ -167,6 +167,10 @@ Test case4: VF tagged vlan rx
      testpmd> set verbose 1
      testpmd> start
 
+.. note::
+
+     parameter "--enable-hw-vlan" not support nic: IXGBE_10G-82599_SFP.
+
 3. Send packet without vlan and check packet received
 
 4. Send packet with vlan 0 and check packet received
@@ -197,6 +201,10 @@ Test case5: VF Vlan strip test
      testpmd> set fwd mac
      testpmd> set verbose 1
      testpmd> start
+
+.. note::
+
+     parameter "--enable-hw-vlan" not support nic: IXGBE_10G-82599_SFP.
 
 2. Add tagged vlan 1 on VF0::
 
