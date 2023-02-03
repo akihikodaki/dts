@@ -344,7 +344,11 @@ class TestVfVlan(TestCase):
         self.vm0_dut_ports = self.vm_dut_0.get_ports("any")
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        param = "--enable-hw-vlan" if not self.dcf_mode else ""
+        param = (
+            "--enable-hw-vlan"
+            if not self.dcf_mode and self.kdriver is not "ixgbe"
+            else ""
+        )
         self.launch_testpmd(dcf_flag=self.dcf_mode, param=param)
         self.vm0_testpmd.execute_cmd("set fwd rxonly")
         self.vm0_testpmd.execute_cmd("set verbose 1")
@@ -424,7 +428,12 @@ class TestVfVlan(TestCase):
         self.vm0_dut_ports = self.vm_dut_0.get_ports("any")
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        param = "--enable-hw-vlan" if not self.dcf_mode else ""
+        param = (
+            "--enable-hw-vlan"
+            if not self.dcf_mode and self.kdriver is not "ixgbe"
+            else ""
+        )
+
         self.launch_testpmd(dcf_flag=self.dcf_mode, param=param)
         self.vm0_testpmd.execute_cmd("set fwd rxonly")
         self.vm0_testpmd.execute_cmd("set verbose 1")
