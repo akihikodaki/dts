@@ -57,6 +57,7 @@ class TestDynamicQueue(TestCase):
                 "Default",
                 "--port-topology=chained --txq=%s --rxq=%s"
                 % (self.PF_QUEUE, self.PF_QUEUE),
+                ports=self.dut_ports[0:1],
             )
 
     def element_strip(self, out, pattern, if_get_from_cfg=False):
