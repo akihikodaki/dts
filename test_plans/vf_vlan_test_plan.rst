@@ -80,11 +80,16 @@ if test DCF, set VF port to dcf and start up::
 
        ip link set $PF_INTF vf 0 trust on
 
-    dpdk-testpmd -c 0x0f -n 4 -a 00:04.0,cap=dcf -a 00:05.0,cap=dcf -- -i --portmask=0x3
+   start testpmd with scalar path:
+
+    dpdk-testpmd -c 0x0f -n 4 -a 00:04.0,cap=dcf -a 00:05.0,cap=dcf --force-max-simd-bitwidth=64 -- -i --portmask=0x3
 
 .. note::
 
    make dcf as full feature pmd is dpdk22.07 feature, and only support E810 series nic.
+   the dcf not support vlan offload and change the rx path in vector path when pmd is initialized, so we use
+   the scalar path to start testpmd(use param "--force-max-simd-bitwidth=64").
+
 
 Test Case 1: Add port based vlan on VF
 ======================================

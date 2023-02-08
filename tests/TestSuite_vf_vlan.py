@@ -169,11 +169,13 @@ class TestVfVlan(TestCase):
     def launch_testpmd(self, **kwargs):
         dcf_flag = kwargs.get("dcf_flag")
         param = kwargs.get("param") if kwargs.get("param") else ""
+        # for dcf mode, the vlan offload support in scalar path
         if dcf_flag:
             self.vm0_testpmd.start_testpmd(
                 VM_CORES_MASK,
                 ports=[self.vf0_guest_pci, self.vf1_guest_pci],
                 param=param,
+                eal_param="--force-max-simd-bitwidth=64",
                 port_options={
                     self.vf0_guest_pci: "cap=dcf",
                     self.vf1_guest_pci: "cap=dcf",
