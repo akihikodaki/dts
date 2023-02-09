@@ -317,6 +317,7 @@ class Tester(Crb):
             self.send_expect("modprobe ixgbe", "# ", 20)
             self.send_expect("modprobe e1000e", "# ", 20)
             self.send_expect("modprobe e1000", "# ", 20)
+            self.send_expect("modprobe nfp", "# ", 20)
 
         try:
             for (pci_bus, pci_id) in self.pci_devices_info:

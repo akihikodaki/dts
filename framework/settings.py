@@ -87,6 +87,16 @@ NICS = {
     "IGC-I226_LM": "8086:125b",
     "brcm_57414": "14e4:16d7",
     "brcm_P2100G": "14e4:1750",
+    "netronome_3800_pf": "19ee:3800",
+    "netronome_3800_vf": "19ee:3803",
+    "netronome_4000_pf": "19ee:4000",
+    "netronome_6000_pf": "19ee:6000",
+    "netronome_6000_vf": "19ee:6003",
+    "corigine_3800_pf": "1da8:3800",
+    "corigine_3800_vf": "1da8:3803",
+    "corigine_4000_pf": "1da8:4000",
+    "corigine_6000_pf": "1da8:6000",
+    "corigine_6000_vf": "1da8:6003",
 }
 
 ETH_700_SERIES = (
@@ -171,6 +181,16 @@ DRIVERS = {
     "IGC-I226_LM": "igc",
     "brcm_57414": "bnxt_en",
     "brcm_P2100G": "bnxt_en",
+    "netronome_3800_pf": "nfp",
+    "netronome_3800_vf": "nfp_vf",
+    "netronome_4000_pf": "nfp",
+    "netronome_6000_pf": "nfp",
+    "netronome_6000_vf": "nfp_vf",
+    "corigine_3800_pf": "nfp",
+    "corigine_3800_vf": "nfp_vf",
+    "corigine_4000_pf": "nfp",
+    "corigine_6000_pf": "nfp",
+    "corigine_6000_vf": "nfp_vf",
 }
 
 """
