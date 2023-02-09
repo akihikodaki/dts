@@ -194,8 +194,8 @@ class NetDevice(object):
         else:
             self.intf_name = out
 
-        # not a complete fix for CX3.
-        if len(out.split()) > 1 and self.default_driver == "mlx4_core":
+        # Incomplete fix for dual-ports adapters (CX3, NFP) which present both interfaces on a single PCI location
+        if len(out.split()) > 1 and self.default_driver in ["mlx4_core", "nfp"]:
             self.intf_name = out.split()[0]
             self.intf2_name = out.split()[1]
 

@@ -518,7 +518,7 @@ class Tester(Crb):
                 }
             )
 
-            # return if port is not connect x3
+            # return if port does not have two interface
             if not port.get_interface2_name():
                 continue
 
