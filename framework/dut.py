@@ -424,9 +424,11 @@ class Dut(Crb):
                 )
                 # bind to linux kernel driver
                 if not self.is_container:
-                    self.send_expect("modprobe %s" % driver, "# ")
+                    self.send_expect("modprobe %s" % driver, "# ", timeout=30)
                 self.send_expect(
-                    "echo %s > /sys/bus/pci/drivers/%s/bind" % (pci_bus, driver), "# "
+                    "echo %s > /sys/bus/pci/drivers/%s/bind" % (pci_bus, driver),
+                    "# ",
+                    timeout=30,
                 )
                 pull_retries = 5
                 itf = "N/A"
