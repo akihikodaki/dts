@@ -110,8 +110,7 @@ different_queues_switch = {
 
 pf_large_vf_fdir_coexist = {
     "name": "test_pf_large_vf_fdir_coexist",
-    "param": [21, 63],
-    "check_param": (54, 63),
+    "param": [21],
     "count": 1,
 }
 
@@ -124,7 +123,7 @@ exceed_256_queues = {
 more_than_3_vfs_256_queues = {
     "name": "test_more_than_3_vfs_256_queues",
     "param": "--txq=256 --rxq=256",
-    "check_param": "Cause: Start ports failed",
+    "check_param": "Start ports failed",
 }
 
 max_vfs_256_queues_3 = [
@@ -296,6 +295,7 @@ class TestLargeVf(TestCase):
 
     def rte_flow_process(self, vectors):
         test_results = {}
+        self.rule_num = []
         for tv in vectors:
             try:
                 subcase_name = tv["name"]
@@ -322,14 +322,14 @@ class TestLargeVf(TestCase):
                         self.pmdout_list[0],
                         self.pf0_intf,
                         tv["param"][0],
-                        tv["param"][1],
+                        self.max_ring_num - 1,
                     )
                     self.send_pkts_pf_check(
                         self.pmdout_list[0],
                         self.pf0_intf,
                         self.pf0_mac,
                         tv["param"][0],
-                        tv["check_param"],
+                        self.rule_num,
                         tv["count"],
                     )
                     self.create_fdir_rule(vectors[0]["rule"])
@@ -373,11 +373,14 @@ class TestLargeVf(TestCase):
                                 + "-- -i "
                                 + tv["param"]
                             )
-                            out = self.pmd_output.execute_cmd(cmd, "#")
+                            out = self.pmd_output.execute_cmd(
+                                cmd, "testpmd> ", timeout=30
+                            )
                             self.verify(
                                 tv["check_param"] in out,
                                 "fail: testpmd start successfully",
                             )
+                            self.pmd_output.quit()
                             self.pmdout_list[0].execute_cmd("quit", "# ")
                             break
                         else:
@@ -399,11 +402,12 @@ class TestLargeVf(TestCase):
                                     + "-- -i "
                                     + tv["param"]
                                 )
-                                out = self.pmd_output.execute_cmd(cmd, "#")
+                                out = self.pmd_output.execute_cmd(cmd, "testpmd> ")
                                 self.verify(
                                     tv["check_param"] in out,
                                     "fail: testpmd start successfully",
                                 )
+                                self.pmd_output.quit()
                                 # quit all testpmd
                                 self.pmdout_list[0].execute_cmd("quit", "# ")
                                 self.pmdout_list[1].execute_cmd("quit", "# ")
@@ -515,6 +519,7 @@ class TestLargeVf(TestCase):
                 pf_intf, ip, action
             )
             pmdout.execute_cmd(cmd, "#")
+            self.rule_num.append(action)
             ip += 1
             action -= 1
         self.validation_pf_rule(pmdout, pf_intf, 10)
@@ -534,7 +539,7 @@ class TestLargeVf(TestCase):
             ip += 1
         time.sleep(1)
         out = pmdout.execute_cmd("ethtool -S %s" % pf_intf, "# ")
-        for queue in range(check_param[0], check_param[1] + 1):
+        for queue in check_param:
             packet_str = "rx_queue_%d_packets: (\d+)" % queue
             packet = re.search(packet_str, out).group(1)
             self.verify(
@@ -544,8 +549,10 @@ class TestLargeVf(TestCase):
 
     def destroy_pf_rule(self, pmdout, pf_intf):
         rule_str = "Filter:.*?(\d+)"
+        max_ring_str = "(\d+) RX rings available"
         out = pmdout.execute_cmd("ethtool -n %s" % pf_intf, "#")
         rule_list = re.findall(rule_str, out)
+        self.max_ring_num = int(re.search(max_ring_str, out).group(1))
         if rule_list:
             for rule in rule_list:
                 cmd = "ethtool -N {} delete {}".format(pf_intf, rule)
