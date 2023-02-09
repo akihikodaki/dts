@@ -522,6 +522,11 @@ Test case: IAVF DUAL VLAN header stripping
 Test case: IAVF DUAL VLAN header insertion
 ==========================================
 
+..note::
+
+   according to dpdk commit d048a0aaae27809523969904c2f7b71fe3cc1bb6,
+   when the ice driver version newer than 1.8.9, avx512 tx path not support insert correct vlag tag(outer of QinQ)
+
 1. enable vlan filtering on port VF::
 
     testpmd> vlan set filter on 0

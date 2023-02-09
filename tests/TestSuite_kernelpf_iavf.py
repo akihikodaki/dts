@@ -16,7 +16,11 @@ import time
 import framework.utils as utils
 from framework.packet import Packet
 from framework.pmd_output import PmdOutput
-from framework.settings import DPDK_DCFMODE_SETTING, load_global_setting
+from framework.settings import (
+    DPDK_DCFMODE_SETTING,
+    DPDK_RXMODE_SETTING,
+    load_global_setting,
+)
 from framework.test_case import TestCase, check_supported_nic
 from framework.utils import RED
 from framework.virt_common import VM
@@ -81,6 +85,7 @@ class TestKernelpfIavf(TestCase):
         self.flag = "vf-vlan-pruning"
         self.default_stats = self.dut.get_priv_flags_state(self.host_intf, self.flag)
         self.dcf_mode = load_global_setting(DPDK_DCFMODE_SETTING)
+        self.rx_mode = load_global_setting(DPDK_RXMODE_SETTING)
 
     def set_up(self):
 
@@ -1022,12 +1027,39 @@ class TestKernelpfIavf(TestCase):
                     "port {} should not received a packets".format(port_id),
                 )
 
+    def convert_driver_version_value(self, check_version):
+        """
+        convert the driver version to int list
+        take the first three values in the list for comparison and limit intree driver
+        for example:
+            6.0.7-060007-generic: [6, 0, 7-060007-generic]
+            1.11.0_rc59: [1, 11, 0]
+            1.11.11: [1, 11, 11]
+        """
+        try:
+            value_list = list(map(int, re.split(r"[.|_]", check_version)[:3]))
+        except ValueError as e:
+            self.logger.warning(e)
+            # the intree-driver has character, so set the return value is null list as the lowest driver version
+            return []
+        return value_list
+
     @check_supported_nic(ice_nic)
     def test_iavf_dual_vlan_insert(self):
         """
         Test case: IAVF DUAL VLAN header insertion
         """
+
+        """
+        according to dpdk commit d048a0aaae27809523969904c2f7b71fe3cc1bb6,
+        when the ice driver version newer than 1.8.9, avx512 tx path not support
+        insert correct vlag tag(outer of QinQ)
+        """
         self.skip_case(not self.dcf_mode, "the case not support this dcf mode")
+        if self.rx_mode == "avx512" and self.convert_driver_version_value(
+            self.driver_version
+        ) > self.convert_driver_version_value("1.8.9"):
+            self.skip_case(False, "avx512 tx path not support insert correct vlan tag")
         out_vlan = 1
         pkt_list = [
             'Ether(dst="%s",type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
