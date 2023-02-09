@@ -1250,6 +1250,7 @@ class Dut(Crb):
                     elif (
                         self.tester.ports_info[remotePort]["pci"].lower()
                         == peer.lower()
+                        and hits[remotePort] == False
                     ):
                         hits[remotePort] = True
                         self.ports_map[dutPort] = remotePort
