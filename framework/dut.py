@@ -402,9 +402,9 @@ class Dut(Crb):
         """
         Restore Linux interfaces.
         """
-        for port in self.ports_info:
-            pci_bus = port["pci"]
-            pci_id = port["type"]
+        for port_info in self.ports_info:
+            pci_bus = port_info["pci"]
+            pci_id = port_info["type"]
             # get device driver
             driver = settings.get_nic_driver(pci_id)
             if driver is not None:
@@ -431,7 +431,10 @@ class Dut(Crb):
                 pull_retries = 5
                 itf = "N/A"
                 while pull_retries > 0:
-                    itf = port.get_interface_name()
+                    if port_info["port_id"] == 1:
+                        itf = port.get_interface_name()
+                    else:
+                        itf = port.get_interface2_name()
                     if not itf or itf == "N/A":
                         time.sleep(1)
                         pull_retries -= 1
@@ -865,13 +868,19 @@ class Dut(Crb):
 
         for port_info in self.ports_info:
             port = port_info["port"]
-            intf = port.get_interface_name()
+            if port_info["port_id"] == 1:
+                intf = port.get_interface_name()
+            else:
+                intf = port.get_interface2_name()
             port_info["intf"] = intf
             out = self.send_expect("ip link show %s" % intf, "# ")
             if "DOWN" in out:
                 self.send_expect("ip link set %s up" % intf, "# ")
                 time.sleep(5)
-            port_info["mac"] = port.get_mac_addr()
+            if port_info["port_id"] == 1:
+                port_info["mac"] = port.get_mac_addr()
+            else:
+                port_info["mac"] = port.get_intf2_mac_addr()
             out = self.send_expect(
                 "ip -family inet6 address show dev %s | awk '/inet6/ { print $2 }'"
                 % intf,
@@ -1017,6 +1026,7 @@ class Dut(Crb):
                     "type": pci_id,
                     "numa": numa,
                     "intf": intf,
+                    "port_id": 1,
                     "mac": macaddr,
                 }
             )
@@ -1035,6 +1045,7 @@ class Dut(Crb):
                     "type": pci_id,
                     "numa": numa,
                     "intf": intf,
+                    "port_id": 2,
                     "mac": macaddr,
                 }
             )
