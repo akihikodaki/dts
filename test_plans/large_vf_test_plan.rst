@@ -264,25 +264,29 @@ Subcase 5: PF fdir + large VF fdir co-exist
 
 Start testpmd on VF0 with 256 queues.
 
-Create 10 rules on PF0, queue from [54~63]::
+Get RX rings available on DUT ::
 
-    ethtool -N enp96s0f0 flow-type udp4 dst-ip 192.168.0.21 src-port 22 action 63
-    ethtool -N enp96s0f0 flow-type udp4 dst-ip 192.168.0.22 src-port 22 action 62
-    ethtool -N enp96s0f0 flow-type udp4 dst-ip 192.168.0.23 src-port 22 action 61
+    ethtool -n enp96s0f0
+
+Create 10 rules on PF0, and the actions decrease from the maximum value of RX rings available::
+
+    ethtool -N enp96s0f0 flow-type udp4 dst-ip 192.168.0.21 src-port 22 action 35
+    ethtool -N enp96s0f0 flow-type udp4 dst-ip 192.168.0.22 src-port 22 action 34
+    ethtool -N enp96s0f0 flow-type udp4 dst-ip 192.168.0.23 src-port 22 action 33
     ...
-    ethtool -N enp96s0f0 flow-type udp4 dst-ip 192.168.0.30 src-port 22 action 54
+    ethtool -N enp96s0f0 flow-type udp4 dst-ip 192.168.0.30 src-port 22 action 26
 
 Check rules on PF::
 
     ethtool -n enp96s0f0
 
-Send matched patches to PF::
+Send matched packet to PF::
 
     pkt1=Ether(dst="00:00:00:00:01:00")/IP(src=RandIP(),dst="192.168.0.21")/UDP(sport=22,dport=23)/Raw('x'*80)
     ......
     pkt10=Ether(dst="00:00:00:00:01:00")/IP(src=RandIP(),dst="192.168.0.30")/UDP(sport=22,dport=23)/Raw('x'*80)
 
-Check PF matched queue [54~63] could receive matched packet::
+Check PF matched queue could receive matched packet::
 
     ethtool -S enp96s0f0
 
