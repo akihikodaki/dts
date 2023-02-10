@@ -420,11 +420,11 @@ class TestTelemetry(TestCase):
     def change_run_fileprefix(self, out):
         self.get_file_prefix(out)
         if self.file_prefix:
-            cmd1 = 'sed -i \'s/self.socket.send_fd.connect("\/var\/run\/dpdk\/.*\/telemetry")/self.socket.send_fd.connect("\/var\/run\/dpdk\/{0}\/telemetry")/g\' {1}'.format(
+            cmd1 = "sed -i 's/self.socket.send_fd.connect(self.run_path)/self.socket.send_fd.connect(\"\/var\/run\/dpdk\/{0}\/telemetry\")/g' {1}".format(
                 self.file_prefix,
                 os.path.join(self.target_dir, "usertools/dpdk-telemetry-client.py"),
             )
-            cmd2 = 'sed -i \'s/self.socket.send_fd.connect("\/var\/run\/dpdk\/.*\/telemetry")/self.socket.send_fd.connect("\/var\/run\/dpdk\/{0}\/telemetry")/g\' {1}'.format(
+            cmd2 = "sed -i 's/self.socket.send_fd.connect(self.run_path)/self.socket.send_fd.connect(\"\/var\/run\/dpdk\/{0}\/telemetry\")/g' {1}".format(
                 self.file_prefix,
                 os.path.join(self.target_dir, "dpdk_telemetry_client.py"),
             )
