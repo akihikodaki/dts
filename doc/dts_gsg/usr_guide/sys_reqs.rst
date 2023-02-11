@@ -42,7 +42,7 @@ To run DTS, `Python3` must be installed, and it uses the following packages:
 * numpy: it provides method to deal with array-processing test results.
 * pexpect: it provides API to automate interactive SSH sessions.
 * docutils：it is a modular system for processing documentation into useful formats, such as HTML, XML, and LaTeX
-* pcapy: it is a Python extension module that interfaces with the libpcap packet capture library. Pcapy enables python scripts to capture packets on the network.
+* pcapyplus: it is a Python extension module that interfaces with the libpcap packet capture library. Pcapyplus enables python scripts to capture packets on the network.
 * xlrd: it is a Python module that extracts data from Excel spreadsheets.
 * threadpool: it is a Python module that maintains a pool of worker threads to perform time consuming operations in parallel.
 * scapy: it is a Python program that enables the user to send, sniff and dissect and forge network packets.
@@ -57,7 +57,7 @@ They are recorded in `requirements.txt`.
     pexpect==4.7.0
     numpy==1.18.5
     docutils
-    pcapy
+    pcapyplus
     xlrd
     scapy==2.4.4
     threadpool

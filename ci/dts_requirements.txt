@@ -6,7 +6,7 @@ xlwt==1.3.0
 pexpect==4.7.0
 numpy==1.18.5
 docutils
-pcapy
+pcapyplus
 xlrd
 scapy==2.4.4
 threadpool
