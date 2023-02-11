@@ -55,7 +55,7 @@ They are recorded in `requirements.txt`.
     ...
     xlwt==1.3.0
     pexpect==4.7.0
-    numpy==1.18.5
+    numpy==1.24.2
     docutils
     pcapyplus
     xlrd
