@@ -13,7 +13,7 @@ from framework.packet import Packet
 from framework.pktgen import PacketGeneratorHelper
 from framework.pmd_output import PmdOutput
 from framework.qemu_kvm import QEMUKvm
-from framework.settings import CONFIG_ROOT_PATH
+from framework.settings import CONFIG_ROOT_PATH, get_host_ip
 from framework.test_case import TestCase
 
 
@@ -62,6 +62,8 @@ class TestBasic4kPagesCbdma(TestCase):
         self.virtio_mac2 = "52:54:00:00:00:02"
         self.base_dir = self.dut.base_dir.replace("~", "/root")
         self.random_string = string.ascii_letters + string.digits
+        self.addr = str(self.dut.get_ip_address())
+        self.host_addr = get_host_ip(self.addr).split(":")[0]
 
         self.mount_tmpfs_for_4k(number=2)
         self.vm0_virt_conf = self.get_virt_config(vm_name="vm0")
@@ -120,6 +122,7 @@ class TestBasic4kPagesCbdma(TestCase):
 
     def start_vm0(self, packed=False, queues=1, server=False):
         packed_param = ",packed=on" if packed else ""
+        mq_param = ",mq=on,vectors=%s" % (2 + 2 * queues) if queues > 1 else ""
         server = ",server" if server else ""
         self.qemu_cmd0 = (
             f"taskset -c {self.vm0_lcore} {self.vm0_qemu_path} -name vm0 -enable-kvm "
@@ -128,7 +131,7 @@ class TestBasic4kPagesCbdma(TestCase):
             f"-chardev socket,id=char0,path=/root/dpdk/vhost-net0{server} "
             f"-netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues={queues} "
             f"-device virtio-net-pci,netdev=netdev0,mac=%s,"
-            f"disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on{packed_param} "
+            f"disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on{packed_param}{mq_param} "
             f"-cpu host -smp {self.vm0_lcore_smp} -m {self.vm0_mem_size} -object memory-backend-file,id=mem,size={self.vm0_mem_size}M,mem-path=/mnt/tmpfs_nohuge0,share=on "
             f"-numa node,memdev=mem -mem-prealloc -drive file={self.vm0_image_path} "
             f"-chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 -device virtio-serial "
@@ -137,7 +140,7 @@ class TestBasic4kPagesCbdma(TestCase):
 
         self.vm0_session = self.dut.new_session(suite="vm0_session")
         cmd0 = self.qemu_cmd0 % (
-            self.dut.get_ip_address(),
+            self.host_addr,
             self.virtio_mac1,
         )
         self.vm0_session.send_expect(cmd0, "# ")
@@ -148,6 +151,7 @@ class TestBasic4kPagesCbdma(TestCase):
 
     def start_vm1(self, packed=False, queues=1, server=False):
         packed_param = ",packed=on" if packed else ""
+        mq_param = ",mq=on,vectors=%s" % (2 + 2 * queues) if queues > 1 else ""
         server = ",server" if server else ""
         self.qemu_cmd1 = (
             f"taskset -c {self.vm1_lcore} {self.vm1_qemu_path} -name vm1 -enable-kvm "
@@ -156,7 +160,7 @@ class TestBasic4kPagesCbdma(TestCase):
             f"-chardev socket,id=char0,path=/root/dpdk/vhost-net1{server} "
             f"-netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues={queues} "
             f"-device virtio-net-pci,netdev=netdev0,mac=%s,"
-            f"disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on{packed_param} "
+            f"disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on{packed_param}{mq_param} "
             f"-cpu host -smp {self.vm1_lcore_smp} -m {self.vm1_mem_size} -object memory-backend-file,id=mem,size={self.vm1_mem_size}M,mem-path=/mnt/tmpfs_nohuge1,share=on "
             f"-numa node,memdev=mem -mem-prealloc -drive file={self.vm1_image_path} "
             f"-chardev socket,path=/tmp/vm1_qga0.sock,server,nowait,id=vm1_qga0 -device virtio-serial "
@@ -165,7 +169,7 @@ class TestBasic4kPagesCbdma(TestCase):
 
         self.vm1_session = self.dut.new_session(suite="vm1_session")
         cmd1 = self.qemu_cmd1 % (
-            self.dut.get_ip_address(),
+            self.host_addr,
             self.virtio_mac2,
         )
         self.vm1_session.send_expect(cmd1, "# ")
