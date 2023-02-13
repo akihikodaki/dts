@@ -180,7 +180,7 @@ class TestDPDKGROLib(TestCase):
                 vm_config.params[i]["cpu"][0]["number"] = 1
                 vm_config.params[i]["cpu"][0]["cpupin"] = self.qemu_cpupin
 
-    def start_vm(self, mode=1, queue=1):
+    def start_vm(self, queue=1):
         self.vm1 = VM(self.dut, "vm0", "vhost_sample")
         self.vm1.load_config()
         vm_params_1 = {}
@@ -188,14 +188,13 @@ class TestDPDKGROLib(TestCase):
         vm_params_1["opt_path"] = self.base_dir + "/vhost-net"
         vm_params_1["opt_mac"] = self.virtio_mac1
         vm_params_1["opt_queue"] = queue
-        if mode == 5:
-            vm_params_1[
-                "opt_settings"
-            ] = "mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on,mq=on,vectors=15"
+        if int(queue) > 1:
+            mq_pram = ",mq=on,vectors=%s" % (2 + 2 * int(queue))
         else:
-            vm_params_1[
-                "opt_settings"
-            ] = "mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on"
+            mq_pram = ""
+        vm_params_1["opt_settings"] = (
+            "mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on%s" % mq_pram
+        )
         self.vm1.set_vm_device(**vm_params_1)
         self.set_vm_cpu_number(self.vm1)
         try:
@@ -347,7 +346,7 @@ class TestDPDKGROLib(TestCase):
         """
         self.config_kernel_nic_host(0)
         self.launch_testpmd_gro_on(mode=1, queue=2)
-        self.start_vm(mode=1, queue=2)
+        self.start_vm(queue=2)
         time.sleep(5)
         self.dut.get_session_output(timeout=2)
         # Get the virtio-net device name
