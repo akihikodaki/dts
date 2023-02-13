@@ -57,7 +57,7 @@ class SystemInfo(object):
         speed_regex = r"(\s+)Speed: (.*)"
         size = ""
         locate = ""
-        speed = "Unknown"
+        speed = None
         memory_infos = []
         memory_channel = set()
         lines = memories.split("\r\n")
@@ -75,10 +75,10 @@ class SystemInfo(object):
             s_m = re.match(speed_regex, line)
             if s_m:
                 speed = s_m.group(2)
-            if speed != "Unknown":
+            if speed is not None:
                 memory = {"Size": size, "Locate": locate, "Speed": speed}
                 memory_infos.append(memory)
-                speed = "Unknown"
+                speed = None
                 total_size += int(size)
                 memory_channel.add(locate[0])
 
