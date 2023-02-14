@@ -849,6 +849,172 @@ class TestVfOffload(TestCase):
         rx_packet_size = [len(p[Raw].load) for p in pkts]
         return rx_packet_count, rx_packet_size
 
+    def segment_validate(
+        self,
+        segment_size,
+        loading_size,
+        packet_count,
+        tx_stats,
+        rx_stats,
+        payload_size_list,
+    ):
+        """
+        Validate the segmentation, checking if the result is segmented
+        as expected.
+        segment_size: segment size,
+        loading_size: tx payload size,
+        packet_count: tx packet count,
+        tx_stats: tx packets count sniffed,
+        rx_stats: rx packets count,
+        payload_size_list: rx packets payload size list,
+        Return a message of validate result.
+        """
+        num_segs = (loading_size + segment_size - 1) // segment_size
+        num_segs_full = loading_size // segment_size
+        if not packet_count == tx_stats:
+            return "Failed: TX packet count is of inconsitent with sniffed TX packet count."
+        elif not packet_count * num_segs == rx_stats:
+            return "Failed: RX packet count is of inconsitent with expected RX packet count."
+        elif not (
+            all(
+                [
+                    # i * packet_count + j is the i-th segmentation for j-th packet.
+                    payload_size_list[i * packet_count + j] == segment_size
+                    for j in range(packet_count)
+                    for i in range(num_segs_full)
+                ]
+                + [
+                    # i * packet_count + j is i-th segmentation for j-th packet.
+                    # i range from num_segs_full to num_segs, means the last
+                    # segmentation if exists.
+                    payload_size_list[i * packet_count + j]
+                    == (loading_size % segment_size)
+                    for j in range(packet_count)
+                    for i in range(num_segs_full, num_segs)
+                ]
+            )
+        ):
+            return (
+                "Failed: RX packet segmentation size incorrect, %s." % payload_size_list
+            )
+        return None
+
+    def tso_validate(
+        self,
+        tx_interface,
+        rx_interface,
+        mac,
+        inet_type,
+        size_and_count,
+        outer_pkts=None,
+    ):
+
+        validate_result = []
+
+        self.tester.scapy_foreground()
+        time.sleep(5)
+
+        packet_l3 = {
+            "IP": 'IP(src="192.168.1.1",dst="192.168.1.2")',
+            "IPv6": 'IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")',
+        }
+
+        if not outer_pkts is None:
+            for key_outer in outer_pkts:
+                for loading_size, packet_count in size_and_count:
+                    out = self.vm0_testpmd.execute_cmd(
+                        "clear port info all", "testpmd> ", 120
+                    )
+                    self.tcpdump_start_sniffing([tx_interface, rx_interface])
+                    if "GTPU" in key_outer:
+                        self.tester.scapy_append(
+                            "from scapy.contrib.gtp import GTP_U_Header"
+                        )
+                    self.tester.scapy_append(
+                        (
+                            'sendp([Ether(dst="%s",src="52:00:00:00:00:00")/'
+                            + outer_pkts[key_outer]
+                            + '/%s/TCP(sport=1021,dport=1021)/Raw(RandString(size=%s))], iface="%s", count=%s)'
+                        )
+                        % (
+                            mac,
+                            packet_l3[inet_type],
+                            loading_size,
+                            tx_interface,
+                            packet_count,
+                        )
+                    )
+                    out = self.tester.scapy_execute()
+                    out = self.vm0_testpmd.execute_cmd("show port stats all")
+                    print(out)
+                    # In case tcpdump working slower than expected on very limited environments,
+                    # an immediate stop sniffing causes a trimed pcap file, leading to wrong
+                    # packet statistic.
+                    # Uncommenting the following line helps resolving this problem.
+                    # time.sleep(1)
+                    self.tcpdump_stop_sniff()
+                    rx_stats, payload_size_list = self.tcpdump_analyse_sniff(
+                        rx_interface
+                    )
+                    tx_stats, _ = self.tcpdump_analyse_sniff(tx_interface)
+                    payload_size_list.sort(reverse=True)
+                    self.logger.info(payload_size_list)
+                    segment_result = self.segment_validate(
+                        800,
+                        loading_size,
+                        packet_count,
+                        tx_stats,
+                        rx_stats,
+                        payload_size_list,
+                    )
+                    if segment_result:
+                        result_message = (
+                            f"Packet: {key_outer}, inet type: {inet_type}, loading size: {loading_size} packet count: {packet_count}: "
+                            + segment_result
+                        )
+                        self.logger.info(result_message)
+                        validate_result.append(result_message)
+        else:
+            for loading_size, packet_count in size_and_count:
+                out = self.vm0_testpmd.execute_cmd(
+                    "clear port info all", "testpmd> ", 120
+                )
+                self.tcpdump_start_sniffing([tx_interface, rx_interface])
+                self.tester.scapy_append(
+                    'sendp([Ether(dst="%s",src="52:00:00:00:00:00")/%s/TCP(sport=1021,dport=1021)/Raw(RandString(size=%s))], iface="%s", count=%s)'
+                    % (
+                        mac,
+                        packet_l3[inet_type],
+                        loading_size,
+                        tx_interface,
+                        packet_count,
+                    )
+                )
+                out = self.tester.scapy_execute()
+                out = self.vm0_testpmd.execute_cmd("show port stats all")
+                print(out)
+                self.tcpdump_stop_sniff()
+                rx_stats, payload_size_list = self.tcpdump_analyse_sniff(rx_interface)
+                tx_stats, _ = self.tcpdump_analyse_sniff(tx_interface)
+                payload_size_list.sort(reverse=True)
+                self.logger.info(payload_size_list)
+                segment_result = self.segment_validate(
+                    800,
+                    loading_size,
+                    packet_count,
+                    tx_stats,
+                    rx_stats,
+                    payload_size_list,
+                )
+                if segment_result:
+                    result_message = (
+                        f"Inet type: {inet_type}, loading size: {loading_size} packet count: {packet_count}: "
+                        + segment_result
+                    )
+                    self.logger.info(result_message)
+                    validate_result.append(result_message)
+        return validate_result
+
     def test_tso(self):
         """
         TSO IPv4 TCP, IPv6 TCP testing.
@@ -863,7 +1029,7 @@ class TestVfOffload(TestCase):
         # Here size_and_count is a list of tuples for the test scopes that
         # in a tuple (size, count) means, sending packets for count times
         # for TSO with a payload size of size.
-        self.size_and_count = [
+        size_and_count = [
             (128, 10),
             (800, 10),
             (801, 10),
@@ -895,162 +1061,31 @@ class TestVfOffload(TestCase):
 
         mac = self.vm0_testpmd.get_port_mac(0)
         self.vm0_testpmd.execute_cmd("set verbose 1", "testpmd> ", 120)
-        self.vm0_testpmd.execute_cmd("port stop all", "testpmd> ", 120)
-        self.vm0_testpmd.execute_cmd(
-            "csum set ip hw %d" % self.dut_ports[0], "testpmd> ", 120
-        )
-        self.vm0_testpmd.execute_cmd(
-            "csum set udp hw %d" % self.dut_ports[0], "testpmd> ", 120
-        )
-        self.vm0_testpmd.execute_cmd(
-            "csum set tcp hw %d" % self.dut_ports[0], "testpmd> ", 120
-        )
-        self.vm0_testpmd.execute_cmd(
-            "csum set sctp hw %d" % self.dut_ports[0], "testpmd> ", 120
-        )
-        self.vm0_testpmd.execute_cmd(
-            "csum set outer-ip hw %d" % self.dut_ports[0], "testpmd> ", 120
-        )
-        self.vm0_testpmd.execute_cmd(
-            "csum parse-tunnel on %d" % self.dut_ports[0], "testpmd> ", 120
-        )
-
-        self.vm0_testpmd.execute_cmd(
-            "csum set ip hw %d" % self.dut_ports[1], "testpmd> ", 120
-        )
-        self.vm0_testpmd.execute_cmd(
-            "csum set udp hw %d" % self.dut_ports[1], "testpmd> ", 120
-        )
-        self.vm0_testpmd.execute_cmd(
-            "csum set tcp hw %d" % self.dut_ports[1], "testpmd> ", 120
-        )
-        self.vm0_testpmd.execute_cmd(
-            "csum set sctp hw %d" % self.dut_ports[1], "testpmd> ", 120
-        )
-        self.vm0_testpmd.execute_cmd(
-            "csum set outer-ip hw %d" % self.dut_ports[1], "testpmd> ", 120
-        )
-        self.vm0_testpmd.execute_cmd(
-            "csum parse-tunnel on %d" % self.dut_ports[1], "testpmd> ", 120
-        )
-
-        self.vm0_testpmd.execute_cmd("tso set 800 %d" % self.vm0_dut_ports[1])
         self.vm0_testpmd.execute_cmd("set fwd csum")
-        self.vm0_testpmd.execute_cmd("port start all", "testpmd> ", 120)
+        self.tso_enable(self.vm0_dut_ports[0], self.vm_dut_0)
+        self.tso_enable(self.vm0_dut_ports[1], self.vm_dut_0)
         self.vm0_testpmd.execute_cmd("set promisc 0 on", "testpmd> ", 120)
         self.vm0_testpmd.execute_cmd("set promisc 1 on", "testpmd> ", 120)
         self.vm0_testpmd.execute_cmd("start")
+        self.vm0_testpmd.wait_link_status_up(self.vm0_dut_ports[0])
+        self.vm0_testpmd.wait_link_status_up(self.vm0_dut_ports[1])
 
-        self.tester.scapy_foreground()
-        time.sleep(5)
-
-        for loading_size, packet_count in self.size_and_count:
-            # IPv4 tcp test
-            out = self.vm0_testpmd.execute_cmd("clear port info all", "testpmd> ", 120)
-            self.tcpdump_start_sniffing([tx_interface, rx_interface])
-            self.tester.scapy_append(
-                'sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/Raw(RandString(size=%s))], iface="%s", count=%s)'
-                % (mac, loading_size, tx_interface, packet_count)
-            )
-            out = self.tester.scapy_execute()
-            out = self.vm0_testpmd.execute_cmd("show port stats all")
-            print(out)
-            self.tcpdump_stop_sniff()
-            rx_stats, payload_size_list = self.tcpdump_analyse_sniff(rx_interface)
-            tx_stats, _ = self.tcpdump_analyse_sniff(tx_interface)
-            payload_size_list.sort(reverse=True)
-            self.logger.info(payload_size_list)
-            if loading_size <= 800:
-                self.verify(
-                    # for all packet_count packets, verifying the packet size equals the size we sent.
-                    rx_stats == tx_stats
-                    and all(
-                        [
-                            int(payload_size_list[j]) == loading_size
-                            for j in range(packet_count)
-                        ]
-                    ),
-                    "IPV4 RX or TX packet number not correct",
-                )
-            else:
-                num = loading_size // 800
-                for i in range(num):
-                    self.verify(
-                        # i * packet_count + j is the i-th segmentation for j-th packet.
-                        all(
-                            [
-                                int(payload_size_list[i * packet_count + j]) == 800
-                                for j in range(packet_count)
-                            ]
-                        ),
-                        "the packet segmentation incorrect, %s" % payload_size_list,
-                    )
-                if loading_size % 800 != 0:
-                    self.verify(
-                        # num * packet_count + j is the last segmentation for j-th packet.
-                        all(
-                            [
-                                int(payload_size_list[num * packet_count + j])
-                                == loading_size % 800
-                                for j in range(packet_count)
-                            ]
-                        ),
-                        "the packet segmentation incorrect, %s" % payload_size_list,
-                    )
-
-        for loading_size, packet_count in self.size_and_count:
-            # IPv6 tcp test
-            out = self.vm0_testpmd.execute_cmd("clear port info all", "testpmd> ", 120)
-            self.tcpdump_start_sniffing([tx_interface, rx_interface])
-            self.tester.scapy_append(
-                'sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/Raw(RandString(size=%s))], iface="%s", count=%s)'
-                % (mac, loading_size, tx_interface, packet_count)
-            )
-            out = self.tester.scapy_execute()
-            out = self.vm0_testpmd.execute_cmd("show port stats all")
-            print(out)
-            self.tcpdump_stop_sniff()
-            rx_stats, payload_size_list = self.tcpdump_analyse_sniff(rx_interface)
-            tx_stats, _ = self.tcpdump_analyse_sniff(tx_interface)
-            payload_size_list.sort(reverse=True)
-            self.logger.info(payload_size_list)
-            if loading_size <= 800:
-                self.verify(
-                    # for all packet_count packets, verifying the packet size equals the size we sent.
-                    rx_stats == tx_stats
-                    and all(
-                        [
-                            int(payload_size_list[j]) == loading_size
-                            for j in range(packet_count)
-                        ]
-                    ),
-                    "IPV6 RX or TX packet number not correct",
-                )
-            else:
-                num = loading_size // 800
-                for i in range(num):
-                    self.verify(
-                        # i * packet_count + j is the i-th segmentation for j-th packet.
-                        all(
-                            [
-                                int(payload_size_list[i * packet_count + j]) == 800
-                                for j in range(packet_count)
-                            ]
-                        ),
-                        "the packet segmentation incorrect, %s" % payload_size_list,
-                    )
-                if loading_size % 800 != 0:
-                    self.verify(
-                        # num * packet_count + j is the last segmentation for j-th packet.
-                        all(
-                            [
-                                int(payload_size_list[num * packet_count + j])
-                                == loading_size % 800
-                                for j in range(packet_count)
-                            ]
-                        ),
-                        "the packet segmentation incorrect, %s" % payload_size_list,
-                    )
+        validate_result = []
+        validate_result += self.tso_validate(
+            tx_interface=tx_interface,
+            rx_interface=rx_interface,
+            mac=mac,
+            inet_type="IP",
+            size_and_count=size_and_count,
+        )
+        validate_result += self.tso_validate(
+            tx_interface=tx_interface,
+            rx_interface=rx_interface,
+            mac=mac,
+            inet_type="IPv6",
+            size_and_count=size_and_count,
+        )
+        self.verify(len(validate_result) == 0, ",".join(list(validate_result)))
 
     @check_supported_nic(
         ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]
@@ -1070,7 +1105,7 @@ class TestVfOffload(TestCase):
         # Here size_and_count is a list of tuples for the test scopes that
         # in a tuple (size, count) means, sending packets for count times
         # for TSO with a payload size of size.
-        self.size_and_count = [
+        size_and_count = [
             (128, 10),
             (800, 10),
             (801, 10),
@@ -1130,138 +1165,24 @@ class TestVfOffload(TestCase):
             "IPv6/UDP/GTPU": 'IPv6(src = "FE80:0:0:0:200:1FF:FE00:200", dst = "3555:5555:6666:6666:7777:7777:8888:8888") / UDP(dport = 2152) / GTP_U_Header(gtp_type=255, teid=0x123456)',
         }
 
-        self.tester.scapy_foreground()
-        time.sleep(5)
-
-        for key_outer in pkts_outer:
-            for loading_size, packet_count in self.size_and_count:
-                # IPv4 tcp test
-                out = self.vm0_testpmd.execute_cmd(
-                    "clear port info all", "testpmd> ", 120
-                )
-                self.tcpdump_start_sniffing([tx_interface, rx_interface])
-                if "GTPU" in key_outer:
-                    self.tester.scapy_append(
-                        "from scapy.contrib.gtp import GTP_U_Header"
-                    )
-                self.tester.scapy_append(
-                    (
-                        'sendp([Ether(dst="%s",src="52:00:00:00:00:00")/'
-                        + pkts_outer[key_outer]
-                        + '/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/Raw(RandString(size=%s))], iface="%s", count=%s)'
-                    )
-                    % (mac, loading_size, tx_interface, packet_count)
-                )
-                out = self.tester.scapy_execute()
-                out = self.vm0_testpmd.execute_cmd("show port stats all")
-                print(out)
-                self.tcpdump_stop_sniff()
-                rx_stats, payload_size_list = self.tcpdump_analyse_sniff(rx_interface)
-                tx_stats, _ = self.tcpdump_analyse_sniff(tx_interface)
-                payload_size_list.sort(reverse=True)
-                self.logger.info(payload_size_list)
-                if loading_size <= 800:
-                    self.verify(
-                        # for all packet_count packets, verifying the packet size equals the size we sent.
-                        rx_stats == tx_stats
-                        and all(
-                            [
-                                int(payload_size_list[j]) == loading_size
-                                for j in range(packet_count)
-                            ]
-                        ),
-                        f"{key_outer} tunnel IPV4 RX or TX packet number not correct",
-                    )
-                else:
-                    num = loading_size // 800
-                    for i in range(num):
-                        self.verify(
-                            # i * packet_count + j is the i-th segmentation for j-th packet.
-                            all(
-                                [
-                                    payload_size_list[i * packet_count + j] == 800
-                                    for j in range(packet_count)
-                                ]
-                            ),
-                            "the packet segmentation incorrect, %s" % payload_size_list,
-                        )
-                    if loading_size % 800 != 0:
-                        self.verify(
-                            # num * packet_count + j is the last segmentation for j-th packet.
-                            all(
-                                [
-                                    payload_size_list[num * packet_count + j]
-                                    == loading_size % 800
-                                    for j in range(packet_count)
-                                ]
-                            ),
-                            "the packet segmentation incorrect, %s" % payload_size_list,
-                        )
-
-            for loading_size, packet_count in self.size_and_count:
-                # IPv6 tcp test
-                out = self.vm0_testpmd.execute_cmd(
-                    "clear port info all", "testpmd> ", 120
-                )
-                self.tcpdump_start_sniffing([tx_interface, rx_interface])
-                if "GTPU" in key_outer:
-                    self.tester.scapy_append(
-                        "from scapy.contrib.gtp import GTP_U_Header"
-                    )
-                self.logger.info([mac, loading_size, tx_interface, packet_count])
-                self.tester.scapy_append(
-                    (
-                        'sendp([Ether(dst="%s", src="52:00:00:00:00:00")/'
-                        + pkts_outer[key_outer]
-                        + '/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s", count=%s)'
-                    )
-                    % (mac, loading_size, tx_interface, packet_count)
-                )
-                out = self.tester.scapy_execute()
-                out = self.vm0_testpmd.execute_cmd("show port stats all")
-                print(out)
-                self.tcpdump_stop_sniff()
-                rx_stats, payload_size_list = self.tcpdump_analyse_sniff(rx_interface)
-                tx_stats, _ = self.tcpdump_analyse_sniff(tx_interface)
-                payload_size_list.sort(reverse=True)
-                self.logger.info(payload_size_list)
-                if loading_size <= 800:
-                    self.verify(
-                        # for all packet_count packets, verifying the packet size equals the size we sent.
-                        rx_stats == tx_stats
-                        and all(
-                            [
-                                payload_size_list[j] == loading_size
-                                for j in range(packet_count)
-                            ]
-                        ),
-                        f"{key_outer} tunnel IPV6 RX or TX packet number not correct",
-                    )
-                else:
-                    num = loading_size // 800
-                    for i in range(num):
-                        self.verify(
-                            # i * packet_count + j is the i-th segmentation for j-th packet.
-                            all(
-                                [
-                                    payload_size_list[i * packet_count + j] == 800
-                                    for j in range(packet_count)
-                                ]
-                            ),
-                            "the packet segmentation incorrect, %s" % payload_size_list,
-                        )
-                    if loading_size % 800 != 0:
-                        self.verify(
-                            # num * packet_count + j is the last segmentation for j-th packet.
-                            all(
-                                [
-                                    payload_size_list[num * packet_count + j]
-                                    == loading_size % 800
-                                    for j in range(packet_count)
-                                ]
-                            ),
-                            "the packet segmentation incorrect, %s" % payload_size_list,
-                        )
+        validate_result = []
+        validate_result += self.tso_validate(
+            tx_interface=tx_interface,
+            rx_interface=rx_interface,
+            mac=mac,
+            inet_type="IP",
+            size_and_count=size_and_count,
+            outer_pkts=pkts_outer,
+        )
+        validate_result += self.tso_validate(
+            tx_interface=tx_interface,
+            rx_interface=rx_interface,
+            mac=mac,
+            inet_type="IPv6",
+            size_and_count=size_and_count,
+            outer_pkts=pkts_outer,
+        )
+        self.verify(len(validate_result) == 0, ",".join(list(validate_result)))
 
     def tear_down(self):
         self.vm0_testpmd.execute_cmd("quit", "# ")
