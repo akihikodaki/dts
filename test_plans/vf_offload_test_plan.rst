@@ -286,6 +286,135 @@ be validated as pass by the tester.
 The first byte of source IPv4 address will be increased by testpmd. The checksum
 is indeed recalculated by software algorithms.
 
+
+Test Case: HW checksum offload check with vlan
+==============================================
+Start testpmd and enable checksum offload on rx port. Based on test steps of
+HW checksum offload check, configure the traffic generator to send the multiple
+packets for the following combination:
+
+  +----------------+----------------------------------------+
+  | packet type    | packet organization                    |
+  +================+========================================+
+  |                | Ether / VLAN / IPv4 / UDP / payload    |
+  |                +----------------------------------------+
+  |                | Ether / VLAN / IPv4 / TCP / payload    |
+  |                +----------------------------------------+
+  | packets        | Ether / VLAN / IPv4 / SCTP / payload   |
+  | for checksum   +----------------------------------------+
+  | offload test   | Ether / VLAN / IPv6 / UDP / payload    |
+  |                +----------------------------------------+
+  |                | Ether / VLAN / IPv6 / TCP / payload    |
+  +----------------+----------------------------------------+
+
+
+Test Case: HW tunneling checksum offload check with vlan
+========================================================
+Based on test steps of HW tunneling checksum offload check, configure the
+traffic generator to send the multiple packets combination with outer or
+tunneling package of:
+
+  +----------------+--------------------------------------------+
+  | packet type    | packet organization                        |
+  +================+============================================+
+  |                | Ether / VLAN / IPv4 / UDP / VXLAN / Ether  |
+  |                +--------------------------------------------+
+  |                | Ether / VLAN / IPv6 / UDP / VXLAN / Ether  |
+  |                +--------------------------------------------+
+  |                | Ether / VLAN / IPv4 / GRE                  |
+  | outer and      +--------------------------------------------+
+  | tunneling      | Ether / VLAN / IPv4 / GRE / Ether          |
+  | packets        +--------------------------------------------+
+  | for checksum   | Ether / VLAN / IPv6 / GRE                  |
+  | offload test   +--------------------------------------------+
+  |                | Ether / VLAN / IPv6 / GRE / Ether          |
+  |                +--------------------------------------------+
+  |                | Ether / VLAN / IPv4 / NVGRE                |
+  |                +--------------------------------------------+
+  |                | Ether / VLAN / IPv4 / NVGRE / Ether        |
+  |                +--------------------------------------------+
+  |                | Ether / VLAN / IPv6 / NVGRE                |
+  |                +--------------------------------------------+
+  |                | Ether / VLAN / IPv6 / NVGRE / Ether        |
+  |                +--------------------------------------------+
+  |                | Ether / VLAN / IPv4 / UDP / GTPU           |
+  |                +--------------------------------------------+
+  |                | Ether / VLAN / IPv6 / UDP / GTPU           |
+  +----------------+--------------------------------------------+
+
+
+Test Case: HW checksum offload check on scalar path
+===================================================
+These set of cases based on existing cases are designed for better case managment for
+regression test.
+
+Start testpmd with eal parameter --force-max-simd-bitwidth=64. Based on test steps of
+'HW checksum offload check'.
+
+Test Case: HW checksum offload check on sse path
+================================================
+Start testpmd with eal parameter --force-max-simd-bitwidth=128. Based on test steps of
+'HW checksum offload check'.
+
+Test Case: HW checksum offload check on avx2 path
+=================================================
+Start testpmd with eal parameter --force-max-simd-bitwidth=256. Based on test steps of
+'HW checksum offload check'.
+
+Test Case: HW checksum offload check on avx512 path
+===================================================
+Start testpmd with eal parameter --force-max-simd-bitwidth=512. Based on test steps of
+'HW checksum offload check'.
+
+Test Case: HW checksum offload check with vlan on scalar path
+=============================================================
+
+Test Case: HW checksum offload check with vlan on sse path
+=============================================================
+
+Test Case: HW checksum offload check with vlan on avx2 path
+=============================================================
+
+Test Case: HW checksum offload check with vlan on avx512 path
+=============================================================
+
+Test Case: HW tunneling checksum offload check on scalar path
+=============================================================
+
+Test Case: HW tunneling checksum offload check on sse path
+==========================================================
+
+Test Case: HW tunneling checksum offload check on avx2 path
+===========================================================
+
+Test Case: HW tunneling checksum offload check on avx512 path
+=============================================================
+
+Test Case: HW tunneling checksum offload check with vlan on scalar path
+=======================================================================
+
+Test Case: HW tunneling checksum offload check with vlan on sse path
+====================================================================
+
+Test Case: HW tunneling checksum offload check with vlan on avx2 path
+=====================================================================
+
+Test Case: HW tunneling checksum offload check with vlan on avx512 path
+=======================================================================
+
+Test Case: SW checksum offload check on scalar path
+===================================================
+
+Test Case: SW checksum offload check on sse path
+================================================
+
+Test Case: SW checksum offload check on avx2 path
+=================================================
+
+Test Case: SW checksum offload check on avx512 path
+===================================================
+
+
 Prerequisites for TSO
 =====================
 
@@ -510,3 +639,32 @@ Test IPv6() in scapy::
 
   for one_outer_packet in outer_packet_list:
     sendp([Ether(dst="%s", src="52:00:00:00:00:00")/one_outer_packet/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/Raw(load=RandString(size=%s))], iface="%s", count = %s)
+
+Test case: csum fwd engine, use TSO, on scalar path
+===================================================
+These set of cases based on existing cases are designed for better case managment for
+regression test.
+
+Start testpmd with eal parameter --force-max-simd-bitwidth=64. Based on test steps of
+'csum fwd engine, use TSO'.
+
+Test case: csum fwd engine, use TSO, on sse path
+================================================
+
+Test case: csum fwd engine, use TSO, on avx2 path
+=================================================
+
+Test case: csum fwd engine, use TSO, on avx512 path
+===================================================
+
+Test case: csum fwd engine, use tunnel TSO, on scalar path
+==========================================================
+
+Test case: csum fwd engine, use tunnel TSO, on sse path
+=======================================================
+
+Test case: csum fwd engine, use tunnel TSO, on avx2 path
+========================================================
+
+Test case: csum fwd engine, use tunnel TSO, on avx512 path
+==========================================================
