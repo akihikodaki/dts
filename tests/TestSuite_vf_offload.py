@@ -262,7 +262,7 @@ class TestVfOffload(TestCase):
     def filter_packets(self, packets):
         return [
             p
-            for p in packets
+            for p in (packets if packets else [])
             if len(p.layers()) >= 3
             and p.layers()[1] in {IP, IPv6, Dot1Q}
             and p.layers()[2] in {IP, IPv6, Dot1Q, UDP, TCP, SCTP, GRE, MPLS}
