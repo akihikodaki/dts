@@ -185,11 +185,13 @@ class TestVfOffload(TestCase):
 
     def launch_testpmd(self, **kwargs):
         dcf_flag = kwargs.get("dcf_flag")
+        eal_param = kwargs.get("eal_param") if kwargs.get("eal_param") else ""
         param = kwargs.get("param") if kwargs.get("param") else ""
         if dcf_flag == "enable":
             self.vm0_testpmd.start_testpmd(
                 VM_CORES_MASK,
                 param=param,
+                eal_param=eal_param,
                 ports=[self.vf0_guest_pci, self.vf1_guest_pci],
                 port_options={
                     self.vf0_guest_pci: "cap=dcf",
@@ -197,7 +199,11 @@ class TestVfOffload(TestCase):
                 },
             )
         else:
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK, param=param)
+            self.vm0_testpmd.start_testpmd(
+                VM_CORES_MASK,
+                param=param,
+                eal_param=eal_param,
+            )
 
     def checksum_enablehw(self, port, dut):
         dut.send_expect("port stop all", "testpmd>")
@@ -336,7 +342,7 @@ class TestVfOffload(TestCase):
                 )
         return result
 
-    def test_checksum_offload_enable(self):
+    def exec_checksum_offload_enable(self, specific_bitwidth=None):
         """
         Enable HW checksum offload.
         Send packet with incorrect checksum,
@@ -346,6 +352,13 @@ class TestVfOffload(TestCase):
         self.launch_testpmd(
             dcf_flag=self.dcf_mode,
             param="--portmask=%s " % (self.portMask) + "--enable-rx-cksum " + "",
+            eal_param=(
+                "--force-max-simd-bitwidth=%d " % specific_bitwidth
+                + "--log-level='iavf,7' "
+                + "--log-level='dcf,7' "
+            )
+            if (not specific_bitwidth is None)
+            else "",
         )
         self.vm0_testpmd.execute_cmd("set fwd csum")
         self.vm0_testpmd.execute_cmd("csum mac-swap off 0", "testpmd>")
@@ -400,7 +413,7 @@ class TestVfOffload(TestCase):
 
         self.verify(len(result) == 0, ",".join(list(result.values())))
 
-    def test_checksum_offload_vlan_enable(self):
+    def exec_checksum_offload_vlan_enable(self, specific_bitwidth=None):
         """
         Enable HW checksum offload.
         Send packet with incorrect checksum,
@@ -410,6 +423,13 @@ class TestVfOffload(TestCase):
         self.launch_testpmd(
             dcf_flag=self.dcf_mode,
             param="--portmask=%s " % (self.portMask) + "--enable-rx-cksum " + "",
+            eal_param=(
+                "--force-max-simd-bitwidth=%d " % specific_bitwidth
+                + "--log-level='iavf,7' "
+                + "--log-level='dcf,7' "
+            )
+            if (not specific_bitwidth is None)
+            else "",
         )
         self.vm0_testpmd.execute_cmd("set fwd csum")
         self.vm0_testpmd.execute_cmd("csum mac-swap off 0", "testpmd>")
@@ -468,7 +488,7 @@ class TestVfOffload(TestCase):
         ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]
     )
     @skip_unsupported_pkg(["os default"])
-    def test_checksum_offload_tunnel_enable(self):
+    def exec_checksum_offload_tunnel_enable(self, specific_bitwidth=None):
         """
         Enable HW checksum offload.
         Send packet with inner and outer incorrect checksum,
@@ -478,6 +498,13 @@ class TestVfOffload(TestCase):
         self.launch_testpmd(
             dcf_flag=self.dcf_mode,
             param="--portmask=%s " % (self.portMask) + "--enable-rx-cksum " + "",
+            eal_param=(
+                "--force-max-simd-bitwidth=%d " % specific_bitwidth
+                + "--log-level='iavf,7' "
+                + "--log-level='dcf,7' "
+            )
+            if (not specific_bitwidth is None)
+            else "",
         )
         self.vm0_testpmd.execute_cmd("set fwd csum")
         self.vm0_testpmd.execute_cmd("set promisc 1 on")
@@ -612,7 +639,7 @@ class TestVfOffload(TestCase):
         ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]
     )
     @skip_unsupported_pkg(["os default"])
-    def test_checksum_offload_vlan_tunnel_enable(self):
+    def exec_checksum_offload_vlan_tunnel_enable(self, specific_bitwidth=None):
         """
         Enable HW checksum offload.
         Send packet with inner and outer incorrect checksum,
@@ -622,6 +649,13 @@ class TestVfOffload(TestCase):
         self.launch_testpmd(
             dcf_flag=self.dcf_mode,
             param="--portmask=%s " % (self.portMask) + "--enable-rx-cksum " + "",
+            eal_param=(
+                "--force-max-simd-bitwidth=%d " % specific_bitwidth
+                + "--log-level='iavf,7' "
+                + "--log-level='dcf,7' "
+            )
+            if (not specific_bitwidth is None)
+            else "",
         )
         self.vm0_testpmd.execute_cmd("set fwd csum")
         self.vm0_testpmd.execute_cmd("set promisc 1 on")
@@ -752,7 +786,7 @@ class TestVfOffload(TestCase):
 
         self.verify(len(result) == 0, ",".join(list(result.values())))
 
-    def test_checksum_offload_disable(self):
+    def exec_checksum_offload_disable(self, specific_bitwidth=None):
         """
         Enable SW checksum offload.
         Send same packet with incorrect checksum and verify checksum is valid.
@@ -761,6 +795,13 @@ class TestVfOffload(TestCase):
         self.launch_testpmd(
             dcf_flag=self.dcf_mode,
             param="--portmask=%s " % (self.portMask) + "--enable-rx-cksum " + "",
+            eal_param=(
+                "--force-max-simd-bitwidth=%d " % specific_bitwidth
+                + "--log-level='iavf,7' "
+                + "--log-level='dcf,7' "
+            )
+            if (not specific_bitwidth is None)
+            else "",
         )
         self.vm0_testpmd.execute_cmd("set fwd csum")
         self.vm0_testpmd.execute_cmd("csum mac-swap off 0", "testpmd>")
@@ -811,6 +852,81 @@ class TestVfOffload(TestCase):
         self.verify(bad_l4csum == 4, "Bad-l4csum check error")
 
         self.verify(len(result) == 0, ",".join(list(result.values())))
+
+    def test_checksum_offload_enable(self):
+        self.exec_checksum_offload_enable()
+
+    def test_checksum_offload_enable_scalar(self):
+        self.exec_checksum_offload_enable(specific_bitwidth=64)
+
+    def test_checksum_offload_enable_sse(self):
+        self.exec_checksum_offload_enable(specific_bitwidth=128)
+
+    def test_checksum_offload_enable_avx2(self):
+        self.exec_checksum_offload_enable(specific_bitwidth=256)
+
+    def test_checksum_offload_enable_avx512(self):
+        self.exec_checksum_offload_enable(specific_bitwidth=512)
+
+    def test_checksum_offload_vlan_enable(self):
+        self.exec_checksum_offload_vlan_enable()
+
+    def test_checksum_offload_vlan_enable_scalar(self):
+        self.exec_checksum_offload_vlan_enable(specific_bitwidth=64)
+
+    def test_checksum_offload_vlan_enable_sse(self):
+        self.exec_checksum_offload_vlan_enable(specific_bitwidth=128)
+
+    def test_checksum_offload_vlan_enable_avx2(self):
+        self.exec_checksum_offload_vlan_enable(specific_bitwidth=256)
+
+    def test_checksum_offload_vlan_enable_avx512(self):
+        self.exec_checksum_offload_vlan_enable(specific_bitwidth=512)
+
+    def test_checksum_offload_tunnel_enable(self):
+        self.exec_checksum_offload_tunnel_enable()
+
+    def test_checksum_offload_tunnel_enable_scalar(self):
+        self.exec_checksum_offload_tunnel_enable(specific_bitwidth=64)
+
+    def test_checksum_offload_tunnel_enable_sse(self):
+        self.exec_checksum_offload_tunnel_enable(specific_bitwidth=128)
+
+    def test_checksum_offload_tunnel_enable_avx2(self):
+        self.exec_checksum_offload_tunnel_enable(specific_bitwidth=256)
+
+    def test_checksum_offload_tunnel_enable_avx512(self):
+        self.exec_checksum_offload_tunnel_enable(specific_bitwidth=512)
+
+    def test_checksum_offload_vlan_tunnel_enable(self):
+        self.exec_checksum_offload_vlan_tunnel_enable()
+
+    def test_checksum_offload_vlan_tunnel_enable_scalar(self):
+        self.exec_checksum_offload_vlan_tunnel_enable(specific_bitwidth=64)
+
+    def test_checksum_offload_vlan_tunnel_enable_sse(self):
+        self.exec_checksum_offload_vlan_tunnel_enable(specific_bitwidth=128)
+
+    def test_checksum_offload_vlan_tunnel_enable_avx2(self):
+        self.exec_checksum_offload_vlan_tunnel_enable(specific_bitwidth=256)
+
+    def test_checksum_offload_vlan_tunnel_enable_avx512(self):
+        self.exec_checksum_offload_vlan_tunnel_enable(specific_bitwidth=512)
+
+    def test_checksum_offload_disable(self):
+        self.exec_checksum_offload_disable()
+
+    def test_checksum_offload_disable_scalar(self):
+        self.exec_checksum_offload_disable(specific_bitwidth=64)
+
+    def test_checksum_offload_disable_sse(self):
+        self.exec_checksum_offload_disable(specific_bitwidth=128)
+
+    def test_checksum_offload_disable_avx2(self):
+        self.exec_checksum_offload_disable(specific_bitwidth=256)
+
+    def test_checksum_offload_disable_avx512(self):
+        self.exec_checksum_offload_disable(specific_bitwidth=512)
 
     def tcpdump_start_sniffing(self, ifaces=[]):
         """
@@ -1015,7 +1131,7 @@ class TestVfOffload(TestCase):
                     validate_result.append(result_message)
         return validate_result
 
-    def test_tso(self):
+    def exec_tso(self, specific_bitwidth=None):
         """
         TSO IPv4 TCP, IPv6 TCP testing.
         """
@@ -1057,6 +1173,13 @@ class TestVfOffload(TestCase):
             param="--portmask=0x3 "
             + "--enable-rx-cksum "
             + "--max-pkt-len=%s" % TSO_MTU,
+            eal_param=(
+                "--force-max-simd-bitwidth=%d " % specific_bitwidth
+                + "--log-level='iavf,7' "
+                + "--log-level='dcf,7' "
+            )
+            if (not specific_bitwidth is None)
+            else "",
         )
 
         mac = self.vm0_testpmd.get_port_mac(0)
@@ -1091,7 +1214,7 @@ class TestVfOffload(TestCase):
         ["ICE_100G-E810C_QSFP", "ICE_25G-E810C_SFP", "ICE_25G-E810_XXV_SFP"]
     )
     @skip_unsupported_pkg(["os default"])
-    def test_tso_tunnel(self):
+    def exec_tso_tunnel(self, specific_bitwidth=None):
         """
         TSO tunneled IPv4 TCP, IPv6 TCP testing.
         """
@@ -1133,6 +1256,13 @@ class TestVfOffload(TestCase):
             param="--portmask=0x3 "
             + "--enable-rx-cksum "
             + "--max-pkt-len=%s" % TSO_MTU,
+            eal_param=(
+                "--force-max-simd-bitwidth=%d " % specific_bitwidth
+                + "--log-level='iavf,7' "
+                + "--log-level='dcf,7' "
+            )
+            if (not specific_bitwidth is None)
+            else "",
         )
 
         mac = self.vm0_testpmd.get_port_mac(0)
@@ -1183,6 +1313,36 @@ class TestVfOffload(TestCase):
             outer_pkts=pkts_outer,
         )
         self.verify(len(validate_result) == 0, ",".join(list(validate_result)))
+
+    def test_tso(self):
+        self.exec_tso()
+
+    def test_tso_scalar(self):
+        self.exec_tso(specific_bitwidth=64)
+
+    def test_tso_sse(self):
+        self.exec_tso(specific_bitwidth=128)
+
+    def test_tso_avx2(self):
+        self.exec_tso(specific_bitwidth=256)
+
+    def test_tso_avx512(self):
+        self.exec_tso(specific_bitwidth=512)
+
+    def test_tso_tunnel(self):
+        self.exec_tso_tunnel()
+
+    def test_tso_tunnel_scalar(self):
+        self.exec_tso_tunnel(specific_bitwidth=64)
+
+    def test_tso_tunnel_sse(self):
+        self.exec_tso_tunnel(specific_bitwidth=128)
+
+    def test_tso_tunnel_avx2(self):
+        self.exec_tso_tunnel(specific_bitwidth=256)
+
+    def test_tso_tunnel_avx512(self):
+        self.exec_tso_tunnel(specific_bitwidth=512)
 
     def tear_down(self):
         self.vm0_testpmd.execute_cmd("quit", "# ")
