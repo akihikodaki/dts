@@ -111,6 +111,7 @@ The following are the test plans for the DPDK DTS automated test system.
     loopback_virtio_user_server_mode_test_plan
     loopback_virtio_user_server_mode_cbdma_test_plan
     loopback_virtio_user_server_mode_dsa_test_plan
+    loopback_vhost_async_perf_dsa_test_plan
     mac_filter_test_plan
     macsec_for_ixgbe_test_plan
     mtu_update_test_plan
