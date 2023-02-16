@@ -1295,12 +1295,21 @@ class TestDcfLifeCycle(TestCase):
         # Kill DCF process
         cmd = "ps aux | grep testpmd"
         self.d_a_con(cmd)
-        cmd = (
-            r"kill -9 `ps -ef | grep %s | grep -v grep | grep cap=dcf | awk '{print $2}'`"
+        grep_key = (
+            "grep %s | grep -v grep | grep cap=dcf | awk '{print $2}'"
             % self.vf_dcf_testpmd.split("/")[-1]
         )
+        cmd = r"kill -9 `ps -ef | %s`" % grep_key
         self.d_a_con(cmd)
+        out = self.check_process_status(grep_key)
+        if out:
+            self.logger.warning("the process failed to kill")
         time.sleep(1)
+
+    def check_process_status(self, process_key):
+        cmd = "ps -aux | grep -v grep | {}".format(process_key)
+        out = self.d_a_con(cmd)
+        return out
 
     def create_acl_rule_by_kernel_cmd(self, port_id=0, stats=True):
         # create an ACL rule on PF0 by kernel command
