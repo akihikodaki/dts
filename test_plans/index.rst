@@ -133,6 +133,7 @@ The following are the test plans for the DPDK DTS automated test system.
     pvp_multi_paths_vhost_single_core_performance_test_plan
     pvp_multi_paths_virtio_single_core_performance_test_plan
     pvp_vhost_async_multi_paths_performance_dsa_test_plan
+    pvp_vhost_async_virtio_pmd_perf_dsa_test_plan
     qinq_filter_test_plan
     qos_api_test_plan
     qos_meter_test_plan
