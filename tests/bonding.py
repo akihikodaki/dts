@@ -19,13 +19,13 @@ from framework.pmd_output import PmdOutput
 from framework.settings import HEADER_SIZE
 
 # define bonding mode
-MODE_ROUND_ROBIN = 0
-MODE_ACTIVE_BACKUP = 1
-MODE_XOR_BALANCE = 2
-MODE_BROADCAST = 3
-MODE_LACP = 4
-MODE_TLB_BALANCE = 5
-MODE_ALB_BALANCE = 6
+MODE_ROUND_ROBIN = "ROUND_ROBIN(0)"
+MODE_ACTIVE_BACKUP = "ACTIVE_BACKUP(1)"
+MODE_XOR_BALANCE = "BALANCE(2)"
+MODE_BROADCAST = "BROADCAST(3)"
+MODE_LACP = "8023AD(4)"
+MODE_TLB_BALANCE = "TLB(5)"
+MODE_ALB_BALANCE = "ALB(6)"
 
 # define packet size
 FRAME_SIZE_64 = 64
@@ -643,7 +643,7 @@ class PmdBonding(object):
     def get_bonding_info(self, bond_port, info_types):
         """Get the specified port information by its output message format"""
         info_set = {
-            "mode": ["Bonding mode: ", "\d*"],
+            "mode": ["Bonding mode: ", "\S*"],
             "agg_mode": ["IEEE802.3AD Aggregator Mode: ", "\S*"],
             "balance_policy": ["Balance Xmit Policy: ", "\S+"],
             "slaves": [
@@ -654,7 +654,7 @@ class PmdBonding(object):
                 ["Active Slaves \(\d\): \[", "\d*( \d*)*"],
                 ["Acitve Slaves: \[", "\d*( \d*)*"],
             ],
-            "primary": ["Primary: \[", "\d*"],
+            "current_primary": ["Current Primary: \[", "\d*"],
         }
         # get all config information
         config_content = self.d_console("show bonding config %d" % bond_port)
@@ -684,18 +684,20 @@ class PmdBonding(object):
                 return None
 
     def get_active_slaves(self, bond_port):
-        primary_port = int(self.get_bonding_info(bond_port, "primary"))
+        primary_port = int(self.get_bonding_info(bond_port, "current_primary"))
         active_slaves = self.get_bonding_info(bond_port, "active_slaves")
 
         return int(primary_port), [int(slave) for slave in active_slaves]
 
-    def create_bonded_device(self, mode=0, socket=0, verify_detail=False):
+    def create_bonded_device(self, mode="", socket=0, verify_detail=False):
         """
         Create a bonding device with the parameters you specified.
         """
-        cmd = "create bonded device %d %d" % (mode, socket)
+        p = r"\w+\((\d+)\)"
+        mode_id = int(re.match(p, mode).group(1))
+        cmd = "create bonded device %d %d" % (mode_id, socket)
         out = self.d_console(cmd)
-        err_fmt = "Create bonded device on mode [%d] socket [%d] failed"
+        err_fmt = "Create bonded device on mode [%s] socket [%d] failed"
         self.verify("Created new bonded device" in out, err_fmt % (mode, socket))
         fmts = [
             "Created new bonded device net_bond_testpmd_[\d] on \(port ",
@@ -708,7 +710,7 @@ class PmdBonding(object):
         if verify_detail:
             out = self.d_console("show bonding config %d" % bond_port)
             self.verify(
-                "Bonding mode: %d" % mode in out,
+                "Bonding mode: %s" % mode in out,
                 "Bonding mode display error when create bonded device",
             )
             self.verify(
@@ -719,8 +721,8 @@ class PmdBonding(object):
                 "Active Slaves display error when create bonded device",
             )
             self.verify(
-                "Primary: []" not in out,
-                "Primary display error when create bonded device",
+                "Current Primary: []" not in out,
+                "Current Primary display error when create bonded device",
             )
             out = self.d_console("show port info %d" % bond_port)
             self.verify(
@@ -796,7 +798,7 @@ class PmdBonding(object):
         """
         cmd = "set bonding primary %d %d" % (slave_port, bond_port)
         self.d_console(cmd)
-        out = self.get_bonding_info(bond_port, "primary")
+        out = self.get_bonding_info(bond_port, "current_primary")
         if not invert_verify:
             self.verify(str(slave_port) in out, "Set bonding primary port failed")
         else:
