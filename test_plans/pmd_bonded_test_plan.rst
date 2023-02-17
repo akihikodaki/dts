@@ -105,18 +105,20 @@ Create bonded device, add first slave, verify default bonded device has default 
     testpmd> add bonding slave 1 4
     Adding port 1 as slave
     testpmd> show bonding config 4
-        Bonding mode: 1
-        Slaves: [1]
-        Active Slaves: []
-        Failed to get primary slave for port=4
+    - Dev basic:
+      Bonding mode: ACTIVE_BACKUP(1)
+      Slaves (1): [1]
+      Active Slaves: []
+      Current Primary: [1]
     testpmd> port start 4
     ......
     Done
     testpmd> show bonding config 4
-        Bonding mode: 1
-        Slaves: [1]
-        Active Slaves: [1]
-        Primary: [1]
+    - Dev basic:
+      Bonding mode: ACTIVE_BACKUP(1)
+      Slaves (1): [1]
+      Active Slaves: [1]
+      Current Primary: [1]
 
 Create another bonded device, and check if the slave added to bonded device1 can't be added to bonded device2::
 
