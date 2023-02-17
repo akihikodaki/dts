@@ -362,7 +362,9 @@ class TestBonding8023AD(TestCase):
         # create commandline option format
         bonding_name = "net_bonding0"
         slaves_pci = ["slave=" + pci for pci in slave_pcis]
-        bonding_mode = "mode={0}".format(str(MODE_LACP))
+        p = r"\w+\((\d+)\)"
+        mode_id = int(re.match(p, str(MODE_LACP)).group(1))
+        bonding_mode = "mode={0}".format(mode_id)
         agg_config = "agg_mode={0}"
         vdev_format = ",".join([bonding_name] + slaves_pci + [bonding_mode, agg_config])
         # command line option
