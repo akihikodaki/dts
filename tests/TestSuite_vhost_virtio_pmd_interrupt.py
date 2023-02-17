@@ -70,7 +70,9 @@ class TestVhostVirtioPmdInterrupt(TestCase):
             self.cores_num >= (self.nb_cores + 1),
             "There has not enough cores to running case: %s" % self.running_case,
         )
-        self.core_list = self.dut.get_core_list("all", socket=self.ports_socket)
+        self.core_list = self.dut.get_core_list(
+            config=core_config, socket=self.ports_socket
+        )
 
     def prepare_vm_env(self):
         """
