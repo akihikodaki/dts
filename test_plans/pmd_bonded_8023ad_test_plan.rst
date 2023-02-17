@@ -293,11 +293,60 @@ steps
 #. check if agg_mode set successful::
 
     testpmd> show bonding config 2
-        Bonding mode: 4
-        IEEE802.3AD Aggregator Mode: <agg_option>
-        Slaves (2): [0 1]
-        Active Slaves (2): [0 1]
-        Primary: [0]
+    - Dev basic:
+       Bonding mode: 8023AD(4)
+       Balance Xmit Policy: BALANCE_XMIT_POLICY_LAYER2
+       IEEE802.3AD Aggregator Mode: <agg_option>
+       Slaves (2): [0 1]
+       Active Slaves (2): [0 1]
+       Current Primary: [0]
+    - Lacp info:
+        IEEE802.3 port: 2
+        fast period: 900 ms
+        slow period: 29000 ms
+        short timeout: 3000 ms
+        long timeout: 90000 ms
+        aggregate wait timeout: 2000 ms
+        tx period: 500 ms
+        rx marker period: 2000 ms
+        update timeout: 100 ms
+        aggregation mode: count
+
+        Slave Port: 0
+        Aggregator port id: 0
+        selection: SELECTED
+        Actor detail info:
+                system priority: 65535
+                system mac address: 7A:1A:91:74:32:46
+                port key: 8448
+                port priority: 65280
+                port number: 256
+                port state: ACTIVE AGGREGATION DEFAULTED
+        Partner detail info:
+                system priority: 65535
+                system mac address: 00:00:00:00:00:00
+                port key: 256
+                port priority: 65280
+                port number: 0
+                port state: ACTIVE
+
+        Slave Port: 1
+        Aggregator port id: 0
+        selection: SELECTED
+        Actor detail info:
+                system priority: 65535
+                system mac address: 5E:F7:F5:3E:58:D8
+                port key: 8448
+                port priority: 65280
+                port number: 512
+                port state: ACTIVE AGGREGATION DEFAULTED
+        Partner detail info:
+                system priority: 65535
+                system mac address: 00:00:00:00:00:00
+                port key: 256
+                port priority: 65280
+                port number: 0
+                port state: ACTIVE
 
 #. quit testpmd::
 
@@ -384,11 +433,24 @@ steps
 #. check if bonded device has been created and slaves have been bonded successful::
 
     testpmd> show bonding config 2
-        Bonding mode: 4
-        IEEE802.3AD Aggregator Mode: <agg_option>
-        Slaves (2): [0 1]
-        Active Slaves (2): [0 1]
-        Primary: [0]
+    - Dev basic:
+       Bonding mode: 8023AD(4)
+       Balance Xmit Policy: BALANCE_XMIT_POLICY_LAYER2
+       IEEE802.3AD Aggregator Mode: <agg_option>
+       Slaves (2): [0 1]
+       Active Slaves (2): [0 1]
+       Current Primary: [0]
+    - Lacp info:
+        IEEE802.3 port: 2
+        fast period: 900 ms
+        slow period: 29000 ms
+        short timeout: 3000 ms
+        long timeout: 90000 ms
+        aggregate wait timeout: 2000 ms
+        tx period: 500 ms
+        rx marker period: 2000 ms
+        update timeout: 100 ms
+        aggregation mode: <agg_option>
 
 #. check if bonded port can start::
 
