@@ -25,13 +25,13 @@ from framework.test_case import TestCase
 SOCKET_0 = 0
 SOCKET_1 = 1
 
-MODE_ROUND_ROBIN = 0
-MODE_ACTIVE_BACKUP = 1
-MODE_XOR_BALANCE = 2
-MODE_BROADCAST = 3
-MODE_LACP = 4
-MODE_TLB_BALANCE = 5
-MODE_ALB_BALANCE = 6
+MODE_ROUND_ROBIN = "ROUND_ROBIN(0)"
+MODE_ACTIVE_BACKUP = "ACTIVE_BACKUP(1)"
+MODE_XOR_BALANCE = "BALANCE(2)"
+MODE_BROADCAST = "BROADCAST(3)"
+MODE_LACP = "8023AD(4)"
+MODE_TLB_BALANCE = "TLB(5)"
+MODE_ALB_BALANCE = "ALB(6)"
 
 FRAME_SIZE_64 = 64
 FRAME_SIZE_65 = 65
@@ -413,7 +413,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)'
         """
         Get the  mode of the bonding device  which you choose.
         """
-        return self.get_info_from_bond_config("Bonding mode: ", "\d*", bond_port)
+        return self.get_info_from_bond_config("Bonding mode: ", "\S*", bond_port)
 
     def get_bond_balance_policy(self, bond_port):
         """
@@ -449,7 +449,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)'
         """
         Get the primary slave of the bonding device which you choose.
         """
-        return self.get_info_from_bond_config("Primary: \[", "\d*", bond_port)
+        return self.get_info_from_bond_config("Current Primary: \[", "\d*", bond_port)
 
     def launch_app(self, pmd_param=" "):
         """
@@ -457,16 +457,18 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)'
         """
         self.pmdout.start_testpmd("all", param=pmd_param)
 
-    def create_bonded_device(self, mode=0, socket=0, verify_detail=False):
+    def create_bonded_device(self, mode="", socket=0, verify_detail=False):
         """
         Create a bonding device with the parameters you specified.
         """
+        p = r"\w+\((\d+)\)"
+        mode_id = int(re.match(p, mode).group(1))
         out = self.dut.send_expect(
-            "create bonded device %d %d" % (mode, socket), "testpmd> "
+            "create bonded device %d %d" % (mode_id, socket), "testpmd> "
         )
         self.verify(
             "Created new bonded device" in out,
-            "Create bonded device on mode [%d] socket [%d] failed" % (mode, socket),
+            "Create bonded device on mode [%s] socket [%d] failed" % (mode, socket),
         )
         bond_port = self.get_value_from_str(
             "Created new bonded device net_bonding_testpmd_[\d] on \(port ", "\d+", out
@@ -478,7 +480,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)'
                 "show bonding config %d" % bond_port, "testpmd> "
             )
             self.verify(
-                "Bonding mode: %d" % mode in out,
+                "Bonding mode: %s" % mode in out,
                 "Bonding mode display error when create bonded device",
             )
             self.verify(
@@ -915,19 +917,20 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)'
         Do some basic operations to bonded devices and slaves,
         such as adding, removing, setting primary or setting mode.
         """
+        p = r"\w+\((\d+)\)"
+        mode_id = int(re.match(p, mode_set).group(1))
         bond_port_0 = self.create_bonded_device(mode_set, SOCKET_0, True)
         self.add_slave_to_bonding_device(bond_port_0, False, self.dut_ports[1])
-
         mode_value = self.get_bond_mode(bond_port_0)
-        self.verify("%d" % mode_set in mode_value, "Setting bonding mode error")
+        self.verify("%s" % mode_set in mode_value, "Setting bonding mode error")
 
         bond_port_1 = self.create_bonded_device(mode_set, SOCKET_0)
         self.add_slave_to_bonding_device(bond_port_0, False, self.dut_ports[0])
         self.add_slave_to_bonding_device(bond_port_1, True, self.dut_ports[0])
 
-        OTHER_MODE = mode_set + 1 if not mode_set else mode_set - 1
+        OTHER_MODE = mode_id + 1 if not mode_id else mode_id - 1
         self.set_mode_for_bonding_device(bond_port_0, OTHER_MODE)
-        self.set_mode_for_bonding_device(bond_port_0, mode_set)
+        self.set_mode_for_bonding_device(bond_port_0, mode_id)
 
         self.add_slave_to_bonding_device(bond_port_0, False, self.dut_ports[2])
         time.sleep(5)
@@ -972,14 +975,14 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)'
             self.verify(
                 mac_address_1_orig == mac_address_bond_now
                 and mac_address_bond_now == mac_address_2_now,
-                "NOT all slaves MAC address same with bonding device in mode %d"
+                "NOT all slaves MAC address same with bonding device in mode %s"
                 % mode_set,
             )
         else:
             self.verify(
                 mac_address_1_orig == mac_address_bond_now
                 and mac_address_bond_now != mac_address_2_now,
-                "All slaves should not be the same in mode %d" % mode_set,
+                "All slaves should not be the same in mode %s" % mode_set,
             )
 
         new_mac = "00:11:22:00:33:44"
@@ -994,7 +997,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)'
                 == mac_address_2_now
                 == mac_address_bond_now
                 == new_mac,
-                "Set mac failed for bonding device in mode %d" % mode_set,
+                "Set mac failed for bonding device in mode %s" % mode_set,
             )
         elif mode_set == MODE_LACP:
             self.verify(
@@ -1002,14 +1005,14 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)'
                 and mac_address_1_now != new_mac
                 and mac_address_2_now != new_mac
                 and mac_address_1_now != mac_address_2_now,
-                "Set mac failed for bonding device in mode %d" % mode_set,
+                "Set mac failed for bonding device in mode %s" % mode_set,
             )
         elif mode_set in [MODE_ACTIVE_BACKUP, MODE_TLB_BALANCE]:
             self.verify(
                 mac_address_bond_now == new_mac
                 and mac_address_1_now == new_mac
                 and mac_address_bond_now != mac_address_2_now,
-                "Set mac failed for bonding device in mode %d" % mode_set,
+                "Set mac failed for bonding device in mode %s" % mode_set,
             )
 
         self.set_primary_for_bonding_device(bond_port, self.dut_ports[2], False)
@@ -1121,18 +1124,18 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)'
         if mode_set in [MODE_ROUND_ROBIN, MODE_XOR_BALANCE, MODE_BROADCAST]:
             self.verify(
                 port_disabled_num == 4,
-                "Not all slaves of bonded device turn promiscuous mode off in mode %d."
+                "Not all slaves of bonded device turn promiscuous mode off in mode %s."
                 % mode_set,
             )
         elif mode_set == MODE_LACP:
             self.verify(
                 port_disabled_num == 1,
-                "Not only turn bound device promiscuous mode off in mode %d" % mode_set,
+                "Not only turn bound device promiscuous mode off in mode %s" % mode_set,
             )
         else:
             self.verify(
                 port_disabled_num == 2,
-                "Not only the primary slave turn promiscous mode off in mode %d, "
+                "Not only the primary slave turn promiscous mode off in mode %s, "
                 % mode_set
                 + " when bonded device  promiscous disabled.",
             )
