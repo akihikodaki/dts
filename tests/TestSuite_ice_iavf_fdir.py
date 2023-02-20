@@ -9573,6 +9573,7 @@ class TestICEIAVFFdir(TestCase):
     def test_l2_ethertype(self):
         self.multirules_process(vectors_l2_ethertype)
 
+    @skip_unsupported_pkg("comms")
     def test_negative_case(self):
         """
         negative cases
