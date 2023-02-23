@@ -885,14 +885,18 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)'
         self.pmdout = PmdOutput(self.dut)
 
         self.tester_bond = "bond0"
-
-        for port in self.dut_ports:
-            tester_port = self.tester.get_local_port(port)
-            intf = self.tester.get_interface(tester_port)
-            driver = self.tester.ports_info[tester_port]["port"].get_nic_driver()
-            if driver == "i40e":
+        tester_port0 = self.tester.get_local_port(self.dut_ports[0])
+        self.tport_iface0 = self.tester.get_interface(tester_port0)
+        self.flag = "link-down-on-close"
+        self.default_stats = self.tester.get_priv_flags_state(
+            self.tport_iface0, self.flag
+        )
+        if self.default_stats:
+            for port in self.dut_ports:
+                tester_port = self.tester.get_local_port(port)
+                intf = self.tester.get_interface(tester_port)
                 self.tester.send_expect(
-                    "ethtool --set-priv-flags %s link-down-on-close on" % intf, "# ", 10
+                    "ethtool --set-priv-flags %s %s on" % (intf, self.flag), "# "
                 )
 
     def set_up(self):
@@ -1052,7 +1056,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)'
         self.dut.send_expect("start", "testpmd> ")
 
         port_disabled_num = 0
-        testpmd_all_ports = self.dut_ports
+        testpmd_all_ports = self.dut_ports[:]
         testpmd_all_ports.append(bond_port)
         for port_id in testpmd_all_ports:
             value = self.get_detail_from_port_info(
@@ -2349,4 +2353,13 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)'
         """
         Run after each test suite.
         """
-        pass
+        self.dut.kill_all()
+        if self.default_stats:
+            for port in self.dut_ports:
+                tester_port = self.tester.get_local_port(port)
+                tport_iface = self.tester.get_interface(tester_port)
+                self.tester.send_expect(
+                    "ethtool --set-priv-flags %s %s %s"
+                    % (tport_iface, self.flag, self.default_stats),
+                    "# ",
+                )
