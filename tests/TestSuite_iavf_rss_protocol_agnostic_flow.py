@@ -484,7 +484,6 @@ class TestIavfRssProtocolAgnosticFlow(TestCase):
     def handle_rss_case(self, case_info):
         # clear hash_records before each sub case
         self.hash_records = {}
-        self.error_msgs = []
         self.current_saved_hash = ""
         sub_case_name = case_info.get("sub_casename")
         self.logger.info(
@@ -516,10 +515,12 @@ class TestIavfRssProtocolAgnosticFlow(TestCase):
             self.rsspro.destroy_rule(port_id=port_id, rule_id=rule_ids)
             self.rsspro.check_rule(port_id=port_id, stats=False)
             self.rsspro.handle_tests(case_info["post-test"], port_id=port_id)
-        if self.error_msgs:
+        if self.rsspro.error_msgs:
             self.verify(
                 False,
-                " ".join([errs.replace("'", " ") for errs in self.error_msgs[:500]]),
+                " ".join(
+                    [errs.replace("'", " ") for errs in self.rsspro.error_msgs[:500]]
+                ),
             )
 
     def rte_flow(self, case_list, func_name, **kwargs):
@@ -642,7 +643,6 @@ class TestIavfRssProtocolAgnosticFlow(TestCase):
         ]
         # create rule
         self.rsspro.create_rule(rules, check_stats=True)
-        self.rsspro.error_msgs = []
         self.rsspro.error_msgs = []
         self.handle_tests(tests, port_id=dPort, tport_id=tPort)
         if self.rsspro.error_msgs:
