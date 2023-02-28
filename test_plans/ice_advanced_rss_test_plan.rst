@@ -944,10 +944,21 @@ not hit pattern packets are the same in this test case::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
+ipv6_destopt packets::
 
-   sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/Raw("x"*40)],iface="ens786f0")
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)],iface="ens786f0")
 
+ipv6_routing packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=123)/("X"*480)],iface="ens786f0")
+
+ipv6_hopbyhop packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=123)/("X"*480)],iface="ens786f0")
+
+ipv6_segment_routing packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=123)/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_L2SRC
 -----------------------
@@ -968,10 +979,6 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packet::
-
-   sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/Raw("x"*40)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-nonfrag packets::
 
@@ -984,6 +991,22 @@ ipv6-icmp packets::
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/UDP(sport=25,dport=99)/("X"*480)],iface="ens786f0")
+
+Subcase: MAC_IPV6_NEXT_PROTO_L2SRC
+----------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / end actions rss types eth l2-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_destopt packet::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6_destopt packet::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_L2DST
 -----------------------
@@ -1004,10 +1027,6 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
-
-   sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/Raw("x"*40)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-nonfrag packets::
 
@@ -1020,6 +1039,22 @@ ipv6-icmp packets::
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2027")/UDP(sport=25,dport=99)/("X"*480)],iface="ens786f0")
+
+Subcase: MAC_IPV6_NEXT_PROTO_L2DST
+----------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / end actions rss types eth l2-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_routing packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=123)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6_routing packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=123)/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_L2SRC_L2DST
 -----------------------------
@@ -1046,12 +1081,6 @@ ipv6-udp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
-
-   sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/Raw("x"*40)],iface="ens786f0")
-   sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/Raw("x"*40)],iface="ens786f0")
-   sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/Raw("x"*40)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-nonfrag packets::
 
@@ -1064,6 +1093,24 @@ ipv6-icmp packets::
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/UDP(sport=25,dport=99)/("X"*480)],iface="ens786f0")
+
+Subcase: MAC_IPV6_NEXT_PROTO_L2SRC_L2DST
+----------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / end actions rss types eth end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_hopbyhop packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=123)/("x"*480)],iface="ens786f0")
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=123)/("x"*480)],iface="ens786f0")
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=123)/("x"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6-ipv6_hopbyhop packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrHopByHop(nh=122)/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_L3SRC
 -----------------------
@@ -1084,10 +1131,6 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
-
-   sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/Raw("x"*40)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-nonfrag packets::
 
@@ -1100,6 +1143,22 @@ ipv6-icmp packets::
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
+
+Subcase: MAC_IPV6_NEXT_PROTO_L3SRC
+----------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / end actions rss types ipv6 l3-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_segment_routing packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=123)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6_segment_routing packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting(nh=123)/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_L3DST
 -----------------------
@@ -1120,10 +1179,6 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
-
-   sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrDestOpt(nh=123)/Raw("x"*40)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-nonfrag packets::
 
@@ -1136,6 +1191,22 @@ ipv6-icmp packets::
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
+
+Subcase: MAC_IPV6_NEXT_PROTO_L3DST
+----------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / end actions rss types ipv6 l3-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_destopt packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6_destopt packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=122)/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_ALL
 ---------------------
@@ -1159,11 +1230,6 @@ ipv6-udp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
-
-   sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrDestOpt(nh=123)/Raw("x"*40)],iface="ens786f0")
-   sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/Raw("x"*40)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-nonfrag packets::
 
@@ -1177,6 +1243,22 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
 
+Subcase: MAC_IPV6_NEXT_PROTO_ALL
+--------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / end actions rss types ipv6 end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_next_proto packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=123)/("X"*480)],iface="ens786f0")
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=123)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6-nonfrag packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrRouting(nh=122)/("X"*480)],iface="ens786f0")
 
 Test case: MAC_IPV6_UDP
 =======================
@@ -1189,15 +1271,27 @@ ipv4_udp_vxlan_ipv6_udp packet::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-
 not hit pattern packets are the same in this test case::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(src="192.168.0.1",dst="192.168.0.2")/UDP(sport=22,dport=23)/Raw("x"*80)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+ipv6_destopt_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+ipv6_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+ipv6_hopbyhop_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+ipv6_segment_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_UDP_L2SRC
 ---------------------------
@@ -1210,14 +1304,31 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/UDP(sport=25,dport=99)/("X"*480)],iface="ens786f0")
+
+Subcase: MAC_IPV6_NEXT_PROTO_UDP_L2SRC
+--------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types eth l2-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_destopt_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6_destopt_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=25,dport=99)/("X"*480)],iface="ens786f0")
+
+4. not hit pattern:
+ipv6_destopt_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=16)/UDP(sport=22,dport=23)/Raw("x"*40)],iface="ens786f0")
 
 Subcase: MAC_IPV6_UDP_L2DST
 ---------------------------
@@ -1230,14 +1341,32 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/UDP(sport=25,dport=99)/("X"*480)],iface="ens786f0")
+
+Subcase: MAC_IPV6_NEXT_PROTO_UDP_L2DST
+--------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types eth l2-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_destopt_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6_destopt_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=25,dport=99)/("X"*480)],iface="ens786f0")
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/("X"*480)],iface="ens786f0")
+
+4. not hit pattern:
+ipv6_destopt_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=6)/UDP(sport=22,dport=23)/Raw("x"*40)],iface="ens786f0")
 
 Subcase: MAC_IPV6_UDP_L2SRC_L2DST
 ---------------------------------
@@ -1252,16 +1381,33 @@ ipv6-udp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
+3. hit pattern/not defined input set:
+ipv6-udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/UDP(sport=25,dport=99)/("X"*480)],iface="ens786f0")
+
+Subcase: MAC_IPV6_NEXT_PROTO_UDP_L2SRC_L2DST
+--------------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types eth end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_destopt_udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
 3. hit pattern/not defined input set:
-ipv6-udp packets::
+ipv6_destopt_udp packets::
 
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/UDP(sport=25,dport=99)/("X"*480)],iface="ens786f0")
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=25,dport=99)/("X"*480)],iface="ens786f0")
+
+4. not hit pattern:
+ipv6_destopt_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=132)/UDP(sport=22,dport=23)/Raw("x"*40)],iface="ens786f0")
 
 Subcase: MAC_IPV6_UDP_L3SRC
 ---------------------------
@@ -1274,14 +1420,31 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
+
+Subcase: MAC_IPV6_NEXT_PROTO_UDP_L3SRC
+--------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp l3-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=17)/UDP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
+
+4. not hit pattern:
+ipv6_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=16)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_UDP_L3DST
 ---------------------------
@@ -1299,6 +1462,27 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
 
+Subcase: MAC_IPV6_NEXT_PROTO_UDP_L3DST
+--------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp l3-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/UDP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
+
+4. not hit pattern:
+ipv6_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=6)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
 Subcase: MAC_IPV6_UDP_L3SRC_L4SRC
 ---------------------------------
 1. create rss rule::
@@ -1310,14 +1494,31 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
+
+Subcase: MAC_IPV6_NEXT_PROTO_UDP_L3SRC_L4SRC
+--------------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp l3-src-only l4-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_hopbyhop_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6_hopbyhop_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
+
+4. not hit pattern:
+ipv6_hopbyhop_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=132)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_UDP_L3SRC_L4DST
 ---------------------------------
@@ -1330,14 +1531,32 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
+
+Subcase: MAC_IPV6_NEXT_PROTO_UDP_L3SRC_L4DST
+--------------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp l3-src-only l4-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_hopbyhop_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6_hopbyhop_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=17)/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+4. not hit pattern:
+ipv6_hopbyhop_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_UDP_L3DST_L4SRC
 ---------------------------------
@@ -1350,14 +1569,32 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
+
+Subcase: MAC_IPV6_NEXT_PROTO_UDP_L3DST_L4SRC
+--------------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp l3-dst-only l4-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_segment_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6_segment_routing_udp packets::
+
+     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
+     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting()/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+4. not hit pattern:
+ipv6_segment_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting()/SCTP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_UDP_L3DST_L4DST
 ---------------------------------
@@ -1370,14 +1607,31 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
+
+Subcase: MAC_IPV6_NEXT_PROTO_UDP_L3DST_L4DST
+--------------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp l3-dst-only l4-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_segment_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6_segment_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/TCP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
+
+4. not hit pattern:
+ipv6_segment_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=6)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_UDP_L4SRC
 ---------------------------
@@ -1390,14 +1644,31 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
+
+Subcase: MAC_IPV6_NEXT_PROTO_UDP_L4SRC
+--------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp l4-src-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_segment_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6_segment_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting()/IPv6ExtHdrDestOpt()/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
+
+4. not hit pattern:
+ipv6_segment_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting()/IPv6ExtHdrDestOpt(nh=6)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_UDP_L4DST
 ---------------------------
@@ -1415,6 +1686,27 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
 
+Subcase: MAC_IPV6_NEXT_PROTO_UDP_L4DST
+--------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp l4-dst-only end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_segment_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6_segment_routing_udp  packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting()/IPv6ExtHdrSegmentRouting(nh=17)/TCP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
+
+4. not hit pattern:
+ipv6_segment_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting()/IPv6ExtHdrSegmentRouting(nh=132)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
 Subcase: MAC_IPV6_UDP_IPV6
 --------------------------
 1. create rss rule::
@@ -1427,15 +1719,31 @@ ipv6-udp packets::
     sendp([Ether(dst="00:11:22:33:44:55", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
     sendp([Ether(dst="00:11:22:33:44:55", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
 
-ipv6_next_proto packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(dst="00:11:22:33:44:53", src="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)],iface="enp134s0f0")
+
+Subcase: MAC_IPV6_NEXT_PROTO_UDP_IPV6
+-------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6 end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_hopbyhop_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6_hopbyhop_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting(nh=17)/SCTP(sport=32,dport=33)/("X"*480)],iface="enp134s0f0")
+
+4. not hit pattern:
+ipv6_hopbyhop_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrHopByHop(nh=6)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_UDP_ALL
 -------------------------
@@ -1451,17 +1759,34 @@ ipv6-udp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto packets::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+Subcase: MAC_IPV6_NEXT_PROTO_UDP_ALL
+------------------------------------
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
+
+3. hit pattern/not defined input set:
+ipv6_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+4. not hit pattern:
+ipv6_routing_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=6)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
 Test case: MAC_IPV6_TCP
 =======================
@@ -1479,39 +1804,74 @@ just change some parts of rules and packets:
 Subcase: MAC_IPV6_TCP_L2SRC
 ---------------------------
 
+Subcase: MAC_IPV6_NEXT_PROTO_TCP_L2SRC
+--------------------------------------
+
 Subcase: MAC_IPV6_TCP_L2DST
 ---------------------------
+
+Subcase: MAC_IPV6_NEXT_PROTO_TCP_L2DST
+--------------------------------------
 
 Subcase: MAC_IPV6_TCP_L2SRC_L2DST
 ---------------------------------
 
+Subcase: MAC_IPV6_NEXT_PROTO_TCP_L2SRC_L2DST
+--------------------------------------------
+
 Subcase: MAC_IPV6_TCP_L3SRC
 ---------------------------
+
+Subcase: MAC_IPV6_NEXT_PROTO_TCP_L3SRC
+--------------------------------------
 
 Subcase: MAC_IPV6_TCP_L3DST
 ---------------------------
 
+Subcase: MAC_IPV6_NEXT_PROTO_TCP_L3DST
+--------------------------------------
+
 Subcase: MAC_IPV6_TCP_L3SRC_L4SRC
 ---------------------------------
+
+Subcase: MAC_IPV6_NEXT_PROTO_TCP_L3SRC_L4SRC
+--------------------------------------------
 
 Subcase: MAC_IPV6_TCP_L3SRC_L4DST
 ---------------------------------
 
+Subcase: MAC_IPV6_NEXT_PROTO_TCP_L3SRC_L4DST
+--------------------------------------------
+
 Subcase: MAC_IPV6_TCP_L3DST_L4SRC
 ---------------------------------
+
+Subcase: MAC_IPV6_NEXT_PROTO_TCP_L3DST_L4SRC
+--------------------------------------------
 
 Subcase: MAC_IPV6_TCP_L3DST_L4DST
 ---------------------------------
 
+Subcase: MAC_IPV6_NEXT_PROTO_TCP_L3DST_L4DST
+--------------------------------------------
+
 Subcase: MAC_IPV6_TCP_L4SRC
 ---------------------------
+
+Subcase: MAC_IPV6_NEXT_PROTO_TCP_L4SRC
+--------------------------------------
 
 Subcase: MAC_IPV6_TCP_L4DST
 ---------------------------
 
+Subcase: MAC_IPV6_NEXT_PROTO_TCP_L4DST
+--------------------------------------
+
 Subcase: MAC_IPV6_TCP_ALL
 -------------------------
 
+Subcase: MAC_IPV6_NEXT_PROTO_TCP_ALL
+------------------------------------
 
 Test case: MAC_IPV6_SCTP
 ========================
@@ -1528,38 +1888,74 @@ just change some parts of rules and packets:
 Subcase: MAC_IPV6_SCTP_L2SRC
 ----------------------------
 
+Subcase: MAC_IPV6_NEXT_PROTO_SCTP_L2SRC
+---------------------------------------
+
 Subcase: MAC_IPV6_SCTP_L2DST
 ----------------------------
+
+Subcase: MAC_IPV6_NEXT_PROTO_SCTP_L2DST
+---------------------------------------
 
 Subcase: MAC_IPV6_SCTP_L2SRC_L2DST
 ----------------------------------
 
+Subcase: MAC_IPV6_NEXT_PROTO_SCTP_L2SRC_L2DST
+---------------------------------------------
+
 Subcase: MAC_IPV6_SCTP_L3SRC
 ----------------------------
+
+Subcase: MAC_IPV6_NEXT_PROTO_SCTP_L3SRC
+---------------------------------------
 
 Subcase: MAC_IPV6_SCTP_L3DST
 ----------------------------
 
+Subcase: MAC_IPV6_NEXT_PROTO_SCTP_L3DST
+---------------------------------------
+
 Subcase: MAC_IPV6_SCTP_L3SRC_L4SRC
 ----------------------------------
+
+Subcase: MAC_IPV6_NEXT_PROTO_SCTP_L3SRC_L4SRC
+---------------------------------------------
 
 Subcase: MAC_IPV6_SCTP_L3SRC_L4DST
 ----------------------------------
 
+Subcase: MAC_IPV6_NEXT_PROTO_SCTP_L3SRC_L4DST
+---------------------------------------------
+
 Subcase: MAC_IPV6_SCTP_L3DST_L4SRC
 ----------------------------------
+
+Subcase: MAC_IPV6_NEXT_PROTO_SCTP_L3DST_L4SRC
+---------------------------------------------
 
 Subcase: MAC_IPV6_SCTP_L3DST_L4DST
 ----------------------------------
 
+Subcase: MAC_IPV6_NEXT_PROTO_SCTP_L3DST_L4DST
+---------------------------------------------
+
 Subcase: MAC_IPV6_SCTP_L4SRC
 ----------------------------
+
+Subcase: MAC_IPV6_NEXT_PROTO_SCTP_L4SRC
+---------------------------------------
 
 Subcase: MAC_IPV6_SCTP_L4DST
 ----------------------------
 
+Subcase: MAC_IPV6_NEXT_PROTO_SCTP_L4DST
+---------------------------------------
+
 Subcase: MAC_IPV6_SCTP_ALL
 --------------------------
+
+Subcase: MAC_IPV6_NEXT_PROTO_SCTP_ALL
+-------------------------------------
 
 Test case: MAC_IPV6_32BIT_PREFIX
 =================================
@@ -1910,16 +2306,23 @@ ipv6-udp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto::
-
-   sendp(['Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)],iface="ens786f0")
-   sendp(['Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)],iface="ens786f0")
-
 3. not hit pattern with switched value of input set in the rule:
 ipv4-nonfrag packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/("X"*480)],iface="ens786f0")
+
+Test case: symmetric MAC_IPV6_NEXT_PROTO
+========================================
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / end actions rss func symmetric_toeplitz types ipv6 end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_next_proto::
+
+   sendp(['Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)],iface="ens786f0")
+   sendp(['Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)],iface="ens786f0")
 
 Test case: symmetric MAC_IPV6_UDP
 =================================
@@ -1939,10 +2342,23 @@ ipv6-tcp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto::
+Test case: symmetric MAC_IPV6_NEXT_PROTO_UDP
+============================================
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss func symmetric_toeplitz types ipv6-udp end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_next_proto_udp::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+3. not hit pattern/not defined input set packets::
+ipv6_next_proto_tcp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=6)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=6)/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
 Test case: symmetric MAC_IPV6_TCP
 =================================
@@ -1956,17 +2372,29 @@ ipv6-tcp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-
 3. not hit pattern/not defined input set packets::
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
+Test case: symmetric MAC_IPV6_NEXT_PROTO_TCP
+============================================
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss func symmetric_toeplitz types ipv6-tcp end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_next_proto_tcp::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+3. not hit pattern/not defined input set packets::
+ipv6_next_proto_sctp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=132)/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=132)/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
 Test case: symmetric MAC_IPV6_SCTP
 ==================================
@@ -1980,16 +2408,29 @@ ipv6-sctp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv6_next_proto::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-
 3. not hit pattern/not defined input set packets::
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+Test case: symmetric MAC_IPV6_NEXT_PROTO_SCTP
+=============================================
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss func symmetric_toeplitz types ipv6-sctp end key_len 0 queues end / end
+
+2. hit pattern/defined input set:
+ipv6_next_proto_sctp::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+
+3. not hit pattern/not defined input set packets::
+ipv6_next_proto_udp packets::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=17)/SCTP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
+    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=17)/SCTP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
 Test case: global simple-xor
 ============================
@@ -2430,21 +2871,36 @@ Test case: MAC_IPV6_UDP_L4_CHKSUM
 2. basic hit pattern packet::
 
     p1 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/UDP(sport=22, dport=23, chksum=0x1)/("X"*48)
-    pp1 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22, dport=23, chksum=0x1)/("X"*48)
 
 3. hit pattern/changed defined input set::
 
     p2 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/UDP(sport=22, dport=23, chksum=0x2)/("X"*48)
-    pp2 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22, dport=23, chksum=0x2)/("X"*48)
 
 4. hit pattern/changed not defined input set::
 
     p3 = Ether(src="52:00:00:00:00:01", dst="00:11:22:33:44:53")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", src="ABAB:910A:2222:5498:8475:1111:3900:1011")/UDP(sport=32, dport=33, chksum=0x1)/("X"*48)
-    pp3 = Ether(src="52:00:00:00:00:01", dst="00:11:22:33:44:53")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", src="ABAB:910A:2222:5498:8475:1111:3900:1011")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=32, dport=33, chksum=0x1)/("X"*48)
 
 5. not hit pattern::
 
     p4 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/TCP(sport=22, dport=23, chksum=0x1)/("X"*49)
+
+Test case: MAC_IPV6_NEXT_PROTO_UDP_L4_CHKSUM
+============================================
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types l4-chksum  end queues end / end
+
+2. basic hit pattern packet::
+
+    p1 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22, dport=23, chksum=0x1)/("X"*48)
+
+3. hit pattern/changed defined input set::
+
+    p2 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22, dport=23, chksum=0x2)/("X"*48)
+
+4. hit pattern/changed not defined input set::
+
+    p3 = Ether(src="52:00:00:00:00:01", dst="00:11:22:33:44:53")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:3939",dst="CDCD:910A:2222:5498:8475:1111:3900:3030")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=32, dport=33, chksum=0x1)/("X"*48)
 
 Test case: MAC_IPV6_TCP_L4_CHKSUM
 =================================
@@ -2455,21 +2911,36 @@ Test case: MAC_IPV6_TCP_L4_CHKSUM
 2. basic hit pattern packet::
 
     p1 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/TCP(sport=22, dport=23, chksum=0x1)/("X"*48)
-    pp1 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/IPv6ExtHdrDestOpt(nh=6)/UDP(sport=22, dport=23, chksum=0x1)/("X"*48)
 
 3. hit pattern/changed defined input set::
 
     p2 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/TCP(sport=22, dport=23, chksum=0x2)/("X"*48)
-    pp2 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/IPv6ExtHdrDestOpt(nh=6)/UDP(sport=22, dport=23, chksum=0x2)/("X"*48)
 
 4. hit pattern/changed not defined input set::
 
     p3 = Ether(src="52:00:00:00:00:01", dst="00:11:22:33:44:53")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", src="ABAB:910A:2222:5498:8475:1111:3900:1011")/TCP(sport=32, dport=33, chksum=0x1)/("X"*48)
-    pp3 = Ether(src="52:00:00:00:00:01", dst="00:11:22:33:44:53")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", src="ABAB:910A:2222:5498:8475:1111:3900:1011")/IPv6ExtHdrDestOpt(nh=6)/UDP(sport=22, dport=23, chksum=0x1)/("X"*48)
 
 5. not hit pattern::
 
     p4 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/SCTP(sport=22, dport=23, chksum=0x1)/("X"*49)
+
+Test case: MAC_IPV6_NEXT_PROTO_TCP_L4_CHKSUM
+============================================
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss types l4-chksum  end queues end / end
+
+2. basic hit pattern packet::
+
+    p1 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=6)/TCP(sport=22, dport=23, chksum=0x1)/("X"*48)
+
+3. hit pattern/changed defined input set::
+
+    p2 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=6)/TCP(sport=22, dport=23, chksum=0x2)/("X"*48)
+
+4. hit pattern/changed not defined input set::
+
+    p3 = Ether(src="52:00:00:00:00:01", dst="00:11:22:33:44:53")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:3939",dst="CDCD:910A:2222:5498:8475:1111:3900:3030")/IPv6ExtHdrDestOpt(nh=6)/TCP(sport=32, dport=33, chksum=0x1)/("X"*48)
 
 Test case: MAC_IPV6_SCTP_L4_CHKSUM
 ==================================
@@ -2480,21 +2951,36 @@ Test case: MAC_IPV6_SCTP_L4_CHKSUM
 2. basic hit pattern packet::
 
     p1 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/SCTP(sport=22, dport=23, chksum=0xffffffff)/("X"*48)
-    pp1 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/IPv6ExtHdrDestOpt(nh=132)/UDP(sport=22, dport=23, chksum=0x1)/("X"*48)
 
 3. hit pattern/changed defined input set::
 
     p2 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/SCTP(sport=22, dport=23, chksum=0xfffffffe)/("X"*48)
-    pp2 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/IPv6ExtHdrDestOpt(nh=132)/UDP(sport=22, dport=23, chksum=0x2)/("X"*48)
 
 4. hit pattern/changed not defined input set::
 
     p3 = Ether(src="52:00:00:00:00:01", dst="00:11:22:33:44:53")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", src="ABAB:910A:2222:5498:8475:1111:3900:1011")/SCTP(sport=32, dport=33, chksum=0xffffffff)/("X"*48)
-    pp3 = Ether(src="52:00:00:00:00:01", dst="00:11:22:33:44:53")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", src="ABAB:910A:2222:5498:8475:1111:3900:1011")/IPv6ExtHdrDestOpt(nh=132)/UDP(sport=22, dport=23, chksum=0x1)/("X"*48)
 
 5. not hit pattern::
 
     p4 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="ABAB:910A:2222:5498:8475:1111:3900:1010")/UDP(sport=22, dport=23, chksum=0x1)/("X"*49)
+
+Test case: MAC_IPV6_NEXT_PROTO_SCTP_L4_CHKSUM
+=============================================
+1. create rss rule::
+
+    flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss types l4-chksum  end queues end / end
+
+2. basic hit pattern packet::
+
+    p1 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22, dport=23, chksum=0x1)/("X"*48)
+
+3. hit pattern/changed defined input set::
+
+    p2 = Ether(src="52:00:00:00:00:00", dst="00:11:22:33:44:55")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22, dport=23, chksum=0x2)/("X"*48)
+
+4. hit pattern/changed not defined input set::
+
+    p3 = Ether(src="52:00:00:00:00:01", dst="00:11:22:33:44:53")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:3939",dst="CDCD:910A:2222:5498:8475:1111:3900:3030")/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=32, dport=33, chksum=0x1)/("X"*48)
 
 Test case: Checksum for different payload length
 ================================================
@@ -2668,3 +3154,4 @@ Test case: Negative case
 
     flow create 0 ingress pattern eth / ipv6 / end actions rss types ipv6-chksum  end queues end / end
     Bad arguments
+
