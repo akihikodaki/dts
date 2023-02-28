@@ -7,7 +7,7 @@ import re
 
 from framework.packet import Packet
 from framework.pmd_output import PmdOutput
-from framework.test_case import TestCase
+from framework.test_case import TestCase, skip_unsupported_pkg
 
 from .rte_flow_common import FdirProcessing, RssProcessing, check_mark
 
@@ -85,8 +85,17 @@ mac_ipv6_toeplitz_basic_pkt = {
     "nvgre": [
         'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
     ],
-    "ipv6-next-proto": [
-        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/Raw("x"*40)'
+    "ipv6_destopt": [
+        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)',
+    ],
+    "ipv6_routing": [
+        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=123)/("X"*480)',
+    ],
+    "ipv6_hopbyhop": [
+        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=123)/("X"*480)',
+    ],
+    "ipv6_segment_routing": [
+        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=123)/("X"*480)'
     ],
 }
 
@@ -101,8 +110,17 @@ mac_ipv6_udp_toeplitz_basic_pkt = {
     "ipv4_udp_vxlan_ipv6_udp": [
         'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)',
     ],
-    "ipv6-next-proto-udp": [
-        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/Raw("x"*40)'
+    "ipv6_destopt_udp": [
+        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/Raw("x"*40)',
+    ],
+    "ipv6_routing_udp": [
+        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+    ],
+    "ipv6_hopbyhop_udp": [
+        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+    ],
+    "ipv6_segment_routing_udp": [
+        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)'
     ],
 }
 
@@ -119,8 +137,17 @@ mac_ipv6_tcp_toeplitz_basic_pkt = {
     "ipv4_tcp_vxlan_ipv6_tcp": [
         'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)',
     ],
-    "ipv6-next-proto-tcp": [
+    "ipv6_destopt_tcp": [
         'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=6)/TCP(sport=22,dport=23)/Raw("x"*40)'
+    ],
+    "ipv6_routing_tcp": [
+        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=6)/UDP(sport=22,dport=23)/("X"*480)',
+    ],
+    "ipv6_hopbyhop_tcp": [
+        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/UDP(sport=22,dport=23)/("X"*480)',
+    ],
+    "ipv6_segment_routing_tcp": [
+        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=6)/UDP(sport=22,dport=23)/("X"*480)'
     ],
 }
 
@@ -137,8 +164,17 @@ mac_ipv6_sctp_toeplitz_basic_pkt = {
     "ipv4_sctp_vxlan_ipv6_sctp": [
         'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=22,dport=23)/("X"*480)',
     ],
-    "ipv6-next-proto-sctp": [
-        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/Raw("x"*40)'
+    "ipv6_destopt_sctp": [
+        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/Raw("x"*40)',
+    ],
+    "ipv6_routing_sctp": [
+        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+    ],
+    "ipv6_hopbyhop_sctp": [
+        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+    ],
+    "ipv6_segment_routing_sctp": [
+        'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)'
     ],
 }
 
@@ -2153,18 +2189,6 @@ mac_ipv6_l2_src = {
             "action": {"check_hash_same": "ipv6-udp"},
         },
         {
-            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6-next-proto"],
-            "action": {"save_hash": "ipv6-next-proto"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)',
-            "action": {"check_hash_different": "ipv6-next-proto"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)',
-            "action": {"check_hash_same": "ipv6-next-proto"},
-        },
-        {
             "send_packet": mac_ipv6_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -2175,7 +2199,6 @@ mac_ipv6_l2_src = {
                 mac_ipv6_toeplitz_basic_pkt["ipv6-nonfrag"][0],
                 mac_ipv6_toeplitz_basic_pkt["ipv6-icmp"][0],
                 mac_ipv6_toeplitz_basic_pkt["ipv6-udp"][0],
-                mac_ipv6_toeplitz_basic_pkt["ipv6-next-proto"][0],
             ],
             "action": "check_no_hash",
         },
@@ -2222,22 +2245,6 @@ mac_ipv6_l2_dst = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2027")/UDP(sport=25,dport=99)/("X"*480)',
             "action": {"check_hash_same": "ipv6-udp"},
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_toeplitz_basic_pkt["ipv6-next-proto"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrRouting"
-                )
-            ),
-            "action": {"save_hash": "ipv6-next-proto"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=123)/("X"*480)',
-            "action": {"check_hash_different": "ipv6-next-proto"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrRouting(nh=123)/("X"*480)',
-            "action": {"check_hash_same": "ipv6-next-proto"},
         },
         {
             "send_packet": mac_ipv6_toeplitz_non_basic_pkt,
@@ -2322,30 +2329,6 @@ mac_ipv6_l2src_l2dst = {
             "action": {"check_hash_same": "ipv6-udp"},
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_toeplitz_basic_pkt["ipv6-next-proto"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrHopByHop"
-                )
-            ),
-            "action": {"save_hash": "ipv6-next-proto"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=123)/("X"*480)',
-            "action": {"check_hash_different": "ipv6-next-proto"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=123)/("X"*480)',
-            "action": {"check_hash_different": "ipv6-next-proto"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=123)/("X"*480)',
-            "action": {"check_hash_different": "ipv6-next-proto"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrHopByHop(nh=122)/("X"*480)',
-            "action": {"check_hash_same": "ipv6-next-proto"},
-        },
-        {
             "send_packet": mac_ipv6_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -2402,22 +2385,6 @@ mac_ipv6_l3_src = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=33)/("X"*480)',
             "action": {"check_hash_same": "ipv6-udp"},
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_toeplitz_basic_pkt["ipv6-next-proto"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrSegmentRouting"
-                )
-            ),
-            "action": {"save_hash": "ipv6-next-proto"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=123)/("X"*480)',
-            "action": {"check_hash_different": "ipv6-next-proto"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting(nh=122)/("X"*480)',
-            "action": {"check_hash_same": "ipv6-next-proto"},
         },
         {
             "send_packet": mac_ipv6_toeplitz_non_basic_pkt,
@@ -2477,18 +2444,6 @@ mac_ipv6_l3_dst = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)',
             "action": {"check_hash_same": "ipv6-udp"},
-        },
-        {
-            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6-next-proto"],
-            "action": {"save_hash": "ipv6-next-proto"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=123)/("X"*480)',
-            "action": {"check_hash_different": "ipv6-next-proto"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=122)/("X"*480)',
-            "action": {"check_hash_same": "ipv6-next-proto"},
         },
         {
             "send_packet": mac_ipv6_toeplitz_non_basic_pkt,
@@ -2562,26 +2517,6 @@ mac_ipv6_all = {
             "action": {"check_hash_same": "ipv6-udp"},
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_toeplitz_basic_pkt["ipv6-next-proto"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrDestOpt()/IPv6ExtHdrRouting"
-                )
-            ),
-            "action": {"save_hash": "ipv6-next-proto"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrDestOpt()/IPv6ExtHdrRouting(nh=123)/("X"*480)',
-            "action": {"check_hash_different": "ipv6-next-proto"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrRouting(nh=123)/("X"*480)',
-            "action": {"check_hash_different": "ipv6-next-proto"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrRouting(nh=122)/("X"*480)',
-            "action": {"check_hash_same": "ipv6-next-proto"},
-        },
-        {
             "send_packet": mac_ipv6_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -2595,6 +2530,179 @@ mac_ipv6_all = {
                 mac_ipv6_toeplitz_basic_pkt["nvgre"][0],
             ],
             "action": {"check_no_hash": ""},
+        },
+    ],
+}
+
+# mac_ipv6_next_proto
+mac_ipv6_next_proto_l2_src = {
+    "sub_casename": "mac_ipv6_next_proto_l2_src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6_destopt"],
+            "action": {"save_hash": "ipv6_destopt"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_destopt"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6_destopt"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_l2_dst = {
+    "sub_casename": "mac_ipv6_next_proto_l2_dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / end actions rss types eth l2-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6_routing"],
+            "action": {"save_hash": "ipv6_routing"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=123)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrRouting(nh=123)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_routing"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6_routing"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_l2src_l2dst = {
+    "sub_casename": "mac_ipv6_next_proto_l2src_l2dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / end actions rss types eth end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6_hopbyhop"],
+            "action": {"save_hash": "ipv6_hopbyhop"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=123)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_hopbyhop"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=123)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_hopbyhop"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=123)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_hopbyhop"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrHopByHop(nh=123)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_hopbyhop"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6_hopbyhop"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_l3_src = {
+    "sub_casename": "mac_ipv6_next_proto_l3_src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / end actions rss types ipv6 l3-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6_segment_routing"],
+            "action": {"save_hash": "ipv6_segment_routing"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=123)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_segment_routing"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting(nh=123)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_segment_routing"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6_segment_routing"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_l3_dst = {
+    "sub_casename": "mac_ipv6_next_proto_l3_dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / end actions rss types ipv6 l3-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6_destopt"],
+            "action": {"save_hash": "ipv6_destopt"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=122)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_destopt"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6_destopt"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_all = {
+    "sub_casename": "mac_ipv6_next_proto_all",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / end actions rss types ipv6 end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6_routing"],
+            "action": {"save_hash": "ipv6_routing"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=123)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=123)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrRouting(nh=122)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_routing"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting()/IPv6ExtHdrDestOpt(nh=122)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_routing"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_toeplitz_basic_pkt["ipv6_hopbyhop"],
+            "action": "check_no_hash",
         },
     ],
 }
@@ -2615,18 +2723,6 @@ mac_ipv6_udp_l2_src = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/UDP(sport=25,dport=99)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"],
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=25,dport=99)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -2659,18 +2755,6 @@ mac_ipv6_udp_l2_dst = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/UDP(sport=25,dport=99)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"],
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=25,dport=99)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -2714,26 +2798,6 @@ mac_ipv6_udp_l2src_l2dst = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"],
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=25,dport=99)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_udp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -2763,22 +2827,6 @@ mac_ipv6_udp_l3_src = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=33)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=17)/UDP(sport=32,dport=33)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -2815,22 +2863,6 @@ mac_ipv6_udp_l3_dst = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/UDP(sport=32,dport=33)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_udp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -2861,22 +2893,6 @@ mac_ipv6_udp_l3src_l4src = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrHopByHop"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=22,dport=33)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -2913,22 +2929,6 @@ mac_ipv6_udp_l3src_l4dst = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrHopByHop"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_udp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -2959,22 +2959,6 @@ mac_ipv6_udp_l3dst_l4src = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrSegmentRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=33)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -3011,22 +2995,6 @@ mac_ipv6_udp_l3dst_l4dst = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrSegmentRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_udp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -3060,22 +3028,6 @@ mac_ipv6_udp_l4_src = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrDestOpt()/IPv6ExtHdrSegmentRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrDestOpt()/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_udp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -3106,22 +3058,6 @@ mac_ipv6_udp_l4_dst = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrDestOpt()/IPv6ExtHdrSegmentRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrDestOpt()/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=32,dport=23)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -3170,34 +3106,6 @@ mac_ipv6_udp_all = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrDestOpt()/IPv6ExtHdrSegmentRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrDestOpt()/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_udp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -3233,18 +3141,6 @@ mac_ipv6_udp_ipv6 = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)',
             "action": "check_hash_same",
-        },
-        {
-            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"],
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
         },
     ],
     "post-test": [
@@ -3290,31 +3186,6 @@ mac_ipv6_udp_l4_chksum = {
         },
         {
             "send_packet": eval(
-                str(mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"]).replace(
-                    "dport=23", "dport=23, chksum=0x1"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"]).replace(
-                    "dport=23", "dport=23, chksum=0x2"
-                )
-            ),
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_udp_toeplitz_basic_pkt["ipv6-next-proto-udp"])
-                .replace("sport=22,dport=23", "sport=22,dport=23,chksum=0x1")
-                .replace("1800:2929", "1800:3939")
-                .replace("2020", "3030")
-            ),
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": eval(
                 str(mac_ipv6_toeplitz_basic_pkt["ipv6-udp"]).replace(
                     "/UDP(sport=22,dport=23)", "/SCTP(sport=22,dport=23,chksum=0x1)"
                 )
@@ -3326,6 +3197,484 @@ mac_ipv6_udp_l4_chksum = {
         {
             "send_packet": eval(
                 str(mac_ipv6_toeplitz_basic_pkt["ipv6-udp"]).replace(
+                    "dport=23", "dport=23, chksum=0x1"
+                )
+            ),
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+# mac_ipv6_next_proto_udp
+mac_ipv6_next_proto_udp_l2_src = {
+    "sub_casename": "mac_ipv6_next_proto_udp_l2_src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_destopt_udp"],
+            "action": {"save_hash": "ipv6_destopt_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=25,dport=99)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_destopt_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/Raw("x"*40)',
+            "action": {"check_hash_same": "ipv6_destopt_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=16)/UDP(sport=22,dport=23)/Raw("x"*40)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_destopt_udp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_udp_l2_dst = {
+    "sub_casename": "mac_ipv6_next_proto_udp_l2_dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types eth l2-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_routing_udp"],
+            "action": {"save_hash": "ipv6_destopt_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=25,dport=99)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_destopt_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_destopt_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=6)/UDP(sport=22,dport=23)/Raw("x"*40)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_destopt_udp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_udp_l2src_l2dst = {
+    "sub_casename": "mac_ipv6_next_proto_udp_l2src_l2dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types eth end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_destopt_udp"],
+            "action": {"save_hash": "ipv6_destopt_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=17)/UDP(sport=25,dport=99)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_destopt_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=132)/UDP(sport=22,dport=23)/Raw("x"*40)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": [
+                mac_ipv6_udp_toeplitz_basic_pkt["ipv6_destopt_udp"][0],
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_udp_l3_src = {
+    "sub_casename": "mac_ipv6_next_proto_udp_l3_src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp l3-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_routing_udp"],
+            "action": {"save_hash": "ipv6_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=17)/UDP(sport=32,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=16)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_routing_udp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_udp_l3_dst = {
+    "sub_casename": "mac_ipv6_next_proto_udp_l3_dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp l3-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_routing_udp"],
+            "action": {"save_hash": "ipv6_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/UDP(sport=32,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=6)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_routing_udp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_udp_l3src_l4src = {
+    "sub_casename": "mac_ipv6_next_proto_udp_l3src_l4src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp l3-src-only l4-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_hopbyhop_udp"],
+            "action": {"save_hash": "ipv6_hopbyhop_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_hopbyhop_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_hopbyhop_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=132)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_hopbyhop_udp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_udp_l3src_l4dst = {
+    "sub_casename": "mac_ipv6_next_proto_udp_l3src_l4dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp l3-src-only l4-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_hopbyhop_udp"],
+            "action": {"save_hash": "ipv6_hopbyhop_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_hopbyhop_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_hopbyhop_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=17)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_hopbyhop_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_hopbyhop_udp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_udp_l3dst_l4src = {
+    "sub_casename": "mac_ipv6_next_proto_udp_l3dst_l4src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp l3-dst-only l4-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_segment_routing_udp"],
+            "action": {"save_hash": "ipv6_segment_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_segment_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_segment_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting()/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_segment_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting()/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_no_hash": "ipv6_segment_routing_udp"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_segment_routing_udp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_udp_l3dst_l4dst = {
+    "sub_casename": "mac_ipv6_next_proto_udp_l3dst_l4dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp l3-dst-only l4-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_segment_routing_udp"],
+            "action": {"save_hash": "ipv6_segment_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_segment_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/TCP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_segment_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=6)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_no_hash": "ipv6_segment_routing_udp"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_segment_routing_udp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_udp_l4_src = {
+    "sub_casename": "mac_ipv6_next_proto_udp_l4_src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp l4-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_segment_routing_udp"],
+            "action": {"save_hash": "ipv6_segment_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_segment_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting()/IPv6ExtHdrDestOpt()/UDP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_segment_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting()/IPv6ExtHdrDestOpt(nh=6)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_segment_routing_udp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_udp_l4_dst = {
+    "sub_casename": "mac_ipv6_next_proto_udp_l4_dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp l4-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_segment_routing_udp"],
+            "action": {"save_hash": "ipv6_segment_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_segment_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting()/IPv6ExtHdrSegmentRouting(nh=17)/TCP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_segment_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting()/IPv6ExtHdrSegmentRouting(nh=132)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_segment_routing_udp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_udp_all = {
+    "sub_casename": "mac_ipv6_next_proto_udp_all",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6-udp end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_routing_udp"],
+            "action": {"save_hash": "ipv6_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/UDP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/UDP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_routing_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=6)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_routing_udp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_udp_ipv6 = {
+    "sub_casename": "mac_ipv6_next_proto_udp_ipv6",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types ipv6 end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_udp_toeplitz_basic_pkt["ipv6_hopbyhop_udp"],
+            "action": {"save_hash": "ipv6_hopbyhop_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_hopbyhop_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_hopbyhop_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting(nh=17)/SCTP(sport=32,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_hopbyhop_udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrHopByHop(nh=6)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": [
+                mac_ipv6_udp_toeplitz_basic_pkt["ipv6_hopbyhop_udp"][0],
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_udp_l4_chksum = {
+    "sub_casename": "mac_ipv6_next_proto_udp_l4_chksum",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions rss types l4-chksum  end queues end / end",
+    "test": [
+        {
+            "send_packet": eval(
+                str(mac_ipv6_udp_toeplitz_basic_pkt["ipv6_destopt_udp"]).replace(
+                    "dport=23", "dport=23, chksum=0x1"
+                )
+            ),
+            "action": {"save_hash": "ipv6_destopt_udp"},
+        },
+        {
+            "send_packet": eval(
+                str(mac_ipv6_udp_toeplitz_basic_pkt["ipv6_destopt_udp"]).replace(
+                    "dport=23", "dport=23, chksum=0x2"
+                )
+            ),
+            "action": {"check_hash_different": "ipv6_destopt_udp"},
+        },
+        {
+            "send_packet": eval(
+                str(mac_ipv6_udp_toeplitz_basic_pkt["ipv6_destopt_udp"])
+                .replace("sport=22,dport=23", "sport=32,dport=33,chksum=0x1")
+                .replace("1800:2929", "1800:3939")
+                .replace("2020", "3030")
+            ),
+            "action": {"check_hash_same": "ipv6_destopt_udp"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": eval(
+                str(mac_ipv6_udp_toeplitz_basic_pkt["ipv6_destopt_udp"]).replace(
                     "dport=23", "dport=23, chksum=0x1"
                 )
             ),
@@ -3350,22 +3699,6 @@ mac_ipv6_tcp_l2_src = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/TCP(sport=25,dport=99)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_tcp_toeplitz_basic_pkt["ipv6-next-proto-tcp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrRouting()/IPv6ExtHdrHopByHop"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting()/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrRouting()/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=25,dport=99)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -3399,26 +3732,6 @@ mac_ipv6_tcp_l2_dst = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/TCP(sport=25,dport=99)/("X"*480)',
             "action": "check_hash_same",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_tcp_toeplitz_basic_pkt["ipv6-next-proto-tcp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrRouting()/IPv6ExtHdrHopByHop"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting()/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrRouting()/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=25,dport=99)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": mac_ipv6_tcp_toeplitz_non_basic_pkt,
-            "action": "check_no_hash",
         },
     ],
     "post-test": [
@@ -3457,30 +3770,6 @@ mac_ipv6_tcp_l2src_l2dst = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_tcp_toeplitz_basic_pkt["ipv6-next-proto-tcp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrRouting()/IPv6ExtHdrHopByHop"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting()/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting()/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting()/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrRouting()/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=25,dport=99)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_tcp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -3510,22 +3799,6 @@ mac_ipv6_tcp_l3_src = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/TCP(sport=32,dport=33)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_tcp_toeplitz_basic_pkt["ipv6-next-proto-tcp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrSegmentRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting(nh=6)/TCP(sport=32,dport=33)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -3562,22 +3835,6 @@ mac_ipv6_tcp_l3_dst = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_tcp_toeplitz_basic_pkt["ipv6-next-proto-tcp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrSegmentRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=32,dport=33)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_tcp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -3608,22 +3865,6 @@ mac_ipv6_tcp_l3src_l4src = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/TCP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_tcp_toeplitz_basic_pkt["ipv6-next-proto-tcp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrHopByHop"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=33)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -3660,22 +3901,6 @@ mac_ipv6_tcp_l3src_l4dst = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_tcp_toeplitz_basic_pkt["ipv6-next-proto-tcp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrHopByHop"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_tcp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -3706,22 +3931,6 @@ mac_ipv6_tcp_l3dst_l4src = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_tcp_toeplitz_basic_pkt["ipv6-next-proto-tcp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrHopByHop"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=6)/TCP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=6)/TCP(sport=22,dport=33)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -3758,22 +3967,6 @@ mac_ipv6_tcp_l3dst_l4dst = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_tcp_toeplitz_basic_pkt["ipv6-next-proto-tcp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=6)/TCP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=6)/TCP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_tcp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -3807,18 +4000,6 @@ mac_ipv6_tcp_l4_src = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6-next-proto-tcp"],
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_tcp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -3849,18 +4030,6 @@ mac_ipv6_tcp_l4_dst = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/TCP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6-next-proto-tcp"],
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=32,dport=23)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -3909,30 +4078,6 @@ mac_ipv6_tcp_all = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6-next-proto-tcp"],
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_tcp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -3969,22 +4114,6 @@ mac_ipv6_tcp_ipv6 = {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=32,dport=33)/("X"*480)',
             "action": "check_hash_same",
         },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_tcp_toeplitz_basic_pkt["ipv6-next-proto-tcp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrSegmentRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
     ],
     "post-test": [
         {
@@ -4000,6 +4129,449 @@ mac_ipv6_tcp_ipv6 = {
 mac_ipv6_tcp_l4_chksum = eval(
     str(mac_ipv6_udp_l4_chksum)
     .replace("mac_ipv6_udp", "mac_ipv6_tcp")
+    .replace("ipv6 / udp", "ipv6 / tcp")
+    .replace("/UDP(sport=", "/TCP(sport=")
+    .replace("nh=17", "nh=6")
+)
+
+# mac_ipv6_next_proto_tcp
+mac_ipv6_next_proto_tcp_l2_src = {
+    "sub_casename": "mac_ipv6_next_proto_tcp_l2_src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_destopt_tcp"],
+            "action": {"save_hash": "ipv6_destopt_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=6)/TCP(sport=25,dport=99)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_destopt_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=6)/TCP(sport=22,dport=23)/Raw("x"*40)',
+            "action": {"check_hash_same": "ipv6_destopt_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=16)/TCP(sport=22,dport=23)/Raw("x"*40)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_destopt_tcp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_tcp_l2_dst = {
+    "sub_casename": "mac_ipv6_next_proto_tcp_l2_dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss types eth l2-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_routing_tcp"],
+            "action": {"save_hash": "ipv6_destopt_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=6)/TCP(sport=25,dport=99)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_destopt_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=6)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_destopt_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=132)/TCP(sport=22,dport=23)/Raw("x"*40)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_destopt_tcp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_tcp_l2src_l2dst = {
+    "sub_casename": "mac_ipv6_next_proto_tcp_l2src_l2dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss types eth end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_destopt_tcp"],
+            "action": {"save_hash": "ipv6_destopt_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=6)/TCP(sport=25,dport=99)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_destopt_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/TCP(sport=22,dport=23)/Raw("x"*40)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": [
+                mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_destopt_tcp"][0],
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_tcp_l3_src = {
+    "sub_casename": "mac_ipv6_next_proto_tcp_l3_src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss types ipv6-tcp l3-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_routing_tcp"],
+            "action": {"save_hash": "ipv6_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=6)/TCP(sport=32,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=16)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_routing_tcp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_tcp_l3_dst = {
+    "sub_casename": "mac_ipv6_next_proto_tcp_l3_dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss types ipv6-tcp l3-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_routing_tcp"],
+            "action": {"save_hash": "ipv6_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=6)/TCP(sport=32,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=132)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_routing_tcp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_tcp_l3src_l4src = {
+    "sub_casename": "mac_ipv6_next_proto_tcp_l3src_l4src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss types ipv6-tcp l3-src-only l4-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_hopbyhop_tcp"],
+            "action": {"save_hash": "ipv6_hopbyhop_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_hopbyhop_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_hopbyhop_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=17)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_hopbyhop_tcp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_tcp_l3src_l4dst = {
+    "sub_casename": "mac_ipv6_next_proto_tcp_l3src_l4dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss types ipv6-tcp l3-src-only l4-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_hopbyhop_tcp"],
+            "action": {"save_hash": "ipv6_hopbyhop_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_hopbyhop_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_hopbyhop_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_hopbyhop_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=132)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_hopbyhop_tcp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_tcp_l3dst_l4src = {
+    "sub_casename": "mac_ipv6_next_proto_tcp_l3dst_l4src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss types ipv6-tcp l3-dst-only l4-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_segment_routing_tcp"],
+            "action": {"save_hash": "ipv6_segment_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting(nh=6)/TCP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_segment_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=6)/TCP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_segment_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting()/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_segment_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting()/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_no_hash": "ipv6_segment_routing_tcp"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_segment_routing_tcp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_tcp_l3dst_l4dst = {
+    "sub_casename": "mac_ipv6_next_proto_tcp_l3dst_l4dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss types ipv6-tcp l3-dst-only l4-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_segment_routing_tcp"],
+            "action": {"save_hash": "ipv6_segment_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting(nh=6)/TCP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_segment_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=6)/SCTP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_segment_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=132)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_no_hash": "ipv6_segment_routing_tcp"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_segment_routing_tcp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_tcp_l4_src = {
+    "sub_casename": "mac_ipv6_next_proto_tcp_l4_src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss types ipv6-tcp l4-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_segment_routing_tcp"],
+            "action": {"save_hash": "ipv6_segment_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=6)/TCP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_segment_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting()/IPv6ExtHdrDestOpt()/TCP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_segment_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting()/IPv6ExtHdrDestOpt(nh=132)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_segment_routing_tcp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_tcp_l4_dst = {
+    "sub_casename": "mac_ipv6_next_proto_tcp_l4_dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss types ipv6-tcp l4-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_segment_routing_tcp"],
+            "action": {"save_hash": "ipv6_segment_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=6)/TCP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_segment_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting()/IPv6ExtHdrSegmentRouting(nh=6)/SCTP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_segment_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting()/IPv6ExtHdrSegmentRouting(nh=17)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_segment_routing_tcp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_tcp_all = {
+    "sub_casename": "mac_ipv6_next_proto_tcp_all",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss types ipv6-tcp end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_routing_tcp"],
+            "action": {"save_hash": "ipv6_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=6)/TCP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=6)/TCP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_routing_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=132)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_routing_tcp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_tcp_ipv6 = {
+    "sub_casename": "mac_ipv6_next_proto_tcp_ipv6",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss types ipv6 end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_hopbyhop_tcp"],
+            "action": {"save_hash": "ipv6_hopbyhop_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_hopbyhop_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_hopbyhop_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting(nh=6)/UDP(sport=32,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_hopbyhop_tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrHopByHop(nh=132)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": [
+                mac_ipv6_tcp_toeplitz_basic_pkt["ipv6_hopbyhop_tcp"][0],
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_tcp_l4_chksum = eval(
+    str(mac_ipv6_next_proto_udp_l4_chksum)
+    .replace("mac_ipv6_next_proto_udp", "mac_ipv6_next_proto_tcp")
     .replace("ipv6 / udp", "ipv6 / tcp")
     .replace("/UDP(sport=", "/TCP(sport=")
     .replace("nh=17", "nh=6")
@@ -4021,22 +4593,6 @@ mac_ipv6_sctp_l2_src = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/SCTP(sport=25,dport=99)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_sctp_toeplitz_basic_pkt["ipv6-next-proto-sctp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrSegmentRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrSegmentRouting(nh=132)/SCTP(sport=25,dport=99)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -4069,22 +4625,6 @@ mac_ipv6_sctp_l2_dst = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/SCTP(sport=25,dport=99)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_sctp_toeplitz_basic_pkt["ipv6-next-proto-sctp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrSegmentRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrSegmentRouting(nh=132)/SCTP(sport=25,dport=99)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -4128,30 +4668,6 @@ mac_ipv6_sctp_l2src_l2dst = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_sctp_toeplitz_basic_pkt["ipv6-next-proto-sctp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrSegmentRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrSegmentRouting(nh=132)/SCTP(sport=25,dport=99)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_sctp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -4181,22 +4697,6 @@ mac_ipv6_sctp_l3_src = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/SCTP(sport=32,dport=33)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_sctp_toeplitz_basic_pkt["ipv6-next-proto-sctp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=132)/SCTP(sport=32,dport=33)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -4233,22 +4733,6 @@ mac_ipv6_sctp_l3_dst = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_sctp_toeplitz_basic_pkt["ipv6-next-proto-sctp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=132)/SCTP(sport=32,dport=33)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_sctp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -4279,22 +4763,6 @@ mac_ipv6_sctp_l3src_l4src = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/SCTP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_sctp_toeplitz_basic_pkt["ipv6-next-proto-sctp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=132)/SCTP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=33)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -4331,22 +4799,6 @@ mac_ipv6_sctp_l3src_l4dst = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_sctp_toeplitz_basic_pkt["ipv6-next-proto-sctp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrHopByHop"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=132)/SCTP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=132)/SCTP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_sctp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -4377,22 +4829,6 @@ mac_ipv6_sctp_l3dst_l4src = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_sctp_toeplitz_basic_pkt["ipv6-next-proto-sctp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrHopByHop"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=132)/SCTP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=132)/SCTP(sport=22,dport=33)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -4429,22 +4865,6 @@ mac_ipv6_sctp_l3dst_l4dst = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_sctp_toeplitz_basic_pkt["ipv6-next-proto-sctp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrHopByHop"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=132)/SCTP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=132)/SCTP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_sctp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -4478,22 +4898,6 @@ mac_ipv6_sctp_l4_src = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_sctp_toeplitz_basic_pkt["ipv6-next-proto-sctp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting(nh=132)/SCTP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_sctp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -4524,22 +4928,6 @@ mac_ipv6_sctp_l4_dst = {
         },
         {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/SCTP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_sctp_toeplitz_basic_pkt["ipv6-next-proto-sctp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting(nh=132)/SCTP(sport=32,dport=23)/("X"*480)',
             "action": "check_hash_same",
         },
         {
@@ -4588,34 +4976,6 @@ mac_ipv6_sctp_all = {
             "action": "check_hash_same",
         },
         {
-            "send_packet": eval(
-                str(mac_ipv6_sctp_toeplitz_basic_pkt["ipv6-next-proto-sctp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting(nh=132)/SCTP(sport=32,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=33)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_same",
-        },
-        {
             "send_packet": mac_ipv6_sctp_toeplitz_non_basic_pkt,
             "action": "check_no_hash",
         },
@@ -4652,22 +5012,6 @@ mac_ipv6_sctp_ipv6 = {
             "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=32,dport=33)/("X"*480)',
             "action": "check_hash_same",
         },
-        {
-            "send_packet": eval(
-                str(mac_ipv6_sctp_toeplitz_basic_pkt["ipv6-next-proto-sctp"]).replace(
-                    "IPv6ExtHdrDestOpt", "IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting"
-                )
-            ),
-            "action": "save_hash",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
-            "action": "check_hash_different",
-        },
     ],
     "post-test": [
         {
@@ -4683,6 +5027,466 @@ mac_ipv6_sctp_ipv6 = {
 mac_ipv6_sctp_l4_chksum = eval(
     str(mac_ipv6_udp_l4_chksum)
     .replace("mac_ipv6_udp", "mac_ipv6_sctp")
+    .replace("/SCTP(sport=", "/TCP(sport=")
+    .replace("ipv6 / udp", "ipv6 / sctp")
+    .replace("/UDP(sport=", "/SCTP(sport=")
+    .replace("nh=17", "nh=132")
+)
+
+# mac_ipv6_next_proto_sctp
+mac_ipv6_next_proto_sctp_l2_src = {
+    "sub_casename": "mac_ipv6_next_proto_sctp_l2_src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss types eth l2-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_destopt_sctp"],
+            "action": {"save_hash": "ipv6_destopt_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=25,dport=99)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_destopt_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/Raw("x"*40)',
+            "action": {"check_hash_same": "ipv6_destopt_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=16)/SCTP(sport=22,dport=23)/Raw("x"*40)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_destopt_sctp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_sctp_l2_dst = {
+    "sub_casename": "mac_ipv6_next_proto_sctp_l2_dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss types eth l2-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_routing_sctp"],
+            "action": {"save_hash": "ipv6_destopt_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=25,dport=99)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_destopt_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=132)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_destopt_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=17)/SCTP(sport=22,dport=23)/Raw("x"*40)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_destopt_sctp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_sctp_l2src_l2dst = {
+    "sub_casename": "mac_ipv6_next_proto_sctp_l2src_l2dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss types eth end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_destopt_sctp"],
+            "action": {"save_hash": "ipv6_destopt_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_destopt_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=25,dport=99)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_destopt_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=6)/SCTP(sport=22,dport=23)/Raw("x"*40)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": [
+                mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_destopt_sctp"][0],
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_sctp_l3_src = {
+    "sub_casename": "mac_ipv6_next_proto_sctp_l3_src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss types ipv6-sctp l3-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_routing_sctp"],
+            "action": {"save_hash": "ipv6_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=132)/SCTP(sport=32,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=16)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_routing_sctp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_sctp_l3_dst = {
+    "sub_casename": "mac_ipv6_next_proto_sctp_l3_dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss types ipv6-sctp l3-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_routing_sctp"],
+            "action": {"save_hash": "ipv6_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=132)/SCTP(sport=32,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_routing_sctp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_sctp_l3src_l4src = {
+    "sub_casename": "mac_ipv6_next_proto_sctp_l3src_l4src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss types ipv6-sctp l3-src-only l4-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_hopbyhop_sctp"],
+            "action": {"save_hash": "ipv6_hopbyhop_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=132)/SCTP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_hopbyhop_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=132)/SCTP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_hopbyhop_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_hopbyhop_sctp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_sctp_l3src_l4dst = {
+    "sub_casename": "mac_ipv6_next_proto_sctp_l3src_l4dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss types ipv6-sctp l3-src-only l4-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_hopbyhop_sctp"],
+            "action": {"save_hash": "ipv6_hopbyhop_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=132)/SCTP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_hopbyhop_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=132)/SCTP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_hopbyhop_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=132)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_hopbyhop_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=17)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_hopbyhop_sctp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_sctp_l3dst_l4src = {
+    "sub_casename": "mac_ipv6_next_proto_sctp_l3dst_l4src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss types ipv6-sctp l3-dst-only l4-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt[
+                "ipv6_segment_routing_sctp"
+            ],
+            "action": {"save_hash": "ipv6_segment_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting(nh=132)/SCTP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_segment_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=132)/SCTP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_segment_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting()/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_segment_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting()/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_no_hash": "ipv6_segment_routing_sctp"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt[
+                "ipv6_segment_routing_sctp"
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_sctp_l3dst_l4dst = {
+    "sub_casename": "mac_ipv6_next_proto_sctp_l3dst_l4dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss types ipv6-sctp l3-dst-only l4-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt[
+                "ipv6_segment_routing_sctp"
+            ],
+            "action": {"save_hash": "ipv6_segment_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting(nh=132)/SCTP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_segment_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=132)/UDP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_segment_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_no_hash": "ipv6_segment_routing_sctp"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt[
+                "ipv6_segment_routing_sctp"
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_sctp_l4_src = {
+    "sub_casename": "mac_ipv6_next_proto_sctp_l4_src",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss types ipv6-sctp l4-src-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt[
+                "ipv6_segment_routing_sctp"
+            ],
+            "action": {"save_hash": "ipv6_segment_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=132)/SCTP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_segment_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting()/IPv6ExtHdrDestOpt()/SCTP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_segment_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting()/IPv6ExtHdrDestOpt(nh=17)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt[
+                "ipv6_segment_routing_sctp"
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_sctp_l4_dst = {
+    "sub_casename": "mac_ipv6_next_proto_sctp_l4_dst",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss types ipv6-sctp l4-dst-only end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt[
+                "ipv6_segment_routing_sctp"
+            ],
+            "action": {"save_hash": "ipv6_segment_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=132)/SCTP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_segment_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting()/IPv6ExtHdrSegmentRouting(nh=132)/UDP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_segment_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrSegmentRouting()/IPv6ExtHdrSegmentRouting(nh=6)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt[
+                "ipv6_segment_routing_sctp"
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_sctp_all = {
+    "sub_casename": "mac_ipv6_next_proto_sctp_all",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss types ipv6-sctp end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_routing_sctp"],
+            "action": {"save_hash": "ipv6_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=132)/SCTP(sport=32,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=33)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_routing_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrRouting(nh=17)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_routing_sctp"],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_sctp_ipv6 = {
+    "sub_casename": "mac_ipv6_next_proto_sctp_ipv6",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss types ipv6 end key_len 0 queues end / end",
+    "test": [
+        {
+            "send_packet": mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_hopbyhop_sctp"],
+            "action": {"save_hash": "ipv6_hopbyhop_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_hopbyhop_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/IPv6ExtHdrHopByHop(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6_hopbyhop_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop()/IPv6ExtHdrRouting(nh=132)/TCP(sport=32,dport=33)/("X"*480)',
+            "action": {"check_hash_same": "ipv6_hopbyhop_sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrHopByHop(nh=17)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": "check_no_hash",
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": [
+                mac_ipv6_sctp_toeplitz_basic_pkt["ipv6_hopbyhop_sctp"][0],
+            ],
+            "action": "check_no_hash",
+        },
+    ],
+}
+
+mac_ipv6_next_proto_sctp_l4_chksum = eval(
+    str(mac_ipv6_next_proto_udp_l4_chksum)
+    .replace("mac_ipv6_next_proto_udp", "mac_ipv6_next_proto_sctp")
     .replace("/SCTP(sport=", "/TCP(sport=")
     .replace("ipv6 / udp", "ipv6 / sctp")
     .replace("/UDP(sport=", "/SCTP(sport=")
@@ -4752,6 +5556,15 @@ mac_ipv6 = [
     mac_ipv6_all,
 ]
 
+mac_ipv6_next_proto = [
+    mac_ipv6_next_proto_l2_src,
+    mac_ipv6_next_proto_l2_dst,
+    mac_ipv6_next_proto_l2src_l2dst,
+    mac_ipv6_next_proto_l3_src,
+    mac_ipv6_next_proto_l3_dst,
+    mac_ipv6_next_proto_all,
+]
+
 mac_ipv6_udp = [
     mac_ipv6_udp_l2_src,
     mac_ipv6_udp_l2_dst,
@@ -4768,6 +5581,23 @@ mac_ipv6_udp = [
     mac_ipv6_udp_ipv6,
 ]
 mac_ipv6_udp_l4_chksum = [mac_ipv6_udp_l4_chksum]
+
+mac_ipv6_next_proto_udp = [
+    mac_ipv6_next_proto_udp_l2_src,
+    mac_ipv6_next_proto_udp_l2_dst,
+    mac_ipv6_next_proto_udp_l2src_l2dst,
+    mac_ipv6_next_proto_udp_l3_src,
+    mac_ipv6_next_proto_udp_l3_dst,
+    mac_ipv6_next_proto_udp_l3src_l4src,
+    mac_ipv6_next_proto_udp_l3src_l4dst,
+    mac_ipv6_next_proto_udp_l3dst_l4src,
+    mac_ipv6_next_proto_udp_l3dst_l4dst,
+    mac_ipv6_next_proto_udp_l4_src,
+    mac_ipv6_next_proto_udp_l4_dst,
+    mac_ipv6_next_proto_udp_all,
+    mac_ipv6_next_proto_udp_ipv6,
+]
+mac_ipv6_next_proto_udp_l4_chksum = [mac_ipv6_next_proto_udp_l4_chksum]
 
 mac_ipv6_tcp = [
     mac_ipv6_tcp_l2_src,
@@ -4786,6 +5616,23 @@ mac_ipv6_tcp = [
 ]
 mac_ipv6_tcp_l4_chksum = [mac_ipv6_tcp_l4_chksum]
 
+mac_ipv6_next_proto_tcp = [
+    mac_ipv6_next_proto_tcp_l2_src,
+    mac_ipv6_next_proto_tcp_l2_dst,
+    mac_ipv6_next_proto_tcp_l2src_l2dst,
+    mac_ipv6_next_proto_tcp_l3_src,
+    mac_ipv6_next_proto_tcp_l3_dst,
+    mac_ipv6_next_proto_tcp_l3src_l4src,
+    mac_ipv6_next_proto_tcp_l3src_l4dst,
+    mac_ipv6_next_proto_tcp_l3dst_l4src,
+    mac_ipv6_next_proto_tcp_l3dst_l4dst,
+    mac_ipv6_next_proto_tcp_l4_src,
+    mac_ipv6_next_proto_tcp_l4_dst,
+    mac_ipv6_next_proto_tcp_all,
+    mac_ipv6_next_proto_tcp_ipv6,
+]
+mac_ipv6_next_proto_tcp_l4_chksum = [mac_ipv6_next_proto_tcp_l4_chksum]
+
 mac_ipv6_sctp = [
     mac_ipv6_sctp_l2_src,
     mac_ipv6_sctp_l2_dst,
@@ -4802,6 +5649,23 @@ mac_ipv6_sctp = [
     mac_ipv6_sctp_ipv6,
 ]
 mac_ipv6_sctp_l4_chksum = [mac_ipv6_sctp_l4_chksum]
+
+mac_ipv6_next_proto_sctp = [
+    mac_ipv6_next_proto_sctp_l2_src,
+    mac_ipv6_next_proto_sctp_l2_dst,
+    mac_ipv6_next_proto_sctp_l2src_l2dst,
+    mac_ipv6_next_proto_sctp_l3_src,
+    mac_ipv6_next_proto_sctp_l3_dst,
+    mac_ipv6_next_proto_sctp_l3src_l4src,
+    mac_ipv6_next_proto_sctp_l3src_l4dst,
+    mac_ipv6_next_proto_sctp_l3dst_l4src,
+    mac_ipv6_next_proto_sctp_l3dst_l4dst,
+    mac_ipv6_next_proto_sctp_l4_src,
+    mac_ipv6_next_proto_sctp_l4_dst,
+    mac_ipv6_next_proto_sctp_all,
+    mac_ipv6_next_proto_sctp_ipv6,
+]
+mac_ipv6_next_proto_sctp_l4_chksum = [mac_ipv6_next_proto_sctp_l4_chksum]
 
 # symmetric related data start
 mac_ipv4_symmetric = {
@@ -5151,14 +6015,6 @@ mac_ipv6_symmetric = {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/("X"*480)',
             "action": {"check_hash_different": "ipv4-nonfrag"},
         },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)',
-            "action": {"save_hash": "ipv6-next-proto"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)',
-            "action": {"check_hash_same": "ipv6-next-proto"},
-        },
     ],
     "post-test": [
         {
@@ -5219,14 +6075,6 @@ mac_ipv6_udp_symmetric = {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)',
             "action": {"check_hash_different": "ipv6-tcp"},
         },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
-            "action": {"save_hash": "ipv6-next-proto-udp"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
-            "action": {"check_hash_same": "ipv6-next-proto-udp"},
-        },
     ],
     "post-test": [
         {
@@ -5271,14 +6119,6 @@ mac_ipv6_tcp_symmetric = {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)',
             "action": {"check_hash_different": "ipv6-udp"},
         },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
-            "action": {"save_hash": "ipv6-next-proto-tcp"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
-            "action": {"check_hash_same": "ipv6-next-proto-tcp"},
-        },
     ],
     "post-test": [
         {
@@ -5315,14 +6155,6 @@ mac_ipv6_sctp_symmetric = {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=22,dport=23)/("X"*480)',
             "action": {"check_hash_same": "ipv6-sctp"},
         },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
-            "action": {"save_hash": "ipv6-next-proto-sctp"},
-        },
-        {
-            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
-            "action": {"check_hash_same": "ipv6-next-proto-sctp"},
-        },
     ],
     "post-test": [
         {
@@ -5332,6 +6164,158 @@ mac_ipv6_sctp_symmetric = {
         {
             "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=22,dport=23)/("X"*480)',
             "action": {"check_no_hash_or_different": "ipv6-sctp-post"},
+        },
+    ],
+}
+
+mac_ipv6_next_proto_symmetric = {
+    "sub_casename": "mac_ipv6_next_proto_symmetric",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / end actions rss func symmetric_toeplitz types ipv6 end key_len 0 queues end / end",
+    "pre-test": [
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)',
+            "action": {"save_hash": "ipv6-next-proto"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)',
+            "action": {"check_hash_different": "ipv6-next-proto"},
+        },
+    ],
+    "test": [
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)',
+            "action": {"save_hash": "ipv6-next-proto"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)',
+            "action": {"check_hash_same": "ipv6-next-proto"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt(nh=123)/("X"*480)',
+            "action": {"check_no_hash_or_different": "ipv6-next-proto"},
+        },
+    ],
+}
+
+mac_ipv6_next_proto_udp_symmetric = {
+    "sub_casename": "mac_ipv6_next_proto_udp_symmetric",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions rss func symmetric_toeplitz types ipv6-udp end key_len 0 queues end / end",
+    "pre-test": [
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"save_hash": "ipv6-next-proto-udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6-next-proto-udp"},
+        },
+    ],
+    "test": [
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"save_hash": "ipv6-next-proto-udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6-next-proto-udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=6)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"save_hash": "ipv6-next-proto-tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=6)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6-next-proto-tcp"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrSegmentRouting(nh=17)/UDP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_no_hash_or_different": "ipv6-next-proto-udp"},
+        },
+    ],
+}
+
+mac_ipv6_next_proto_tcp_symmetric = {
+    "sub_casename": "mac_ipv6_next_proto_tcp_symmetric",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss func symmetric_toeplitz types ipv6-tcp end key_len 0 queues end / end",
+    "pre-test": [
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"save_hash": "ipv6-next-proto-tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6-next-proto-tcp"},
+        },
+    ],
+    "test": [
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"save_hash": "ipv6-next-proto-tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6-next-proto-tcp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=132)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"save_hash": "ipv6-next-proto-sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=132)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6-next-proto-sctp"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrHopByHop(nh=6)/TCP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_no_hash_or_different": "ipv6-next-proto-tcp"},
+        },
+    ],
+}
+
+mac_ipv6_next_proto_sctp_symmetric = {
+    "sub_casename": "mac_ipv6_next_proto_sctp_symmetric",
+    "port_id": 0,
+    "rule": "flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss func symmetric_toeplitz types ipv6-sctp end key_len 0 queues end / end",
+    "pre-test": [
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"save_hash": "ipv6-next-proto-sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6-next-proto-sctp"},
+        },
+    ],
+    "test": [
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"save_hash": "ipv6-next-proto-sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_same": "ipv6-next-proto-sctp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=17)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"save_hash": "ipv6-next-proto-udp"},
+        },
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=17)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_hash_different": "ipv6-next-proto-udp"},
+        },
+    ],
+    "post-test": [
+        {
+            "send_packet": 'Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrDestOpt()/IPv6ExtHdrDestOpt(nh=132)/SCTP(sport=22,dport=23)/("X"*480)',
+            "action": {"check_no_hash_or_different": "ipv6-next-proto-sctp"},
         },
     ],
 }
@@ -5748,7 +6732,7 @@ ipv6_64bit_prefix = [
 ]
 
 
-class AdvancedRSSTest(TestCase):
+class ICEAdvancedRSSTest(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -5861,6 +6845,30 @@ class AdvancedRSSTest(TestCase):
         self.pmd_output.execute_cmd("rx_vxlan_port add 4789 0")
         self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_sctp)
 
+    @skip_unsupported_pkg("os default")
+    def test_mac_ipv6_next_proto(self):
+        self.switch_testpmd(symmetric=False)
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_next_proto)
+
+    @skip_unsupported_pkg("os default")
+    def test_mac_ipv6_next_proto_udp(self):
+
+        self.switch_testpmd(symmetric=False)
+        self.pmd_output.execute_cmd("rx_vxlan_port add 4789 0")
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_next_proto_udp)
+
+    @skip_unsupported_pkg("os default")
+    def test_mac_ipv6_next_proto_tcp(self):
+        self.switch_testpmd(symmetric=False)
+        self.pmd_output.execute_cmd("rx_vxlan_port add 4789 0")
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_next_proto_tcp)
+
+    @skip_unsupported_pkg("os default")
+    def test_mac_ipv6_next_proto_sctp(self):
+        self.switch_testpmd(symmetric=False)
+        self.pmd_output.execute_cmd("rx_vxlan_port add 4789 0")
+        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_next_proto_sctp)
+
     def test_mac_ipv4_ipv4_chksum(self):
         self.switch_testpmd(symmetric=False)
         self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_ipv4_chksum)
@@ -5888,6 +6896,27 @@ class AdvancedRSSTest(TestCase):
     def test_mac_ipv6_sctp_l4_chksum(self):
         self.switch_testpmd(symmetric=False)
         self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_sctp_l4_chksum)
+
+    @skip_unsupported_pkg("os default")
+    def test_mac_ipv6_next_proto_udp_l4_chksum(self):
+        self.switch_testpmd(symmetric=False)
+        self.rssprocess.handle_rss_distribute_cases(
+            cases_info=mac_ipv6_next_proto_udp_l4_chksum
+        )
+
+    @skip_unsupported_pkg("os default")
+    def test_mac_ipv6_next_proto_tcp_l4_chksum(self):
+        self.switch_testpmd(symmetric=False)
+        self.rssprocess.handle_rss_distribute_cases(
+            cases_info=mac_ipv6_next_proto_tcp_l4_chksum
+        )
+
+    @skip_unsupported_pkg("os default")
+    def test_mac_ipv6_next_proto_sctp_l4_chksum(self):
+        self.switch_testpmd(symmetric=False)
+        self.rssprocess.handle_rss_distribute_cases(
+            cases_info=mac_ipv6_next_proto_sctp_l4_chksum
+        )
 
     def test_symmetric_mac_ipv4(self):
         self.switch_testpmd(symmetric=2)
@@ -5923,6 +6952,35 @@ class AdvancedRSSTest(TestCase):
     def test_symmetric_mac_ipv6_sctp(self):
         self.switch_testpmd(symmetric=True)
         self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_sctp_symmetric)
+
+    @skip_unsupported_pkg("os default")
+    def test_symmetric_mac_ipv6_next_proto(self):
+        self.switch_testpmd(symmetric=2)
+        self.pmd_output.execute_cmd("rx_vxlan_port add 4789 0")
+        self.rssprocess.handle_rss_distribute_cases(
+            cases_info=mac_ipv6_next_proto_symmetric
+        )
+
+    @skip_unsupported_pkg("os default")
+    def test_symmetric_mac_ipv6_next_proto_udp(self):
+        self.switch_testpmd(symmetric=True)
+        self.rssprocess.handle_rss_distribute_cases(
+            cases_info=mac_ipv6_next_proto_udp_symmetric
+        )
+
+    @skip_unsupported_pkg("os default")
+    def test_symmetric_mac_ipv6_next_proto_tcp(self):
+        self.switch_testpmd(symmetric=True)
+        self.rssprocess.handle_rss_distribute_cases(
+            cases_info=mac_ipv6_next_proto_tcp_symmetric
+        )
+
+    @skip_unsupported_pkg("os default")
+    def test_symmetric_mac_ipv6_next_proto_sctp(self):
+        self.switch_testpmd(symmetric=True)
+        self.rssprocess.handle_rss_distribute_cases(
+            cases_info=mac_ipv6_next_proto_sctp_symmetric
+        )
 
     def test_32bit_ipv6_prefix(self):
         self.switch_testpmd(symmetric=True)
