@@ -2034,6 +2034,255 @@ sv_mac_test_drop_action = [
     tv_mac_ipv4_nvgre_eth_ipv4_tcp_l4_mask_drop,
 ]
 
+tv_mac_ipv4_vxlan_ipv4_frag = {
+    "name": "tv_mac_ipv4_vxlan_ipv4_frag",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions port_representor port_id 0 / end",
+    ],
+    "matched": {
+        "scapy_str": [
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3",frag=5)/TCP()/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3",frag=5)/Raw("x"*80)',
+        ],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": [2, 2]},
+    },
+    "mismatched": {
+        "scapy_str": [
+            'Ether()/IP(dst="192.168.0.2")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3",frag=5)/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=3)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3",frag=5)/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.4", dst="192.168.0.3",frag=5)/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.5",frag=5)/Raw("x"*80)',
+        ],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": [0, 0]},
+    },
+}
+
+tv_mac_ipv4_vxlan_ipv4_pay = {
+    "name": "tv_mac_ipv4_vxlan_ipv4_pay",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions port_representor port_id 0 / end",
+    ],
+    "matched": {
+        "scapy_str": [
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP()/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/Raw("x"*80)',
+        ],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": [2, 2]},
+    },
+    "mismatched": {
+        "scapy_str": [
+            'Ether(dst="68:05:ca:8d:ed:a3")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=2,frag=5)/("X"*480)',
+            'Ether()/IP(dst="192.168.0.2")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP()/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=3)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP()/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.4", dst="192.168.0.3")/TCP()/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.5")/TCP()/Raw("x"*80)',
+        ],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": [0, 0]},
+    },
+}
+
+tv_mac_ipv4_vxlan_ipv4_udp_pay = {
+    "name": "tv_mac_ipv4_vxlan_ipv4_udp_pay",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 50 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 50 dst is 23 / end actions port_representor port_id 0 / end",
+    ],
+    "matched": {
+        "scapy_str": [
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=50,dport=23) /Raw("x"*80)',
+        ],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": [1, 1]},
+    },
+    "mismatched": {
+        "scapy_str": [
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=20,dport=23) /Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=50,dport=19) /Raw("x"*80)',
+        ],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": [0, 0]},
+    },
+}
+
+tv_mac_ipv4_vxlan_ipv4_tcp = {
+    "name": "tv_mac_ipv4_vxlan_ipv4_tcp",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp src is 50 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp src is 50 dst is 23 / end actions port_representor port_id 0 / end",
+    ],
+    "matched": {
+        "scapy_str": [
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=50,dport=23)/Raw("x"*80)',
+        ],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": [1, 1]},
+    },
+    "mismatched": {
+        "scapy_str": [
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=29,dport=23)/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=50,dport=100)/Raw("x"*80)',
+        ],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": [0, 0]},
+    },
+}
+
+tv_mac_ipv4_vxlan_mac_ipv4_frag = {
+    "name": "tv_mac_ipv4_vxlan_mac_ipv4_frag",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions port_representor port_id 0 / end",
+    ],
+    "matched": {
+        "scapy_str": [
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3" ,frag=5)/TCP()/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3" ,frag=5)/Raw("x"*80)',
+        ],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": [2, 2]},
+    },
+    "mismatched": {
+        "scapy_str": [
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=29,dport=23)/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=50,dport=100)/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.2")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3" ,frag=5)/TCP()/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=3)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3" ,frag=5)/TCP()/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a9")/IP(src="192.168.0.2", dst="192.168.0.3" ,frag=5)/TCP()/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.4", dst="192.168.0.3" ,frag=5)/TCP()/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.5" ,frag=5)/TCP()/Raw("x"*80)',
+        ],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": [0, 0]},
+    },
+}
+
+tv_mac_ipv4_vxlan_mac_ipv4_pay = {
+    "name": "tv_mac_ipv4_vxlan_mac_ipv4_pay",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / end actions port_representor port_id 0 / end",
+    ],
+    "matched": {
+        "scapy_str": [
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3") /TCP()/Raw("x" * 80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3")/Raw("x" * 80)',
+        ],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": [2, 2]},
+    },
+    "mismatched": {
+        "scapy_str": [
+            'Ether()/IP(dst="192.168.0.2")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3") /TCP()/Raw("x" * 80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=3)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3") /TCP()/Raw("x" * 80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a9")/IP(src="192.168.0.2", dst="192.168.0.3") /TCP()/Raw("x" * 80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.4", dst="192.168.0.3") /TCP()/Raw("x" * 80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.5") /TCP()/Raw("x" * 80)',
+        ],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": [0, 0]},
+    },
+}
+
+tv_mac_ipv4_vxlan_mac_ipv4_udp_pay = {
+    "name": "tv_mac_ipv4_vxlan_mac_ipv4_udp_pay",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 50 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src is 50 dst is 23 / end actions port_representor port_id 0 / end",
+    ],
+    "matched": {
+        "scapy_str": [
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=50,dport=23)/Raw("x" * 80)',
+        ],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": [1, 1]},
+    },
+    "mismatched": {
+        "scapy_str": [
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=20,dport=23)/Raw("x" * 80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=50,dport=29)/Raw("x" * 80)',
+        ],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": [0, 0]},
+    },
+}
+
+tv_mac_ipv4_vxlan_mac_ipv4_tcp = {
+    "name": "tv_mac_ipv4_vxlan_mac_ipv4_tcp",
+    "rte_flow_pattern": [
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
+        "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / udp / vxlan vni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / tcp src is 25 dst is 23 / end actions port_representor port_id 0 / end",
+    ],
+    "matched": {
+        "scapy_str": [
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+        ],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": [1, 1]},
+    },
+    "mismatched": {
+        "scapy_str": [
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=20,dport=23)/Raw("x" * 80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=25,dport=19)/Raw("x" * 80)',
+        ],
+        "check_func": {
+            "func": rfc.check_vf_rx_packets_number,
+            "param": {"expect_port": [0, 3], "expect_queues": "null"},
+        },
+        "expect_results": {"expect_pkts": [0, 0]},
+    },
+}
+
 
 class ICEDCFSwitchFilterTest(TestCase):
     supported_nic = [
@@ -2156,7 +2405,7 @@ class ICEDCFSwitchFilterTest(TestCase):
         command = self.path + all_eal_param + " -- -i"
         return command
 
-    def launch_testpmd(self):
+    def launch_testpmd(self, is_vxlan=False):
         """
         launch testpmd with the command
         """
@@ -2167,6 +2416,8 @@ class ICEDCFSwitchFilterTest(TestCase):
         self.dut.send_expect("set promisc 0 off", "testpmd> ", 15)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
         self.dut.send_expect("set verbose 1", "testpmd> ", 15)
+        if is_vxlan:
+            self.dut.send_expect("rx_vxlan_port add 4789 0", "testpmd> ", 15)
 
     def send_packets(self, dic, session_name="", tx_iface=""):
         """
@@ -2380,11 +2631,12 @@ class ICEDCFSwitchFilterTest(TestCase):
             out_vfs.append(out)
         return out_vfs
 
-    def _rte_flow_validate_pattern(self, test_vector, launch_testpmd=True):
+    def _rte_flow_validate_pattern(self, test_vector, launch_testpmd=True, **kwargs):
 
+        vxlan = kwargs.get("is_vxlan")
         if launch_testpmd:
             # launch testpmd
-            self.launch_testpmd()
+            self.launch_testpmd(is_vxlan=vxlan)
         # validate a rule
         self.validate_switch_filter_rule(test_vector["rte_flow_pattern"])
         # create a rule
@@ -3221,6 +3473,40 @@ class ICEDCFSwitchFilterTest(TestCase):
                 self.dut.send_expect("flow flush 0", "testpmd> ")
         if False in test_result:
             self.verify(False, "some subcases failed, result %s" % test_result)
+
+    def test_mac_ipv4_vxlan_ipv4_frag(self):
+        self.setup_2pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_ipv4_vxlan_ipv4_frag, is_vxlan=True)
+
+    def test_mac_ipv4_vxlan_ipv4_pay(self):
+        self.setup_2pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_ipv4_vxlan_ipv4_pay, is_vxlan=True)
+
+    def test_mac_ipv4_vxlan_ipv4_udp_pay(self):
+        self.setup_2pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_ipv4_vxlan_ipv4_udp_pay, is_vxlan=True)
+
+    def test_mac_ipv4_vxlan_ipv4_tcp(self):
+        self.setup_2pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_ipv4_vxlan_ipv4_tcp, is_vxlan=True)
+
+    def test_mac_ipv4_vxlan_mac_ipv4_frag(self):
+        self.setup_2pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_ipv4_vxlan_mac_ipv4_frag, is_vxlan=True)
+
+    def test_mac_ipv4_vxlan_mac_ipv4_pay(self):
+        self.setup_2pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_ipv4_vxlan_mac_ipv4_pay, is_vxlan=True)
+
+    def test_mac_ipv4_vxlan_mac_ipv4_udp_pay(self):
+        self.setup_2pf_vfs_env()
+        self._rte_flow_validate_pattern(
+            tv_mac_ipv4_vxlan_mac_ipv4_udp_pay, is_vxlan=True
+        )
+
+    def test_mac_ipv4_vxlan_mac_ipv4_tcp(self):
+        self.setup_2pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_ipv4_vxlan_mac_ipv4_tcp, is_vxlan=True)
 
     def tear_down(self):
         """
