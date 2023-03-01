@@ -2,7 +2,6 @@
 # Copyright(c) 2010-2018 Intel Corporation
 #
 
-import re
 import time
 from time import sleep
 
@@ -17,48 +16,6 @@ from framework.test_case import TestCase, skip_unsupported_host_driver
 
 
 class TestIPPipeline(TestCase):
-    def get_flow_direction_param_of_tcpdump(self):
-        """
-        get flow dirction param depend on tcpdump version
-        """
-        param = ""
-        direct_param = r"(\s+)\[ (\S+) in\|out\|inout \]"
-        out = self.tester.send_expect("tcpdump -h", "# ")
-        for line in out.split("\n"):
-            m = re.match(direct_param, line)
-            if m:
-                opt = re.search("-Q", m.group(2))
-                if opt:
-                    param = "-Q" + " in"
-                else:
-                    opt = re.search("-P", m.group(2))
-                    if opt:
-                        param = "-P" + " in"
-        if len(param) == 0:
-            self.logger.info("tcpdump not support direction choice!!!")
-        return param
-
-    def tcpdump_start_sniff(self, interface, filters=""):
-        """
-        Starts tcpdump in the background to sniff packets that received by interface.
-        """
-        command = "rm -f /tmp/tcpdump_{0}.pcap".format(interface)
-        self.tester.send_expect(command, "#")
-        command = "tcpdump -n -e {0} -w /tmp/tcpdump_{1}.pcap -i {1} {2} 2>/tmp/tcpdump_{1}.out &".format(
-            self.param_flow_dir, interface, filters
-        )
-        self.tester.send_expect(command, "# ")
-
-    def tcpdump_stop_sniff(self):
-        """
-        Stops the tcpdump process running in the background.
-        """
-        self.tester.send_expect("killall tcpdump", "# ")
-        # For the [pid]+ Done tcpdump... message after killing the process
-        sleep(1)
-        self.tester.send_expect('echo "Cleaning buffer"', "# ")
-        sleep(1)
-
     def write_pcap_file(self, pcap_file, pkts):
         try:
             wrpcap(pcap_file, pkts)
@@ -74,7 +31,7 @@ class TestIPPipeline(TestCase):
 
         return pcap_pkts
 
-    def send_and_sniff_pkts(self, from_port, to_port, pcap_file, filters="", count=1):
+    def send_and_sniff_pkts(self, from_port, to_port, pcap_file, filters=[], count=1):
         """
         Sent pkts that read from the pcap_file.
         Return the sniff pkts.
@@ -85,7 +42,7 @@ class TestIPPipeline(TestCase):
         tx_interface = self.tester.get_interface(tx_port)
         rx_interface = self.tester.get_interface(rx_port)
 
-        self.tcpdump_start_sniff(rx_interface, filters)
+        inst = self.tester.tcpdump_sniff_packets(rx_interface, filters=filters)
 
         # check that the link status of the port sending the packet is up
         self.tester.is_interface_up(tx_interface)
@@ -100,9 +57,7 @@ class TestIPPipeline(TestCase):
         )
         self.tester.scapy_execute()
 
-        self.tcpdump_stop_sniff()
-
-        return self.read_pcap_file("/tmp/tcpdump_%s.pcap" % rx_interface)
+        return self.tester.load_tcpdump_sniff_packets(inst).pktgen.pkts
 
     def setup_env(self, port_nums, driver):
         """
@@ -217,7 +172,6 @@ class TestIPPipeline(TestCase):
         self.verify("Error" not in out, "Compilation error")
         self.app_ip_pipline_path = self.dut.apps_name["ip_pipeline"]
         self.app_testpmd_path = self.dut.apps_name["test-pmd"]
-        self.param_flow_dir = self.get_flow_direction_param_of_tcpdump()
 
     def set_up(self):
         """
@@ -261,7 +215,7 @@ class TestIPPipeline(TestCase):
         pcap_file = "/tmp/route_0.pcap"
         pkt = [Ether(dst=self.dut_p0_mac) / IP(dst="100.0.0.1") / Raw(load="X" * 26)]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "dst host 100.0.0.1"
+        filters = [{"layer": "network", "config": {"dsthost": "100.0.0.1"}}]
         sniff_pkts = self.send_and_sniff_pkts(0, 0, pcap_file, filters)
         dst_mac_list = []
         for packet in sniff_pkts:
@@ -272,7 +226,7 @@ class TestIPPipeline(TestCase):
         pcap_file = "/tmp/route_1.pcap"
         pkt = [Ether(dst=self.dut_p0_mac) / IP(dst="100.64.0.1") / Raw(load="X" * 26)]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "dst host 100.64.0.1"
+        filters = [{"layer": "network", "config": {"dsthost": "100.64.0.1"}}]
         sniff_pkts = self.send_and_sniff_pkts(0, 1, pcap_file, filters)
         dst_mac_list = []
         for packet in sniff_pkts:
@@ -283,7 +237,7 @@ class TestIPPipeline(TestCase):
         pcap_file = "/tmp/route_2.pcap"
         pkt = [Ether(dst=self.dut_p0_mac) / IP(dst="100.128.0.1") / Raw(load="X" * 26)]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "dst host 100.128.0.1"
+        filters = [{"layer": "network", "config": {"dsthost": "100.128.0.1"}}]
         sniff_pkts = self.send_and_sniff_pkts(0, 2, pcap_file, filters)
         dst_mac_list = []
         for packet in sniff_pkts:
@@ -294,7 +248,7 @@ class TestIPPipeline(TestCase):
         pcap_file = "/tmp/route_3.pcap"
         pkt = [Ether(dst=self.dut_p0_mac) / IP(dst="100.192.0.1") / Raw(load="X" * 26)]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "dst host 100.192.0.1"
+        filters = [{"layer": "network", "config": {"dsthost": "100.192.0.1"}}]
         sniff_pkts = self.send_and_sniff_pkts(0, 3, pcap_file, filters)
         dst_mac_list = []
         for packet in sniff_pkts:
@@ -346,7 +300,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "dst host 100.0.0.1"
+        filters = [{"layer": "network", "config": {"dsthost": "100.0.0.1"}}]
         sniff_pkts = self.send_and_sniff_pkts(0, 0, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -362,7 +316,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "dst host 100.64.0.1"
+        filters = [{"layer": "network", "config": {"dsthost": "100.64.0.1"}}]
         sniff_pkts = self.send_and_sniff_pkts(0, 1, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -378,7 +332,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "dst host 100.128.0.1"
+        filters = [{"layer": "network", "config": {"dsthost": "100.128.0.1"}}]
         sniff_pkts = self.send_and_sniff_pkts(0, 2, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -394,7 +348,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "dst host 100.192.0.1"
+        filters = [{"layer": "network", "config": {"dsthost": "100.192.0.1"}}]
         sniff_pkts = self.send_and_sniff_pkts(0, 3, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -446,7 +400,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(0, 0, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -462,7 +416,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(0, 1, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -478,7 +432,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(0, 2, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -494,7 +448,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(0, 3, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -546,7 +500,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(0, 1, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -562,7 +516,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(1, 0, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -578,7 +532,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(2, 3, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -594,7 +548,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(3, 2, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -680,7 +634,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(0, 1, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -696,7 +650,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(1, 0, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -712,7 +666,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(2, 3, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -728,7 +682,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(3, 2, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -792,7 +746,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(0, 1, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -808,7 +762,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(1, 0, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -824,7 +778,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(2, 3, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -840,7 +794,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(3, 2, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -893,7 +847,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(0, 1, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -909,7 +863,7 @@ class TestIPPipeline(TestCase):
             / Raw(load="X" * 6)
         ]
         self.write_pcap_file(pcap_file, pkt)
-        filters = "tcp"
+        filters = [{"layer": "userdefined", "config": {"pcap-filter": "tcp"}}]
         sniff_pkts = self.send_and_sniff_pkts(1, 0, pcap_file, filters)
         dst_ip_list = []
         for packet in sniff_pkts:
@@ -1041,8 +995,6 @@ class TestIPPipeline(TestCase):
         """
         Run after each test case.
         """
-        # kill all tcpdump
-        self.tcpdump_stop_sniff()
         # close app
         self.dut.send_expect("^C", "# ")
         self.dut.kill_all()
