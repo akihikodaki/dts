@@ -3459,8 +3459,7 @@
                 "ALL"
             ],
             "NIC": [
-                "IGC-I226_LM",
-                "IGC-I225_LM"
+                ""
             ],
             "Target": [
                 "ALL"
