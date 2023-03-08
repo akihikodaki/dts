@@ -2791,40 +2791,44 @@ are dropped.
 Test case: Max vfs
 ==================
 
-Description: 256 VFs can be created on a Intel® Ethernet 800 Series NIC, if 2*100G NIC, each PF
-can create 128 VFs, else if 4*25G NIC, each PF can create 64 VFs. This
-case is used to test when all VFs on a PF are used, switch filter rules can work.
+Description: This case is used to test when all VFs on a PF are used, switch filter rules can work.
 This case is designed based on 4*25G NIC.
 
-1. generate 64 VFs on PF::
+1. Query the maximum number of VF that can be created by each PF::
+
+     cat /sys/bus/pci/devices/0000\:18\:00.0/sriov_totalvfs
+
+   here sriov_totalvfs is 64.
+
+2. generate 64 VFs on PF::
 
      echo 64 > /sys/bus/pci/devices/0000:18:00.0/sriov_numvfs
 
-2. Get the interface name of the VFs, for example::
+3. Get the interface name of the VFs, for example::
 
      ./usertools/dpdk-devbind.py -s
 
      0000:18:01.1 'Ethernet Adaptive Virtual Function 1889' if=enp24s1f1 drv=iavf unused=igb_uio
 
-3. Start the 64 VFs in the kernel, for example::
+4. Start the 64 VFs in the kernel, for example::
 
      ifconfig enp24s1f1 up
 
-4. Set VF0 as trust::
+5. Set VF0 as trust::
 
      ip link set enp24s0f0 vf 0 trust on
 
-5. bind VF0 to dpdk driver::
+6. bind VF0 to dpdk driver::
 
      ./usertools/dpdk-devbind.py -b vfio-pci 0000:18:01.0
 
-6. launch dpdk on VF0, and request DCF mode, representing VF1 to VF63::
+7. launch dpdk on VF0, and request DCF mode, representing VF1 to VF63::
 
      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 \
      -a 0000:18:01.0,cap=dcf,representor=[1-63] \
      -- -i
 
-7. set a switch rule to each VF from DCF, totally 63 rules::
+8. set a switch rule to each VF from DCF, totally 63 rules::
 
      testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 / tcp / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 / tcp / end actions represented_port ethdev_port_id 2 / end
@@ -2835,7 +2839,7 @@ This case is designed based on 4*25G NIC.
 
    check the rules exist in the list.
 
-8. send matched packets::
+9. send matched packets::
 
      sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1")/TCP()/Raw("X"*480)], iface="ens786f0", count=1)
      sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2")/TCP()/Raw("X"*480)], iface="ens786f0", count=1)
@@ -2862,7 +2866,7 @@ This case is designed based on 4*25G NIC.
 
    check the packets are not to any VF.
 
-9. verify rules can be destroyed::
+10. verify rules can be destroyed::
 
      testpmd> flow flush 0
      testpmd> flow list 0
