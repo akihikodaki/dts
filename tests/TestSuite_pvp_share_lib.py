@@ -34,7 +34,6 @@ class TestPVPShareLib(TestCase):
         self.core_list_vhost_user = self.core_list[2:4]
         self.mem_channels = self.dut.get_memory_channels()
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
-        self.prepare_share_lib_env()
 
         self.out_path = "/tmp"
         out = self.tester.send_expect("ls -d %s" % self.out_path, "# ")
@@ -70,11 +69,6 @@ class TestPVPShareLib(TestCase):
         self.table_header.append("Queue Num")
         self.table_header.append("% linerate")
         self.result_table_create(self.table_header)
-
-    def prepare_share_lib_env(self):
-        self.dut.build_install_dpdk(
-            self.dut.target, extra_options="-Dc_args=-DRTE_BUILD_SHARED_LIB"
-        )
 
     def restore_env(self):
         self.dut.build_install_dpdk(self.dut.target)
@@ -166,21 +160,62 @@ class TestPVPShareLib(TestCase):
         self.dut.close_session(self.vhost_user)
         self.dut.close_session(self.virtio_user)
 
-    def test_perf_pvp_share_lib(self):
+    def test_perf_pvp_share_lib_for_intel_82599_series(self):
         """
-        Vhost/virtio-user pvp share lib test with Intel® Ethernet 82599/700 Series
+        Test Case 1: Vhost/virtio-user pvp share lib test with Intel® Ethernet 82599 Series
         """
         self.verify(
             self.nic
             in [
                 "IXGBE_10G-82599_SFP",
+                "IXGBE_10G-82599_T3_LOM",
+                "IXGBE_10G-82599_SFP_SF_QP",
+            ],
+            "the nic not support this case: %s" % self.running_case,
+        )
+        self.start_testpmd_as_vhost(driver="ixgbe")
+        self.start_testpmd_as_virtio()
+        self.send_and_verify()
+        self.result_table_print()
+        self.close_all_apps()
+
+    def test_perf_pvp_share_lib_for_intel_700_series(self):
+        """
+        Test Case 2: Vhost/virtio-user pvp share lib test with Intel® Ethernet 700 Series
+        """
+        self.verify(
+            self.nic
+            in [
                 "I40E_10G-SFP_XL710",
                 "I40E_40G-QSFP_A",
+                "I40E_40G-QSFP_B",
+                "I40E_10G-SFP_X722",
+                "I40E_10G-10G_BASE_T_X722",
                 "I40E_25G-25G_SFP28",
             ],
             "the nic not support this case: %s" % self.running_case,
         )
-        self.start_testpmd_as_vhost(driver=DRIVERS[self.nic])
+        self.start_testpmd_as_vhost(driver="i40e")
+        self.start_testpmd_as_virtio()
+        self.send_and_verify()
+        self.result_table_print()
+        self.close_all_apps()
+
+    def test_perf_pvp_share_lib_for_intel_800_series(self):
+        """
+        Test Case 3: Vhost/virtio-user pvp share lib test with Intel® Ethernet 800 Series
+        """
+        self.verify(
+            self.nic
+            in [
+                "ICE_100G-E810C_QSFP",
+                "ICE_25G-E810C_SFP",
+                "ICE_25G-E810_XXV_SFP",
+                "ICE_25G-E823C_QSFP",
+            ],
+            "the nic not support this case: %s" % self.running_case,
+        )
+        self.start_testpmd_as_vhost(driver="ice")
         self.start_testpmd_as_virtio()
         self.send_and_verify()
         self.result_table_print()
