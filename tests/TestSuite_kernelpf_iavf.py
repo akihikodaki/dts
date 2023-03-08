@@ -93,6 +93,9 @@ class TestKernelpfIavf(TestCase):
             self.destroy_vm_env()
         elif self.env_done is False:
             self.setup_vm_env()
+        self.dut.send_expect(
+            "ip link set %s vf 0 mac %s" % (self.host_intf, self.vf_mac), "# "
+        )
 
     def setup_vm_env(self, driver="default", set_vf_mac=True):
         """
