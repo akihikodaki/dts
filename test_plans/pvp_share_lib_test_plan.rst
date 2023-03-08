@@ -10,8 +10,8 @@ Description
 
 The feature need compile dpdk as shared libraries, then application should use option ``-d`` to load the dynamic pmd that are built as shared libraries.
 
-Test Case1: Vhost/virtio-user pvp share lib test with 82599
-===========================================================
+Test Case 1: Vhost/virtio-user pvp share lib test with Intel® Ethernet 82599 Series
+===================================================================================
 
 1. Enable the shared lib in DPDK configure file::
 
@@ -27,13 +27,13 @@ Test Case1: Vhost/virtio-user pvp share lib test with 82599
 
 4. Bind 82599 port with vfio-pci, use option ``-d`` to load the dynamic pmd when launch vhost::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd  -c 0x03 -n 4 -d librte_net_vhost.so.21.0 -d librte_net_i40e.so.21.0 -d librte_mempool_ring.so.21.0 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd  -c 0x03 -n 4 -d librte_net_vhost.so -d librte_net_ixgbe.so -d librte_mempool_ring.so \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i
     testpmd>start
 
 5. Launch virtio-user::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0c -n 4 -d librte_net_virtio.so.21.0 -d librte_mempool_ring.so.21.0 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x0c -n 4 -d librte_net_virtio.so -d librte_mempool_ring.so \
     --no-pci --file-prefix=virtio  --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net -- -i
     testpmd>start
 
@@ -41,13 +41,24 @@ Test Case1: Vhost/virtio-user pvp share lib test with 82599
 
     testpmd>show port stats all
 
-Test Case2: Vhost/virtio-user pvp share lib test with Intel® Ethernet 700 Series
-================================================================================
+Test Case 2: Vhost/virtio-user pvp share lib test with Intel® Ethernet 700 Series
+=================================================================================
 
 Similar as Test Case1, all steps are similar except step 4:
 
 4. Bind Intel® Ethernet 700 Series port with vfio-pci, use option ``-d`` to load the dynamic pmd when launch vhost::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd  -c 0x03 -n 4 -d librte_net_vhost.so -d librte_net_i40e.so -d librte_mempool_ring.so \
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i
+    testpmd>start
+
+Test Case 3: Vhost/virtio-user pvp share lib test with Intel® Ethernet 800 Series
+=================================================================================
+
+Similar as Test Case1, all steps are similar except step 4:
+
+4. Bind Intel® Ethernet 800 Series port with vfio-pci, use option ``-d`` to load the dynamic pmd when launch vhost::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd  -c 0x03 -n 4 -d librte_net_vhost.so -d librte_net_ice.so -d librte_mempool_ring.so \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i
     testpmd>start
