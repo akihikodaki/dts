@@ -3203,10 +3203,21 @@ class ICEDCFSwitchFilterTest(TestCase):
 
     def test_max_vfs(self):
         # get max vfs number
-        port_count = (1, 1, 2, 4, 4)[len(self.dut_ports)]
-        max_vf_number = int(256 / (port_count))
-        # set up max_vf_number vfs on 1 pf environment
         self.used_dut_port_0 = self.dut_ports[0]
+        self.domain_id_0 = self.dut.ports_info[self.used_dut_port_0]["port"].domain_id
+        self.bus_id_0 = self.dut.ports_info[self.used_dut_port_0]["port"].bus_id
+        self.devfun_id_0 = self.dut.ports_info[self.used_dut_port_0]["port"].devfun_id
+        cmd_max_vfs = (
+            "cat /sys/bus/pci/devices/"
+            + self.domain_id_0
+            + "\\:"
+            + self.bus_id_0
+            + "\\:"
+            + self.devfun_id_0
+            + "/sriov_totalvfs"
+        )
+        max_vf_number = int(self.dut.send_expect(cmd_max_vfs, "#"))
+        # set up max_vf_number vfs on 1 pf environment
         self.pf0_intf = self.dut.ports_info[self.used_dut_port_0]["intf"]
         out = self.dut.send_expect("ethtool -i %s" % self.pf0_intf, "#")
         # generate max_vf_number VFs on PF0
