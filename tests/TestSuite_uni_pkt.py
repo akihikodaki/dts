@@ -16,6 +16,7 @@ translate the offloaded packet types into these 7 fields of information, for
 user applications
 """
 
+import re
 import time
 
 import framework.utils as utils
@@ -59,10 +60,13 @@ class TestUniPacket(TestCase):
             pkt = Packet(pkt_type=pkt_type)
             pkt.send_pkt(self.tester, tx_port=self.tester_iface, count=4)
             out = self.dut.get_session_output(timeout=2)
+            pattern = re.compile(r"hw ptype: (.*?)sw")
+            hw_ptype = re.findall(pattern, out)
             for pkt_layer_name in pkt_names:
-                if pkt_layer_name not in out:
-                    print((utils.RED("Fail to detect %s" % pkt_layer_name)))
-                    raise VerifyFailure("Failed to detect %s" % pkt_layer_name)
+                for tag in hw_ptype:
+                    if pkt_layer_name.strip() not in tag:
+                        print((utils.RED("Fail to detect %s" % pkt_layer_name)))
+                        raise VerifyFailure("Failed to detect %s" % pkt_layer_name)
             print((utils.GREEN("Detected %s successfully" % pkt_type)))
 
     def test_l2pkt_detect(self):
