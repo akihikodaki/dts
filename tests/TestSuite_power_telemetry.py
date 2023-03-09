@@ -219,7 +219,7 @@ class TestPowerTelemetry(TestCase):
     def telemetry_query(self):
         json_name = "telemetry_data.json"
         json_file = os.path.join(self.target_dir, json_name)
-        pipe = "/var/run/some_client"
+        pipe = "/var/run/dpdk/default_client"
         cmd = "{0} -j {1} -f {2}".format(self.query_tool, json_file, pipe)
         output = self.d_a_con(cmd)
         msg = "failed to query metric data"
@@ -246,7 +246,7 @@ class TestPowerTelemetry(TestCase):
     def telemetry_query_on_traffic(self):
         json_name = "telemetry_data_on_traffic.json"
         json_file = os.path.join(self.target_dir, json_name)
-        pipe = "/var/run/some_client"
+        pipe = "/var/run/dpdk/default_client"
         cmd = "{0} -j {1} -f {2}".format(self.query_tool, json_file, pipe)
         output = self.d_a_con(cmd)
         dst_file = os.path.join(self.output_path, json_name)
