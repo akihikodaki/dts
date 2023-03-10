@@ -1090,6 +1090,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_10G-SFP_X722",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
             ],
             "%s nic not support 2-tuple filter" % self.nic,
         )
@@ -1113,6 +1114,7 @@ class TestGeneric_flow_api(TestCase):
             "I40E_10G-SFP_X722",
             "ICE_25G-E810C_SFP",
             "ICE_100G-E810C_QSFP",
+            "ICE_25G-E823C_QSFP",
         ]:
             basic_flow_actions = [
                 {
@@ -1206,6 +1208,7 @@ class TestGeneric_flow_api(TestCase):
                 "IGC-I226_LM",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
             ],
             "%s nic not support ethertype filter" % self.nic,
         )
@@ -1230,6 +1233,7 @@ class TestGeneric_flow_api(TestCase):
             "I40E_10G-10G_BASE_T_X722",
             "ICE_25G-E810C_SFP",
             "ICE_100G-E810C_QSFP",
+            "ICE_25G-E823C_QSFP",
         ]:
 
             basic_flow_actions = [
@@ -1325,6 +1329,7 @@ class TestGeneric_flow_api(TestCase):
                 "IGC-I226_LM",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
             ],
             "%s nic not support fdir L2 payload filter" % self.nic,
         )
@@ -1393,6 +1398,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_10G-10G_BASE_T_BC",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
             ],
             "%s nic not support fdir vlan filter" % self.nic,
         )
@@ -1525,6 +1531,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_10G-10G_BASE_T_BC",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
             ],
             "%s nic not support fdir vlan filter" % self.nic,
         )
@@ -1659,6 +1666,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_10G-10G_BASE_T_BC",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
             ],
             "%s nic not support fdir vlan filter" % self.nic,
         )
@@ -1793,6 +1801,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_10G-10G_BASE_T_BC",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
             ],
             "%s nic not support fdir vlan filter" % self.nic,
         )
@@ -1937,6 +1946,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_10G-10G_BASE_T_BC",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
             ],
             "%s nic not support fdir vlan filter" % self.nic,
         )
@@ -2272,6 +2282,7 @@ class TestGeneric_flow_api(TestCase):
                 "IGC-I226_LM",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
             ],
             "%s nic not support fdir vlan filter" % self.nic,
         )
@@ -2595,6 +2606,7 @@ class TestGeneric_flow_api(TestCase):
                 "IXGBE_10G-82599_SFP",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IXGBE_10G-X550T",
                 "I40E_10G-SFP_XL710",
@@ -2616,6 +2628,7 @@ class TestGeneric_flow_api(TestCase):
             "I40E_40G-QSFP_A",
             "ICE_25G-E810C_SFP",
             "ICE_100G-E810C_QSFP",
+            "ICE_25G-E823C_QSFP",
             "I40E_40G-QSFP_B",
             "I40E_10G-SFP_X722",
             "I40E_10G-10G_BASE_T_X722",
@@ -3235,6 +3248,7 @@ class TestGeneric_flow_api(TestCase):
                 "IXGBE_10G-X550T",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
                 "I40E_10G-SFP_XL710",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_A",
@@ -3254,6 +3268,7 @@ class TestGeneric_flow_api(TestCase):
             "I40E_40G-QSFP_A",
             "ICE_25G-E810C_SFP",
             "ICE_100G-E810C_QSFP",
+            "ICE_25G-E823C_QSFP",
             "I40E_40G-QSFP_B",
             "I40E_10G-SFP_X722",
             "I40E_10G-10G_BASE_T_X722",
@@ -4136,6 +4151,7 @@ class TestGeneric_flow_api(TestCase):
                 "IGC-I226_LM",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
             ],
             "%s nic not support fdir flexbytes filter" % self.nic,
         )
@@ -4150,6 +4166,7 @@ class TestGeneric_flow_api(TestCase):
             "I40E_10G-10G_BASE_T_X722",
             "ICE_25G-E810C_SFP",
             "ICE_100G-E810C_QSFP",
+            "ICE_25G-E823C_QSFP",
         ]:
             self.pmdout.start_testpmd(
                 "%s" % self.pf_cores,
@@ -4730,6 +4747,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_10G-SFP_X722",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
             ],
             "%s nic not support fdir mac vlan filter" % self.nic,
         )
@@ -4754,6 +4772,7 @@ class TestGeneric_flow_api(TestCase):
             "I40E_10G-SFP_X722",
             "ICE_25G-E810C_SFP",
             "ICE_100G-E810C_QSFP",
+            "ICE_25G-E823C_QSFP",
         ]:
             basic_flow_actions = [
                 {"create": "validate", "flows": ["vlan"], "actions": ["queue"]},
@@ -4799,6 +4818,7 @@ class TestGeneric_flow_api(TestCase):
                 "IXGBE_10G-X550T",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
                 "IGC-I225_LM",
                 "IGC-I226_LM",
             ],
@@ -4999,6 +5019,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_40G-QSFP_A",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
                 "I40E_40G-QSFP_B",
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
@@ -5265,6 +5286,7 @@ class TestGeneric_flow_api(TestCase):
                 "I40E_40G-QSFP_A",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
                 "I40E_40G-QSFP_B",
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",

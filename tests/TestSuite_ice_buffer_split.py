@@ -521,7 +521,8 @@ class TestBufferSplit(TestCase):
         Generic filter Prerequistites
         """
         self.verify(
-            self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"],
+            self.nic
+            in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP", "ICE_25G-E823C_QSFP"],
             "%s nic not support timestamp" % self.nic,
         )
         self.dut_ports = self.dut.get_ports(self.nic)

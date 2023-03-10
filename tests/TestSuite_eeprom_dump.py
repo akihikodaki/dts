@@ -46,7 +46,11 @@ class TestEEPROMDump(TestCase):
     def dump_to_file(self, regex, get, to, testname):
         # if nic is Intel® Ethernet 800 Series, eeprom_dump get testpmd output of the
         # first 1000 lines, module_eeprom_dump get testpmd output of the first 16 lines.
-        if self.nic in ["ICE_25G-E810C_SFP", "ICE_100G-E810C_QSFP"]:
+        if self.nic in [
+            "ICE_25G-E810C_SFP",
+            "ICE_100G-E810C_QSFP",
+            "ICE_25G-E823C_QSFP",
+        ]:
             if testname == "eeprom":
                 count = 1000
             elif testname == "module_eeprom":

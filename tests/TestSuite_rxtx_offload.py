@@ -78,6 +78,7 @@ class TestRxTx_Offload(TestCase):
                 "cavium_a064",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
+                "ICE_25G-E823C_QSFP",
             ],
             "NIC Unsupported: " + str(self.nic),
         )
@@ -604,6 +605,7 @@ class TestRxTx_Offload(TestCase):
             "cavium_a064",
             "ICE_100G-E810C_QSFP",
             "ICE_25G-E810C_SFP",
+            "ICE_25G-E823C_QSFP",
         ]:
             self.dut.send_expect("port stop 0", "testpmd> ")
             self.dut.send_expect(
@@ -832,6 +834,7 @@ class TestRxTx_Offload(TestCase):
                 "I40E_10G-10G_BASE_T_X722",
                 "ICE_100G-E810C_QSFP",
                 "ICE_25G-E810C_SFP",
+                "ICE_25G-E823C_QSFP",
             ],
             "%s nic not support rx offload setting by queue." % self.nic,
         )
