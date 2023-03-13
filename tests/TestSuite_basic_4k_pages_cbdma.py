@@ -181,7 +181,7 @@ class TestBasic4kPagesCbdma(TestCase):
     def connect_vm0(self):
         self.vm0 = QEMUKvm(self.dut, "vm0", self.suite_name)
         self.vm0.net_type = "hostfwd"
-        self.vm0.hostfwd_addr = "%s:6000" % self.dut.get_ip_address()
+        self.vm0.hostfwd_addr = "%s:6000" % self.host_addr
         self.vm0.def_driver = "vfio-pci"
         self.vm0.driver_mode = "noiommu"
         self.wait_vm_net_ready(vm_index=0)
@@ -194,7 +194,7 @@ class TestBasic4kPagesCbdma(TestCase):
     def connect_vm1(self):
         self.vm1 = QEMUKvm(self.dut, "vm1", "vm_hotplug")
         self.vm1.net_type = "hostfwd"
-        self.vm1.hostfwd_addr = "%s:6001" % self.dut.get_ip_address()
+        self.vm1.hostfwd_addr = "%s:6001" % self.host_addr
         self.vm1.def_driver = "vfio-pci"
         self.vm1.driver_mode = "noiommu"
         self.wait_vm_net_ready(vm_index=1)
