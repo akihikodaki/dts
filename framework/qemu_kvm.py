@@ -68,7 +68,7 @@ class QEMUKvm(VirtBase):
         + "   tunctl -t $1\n"
         + "   ip link set $1 up\n"
         + "   sleep 0.5s\n"
-        + "   brctl addif $switch $1\n"
+        + "   ip link set $1 master $switch\n"
         + "   exit 0\n"
         + "else\n"
         + "   echo 'Error: no interface specified'\n"
