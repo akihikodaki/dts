@@ -72,7 +72,7 @@ Create Two VF interfaces from two kernel PF interfaces, and then attach them to 
           /usr/sbin/tunctl -u `whoami` -t $1
           /sbin/ip link set $1 up
           sleep 0.5s
-          /usr/sbin/brctl addif $switch $1
+          /sbin/ip link set $1 master $switch
           exit 0
       else
           echo "Error: no interface specified"

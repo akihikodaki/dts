@@ -47,7 +47,7 @@ The /etc/qemu-ifup can be below script, need you to create first::
         /usr/sbin/tunctl -u `whoami` -t $1
         /sbin/ip link set $1 up
         sleep 0.5s
-        /usr/sbin/brctl addif $switch $1
+        /sbin/ip link set $1 master $switch
         exit 0
     else
         echo "Error: no interface specified"

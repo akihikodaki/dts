@@ -832,9 +832,9 @@ class TestIpPipeline(TestCase):
         self.dut.send_expect(cmd, "fwd port 3", 60)
 
         tap_session = self.dut.new_session()
-        cmd = "ip link set br1 down; brctl delbr br1"
+        cmd = "ip link set br1 down; ip link delete br1"
         tap_session.send_expect(cmd, "# ", 20)
-        cmd = "brctl addbr br1; brctl addif br1 TAP0; brctl addif br1 TAP1"
+        cmd = "ip link add br1 type bridge; ip link set TAP0 master br1; ip link set TAP1 master br1"
         tap_session.send_expect(cmd, "# ", 20)
         cmd = "ifconfig TAP0 up;  ifconfig TAP1 up; ifconfig br1 up"
         tap_session.send_expect(cmd, "# ", 20)
@@ -874,7 +874,7 @@ class TestIpPipeline(TestCase):
         cmd = "^C"
         self.dut.send_expect(cmd, "# ", 20)
 
-        cmd = "ip link set br1 down; brctl delbr br1"
+        cmd = "ip link set br1 down; ip link delete br1"
         tap_session.send_expect(cmd, "# ", 20)
         self.dut.close_session(tap_session)
 
