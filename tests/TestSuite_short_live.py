@@ -153,6 +153,7 @@ class TestShortLiveApp(TestCase):
         self.verify(res is True, "there have port link is down")
 
         self.check_forwarding([0, 1], self.nic)
+        self.dut.send_expect("quit", "# ")
 
     def test_start_up_time(self):
         """
