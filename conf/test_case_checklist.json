@@ -293,6 +293,7 @@
                 "I40E_40G-QSFP_B",
                 "IGC-I225_LM",
                 "IGC-I226_LM",
+                "IGB_1G-82576",
                 "IGB_1G-I350_COPPER",
                 "IGB_1G-82576_QUAD_COPPER_ET2",
                 "IGB_1G-I210_COPPER",
