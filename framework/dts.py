@@ -149,9 +149,32 @@ def dts_parse_config(config, section):
     settings.save_global_setting(settings.DPDK_RXMODE_SETTING, rx_mode)
     settings.save_global_setting(settings.DPDK_DCFMODE_SETTING, dcf_mode)
 
+    suite_list_dedup = {}
+    ## suite_list_dedup[suite_name] := { True | Set | ... }
+    ## True := All Cases to Run
+    ## Set := Listed Cases to Run
     for suite in test_suites:
         if suite == "":
-            test_suites.remove(suite)
+            pass
+        elif ":" in suite:
+            suite_name = suite[: suite.find(":")]
+            case_list_str = suite[suite.find(":") + 1 :]
+            case_list = case_list_str.split("\\")
+            if not suite_name in suite_list_dedup:
+                suite_list_dedup[suite_name] = set()
+            if isinstance(suite_list_dedup[suite_name], set):
+                suite_list_dedup[suite_name].update(case_list)
+            elif suite_list_dedup[suite_name] == True:
+                pass
+        else:
+            suite_list_dedup[suite] = True
+
+    test_suites = []
+    for suite in suite_list_dedup:
+        if suite_list_dedup[suite] == True:
+            test_suites.append(suite)
+        elif isinstance(suite_list_dedup[suite], set) and suite_list_dedup[suite]:
+            test_suites.append(suite + ":" + "\\".join(suite_list_dedup[suite]))
 
     return duts, targets, test_suites
 
