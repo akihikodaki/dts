@@ -10,7 +10,10 @@
                 "I40E_25G-25G_SFP28",
                 "I40E_10G-10G_BASE_T_X722",
                 "I40E_10G-SFP_X722",
-                "I40E_10G-10G_BASE_T_BC"
+                "I40E_10G-10G_BASE_T_BC",
+                "ICE_25G-E810C_SFP",
+		        "ICE_25G-E823C_QSFP",
+                "ICE_100G-E810C_QSFP"
             ],
             "Target": [
                 "ALL"
