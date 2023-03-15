@@ -545,7 +545,7 @@ class TestVfOffload(TestCase):
         if self.dcf_mode == "enable":
             pkts_outer.update(
                 {
-                    "IP/UDP/VXLAN/ETH": f'IP(src = "{sndIP}") / UDP(sport = 4789, dport = 4789, chksum = 0xff) / VXLAN() / Ether()',
+                    "IP/UDP/VXLAN/ETH": f'IP(src = "{sndIP}", chksum = 0xff) / UDP(sport = 4789, dport = 4789, chksum = 0xff) / VXLAN() / Ether()',
                     "IPv6/UDP/VXLAN/ETH": f'IPv6(src = "{sndIPv6}") / UDP(sport = 4789, dport = 4789, chksum = 0xff) / VXLAN() / Ether()',
                 }
             )
@@ -584,9 +584,9 @@ class TestVfOffload(TestCase):
         }
 
         if self.dcf_mode == "enable":
-            pkts_outer.update(
+            pkts_outer_ref.update(
                 {
-                    "IP/UDP/VXLAN/ETH": f'IP(src = "{sndIP}", chksum = 0xff) / UDP(sport = 4789, dport = 4789) / VXLAN() / Ether()',
+                    "IP/UDP/VXLAN/ETH": f'IP(src = "{sndIP}") / UDP(sport = 4789, dport = 4789) / VXLAN() / Ether()',
                     "IPv6/UDP/VXLAN/ETH": f'IPv6(src = "{sndIPv6}") / UDP(sport = 4789, dport = 4789) / VXLAN() / Ether()',
                 }
             )
@@ -735,9 +735,9 @@ class TestVfOffload(TestCase):
         }
 
         if self.dcf_mode == "enable":
-            pkts_outer.update(
+            pkts_outer_ref.update(
                 {
-                    "VLAN/IP/UDP/VXLAN/ETH": f'Dot1Q(vlan=100) / IP(src = "{sndIP}", chksum = 0xff) / UDP(sport = 4789, dport = 4789) / VXLAN() / Ether()',
+                    "VLAN/IP/UDP/VXLAN/ETH": f'Dot1Q(vlan=100) / IP(src = "{sndIP}") / UDP(sport = 4789, dport = 4789) / VXLAN() / Ether()',
                     "VLAN/IPv6/UDP/VXLAN/ETH": f'Dot1Q(vlan=100) / IPv6(src = "{sndIPv6}") / UDP(sport = 4789, dport = 4789) / VXLAN() / Ether()',
                 }
             )
