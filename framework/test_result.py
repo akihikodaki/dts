@@ -232,8 +232,9 @@ class Result(object):
 
     def __set_test_case(self, test_case):
         cases = self.__current_cases()
-        cases.append(test_case)
-        cases.append([])
+        if test_case not in cases:
+            cases.append(test_case)
+            cases.append([])
         self.__test_case = cases.index(test_case)
 
     def __get_test_case(self):
