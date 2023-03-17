@@ -232,7 +232,7 @@ class TestPacketCapture(TestCase):
         self.rxtx_iface = ifaces[0]
 
     def verify_supported_nic(self):
-        supported_drivers = ["i40e", "ixgbe"]
+        supported_drivers = ["i40e", "ixgbe", "ice"]
         result = all(
             [
                 self.dut.ports_info[index]["port"].default_driver in supported_drivers
@@ -803,8 +803,9 @@ class TestPacketCapture(TestCase):
         Run at the start of each test suite.
         """
         self.verify(
-            self.target == "x86_64-native-linuxapp-gcc",
-            "only support x86_64-native-linuxapp-gcc",
+            self.target
+            in ["x86_64-native-linuxapp-gcc", "x86_64-native-linuxapp-clang"],
+            "only support x86_64-native-linuxapp-gcc and x86_64-native-linuxapp-clang",
         )
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) == 2, "Insufficient ports for testing")
