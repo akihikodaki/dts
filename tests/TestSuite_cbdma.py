@@ -412,9 +412,8 @@ class TestCBDMA(TestCase):
             cores=self.core_list, ports=dev_info
         )
         self.launch_dma_app(eal_params)
-        self.send_session.send_expect("^C", "#")
-        self.pmdout.execute_cmd("^C")
-        self.result_table_print()
+        self.send_session.send_expect("^C", "# ")
+        self.pmdout.execute_cmd("quit", "# ")
 
     def tear_down(self):
         """
