@@ -10,6 +10,7 @@ Test the IP reassembly feature
 """
 
 import os
+import re
 import time
 
 from scapy.layers.inet import IP, TCP, Ether, fragment
@@ -92,7 +93,7 @@ class TestIpReassembly(TestCase):
     # Test cases.
     #
 
-    def set_max_num_of_fragments(self, num_of_fragments=4):
+    def set_max_num_of_fragments(self, num_of_fragments):
         """
         Changes the maximum number of frames by modifying the example app code.
         """
@@ -103,6 +104,22 @@ class TestIpReassembly(TestCase):
         self.dut.send_expect("export RTE_SDK=`pwd`", "#")
         self.dut.send_expect("rm -rf %s" % self.target, "# ", 5)
         self.dut.build_install_dpdk(self.target)
+
+    def get_dpdk_default_config(self, config_params, config_file=""):
+        if config_file == "":
+            config_file = "config/rte_config.h"
+        out = self.dut.send_expect(
+            "cat %s | grep %s" % (config_file, config_params), "[~|~\]]# "
+        )
+        if len(out) == 0:
+            self.verify(False, "Not Found Parameter %s !!!" % config_params)
+        regex = r"#define\s+%s\s+(\d+)" % config_params
+        m = re.match(regex, out)
+        if m:
+            default_value = m.group(1)
+            return int(default_value)
+        else:
+            self.verify(False, "Not Get Parameter %s Value!!!" % config_params)
 
     def set_tester_iface_mtu(self, iface, mtu=1500):
         """
@@ -393,6 +410,9 @@ class TestIpReassembly(TestCase):
         dut_ports = self.dut.get_ports(self.nic)
         dut_port = dut_ports[0]
         self.destination_mac = self.dut.get_mac_address(dut_port)
+        self.default_max_fragments = self.get_dpdk_default_config(
+            "RTE_LIBRTE_IP_FRAG_MAX_FRAG"
+        )
 
     def test_send_1K_frames_split_in_4_and_1K_maxflows(self):
         """
@@ -442,14 +462,10 @@ class TestIpReassembly(TestCase):
             self.verify_all()
             self.dut.send_expect("^C", "# ")
             time.sleep(5)
-            self.set_max_num_of_fragments(4)
-            time.sleep(5)
 
         except Exception as e:
             self.dut.send_expect("^C", "# ")
             time.sleep(2)
-            self.set_max_num_of_fragments()
-            self.compile_example_app()
             raise e
 
     def test_packets_are_forwarded_after_ttl_timeout(self):
@@ -500,12 +516,14 @@ class TestIpReassembly(TestCase):
 
     def test_send_more_fragments_than_supported(self):
         """
-        Sends 1 frame split in 5 fragments. Since the max number of
-        fragments is set to 4 by default, the packet can't be forwarded back.
+        Sends 1 frame split in into maximum fragments + 1 fragment, the packet can't be forwarded back.
         """
 
         self.test_config = IpReassemblyTestConfig(
-            self, number_of_frames=1, frags_per_frame=5, payload_size=180
+            self,
+            number_of_frames=1,
+            frags_per_frame=self.default_max_fragments + 1,
+            payload_size=(self.default_max_fragments + 1) * 40 - 20,
         )
         self.execute_example_app()
 
@@ -527,7 +545,6 @@ class TestIpReassembly(TestCase):
         self.test_config = IpReassemblyTestConfig(
             self, number_of_frames=1, flowttl="3s"
         )
-        self.compile_example_app()
         self.execute_example_app()
         self.tcpdump_start_sniffing()
 
@@ -563,7 +580,6 @@ class TestIpReassembly(TestCase):
         )
         try:
             self.set_tester_iface_mtu(self.test_config.tester_iface, mtu)
-            self.compile_example_app()
             self.execute_example_app()
             self.send_n_siff_packets()
             self.verify_all()
@@ -602,6 +618,10 @@ class TestIpReassembly(TestCase):
         """
 
         self.dut.send_expect("^C", "# ")
+        self.max_fragments = self.get_dpdk_default_config("RTE_LIBRTE_IP_FRAG_MAX_FRAG")
+        if self.max_fragments != self.default_max_fragments:
+            self.set_max_num_of_fragments(self.default_max_fragments)
+            self.compile_example_app()
 
     def tear_down_all(self):
         """
