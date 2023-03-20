@@ -153,12 +153,11 @@ Sample command::
   ./<build_target>/examples/dpdk-ip_reassembly -c 0x2 -n 4 -- \
       -P -p 0x2 --config "(1,0,1)" --maxflows=1024 --flowttl=10s
 
-Sends 1 packet split in 5 fragments while the maximum number of supported
-fragments per packet is 4.
+Sends 1 frame split in into maximum fragments + 1 fragment, the packet can't be forwarded back.
 
 It expects:
 
-  - 5 IP packets to be sent to the DUT.
+  - (maximum fragments + 1 fragment) IP packets to be sent to the DUT.
   - 0 TCP packets being forwarded back to the TESTER.
   - 0 packets with a valid TCP checksum.
 
