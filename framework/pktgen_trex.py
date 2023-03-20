@@ -615,7 +615,7 @@ class TrexPacketGenerator(PacketGenerator):
                     ]
                 ),
                 "-Per port stats table",
-                30,
+                60,
             )
         try:
             self._connect()
