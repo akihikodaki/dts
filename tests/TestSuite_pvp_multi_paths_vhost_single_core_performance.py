@@ -103,7 +103,10 @@ class TestPVPMultiPathVhostPerformance(TestCase):
             streams = self.pktgen_helper.prepare_stream_from_tginput(
                 tgen_input, 100, None, self.tester.pktgen
             )
-            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
+            trans_options = {"delay": 5, "duration": 30}
+            _, pps = self.tester.pktgen.measure_throughput(
+                stream_ids=streams, options=trans_options
+            )
             Mpps = pps / 1000000.0
             linerate = (
                 Mpps
