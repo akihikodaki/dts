@@ -125,6 +125,9 @@ The following are the test plans for the DPDK DTS automated test system.
     pmd_bonded_8023ad_test_plan
     pmd_bonded_test_plan
     pmd_stacked_bonded_test_plan
+    vf_pmd_bonded_test_plan
+    vf_pmd_bonded_8023ad_test_plan
+    vf_pmd_stacked_bonded_test_plan
     pmd_test_plan
     pmdpcap_test_plan
     pmdrss_hash_test_plan
