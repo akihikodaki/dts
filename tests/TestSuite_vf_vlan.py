@@ -168,23 +168,36 @@ class TestVfVlan(TestCase):
 
     def launch_testpmd(self, **kwargs):
         dcf_flag = kwargs.get("dcf_flag")
+        force_max_simd_bitwidth = kwargs.get("force-max-simd-bitwidth")
         param = kwargs.get("param") if kwargs.get("param") else ""
+        eal_param = ""
         # for dcf mode, the vlan offload support in scalar path
         if dcf_flag:
+            eal_param += " --force-max-simd-bitwidth=64 "
+            eal_param += " --log-level='dcf,8' "
             self.vm0_testpmd.start_testpmd(
                 VM_CORES_MASK,
                 ports=[self.vf0_guest_pci, self.vf1_guest_pci],
                 param=param,
-                eal_param="--force-max-simd-bitwidth=64",
+                eal_param=eal_param,
                 port_options={
                     self.vf0_guest_pci: "cap=dcf",
                     self.vf1_guest_pci: "cap=dcf",
                 },
             )
         else:
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK, param=param)
+            if force_max_simd_bitwidth:
+                eal_param += " --force-max-simd-bitwidth=%d " % force_max_simd_bitwidth
+                param += " --enable-rx-cksum "
+            if self.kdriver == "ice" or self.kdriver == "i40e":
+                eal_param += " --log-level='iavf,8' "
+            elif self.kdriver == "ixgbe" or self.kdriver == "igbe":
+                eal_param += " --log-level='%svf,8' " % self.kdriver
+            self.vm0_testpmd.start_testpmd(
+                VM_CORES_MASK, param=param, eal_param=eal_param
+            )
 
-    def test_pvid_vf_tx(self):
+    def execute_pvid_vf_tx(self, specific_bitwidth=None):
         """
         Add port based vlan on vf device and check vlan tx work
         """
@@ -199,7 +212,10 @@ class TestVfVlan(TestCase):
         self.vm0_dut_ports = self.vm_dut_0.get_ports("any")
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.launch_testpmd(dcf_flag=self.dcf_mode)
+        self.launch_testpmd(
+            dcf_flag=self.dcf_mode,
+            force_max_simd_bitwidth=specific_bitwidth,
+        )
         self.vm0_testpmd.execute_cmd("set fwd mac")
         self.vm0_testpmd.execute_cmd("start")
 
@@ -214,6 +230,12 @@ class TestVfVlan(TestCase):
 
         # disable pvid
         self.dut.send_expect("ip link set %s vf 0 vlan 0" % (self.host_intf0), "# ")
+
+    def test_pvid_vf_tx(self):
+        self.execute_pvid_vf_tx()
+
+    def test_pvid_vf_tx_avx512(self):
+        self.execute_pvid_vf_tx(specific_bitwidth=512)
 
     def send_and_getout(self, vlan=0, pkt_type="UDP"):
 
@@ -230,7 +252,7 @@ class TestVfVlan(TestCase):
 
         return out
 
-    def test_add_pvid_vf(self):
+    def execute_add_pvid_vf(self, specific_bitwidth=None):
         random_vlan = random.randint(1, MAX_VLAN)
 
         self.dut.send_expect(
@@ -243,7 +265,10 @@ class TestVfVlan(TestCase):
         self.vm0_dut_ports = self.vm_dut_0.get_ports("any")
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.launch_testpmd(dcf_flag=self.dcf_mode)
+        self.launch_testpmd(
+            dcf_flag=self.dcf_mode,
+            force_max_simd_bitwidth=specific_bitwidth,
+        )
         self.vm0_testpmd.execute_cmd("set fwd rxonly")
         self.vm0_testpmd.execute_cmd("set verbose 1")
         self.vm0_testpmd.execute_cmd("start")
@@ -269,7 +294,10 @@ class TestVfVlan(TestCase):
 
         # restart testpmd
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.launch_testpmd(dcf_flag=self.dcf_mode)
+        self.launch_testpmd(
+            dcf_flag=self.dcf_mode,
+            force_max_simd_bitwidth=specific_bitwidth,
+        )
         self.vm0_testpmd.execute_cmd("set fwd rxonly")
         self.vm0_testpmd.execute_cmd("set verbose 1")
         self.vm0_testpmd.execute_cmd("start")
@@ -298,6 +326,12 @@ class TestVfVlan(TestCase):
         # disable pvid
         self.dut.send_expect("ip link set %s vf 0 vlan 0" % (self.host_intf0), "# ")
 
+    def test_add_pvid_vf(self):
+        self.execute_add_pvid_vf()
+
+    def test_add_pvid_vf_avx512(self):
+        self.execute_add_pvid_vf(specific_bitwidth=512)
+
     def tx_and_check(self, tx_vlan=1):
         inst = self.tester.tcpdump_sniff_packets(self.tester_intf0)
         self.vm0_testpmd.execute_cmd("set burst 1")
@@ -313,7 +347,7 @@ class TestVfVlan(TestCase):
 
         self.verify(tx_vlan in vlans, "Tx packet with vlan not received!!!")
 
-    def test_vf_vlan_tx(self):
+    def execute_vf_vlan_tx(self, specific_bitwidth=None):
         self.verify(self.kdriver not in ["ixgbe"], "NIC Unsupported: " + str(self.nic))
         random_vlan = random.randint(1, MAX_VLAN)
         tx_vlans = [1, random_vlan, MAX_VLAN]
@@ -321,7 +355,10 @@ class TestVfVlan(TestCase):
         self.vm0_dut_ports = self.vm_dut_0.get_ports("any")
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.launch_testpmd(dcf_flag=self.dcf_mode)
+        self.launch_testpmd(
+            dcf_flag=self.dcf_mode,
+            force_max_simd_bitwidth=specific_bitwidth,
+        )
         self.vm0_testpmd.execute_cmd("set verbose 1")
 
         for tx_vlan in tx_vlans:
@@ -339,7 +376,13 @@ class TestVfVlan(TestCase):
 
         self.vm0_testpmd.quit()
 
-    def test_vf_vlan_rx(self):
+    def test_vf_vlan_tx(self):
+        self.execute_vf_vlan_tx()
+
+    def test_vf_vlan_tx_avx512(self):
+        self.execute_vf_vlan_tx(specific_bitwidth=512)
+
+    def execute_vf_vlan_rx(self, specific_bitwidth=None):
         random_vlan = random.randint(1, MAX_VLAN - 1)
         rx_vlans = [1, random_vlan, MAX_VLAN]
         # start testpmd in VM
@@ -351,7 +394,11 @@ class TestVfVlan(TestCase):
             if not self.dcf_mode and self.kdriver is not "ixgbe"
             else ""
         )
-        self.launch_testpmd(dcf_flag=self.dcf_mode, param=param)
+        self.launch_testpmd(
+            dcf_flag=self.dcf_mode,
+            param=param,
+            force_max_simd_bitwidth=specific_bitwidth,
+        )
         self.vm0_testpmd.execute_cmd("set fwd rxonly")
         self.vm0_testpmd.execute_cmd("set verbose 1")
         self.vm0_testpmd.execute_cmd("vlan set strip on 0")
@@ -423,7 +470,13 @@ class TestVfVlan(TestCase):
 
         self.vm0_testpmd.quit()
 
-    def test_vf_vlan_strip(self):
+    def test_vf_vlan_rx(self):
+        self.execute_vf_vlan_rx()
+
+    def test_vf_vlan_rx_avx512(self):
+        self.execute_vf_vlan_rx(specific_bitwidth=512)
+
+    def execute_vf_vlan_strip(self, specific_bitwidth=None):
         random_vlan = random.randint(1, MAX_VLAN - 1)
         rx_vlans = [1, random_vlan, MAX_VLAN]
         # start testpmd in VM
@@ -436,7 +489,11 @@ class TestVfVlan(TestCase):
             else ""
         )
 
-        self.launch_testpmd(dcf_flag=self.dcf_mode, param=param)
+        self.launch_testpmd(
+            dcf_flag=self.dcf_mode,
+            param=param,
+            force_max_simd_bitwidth=specific_bitwidth,
+        )
         self.vm0_testpmd.execute_cmd("set fwd rxonly")
         self.vm0_testpmd.execute_cmd("set verbose 1")
         self.vm0_testpmd.execute_cmd("start")
@@ -468,6 +525,12 @@ class TestVfVlan(TestCase):
             )
 
         self.vm0_testpmd.quit()
+
+    def test_vf_vlan_strip(self):
+        self.execute_vf_vlan_strip()
+
+    def test_vf_vlan_strip_avx512(self):
+        self.execute_vf_vlan_strip(specific_bitwidth=512)
 
     def tear_down(self):
         self.destroy_vm_env()
