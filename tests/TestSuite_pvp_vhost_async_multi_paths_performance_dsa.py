@@ -51,8 +51,6 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
-        self.DC.reset_all_work_queue()
-        self.DC.bind_all_dsa_to_kernel()
         # Prepare the result table
         self.table_header = ["Frame"]
         self.table_header.append("Mode/RXD-TXD")
@@ -273,8 +271,8 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 1: pvp vhost async test with split ring inorder mergeable path using IDXD kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=1, dsa_index=0)
-        dmas = "txq0@wq0.0;rxq0@wq0.1"
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dmas = "txq0@%s;rxq0@%s" % (wqs[0], wqs[1])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
@@ -301,8 +299,8 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 2: pvp vhost async test with split ring inorder non-mergeable path using IDXD kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=1, dsa_index=0)
-        dmas = "txq0@wq0.0;rxq0@wq0.1"
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dmas = "txq0@%s;rxq0@%s" % (wqs[0], wqs[1])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
@@ -329,8 +327,8 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 3: pvp vhost async test with split ring mergeable path using IDXD kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=1, dsa_index=0)
-        dmas = "txq0@wq0.0;rxq0@wq0.1"
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dmas = "txq0@%s;rxq0@%s" % (wqs[0], wqs[1])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
@@ -357,8 +355,8 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 4: pvp vhost async test with split ring non-mergeable path using IDXD kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=1, dsa_index=0)
-        dmas = "txq0@wq0.0;rxq0@wq0.1"
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dmas = "txq0@%s;rxq0@%s" % (wqs[0], wqs[1])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
@@ -385,8 +383,8 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 5: pvp vhost async test with split ring vectorized path using IDXD kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=1, dsa_index=0)
-        dmas = "txq0@wq0.0;rxq0@wq0.1"
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dmas = "txq0@%s;rxq0@%s" % (wqs[0], wqs[1])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
@@ -413,8 +411,8 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 6: pvp vhost async test with packed ring inorder mergeable path using IDXD kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=1, dsa_index=0)
-        dmas = "txq0@wq0.0;rxq0@wq0.1"
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dmas = "txq0@%s;rxq0@%s" % (wqs[0], wqs[1])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
@@ -441,8 +439,8 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 7: pvp vhost async test with packed ring inorder non-mergeable path using IDXD kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=1, dsa_index=0)
-        dmas = "txq0@wq0.0;rxq0@wq0.1"
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dmas = "txq0@%s;rxq0@%s" % (wqs[0], wqs[1])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
@@ -469,8 +467,8 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 8: pvp vhost async test with packed ring mergeable path using IDXD kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=1, dsa_index=0)
-        dmas = "txq0@wq0.0;rxq0@wq0.1"
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dmas = "txq0@%s;rxq0@%s" % (wqs[0], wqs[1])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
@@ -497,8 +495,8 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 9: pvp vhost async test with packed ring non-mergeable path using IDXD kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=1, dsa_index=0)
-        dmas = "txq0@wq0.0;rxq0@wq0.1"
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dmas = "txq0@%s;rxq0@%s" % (wqs[0], wqs[1])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
@@ -525,8 +523,8 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 10: pvp vhost async test with packed ring vectorized path using IDXD kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=1, dsa_index=0)
-        dmas = "txq0@wq0.0;rxq0@wq0.1"
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dmas = "txq0@%s;rxq0@%s" % (wqs[0], wqs[1])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
@@ -553,17 +551,17 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 11: pvp vhost async test with split ring inorder mergeable path using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
-        dmas = "txq0@%s-q0;" "rxq0@%s-q1" % (self.use_dsa_list[0], self.use_dsa_list[0])
+        dmas = "txq0@%s-q0;rxq0@%s-q1" % (dsas[0], dsas[0])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=1 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_user_testpmd(
             eal_param=vhost_eal_param,
             param=vhost_param,
@@ -588,17 +586,17 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 12: pvp vhost async test with split ring inorder non-mergeable path using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
-        dmas = "txq0@%s-q0;" "rxq0@%s-q1" % (self.use_dsa_list[0], self.use_dsa_list[0])
+        dmas = "txq0@%s-q0;rxq0@%s-q1" % (dsas[0], dsas[0])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=1 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_user_testpmd(
             eal_param=vhost_eal_param,
             param=vhost_param,
@@ -623,17 +621,17 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 13: pvp vhost async test with split ring mergeable path using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
-        dmas = "txq0@%s-q0;" "rxq0@%s-q1" % (self.use_dsa_list[0], self.use_dsa_list[0])
+        dmas = "txq0@%s-q0;rxq0@%s-q1" % (dsas[0], dsas[0])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=1 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_user_testpmd(
             eal_param=vhost_eal_param,
             param=vhost_param,
@@ -658,17 +656,17 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 14: pvp vhost async test with split ring non-mergeable path using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
-        dmas = "txq0@%s-q0;" "rxq0@%s-q1" % (self.use_dsa_list[0], self.use_dsa_list[0])
+        dmas = "txq0@%s-q0;rxq0@%s-q1" % (dsas[0], dsas[0])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=1 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_user_testpmd(
             eal_param=vhost_eal_param,
             param=vhost_param,
@@ -693,17 +691,17 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 15: pvp vhost async test with split ring vectorized_rx path using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
-        dmas = "txq0@%s-q0;" "rxq0@%s-q1" % (self.use_dsa_list[0], self.use_dsa_list[0])
+        dmas = "txq0@%s-q0;rxq0@%s-q1" % (dsas[0], dsas[0])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=1 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_user_testpmd(
             eal_param=vhost_eal_param,
             param=vhost_param,
@@ -728,17 +726,17 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 16: pvp vhost async test with packed ring inorder mergeable path using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
-        dmas = "txq0@%s-q0;" "rxq0@%s-q1" % (self.use_dsa_list[0], self.use_dsa_list[0])
+        dmas = "txq0@%s-q0;rxq0@%s-q1" % (dsas[0], dsas[0])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=1 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_user_testpmd(
             eal_param=vhost_eal_param,
             param=vhost_param,
@@ -763,17 +761,17 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 17: pvp vhost async test with packed ring inorder non-mergeable path using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
-        dmas = "txq0@%s-q0;" "rxq0@%s-q1" % (self.use_dsa_list[0], self.use_dsa_list[0])
+        dmas = "txq0@%s-q0;rxq0@%s-q1" % (dsas[0], dsas[0])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=1 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_user_testpmd(
             eal_param=vhost_eal_param,
             param=vhost_param,
@@ -798,17 +796,17 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 18: pvp vhost async test with packed ring mergeable path using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
-        dmas = "txq0@%s-q0;" "rxq0@%s-q1" % (self.use_dsa_list[0], self.use_dsa_list[0])
+        dmas = "txq0@%s-q0;rxq0@%s-q1" % (dsas[0], dsas[0])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=1 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_user_testpmd(
             eal_param=vhost_eal_param,
             param=vhost_param,
@@ -833,17 +831,17 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 19: pvp vhost async test with packed ring non-mergeable path using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
-        dmas = "txq0@%s-q0;" "rxq0@%s-q1" % (self.use_dsa_list[0], self.use_dsa_list[0])
+        dmas = "txq0@%s-q0;rxq0@%s-q1" % (dsas[0], dsas[0])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=1 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_user_testpmd(
             eal_param=vhost_eal_param,
             param=vhost_param,
@@ -868,17 +866,17 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         Test Case 20: pvp vhost async test with split ring vectorized path using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
-        dmas = "txq0@%s-q0;" "rxq0@%s-q1" % (self.use_dsa_list[0], self.use_dsa_list[0])
+        dmas = "txq0@%s-q0;rxq0@%s-q1" % (dsas[0], dsas[0])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=1 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_user_testpmd(
             eal_param=vhost_eal_param,
             param=vhost_param,
@@ -909,8 +907,6 @@ class TestPVPVhostAsyncMultiPathsPerformanceDsa(TestCase):
         """
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
-        self.DC.reset_all_work_queue()
-        self.DC.bind_all_dsa_to_kernel()
 
     def tear_down_all(self):
         """

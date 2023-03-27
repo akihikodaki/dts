@@ -42,9 +42,6 @@ class TestVM2VMVirtioPmdDsa(TestCase):
         self.vm_num = 2
         self.vm_dut = []
         self.vm = []
-        self.use_dsa_list = []
-        self.DC.reset_all_work_queue()
-        self.DC.bind_all_dsa_to_kernel()
 
     @property
     def check_2M_env(self):
@@ -99,7 +96,6 @@ class TestVM2VMVirtioPmdDsa(TestCase):
         packed=False,
         server_mode=True,
         restart_vm1=False,
-        vm_config="vhost_sample",
     ):
         """
         start two VM, each VM has one virtio device
@@ -111,7 +107,7 @@ class TestVM2VMVirtioPmdDsa(TestCase):
         for i in range(self.vm_num):
             if restart_vm1:
                 i = i + 1
-            vm_info = VM(self.dut, "vm%d" % i, vm_config)
+            vm_info = VM(self.dut, "vm%d" % i, "vhost_sample")
             vm_params["driver"] = "vhost-user"
             if not server_mode:
                 vm_params["opt_path"] = self.base_dir + "/vhost-net%d" % i
@@ -210,6 +206,7 @@ class TestVM2VMVirtioPmdDsa(TestCase):
         dut_pmd.execute_cmd("start")
 
     def get_and_verify_func_name_of_perf_top(self, func_name_list):
+        time.sleep(10)
         self.dut.send_expect("rm -fr perf_top.log", "# ", 120)
         self.dut.send_expect("perf top > perf_top.log", "", 120)
         time.sleep(30)
@@ -229,8 +226,8 @@ class TestVM2VMVirtioPmdDsa(TestCase):
         Test Case 1: VM2VM virtio-pmd split ring mergeable path dynamic queue size with dsa dpdk driver and server mode
         """
         self.check_path = ["virtio_dev_rx_async", "virtio_dev_tx_async"]
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -241,18 +238,9 @@ class TestVM2VMVirtioPmdDsa(TestCase):
             "rxq1@%s-q1;"
             "rxq2@%s-q2;"
             "rxq3@%s-q3"
-            % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-            )
+            % (dsas[0], dsas[0], dsas[0], dsas[0], dsas[0], dsas[0], dsas[0], dsas[0])
         )
-        port_options = {self.use_dsa_list[0]: "max_queues=4"}
+        port_options = {dsas[0]: "max_queues=4"}
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[%s]' "
             "--vdev 'eth_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[%s]'"
@@ -263,7 +251,7 @@ class TestVM2VMVirtioPmdDsa(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
         )
         self.start_vms(vm_queue=8, mergeable=True, packed=False, server_mode=True)
@@ -293,8 +281,8 @@ class TestVM2VMVirtioPmdDsa(TestCase):
         Test Case 2: VM2VM virtio-pmd split ring non-mergeable path dynamic queue size with dsa dpdk driver and server mode
         """
         self.check_path = ["virtio_dev_rx_async", "virtio_dev_tx_async"]
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -305,18 +293,9 @@ class TestVM2VMVirtioPmdDsa(TestCase):
             "rxq1@%s-q2;"
             "rxq2@%s-q3;"
             "rxq3@%s-q3"
-            % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-            )
+            % (dsas[0], dsas[0], dsas[0], dsas[0], dsas[0], dsas[0], dsas[0], dsas[0])
         )
-        port_options = {self.use_dsa_list[0]: "max_queues=4"}
+        port_options = {dsas[0]: "max_queues=4"}
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[%s]' "
             "--vdev 'eth_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[%s]'"
@@ -327,7 +306,7 @@ class TestVM2VMVirtioPmdDsa(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
         )
         self.start_vms(vm_queue=8, mergeable=False, packed=False, server_mode=True)
@@ -359,8 +338,8 @@ class TestVM2VMVirtioPmdDsa(TestCase):
         Test Case 3: VM2VM virtio-pmd packed ring mergeable path dynamic queue size with dsa dpdk driver and server mode
         """
         self.check_path = ["virtio_dev_rx_async", "virtio_dev_tx_async"]
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -371,18 +350,9 @@ class TestVM2VMVirtioPmdDsa(TestCase):
             "rxq1@%s-q1;"
             "rxq2@%s-q2;"
             "rxq3@%s-q3"
-            % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-            )
+            % (dsas[0], dsas[0], dsas[0], dsas[0], dsas[0], dsas[0], dsas[0], dsas[0])
         )
-        port_options = {self.use_dsa_list[0]: "max_queues=4"}
+        port_options = {dsas[0]: "max_queues=4"}
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[%s]' "
             "--vdev 'eth_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[%s]'"
@@ -393,7 +363,7 @@ class TestVM2VMVirtioPmdDsa(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
         )
         self.start_vms(vm_queue=8, mergeable=True, packed=True, server_mode=True)
@@ -442,8 +412,8 @@ class TestVM2VMVirtioPmdDsa(TestCase):
         Test Case 4: VM2VM virtio-pmd packed ring non-mergeable path dynamic queue size with dsa dpdk driver and server mode
         """
         self.check_path = ["virtio_dev_rx_async", "virtio_dev_tx_async"]
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -454,18 +424,9 @@ class TestVM2VMVirtioPmdDsa(TestCase):
             "rxq1@%s-q1;"
             "rxq2@%s-q2;"
             "rxq3@%s-q3"
-            % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-            )
+            % (dsas[0], dsas[0], dsas[0], dsas[0], dsas[0], dsas[0], dsas[0], dsas[0])
         )
-        port_options = {self.use_dsa_list[0]: "max_queues=4"}
+        port_options = {dsas[0]: "max_queues=4"}
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[%s]' "
             "--vdev 'eth_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[%s]'"
@@ -476,7 +437,7 @@ class TestVM2VMVirtioPmdDsa(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
         )
         self.start_vms(vm_queue=8, mergeable=False, packed=True, server_mode=True)
@@ -508,28 +469,27 @@ class TestVM2VMVirtioPmdDsa(TestCase):
         Test Case 5: VM2VM virtio-pmd split ring mergeable path dynamic queue size with dsa kernel driver and server mode
         """
         self.check_path = ["virtio_dev_rx_async", "virtio_dev_tx_async"]
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
         dmas1 = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "rxq0@wq0.1;"
-            "rxq1@wq0.1;"
-            "rxq2@wq0.1;"
-            "rxq3@wq0.1"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "rxq0@%s;"
+            "rxq1@%s;"
+            "rxq2@%s;"
+            "rxq3@%s" % (wqs[0], wqs[0], wqs[0], wqs[0], wqs[1], wqs[1], wqs[1], wqs[1])
         )
 
         dmas2 = (
-            "txq0@wq0.1;"
-            "txq1@wq0.1;"
-            "txq2@wq0.1;"
-            "txq3@wq0.1;"
-            "rxq0@wq0.0;"
-            "rxq1@wq0.0;"
-            "rxq2@wq0.0;"
-            "rxq3@wq0.0"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "rxq0@%s;"
+            "rxq1@%s;"
+            "rxq2@%s;"
+            "rxq3@%s" % (wqs[1], wqs[1], wqs[1], wqs[1], wqs[0], wqs[0], wqs[0], wqs[0])
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[%s]' "
@@ -572,21 +532,34 @@ class TestVM2VMVirtioPmdDsa(TestCase):
         Test Case 6: VM2VM virtio-pmd split ring non-mergeable path dynamic queue size with dsa kernel driver and server mode
         """
         self.check_path = ["virtio_dev_rx_async", "virtio_dev_tx_async"]
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.1;"
-            "rxq2@wq1.0;"
-            "rxq3@wq1.0;"
-            "rxq4@wq1.1;"
-            "rxq5@wq1.1;"
-            "rxq6@wq1.1;"
-            "rxq7@wq1.1"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[8],
+                wqs[8],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[%s]' "
@@ -629,17 +602,16 @@ class TestVM2VMVirtioPmdDsa(TestCase):
         Test Case 7: VM2VM virtio-pmd packed ring mergeable path dynamic queue size with dsa kernel driver and server mode
         """
         self.check_path = ["virtio_dev_rx_async", "virtio_dev_tx_async"]
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.1;"
-            "txq2@wq0.2;"
-            "txq3@wq0.3;"
-            "rxq0@wq0.0;"
-            "rxq1@wq0.1;"
-            "rxq2@wq0.2;"
-            "rxq3@wq0.3"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "rxq0@%s;"
+            "rxq1@%s;"
+            "rxq2@%s;"
+            "rxq3@%s" % (wqs[0], wqs[1], wqs[2], wqs[3], wqs[0], wqs[1], wqs[2], wqs[3])
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[%s]' "
@@ -699,36 +671,63 @@ class TestVM2VMVirtioPmdDsa(TestCase):
         Test Case 8: VM2VM virtio-pmd packed ring non-mergeable path dynamic queue size with dsa kernel driver and server mode
         """
         self.check_path = ["virtio_dev_rx_async", "virtio_dev_tx_async"]
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
         dmas1 = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.1;"
-            "rxq2@wq1.0;"
-            "rxq3@wq1.0;"
-            "rxq4@wq1.1;"
-            "rxq5@wq1.1;"
-            "rxq6@wq1.1;"
-            "rxq7@wq1.1"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[8],
+                wqs[8],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+            )
         )
 
         dmas2 = (
-            "txq0@wq0.2;"
-            "txq1@wq0.2;"
-            "txq2@wq0.2;"
-            "txq3@wq0.2;"
-            "txq4@wq0.3;"
-            "txq5@wq0.3;"
-            "rxq2@wq1.2;"
-            "rxq3@wq1.2;"
-            "rxq4@wq1.3;"
-            "rxq5@wq1.3;"
-            "rxq6@wq1.3;"
-            "rxq7@wq1.3"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[2],
+                wqs[2],
+                wqs[2],
+                wqs[2],
+                wqs[3],
+                wqs[3],
+                wqs[10],
+                wqs[10],
+                wqs[11],
+                wqs[11],
+                wqs[11],
+                wqs[11],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[%s]' "
@@ -773,8 +772,6 @@ class TestVM2VMVirtioPmdDsa(TestCase):
         self.stop_all_apps()
         self.dut.kill_all()
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
-        self.DC.reset_all_work_queue()
-        self.DC.bind_all_dsa_to_kernel()
 
     def tear_down_all(self):
         self.dut.close_session(self.vhost_user)

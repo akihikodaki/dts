@@ -76,8 +76,6 @@ class TestVhostDsa(TestCase):
         self.dut.send_expect("killall -I %s" % self.testpmd_name, "#", 20)
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.mode_list = []
-        self.DC.reset_all_work_queue()
-        self.DC.bind_all_dsa_to_kernel()
 
     def get_vhost_port_num(self):
         out = self.vhost_user.send_expect("show port summary all", "testpmd> ", 60)
@@ -166,8 +164,8 @@ class TestVhostDsa(TestCase):
         """
         Test Case 1: PVP split ring vhost async operation test with each tx/rx queue using one DSA dpdk driver channel
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -175,10 +173,10 @@ class TestVhostDsa(TestCase):
             "rxq0@%s-q2;"
             "rxq1@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
@@ -187,9 +185,9 @@ class TestVhostDsa(TestCase):
         vhost_param = "--nb-cores=1 --txq=2 --rxq=2 --txd=1024 --rxd=1024"
 
         ports = [self.dut.ports_info[0]["pci"]]
-        for i in self.use_dsa_list:
+        for i in dsas:
             ports.append(i)
-        port_options = {self.use_dsa_list[0]: "max_queues=4"}
+        port_options = {dsas[0]: "max_queues=4"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             param=vhost_param,
@@ -233,10 +231,10 @@ class TestVhostDsa(TestCase):
                 "rxq0@%s-q0;"
                 "rxq1@%s-q1"
                 % (
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[1],
-                    self.use_dsa_list[1],
+                    dsas[0],
+                    dsas[0],
+                    dsas[1],
+                    dsas[1],
                 )
             )
             vhost_param = "--nb-cores=2 --txq=2 --rxq=2 --txd=1024 --rxd=1024"
@@ -244,8 +242,8 @@ class TestVhostDsa(TestCase):
                 "--vdev 'net_vhost0,iface=vhost-net0,queues=2,dmas=[%s]'" % dmas
             )
             port_options = {
-                self.use_dsa_list[0]: "max_queues=2",
-                self.use_dsa_list[1]: "max_queues=2",
+                dsas[0]: "max_queues=2",
+                dsas[1]: "max_queues=2",
             }
             self.start_vhost_testpmd(
                 cores=self.vhost_core_list,
@@ -293,8 +291,8 @@ class TestVhostDsa(TestCase):
         """
         Test Case 2: PVP split ring vhost async operations test with one DSA dpdk driver channel being shared among multiple tx/rx queues
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -314,22 +312,22 @@ class TestVhostDsa(TestCase):
             "rxq6@%s-q1;"
             "rxq7@%s-q1"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
@@ -337,9 +335,9 @@ class TestVhostDsa(TestCase):
         )
         vhost_param = "--nb-cores=4 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[0]["pci"]]
-        for i in self.use_dsa_list:
+        for i in dsas:
             ports.append(i)
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             param=vhost_param,
@@ -395,29 +393,29 @@ class TestVhostDsa(TestCase):
                 "rxq6@%s-q6;"
                 "rxq7@%s-q7"
                 % (
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
                 )
             )
             vhost_eal_param = (
                 "--vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[%s]'" % dmas
             )
             vhost_param = "--nb-cores=6 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
-            port_options = {self.use_dsa_list[0]: "max_queues=8"}
+            port_options = {dsas[0]: "max_queues=8"}
             self.start_vhost_testpmd(
                 cores=self.vhost_core_list,
                 param=vhost_param,
@@ -470,29 +468,29 @@ class TestVhostDsa(TestCase):
                 "rxq6@%s-q0;"
                 "rxq7@%s-q0"
                 % (
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
                 )
             )
             vhost_eal_param = (
                 "--vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[%s]'" % dmas
             )
             vhost_param = "--nb-cores=6 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
-            port_options = {self.use_dsa_list[0]: "max_queues=1"}
+            port_options = {dsas[0]: "max_queues=1"}
             self.start_vhost_testpmd(
                 cores=self.vhost_core_list,
                 param=vhost_param,
@@ -539,8 +537,8 @@ class TestVhostDsa(TestCase):
         """
         Test Case 3: PVP split ring dynamic queues vhost async operation with dsa dpdk driver channels
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -548,10 +546,10 @@ class TestVhostDsa(TestCase):
             "txq2@%s-q2;"
             "txq3@%s-q2"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
@@ -559,9 +557,9 @@ class TestVhostDsa(TestCase):
         )
         vhost_param = "--nb-cores=4 --txq=4 --rxq=4 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[0]["pci"]]
-        for i in self.use_dsa_list:
+        for i in dsas:
             ports.append(i)
-        port_options = {self.use_dsa_list[0]: "max_queues=4"}
+        port_options = {dsas[0]: "max_queues=4"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             param=vhost_param,
@@ -610,17 +608,17 @@ class TestVhostDsa(TestCase):
             "rxq2@%s-q1;"
             "rxq3@%s-q0"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=4 --txq=4 --rxq=4 --txd=1024 --rxd=1024"
-        port_options = {self.use_dsa_list[0]: "max_queues=4"}
+        port_options = {dsas[0]: "max_queues=4"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             param=vhost_param,
@@ -649,18 +647,18 @@ class TestVhostDsa(TestCase):
             "rxq6@%s-q2;"
             "rxq7@%s-q2"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
             )
         )
         vhost_eal_param = (
@@ -668,8 +666,8 @@ class TestVhostDsa(TestCase):
         )
         vhost_param = "--nb-cores=4 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
         port_options = {
-            self.use_dsa_list[0]: "max_queues=4",
-            self.use_dsa_list[1]: "max_queues=4",
+            dsas[0]: "max_queues=4",
+            dsas[1]: "max_queues=4",
         }
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -711,19 +709,19 @@ class TestVhostDsa(TestCase):
             "rxq2@%s-q1;"
             "rxq3@%s-q1"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=5 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             param=vhost_param,
@@ -751,8 +749,8 @@ class TestVhostDsa(TestCase):
         """
         Test Case 4: PVP packed ring vhost async operation test with each tx/rx queue using one DSA dpdk driver channel
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -760,10 +758,10 @@ class TestVhostDsa(TestCase):
             "rxq0@%s-q2;"
             "rxq1@%s-q2"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
@@ -771,9 +769,9 @@ class TestVhostDsa(TestCase):
         )
         vhost_param = "--nb-cores=1 --txq=2 --rxq=2 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[0]["pci"]]
-        for i in self.use_dsa_list:
+        for i in dsas:
             ports.append(i)
-        port_options = {self.use_dsa_list[0]: "max_queues=4"}
+        port_options = {dsas[0]: "max_queues=4"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             param=vhost_param,
@@ -818,10 +816,10 @@ class TestVhostDsa(TestCase):
                 "rxq0@%s-q0;"
                 "rxq1@%s-q1"
                 % (
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[1],
-                    self.use_dsa_list[1],
+                    dsas[0],
+                    dsas[0],
+                    dsas[1],
+                    dsas[1],
                 )
             )
             vhost_eal_param = (
@@ -875,8 +873,8 @@ class TestVhostDsa(TestCase):
         """
         Test Case 5: PVP packed ring vhost async operation test with one DSA dpdk driver channel being shared among multiple tx/rx queues
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -896,22 +894,22 @@ class TestVhostDsa(TestCase):
             "rxq6@%s-q1;"
             "rxq7@%s-q1"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
@@ -919,9 +917,9 @@ class TestVhostDsa(TestCase):
         )
         vhost_param = "--nb-cores=4 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[0]["pci"]]
-        for i in self.use_dsa_list:
+        for i in dsas:
             ports.append(i)
-        port_options = {self.use_dsa_list[0]: "max_queues=4"}
+        port_options = {dsas[0]: "max_queues=4"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             param=vhost_param,
@@ -978,22 +976,22 @@ class TestVhostDsa(TestCase):
                 "rxq6@%s-q0;"
                 "rxq7@%s-q0"
                 % (
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
-                    self.use_dsa_list[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
+                    dsas[0],
                 )
             )
             vhost_eal_param = (
@@ -1047,17 +1045,17 @@ class TestVhostDsa(TestCase):
         """
         Test Case 6: PVP packed ring dynamic queues vhost async operation with dsa dpdk driver channels
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
             "txq1@%s-q0;"
             "txq2@%s-q1"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
@@ -1065,11 +1063,11 @@ class TestVhostDsa(TestCase):
         )
         vhost_param = "--nb-cores=4 --txq=4 --rxq=4 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[0]["pci"]]
-        for i in self.use_dsa_list:
+        for i in dsas:
             ports.append(i)
         port_options = {
-            self.use_dsa_list[0]: "max_queues=4",
-            self.use_dsa_list[1]: "max_queues=4",
+            dsas[0]: "max_queues=4",
+            dsas[1]: "max_queues=4",
         }
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -1118,9 +1116,9 @@ class TestVhostDsa(TestCase):
             "rxq1@%s-q1;"
             "rxq2@%s-q1"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
@@ -1155,18 +1153,18 @@ class TestVhostDsa(TestCase):
             "rxq6@%s-q2;"
             "rxq7@%s-q2"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
             )
         )
         vhost_eal_param = (
@@ -1244,8 +1242,8 @@ class TestVhostDsa(TestCase):
         """
         Test Case 7: PVP split ring vhost async operation test with each tx/rx queue using one DSA kernel driver channel
         """
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=0)
-        dmas = "txq0@wq0.0;" "txq1@wq0.1;" "rxq0@wq0.2;" "rxq1@wq0.3"
+        wqs = self.DC.create_wq(wq_num=4, dsa_idxs=[0])
+        dmas = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (wqs[0], wqs[1], wqs[2], wqs[3])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=2,dmas=[%s]'" % dmas
         )
@@ -1300,24 +1298,42 @@ class TestVhostDsa(TestCase):
         """
         Test Case 8: PVP split ring all path multi-queues vhost async operation test with one DSA kernel driver channel being shared among multiple tx/rx queues
         """
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=4, dsa_idxs=[0])
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.1;"
-            "txq6@wq0.1;"
-            "txq7@wq0.1;"
-            "rxq0@wq0.0;"
-            "rxq1@wq0.0;"
-            "rxq2@wq0.0;"
-            "rxq3@wq0.0;"
-            "rxq4@wq0.1;"
-            "rxq5@wq0.1;"
-            "rxq6@wq0.1;"
-            "rxq7@wq0.1"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "txq6@%s;"
+            "txq7@%s;"
+            "rxq0@%s;"
+            "rxq1@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[1],
+                wqs[1],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[1],
+                wqs[1],
+            )
         )
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[%s]'" % dmas
@@ -1362,22 +1378,40 @@ class TestVhostDsa(TestCase):
         if not self.check_2M_env:
             self.vhost_user_pmd.quit()
             dmas = (
-                "txq0@wq0.0;"
-                "txq1@wq0.0;"
-                "txq2@wq0.1;"
-                "txq3@wq0.1;"
-                "txq4@wq0.2;"
-                "txq5@wq0.2;"
-                "txq6@wq0.3;"
-                "txq7@wq0.3;"
-                "rxq0@wq0.0;"
-                "rxq1@wq0.0;"
-                "rxq2@wq0.1;"
-                "rxq3@wq0.1;"
-                "rxq4@wq0.2;"
-                "rxq5@wq0.2;"
-                "rxq6@wq0.3;"
-                "rxq7@wq0.3"
+                "txq0@%s;"
+                "txq1@%s;"
+                "txq2@%s;"
+                "txq3@%s;"
+                "txq4@%s;"
+                "txq5@%s;"
+                "txq6@%s;"
+                "txq7@%s;"
+                "rxq0@%s;"
+                "rxq1@%s;"
+                "rxq2@%s;"
+                "rxq3@%s;"
+                "rxq4@%s;"
+                "rxq5@%s;"
+                "rxq6@%s;"
+                "rxq7@%s"
+                % (
+                    wqs[0],
+                    wqs[0],
+                    wqs[1],
+                    wqs[1],
+                    wqs[2],
+                    wqs[2],
+                    wqs[3],
+                    wqs[3],
+                    wqs[0],
+                    wqs[0],
+                    wqs[1],
+                    wqs[1],
+                    wqs[2],
+                    wqs[2],
+                    wqs[3],
+                    wqs[3],
+                )
             )
             vhost_eal_param = (
                 "--vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[%s]'" % dmas
@@ -1406,9 +1440,8 @@ class TestVhostDsa(TestCase):
         """
         Test Case 9: PVP split ring dynamic queues vhost async operation with dsa kernel driver channels
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
-        dmas = "txq0@wq0.0;" "txq1@wq0.1;" "txq2@wq0.2;" "txq3@wq0.2"
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
+        dmas = "txq0@%s;txq1@%s;txq2@%s;txq3@%s" % (wqs[0], wqs[1], wqs[2], wqs[2])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
@@ -1456,7 +1489,7 @@ class TestVhostDsa(TestCase):
         self.check_each_queue_of_port_packets(queues=1)
 
         self.vhost_user_pmd.quit()
-        dmas = "rxq0@wq0.0;" "rxq1@wq0.1;" "rxq2@wq0.1;" "rxq3@wq0.0"
+        dmas = "rxq0@%s;rxq1@%s;rxq2@%s;rxq3@%s" % (wqs[0], wqs[1], wqs[1], wqs[0])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
@@ -1476,18 +1509,32 @@ class TestVhostDsa(TestCase):
 
         self.vhost_user_pmd.quit()
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.2;"
-            "rxq2@wq1.0;"
-            "rxq3@wq1.1;"
-            "rxq4@wq1.2;"
-            "rxq5@wq1.2;"
-            "rxq6@wq1.2;"
-            "rxq7@wq1.2"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[2],
+                wqs[8],
+                wqs[9],
+                wqs[10],
+                wqs[10],
+                wqs[10],
+                wqs[10],
+            )
         )
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1508,18 +1555,32 @@ class TestVhostDsa(TestCase):
 
         self.vhost_user_pmd.quit()
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.1;"
-            "txq2@wq0.2;"
-            "txq3@wq0.3;"
-            "txq4@wq0.4;"
-            "txq5@wq0.5;"
-            "rxq2@wq1.2;"
-            "rxq3@wq1.3;"
-            "rxq4@wq1.4;"
-            "rxq5@wq1.5;"
-            "rxq6@wq1.6;"
-            "rxq7@wq1.7"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[1],
+                wqs[2],
+                wqs[3],
+                wqs[4],
+                wqs[5],
+                wqs[10],
+                wqs[11],
+                wqs[12],
+                wqs[13],
+                wqs[14],
+                wqs[15],
+            )
         )
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1571,9 +1632,8 @@ class TestVhostDsa(TestCase):
         Test Case 10: PVP packed ring all path multi-queues vhost async operation test with each tx/rx queue using one DSA kernel driver channel
 
         """
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=1)
-        dmas = "txq0@wq0.0;" "txq1@wq0.1;" "rxq0@wq1.0;" "rxq1@wq1.1"
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0, 1])
+        dmas = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (wqs[0], wqs[1], wqs[2], wqs[3])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=2,dmas=[%s]'" % dmas
         )
@@ -1629,24 +1689,42 @@ class TestVhostDsa(TestCase):
         """
         Test Case 11: PVP packed ring all path multi-queues vhost async operation test with one DSA kernel driver channel being shared among multiple tx/rx queues
         """
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.1;"
-            "txq6@wq0.1;"
-            "txq7@wq0.1;"
-            "rxq0@wq0.0;"
-            "rxq1@wq0.0;"
-            "rxq2@wq0.0;"
-            "rxq3@wq0.0;"
-            "rxq4@wq0.1;"
-            "rxq5@wq0.1;"
-            "rxq6@wq0.1;"
-            "rxq7@wq0.1"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "txq6@%s;"
+            "txq7@%s;"
+            "rxq0@%s;"
+            "rxq1@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[1],
+                wqs[1],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[1],
+                wqs[1],
+            )
         )
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[%s]'" % dmas
@@ -1691,24 +1769,6 @@ class TestVhostDsa(TestCase):
 
         if not self.check_2M_env:
             self.vhost_user_pmd.quit()
-            dmas = (
-                "txq0@wq0.0;"
-                "txq1@wq0.0;"
-                "txq2@wq0.0;"
-                "txq3@wq0.0;"
-                "txq4@wq0.1;"
-                "txq5@wq0.1;"
-                "txq6@wq0.1;"
-                "txq7@wq0.1;"
-                "rxq0@wq0.0;"
-                "rxq1@wq0.0;"
-                "rxq2@wq0.0;"
-                "rxq3@wq0.0;"
-                "rxq4@wq0.1;"
-                "rxq5@wq0.1;"
-                "rxq6@wq0.1;"
-                "rxq7@wq0.1"
-            )
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,dmas=[%s]'" % dmas
         )
@@ -1736,9 +1796,8 @@ class TestVhostDsa(TestCase):
         """
         Test Case 12: PVP packed ring dynamic queues vhost async operation with dsa kernel driver channels
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
-        dmas = "txq0@wq0.0;" "txq1@wq0.1;" "txq2@wq0.2;" "txq3@wq0.2"
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
+        dmas = "txq0@%s;txq1@%s;txq2@%s;txq3@%s" % (wqs[0], wqs[1], wqs[2], wqs[2])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
@@ -1786,7 +1845,7 @@ class TestVhostDsa(TestCase):
         self.check_each_queue_of_port_packets(queues=1)
 
         self.vhost_user_pmd.quit()
-        dmas = "rxq0@wq0.0;" "rxq1@wq0.1;" "rxq2@wq0.1;" "rxq3@wq0.0"
+        dmas = "rxq0@%s;rxq1@%s;rxq2@%s;rxq3@%s" % (wqs[0], wqs[1], wqs[1], wqs[0])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
@@ -1806,18 +1865,32 @@ class TestVhostDsa(TestCase):
 
         self.vhost_user_pmd.quit()
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.2;"
-            "rxq2@wq1.0;"
-            "rxq3@wq1.1;"
-            "rxq4@wq1.2;"
-            "rxq5@wq1.2;"
-            "rxq6@wq1.2;"
-            "rxq7@wq1.2"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[2],
+                wqs[8],
+                wqs[9],
+                wqs[10],
+                wqs[10],
+                wqs[10],
+                wqs[10],
+            )
         )
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1838,18 +1911,32 @@ class TestVhostDsa(TestCase):
 
         self.vhost_user_pmd.quit()
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.1;"
-            "txq2@wq0.2;"
-            "txq3@wq0.3;"
-            "txq4@wq0.4;"
-            "txq5@wq0.5;"
-            "rxq2@wq1.2;"
-            "rxq3@wq1.3;"
-            "rxq4@wq1.4;"
-            "rxq5@wq1.5;"
-            "rxq6@wq1.6;"
-            "rxq7@wq1.7"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[1],
+                wqs[2],
+                wqs[3],
+                wqs[4],
+                wqs[5],
+                wqs[10],
+                wqs[11],
+                wqs[12],
+                wqs[13],
+                wqs[14],
+                wqs[15],
+            )
         )
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1894,15 +1981,14 @@ class TestVhostDsa(TestCase):
         """
         Test Case 13: PVP split and packed ring dynamic queues vhost async operation with dsa dpdk and kernel driver channels
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2,
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2,
             driver_name="vfio-pci",
-            dsa_index_list=[2, 3],
+            dsa_idxs=[2, 3],
             socket=self.ports_socket,
         )
-        dmas = "txq0@wq0.0;" "txq1@wq0.0"
+        dmas = "txq0@%s;txq1@%s" % (wqs[0], wqs[0])
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
@@ -1944,14 +2030,14 @@ class TestVhostDsa(TestCase):
             "rxq2@%s-q1;"
             "rxq3@%s-q2"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
             )
         )
         vhost_eal_param = (
@@ -1959,11 +2045,11 @@ class TestVhostDsa(TestCase):
         )
         vhost_param = "--nb-cores=4 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[0]["pci"]]
-        for i in self.use_dsa_list:
+        for i in dsas:
             ports.append(i)
         port_options = {
-            self.use_dsa_list[0]: "max_queues=2",
-            self.use_dsa_list[1]: "max_queues=4",
+            dsas[0]: "max_queues=2",
+            dsas[1]: "max_queues=4",
         }
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -1980,13 +2066,13 @@ class TestVhostDsa(TestCase):
 
         self.vhost_user_pmd.quit()
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.1;"
-            "txq2@wq0.2;"
-            "txq3@wq0.3;"
-            "txq4@wq0.4;"
-            "txq5@wq0.5;"
-            "txq6@wq0.6;"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "txq6@%s;"
             "rxq2@%s-q0;"
             "rxq3@%s-q1;"
             "rxq4@%s-q0;"
@@ -1994,12 +2080,19 @@ class TestVhostDsa(TestCase):
             "rxq6@%s-q2;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
+                wqs[0],
+                wqs[1],
+                wqs[2],
+                wqs[3],
+                wqs[4],
+                wqs[5],
+                wqs[6],
+                dsas[0],
+                dsas[0],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
             )
         )
         vhost_eal_param = (
@@ -2007,11 +2100,11 @@ class TestVhostDsa(TestCase):
         )
         vhost_param = "--nb-cores=4 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[0]["pci"]]
-        for i in self.use_dsa_list:
+        for i in dsas:
             ports.append(i)
         port_options = {
-            self.use_dsa_list[0]: "max_queues=2",
-            self.use_dsa_list[1]: "max_queues=4",
+            dsas[0]: "max_queues=2",
+            dsas[1]: "max_queues=4",
         }
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -2045,39 +2138,16 @@ class TestVhostDsa(TestCase):
                 self.check_each_queue_of_port_packets(queues=8)
 
         self.vhost_user_pmd.quit()
-        dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.1;"
-            "txq2@wq0.2;"
-            "txq3@wq0.3;"
-            "txq4@wq0.4;"
-            "txq5@wq0.5;"
-            "txq6@wq0.6;"
-            "rxq2@%s-q0;"
-            "rxq3@%s-q1;"
-            "rxq4@%s-q0;"
-            "rxq5@%s-q1;"
-            "rxq6@%s-q2;"
-            "rxq7@%s-q3"
-            % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-            )
-        )
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=4 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
         ports = [self.dut.ports_info[0]["pci"]]
-        for i in self.use_dsa_list:
+        for i in dsas:
             ports.append(i)
         port_options = {
-            self.use_dsa_list[0]: "max_queues=2",
-            self.use_dsa_list[1]: "max_queues=4",
+            dsas[0]: "max_queues=2",
+            dsas[1]: "max_queues=4",
         }
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,

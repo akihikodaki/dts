@@ -46,10 +46,6 @@ class TestVM2VMVirtioUserDsa(TestCase):
         self.dut.send_expect("rm -rf %s" % self.dump_vhost_pcap, "#")
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT %s" % self.pdump_name, "#")
-        self.use_dsa_list = []
-
-        self.DC.reset_all_work_queue()
-        self.DC.bind_all_dsa_to_kernel()
 
     @property
     def check_2M_env(self):
@@ -279,16 +275,16 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 1: VM2VM vhost-user/virtio-user split ring non-mergeable path and multi-queues payload check with dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.port_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.port_socket
         )
         dmas1 = "txq0@%s-q0;rxq1@%s-q0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q1;rxq1@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -296,14 +292,14 @@ class TestVM2VMVirtioUserDsa(TestCase):
             % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
             port_options=port_options,
-            ports=self.use_dsa_list[0:1],
+            ports=dsas[0:1],
             iova_mode="va",
         )
         virtio1_eal_param = "--vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,mrg_rxbuf=0,in_order=0,queue_size=4096"
@@ -329,16 +325,16 @@ class TestVM2VMVirtioUserDsa(TestCase):
         self.vhost_user_pmd.execute_cmd("quit", "#", 60)
         self.clear_virtio_user1_stats()
         dmas1 = "txq0@%s-q1;txq1@%s-q1;rxq0@%s-q1;rxq1@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q1;txq1@%s-q1;rxq1@%s-q1;rxq1@%s-q1" % (
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
+            dsas[1],
+            dsas[1],
+            dsas[1],
+            dsas[1],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -346,8 +342,8 @@ class TestVM2VMVirtioUserDsa(TestCase):
             % (dmas1, dmas2)
         )
         port_options = {
-            self.use_dsa_list[0]: "max_queues=4",
-            self.use_dsa_list[1]: "max_queues=4",
+            dsas[0]: "max_queues=4",
+            dsas[1]: "max_queues=4",
         }
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -355,7 +351,7 @@ class TestVM2VMVirtioUserDsa(TestCase):
             param=vhost_param,
             no_pci=False,
             port_options=port_options,
-            ports=self.use_dsa_list,
+            ports=dsas,
             iova_mode="va",
         )
         self.start_pdump_to_capture_pkt()
@@ -370,16 +366,16 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 2: VM2VM split ring inorder non-mergeable path and multi-queues payload check with dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.port_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.port_socket
         )
         dmas1 = "txq0@%s-q0;rxq1@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q2;rxq1@%s-q3" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -387,14 +383,14 @@ class TestVM2VMVirtioUserDsa(TestCase):
             % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
-        port_options = {self.use_dsa_list[0]: "max_queues=4"}
+        port_options = {dsas[0]: "max_queues=4"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
             port_options=port_options,
-            ports=self.use_dsa_list[0:1],
+            ports=dsas[0:1],
             iova_mode="va",
         )
         virtio1_eal_param = "--vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,mrg_rxbuf=0,in_order=1,queue_size=4096"
@@ -420,16 +416,16 @@ class TestVM2VMVirtioUserDsa(TestCase):
         self.vhost_user_pmd.execute_cmd("quit", "#", 60)
         self.clear_virtio_user1_stats()
         dmas1 = "txq0@%s-q1;txq1@%s-q1;rxq0@%s-q1;rxq1@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q1;txq1@%s-q1;rxq1@%s-q1;rxq1@%s-q1" % (
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
+            dsas[1],
+            dsas[1],
+            dsas[1],
+            dsas[1],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -437,8 +433,8 @@ class TestVM2VMVirtioUserDsa(TestCase):
             % (dmas1, dmas2)
         )
         port_options = {
-            self.use_dsa_list[0]: "max_queues=2",
-            self.use_dsa_list[1]: "max_queues=2",
+            dsas[0]: "max_queues=2",
+            dsas[1]: "max_queues=2",
         }
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -446,7 +442,7 @@ class TestVM2VMVirtioUserDsa(TestCase):
             param=vhost_param,
             no_pci=False,
             port_options=port_options,
-            ports=self.use_dsa_list,
+            ports=dsas,
             iova_mode="va",
         )
         self.start_pdump_to_capture_pkt()
@@ -461,16 +457,16 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 3: VM2VM split ring inorder mergeable path and multi-queues test non-indirect descriptor and payload check with dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.port_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.port_socket
         )
         dmas1 = "txq0@%s-q0;rxq1@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q0;rxq1@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -479,14 +475,14 @@ class TestVM2VMVirtioUserDsa(TestCase):
         )
 
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx"
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
             port_options=port_options,
-            ports=self.use_dsa_list[0:1],
+            ports=dsas[0:1],
             iova_mode="va",
         )
 
@@ -514,16 +510,16 @@ class TestVM2VMVirtioUserDsa(TestCase):
         self.virtio_user1_pmd.execute_cmd("quit", "#", 60)
         self.vhost_user_pmd.execute_cmd("quit", "#", 60)
         dmas1 = "txq0@%s-q0;txq1@%s-q1;rxq0@%s-q2;rxq1@%s-q3" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q0;txq1@%s-q1;rxq1@%s-q2;rxq1@%s-q3" % (
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
+            dsas[1],
+            dsas[1],
+            dsas[1],
+            dsas[1],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -531,8 +527,8 @@ class TestVM2VMVirtioUserDsa(TestCase):
             % (dmas1, dmas2)
         )
         port_options = {
-            self.use_dsa_list[0]: "max_queues=4",
-            self.use_dsa_list[1]: "max_queues=4",
+            dsas[0]: "max_queues=4",
+            dsas[1]: "max_queues=4",
         }
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -540,7 +536,7 @@ class TestVM2VMVirtioUserDsa(TestCase):
             param=vhost_param,
             no_pci=False,
             port_options=port_options,
-            ports=self.use_dsa_list,
+            ports=dsas,
             iova_mode="va",
         )
         self.start_virtio_testpmd_with_vhost_net1(
@@ -565,16 +561,16 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 4: VM2VM split ring mergeable path and multi-queues test indirect descriptor and payload check with dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.port_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.port_socket
         )
         dmas1 = "txq0@%s-q0;rxq1@%s-q0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q0;rxq1@%s-q0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -582,14 +578,14 @@ class TestVM2VMVirtioUserDsa(TestCase):
             % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx"
-        port_options = {self.use_dsa_list[0]: "max_queues=1"}
+        port_options = {dsas[0]: "max_queues=1"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
             port_options=port_options,
-            ports=self.use_dsa_list[0:1],
+            ports=dsas[0:1],
             iova_mode="va",
         )
         virtio1_eal_param = "--vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,mrg_rxbuf=1,in_order=0,queue_size=256"
@@ -616,16 +612,16 @@ class TestVM2VMVirtioUserDsa(TestCase):
         self.virtio_user1_pmd.execute_cmd("quit", "#", 60)
         self.vhost_user_pmd.execute_cmd("quit", "#", 60)
         dmas1 = "txq0@%s-q0;txq1@%s-q1;rxq0@%s-q2;rxq1@%s-q3" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q0;txq1@%s-q1;rxq1@%s-q2;rxq1@%s-q3" % (
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
+            dsas[1],
+            dsas[1],
+            dsas[1],
+            dsas[1],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -633,8 +629,8 @@ class TestVM2VMVirtioUserDsa(TestCase):
             % (dmas1, dmas2)
         )
         port_options = {
-            self.use_dsa_list[0]: "max_queues=4",
-            self.use_dsa_list[1]: "max_queues=4",
+            dsas[0]: "max_queues=4",
+            dsas[1]: "max_queues=4",
         }
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -642,7 +638,7 @@ class TestVM2VMVirtioUserDsa(TestCase):
             param=vhost_param,
             no_pci=False,
             port_options=port_options,
-            ports=self.use_dsa_list,
+            ports=dsas,
             iova_mode="va",
         )
         self.start_virtio_testpmd_with_vhost_net1(
@@ -667,18 +663,18 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 5: VM2VM split ring vectorized path and multi-queues payload check with vhost async operation and dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.port_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.port_socket
         )
         dmas1 = "txq0@%s-q0;rxq0@%s-q0;rxq1@%s-q0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q1;rxq0@%s-q1;rxq1@%s-q0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -692,7 +688,7 @@ class TestVM2VMVirtioUserDsa(TestCase):
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             iova_mode="va",
         )
 
@@ -722,16 +718,16 @@ class TestVM2VMVirtioUserDsa(TestCase):
         self.vhost_user_pmd.execute_cmd("quit", "#", 60)
         self.clear_virtio_user1_stats()
         dmas1 = "txq0@%s-q3;txq1@%s-q3;rxq0@%s-q1;rxq1@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
+            dsas[0],
+            dsas[0],
+            dsas[1],
+            dsas[1],
         )
         dmas2 = "txq0@%s-q1;txq1@%s-q1;rxq1@%s-q3;rxq1@%s-q3" % (
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[1],
+            dsas[1],
+            dsas[0],
+            dsas[0],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -739,8 +735,8 @@ class TestVM2VMVirtioUserDsa(TestCase):
             % (dmas1, dmas2)
         )
         port_options = {
-            self.use_dsa_list[0]: "max_queues=4",
-            self.use_dsa_list[1]: "max_queues=4",
+            dsas[0]: "max_queues=4",
+            dsas[1]: "max_queues=4",
         }
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -748,7 +744,7 @@ class TestVM2VMVirtioUserDsa(TestCase):
             param=vhost_param,
             no_pci=False,
             port_options=port_options,
-            ports=self.use_dsa_list,
+            ports=dsas,
             iova_mode="va",
         )
         self.start_pdump_to_capture_pkt()
@@ -763,16 +759,16 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 6: VM2VM packed ring non-mergeable path and multi-queues payload check with dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.port_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.port_socket
         )
         dmas1 = "txq0@%s-q1;rxq1@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q1;rxq1@%s-q1" % (
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
+            dsas[1],
+            dsas[1],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -786,7 +782,7 @@ class TestVM2VMVirtioUserDsa(TestCase):
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             iova_mode="va",
         )
 
@@ -816,16 +812,16 @@ class TestVM2VMVirtioUserDsa(TestCase):
         self.vhost_user_pmd.execute_cmd("quit", "#", 60)
         self.clear_virtio_user1_stats()
         dmas1 = "txq0@%s-q0;txq1@%s-q1;rxq0@%s-q0;rxq1@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q0;txq1@%s-q1;rxq1@%s-q0;rxq1@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -833,8 +829,8 @@ class TestVM2VMVirtioUserDsa(TestCase):
             % (dmas1, dmas2)
         )
         port_options = {
-            self.use_dsa_list[0]: "max_queues=4",
-            self.use_dsa_list[1]: "max_queues=4",
+            dsas[0]: "max_queues=4",
+            dsas[1]: "max_queues=4",
         }
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -842,7 +838,7 @@ class TestVM2VMVirtioUserDsa(TestCase):
             param=vhost_param,
             no_pci=False,
             port_options=port_options,
-            ports=self.use_dsa_list[0:1],
+            ports=dsas[0:1],
             iova_mode="va",
         )
         self.start_pdump_to_capture_pkt()
@@ -857,16 +853,16 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 7: VM2VM packed ring inorder non-mergeable path and multi-queues payload check with dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.port_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.port_socket
         )
         dmas1 = "txq0@%s-q0;rxq1@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q0;rxq1@%s-q1" % (
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
+            dsas[1],
+            dsas[1],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -876,8 +872,8 @@ class TestVM2VMVirtioUserDsa(TestCase):
 
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
         port_options = {
-            self.use_dsa_list[0]: "max_queues=2",
-            self.use_dsa_list[1]: "max_queues=2",
+            dsas[0]: "max_queues=2",
+            dsas[1]: "max_queues=2",
         }
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -885,7 +881,7 @@ class TestVM2VMVirtioUserDsa(TestCase):
             param=vhost_param,
             no_pci=False,
             port_options=port_options,
-            ports=self.use_dsa_list,
+            ports=dsas,
             iova_mode="va",
         )
 
@@ -915,16 +911,16 @@ class TestVM2VMVirtioUserDsa(TestCase):
         self.vhost_user_pmd.execute_cmd("quit", "#", 60)
         self.clear_virtio_user1_stats()
         dmas1 = "txq0@%s-q5;txq1@%s-q6;rxq0@%s-q5;rxq1@%s-q6" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q5;txq1@%s-q6;rxq1@%s-q5;rxq1@%s-q6" % (
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
+            dsas[1],
+            dsas[1],
+            dsas[1],
+            dsas[1],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -936,7 +932,7 @@ class TestVM2VMVirtioUserDsa(TestCase):
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             iova_mode="va",
         )
         self.start_pdump_to_capture_pkt()
@@ -951,16 +947,16 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 8: VM2VM packed ring mergeable path and multi-queues payload check with dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.port_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.port_socket
         )
         dmas1 = "txq0@%s-q0;rxq1@%s-q0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q0;rxq1@%s-q0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -969,14 +965,14 @@ class TestVM2VMVirtioUserDsa(TestCase):
         )
 
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
-        port_options = {self.use_dsa_list[0]: "max_queues=1"}
+        port_options = {dsas[0]: "max_queues=1"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
             port_options=port_options,
-            ports=self.use_dsa_list[0:1],
+            ports=dsas[0:1],
             iova_mode="va",
         )
 
@@ -1006,16 +1002,16 @@ class TestVM2VMVirtioUserDsa(TestCase):
         self.vhost_user_pmd.execute_cmd("quit", "#", 60)
         self.clear_virtio_user1_stats()
         dmas1 = "txq0@%s-q0;txq1@%s-q1;rxq0@%s-q2;rxq1@%s-q3" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q4;txq1@%s-q5;rxq1@%s-q6;rxq1@%s-q7" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -1027,7 +1023,7 @@ class TestVM2VMVirtioUserDsa(TestCase):
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list[0:1],
+            ports=dsas[0:1],
             iova_mode="va",
         )
         self.start_pdump_to_capture_pkt()
@@ -1042,18 +1038,18 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 9: VM2VM packed ring inorder mergeable path and multi-queues payload check with dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.port_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.port_socket
         )
         dmas1 = "txq0@%s-q0;rxq0@%s-q0;rxq1@%s-q0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q0;txq1@%s-q0;rxq1@%s-q0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -1067,7 +1063,7 @@ class TestVM2VMVirtioUserDsa(TestCase):
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             iova_mode="va",
         )
 
@@ -1097,16 +1093,16 @@ class TestVM2VMVirtioUserDsa(TestCase):
         self.vhost_user_pmd.execute_cmd("quit", "#", 60)
         self.clear_virtio_user1_stats()
         dmas1 = "txq0@%s-q0;txq1@%s-q1;rxq0@%s-q0;rxq1@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q0;txq1@%s-q1;rxq1@%s-q0;rxq1@%s-q1" % (
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
+            dsas[1],
+            dsas[1],
+            dsas[1],
+            dsas[1],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -1118,7 +1114,7 @@ class TestVM2VMVirtioUserDsa(TestCase):
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             iova_mode="va",
         )
         self.start_pdump_to_capture_pkt()
@@ -1133,20 +1129,20 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 10: VM2VM packed ring vectorized-tx path and multi-queues test indirect descriptor and payload check with dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.port_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.port_socket
         )
         dmas1 = "txq0@%s-q0;txq1@%s-q0;rxq0@%s-q0;rxq1@%s-q0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q1;txq1@%s-q1;rxq0@%s-q1;rxq1@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -1155,13 +1151,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
         )
 
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx"
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list[0:1],
+            ports=dsas[0:1],
             port_options=port_options,
             iova_mode="va",
         )
@@ -1193,14 +1189,14 @@ class TestVM2VMVirtioUserDsa(TestCase):
         self.virtio_user1_pmd.execute_cmd("quit", "#", 60)
         self.vhost_user_pmd.execute_cmd("quit", "#", 60)
         dmas1 = "txq0@%s-q0;txq1@%s-q1;rxq0@%s-q2;rxq1@%s-q3" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q0;txq1@%s-q1" % (
-            self.use_dsa_list[1],
-            self.use_dsa_list[1],
+            dsas[1],
+            dsas[1],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -1208,15 +1204,15 @@ class TestVM2VMVirtioUserDsa(TestCase):
             % (dmas1, dmas2)
         )
         port_options = {
-            self.use_dsa_list[0]: "max_queues=4",
-            self.use_dsa_list[1]: "max_queues=2",
+            dsas[0]: "max_queues=4",
+            dsas[1]: "max_queues=2",
         }
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
             iova_mode="va",
         )
@@ -1242,20 +1238,20 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 11: VM2VM packed ring vectorized path and payload check test with dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.port_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.port_socket
         )
         dmas1 = "txq0@%s-q0;txq1@%s-q0;rxq0@%s-q0;rxq1@%s-q0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q1;txq1@%s-q1;rxq0@%s-q1;rxq1@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -1264,13 +1260,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
         )
 
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list[0:1],
+            ports=dsas[0:1],
             port_options=port_options,
             iova_mode="va",
         )
@@ -1304,20 +1300,20 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 12: VM2VM packed ring vectorized path payload check test with ring size is not power of 2 with dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.port_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.port_socket
         )
         dmas1 = "txq0@%s-q0;txq1@%s-q0;rxq0@%s-q1;rxq1@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         dmas2 = "txq0@%s-q0;txq1@%s-q0;rxq0@%s-q1;rxq1@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -1326,13 +1322,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
         )
 
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list[0:1],
+            ports=dsas[0:1],
             port_options=port_options,
             iova_mode="va",
         )
@@ -1366,10 +1362,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 13: VM2VM split ring non-mergeable path and multi-queues payload check with dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dmas1 = "txq0@%s;rxq1@%s" % (wqs[0], wqs[0])
+        dmas2 = "txq0@%s;rxq1@%s" % (wqs[1], wqs[1])
         vhost_eal_param = (
-            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0@wq0.0;rxq1@wq0.0]' "
-            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@wq0.1;rxq1@wq0.1]'"
+            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
         self.start_vhost_testpmd(
@@ -1409,10 +1408,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 14: VM2VM split ring inorder non-mergeable path and multi-queues payload check with dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=4, dsa_idxs=[0])
+        dmas1 = "txq0@%s;rxq1@%s" % (wqs[0], wqs[1])
+        dmas2 = "txq0@%s;rxq1@%s" % (wqs[2], wqs[3])
         vhost_eal_param = (
-            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0@wq0.0;rxq1@wq0.1]' "
-            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@wq0.2;rxq1@wq0.3]'"
+            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
         self.start_vhost_testpmd(
@@ -1452,10 +1454,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 15: VM2VM split ring inorder mergeable path and multi-queues test non-indirect descriptor and payload check with dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=4, dsa_idxs=[0])
+        dmas1 = "txq0@%s;rxq1@%s" % (wqs[0], wqs[1])
+        dmas2 = "txq0@%s;rxq1@%s" % (wqs[2], wqs[3])
         vhost_eal_param = (
-            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0@wq0.0;rxq1@wq0.1]' "
-            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@wq0.2;rxq1@wq0.3]'"
+            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx"
         self.start_vhost_testpmd(
@@ -1495,10 +1500,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 16: VM2VM split ring mergeable path and multi-queues test indirect descriptor and payload check with dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s;rxq0@%s" % (wqs[0], wqs[0], wqs[0], wqs[0])
+        dmas2 = "txq0@%s;txq1@%s;rxq0@%s;rxq0@%s" % (wqs[1], wqs[1], wqs[1], wqs[1])
         vhost_eal_param = (
-            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0@wq0.0;txq1@wq0.0;rxq0@wq0.0;rxq0@wq0.0]' "
-            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@wq0.1;txq1@wq0.1;rxq0@wq0.1;rxq0@wq0.1]'"
+            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx"
         self.start_vhost_testpmd(
@@ -1538,10 +1546,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 17: VM2VM split ring vectorized path and multi-queues payload check with vhost async operation and dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=4, dsa_idxs=[0])
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (wqs[0], wqs[0], wqs[0], wqs[0])
+        dmas2 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (wqs[0], wqs[0], wqs[0], wqs[0])
         vhost_eal_param = (
-            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0@wq0.0;txq1@wq0.0;rxq0@wq0.0;rxq1@wq0.0]' "
-            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@wq0.0;txq1@wq0.0;rxq0@wq0.0;rxq1@wq0.0]'"
+            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
         self.start_vhost_testpmd(
@@ -1581,10 +1592,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 18: VM2VM packed ring non-mergeable path and multi-queues payload check with dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dmas1 = "txq0@%s;rxq1@%s" % (wqs[0], wqs[0])
+        dmas2 = "txq0@%s;rxq1@%s" % (wqs[1], wqs[1])
         vhost_eal_param = (
-            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0@wq0.0;rxq1@wq0.0]' "
-            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@wq0.1;rxq1@wq0.1]'"
+            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
         self.start_vhost_testpmd(
@@ -1624,11 +1638,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 19: VM2VM packed ring inorder non-mergeable path and multi-queues payload check with dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0, 1])
+        dmas1 = "txq0@%s;rxq1@%s" % (wqs[0], wqs[1])
+        dmas2 = "txq0@%s;rxq1@%s" % (wqs[2], wqs[3])
         vhost_eal_param = (
-            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0@wq0.0;rxq1@wq0.1]' "
-            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@wq1.0;rxq1@wq1.1]'"
+            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
         self.start_vhost_testpmd(
@@ -1668,10 +1684,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 20: VM2VM packed ring mergeable path and multi-queues payload check with dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (wqs[0], wqs[0], wqs[1], wqs[1])
+        dmas2 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (wqs[1], wqs[1], wqs[0], wqs[0])
         vhost_eal_param = (
-            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0@wq0.0;txq1@wq0.0;rxq0@wq0.1;rxq1@wq0.1]' "
-            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@wq0.1;txq1@wq0.1;rxq0@wq0.0;rxq1@wq0.0]'"
+            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
         self.start_vhost_testpmd(
@@ -1711,11 +1730,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 21: VM2VM packed ring inorder mergeable path and multi-queues payload check with dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=1, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=1, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=1, dsa_idxs=[0, 1])
+        dmas1 = "txq0@%s;rxq0@%s;rxq1@%s" % (wqs[0], wqs[0], wqs[0])
+        dmas2 = "txq0@%s;txq1@%s;rxq1@%s" % (wqs[1], wqs[1], wqs[1])
         vhost_eal_param = (
-            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0@wq0.0;rxq0@wq0.0;rxq1@wq0.0]' "
-            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@wq1.0;txq1@wq1.0;rxq1@wq1.0]'"
+            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
         self.start_vhost_testpmd(
@@ -1755,11 +1776,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 22: VM2VM packed ring vectorized-tx path and multi-queues test indirect descriptor and payload check with dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0, 1])
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (wqs[0], wqs[0], wqs[1], wqs[1])
+        dmas2 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (wqs[2], wqs[2], wqs[3], wqs[3])
         vhost_eal_param = (
-            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0@wq0.0;txq1@wq0.0;rxq0@wq0.1;rxq1@wq0.1]' "
-            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@wq1.0;txq1@wq1.0;rxq0@wq1.1;rxq1@wq1.1]'"
+            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
         self.start_vhost_testpmd(
@@ -1799,11 +1822,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 23: VM2VM packed ring vectorized path and multi-queues test indirect descriptor and payload check with dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0, 1])
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (wqs[0], wqs[0], wqs[1], wqs[1])
+        dmas2 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (wqs[2], wqs[2], wqs[3], wqs[3])
         vhost_eal_param = (
-            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0@wq0.0;txq1@wq0.0;rxq0@wq0.1;rxq1@wq0.1]' "
-            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@wq1.0;txq1@wq1.0;rxq0@wq1.1;rxq1@wq1.1]'"
+            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
         self.start_vhost_testpmd(
@@ -1843,11 +1868,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 24: VM2VM packed ring vectorized path payload check test with ring size is not power of 2 with dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0, 1])
+        dmas1 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (wqs[0], wqs[0], wqs[1], wqs[1])
+        dmas2 = "txq0@%s;txq1@%s;rxq0@%s;rxq1@%s" % (wqs[2], wqs[2], wqs[3], wqs[3])
         vhost_eal_param = (
-            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0@wq0.0;txq1@wq0.0;rxq0@wq0.1;rxq1@wq0.1]' "
-            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@wq1.0;txq1@wq1.0;rxq0@wq1.1;rxq1@wq1.1]'"
+            "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
+            "--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[%s]'"
+            % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
         self.start_vhost_testpmd(
@@ -1887,18 +1914,18 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 25: VM2VM split ring mergeable path and multi-queues test indirect descriptor with dsa dpdk and kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=0)
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1,
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1,
             driver_name="vfio-pci",
-            dsa_index_list=[1],
+            dsa_idxs=[1],
             socket=self.port_socket,
         )
-        dmas1 = "txq0@wq0.0;rxq0@wq0.0;rxq1@wq0.0"
+        dmas1 = "txq0@%s;rxq0@%s;rxq1@%s" % (wqs[0], wqs[0], wqs[0])
         dmas2 = "txq0@%s-q0;txq1@%s-q0;rxq1@%s-q0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
+            dsas[0],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -1906,13 +1933,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
             % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx"
-        port_options = {self.use_dsa_list[0]: "max_queues=1"}
+        port_options = {dsas[0]: "max_queues=1"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
             iova_mode="va",
         )
@@ -1946,20 +1973,24 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 26: VM2VM packed ring inorder mergeable path and multi-queues payload check with dsa dpdk and kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=0)
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1,
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1,
             driver_name="vfio-pci",
-            dsa_index_list=[1],
+            dsa_idxs=[1],
             socket=self.port_socket,
         )
-        dmas1 = "txq0@%s-q0;txq1@wq0.0;rxq0@%s-q0;rxq1@wq0.0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+        dmas1 = "txq0@%s-q0;txq1@%s;rxq0@%s-q0;rxq1@%s" % (
+            dsas[0],
+            wqs[0],
+            dsas[0],
+            wqs[0],
         )
-        dmas2 = "txq0@wq0.0;txq1@%s-q0;rxq0@wq0.0;rxq1@%s-q0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+        dmas2 = "txq0@%s;txq1@%s-q0;rxq0@%s;rxq1@%s-q0" % (
+            wqs[0],
+            dsas[0],
+            wqs[0],
+            dsas[0],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -1967,13 +1998,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
             % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
-        port_options = {self.use_dsa_list[0]: "max_queues=1"}
+        port_options = {dsas[0]: "max_queues=1"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
             iova_mode="va",
         )
@@ -2007,20 +2038,24 @@ class TestVM2VMVirtioUserDsa(TestCase):
         """
         Test Case 27: VM2VM packed ring vectorized-tx path test batch processing with dsa dpdk and kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=0)
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1,
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1,
             driver_name="vfio-pci",
-            dsa_index_list=[1],
+            dsa_idxs=[1],
             socket=self.port_socket,
         )
-        dmas1 = "txq0@%s-q0;txq1@wq0.0;rxq0@%s-q0;rxq1@wq0.0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+        dmas1 = "txq0@%s-q0;txq1@%s;rxq0@%s-q0;rxq1@%s" % (
+            dsas[0],
+            wqs[0],
+            dsas[0],
+            wqs[0],
         )
-        dmas2 = "txq0@wq0.0;txq1@%s-q0;rxq0@wq0.0;rxq1@%s-q0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+        dmas2 = "txq0@%s;txq1@%s-q0;rxq0@%s;rxq1@%s-q0" % (
+            wqs[0],
+            dsas[0],
+            wqs[0],
+            dsas[0],
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[%s]' "
@@ -2028,13 +2063,13 @@ class TestVM2VMVirtioUserDsa(TestCase):
             % (dmas1, dmas2)
         )
         vhost_param = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
-        port_options = {self.use_dsa_list[0]: "max_queues=1"}
+        port_options = {dsas[0]: "max_queues=1"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
             iova_mode="va",
         )
@@ -2072,8 +2107,6 @@ class TestVM2VMVirtioUserDsa(TestCase):
         self.quit_all_testpmd()
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT %s" % self.pdump_name, "#")
-        self.DC.reset_all_work_queue()
-        self.DC.bind_all_dsa_to_kernel()
 
     def tear_down_all(self):
         pass

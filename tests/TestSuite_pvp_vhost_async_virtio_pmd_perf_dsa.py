@@ -22,6 +22,7 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Run at the start of each test suite.
         """
+        self.frame_sizes = [64, 128, 256, 512, 1024, 1280, 1518, 2048, 4096]
         self.vhost_user = self.dut.new_session(suite="vhost-user")
         self.vhost_user_pmd = PmdOutput(self.dut, self.vhost_user)
         self.dut_ports = self.dut.get_ports()
@@ -51,8 +52,6 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
-        self.DC.reset_all_work_queue()
-        self.DC.bind_all_dsa_to_kernel()
         # Prepare the result table
         self.table_header = ["Frame"]
         self.table_header.append("Mode/RXD-TXD")
@@ -104,7 +103,7 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
             "mq=on,vectors=%s," % (2 + self.queues * 2) if self.queues > 1 else ""
         )
         vm_params["opt_settings"] = (
-            "disable-modern=false,mrg_rxbuf=on,%srx_queue_size=1024,tx_queue_size=1024,csum=off,guest_csum=off,gso= off,host_tso4=off,guest_tso4=off,guest_ecn=off%s"
+            "disable-modern=false,mrg_rxbuf=on,%srx_queue_size=1024,tx_queue_size=1024,csum=off,guest_csum=off,gso=off,host_tso4=off,guest_tso4=off,guest_ecn=off%s"
             % (mq_param, packed_param)
         )
         self.vm.set_vm_device(**vm_params)
@@ -134,11 +133,7 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Send packet with packet generator and verify
         """
-        if "4c_4q" or "4c_8q" not in self.running_case:
-            frame_sizes = [64, 128, 256, 512, 1024, 1280, 1518]
-        else:
-            frame_sizes = [64, 128, 256, 512, 1024, 1280, 1518, 2048, 4096]
-        for frame_size in frame_sizes:
+        for frame_size in self.frame_sizes:
             payload_size = frame_size - self.headers_size
             tgen_input = []
             self.throughput[frame_size] = dict()
@@ -308,10 +303,7 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
             "--socket-mem 8192 --vdev 'net_vhost0,iface=vhost-net,queues=%d,dmas=[%s]'"
             % (self.queues, self.dmas)
         )
-        if "4c_4q" or "4c_8q" not in self.running_case:
-            max_len_param = ""
-        else:
-            max_len_param = "--max-pkt-len=5200 --tx-offloads=0x00008000"
+        max_len_param = "--max-pkt-len=5200 --tx-offloads=0x00008000"
         vhost_param = (
             "--nb-cores=%d --txq=%d --rxq=%d --txd=2048 --rxd=2048 %s --forward-mode=mac -a"
             % (self.nb_cores, self.queues, self.queues, max_len_param)
@@ -348,9 +340,9 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 1: pvp split ring vhost async test with 1core 1queue using idxd kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
         self.queues = 1
-        self.dmas = "txq0@wq0.0;rxq0@wq0.1"
+        self.dmas = "txq0@%s;rxq0@%s" % (wqs[0], wqs[1])
         self.nb_cores = 1
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
         self.perf_test(
@@ -361,9 +353,9 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 2: pvp split ring vhost async test with 1core 2queue using idxd kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=4, dsa_idxs=[0])
         self.queues = 2
-        self.dmas = "txq0@wq0.0;rxq0@wq0.1;txq1@wq0.2;rxq1@wq0.3"
+        self.dmas = "txq0@%s;rxq0@%s;txq1@%s;rxq1@%s" % (wqs[0], wqs[1], wqs[2], wqs[3])
         self.nb_cores = 1
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
         self.perf_test(
@@ -374,9 +366,9 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 3: pvp split ring vhost async test with 2core 2queue using idxd kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=4, dsa_idxs=[0])
         self.queues = 2
-        self.dmas = "txq0@wq0.0;rxq0@wq0.1;txq1@wq0.2;rxq1@wq0.3"
+        self.dmas = "txq0@%s;rxq0@%s;txq1@%s;rxq1@%s" % (wqs[0], wqs[1], wqs[2], wqs[3])
         self.nb_cores = 2
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
         self.perf_test(
@@ -387,17 +379,17 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 4: pvp split ring vhost async test with 2core 4queue using idxd kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0])
         self.queues = 4
         self.dmas = (
-            "txq0@wq0.0;"
-            "rxq0@wq0.1;"
-            "txq1@wq0.2;"
-            "rxq1@wq0.3;"
-            "txq2@wq0.4;"
-            "rxq2@wq0.5;"
-            "txq3@wq0.6;"
-            "rxq3@wq0.7"
+            "txq0@%s;"
+            "rxq0@%s;"
+            "txq1@%s;"
+            "rxq1@%s;"
+            "txq2@%s;"
+            "rxq2@%s;"
+            "txq3@%s;"
+            "rxq3@%s" % (wqs[0], wqs[1], wqs[2], wqs[3], wqs[4], wqs[5], wqs[6], wqs[7])
         )
         self.nb_cores = 2
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
@@ -409,17 +401,17 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 5: pvp split ring vhost async test with 4core 4queue using idxd kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0])
         self.queues = 4
         self.dmas = (
-            "txq0@wq0.0;"
-            "rxq0@wq0.1;"
-            "txq1@wq0.2;"
-            "rxq1@wq0.3;"
-            "txq2@wq0.4;"
-            "rxq2@wq0.5;"
-            "txq3@wq0.6;"
-            "rxq3@wq0.7"
+            "txq0@%s;"
+            "rxq0@%s;"
+            "txq1@%s;"
+            "rxq1@%s;"
+            "txq2@%s;"
+            "rxq2@%s;"
+            "txq3@%s;"
+            "rxq3@%s" % (wqs[0], wqs[1], wqs[2], wqs[3], wqs[4], wqs[5], wqs[6], wqs[7])
         )
         self.nb_cores = 4
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
@@ -431,25 +423,43 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 6: pvp split ring vhost async test with 4core 8queue using idxd kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0])
         self.queues = 8
         self.dmas = (
-            "txq0@wq0.0;"
-            "rxq0@wq0.0;"
-            "txq1@wq0.1;"
-            "rxq1@wq0.1;"
-            "txq2@wq0.2;"
-            "rxq2@wq0.2;"
-            "txq3@wq0.3;"
-            "rxq3@wq0.3;"
-            "txq4@wq0.4;"
-            "rxq4@wq0.4;"
-            "txq5@wq0.5;"
-            "rxq5@wq0.5;"
-            "txq6@wq0.6;"
-            "rxq6@wq0.6;"
-            "txq7@wq0.7;"
-            "rxq7@wq0.7"
+            "txq0@%s;"
+            "rxq0@%s;"
+            "txq1@%s;"
+            "rxq1@%s;"
+            "txq2@%s;"
+            "rxq2@%s;"
+            "txq3@%s;"
+            "rxq3@%s;"
+            "txq4@%s;"
+            "rxq4@%s;"
+            "txq5@%s;"
+            "rxq5@%s;"
+            "txq6@%s;"
+            "rxq6@%s;"
+            "txq7@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[2],
+                wqs[2],
+                wqs[3],
+                wqs[3],
+                wqs[4],
+                wqs[4],
+                wqs[5],
+                wqs[5],
+                wqs[6],
+                wqs[6],
+                wqs[7],
+                wqs[7],
+            )
         )
         self.nb_cores = 4
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
@@ -461,9 +471,9 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 7: pvp packed ring vhost async test with 1core 1queue using idxd kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=2, dsa_idxs=[0])
         self.queues = 1
-        self.dmas = "txq0@wq0.0;rxq0@wq0.1"
+        self.dmas = "txq0@%s;rxq0@%s" % (wqs[0], wqs[1])
         self.nb_cores = 1
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
         self.perf_test(
@@ -474,9 +484,9 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 8: pvp packed ring vhost async test with 1core 2queue using idxd kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=4, dsa_idxs=[0])
         self.queues = 2
-        self.dmas = "txq0@wq0.0;rxq0@wq0.1;txq1@wq0.2;rxq1@wq0.3"
+        self.dmas = "txq0@%s;rxq0@%s;txq1@%s;rxq1@%s" % (wqs[0], wqs[1], wqs[2], wqs[3])
         self.nb_cores = 1
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
         self.perf_test(
@@ -487,9 +497,9 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 9: pvp packed ring vhost async test with 2core 2queue using idxd kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=4, dsa_idxs=[0])
         self.queues = 2
-        self.dmas = "txq0@wq0.0;rxq0@wq0.1;txq1@wq0.2;rxq1@wq0.3"
+        self.dmas = "txq0@%s;rxq0@%s;txq1@%s;rxq1@%s" % (wqs[0], wqs[1], wqs[2], wqs[3])
         self.nb_cores = 2
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
         self.perf_test(
@@ -500,17 +510,17 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 10: pvp packed ring vhost async test with 2core 4queue using idxd kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0])
         self.queues = 4
         self.dmas = (
-            "txq0@wq0.0;"
-            "rxq0@wq0.1;"
-            "txq1@wq0.2;"
-            "rxq1@wq0.3;"
-            "txq2@wq0.4;"
-            "rxq2@wq0.5;"
-            "txq3@wq0.6;"
-            "rxq3@wq0.7"
+            "txq0@%s;"
+            "rxq0@%s;"
+            "txq1@%s;"
+            "rxq1@%s;"
+            "txq2@%s;"
+            "rxq2@%s;"
+            "txq3@%s;"
+            "rxq3@%s" % (wqs[0], wqs[1], wqs[2], wqs[3], wqs[4], wqs[5], wqs[6], wqs[7])
         )
         self.nb_cores = 2
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
@@ -522,17 +532,17 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 11: pvp packed ring vhost async test with 4core 4queue using idxd kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0])
         self.queues = 4
         self.dmas = (
-            "txq0@wq0.0;"
-            "rxq0@wq0.1;"
-            "txq1@wq0.2;"
-            "rxq1@wq0.3;"
-            "txq2@wq0.4;"
-            "rxq2@wq0.5;"
-            "txq3@wq0.6;"
-            "rxq3@wq0.7"
+            "txq0@%s;"
+            "rxq0@%s;"
+            "txq1@%s;"
+            "rxq1@%s;"
+            "txq2@%s;"
+            "rxq2@%s;"
+            "txq3@%s;"
+            "rxq3@%s" % (wqs[0], wqs[1], wqs[2], wqs[3], wqs[4], wqs[5], wqs[6], wqs[7])
         )
         self.nb_cores = 4
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
@@ -544,25 +554,43 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 12: pvp packed ring vhost async test with 4core 8queue using idxd kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0])
         self.queues = 8
         self.dmas = (
-            "txq0@wq0.0;"
-            "rxq0@wq0.0;"
-            "txq1@wq0.1;"
-            "rxq1@wq0.1;"
-            "txq2@wq0.2;"
-            "rxq2@wq0.2;"
-            "txq3@wq0.3;"
-            "rxq3@wq0.3;"
-            "txq4@wq0.4;"
-            "rxq4@wq0.4;"
-            "txq5@wq0.5;"
-            "rxq5@wq0.5;"
-            "txq6@wq0.6;"
-            "rxq6@wq0.6;"
-            "txq7@wq0.7;"
-            "rxq7@wq0.7"
+            "txq0@%s;"
+            "rxq0@%s;"
+            "txq1@%s;"
+            "rxq1@%s;"
+            "txq2@%s;"
+            "rxq2@%s;"
+            "txq3@%s;"
+            "rxq3@%s;"
+            "txq4@%s;"
+            "rxq4@%s;"
+            "txq5@%s;"
+            "rxq5@%s;"
+            "txq6@%s;"
+            "rxq6@%s;"
+            "txq7@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[2],
+                wqs[2],
+                wqs[3],
+                wqs[3],
+                wqs[4],
+                wqs[4],
+                wqs[5],
+                wqs[5],
+                wqs[6],
+                wqs[6],
+                wqs[7],
+                wqs[7],
+            )
         )
         self.nb_cores = 4
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
@@ -574,18 +602,18 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 13: pvp split ring vhost async test with 1core 1queue using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         self.queues = 1
         self.dmas = "txq0@%s-q0;rxq0@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
         )
         self.nb_cores = 1
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=2"}
         self.perf_test(
             case_info=self.running_case,
             ports=ports,
@@ -597,8 +625,8 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 14: pvp split ring vhost async test with 1core 2queue using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         self.queues = 2
         self.dmas = (
@@ -607,16 +635,16 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
             "txq1@%s-q2;"
             "rxq1@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         self.nb_cores = 1
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=4"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=4"}
         self.perf_test(
             case_info=self.running_case,
             ports=ports,
@@ -628,8 +656,8 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 15: pvp split ring vhost async test with 2core 2queue using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         self.queues = 2
         self.dmas = (
@@ -638,16 +666,16 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
             "txq1@%s-q2;"
             "rxq1@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         self.nb_cores = 2
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=4"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=4"}
         self.perf_test(
             case_info=self.running_case,
             ports=ports,
@@ -659,8 +687,8 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 16: pvp split ring vhost async test with 2core 4queue using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         self.queues = 4
         self.dmas = (
@@ -673,20 +701,20 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
             "txq3@%s-q6;"
             "rxq3@%s-q7"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         self.nb_cores = 2
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=8"}
         self.perf_test(
             case_info=self.running_case,
             ports=ports,
@@ -698,8 +726,8 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 17: pvp split ring vhost async test with 4core 4queue using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         self.queues = 4
         self.dmas = (
@@ -712,20 +740,20 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
             "txq3@%s-q6;"
             "rxq3@%s-q7"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         self.nb_cores = 4
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=8"}
         self.perf_test(
             case_info=self.running_case,
             ports=ports,
@@ -737,8 +765,8 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 18: pvp split ring vhost async test with 4core 8queue using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         self.queues = 8
         self.dmas = (
@@ -751,20 +779,20 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
             "txq3@%s-q6;"
             "rxq3@%s-q7"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         self.nb_cores = 4
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=8"}
         self.perf_test(
             case_info=self.running_case,
             ports=ports,
@@ -776,18 +804,18 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 19: pvp packed ring vhost async test with 1core 1queue using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         self.queues = 1
         self.dmas = "txq0@%s-q0;rxq0@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
+            dsas[0],
+            dsas[0],
         )
         self.nb_cores = 1
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=2"}
         self.perf_test(
             case_info=self.running_case,
             ports=ports,
@@ -799,8 +827,8 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 20: pvp packed ring vhost async test with 1core 2queue using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         self.queues = 2
         self.dmas = (
@@ -809,16 +837,16 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
             "txq1@%s-q2;"
             "rxq1@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         self.nb_cores = 1
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=4"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=4"}
         self.perf_test(
             case_info=self.running_case,
             ports=ports,
@@ -830,8 +858,8 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 21: pvp packed ring vhost async test with 2core 2queue using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         self.queues = 2
         self.dmas = (
@@ -840,16 +868,16 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
             "txq1@%s-q2;"
             "rxq1@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         self.nb_cores = 2
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=4"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=4"}
         self.perf_test(
             case_info=self.running_case,
             ports=ports,
@@ -861,8 +889,8 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 22: pvp packed ring vhost async test with 2core 4queue using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         self.queues = 4
         self.dmas = (
@@ -875,20 +903,20 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
             "txq3@%s-q6;"
             "rxq3@%s-q7"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         self.nb_cores = 2
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=8"}
         self.perf_test(
             case_info=self.running_case,
             ports=ports,
@@ -900,8 +928,8 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 23: pvp packed ring vhost async test with 4core 4queue using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         self.queues = 4
         self.dmas = (
@@ -914,20 +942,20 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
             "txq3@%s-q6;"
             "rxq3@%s-q7"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         self.nb_cores = 4
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=8"}
         self.perf_test(
             case_info=self.running_case,
             ports=ports,
@@ -939,8 +967,8 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         """
         Test Case 24: pvp packed ring vhost async test with 4core 8queue using vfio-pci driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         self.queues = 8
         self.dmas = (
@@ -953,20 +981,20 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
             "txq3@%s-q6;"
             "rxq3@%s-q7"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         self.nb_cores = 4
         ports = [self.dut.ports_info[self.dut_ports[0]]["pci"]]
-        ports.append(self.use_dsa_list[0])
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        ports.append(dsas[0])
+        port_options = {dsas[0]: "max_queues=8"}
         self.perf_test(
             case_info=self.running_case,
             ports=ports,
@@ -985,8 +1013,6 @@ class TestPVPVhostAsyncVirtioPmdPerfDsa(TestCase):
         Run after each test case.
         """
         self.stop_vm_and_quit_testpmd()
-        self.DC.reset_all_work_queue()
-        self.DC.bind_all_dsa_to_kernel()
 
     def tear_down_all(self):
         """

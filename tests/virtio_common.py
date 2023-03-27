@@ -237,66 +237,12 @@ class dsa_common(object):
     def __init__(self, test_case):
         self.test_case = test_case
 
-    def get_all_work_queue_index(self):
-        """
-        Get all DSA device work queue index.
-        Example: `wq0.0 wq0.1 wq1.0 wq1.1`, return [0, 1]
-        """
-        dsa_index_list = []
-        if os.path.exists("/dev/dsa"):
-            out = self.test_case.dut.send_expect("ls /dev/dsa", "# ")
-            info = out.split()
-            for item in info:
-                index = int(re.search("(\d+)", item).group(0))
-                dsa_index_list.append(index)
-        return list(set(dsa_index_list))
-
-    def reset_all_work_queue(self):
-        """
-        Reset all DSA device work queue which have created work queue.
-        After reset all DSA device work queues, the `/dev/dsa/` path will not exist.
-        """
-        dsa_index_list = self.get_all_work_queue_index()
-        if len(dsa_index_list) > 0:
-            for dsa_index in dsa_index_list:
-                self.test_case.dut.send_expect(
-                    "./drivers/dma/idxd/dpdk_idxd_cfg.py --reset %s" % dsa_index, "# "
-                )
-
-    def check_dsa_has_work_queue(self, dsa_index):
-        """
-        Check DSA device has work queue or not, if has work queue, return True, or return False
-        """
-        if dsa_index in self.get_all_work_queue_index():
-            return True
-        else:
-            return False
-
-    def create_work_queue(self, work_queue_number, dsa_index):
-        """
-        Create work queue by work_queue_number and dsa_index.
-        :param work_queue_number: number of work queue to be create.
-        :param dsa_index: index of DSA device which to create work queue.
-        Example: work_queue_number=4, dsa_index=0, will create 4 work queue under this first DSA device
-        root@dpdk:~# ls /dev/dsa/
-        wq0.0  wq0.1  wq0.2  wq0.3
-        """
-        if self.check_dsa_has_work_queue(dsa_index=dsa_index):
-            self.test_case.dut.send_expect(
-                "./drivers/dma/idxd/dpdk_idxd_cfg.py --reset %s" % dsa_index, "# "
-            )
-        self.test_case.dut.send_expect(
-            "./drivers/dma/idxd/dpdk_idxd_cfg.py -q %d %d"
-            % (work_queue_number, dsa_index),
-            "# ",
-        )
-
-    def get_all_dsa_pci(self):
+    def get_all_dsa_pcis(self):
         """
         Get all the DSA device PCI of DUT.
         :return: [0000:6a:01.0, 0000:6f:01.0, 0000:74:01.0, 0000:79:01.0]
         """
-        dsa_pci = []
+        dsa_pcis = []
         out = self.test_case.dut.send_expect(
             "./usertools/dpdk-devbind.py --status-dev dma", "#"
         )
@@ -304,23 +250,110 @@ class dsa_common(object):
         for item in info:
             pci = re.search("\s*(0000:\S*:\d*.\d*)", item)
             if pci is not None:
-                dsa_pci.append(pci.group(1))
-        return dsa_pci
+                dsa_pcis.append(pci.group(1))
+        dsa_pcis.sort()
+        return dsa_pcis
 
-    def bind_dsa_to_dpdk(
-        self, dsa_number, driver_name="vfio-pci", dsa_index_list="all", socket=-1
+    def bind_dsa_to_kernel_driver(self, dsa_idx):
+        """
+        Get the DSA device current driver
+        """
+        dsa_pcis = self.get_all_dsa_pcis()
+        pci = dsa_pcis[dsa_idx]
+        addr_array = pci.split(":")
+        domain_id, bus_id, devfun_id = addr_array[0], addr_array[1], addr_array[2]
+        out = self.test_case.dut.send_expect(
+            "cat /sys/bus/pci/devices/%s\:%s\:%s/uevent"
+            % (domain_id, bus_id, devfun_id),
+            "# ",
+            alt_session=True,
+        )
+        rexp = r"DRIVER=(.+?)\r"
+        pattern = re.compile(rexp)
+        match = pattern.search(out)
+        if not match:
+            driver = None
+        else:
+            driver = match.group(1)
+        if driver != "idxd":
+            self.test_case.dut.send_expect(
+                "./usertools/dpdk-devbind.py --force --bind=idxd %s" % pci, "# ", 60
+            )
+
+    def get_all_dsa_idxs(self):
+        """
+        Get all DSA device work queue index.
+        Example: `wq0.0 wq0.1 wq1.0 wq1.1`, return [0, 1]
+        """
+        dsa_idxs = []
+        if os.path.exists("/dev/dsa"):
+            out = self.test_case.dut.send_expect("ls /dev/dsa", "# ")
+            info = out.split()
+            for item in info:
+                idx = int(re.search("(\d+)", item).group(0))
+                dsa_idxs.append(idx)
+        return list(set(dsa_idxs))
+
+    def check_wq_exist(self, dsa_idx):
+        """
+        Check DSA device has work queue or not, if has work queue, return True, or return False
+        """
+        if dsa_idx in self.get_all_dsa_idxs():
+            return True
+        else:
+            return False
+
+    def reset_wq(self, dsa_idx):
+        """
+        Reset DSA device work queue which have created work queue.
+        """
+        if self.check_wq_exist(dsa_idx):
+            self.test_case.dut.send_expect(
+                "./drivers/dma/idxd/dpdk_idxd_cfg.py --reset %s" % dsa_idx, "# "
+            )
+
+    def create_wq(self, wq_num, dsa_idxs):
+        """
+        Create work queue by work_queue_number and dsa_idx.
+        :param wq_num: number of work queue to be create.
+        :param dsa_idxs: index of DSA device which to create work queue.
+        Example: wq_num=4, dsa_idx=[0, 1], will create 4 work queue:
+        root@dpdk:~# ls /dev/dsa/
+        wq0.0  wq0.1  wq1.0  wq1.1
+        """
+        for dsa_idx in dsa_idxs:
+            if self.check_wq_exist(dsa_idx):
+                self.reset_wq(dsa_idx)
+            self.bind_dsa_to_kernel_driver(dsa_idx)
+            self.test_case.dut.send_expect(
+                "./drivers/dma/idxd/dpdk_idxd_cfg.py -q %d %d" % (wq_num, dsa_idx),
+                "# ",
+            )
+        wqs = []
+        if os.path.exists("/dev/dsa"):
+            out = self.test_case.dut.send_expect("ls /dev/dsa", "# ")
+            info = out.split()
+            for item in info:
+                idx = int(re.search("(\d+)", item).group(0))
+                if idx in dsa_idxs:
+                    wqs.append(item)
+        return wqs
+
+    def bind_dsa_to_dpdk_driver(
+        self, dsa_num, driver_name="vfio-pci", dsa_idxs="all", socket=-1
     ):
         """
         Bind DSA device to driver
-        :param dsa_number: number of DSA device to be bind.
+        :param dsa_num: number of DSA device to be bind.
         :param driver_name: driver name, like `vfio-pci`.
-        :param dsa_index_list: the index list of DSA device, like [2,3]
+        :param dsa_idxs: the index list of DSA device, like [2,3]
         :param socket: socket id: like 0 or 1, if socket=-1, use all the DSA deveice no matter on which socket.
         :return: bind_dsa_list, like [0000:6a:01.0, 0000:6f:01.0]
         """
-        dsa_list = []
-        dsa_pci = self.get_all_dsa_pci()
-        for pci in dsa_pci:
+        dsas = []
+        bind_dsas = []
+        dsa_pcis = self.get_all_dsa_pcis()
+        for pci in dsa_pcis:
             addr_array = pci.split(":")
             domain_id, bus_id, devfun_id = addr_array[0], addr_array[1], addr_array[2]
             cur_socket = self.test_case.dut.send_expect(
@@ -331,47 +364,21 @@ class dsa_common(object):
             )
             if socket != -1:
                 if int(cur_socket) == socket:
-                    dsa_list.append(pci)
+                    dsas.append(pci)
             else:
-                dsa_list.append(pci)
-        if dsa_index_list == "all":
-            bind_dsa_list = dsa_list[0:dsa_number]
+                dsas.append(pci)
+        if dsa_idxs == "all":
+            bind_dsas = dsas[0:dsa_num]
         else:
-            tmp_dsa_list = []
-            for i in dsa_index_list:
-                tmp_dsa_list.append(dsa_list[i])
-            bind_dsa_list = tmp_dsa_list[0:dsa_number]
-        bind_dsa_string = " ".join(bind_dsa_list)
+            tmp_dsas = []
+            for i in dsa_idxs:
+                tmp_dsas.append(dsas[i])
+                bind_dsas = tmp_dsas[0:dsa_num]
+        bind_dsas_str = " ".join(bind_dsas)
         self.test_case.dut.send_expect(
             "./usertools/dpdk-devbind.py --force --bind=%s %s"
-            % (driver_name, bind_dsa_string),
+            % (driver_name, bind_dsas_str),
             "# ",
             60,
         )
-        return bind_dsa_list
-
-    def bind_all_dsa_to_kernel(self):
-        """
-        Check the DSA device is bind to kernel driver or not, if not bind to kernel driver, then bind to kernel driver.
-        """
-        dsa_pci = self.get_all_dsa_pci()
-        for pci in dsa_pci:
-            addr_array = pci.split(":")
-            domain_id, bus_id, devfun_id = addr_array[0], addr_array[1], addr_array[2]
-            out = self.test_case.dut.send_expect(
-                "cat /sys/bus/pci/devices/%s\:%s\:%s/uevent"
-                % (domain_id, bus_id, devfun_id),
-                "# ",
-                alt_session=True,
-            )
-            rexp = r"DRIVER=(.+?)\r"
-            pattern = re.compile(rexp)
-            match = pattern.search(out)
-            if not match:
-                driver = None
-            else:
-                driver = match.group(1)
-            if driver != "idxd":
-                self.test_case.dut.send_expect(
-                    "./usertools/dpdk-devbind.py --force --bind=idxd %s" % pci, "# ", 60
-                )
+        return bind_dsas

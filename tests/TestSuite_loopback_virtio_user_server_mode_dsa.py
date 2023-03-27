@@ -50,9 +50,6 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
             "Cycle",
         ]
         self.result_table_create(self.table_header)
-        self.use_dsa_list = []
-        self.DC.reset_all_work_queue()
-        self.DC.bind_all_dsa_to_kernel()
 
     @property
     def check_2M_env(self):
@@ -190,25 +187,22 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         Test Case 1: Loopback split ring server mode large chain packets stress test with dsa dpdk driver
         """
         if not self.check_2M_env:
-            self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-                dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+            dsas = self.DC.bind_dsa_to_dpdk_driver(
+                dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
             )
-            dmas = "txq0@%s-q0;" "rxq0@%s-q0" % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-            )
+            dmas = "txq0@%s-q0;rxq0@%s-q0" % (dsas[0], dsas[0])
             vhost_eal_param = (
                 "--vdev 'net_vhost0,iface=vhost-net0,queues=1,dmas=[%s],client=1'"
                 % dmas
             )
             vhost_param = "--nb-cores=1 --txd=1024 --rxd=1024 --mbuf-size=65535"
-            port_options = {self.use_dsa_list[0]: "max_queues=1"}
+            port_options = {dsas[0]: "max_queues=1"}
             self.start_vhost_testpmd(
                 cores=self.vhost_core_list,
                 eal_param=vhost_eal_param,
                 param=vhost_param,
                 no_pci=False,
-                ports=self.use_dsa_list,
+                ports=dsas,
                 port_options=port_options,
                 iova_mode="va",
             )
@@ -230,25 +224,22 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         Test Case 2: Loopback packed ring server mode large chain packets stress test with dsa dpdk driver
         """
         if not self.check_2M_env:
-            self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-                dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+            dsas = self.DC.bind_dsa_to_dpdk_driver(
+                dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
             )
-            dmas = "txq0@%s-q0;" "rxq0@%s-q0" % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-            )
+            dmas = "txq0@%s-q0;rxq0@%s-q0" % (dsas[0], dsas[0])
             vhost_eal_param = (
                 "--vdev 'net_vhost0,iface=vhost-net0,queues=1,dmas=[%s],client=1'"
                 % dmas
             )
             vhost_param = "--nb-cores=1 --txd=1024 --rxd=1024 --mbuf-size=65535"
-            port_options = {self.use_dsa_list[0]: "max_queues=1"}
+            port_options = {dsas[0]: "max_queues=1"}
             self.start_vhost_testpmd(
                 cores=self.vhost_core_list,
                 eal_param=vhost_eal_param,
                 param=vhost_param,
                 no_pci=False,
-                ports=self.use_dsa_list,
+                ports=dsas,
                 port_options=port_options,
                 iova_mode="va",
             )
@@ -269,8 +260,8 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 3: Loopback split ring inorder mergeable path multi-queues payload check with server mode and dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -286,31 +277,31 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        port_options = {dsas[0]: "max_queues=8"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
             iova_mode="va",
         )
@@ -333,8 +324,8 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 4: Loopback split ring mergeable path multi-queues payload check with server mode and dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -350,31 +341,31 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        port_options = {dsas[0]: "max_queues=8"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
             iova_mode="va",
         )
@@ -397,8 +388,8 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 5: Loopback split ring non-mergeable path multi-queues payload check with server mode and dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -414,31 +405,31 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        port_options = {dsas[0]: "max_queues=8"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
             iova_mode="va",
         )
@@ -463,8 +454,8 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 6: Loopback split ring inorder non-mergeable path multi-queues payload check with server mode and dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -480,31 +471,31 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        port_options = {dsas[0]: "max_queues=8"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
             iova_mode="va",
         )
@@ -527,8 +518,8 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 7: Loopback split ring vectorized path multi-queues payload check with server mode and dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -544,31 +535,31 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        port_options = {dsas[0]: "max_queues=8"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
             iova_mode="va",
         )
@@ -591,8 +582,8 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 8: Loopback packed ring inorder mergeable path multi-queues payload check with server mode and dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -608,31 +599,31 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        port_options = {dsas[0]: "max_queues=8"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
             iova_mode="va",
         )
@@ -655,8 +646,8 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 9: Loopback packed ring mergeable path multi-queues payload check with server mode and dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -672,31 +663,31 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        port_options = {dsas[0]: "max_queues=8"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
             iova_mode="va",
         )
@@ -719,8 +710,8 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 10: Loopback packed ring non-mergeable path multi-queues payload check with server mode and dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -736,31 +727,31 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        port_options = {dsas[0]: "max_queues=8"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
             iova_mode="va",
         )
@@ -783,8 +774,8 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 11: Loopback packed ring inorder non-mergeable path multi-queues payload check with server mode and dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -800,31 +791,31 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        port_options = {dsas[0]: "max_queues=8"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
             iova_mode="va",
         )
@@ -847,8 +838,8 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 12: Loopback packed ring vectorized path multi-queues payload check with server mode and dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -864,31 +855,31 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        port_options = {dsas[0]: "max_queues=8"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
             iova_mode="va",
         )
@@ -911,8 +902,8 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 13: Loopback packed ring vectorized path and ring size is not power of 2 multi-queues payload check with server mode and dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -928,31 +919,31 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-        port_options = {self.use_dsa_list[0]: "max_queues=8"}
+        port_options = {dsas[0]: "max_queues=8"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
             iova_mode="va",
         )
@@ -976,8 +967,8 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         Test Case 14: Loopback split ring server mode large chain packets stress test with dsa kernel driver
         """
         if not self.check_2M_env:
-            self.DC.create_work_queue(work_queue_number=1, dsa_index=0)
-            dmas = "txq0@wq0.0;rxq0@wq0.0"
+            wqs = self.DC.create_wq(wq_num=1, dsa_idxs=[0])
+            dmas = "txq0@%s;rxq0@%s" % (wqs[0], wqs[0])
             vhost_eal_param = (
                 "--vdev 'net_vhost0,iface=vhost-net0,queues=1,dmas=[%s],client=1'"
                 % dmas
@@ -1008,8 +999,8 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         Test Case 15: Loopback packed ring server mode large chain packets stress test with dsa kernel driver
         """
         if not self.check_2M_env:
-            self.DC.create_work_queue(work_queue_number=1, dsa_index=0)
-            dmas = "txq0@wq0.0;rxq0@wq0.0"
+            wqs = self.DC.create_wq(wq_num=1, dsa_idxs=[0])
+            dmas = "txq0@%s;rxq0@%s" % (wqs[0], wqs[0])
             vhost_eal_param = (
                 "--vdev 'net_vhost0,iface=vhost-net0,queues=1,dmas=[%s],client=1'"
                 % dmas
@@ -1039,21 +1030,34 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 16: Loopback split ring inorder mergeable path multi-queues payload check with server mode and dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.1;"
-            "rxq2@wq1.0;"
-            "rxq3@wq1.0;"
-            "rxq4@wq1.1;"
-            "rxq5@wq1.1;"
-            "rxq6@wq1.1;"
-            "rxq7@wq1.1"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[8],
+                wqs[8],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1080,18 +1084,32 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
 
         self.vhost_user_pmd.quit()
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.1;"
-            "txq2@wq0.2;"
-            "txq3@wq0.3;"
-            "txq4@wq0.4;"
-            "txq5@wq0.5;"
-            "rxq2@wq1.2;"
-            "rxq3@wq1.3;"
-            "rxq4@wq1.4;"
-            "rxq5@wq1.5;"
-            "rxq6@wq1.6;"
-            "rxq7@wq1.7"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[1],
+                wqs[2],
+                wqs[3],
+                wqs[4],
+                wqs[5],
+                wqs[10],
+                wqs[11],
+                wqs[12],
+                wqs[13],
+                wqs[14],
+                wqs[15],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1115,21 +1133,34 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 17: Loopback split ring mergeable path multi-queues payload check with server mode and dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.1;"
-            "rxq2@wq1.0;"
-            "rxq3@wq1.0;"
-            "rxq4@wq1.1;"
-            "rxq5@wq1.1;"
-            "rxq6@wq1.1;"
-            "rxq7@wq1.1"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[8],
+                wqs[8],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1157,18 +1188,32 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
 
         self.vhost_user_pmd.quit()
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.1;"
-            "txq2@wq0.2;"
-            "txq3@wq0.3;"
-            "txq4@wq0.4;"
-            "txq5@wq0.5;"
-            "rxq2@wq1.2;"
-            "rxq3@wq1.3;"
-            "rxq4@wq1.4;"
-            "rxq5@wq1.5;"
-            "rxq6@wq1.6;"
-            "rxq7@wq1.7"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[1],
+                wqs[2],
+                wqs[3],
+                wqs[4],
+                wqs[5],
+                wqs[10],
+                wqs[11],
+                wqs[12],
+                wqs[13],
+                wqs[14],
+                wqs[15],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1192,21 +1237,34 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 18: Loopback split ring non-mergeable path multi-queues payload check with server mode and dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.1;"
-            "rxq2@wq1.0;"
-            "rxq3@wq1.0;"
-            "rxq4@wq1.1;"
-            "rxq5@wq1.1;"
-            "rxq6@wq1.1;"
-            "rxq7@wq1.1"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[8],
+                wqs[8],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1236,18 +1294,32 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
 
         self.vhost_user_pmd.quit()
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.1;"
-            "txq2@wq0.2;"
-            "txq3@wq0.3;"
-            "txq4@wq0.4;"
-            "txq5@wq0.5;"
-            "rxq2@wq1.2;"
-            "rxq3@wq1.3;"
-            "rxq4@wq1.4;"
-            "rxq5@wq1.5;"
-            "rxq6@wq1.6;"
-            "rxq7@wq1.7"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[1],
+                wqs[2],
+                wqs[3],
+                wqs[4],
+                wqs[5],
+                wqs[10],
+                wqs[11],
+                wqs[12],
+                wqs[13],
+                wqs[14],
+                wqs[15],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1271,21 +1343,34 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 19: Loopback split ring inorder non-mergeable path multi-queues payload check with server mode and dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.1;"
-            "rxq2@wq1.0;"
-            "rxq3@wq1.0;"
-            "rxq4@wq1.1;"
-            "rxq5@wq1.1;"
-            "rxq6@wq1.1;"
-            "rxq7@wq1.1"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[8],
+                wqs[8],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1313,18 +1398,32 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
 
         self.vhost_user_pmd.quit()
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.1;"
-            "txq2@wq0.2;"
-            "txq3@wq0.3;"
-            "txq4@wq0.4;"
-            "txq5@wq0.5;"
-            "rxq2@wq1.2;"
-            "rxq3@wq1.3;"
-            "rxq4@wq1.4;"
-            "rxq5@wq1.5;"
-            "rxq6@wq1.6;"
-            "rxq7@wq1.7"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[1],
+                wqs[2],
+                wqs[3],
+                wqs[4],
+                wqs[5],
+                wqs[10],
+                wqs[11],
+                wqs[12],
+                wqs[13],
+                wqs[14],
+                wqs[15],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1348,21 +1447,34 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 20: Loopback split ring vectorized path multi-queues payload check with server mode and dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.1;"
-            "rxq2@wq1.0;"
-            "rxq3@wq1.0;"
-            "rxq4@wq1.1;"
-            "rxq5@wq1.1;"
-            "rxq6@wq1.1;"
-            "rxq7@wq1.1"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[8],
+                wqs[8],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1390,18 +1502,32 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
 
         self.vhost_user_pmd.quit()
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.1;"
-            "txq2@wq0.2;"
-            "txq3@wq0.3;"
-            "txq4@wq0.4;"
-            "txq5@wq0.5;"
-            "rxq2@wq1.2;"
-            "rxq3@wq1.3;"
-            "rxq4@wq1.4;"
-            "rxq5@wq1.5;"
-            "rxq6@wq1.6;"
-            "rxq7@wq1.7"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[1],
+                wqs[2],
+                wqs[3],
+                wqs[4],
+                wqs[5],
+                wqs[10],
+                wqs[11],
+                wqs[12],
+                wqs[13],
+                wqs[14],
+                wqs[15],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1425,21 +1551,34 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 21: Loopback packed ring inorder mergeable path multi-queues payload check with server mode and dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.1;"
-            "rxq2@wq1.0;"
-            "rxq3@wq1.0;"
-            "rxq4@wq1.1;"
-            "rxq5@wq1.1;"
-            "rxq6@wq1.1;"
-            "rxq7@wq1.1"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[8],
+                wqs[8],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1467,18 +1606,32 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
 
         self.vhost_user_pmd.quit()
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.1;"
-            "txq2@wq0.2;"
-            "txq3@wq0.3;"
-            "txq4@wq0.4;"
-            "txq5@wq0.5;"
-            "rxq2@wq1.2;"
-            "rxq3@wq1.3;"
-            "rxq4@wq1.4;"
-            "rxq5@wq1.5;"
-            "rxq6@wq1.6;"
-            "rxq7@wq1.7"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[1],
+                wqs[2],
+                wqs[3],
+                wqs[4],
+                wqs[5],
+                wqs[10],
+                wqs[11],
+                wqs[12],
+                wqs[13],
+                wqs[14],
+                wqs[15],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1502,21 +1655,34 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 22: Loopback packed ring mergeable path multi-queues payload check with server mode and dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.1;"
-            "rxq2@wq1.0;"
-            "rxq3@wq1.0;"
-            "rxq4@wq1.1;"
-            "rxq5@wq1.1;"
-            "rxq6@wq1.1;"
-            "rxq7@wq1.1"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[8],
+                wqs[8],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1544,18 +1710,32 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
 
         self.vhost_user_pmd.quit()
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.1;"
-            "txq2@wq0.2;"
-            "txq3@wq0.3;"
-            "txq4@wq0.4;"
-            "txq5@wq0.5;"
-            "rxq2@wq1.2;"
-            "rxq3@wq1.3;"
-            "rxq4@wq1.4;"
-            "rxq5@wq1.5;"
-            "rxq6@wq1.6;"
-            "rxq7@wq1.7"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[1],
+                wqs[2],
+                wqs[3],
+                wqs[4],
+                wqs[5],
+                wqs[10],
+                wqs[11],
+                wqs[12],
+                wqs[13],
+                wqs[14],
+                wqs[15],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1579,21 +1759,34 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 23: Loopback packed ring non-mergeable path multi-queues payload check with server mode and dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.1;"
-            "rxq2@wq1.0;"
-            "rxq3@wq1.0;"
-            "rxq4@wq1.1;"
-            "rxq5@wq1.1;"
-            "rxq6@wq1.1;"
-            "rxq7@wq1.1"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[8],
+                wqs[8],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1621,18 +1814,32 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
 
         self.vhost_user_pmd.quit()
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.1;"
-            "txq2@wq0.2;"
-            "txq3@wq0.3;"
-            "txq4@wq0.4;"
-            "txq5@wq0.5;"
-            "rxq2@wq1.2;"
-            "rxq3@wq1.3;"
-            "rxq4@wq1.4;"
-            "rxq5@wq1.5;"
-            "rxq6@wq1.6;"
-            "rxq7@wq1.7"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[1],
+                wqs[2],
+                wqs[3],
+                wqs[4],
+                wqs[5],
+                wqs[10],
+                wqs[11],
+                wqs[12],
+                wqs[13],
+                wqs[14],
+                wqs[15],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1656,21 +1863,34 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 24: Loopback packed ring inorder non-mergeable path multi-queues payload check with server mode and dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.1;"
-            "rxq2@wq1.0;"
-            "rxq3@wq1.0;"
-            "rxq4@wq1.1;"
-            "rxq5@wq1.1;"
-            "rxq6@wq1.1;"
-            "rxq7@wq1.1"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[8],
+                wqs[8],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1698,18 +1918,32 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
 
         self.vhost_user_pmd.quit()
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.1;"
-            "txq2@wq0.2;"
-            "txq3@wq0.3;"
-            "txq4@wq0.4;"
-            "txq5@wq0.5;"
-            "rxq2@wq1.2;"
-            "rxq3@wq1.3;"
-            "rxq4@wq1.4;"
-            "rxq5@wq1.5;"
-            "rxq6@wq1.6;"
-            "rxq7@wq1.7"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[1],
+                wqs[2],
+                wqs[3],
+                wqs[4],
+                wqs[5],
+                wqs[10],
+                wqs[11],
+                wqs[12],
+                wqs[13],
+                wqs[14],
+                wqs[15],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1733,21 +1967,34 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 25: Loopback packed ring vectorized path multi-queues payload check with server mode and dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.1;"
-            "rxq2@wq1.0;"
-            "rxq3@wq1.0;"
-            "rxq4@wq1.1;"
-            "rxq5@wq1.1;"
-            "rxq6@wq1.1;"
-            "rxq7@wq1.1"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[8],
+                wqs[8],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1775,18 +2022,32 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
 
         self.vhost_user_pmd.quit()
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.1;"
-            "txq2@wq0.2;"
-            "txq3@wq0.3;"
-            "txq4@wq0.4;"
-            "txq5@wq0.5;"
-            "rxq2@wq1.2;"
-            "rxq3@wq1.3;"
-            "rxq4@wq1.4;"
-            "rxq5@wq1.5;"
-            "rxq6@wq1.6;"
-            "rxq7@wq1.7"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[1],
+                wqs[2],
+                wqs[3],
+                wqs[4],
+                wqs[5],
+                wqs[10],
+                wqs[11],
+                wqs[12],
+                wqs[13],
+                wqs[14],
+                wqs[15],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1810,21 +2071,34 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 26: Loopback packed ring vectorized path and ring size is not power of 2 multi-queues payload check with server mode and dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
-            "txq4@wq0.1;"
-            "txq5@wq0.1;"
-            "rxq2@wq1.0;"
-            "rxq3@wq1.0;"
-            "rxq4@wq1.1;"
-            "rxq5@wq1.1;"
-            "rxq6@wq1.1;"
-            "rxq7@wq1.1"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[1],
+                wqs[1],
+                wqs[8],
+                wqs[8],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+                wqs[9],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1852,18 +2126,32 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
 
         self.vhost_user_pmd.quit()
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.1;"
-            "txq2@wq0.2;"
-            "txq3@wq0.3;"
-            "txq4@wq0.4;"
-            "txq5@wq0.5;"
-            "rxq2@wq1.2;"
-            "rxq3@wq1.3;"
-            "rxq4@wq1.4;"
-            "rxq5@wq1.5;"
-            "rxq6@wq1.6;"
-            "rxq7@wq1.7"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
+            "txq4@%s;"
+            "txq5@%s;"
+            "rxq2@%s;"
+            "rxq3@%s;"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
+            % (
+                wqs[0],
+                wqs[1],
+                wqs[2],
+                wqs[3],
+                wqs[4],
+                wqs[5],
+                wqs[10],
+                wqs[11],
+                wqs[12],
+                wqs[13],
+                wqs[14],
+                wqs[15],
+            )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
@@ -1887,45 +2175,52 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         Test Case 27: PV split and packed ring server mode test txonly mode with dsa dpdk and kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=8, dsa_index=1)
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2,
+        wqs = self.DC.create_wq(wq_num=8, dsa_idxs=[0, 1])
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2,
             driver_name="vfio-pci",
-            dsa_index_list=[2, 3],
+            dsa_idxs=[2, 3],
             socket=self.ports_socket,
         )
         dmas = (
-            "txq0@wq0.0;"
-            "txq1@wq0.0;"
-            "txq2@wq0.0;"
-            "txq3@wq0.0;"
+            "txq0@%s;"
+            "txq1@%s;"
+            "txq2@%s;"
+            "txq3@%s;"
             "txq4@%s-q0;"
             "txq5@%s-q0;"
             "rxq2@%s-q1;"
             "rxq3@%s-q1;"
-            "rxq4@wq1.1;"
-            "rxq5@wq1.1;"
-            "rxq6@wq1.1;"
-            "rxq7@wq1.1"
+            "rxq4@%s;"
+            "rxq5@%s;"
+            "rxq6@%s;"
+            "rxq7@%s"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                wqs[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                wqs[8],
+                wqs[8],
+                wqs[8],
+                wqs[8],
             )
         )
         vhost_eal_param = (
             "--vdev 'eth_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--nb-cores=4 --rxq=8 --txq=8 --txd=1024 --rxd=1024"
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
             no_pci=False,
-            ports=self.use_dsa_list[0:1],
+            ports=dsas[0:1],
             port_options=port_options,
             iova_mode="va",
         )
@@ -1967,8 +2262,6 @@ class TestLoopbackVirtioUserServerModeDsa(TestCase):
         """
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.kill_all()
-        self.DC.reset_all_work_queue()
-        self.DC.bind_all_dsa_to_kernel()
 
     def tear_down_all(self):
         """
