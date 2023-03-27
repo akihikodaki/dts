@@ -91,20 +91,21 @@ class TestVfOffload(TestCase):
         self.host_intf_0 = self.dut.ports_info[self.used_dut_port_0]["intf"]
         self.host_intf_1 = self.dut.ports_info[self.used_dut_port_1]["intf"]
 
-        self.ip_link_set(
-            host_intf=self.host_intf_0,
-            cmd="vf",
-            port=0,
-            types="trust",
-            value="on",
-        )
-        self.ip_link_set(
-            host_intf=self.host_intf_1,
-            cmd="vf",
-            port=0,
-            types="trust",
-            value="on",
-        )
+        if self.dcf_mode:
+            self.ip_link_set(
+                host_intf=self.host_intf_0,
+                cmd="vf",
+                port=0,
+                types="trust",
+                value="on",
+            )
+            self.ip_link_set(
+                host_intf=self.host_intf_1,
+                cmd="vf",
+                port=0,
+                types="trust",
+                value="on",
+            )
         self.ip_link_set(
             host_intf=self.host_intf_0,
             cmd="vf",
