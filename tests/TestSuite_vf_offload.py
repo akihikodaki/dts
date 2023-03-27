@@ -437,6 +437,12 @@ class TestVfOffload(TestCase):
         self.vm0_testpmd.execute_cmd("set promisc 1 on")
         self.vm0_testpmd.execute_cmd("set promisc 0 on")
 
+        # ixgbe kernel drvier has vlan filter enabled by default.
+        # so set vlan filter and vlan id on dpdk.
+        if self.kdriver == "ixgbe":
+            self.vm0_testpmd.execute_cmd("vlan set filter on 0")
+            self.vm0_testpmd.execute_cmd("rx_vlan add 100 0")
+
         time.sleep(2)
         mac = self.vm0_testpmd.get_port_mac(0)
         sndIP = "10.0.0.1"
