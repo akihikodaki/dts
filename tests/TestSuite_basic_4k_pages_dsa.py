@@ -13,7 +13,7 @@ from framework.packet import Packet
 from framework.pktgen import PacketGeneratorHelper
 from framework.pmd_output import PmdOutput
 from framework.qemu_kvm import QEMUKvm
-from framework.settings import CONFIG_ROOT_PATH, HEADER_SIZE
+from framework.settings import CONFIG_ROOT_PATH, HEADER_SIZE, get_host_ip
 from framework.test_case import TestCase
 
 from .virtio_common import dsa_common as DC
@@ -63,6 +63,8 @@ class TestBasic4kPagesDsa(TestCase):
         self.virtio_mac2 = "52:54:00:00:00:02"
         self.base_dir = self.dut.base_dir.replace("~", "/root")
         self.random_string = string.ascii_letters + string.digits
+        self.addr = str(self.dut.get_ip_address())
+        self.host_addr = get_host_ip(self.addr).split(":")[0]
         self.headers_size = HEADER_SIZE["eth"] + HEADER_SIZE["ip"] + HEADER_SIZE["tcp"]
         self.DC = DC(self)
 
@@ -118,13 +120,11 @@ class TestBasic4kPagesDsa(TestCase):
         self.result_table_create(self.table_header)
         self.vm_dut = []
         self.vm = []
-        self.use_dsa_list = []
-        self.DC.reset_all_work_queue()
-        self.DC.bind_all_dsa_to_kernel()
         self.packed = False
 
     def start_vm0(self, packed=False, queues=1, server=False):
         packed_param = ",packed=on" if packed else ""
+        mq_param = ",mq=on,vectors=%s" % (2 + 2 * queues) if queues > 1 else ""
         server = ",server" if server else ""
         self.qemu_cmd0 = (
             f"taskset -c {self.vm0_lcore} {self.vm0_qemu_path} -name vm0 -enable-kvm "
@@ -133,7 +133,7 @@ class TestBasic4kPagesDsa(TestCase):
             f"-chardev socket,id=char0,path=/root/dpdk/vhost-net0{server} "
             f"-netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues={queues} "
             f"-device virtio-net-pci,netdev=netdev0,mac=%s,"
-            f"disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on{packed_param} "
+            f"disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on{packed_param}{mq_param} "
             f"-cpu host -smp {self.vm0_lcore_smp} -m {self.vm0_mem_size} -object memory-backend-file,id=mem,size={self.vm0_mem_size}M,mem-path=/mnt/tmpfs_nohuge0,share=on "
             f"-numa node,memdev=mem -mem-prealloc -drive file={self.vm0_image_path} "
             f"-chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 -device virtio-serial "
@@ -142,7 +142,7 @@ class TestBasic4kPagesDsa(TestCase):
 
         self.vm0_session = self.dut.new_session(suite="vm0_session")
         cmd0 = self.qemu_cmd0 % (
-            self.dut.get_ip_address(),
+            self.host_addr,
             self.virtio_mac1,
         )
         self.vm0_session.send_expect(cmd0, "# ")
@@ -153,6 +153,7 @@ class TestBasic4kPagesDsa(TestCase):
 
     def start_vm1(self, packed=False, queues=1, server=False):
         packed_param = ",packed=on" if packed else ""
+        mq_param = ",mq=on,vectors=%s" % (2 + 2 * queues) if queues > 1 else ""
         server = ",server" if server else ""
         self.qemu_cmd1 = (
             f"taskset -c {self.vm1_lcore} {self.vm1_qemu_path} -name vm1 -enable-kvm "
@@ -161,7 +162,7 @@ class TestBasic4kPagesDsa(TestCase):
             f"-chardev socket,id=char0,path=/root/dpdk/vhost-net1{server} "
             f"-netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues={queues} "
             f"-device virtio-net-pci,netdev=netdev0,mac=%s,"
-            f"disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on{packed_param} "
+            f"disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on{packed_param}{mq_param} "
             f"-cpu host -smp {self.vm1_lcore_smp} -m {self.vm1_mem_size} -object memory-backend-file,id=mem,size={self.vm1_mem_size}M,mem-path=/mnt/tmpfs_nohuge1,share=on "
             f"-numa node,memdev=mem -mem-prealloc -drive file={self.vm1_image_path} "
             f"-chardev socket,path=/tmp/vm1_qga0.sock,server,nowait,id=vm1_qga0 -device virtio-serial "
@@ -169,7 +170,7 @@ class TestBasic4kPagesDsa(TestCase):
         )
         self.vm1_session = self.dut.new_session(suite="vm1_session")
         cmd1 = self.qemu_cmd1 % (
-            self.dut.get_ip_address(),
+            self.host_addr,
             self.virtio_mac2,
         )
         self.vm1_session.send_expect(cmd1, "# ")
@@ -181,7 +182,7 @@ class TestBasic4kPagesDsa(TestCase):
     def connect_vm0(self):
         self.vm0 = QEMUKvm(self.dut, "vm0", self.suite_name)
         self.vm0.net_type = "hostfwd"
-        self.vm0.hostfwd_addr = "%s:6000" % self.dut.get_ip_address()
+        self.vm0.hostfwd_addr = "%s:6000" % self.host_addr
         self.vm0.def_driver = "vfio-pci"
         self.vm0.driver_mode = "noiommu"
         self.wait_vm_net_ready(vm_index=0)
@@ -194,7 +195,7 @@ class TestBasic4kPagesDsa(TestCase):
     def connect_vm1(self):
         self.vm1 = QEMUKvm(self.dut, "vm1", "vm_hotplug")
         self.vm1.net_type = "hostfwd"
-        self.vm1.hostfwd_addr = "%s:6001" % self.dut.get_ip_address()
+        self.vm1.hostfwd_addr = "%s:6001" % self.host_addr
         self.vm1.def_driver = "vfio-pci"
         self.vm1.driver_mode = "noiommu"
         self.wait_vm_net_ready(vm_index=1)
@@ -509,8 +510,8 @@ class TestBasic4kPagesDsa(TestCase):
         """
         Test Case 1: PVP split ring multi-queues with 4K-pages and dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -526,18 +527,18 @@ class TestBasic4kPagesDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
@@ -549,7 +550,7 @@ class TestBasic4kPagesDsa(TestCase):
             % self.ports_socket
         )
         ports = [self.dut.ports_info[0]["pci"]]
-        for i in self.use_dsa_list:
+        for i in dsas:
             ports.append(i)
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
@@ -596,22 +597,22 @@ class TestBasic4kPagesDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
             )
         )
 
@@ -620,11 +621,11 @@ class TestBasic4kPagesDsa(TestCase):
         )
         vhost_param = "--nb-cores=4 --txd=1024 --rxd=1024 --txq=8 --rxq=8"
         ports = [self.dut.ports_info[0]["pci"]]
-        for i in self.use_dsa_list:
+        for i in dsas:
             ports.append(i)
         port_options = {
-            self.use_dsa_list[0]: "max_queues=4",
-            self.use_dsa_list[1]: "max_queues=4",
+            dsas[0]: "max_queues=4",
+            dsas[1]: "max_queues=4",
         }
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
@@ -668,8 +669,8 @@ class TestBasic4kPagesDsa(TestCase):
         """
         Test Case 2: PVP packed ring multi-queues with 4K-pages and dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = (
             "txq0@%s-q0;"
@@ -685,18 +686,18 @@ class TestBasic4kPagesDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         vhost_eal_param = (
@@ -708,7 +709,7 @@ class TestBasic4kPagesDsa(TestCase):
             % self.ports_socket
         )
         ports = [self.dut.ports_info[0]["pci"]]
-        for i in self.use_dsa_list:
+        for i in dsas:
             ports.append(i)
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
@@ -755,22 +756,22 @@ class TestBasic4kPagesDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
             )
         )
         vhost_eal_param = (
@@ -778,11 +779,11 @@ class TestBasic4kPagesDsa(TestCase):
         )
         vhost_param = "--nb-cores=4 --txd=1024 --rxd=1024 --txq=8 --rxq=8"
         ports = [self.dut.ports_info[0]["pci"]]
-        for i in self.use_dsa_list:
+        for i in dsas:
             ports.append(i)
         port_options = {
-            self.use_dsa_list[0]: "max_queues=4",
-            self.use_dsa_list[1]: "max_queues=4",
+            dsas[0]: "max_queues=4",
+            dsas[1]: "max_queues=4",
         }
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
@@ -826,17 +827,11 @@ class TestBasic4kPagesDsa(TestCase):
         """
         Test Case 3: VM2VM split ring vhost-user/virtio-net 4K-pages and dsa dpdk driver test with tcp traffic
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
-        dmas1 = "txq0@%s-q0;" "rxq0@%s-q0" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-        )
-        dmas2 = "txq0@%s-q1;" "rxq0@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-        )
+        dmas1 = "txq0@%s-q0;rxq0@%s-q0" % (dsas[0], dsas[0])
+        dmas2 = "txq0@%s-q1;rxq0@%s-q1" % (dsas[0], dsas[0])
         vhost_eal_param = (
             "--no-huge -m 1024 "
             + "--vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1,dmas=[%s]'" % dmas1
@@ -846,12 +841,12 @@ class TestBasic4kPagesDsa(TestCase):
             " --nb-cores=2 --txd=1024 --rxd=1024 --no-numa --socket-num=%d"
             % self.ports_socket
         )
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
         )
         self.vhost_user_pmd.execute_cmd("start")
@@ -874,17 +869,11 @@ class TestBasic4kPagesDsa(TestCase):
         """
         Test Case 4: VM2VM packed ring vhost-user/virtio-net 4K-pages and dsa dpdk driver test with tcp traffic
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
-        dmas1 = "txq0@%s-q0;" "rxq0@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-        )
-        dmas2 = "txq0@%s-q0;" "rxq0@%s-q1" % (
-            self.use_dsa_list[0],
-            self.use_dsa_list[0],
-        )
+        dmas1 = "txq0@%s-q0;rxq0@%s-q1" % (dsas[0], dsas[0])
+        dmas2 = "txq0@%s-q0;rxq0@%s-q1" % (dsas[0], dsas[0])
         vhost_eal_param = (
             "--no-huge -m 1024 "
             + "--vdev 'net_vhost0,iface=vhost-net0,queues=1,tso=1,dmas=[%s]'" % dmas1
@@ -894,12 +883,12 @@ class TestBasic4kPagesDsa(TestCase):
             " --nb-cores=2 --txd=1024 --rxd=1024 --no-numa --socket-num=%d"
             % self.ports_socket
         )
-        port_options = {self.use_dsa_list[0]: "max_queues=2"}
+        port_options = {dsas[0]: "max_queues=2"}
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
         )
         self.vhost_user_pmd.execute_cmd("start")
@@ -922,8 +911,8 @@ class TestBasic4kPagesDsa(TestCase):
         """
         Test Case 5: VM2VM vhost/virtio-net split packed ring multi queues with 1G/4k-pages and dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas1 = (
             "txq0@%s-q0;"
@@ -939,18 +928,18 @@ class TestBasic4kPagesDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         dmas2 = (
@@ -967,18 +956,18 @@ class TestBasic4kPagesDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
             )
         )
         vhost_eal_param = (
@@ -987,14 +976,14 @@ class TestBasic4kPagesDsa(TestCase):
         )
         vhost_param = " --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8"
         port_options = {
-            self.use_dsa_list[0]: "max_queues=4",
-            self.use_dsa_list[1]: "max_queues=4",
+            dsas[0]: "max_queues=4",
+            dsas[1]: "max_queues=4",
         }
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
         )
         self.vhost_user_pmd.execute_cmd("start")
@@ -1018,8 +1007,8 @@ class TestBasic4kPagesDsa(TestCase):
         """
         Test Case 6: VM2VM vhost/virtio-net split ring multi queues with 1G/4k-pages and dsa dpdk driver
         """
-        self.use_dsa_list = self.DC.bind_dsa_to_dpdk(
-            dsa_number=2, driver_name="vfio-pci", socket=self.ports_socket
+        dsas = self.DC.bind_dsa_to_dpdk_driver(
+            dsa_num=2, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas1 = (
             "txq0@%s-q0;"
@@ -1035,18 +1024,18 @@ class TestBasic4kPagesDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
+                dsas[0],
             )
         )
         dmas2 = (
@@ -1063,18 +1052,18 @@ class TestBasic4kPagesDsa(TestCase):
             "rxq6@%s-q3;"
             "rxq7@%s-q3"
             % (
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
+                dsas[1],
             )
         )
         vhost_eal_param = (
@@ -1085,14 +1074,14 @@ class TestBasic4kPagesDsa(TestCase):
         )
         vhost_param = " --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8"
         port_options = {
-            self.use_dsa_list[0]: "max_queues=4",
-            self.use_dsa_list[1]: "max_queues=4",
+            dsas[0]: "max_queues=4",
+            dsas[1]: "max_queues=4",
         }
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
         )
         self.vhost_user_pmd.execute_cmd("start")
@@ -1117,14 +1106,14 @@ class TestBasic4kPagesDsa(TestCase):
             "rxq2@%s-q0;"
             "rxq3@%s-q1"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
+                dsas[0],
+                dsas[0],
+                dsas[1],
+                dsas[1],
+                dsas[0],
+                dsas[0],
+                dsas[1],
+                dsas[1],
             )
         )
         dmas2 = (
@@ -1137,14 +1126,14 @@ class TestBasic4kPagesDsa(TestCase):
             "rxq2@%s-q0;"
             "rxq3@%s-q1"
             % (
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
-                self.use_dsa_list[0],
-                self.use_dsa_list[0],
-                self.use_dsa_list[1],
-                self.use_dsa_list[1],
+                dsas[0],
+                dsas[0],
+                dsas[1],
+                dsas[1],
+                dsas[0],
+                dsas[0],
+                dsas[1],
+                dsas[1],
             )
         )
         vhost_eal_param = (
@@ -1155,14 +1144,14 @@ class TestBasic4kPagesDsa(TestCase):
         )
         vhost_param = " --nb-cores=4 --txd=1024 --rxd=1024 --rxq=4 --txq=4"
         port_options = {
-            self.use_dsa_list[0]: "max_queues=2",
-            self.use_dsa_list[1]: "max_queues=2",
+            dsas[0]: "max_queues=2",
+            dsas[1]: "max_queues=2",
         }
         self.start_vhost_user_testpmd(
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.use_dsa_list,
+            ports=dsas,
             port_options=port_options,
         )
         self.vhost_user_pmd.execute_cmd("start")
@@ -1180,8 +1169,7 @@ class TestBasic4kPagesDsa(TestCase):
         """
         Test Case 7: PVP split ring multi-queues with 4K-pages and dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=1)
+        self.DC.create_wq(wq_num=4, dsa_idxs=[0, 1])
         dmas = (
             "txq0@wq0.0;"
             "txq1@wq0.0;"
@@ -1297,8 +1285,7 @@ class TestBasic4kPagesDsa(TestCase):
         """
         Test Case 8: PVP packed ring multi-queues with 4K-pages and dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=1)
+        self.DC.create_wq(wq_num=4, dsa_idxs=[0, 1])
         dmas = (
             "txq0@wq0.0;"
             "txq1@wq0.0;"
@@ -1414,7 +1401,7 @@ class TestBasic4kPagesDsa(TestCase):
         """
         Test Case 9: VM2VM split ring vhost-user/virtio-net 4K-pages and dsa kernel driver test with tcp traffic
         """
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=0)
+        self.DC.create_wq(wq_num=4, dsa_idxs=[0])
         dmas1 = "txq0@wq0.0;rxq0@wq0.1"
         dmas2 = "txq0@wq0.2;rxq0@wq0.3"
         vhost_eal_param = (
@@ -1452,7 +1439,7 @@ class TestBasic4kPagesDsa(TestCase):
         """
         Test Case 10: VM2VM packed ring vhost-user/virtio-net 4K-pages and dsa kernel driver test with tcp traffic
         """
-        self.DC.create_work_queue(work_queue_number=2, dsa_index=0)
+        self.DC.create_wq(wq_num=2, dsa_idxs=[0])
         dmas1 = "txq0@wq0.0;rxq0@wq0.0"
         dmas2 = "txq0@wq0.1;rxq0@wq0.1"
         vhost_eal_param = (
@@ -1490,8 +1477,7 @@ class TestBasic4kPagesDsa(TestCase):
         """
         Test Case 11: VM2VM vhost/virtio-net split packed ring multi queues with 1G/4k-pages and dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=1)
+        self.DC.create_wq(wq_num=4, dsa_idxs=[0, 1])
         dmas1 = (
             "txq0@wq0.0;"
             "txq1@wq0.0;"
@@ -1552,8 +1538,7 @@ class TestBasic4kPagesDsa(TestCase):
         """
         Test Case 12: VM2VM vhost/virtio-net split ring multi queues with 1G/4k-pages and dsa kernel driver
         """
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=0)
-        self.DC.create_work_queue(work_queue_number=4, dsa_index=1)
+        self.DC.create_wq(wq_num=4, dsa_idxs=[0])
         dmas1 = (
             "txq0@wq0.0;"
             "txq1@wq0.0;"
@@ -1660,8 +1645,6 @@ class TestBasic4kPagesDsa(TestCase):
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "# ")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.dut.send_expect("rm -rf /tmp/vhost-net*", "# ")
-        self.DC.reset_all_work_queue()
-        self.DC.bind_all_dsa_to_kernel()
 
     def tear_down_all(self):
         """
