@@ -553,7 +553,7 @@ class TestVxlan(TestCase):
         config.outer_mac_dst = self.dut_port_mac
         config.create_pcap()
         self.dut.send_expect("start", "testpmd>", 10)
-        self.pmdout.wait_link_status_up(self.dut_port)
+        self.pmdout.wait_link_status_up("all")
         config.send_pcap(self.tester_iface)
         # check whether detect vxlan type
         out = self.dut.get_session_output(timeout=2)
@@ -615,7 +615,7 @@ class TestVxlan(TestCase):
         config.outer_mac_dst = self.dut_port_mac
         config.create_pcap()
 
-        self.pmdout.wait_link_status_up(self.dut_port)
+        self.pmdout.wait_link_status_up("all")
         # save the capture packet into pcap format
         inst = self.tester.tcpdump_sniff_packets(self.recv_iface)
         config.send_pcap(self.tester_iface)
@@ -660,7 +660,7 @@ class TestVxlan(TestCase):
         # send vxlan packet
         config.create_pcap()
         self.dut.send_expect("start", "testpmd>", 10)
-        self.pmdout.wait_link_status_up(self.dut_port)
+        self.pmdout.wait_link_status_up("all")
         config.send_pcap(self.tester_iface)
         out = self.dut.get_session_output(timeout=2)
         print(out)
@@ -705,7 +705,7 @@ class TestVxlan(TestCase):
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
-        self.pmdout.wait_link_status_up(self.dut_port)
+        self.pmdout.wait_link_status_up("all")
         # check normal packet
         self.send_and_detect(outer_udp_dst=1234)
         # check vxlan + UDP inner packet
@@ -749,7 +749,7 @@ class TestVxlan(TestCase):
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
-        self.pmdout.wait_link_status_up(self.dut_port)
+        self.pmdout.wait_link_status_up("all")
         # check normal ipv6 packet
         self.send_and_detect(
             outer_ip6_src="FE80:0:0:0:0:0:0:0",
@@ -811,7 +811,7 @@ class TestVxlan(TestCase):
 
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
-        self.pmdout.wait_link_status_up(self.dut_port)
+        self.pmdout.wait_link_status_up("all")
         # check normal packet + ip checksum invalid
         self.send_and_check(outer_ip_invalid=1, outer_udp_dst=1234)
         # check vxlan packet + inner ip checksum invalid
@@ -975,7 +975,7 @@ class TestVxlan(TestCase):
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
-        self.pmdout.wait_link_status_up(self.dut_port)
+        self.pmdout.wait_link_status_up("all")
         config = VxlanTestConfig(self)
         config_vlan = VxlanTestConfig(self, inner_vlan=1)
         config.outer_mac_dst = self.dut_port_mac
@@ -1055,7 +1055,7 @@ class TestVxlan(TestCase):
 
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
-        self.pmdout.wait_link_status_up(self.dut_port)
+        self.pmdout.wait_link_status_up("all")
         rule = (
             "flow create {} ingress pattern eth / ipv4 / udp / vxlan vni is {} / eth dst is {} / end actions pf "
             "/ queue index {} / end".format(
@@ -1234,7 +1234,7 @@ class TestVxlan(TestCase):
 
             self.dut.send_expect("set fwd io", "testpmd>", 10)
             self.dut.send_expect("start", "testpmd>", 10)
-            self.pmdout.wait_link_status_up(self.dut_port)
+            self.pmdout.wait_link_status_up("all")
             if BIDIRECT:
                 wirespeed = self.wirespeed(self.nic, PACKET_LEN, 2)
             else:
@@ -1328,7 +1328,7 @@ class TestVxlan(TestCase):
             self.dut.send_expect("set fwd csum", "testpmd>", 10)
             self.enable_vxlan(self.dut_port)
             self.enable_vxlan(self.recv_port)
-            self.pmdout.wait_link_status_up(self.dut_port)
+            self.pmdout.wait_link_status_up("all")
 
             # redirect flow to another queue by tunnel filter
             rule_config = {
