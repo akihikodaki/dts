@@ -720,7 +720,10 @@ class TestICEVfSupportMulticastAdress(TestCase):
         # send 4 packets
         p.send_pkt(self.tester, tx_port=self.tester_itf)
         out_4 = self.check_pkts_received()
-        self.verify(len(out_4) == 1, "Wrong number of pkts received")
+        if self.default_stats:
+            self.verify(len(out_4) == 1, "Wrong number of pkts received")
+        else:
+            self.verify(len(out_4) == 2, "Wrong number of pkts received")
         self.verify(("0", mul_mac_0) in out_4, "pkt1 can't be received by port 0")
 
         # remove the multicast address configuration
