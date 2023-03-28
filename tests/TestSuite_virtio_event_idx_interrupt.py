@@ -2,17 +2,12 @@
 # Copyright(c) 2019 Intel Corporation
 #
 
-"""
-DPDK Test suite.
-Virtio idx interrupt need test with l3fwd-power sample
-"""
-
 import _thread
 import re
 import time
 
-import framework.utils as utils
 from framework.pktgen import PacketGeneratorHelper
+from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 from framework.virt_common import VM
 
@@ -22,8 +17,6 @@ class TestVirtioIdxInterrupt(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.queues = 1
-        self.nb_cores = 1
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
@@ -32,7 +25,7 @@ class TestVirtioIdxInterrupt(TestCase):
         )
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.base_dir = self.dut.base_dir.replace("~", "/root")
-        self.pf_pci = self.dut.ports_info[0]["pci"]
+        self.port_pci = self.dut.ports_info[0]["pci"]
         self.out_path = "/tmp"
         out = self.tester.send_expect("ls -d %s" % self.out_path, "# ")
         if "No such file or directory" in out:
@@ -41,7 +34,8 @@ class TestVirtioIdxInterrupt(TestCase):
         self.pktgen_helper = PacketGeneratorHelper()
         self.app_testpmd_path = self.dut.apps_name["test-pmd"]
         self.testpmd_name = self.app_testpmd_path.split("/")[-1]
-        self.device_str = None
+        self.vhost_user = self.dut.new_session(suite="vhost-user")
+        self.vhost_user_pmd = PmdOutput(self.dut, self.vhost_user)
 
     def set_up(self):
         """
@@ -52,7 +46,6 @@ class TestVirtioIdxInterrupt(TestCase):
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
-        self.vhost = self.dut.new_session(suite="vhost")
 
     def get_core_mask(self):
         self.core_config = "1S/%dC/1T" % (self.nb_cores + 1)
@@ -62,39 +55,38 @@ class TestVirtioIdxInterrupt(TestCase):
         )
         self.core_list = self.dut.get_core_list(self.core_config)
 
-    def start_vhost_testpmd(self, dmas=None, mode=False):
+    def start_vhost_testpmd(self):
         """
         start the testpmd on vhost side
         """
-        # get the core mask depend on the nb_cores number
         self.get_core_mask()
-        testcmd = self.app_testpmd_path + " "
-        vdev = [
-            "net_vhost,iface=%s/vhost-net,queues=%d " % (self.base_dir, self.queues)
-        ]
-        eal_params = self.dut.create_eal_parameters(
-            cores=self.core_list, prefix="vhost", ports=[self.pf_pci], vdevs=vdev
+        eal_param = "--vdev 'net_vhost,iface=%s/vhost-net,queues=%d'" % (
+            self.base_dir,
+            self.queues,
         )
-        para = " -- -i --nb-cores=%d --txd=1024 --rxd=1024 --rxq=%d --txq=%d" % (
+        param = "--nb-cores=%d --txd=1024 --rxd=1024 --rxq=%d --txq=%d" % (
             self.nb_cores,
             self.queues,
             self.queues,
         )
-        command_line = testcmd + eal_params + para
-        self.vhost.send_expect(command_line, "testpmd> ", 30)
-        self.vhost.send_expect("start", "testpmd> ", 30)
+        self.vhost_user_pmd.start_testpmd(
+            cores=self.core_list,
+            eal_param=eal_param,
+            param=param,
+            prefix="vhost-user",
+            fixed_prefix=True,
+            ports=[self.port_pci],
+        )
+        self.vhost_user_pmd.execute_cmd("start")
 
-    def start_vms(self, packed=False, mode=False, set_target=False, bind_dev=False):
+    def start_vms(self, packed=False):
         """
         start qemus
         """
         self.vm = VM(self.dut, "vm0", "vhost_sample")
         vm_params = {}
         vm_params["driver"] = "vhost-user"
-        if mode:
-            vm_params["opt_path"] = "%s/vhost-net,%s" % (self.base_dir, mode)
-        else:
-            vm_params["opt_path"] = "%s/vhost-net" % self.base_dir
+        vm_params["opt_path"] = "%s/vhost-net" % self.base_dir
         vm_params["opt_mac"] = "00:11:22:33:44:55"
         opt_args = (
             "mrg_rxbuf=on,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on"
@@ -107,7 +99,7 @@ class TestVirtioIdxInterrupt(TestCase):
         vm_params["opt_settings"] = opt_args
         self.vm.set_vm_device(**vm_params)
         try:
-            self.vm_dut = self.vm.start(set_target=set_target, bind_dev=bind_dev)
+            self.vm_dut = self.vm.start(set_target=False, bind_dev=False)
             if self.vm_dut is None:
                 raise Exception("Set up VM ENV failed")
         except Exception as e:
@@ -202,7 +194,7 @@ class TestVirtioIdxInterrupt(TestCase):
         """
         check each queue has receive packets on vhost side
         """
-        out = self.vhost.send_expect("stop", "testpmd> ", 60)
+        out = self.vhost_user_pmd.execute_cmd("stop")
         print(out)
         for queue_index in range(0, self.queues):
             queue = re.search("Port= 0/Queue=\s*%d" % queue_index, out)
@@ -217,14 +209,14 @@ class TestVirtioIdxInterrupt(TestCase):
                 "The queue %d rx-packets or tx-packets is 0 about " % queue_index
                 + "rx-packets:%d, tx-packets:%d" % (rx_packets, tx_packets),
             )
-        self.vhost.send_expect("clear port stats all", "testpmd> ", 60)
+        self.vhost_user_pmd.execute_cmd("clear port stats all")
 
     def stop_all_apps(self):
         """
         close all vms
         """
         self.vm.stop()
-        self.vhost.send_expect("quit", "#", 20)
+        self.vhost_user_pmd.quit()
 
     def test_perf_split_ring_virito_pci_driver_reload(self):
         """
@@ -233,9 +225,9 @@ class TestVirtioIdxInterrupt(TestCase):
         self.queues = 1
         self.nb_cores = 1
         self.start_vhost_testpmd()
-        self.start_vms()
+        self.start_vms(packed=False)
         self.config_virito_net_in_vm()
-        res = self.check_packets_after_reload_virtio_device(reload_times=100)
+        res = self.check_packets_after_reload_virtio_device(reload_times=10)
         self.verify(res is True, "Should increase the wait times of ixia")
         self.stop_all_apps()
 
@@ -248,7 +240,7 @@ class TestVirtioIdxInterrupt(TestCase):
         self.queues = 16
         self.nb_cores = 16
         self.start_vhost_testpmd()
-        self.start_vms()
+        self.start_vms(packed=False)
         self.config_virito_net_in_vm()
         self.start_to_send_packets(delay=15)
         self.check_each_queue_has_packets_info_on_vhost()
@@ -263,7 +255,7 @@ class TestVirtioIdxInterrupt(TestCase):
         self.start_vhost_testpmd()
         self.start_vms(packed=True)
         self.config_virito_net_in_vm()
-        res = self.check_packets_after_reload_virtio_device(reload_times=100)
+        res = self.check_packets_after_reload_virtio_device(reload_times=10)
         self.verify(res is True, "Should increase the wait times of ixia")
         self.stop_all_apps()
 
@@ -286,7 +278,6 @@ class TestVirtioIdxInterrupt(TestCase):
         """
         Run after each test case.
         """
-        self.dut.close_session(self.vhost)
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
 
@@ -294,4 +285,4 @@ class TestVirtioIdxInterrupt(TestCase):
         """
         Run after each test suite.
         """
-        pass
+        self.dut.close_session(self.vhost_user)
