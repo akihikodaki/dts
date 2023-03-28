@@ -45,7 +45,12 @@ if not os.path.exists(TMP_PATH):
     os.system("mkdir -p %s" % TMP_PATH)
 
 scapy_modules_required = {
-    "scapy.contrib.gtp": ["GTP_U_Header", "GTPPDUSessionContainer"],
+    "scapy.contrib.gtp": [
+        "GTP_U_Header",
+        "GTPPDUSessionContainer",
+        "GTPEchoRequest",
+        "GTPEchoResponse",
+    ],
     "scapy.contrib.lldp": ["LLDPDU", "LLDPDUManagementAddress"],
     "scapy.contrib.pfcp": ["PFCP"],
     "scapy.contrib.nsh": ["NSH"],
