@@ -44,8 +44,8 @@ Test Case 1: pvp test with virtio 0.95 mergeable path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -- -i \
-    --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1 -a 0000:04:00.0 \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -53,15 +53,18 @@ Test Case 1: pvp test with virtio 0.95 mergeable path
 
     testpmd>show port stats all
 
-5. Port restart 100 times by below command and re-calculate the average througnput,verify the throughput is not zero after port restart::
+5. Stop port at vhost side by below command and re-calculate the average throughput,verify the throughput is zero after port stop::
 
     testpmd>stop
+    testpmd>port stop 0
+    testpmd>show port stats 0
+
+6. Restart port at vhost side by below command and re-calculate the average throughput,verify the throughput is not zero after port restart::
+
+    testpmd>clear port stats all
+    testpmd>port start all
     testpmd>start
-    ...
-    testpmd>stop
-    testpmd>show port stats all
-    testpmd>start
-    testpmd>show port stats all
+    testpmd>show port stats 0
 
 Test Case 2: pvp test with virtio 0.95 normal path
 ==================================================
@@ -90,8 +93,8 @@ Test Case 2: pvp test with virtio 0.95 normal path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd with tx-offloads::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x0 --enable-hw-vlan-strip \
-    --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1 -a 0000:04:00.0 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -102,14 +105,17 @@ Test Case 2: pvp test with virtio 0.95 normal path
 5. Stop port at vhost side by below command and re-calculate the average throughput,verify the throughput is zero after port stop::
 
     testpmd>stop
-    testpmd>show port stats all
+    testpmd>port stop 0
+    testpmd>show port stats 0
 
 6. Restart port at vhost side by below command and re-calculate the average throughput,verify the throughput is not zero after port restart::
 
+    testpmd>clear port stats all
+    testpmd>port start all
     testpmd>start
-    testpmd>show port stats all
+    testpmd>show port stats 0
 
-Test Case 3: pvp test with virtio 0.95 vrctor_rx path
+Test Case 3: pvp test with virtio 0.95 vector_rx path
 =====================================================
 
 1. Bind 1 NIC port to vfio-pci, then launch testpmd by below command::
@@ -136,8 +142,8 @@ Test Case 3: pvp test with virtio 0.95 vrctor_rx path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd without ant tx-offloads::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -a 0000:04:00.0,vectorized=1 -- -i \
-    --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1 -a 0000:04:00.0,vectorized=1 \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -148,12 +154,15 @@ Test Case 3: pvp test with virtio 0.95 vrctor_rx path
 5. Stop port at vhost side by below command and re-calculate the average throughput,verify the throughput is zero after port stop::
 
     testpmd>stop
-    testpmd>show port stats all
+    testpmd>port stop 0
+    testpmd>show port stats 0
 
 6. Restart port at vhost side by below command and re-calculate the average throughput,verify the throughput is not zero after port restart::
 
+    testpmd>clear port stats all
+    testpmd>port start all
     testpmd>start
-    testpmd>show port stats all
+    testpmd>show port stats 0
 
 Test Case 4: pvp test with virtio 1.0 mergeable path
 ====================================================
@@ -182,8 +191,8 @@ Test Case 4: pvp test with virtio 1.0 mergeable path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -- -i \
-    --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1 -a 0000:04:00.0 \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -194,12 +203,15 @@ Test Case 4: pvp test with virtio 1.0 mergeable path
 5. Stop port at vhost side by below command and re-calculate the average throughput,verify the throughput is zero after port stop::
 
     testpmd>stop
-    testpmd>show port stats all
+    testpmd>port stop 0
+    testpmd>show port stats 0
 
 6. Restart port at vhost side by below command and re-calculate the average throughput,verify the throughput is not zero after port restart::
 
+    testpmd>clear port stats all
+    testpmd>port start all
     testpmd>start
-    testpmd>show port stats all
+    testpmd>show port stats 0
 
 Test Case 5: pvp test with virtio 1.0 normal path
 =================================================
@@ -228,8 +240,8 @@ Test Case 5: pvp test with virtio 1.0 normal path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd with tx-offloads::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x0 --enable-hw-vlan-strip\
-    --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1 -a 0000:04:00.0 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -240,14 +252,17 @@ Test Case 5: pvp test with virtio 1.0 normal path
 5. Stop port at vhost side by below command and re-calculate the average throughput,verify the throughput is zero after port stop::
 
     testpmd>stop
-    testpmd>show port stats all
+    testpmd>port stop 0
+    testpmd>show port stats 0
 
 6. Restart port at vhost side by below command and re-calculate the average throughput,verify the throughput is not zero after port restart::
 
+    testpmd>clear port stats all
+    testpmd>port start all
     testpmd>start
-    testpmd>show port stats all
+    testpmd>show port stats 0
 
-Test Case 6: pvp test with virtio 1.0 vrctor_rx path
+Test Case 6: pvp test with virtio 1.0 vector_rx path
 ====================================================
 
 1. Bind 1 NIC port to vfio-pci, then launch testpmd by below command::
@@ -274,8 +289,8 @@ Test Case 6: pvp test with virtio 1.0 vrctor_rx path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd without tx-offloads::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -a 0000:04:00.0,vectorized=1 -- -i \
-    --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1 -a 0000:04:00.0,vectorized=1 \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -286,12 +301,15 @@ Test Case 6: pvp test with virtio 1.0 vrctor_rx path
 5. Stop port at vhost side by below command and re-calculate the average throughput,verify the throughput is zero after port stop::
 
     testpmd>stop
-    testpmd>show port stats all
+    testpmd>port stop 0
+    testpmd>show port stats 0
 
 6. Restart port at vhost side by below command and re-calculate the average throughput,verify the throughput is not zero after port restart::
 
+    testpmd>clear port stats all
+    testpmd>port start all
     testpmd>start
-    testpmd>show port stats all
+    testpmd>show port stats 0
 
 Test Case 7: pvp test with virtio 1.1 mergeable path
 ====================================================
@@ -320,8 +338,8 @@ Test Case 7: pvp test with virtio 1.1 mergeable path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -- -i \
-    --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1 -a 0000:04:00.0 \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -332,12 +350,15 @@ Test Case 7: pvp test with virtio 1.1 mergeable path
 5. Stop port at vhost side by below command and re-calculate the average throughput,verify the throughput is zero after port stop::
 
     testpmd>stop
-    testpmd>show port stats all
+    testpmd>port stop 0
+    testpmd>show port stats 0
 
 6. Restart port at vhost side by below command and re-calculate the average throughput,verify the throughput is not zero after port restart::
 
+    testpmd>clear port stats all
+    testpmd>port start all
     testpmd>start
-    testpmd>show port stats all
+    testpmd>show port stats 0
 
 Test Case 8: pvp test with virtio 1.1 normal path
 =================================================
@@ -366,8 +387,8 @@ Test Case 8: pvp test with virtio 1.1 normal path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd with tx-offloads::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x0 --enable-hw-vlan-strip\
-    --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1 -a 0000:04:00.0 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -378,14 +399,17 @@ Test Case 8: pvp test with virtio 1.1 normal path
 5. Stop port at vhost side by below command and re-calculate the average throughput,verify the throughput is zero after port stop::
 
     testpmd>stop
-    testpmd>show port stats all
+    testpmd>port stop 0
+    testpmd>show port stats 0
 
 6. Restart port at vhost side by below command and re-calculate the average throughput,verify the throughput is not zero after port restart::
 
+    testpmd>clear port stats all
+    testpmd>port start all
     testpmd>start
-    testpmd>show port stats all
+    testpmd>show port stats 0
 
-Test Case 9: pvp test with virtio 1.1 vrctor_rx path
+Test Case 9: pvp test with virtio 1.1 vector_rx path
 ====================================================
 
 1. Bind 1 NIC port to vfio-pci, then launch testpmd by below command::
@@ -412,8 +436,8 @@ Test Case 9: pvp test with virtio 1.1 vrctor_rx path
 
 3. On VM, bind virtio net to vfio-pci and run testpmd without tx-offloads::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -a 0000:04:00.0,vectorized=1 -- -i \
-    --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1 -a 0000:04:00.0,vectorized=1 \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -424,15 +448,18 @@ Test Case 9: pvp test with virtio 1.1 vrctor_rx path
 5. Stop port at vhost side by below command and re-calculate the average throughput,verify the throughput is zero after port stop::
 
     testpmd>stop
-    testpmd>show port stats all
+    testpmd>port stop 0
+    testpmd>show port stats 0
 
 6. Restart port at vhost side by below command and re-calculate the average throughput,verify the throughput is not zero after port restart::
 
+    testpmd>clear port stats all
+    testpmd>port start all
     testpmd>start
-    testpmd>show port stats all
+    testpmd>show port stats 0
 
-Test Case 10: pvp test with virtio 1.0 mergeable path restart 100 times
-=======================================================================
+Test Case 10: pvp test with virtio 1.0 mergeable path restart 10 times
+======================================================================
 
 1. Bind 1 NIC port to vfio-pci, then launch testpmd by below command::
 
@@ -458,8 +485,8 @@ Test Case 10: pvp test with virtio 1.0 mergeable path restart 100 times
 
 3. On VM, bind virtio net to vfio-pci and run testpmd::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 3 -- -i \
-    --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0x3 -n 1 -a 0000:04:00.0 \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -470,11 +497,14 @@ Test Case 10: pvp test with virtio 1.0 mergeable path restart 100 times
 5. Stop port at vhost side by below command and re-calculate the average throughput,verify the throughput is zero after port stop::
 
     testpmd>stop
-    testpmd>show port stats all
+    testpmd>port stop 0
+    testpmd>show port stats 0
 
 6. Restart port at vhost side by below command and re-calculate the average throughput,verify the throughput is not zero after port restart::
 
+    testpmd>clear port stats all
+    testpmd>port start all
     testpmd>start
-    testpmd>show port stats all
+    testpmd>show port stats 0
 
-7. Rerun steps 4-6 100 times to check stability.
+7. Rerun steps 4-6 10 times to check stability.
