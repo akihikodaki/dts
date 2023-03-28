@@ -32,24 +32,24 @@ General set up
 --------------
 1. Compile DPDK::
 
-    # CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static <dpdk build dir>
-    # ninja -C <dpdk build dir> -j 110
-    For example:
-    CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static x86_64-native-linuxapp-gcc
-    ninja -C x86_64-native-linuxapp-gcc -j 110
+	# CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static <dpdk build dir>
+	# ninja -C <dpdk build dir> -j 110
+	For example:
+	CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dexamples=all --default-library=static x86_64-native-linuxapp-gcc
+	ninja -C x86_64-native-linuxapp-gcc -j 110
 
 2. Get the PCI device ID and DMA device ID of DUT, for example, 0000:18:00.0 is PCI device ID, 0000:00:04.0, 0000:00:04.1 is DMA device ID::
 
-    <dpdk dir># ./usertools/dpdk-devbind.py -s
+	<dpdk dir># ./usertools/dpdk-devbind.py -s
 
-    Network devices using kernel driver
-    ===================================
-    0000:18:00.0 'Device 159b' if=ens785f0 drv=ice unused=vfio-pci
+	Network devices using kernel driver
+	===================================
+	0000:18:00.0 'Device 159b' if=ens785f0 drv=ice unused=vfio-pci
 
-    DMA devices using kernel driver
-    ===============================
-    0000:00:04.0 'Sky Lake-E CBDMA Registers 2021' drv=ioatdma unused=vfio-pci
-    0000:00:04.1 'Sky Lake-E CBDMA Registers 2021' drv=ioatdma unused=vfio-pci
+	DMA devices using kernel driver
+	===============================
+	0000:00:04.0 'Sky Lake-E CBDMA Registers 2021' drv=ioatdma unused=vfio-pci
+	0000:00:04.1 'Sky Lake-E CBDMA Registers 2021' drv=ioatdma unused=vfio-pci
 
 Test case
 =========
@@ -62,11 +62,11 @@ operations with CBDMA channels.
 
 1. Bind one nic port and one cbdma channel to vfio-pci, then launch the vhost sample by below commands::
 
-    rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --file-prefix=vhost \
-    --vdev 'net_vhost,iface=vhost-net,queues=1,dmas=[txq0@0000:00:04.0;rxq0@0000:00:04.0]' \
-    -- -i --nb-cores=1 --txd=1024 --rxd=1024
-    testpmd> start
+	rm -rf vhost-net*
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --file-prefix=vhost \
+	--vdev 'net_vhost,iface=vhost-net,queues=1,dmas=[txq0@0000:00:04.0;rxq0@0000:00:04.0]' \
+	-- -i --nb-cores=1 --txd=1024 --rxd=1024
+	testpmd> start
 
 2. Launch VM::
 
@@ -82,21 +82,21 @@ operations with CBDMA channels.
 
 3. On VM1, set virtio device IP, send 10M packets from packet generator to nic then check virtio device can receive packets::
 
-    ifconfig [ens3] 1.1.1.2      # [ens3] is the name of virtio-net
-    tcpdump -i [ens3]
+	ifconfig [ens3] 1.1.1.2      # [ens3] is the name of virtio-net
+	tcpdump -i [ens3]
 
 4. Reload virtio-net driver by below cmds::
 
-    ifconfig [ens3] down
-    ./usertools/dpdk-devbind.py -u [00:03.0]   # [00:03.0] is the pci addr of virtio-net
-    ./usertools/dpdk-devbind.py -b virtio-pci [00:03.0]
+	ifconfig [ens3] down
+	./usertools/dpdk-devbind.py -u [00:03.0]   # [00:03.0] is the pci addr of virtio-net
+	./usertools/dpdk-devbind.py -b virtio-pci [00:03.0]
 
 5. Check virtio device can receive packets again::
 
-    ifconfig [ens3] 1.1.1.2
-    tcpdump -i [ens3]
+	ifconfig [ens3] 1.1.1.2
+	tcpdump -i [ens3]
 
-6. Rerun step4 and step5 100 times to check event idx workable after driver reload.
+6. Rerun step4 and step5 10 times to check event idx workable after driver reload.
 
 Test Case 2: Split ring 16 queues virtio-net event idx interrupt mode test with cbdma enable
 --------------------------------------------------------------------------------------------
@@ -105,11 +105,11 @@ vhost uses the asynchronous operations with CBDMA channels.
 
 1. Bind one nic port and 4 cbdma channels to vfio-pci, then launch the vhost sample by below commands::
 
-    rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-17 -n 4 --file-prefix=vhost \
-    --vdev 'net_vhost,iface=vhost-net,queues=16,client=1,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.0;txq2@0000:00:04.0;txq3@0000:00:04.0;txq4@0000:00:04.0;txq5@0000:00:04.0;txq6@0000:00:04.0;txq7@0000:00:04.0;txq8@0000:00:04.1;txq9@0000:00:04.1;txq10@0000:00:04.1;txq11@0000:00:04.1;txq12@0000:00:04.1;txq13@0000:00:04.1;txq14@0000:00:04.1;txq15@0000:00:04.1;rxq0@0000:00:04.2;rxq1@0000:00:04.2;rxq2@0000:00:04.2;rxq3@0000:00:04.2;rxq4@0000:00:04.2;rxq5@0000:00:04.2;rxq6@0000:00:04.2;rxq7@0000:00:04.2;rxq8@0000:00:04.3;rxq9@0000:00:04.3;rxq10@0000:00:04.3;rxq11@0000:00:04.3;rxq12@0000:00:04.3;rxq13@0000:00:04.3;rxq14@0000:00:04.3;rxq15@0000:00:04.3]' \
-    -- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
-    testpmd> start
+	rm -rf vhost-net*
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-17 -n 4 --file-prefix=vhost \
+	--vdev 'net_vhost,iface=vhost-net,queues=16,client=1,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.0;txq2@0000:00:04.0;txq3@0000:00:04.0;txq4@0000:00:04.0;txq5@0000:00:04.0;txq6@0000:00:04.0;txq7@0000:00:04.0;txq8@0000:00:04.1;txq9@0000:00:04.1;txq10@0000:00:04.1;txq11@0000:00:04.1;txq12@0000:00:04.1;txq13@0000:00:04.1;txq14@0000:00:04.1;txq15@0000:00:04.1;rxq0@0000:00:04.2;rxq1@0000:00:04.2;rxq2@0000:00:04.2;rxq3@0000:00:04.2;rxq4@0000:00:04.2;rxq5@0000:00:04.2;rxq6@0000:00:04.2;rxq7@0000:00:04.2;rxq8@0000:00:04.3;rxq9@0000:00:04.3;rxq10@0000:00:04.3;rxq11@0000:00:04.3;rxq12@0000:00:04.3;rxq13@0000:00:04.3;rxq14@0000:00:04.3;rxq15@0000:00:04.3]' \
+	-- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
+	testpmd> start
 
 2. Launch VM::
 
@@ -125,18 +125,18 @@ vhost uses the asynchronous operations with CBDMA channels.
 
 3. On VM1, give virtio device IP and enable vitio-net with 16 quques::
 
-    ifconfig [ens3] 1.1.1.2           # [ens3] is the name of virtio-net
-    ethtool -L [ens3] combined 16
+	ifconfig [ens3] 1.1.1.2           # [ens3] is the name of virtio-net
+	ethtool -L [ens3] combined 16
 
 4. Send 10M different IP packets from packet generator to nic, check virtio-net interrupt times by below cmd in VM::
 
-    cat /proc/interrupts
+	cat /proc/interrupts
 
 5. Stop testpmd, check each queue has new packets coming, then start testpmd and check each queue has new packets coming::
 
-    testpmd> stop
-    testpmd> start
-    testpmd> stop
+	testpmd> stop
+	testpmd> start
+	testpmd> stop
 
 Test Case 3: Packed ring virtio-pci driver reload test with CBDMA enable
 ------------------------------------------------------------------------
@@ -146,11 +146,11 @@ with CBDMA channels.
 
 1. Bind one nic port and one cbdma channel to vfio-pci, then launch the vhost sample by below commands::
 
-    rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --file-prefix=vhost \
-    --vdev 'net_vhost,iface=vhost-net,queues=1,dmas=[txq0@0000:00:04.0;rxq0@0000:00:04.0]' \
-    -- -i --nb-cores=1 --txd=1024 --rxd=1024
-    testpmd> start
+	rm -rf vhost-net*
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --file-prefix=vhost \
+	--vdev 'net_vhost,iface=vhost-net,queues=1,dmas=[txq0@0000:00:04.0;rxq0@0000:00:04.0]' \
+	-- -i --nb-cores=1 --txd=1024 --rxd=1024
+	testpmd> start
 
 2. Launch VM::
 
@@ -166,21 +166,21 @@ with CBDMA channels.
 
 3. On VM1, set virtio device IP, send 10M packets from packet generator to nic then check virtio device can receive packets::
 
-    ifconfig [ens3] 1.1.1.2      # [ens3] is the name of virtio-net
-    tcpdump -i [ens3]
+	ifconfig [ens3] 1.1.1.2      # [ens3] is the name of virtio-net
+	tcpdump -i [ens3]
 
 4. Reload virtio-net driver by below cmds::
 
-    ifconfig [ens3] down
-    ./usertools/dpdk-devbind.py -u [00:03.0]   # [00:03.0] is the pci addr of virtio-net
-    ./usertools/dpdk-devbind.py -b virtio-pci [00:03.0]
+	ifconfig [ens3] down
+	./usertools/dpdk-devbind.py -u [00:03.0]   # [00:03.0] is the pci addr of virtio-net
+	./usertools/dpdk-devbind.py -b virtio-pci [00:03.0]
 
 5. Check virtio device can receive packets again::
 
-    ifconfig [ens3] 1.1.1.2
-    tcpdump -i [ens3]
+	ifconfig [ens3] 1.1.1.2
+	tcpdump -i [ens3]
 
-6. Rerun step4 and step5 100 times to check event idx workable after driver reload.
+6. Rerun step4 and step5 10 times to check event idx workable after driver reload.
 
 Test Case 4: Packed ring 16 queues virtio-net event idx interrupt mode test with cbdma enable
 ---------------------------------------------------------------------------------------------
@@ -189,11 +189,11 @@ uses the asynchronous operations with CBDMA channels.
 
 1. Bind one nic port and 4 cbdma channels to vfio-pci, then launch the vhost sample by below commands::
 
-    rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-17 -n 4 --file-prefix=vhost \
-    --vdev 'net_vhost,iface=vhost-net,queues=16,client=1,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.0;txq2@0000:00:04.0;txq3@0000:00:04.0;txq4@0000:00:04.0;txq5@0000:00:04.0;txq6@0000:00:04.0;txq7@0000:00:04.0;txq8@0000:00:04.1;txq9@0000:00:04.1;txq10@0000:00:04.1;txq11@0000:00:04.1;txq12@0000:00:04.1;txq13@0000:00:04.1;txq14@0000:00:04.1;txq15@0000:00:04.1;rxq0@0000:00:04.2;rxq1@0000:00:04.2;rxq2@0000:00:04.2;rxq3@0000:00:04.2;rxq4@0000:00:04.2;rxq5@0000:00:04.2;rxq6@0000:00:04.2;rxq7@0000:00:04.2;rxq8@0000:00:04.3;rxq9@0000:00:04.3;rxq10@0000:00:04.3;rxq11@0000:00:04.3;rxq12@0000:00:04.3;rxq13@0000:00:04.3;rxq14@0000:00:04.3;rxq15@0000:00:04.3]' \
-    -- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
-    testpmd> start
+	rm -rf vhost-net*
+	./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-17 -n 4 --file-prefix=vhost \
+	--vdev 'net_vhost,iface=vhost-net,queues=16,client=1,dmas=[txq0@0000:00:04.0;txq1@0000:00:04.0;txq2@0000:00:04.0;txq3@0000:00:04.0;txq4@0000:00:04.0;txq5@0000:00:04.0;txq6@0000:00:04.0;txq7@0000:00:04.0;txq8@0000:00:04.1;txq9@0000:00:04.1;txq10@0000:00:04.1;txq11@0000:00:04.1;txq12@0000:00:04.1;txq13@0000:00:04.1;txq14@0000:00:04.1;txq15@0000:00:04.1;rxq0@0000:00:04.2;rxq1@0000:00:04.2;rxq2@0000:00:04.2;rxq3@0000:00:04.2;rxq4@0000:00:04.2;rxq5@0000:00:04.2;rxq6@0000:00:04.2;rxq7@0000:00:04.2;rxq8@0000:00:04.3;rxq9@0000:00:04.3;rxq10@0000:00:04.3;rxq11@0000:00:04.3;rxq12@0000:00:04.3;rxq13@0000:00:04.3;rxq14@0000:00:04.3;rxq15@0000:00:04.3]' \
+	-- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
+	testpmd> start
 
 2. Launch VM::
 
@@ -209,15 +209,15 @@ uses the asynchronous operations with CBDMA channels.
 
 3. On VM1, configure virtio device IP and enable vitio-net with 16 quques::
 
-    ifconfig [ens3] 1.1.1.2           # [ens3] is the name of virtio-net
-    ethtool -L [ens3] combined 16
+	ifconfig [ens3] 1.1.1.2           # [ens3] is the name of virtio-net
+	ethtool -L [ens3] combined 16
 
 4. Send 10M different IP packets from packet generator to nic, check virtio-net interrupt times by below cmd in VM::
 
-    cat /proc/interrupts
+	cat /proc/interrupts
 
 5. Stop testpmd, check each queue has new packets coming, then start testpmd and check each queue has new packets coming::
 
-    testpmd> stop
-    testpmd> start
-    testpmd> stop
+	testpmd> stop
+	testpmd> start
+	testpmd> stop
