@@ -184,7 +184,7 @@ class TestDcfLifeCycle(TestCase):
         self.d_a_con(cmd)
 
     def get_dmesg(self):
-        cmd = "dmesg --color=never"
+        cmd = "dmesg"
         return self.d_a_con(cmd) or ""
 
     def vf_init(self):
@@ -1078,6 +1078,12 @@ class TestDcfLifeCycle(TestCase):
         self.verify_supported_nic()
         # prepare testing environment
         self.preset_test_environment()
+        self.kernel_version = ""
+        kernel_version = self.dut.send_expect("uname -r", "# ")
+        try:
+            self.kernel_version = re.match("[0-9]+\.\d*", kernel_version).group(0)
+        except Exception as e:
+            self.logger.warning("kernel version cannot be found.")
 
     def tear_down_all(self):
         """
@@ -1182,6 +1188,11 @@ class TestDcfLifeCycle(TestCase):
         """
         When ADQ set on PF, PF should reject the DCF mode
         """
+        if self.kernel_version:
+            self.skip_case(
+                self.kernel_version > "4.19",
+                "Host kernel version is required 4.19+",
+            )
         msg = "begin : When ADQ set on PF, PF should reject the DCF mode"
         self.logger.info(msg)
         self.verify_dcf_with_adq_01()
@@ -1190,6 +1201,11 @@ class TestDcfLifeCycle(TestCase):
         """
         When DCF mode enabled, ADQ setting on PF shall fail
         """
+        if self.kernel_version:
+            self.skip_case(
+                self.kernel_version > "4.19",
+                "Host kernel version is required 4.19+",
+            )
         msg = "begin : When DCF mode enabled, ADQ setting on PF shall fail"
         self.logger.info(msg)
         self.verify_dcf_with_adq_02()
@@ -1198,6 +1214,11 @@ class TestDcfLifeCycle(TestCase):
         """
         DCF and ADQ can be enabled on different PF
         """
+        if self.kernel_version:
+            self.skip_case(
+                self.kernel_version > "4.19",
+                "Host kernel version is required 4.19+",
+            )
         self.verify(len(self.dut_ports) >= 2, "2 ports at least")
         msg = "begin : DCF and ADQ can be enabled on different PF"
         self.logger.info(msg)
