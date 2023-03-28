@@ -23,8 +23,9 @@ Test Case 1: Compare interrupt times with and without split ring virtio event id
 1. Bind one nic port to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1' -- -i
-    --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --file-prefix=vhost \
+	--vdev 'net_vhost,iface=vhost-net,queues=1' \
+	-- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 2. Launch VM::
@@ -56,7 +57,9 @@ Test Case 2: Split ring virtio-pci driver reload test
 1. Bind one nic port to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --file-prefix=vhost \
+	--vdev 'net_vhost,iface=vhost-net,queues=1' \
+	-- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 2. Launch VM::
@@ -86,7 +89,7 @@ Test Case 2: Split ring virtio-pci driver reload test
     ifconfig [ens3] 1.1.1.2
     tcpdump -i [ens3]
 
-6. Rerun step4 and step5 100 times to check event idx workable after driver reload.
+6. Rerun step4 and step5 10 times to check event idx workable after driver reload.
 
 Test Case 3: Wake up split ring virtio-net cores with event idx interrupt mode 16 queues test
 =============================================================================================
@@ -94,7 +97,9 @@ Test Case 3: Wake up split ring virtio-net cores with event idx interrupt mode 1
 1. Bind one nic port to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-17 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=16' -- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-17 -n 4 --file-prefix=vhost \
+	--vdev 'net_vhost,iface=vhost-net,queues=16' \
+	-- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
     testpmd>start
 
 2. Launch VM::
@@ -129,8 +134,9 @@ Test Case 4: Compare interrupt times with and without packed ring virtio event i
 1. Bind one nic port to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1' -- -i
-    --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --file-prefix=vhost \
+	--vdev 'net_vhost,iface=vhost-net,queues=1' \
+	-- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 2. Launch VM::
@@ -162,7 +168,9 @@ Test Case 5: Packed ring virtio-pci driver reload test
 1. Bind one nic port to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xF0000000 -n 4 --file-prefix=vhost \
+	--vdev 'net_vhost,iface=vhost-net,queues=1' \
+	-- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 2. Launch VM::
@@ -192,7 +200,7 @@ Test Case 5: Packed ring virtio-pci driver reload test
     ifconfig [ens3] 1.1.1.2
     tcpdump -i [ens3]
 
-6. Rerun step4 and step5 100 times to check event idx workable after driver reload.
+6. Rerun step4 and step5 10 times to check event idx workable after driver reload.
 
 Test Case 6: Wake up packed ring virtio-net cores with event idx interrupt mode 16 queues test
 ==============================================================================================
@@ -200,7 +208,9 @@ Test Case 6: Wake up packed ring virtio-net cores with event idx interrupt mode 
 1. Bind one nic port to vfio-pci, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-17 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=16' -- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-17 -n 4 --file-prefix=vhost \
+	--vdev 'net_vhost,iface=vhost-net,queues=16' \
+	-- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
     testpmd>start
 
 2. Launch VM::
