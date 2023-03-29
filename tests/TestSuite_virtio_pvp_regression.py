@@ -391,7 +391,7 @@ class TestVirtioPVPRegression(TestCase):
                 tgenInput, 100, fields_config, self.tester.pktgen
             )
             # set traffic option
-            traffic_opt = {"delay": 5, "duration": 20}
+            traffic_opt = {"delay": 5, "duration": 30}
             _, pps = self.tester.pktgen.measure_throughput(
                 stream_ids=streams, options=traffic_opt
             )
