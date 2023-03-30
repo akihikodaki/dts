@@ -653,7 +653,7 @@
                 "I40E_25G-25G_SFP28",
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
-                "carlsvile"
+                "I40E_10G-10G_BASE_T_BC"
             ],
             "Target": [
                 "ALL"
