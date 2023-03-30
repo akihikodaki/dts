@@ -5743,7 +5743,7 @@ class TestI40ERssInput(TestCase):
             "testpmd> ",
         )
 
-        rexp = r"flow query 0 (\d) rss\r\r\nRSS:\r\n queues: ([\S\s]+?)\r\n function: (\S+?)\r\n types:\r\n  ([\s\S]+)"
+        rexp = r"flow query 0 (\d) rss\r\r\nRSS:\r\n queues: ([\S\s]+?)\r\n function: (\S+?)\r\n RSS key:\r\n [\s\S]+\r\n types:\r\n  ([\s\S]+)"
         out0 = self.dut.send_expect("flow query 0 0 rss", "testpmd> ")
         m0 = re.match(rexp, out0.strip())
         self.verify(
