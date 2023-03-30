@@ -139,7 +139,7 @@ class TestVirtioUserInterruptDsa(TestCase):
         )
         if self.check_2M_env:
             eal_params += " --single-file-segments"
-        para = " -- -i --rxq=%d --txq=%d --rss-ip" % (queues, queues)
+        para = " -- -i --rxq=%d --txq=%d" % (queues, queues)
         command_line_client = self.app_testpmd_path + " " + eal_params + para
         self.virtio_user.send_expect(
             command_line_client, "waiting for client connection...", 120
@@ -197,14 +197,13 @@ class TestVirtioUserInterruptDsa(TestCase):
             fields_config = {
                 "ip": {
                     "src": {"action": "random"},
+                    "dst": {"action": "random"},
                 },
             }
             pkt = Packet()
-            pkt.assign_layers(["ether", "ipv4", "raw"])
+            pkt.assign_layers(["ether", "ipv4", "tcp", "raw"])
             pkt.config_layers(
                 [
-                    ("ether", {"dst": "52:54:00:00:00:01"}),
-                    ("ipv4", {"src": "1.1.1.1"}),
                     ("raw", {"payload": ["01"] * int("%d" % payload_size)}),
                 ]
             )
