@@ -31,7 +31,7 @@ Prerequisites
 
 Hardware
 --------
-Supportted NICs: columbiaville_25g/columbiaville_100g
+Supportted NICs: Intel® Ethernet 800 Series: E810-CQDA2/E810-2CQDA2/E810-XXVDA4 etc.
 
 Software
 --------

@@ -385,7 +385,7 @@ Prerequisites
 -------------
 
 1. Hardware:
-   columbiaville_25g/columbiaville_100g
+   Intel® Ethernet 800 Series: E810-CQDA2/E810-2CQDA2/E810-XXVDA4 etc
 
 2. Software:
    DPDK: http://dpdk.org/git/dpdk

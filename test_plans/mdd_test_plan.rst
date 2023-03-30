@@ -5,8 +5,8 @@
 Malicious Driver Detection (MDD) Tests
 ======================================
 
-Malicious Driver Detection (MDD) support sagevill and i350 nic, dpdk2.3+ only
-support sagevill NIC. ixgbe supports disable MDD from version 4.2.3
+Malicious Driver Detection (MDD) support X550T and i350 nic, dpdk2.3+ only
+support X550T NIC. ixgbe supports disable MDD from version 4.2.3
 so this test must run dpdk2.3+
 and used ixgbe 4.2.3+ in host.
 
