@@ -1701,38 +1701,6 @@
             "Comments": "the nic on the environment not support this case"
         }
     ],
-    "perf_pvp_share_lib_of_fortville": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "I40E_10G-SFP_XL710",
-                "I40E_40G-QSFP_A",
-                "I40E_25G-25G_SFP28"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic on the environment not support this case"
-        }
-    ],
-    "perf_pvp_share_lib_of_niantic": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-82599_SFP"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic on the environment not support this case"
-        }
-    ],
     "packet_checking_scalar_mode": [
         {
             "OS": [
