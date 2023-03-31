@@ -104,7 +104,8 @@ class TestPtpClient(TestCase):
 
         # set the dut system time
         self.dut.send_expect("date -s '2000-01-01 00:00:00'", "# ")
-        d_time = self.dut.send_expect("date '+%Y-%m-%d %H:%M'", "# ")
+        out = self.dut.send_expect("date '+%Y-%m-%d %H:%M'", "# ")
+        d_time = re.findall(r"(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2})", out)[0]
         self.verify(d_time == "2000-01-01 00:00", "set the time error")
 
         if self.nic in ["cavium_a063", "cavium_a064"]:
