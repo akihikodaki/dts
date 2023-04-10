@@ -566,7 +566,10 @@ class TestVFPmdStackedBonded(TestCase):
         """
         Test Case: active-backup stacked bonded rx traffic with slave down
         """
-        self.verify(self.default_stats, "tester port not support '%s'" % self.flag)
+        if not self.default_stats:
+            self.logger.warning(
+                "Please ensure that the link status of the vf port can be synchronized with the peer port!!!"
+            )
         self.backup_check_traffic_with_slave_down()
 
     def test_mode_xor_rx(self):
@@ -579,7 +582,10 @@ class TestVFPmdStackedBonded(TestCase):
         """
         Test Case: balance-xor stacked bonded rx traffic with slave down
         """
-        self.verify(self.default_stats, "tester port not support '%s'" % self.flag)
+        if not self.default_stats:
+            self.logger.warning(
+                "Please ensure that the link status of the vf port can be synchronized with the peer port!!!"
+            )
         self.xor_check_stacked_rx_one_slave_down()
 
     def tear_down(self):
