@@ -9,13 +9,9 @@ Test queue start stop Feature
 
 """
 
-import os
-import re
 import time
 
 from framework.packet import Packet, strip_pktload
-from framework.pmd_output import PmdOutput
-from framework.settings import FOLDERS
 from framework.test_case import TestCase
 
 #
@@ -43,26 +39,12 @@ class TestQueueStartStop(TestCase):
         """
         Run before each test case.
         """
-        try:
-            patch_file = FOLDERS["Depends"] + r"/macfwd_log.patch"
-        except:
-            self.logger.warning(str(FOLDERS))
-            patch_file = r"dep/macfwd_log.patch"
-            FOLDERS["Depends"] = "dep"
-        patch_dst = "/tmp/"
+        pass
 
-        # dpdk patch and build
-        try:
-            self.dut.session.copy_file_to(patch_file, patch_dst)
-            self.patch_hotfix_dpdk(patch_dst + "macfwd_log.patch", True)
-            self.dut.build_install_dpdk(self.target)
-        except Exception as e:
-            raise IOError("dpdk setup failure: %s" % e)
+    def check_forwarding(self, ports, pktSize=64, received=True):
+        self.send_packet(ports[0], ports[1], pktSize, received)
 
-    def check_forwarding(self, ports, nic, pktSize=64, received=True):
-        self.send_packet(ports[0], ports[1], self.nic, pktSize, received)
-
-    def send_packet(self, txPort, rxPort, nic, pktSize=64, received=True):
+    def send_packet(self, txPort, rxPort, pktSize=64, received=True):
         """
         Send packages according to parameters.
         """
@@ -85,20 +67,6 @@ class TestQueueStartStop(TestCase):
         else:
             self.verify(len(sniff_pkts) == 0, "stop queue not work as expected")
 
-    def patch_hotfix_dpdk(self, patch_dir, on=True):
-        """
-        This function is to apply or remove patch for dpdk.
-        patch_dir: the abs path of the patch
-        on: True for apply, False for remove
-        """
-        try:
-            if on:
-                self.dut.send_expect("patch -p0 < %s" % patch_dir, "[~|~\]]# ")
-            else:
-                self.dut.send_expect("patch -p0 -R < %s" % patch_dir, "[~|~\]]# ")
-        except Exception as e:
-            raise ValueError("patch_hotfix_dpdk failure: %s" % e)
-
     def test_queue_start_stop(self):
         """
         queue start/stop test
@@ -114,8 +82,9 @@ class TestQueueStartStop(TestCase):
             )
             time.sleep(5)
             self.dut.send_expect("set fwd mac", "testpmd>")
+            self.dut.send_expect("set verbose 1", "testpmd>")
             self.dut.send_expect("start", "testpmd>")
-            self.check_forwarding([0, 0], self.nic)
+            self.check_forwarding([0, 0])
         except Exception as e:
             raise IOError("dpdk start and first forward failure: %s" % e)
 
@@ -125,7 +94,7 @@ class TestQueueStartStop(TestCase):
             self.dut.send_expect("stop", "testpmd>")
             self.dut.send_expect("port 0 rxq 0 stop", "testpmd>")
             self.dut.send_expect("start", "testpmd>")
-            self.check_forwarding([0, 0], self.nic, received=False)
+            self.check_forwarding([0, 0], received=False)
 
             # start rx queue test
             print("test start rx queue stop tx queue")
@@ -133,12 +102,12 @@ class TestQueueStartStop(TestCase):
             self.dut.send_expect("port 0 rxq 0 start", "testpmd>")
             self.dut.send_expect("port 0 txq 0 stop", "testpmd>")
             self.dut.send_expect("start", "testpmd>")
-            self.check_forwarding([0, 0], self.nic, received=False)
+            self.check_forwarding([0, 0], received=False)
             out = self.dut.get_session_output()
         except Exception as e:
             raise IOError("queue start/stop forward failure: %s" % e)
         self.verify(
-            "ports 0 queue 0 receive " not in out,
+            "port 0/queue 0: received 1 packets" not in out,
             "start queue revice package failed, out = %s" % out,
         )
 
@@ -148,12 +117,12 @@ class TestQueueStartStop(TestCase):
             self.dut.send_expect("stop", "testpmd>")
             self.dut.send_expect("port 0 txq 0 start", "testpmd>")
             self.dut.send_expect("start", "testpmd>")
-            self.check_forwarding([0, 0], self.nic)
+            self.check_forwarding([0, 0])
             out = self.dut.get_session_output()
         except Exception as e:
             raise IOError("queue start/stop forward failure: %s" % e)
         self.verify(
-            "ports 0 queue 0 receive " in out,
+            "port 0/queue 0: received 1 packets" in out,
             "start queue revice package failed, out = %s" % out,
         )
 
@@ -161,7 +130,6 @@ class TestQueueStartStop(TestCase):
         """
         Run after each test case.
         """
-        patch_dst = "/tmp/"
 
         try:
             self.dut.send_expect("stop", "testpmd>")
@@ -169,18 +137,8 @@ class TestQueueStartStop(TestCase):
         except:
             print("Failed to quit testpmd")
 
-        self.dut.kill_all()
-
-        try:
-            self.patch_hotfix_dpdk(patch_dst + "macfwd_log.patch", False)
-        except Exception as e:
-            print(("patch_hotfix_dpdk remove failure :%s" % e))
-
     def tear_down_all(self):
         """
         Run after each test suite.
         """
         self.dut.kill_all()
-        self.dut.send_expect("rm -rf ./app/test-pmd/testpmd", "#")
-        self.dut.send_expect("rm -rf ./app/test-pmd/*.o", "#")
-        self.dut.send_expect("rm -rf ./app/test-pmd/build", "#")
