@@ -31,13 +31,10 @@ Test Case: queue start/stop
 
 This case support PF (Intel® Ethernet 700 Series/Intel® Ethernet 800 Series/82599), VF (Intel® Ethernet 700 Series, 82599)
 
-#. Update testpmd source code. Add the following C code in ./app/test-pmd/fwdmac.c::
-
-      printf("ports %u queue %u received %u packages\n", fs->rx_port, fs->rx_queue, nb_rx);
-
-#. Compile testpmd again, then run testpmd::
+#. Launch testpmd::
     x86_64-native-linuxapp-gcc/app/dpdk-testpmd  -l 1-2 -n 4 -a 0000:af:00.0 -- -i --portmask=0x1 --port-topology=loop
 
+#. Run "set verbose 1" to set verbose
 #. Run "set fwd mac" to set fwd type
 #. Run "start" to start fwd package
 
@@ -55,9 +52,9 @@ This case support PF (Intel® Ethernet 700 Series/Intel® Ethernet 800 Series/82
 #. Run "port 0 rxq 0 start" to start rxq 0 in port 0
 #. Run "port 0 txq 0 stop" to stop txq 0 in port 0
 #. Start packet generator to transmit and check tester port not receive packets
-   and in testpmd it not has "ports 0 queue 0 received 1 packages" print
+   and in testpmd it not has "port 0/queue 0: received 1 packets" print
 
 #. Run "port 0 txq 0 start" to start txq 0 in port 0
 #. Start packet generator to transmit and check tester port receive packets
-   and in testpmd it has "ports 0 queue 0 received 1 packages" print
+   and in testpmd it has "port 0/queue 0: received 1 packets" print
 #. Test it again with VF
