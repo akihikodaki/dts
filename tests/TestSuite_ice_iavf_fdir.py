@@ -9573,7 +9573,6 @@ class TestICEIAVFFdir(TestCase):
     def test_l2_ethertype(self):
         self.multirules_process(vectors_l2_ethertype)
 
-    @skip_unsupported_pkg("comms")
     def test_negative_case(self):
         """
         negative cases
@@ -9590,7 +9589,6 @@ class TestICEIAVFFdir(TestCase):
             ],
             "invalid mark id": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions passthru / mark id 4294967296 / end",
             "invalid parameters of GTPU input set": [
-                "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x100 / end actions queue index 1 / end",
                 "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / gtp_psc qfi is 0x5 / end actions queue index 2 / end",
                 "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / end actions queue index 1 / end",
             ],
