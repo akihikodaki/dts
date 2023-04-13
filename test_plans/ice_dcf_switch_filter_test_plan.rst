@@ -4303,7 +4303,7 @@ Subcase 1:  MAC_IPV4_UDP + L4 MASK + single vf
 ----------------------------------------------
 1. validate a rule::
 
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 / udp src spec 2152 src mask 0xff00 dst spec 1281 dst mask 0x00ff / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 / udp src spec 2152 src mask 0xff00 dst spec 1281 dst mask 0x00ff / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -4317,7 +4317,7 @@ Subcase 1:  MAC_IPV4_UDP + L4 MASK + single vf
 
 2. create MAC_IPV4_L2TP_PAY rule::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 / udp src spec 2152 src mask 0xff00 dst spec 1281 dst mask 0x00ff / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 / udp src spec 2152 src mask 0xff00 dst spec 1281 dst mask 0x00ff / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -4347,7 +4347,7 @@ Subcase 2:  MAC_IPV6_TCP + L4 MASK + single vf
 ----------------------------------------------
 1. validate a rule::
 
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv6 / tcp dst spec 3333 dst mask 0x0ff0 / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv6 / tcp dst spec 3333 dst mask 0x0ff0 / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -4361,7 +4361,7 @@ Subcase 2:  MAC_IPV6_TCP + L4 MASK + single vf
 
 2. create MAC_IPV4_L2TP_PAY rule::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv6 / tcp dst spec 3333 dst mask 0x0ff0 / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv6 / tcp dst spec 3333 dst mask 0x0ff0 / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -4391,7 +4391,7 @@ Subcase 3:  MAC_IPV4_UDP_VXLAN_MAC_IPV4_UDP + L4 MASK + single vf
 1. validate a rule::
 
      testpmd> rx_vxlan_port add 4789 0
-     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 / udp src spec 32 src mask 0x0f / end actions vf id 1 / end
+     testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 / udp src spec 32 src mask 0x0f / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -4405,7 +4405,7 @@ Subcase 3:  MAC_IPV4_UDP_VXLAN_MAC_IPV4_UDP + L4 MASK + single vf
 
 2. create MAC_IPV4_L2TP_PAY rule::
 
-     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 / udp src spec 32 src mask 0x0f / end actions vf id 1 / end
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 / udp src spec 32 src mask 0x0f / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
@@ -4434,7 +4434,7 @@ Subcase 4:  MAC_IPV4_NVGRE_MAC_IPV4_UDP + L4 MASK + single vf
 -------------------------------------------------------------
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src spec 1280 src mask 0x00ff / end actions vf id 1 / end
+     testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src spec 1280 src mask 0x00ff / end actions represented_port ethdev_port_id 1 / end
 
    get the message::
 
@@ -4448,7 +4448,7 @@ Subcase 4:  MAC_IPV4_NVGRE_MAC_IPV4_UDP + L4 MASK + single vf
 
 2. create MAC_IPV4_L2TP_PAY rule::
 
-     testpmd> flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src spec 1280 src mask 0x00ff / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 0x8 / eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / udp src spec 1280 src mask 0x00ff / end actions represented_port ethdev_port_id 1 / end
      testpmd> flow list 0
 
    check the rule exists in the list.
