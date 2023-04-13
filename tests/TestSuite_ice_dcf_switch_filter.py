@@ -2107,7 +2107,7 @@ tv_mac_ipv4_vxlan_ipv4_udp_pay = {
     ],
     "matched": {
         "scapy_str": [
-            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=50,dport=23) /Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=50,dport=23) /Raw("x"*80)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
@@ -2136,7 +2136,7 @@ tv_mac_ipv4_vxlan_ipv4_tcp = {
     ],
     "matched": {
         "scapy_str": [
-            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=50,dport=23)/Raw("x"*80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=50,dport=23)/Raw("x"*80)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
@@ -2233,7 +2233,7 @@ tv_mac_ipv4_vxlan_mac_ipv4_udp_pay = {
     ],
     "matched": {
         "scapy_str": [
-            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=50,dport=23)/Raw("x" * 80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=50,dport=23)/Raw("x" * 80)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
@@ -2262,7 +2262,7 @@ tv_mac_ipv4_vxlan_mac_ipv4_tcp = {
     ],
     "matched": {
         "scapy_str": [
-            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+            'Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=25,dport=23)/Raw("x" * 80)'
         ],
         "check_func": {
             "func": rfc.check_vf_rx_packets_number,
@@ -2819,6 +2819,7 @@ class ICEDCFSwitchFilterTest(TestCase):
             "cannot create to vf rule on a representor": "flow create 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
             "cannot create to vf rule on a vf": "flow create 3 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 1 / end",
             "cannot create to vf rule to a vf": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 3 / end",
+            "cannot create to vf rule to self dcf": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 0 / end",
             "cannot create to vf rule to another dcf": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 4 / end",
             "cannot create to vf rule to a representor of another pf": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions represented_port ethdev_port_id 5 / end",
             "cannot create vf original rule on a representor": "flow create 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 1 / end",
@@ -2828,6 +2829,7 @@ class ICEDCFSwitchFilterTest(TestCase):
             "cannot create vf original rule to another dcf": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions port_representor port_id 4 / end",
             "unsupported input set": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 tos is 4 / end actions port_representor port_id 1 / end",
             "invalid port id": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions represented_port ethdev_port_id 20 / end",
+            "deprecated action": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions vf id 1 / end",
             "void action": "flow create 0 ingress pattern eth / ipv4 / udp src is 25 dst is 23 / end actions end",
             "void input set value": "flow create 0 ingress pattern eth / ipv4 / end actions represented_port ethdev_port_id 1 end",
         }
@@ -2858,6 +2860,16 @@ class ICEDCFSwitchFilterTest(TestCase):
         self.check_switch_filter_rule_list(0, [])
         self.create_switch_filter_rule(
             rules["cannot create to vf rule to a vf"], check_stats=False
+        )
+        self.check_switch_filter_rule_list(0, [])
+
+        self.logger.info("Subcase 4: can not create to vf rule to self dcf")
+        self.validate_switch_filter_rule(
+            rules["cannot create to vf rule to self dcf"], check_stats=False
+        )
+        self.check_switch_filter_rule_list(0, [])
+        self.create_switch_filter_rule(
+            rules["cannot create to vf rule to self dcf"], check_stats=False
         )
         self.check_switch_filter_rule_list(0, [])
 
@@ -2921,6 +2933,12 @@ class ICEDCFSwitchFilterTest(TestCase):
         self.create_switch_filter_rule(
             rules["cannot create vf original rule to a representor"], check_stats=False
         )
+        self.check_switch_filter_rule_list(0, [])
+
+        self.logger.info("Subcase 17: deprecated action")
+        self.validate_switch_filter_rule(rules["deprecated action"], check_stats=False)
+        self.check_switch_filter_rule_list(0, [])
+        self.create_switch_filter_rule(rules["deprecated action"], check_stats=False)
         self.check_switch_filter_rule_list(0, [])
 
         # unsupported input set
