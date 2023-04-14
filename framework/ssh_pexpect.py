@@ -50,7 +50,7 @@ class SSHPexpect:
                             original_prompt="[$#>]",
                             port=self.port,
                             login_timeout=20,
-                            password_regex=r"(?i)(?:password:)|(?:passphrase for key)|(?i)(password for .+:)",
+                            password_regex=r"(?i)(?:password:)|(?:passphrase for key)|(password for .+:)",
                         )
                     except Exception as e:
                         print(e)
@@ -68,7 +68,7 @@ class SSHPexpect:
                     self.username,
                     self.password,
                     original_prompt="[$#>]",
-                    password_regex=r"(?i)(?:password:)|(?:passphrase for key)|(?i)(password for .+:)",
+                    password_regex=r"(?i)(?:password:)|(?:passphrase for key)|(password for .+:)",
                 )
             self.send_expect("stty -echo", "#")
             self.send_expect("stty columns 1000", "#")
