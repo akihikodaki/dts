@@ -27,7 +27,6 @@ class TestDynamicQueue(TestCase):
         tester_port = self.tester.get_local_port(self.used_dut_port)
         self.tester_intf = self.tester.get_interface(tester_port)
         self.dut_testpmd = PmdOutput(self.dut)
-        self.is_800_series = self.is_eth_series_nic(800)
 
     def set_up(self):
         # Intel® Ethernet Converged Network Adapter XL710-QDA1 needs more cores to run properly
@@ -129,7 +128,7 @@ class TestDynamicQueue(TestCase):
                 )
 
         for i in range(test_loop):
-            if chgflag == 0 and not self.is_800_series:
+            if chgflag == 0:
                 self.dut_testpmd.execute_cmd("port 0 rxq %d setup" % queue[i])
             self.dut_testpmd.execute_cmd("port 0 rxq %d start" % queue[i])
 
@@ -187,7 +186,7 @@ class TestDynamicQueue(TestCase):
                     chk_qringsize == chg_qringsize,
                     "Fail to change ring size at runtime!",
                 )
-            if chgflag == 0 and not self.is_800_series:
+            if chgflag == 0:
                 self.dut_testpmd.execute_cmd("port 0 txq %d setup" % queue)
 
             self.dut_testpmd.execute_cmd("port 0 txq %d start" % queue)
