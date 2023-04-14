@@ -101,7 +101,7 @@ In Host:
     ./x86_64-native-linuxapp-gcc/examples/dpdk-vhost_crypto \
     --socket-mem 2048,0 --legacy-mem \
     -a 1a:01.0 -a 1c:01.0 -a 1e:01.0 \
-    --vdev crypto_scheduler_pmd_1,slave=0000:1a:01.0_qat_sym,slave=0000:1c:01.0_qat_sym,slave=0000:1e:01.0_qat_sym,mode=round-robin,ordering=enable \
+    --vdev crypto_scheduler_pmd_1,worker=0000:1a:01.0_qat_sym,worker=0000:1c:01.0_qat_sym,worker=0000:1e:01.0_qat_sym,mode=round-robin,ordering=enable \
     -l 8,9,10,11,12 -n 6 \
     -- --config "(9,0,0),(10,0,0),(11,0,0),(12,0,0)" \
     --socket-file 9,/tmp/vm0_crypto0.sock  \
