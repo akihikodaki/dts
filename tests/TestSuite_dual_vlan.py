@@ -197,7 +197,7 @@ class TestDualVlan(TestCase):
 
     def get_tcpdump_package(self):
         self.tester.send_expect("killall tcpdump", "#")
-        self.tester.send_expect(" ", "#")
+        self.tester.send_expect("wait", "#")
         return self.tester.send_expect(
             "tcpdump -nn -e -v -r ./getPackageByTcpdump.cap", "#"
         )
