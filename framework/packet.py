@@ -1104,7 +1104,7 @@ def start_tcpdump(crb, intf, count=0, filters=None, lldp_forbid=True):
     tcpdump_help = tcpdump_session.send_command("tcpdump -h")
 
     for line in tcpdump_help.split("\n"):
-        m = re.match(direct_param, line)
+        m = re.search(direct_param, line)
         if m:
             opt = re.search("-Q", m.group(2))
             if opt:
