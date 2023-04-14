@@ -183,7 +183,7 @@ class TestL2fwdCrypto(TestCase):
     def test_scheduler_rr_AES_CBC_auto(self):
         vdev = "-a " + " -a ".join(cc.get_qat_devices(self, num=3))
         vdev += (
-            " --vdev crypto_scheduler0,slave=%s_qat_sym,slave=%s_qat_sym,slave=%s_qat_sym,\
+            " --vdev crypto_scheduler0,worker=%s_qat_sym,worker=%s_qat_sym,worker=%s_qat_sym,\
                 mode=round-robin"
             % tuple(cc.get_qat_devices(self, num=3))
         )
@@ -195,7 +195,7 @@ class TestL2fwdCrypto(TestCase):
         vdev = "-a 0000:00:00.0 --vdev crypto_aesni_mb1,name=aesni_mb_1"
         vdev += " --vdev crypto_aesni_mb2,name=aesni_mb_2"
         vdev += " --vdev crypto_aesni_mb3,name=aesni_mb_3"
-        vdev += " --vdev crypto_scheduler0,slave=aesni_mb_1,slave=aesni_mb_2,slave=aesni_mb_3,mode=round-robin"
+        vdev += " --vdev crypto_scheduler0,worker=aesni_mb_1,worker=aesni_mb_2,worker=aesni_mb_3,mode=round-robin"
         test_vectors["scheduler_AES_GCM_00"]["vdev"] = vdev
         test_vectors["scheduler_AES_GCM_00"]["mode"] = "rr"
         self.__execute_l2fwd_crypto_test(test_vectors, "scheduler_AES_GCM_00")
@@ -203,7 +203,7 @@ class TestL2fwdCrypto(TestCase):
     def test_scheduler_psb_AES_CBC_auto(self):
         vdev = "-a " + " -a ".join(cc.get_qat_devices(self, num=2))
         vdev += (
-            " --vdev crypto_scheduler0,slave=%s_qat_sym,slave=%s_qat_sym,\
+            " --vdev crypto_scheduler0,worker=%s_qat_sym,worker=%s_qat_sym,\
                 mode=packet-size-distr"
             % tuple(cc.get_qat_devices(self, num=2))
         )
@@ -215,7 +215,7 @@ class TestL2fwdCrypto(TestCase):
         vdev = "-a " + " -a ".join(cc.get_qat_devices(self, num=1))
         vdev += " --vdev crypto_aesni_mb1,name=aesni_mb_1"
         vdev += (
-            " --vdev crypto_scheduler0,slave=%s_qat_sym,slave=aesni_mb_1,\
+            " --vdev crypto_scheduler0,worker=%s_qat_sym,worker=aesni_mb_1,\
                 mode=packet-size-distr"
             % tuple(cc.get_qat_devices(self, num=1))
         )
@@ -226,7 +226,7 @@ class TestL2fwdCrypto(TestCase):
     def test_scheduler_fo_AES_CBC_auto(self):
         vdev = "-a " + " -a ".join(cc.get_qat_devices(self, num=2))
         vdev += (
-            " --vdev crypto_scheduler0,slave=%s_qat_sym,slave=%s_qat_sym,\
+            " --vdev crypto_scheduler0,worker=%s_qat_sym,worker=%s_qat_sym,\
                 mode=fail-over"
             % tuple(cc.get_qat_devices(self, num=2))
         )
@@ -238,7 +238,7 @@ class TestL2fwdCrypto(TestCase):
         vdev = "-a " + " -a ".join(cc.get_qat_devices(self, num=1))
         vdev += " --vdev crypto_aesni_mb1,name=aesni_mb_1"
         vdev += (
-            " --vdev crypto_scheduler0,slave=%s_qat_sym,slave=aesni_mb_1,\
+            " --vdev crypto_scheduler0,worker=%s_qat_sym,worker=aesni_mb_1,\
                 mode=fail-over"
             % tuple(cc.get_qat_devices(self, num=1))
         )
@@ -249,7 +249,7 @@ class TestL2fwdCrypto(TestCase):
     def test_scheduler_mm_AES_CBC_auto(self):
         vdev = "-a " + " -a ".join(cc.get_qat_devices(self, num=2))
         vdev += (
-            " --vdev crypto_scheduler0,slave=%s_qat_sym,slave=%s_qat_sym\
+            " --vdev crypto_scheduler0,worker=%s_qat_sym,worker=%s_qat_sym\
                 mode=multi-core"
             % tuple(cc.get_qat_devices(self, num=2))
         )
@@ -261,7 +261,7 @@ class TestL2fwdCrypto(TestCase):
         vdev = "-a " + " -a ".join(cc.get_qat_devices(self, num=1))
         vdev += " --vdev crypto_aesni_mb1,name=aesni_mb_1"
         vdev += (
-            " --vdev crypto_scheduler0,slave=%s_qat_sym,slave=aesni_mb_1,\
+            " --vdev crypto_scheduler0,worker=%s_qat_sym,worker=aesni_mb_1,\
                 mode=multi-core"
             % tuple(cc.get_qat_devices(self, num=1))
         )
