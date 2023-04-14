@@ -830,7 +830,6 @@ class Dut(Crb):
         """
         Check that whether auto scanned ports ready to use
         """
-        pci_addr = "%s:%s" % (pci_bus, pci_id)
         if self.nic_type == "any":
             return True
         elif self.nic_type == "cfg":
