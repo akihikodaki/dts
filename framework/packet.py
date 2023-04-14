@@ -1068,6 +1068,9 @@ def get_filter_cmd(filters=[]):
             elif list(pktfilter["config"].keys())[0] == "dstport":
                 dport = pktfilter["config"]["dstport"]
                 filter_cmd = "dst port %s" % dport
+            elif list(pktfilter["config"].keys())[0] == "dsthost":
+                dport = pktfilter["config"]["dsthost"]
+                filter_cmd = "dst host %s" % dport
         elif pktfilter["layer"] == "userdefined":
             if list(pktfilter["config"].keys())[0] == "pcap-filter":
                 filter_cmd = pktfilter["config"]["pcap-filter"]
