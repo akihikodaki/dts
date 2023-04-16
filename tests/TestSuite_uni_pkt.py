@@ -118,6 +118,7 @@ class TestUniPacket(TestCase):
             ipv4_default_packet_type = ["L2_ETHER", "L3_IPV4_EXT_UNKNOWN"]
         elif (
             "IXGBE_10G-82599_SFP" in self.nic
+            or "IGB_1G-82576" in self.nic
             or "IGB_1G-I350_COPPER" in self.nic
             or "cavium" in self.nic
             or "IXGBE_10G-X540T" in self.nic
@@ -153,6 +154,7 @@ class TestUniPacket(TestCase):
             pktType.pop("MAC_IPihl_SCTP_PKT")
         elif (
             "IXGBE_10G-82599_SFP" in self.nic
+            or "IGB_1G-82576" in self.nic
             or "IGB_1G-I350_COPPER" in self.nic
             or "cavium" in self.nic
             or "IXGBE_10G-X540T" in self.nic
@@ -181,6 +183,7 @@ class TestUniPacket(TestCase):
             ipv6_default_packet_type = ["L2_ETHER", "L3_IPV6_EXT_UNKNOWN"]
         elif (
             "IXGBE_10G-82599_SFP" in self.nic
+            or "IGB_1G-82576" in self.nic
             or "IGB_1G-I350_COPPER" in self.nic
             or "cavium" in self.nic
             or "IXGBE_10G-X540T" in self.nic
