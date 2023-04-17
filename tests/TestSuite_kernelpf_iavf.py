@@ -128,10 +128,9 @@ class TestKernelpfIavf(TestCase):
         self.verify(res, "%s link status is down" % self.host_intf)
         out = self.dut.send_expect("ethtool %s" % self.host_intf, "#")
         self.speed = int(re.findall("Speed: (\d*)", out)[0]) // 1000
-        if self.is_eth_series_nic(800):
-            self.dut.send_expect(
-                "ip link set %s vf 0 spoofchk off" % (self.host_intf), "# "
-            )
+        self.dut.send_expect(
+            "ip link set %s vf 0 spoofchk off" % (self.host_intf), "# "
+        )
         if self.running_case == "test_vf_multicast":
             self.dut.send_expect(
                 "ethtool --set-priv-flags %s vf-true-promisc-support on"
@@ -849,14 +848,13 @@ class TestKernelpfIavf(TestCase):
         packets = len(re.findall("received 1 packets", out))
         self.verify(packets == 10, "Not receive expected packet")
 
-    @check_supported_nic(ice_nic)
     def test_iavf_dual_vlan_filter(self):
         """
         Test case: IAVF DUAL VLAN filtering
         """
         self.skip_case(not self.dcf_mode, "the case not support dcf mode")
         pkt_list1 = [
-            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x8100,prio=1)/Dot1Q(vlan=2,type=0x0800,prio=2)/IP(src="196.222.232.221")/("X"*480)'
             % self.vf_mac,
             'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)'
             % self.vf_mac,
@@ -888,8 +886,16 @@ class TestKernelpfIavf(TestCase):
         tcpdump_out = self.get_tcpdump_package()
         receive_pkt = re.findall("dst=%s" % self.vf_mac, out)
         self.verify(len(receive_pkt) == 2, "Failed error received vlan packet!")
-        tester_pkt = re.findall("vlan \d+", tcpdump_out)
-        self.verify(len(tester_pkt) == 6, "Failed pass received vlan packet!")
+        tester_pkt = re.findall("vlan\s+\d+, p\s+\d+", tcpdump_out)
+        vlan_prio_1 = re.findall("vlan\s+\d+, p\s+1", tcpdump_out)
+        vlan_prio_2 = re.findall("vlan\s+\d+, p\s+2", tcpdump_out)
+        self.verify(len(tester_pkt) == 6, "Received incorrect vlan packet!")
+        self.verify(
+            len(vlan_prio_1) == 2, "Received incorrect priority 1 vlan  packet!!"
+        )
+        self.verify(
+            len(vlan_prio_2) == 2, "Received incorrect priority 2 vlan packet!!!"
+        )
 
         out = self.send_pkts_getouput(self.tester_intf, pkt_list2)
         receive_pkt = re.findall("dst=%s" % self.vf_mac, out)
@@ -903,7 +909,6 @@ class TestKernelpfIavf(TestCase):
         else:
             self.verify(len(receive_pkt) == 2, "Failed error received vlan packet!")
 
-    @check_supported_nic(ice_nic)
     def test_iavf_dual_vlan_strip(self):
         """
         Test case: IAVF DUAL VLAN header stripping
@@ -1047,7 +1052,6 @@ class TestKernelpfIavf(TestCase):
             return []
         return value_list
 
-    @check_supported_nic(ice_nic)
     def test_iavf_dual_vlan_insert(self):
         """
         Test case: IAVF DUAL VLAN header insertion
