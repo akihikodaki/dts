@@ -445,3 +445,40 @@ Choose the above table's item randomly 30 times and verify that the result is ri
 At last, stop packet forwarding and quit the application::
     testpmd> stop
     testpmd> quit
+
+Test Case: dual vlan priority rx/tx test
+========================================
+
+#. blind port to vfio-pci::
+
+    ./usertools/dpdk-devbind.py -b vfio-pci {pf0_pci} {pf1_pci}
+
+#. launch testpmd with NICs::
+
+      ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -a {pf0_pci} -a {pf1_pci} -n 4 -- -i
+
+#. set testpmd::
+
+    testpmd> set verbose 1
+    testpmd> set fwd mac
+    testpmd> start
+
+#. start tcpdump with tester rx port::
+
+    tcpdump -ei {rx_iface}
+
+#. send dual vlan packet with tester tx port::
+
+    sendp(Ether(dst="FE:EF:65:4C:2C:D0",type=0x8100)/Dot1Q(vlan=1,type=0x8100,prio=1)/Dot1Q(vlan=2,type=0x0800,prio=2)/IP(src="196.222.232.221")/("X"*480),iface="{tx_iface}",count=1,inter=0,verbose=False)
+
+#. check the pkts can be received::
+
+    testpmd> port 0/queue 0: received 1 packets
+    src=00:00:00:00:00:00 - dst=FE:EF:65:4C:2C:D0 - type=0x8100 - length=522 - nb_segs=1 - hw ptype: L2_ETHER  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN  - l2_len=18 - inner_l2_len=4 - Receive queue=0x0
+    ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+#. check the tcpdump packet::
+
+    check the pkts can be received by PF and fwd to tester with inner and outer correct vlan ID and priority value.
+    16:50:38.807217 FE:EF:65:4C:2C:D0 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 1, ethertype 802.1Q, vlan 2, p 2, ethertype 0x0800,
+
