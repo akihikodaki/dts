@@ -14,6 +14,7 @@ import re
 import time
 
 import framework.utils as utils
+from framework.packet import Packet
 from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 
@@ -68,6 +69,7 @@ class TestDualVlan(TestCase):
 
         out = self.dut.send_expect("set fwd mac", "testpmd> ")
         self.verify("Set mac packet forwarding mode" in out, "set fwd mac error")
+        self.dut.send_expect("set verbose 1", "testpmd> ")
         out = self.dut.send_expect("start", "testpmd> ", 120)
 
         # Vlan id
@@ -387,6 +389,25 @@ class TestDualVlan(TestCase):
             for line in resultList:
                 self.verify(line in out, "receive packet is wrong:%s" % out)
 
+    def send_pkts_get_testpmd_tcpdump_output(
+        self, dut_rx_port, dut_tx_port, pkts, count=1
+    ):
+        tester_tx_port = self.tester.get_local_port(dut_rx_port)
+        tester_tx_port_iface = self.tester.get_interface(tester_tx_port)
+        tester_rx_port = self.tester.get_local_port(dut_tx_port)
+        tester_rx_port_ifac = self.tester.get_interface(tester_rx_port)
+        self.start_tcpdump(tester_rx_port_ifac)
+        self.pkt = Packet()
+        self.pkt.update_pkt(pkts)
+        self.pkt.send_pkt(crb=self.tester, tx_port=tester_tx_port_iface, count=count)
+        time.sleep(1)
+        out = self.pmdout.get_output()
+        port_stats = self.pmdout.execute_cmd("show port stats all")
+        self.pmdout.execute_cmd("clear port stats all")
+        pmd_out = out + port_stats
+        tcpdump_out = self.get_tcpdump_package()
+        return pmd_out, tcpdump_out
+
     def set_up(self):
         """
         Run before each test case.
@@ -673,6 +694,32 @@ class TestDualVlan(TestCase):
         for _ in range(30):
             rand = random.randint(0, 15)
             self.multimode_test(rand)
+
+    def test_dual_vlan_priority_rxtx(self):
+        """
+        Test Case: dual vlan priority rx/tx test
+        """
+        mac = self.dut.get_mac_address(dutRxPortId)
+        pkts = [
+            'Ether(dst="%s",type=0x8100)/Dot1Q(vlan=1,type=0x8100,prio=1)/Dot1Q(vlan=2,type=0x0800,prio=2)/IP(src="196.222.232.221")/("X"*480)'
+            % mac,
+        ]
+        self.mode_config(filter="off", extend="off", strip="off")
+        pmd_output, tcpdump_out = self.send_pkts_get_testpmd_tcpdump_output(
+            dutRxPortId, dutTxPortId, pkts, count=1
+        )
+        receive_pkt = re.findall("(?i)dst=%s" % mac, pmd_output)
+        self.verify(len(receive_pkt) == 1, "Failed error received vlan packet!")
+        tester_pkt = re.findall("vlan\s+\d+, p\s+\d+", tcpdump_out)
+        vlan_prio_1 = re.findall("vlan\s+\d+, p\s+1", tcpdump_out)
+        vlan_prio_2 = re.findall("vlan\s+\d+, p\s+2", tcpdump_out)
+        self.verify(len(tester_pkt) == 2, "Received incorrect vlan packet!")
+        self.verify(
+            len(vlan_prio_1) == 1, "Received incorrect priority 1 vlan packet!!"
+        )
+        self.verify(
+            len(vlan_prio_2) == 1, "Received incorrect priority 2 vlan packet!!!"
+        )
 
     def tear_down(self):
         """
