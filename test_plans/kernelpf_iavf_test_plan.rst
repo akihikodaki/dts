@@ -391,7 +391,7 @@ Test case: IAVF DUAL VLAN filtering
 
 3. tester send qinq pkt and single vlan pkt which outer vlan id is 1 to VF::
 
-    sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=1,type=0x8100,prio=1)/Dot1Q(vlan=2,type=0x0800,prio=2)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
     sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
 
 4. check the pkts can't be received in VF, but if the kernel cannot set ``vf-vlan-pruning``, check can receive 2 pkts in VF.
@@ -402,6 +402,7 @@ Test case: IAVF DUAL VLAN filtering
 
 6. repeat step 3, check the pkts can be received by VF and fwd to tester::
 
+    check the pkts can be received by PF and fwd to tester with inner and outer correct vlan ID and priority value.
     testpmd> port 0/queue 0: received 1 packets
     src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=522 - nb_segs=1 - hw ptype: L2_ETHER  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN  - l2_len=18 - inner_l2_len=4 - Receive queue=0x0
     ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
@@ -411,15 +412,15 @@ Test case: IAVF DUAL VLAN filtering
 
     tcpdump -i ens786f0 -nn -e -v
 
-    16:50:38.807158 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype 0x0800,
-    16:50:38.807217 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype 0x0800,
+    16:50:38.807158 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 1, ethertype 802.1Q, vlan 2, p 2, ethertype 0x0800,
+    16:50:38.807217 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 1, ethertype 802.1Q, vlan 2, p 2, ethertype 0x0800,
 
     16:51:06.083084 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 518: vlan 1, p 0, ethertype 0x0800,
     16:51:06.083127 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 518: vlan 1, p 0, ethertype 0x0800,
 
 7. tester send qinq pkt and single vlan pkt which outer vlan id is 11 to VF::
 
-    sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=11,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=11,type=0x8100,prio=1)/Dot1Q(vlan=2,type=0x0800,prio=2)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
     sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=11,type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
 
 8. check the pkts can not be received by VF.
