@@ -28,6 +28,8 @@ prefix_list = [
     "tx_good_packets",
     "rx_good_bytes",
     "tx_good_bytes",
+    "rx_errors",
+    "rx_unicast_packets",
     "tx_size_64_packets",
     "tx_size_65_to_127_packets",
     "tx_size_128_to_255_packets",
@@ -42,6 +44,7 @@ prefix_list = [
     "rx_size_512_to_1023_packets",
     "rx_size_1024_to_1522_packets",
     "rx_size_1523_to_max_packets",
+    "rx_oversize_errors",
     "rx_size_1024_to_max_packets",  # ixgbe
     "tx_size_1024_to_max_packets",  # ixgbe
 ]
@@ -384,6 +387,7 @@ class TestStatsChecks(TestCase):
         """
         self.netobj_0.enable_jumbo(framesize=1518)
         self.netobj_1.enable_jumbo(framesize=1518)
+        self.pmdout.quit()
         self.dut.kill_all()
         if self._suite_result.test_case == "test_xstats_check_vf":
             self.dut.destroy_sriov_vfs_by_port(self.dut_ports[0])
@@ -442,3 +446,46 @@ class TestStatsChecks(TestCase):
                 dcf_flag=self.dcf_mode, param="--txq=4 --rxq=4 --max-pkt-len=9000"
             )
         self.xstats_check(0, 0, if_vf=True)
+
+    def test_negative_xstats_check_pf(self):
+        """
+        Test Case: PF negative xstats check
+        """
+        self.pmdout.start_testpmd("default")
+        self.pmdout.execute_cmd("set fwd mac")
+        self.pmdout.execute_cmd("start")
+        self.netobj_0.enable_jumbo(framesize=5018)
+        self.pmdout.wait_link_status_up("all")
+        self.pmdout.execute_cmd("clear port xstats all")
+        self.pmdout.execute_cmd("show port xstats all")
+        # send jumbo frames
+        self.send_scapy_packet(
+            self.rx_port,
+            f'Ether(dst=dutmac, src="52:00:00:00:00:00")/IP()/Raw(load="X"*4980)',
+        )
+        # get all port xstats
+        all_xstats = self.get_xstats([self.rx_port, self.tx_port])
+        rx_xstats = all_xstats[self.rx_port]
+        # check rx port can not receive packet and rx_errors increased
+        for key, value in rx_xstats.items():
+            if key in ["rx_errors", "rx_oversize_errors"]:
+                self.verify(
+                    value == 1,
+                    "the expected value of %s is 1, but the actual value is %s!!!"
+                    % (key, value),
+                )
+            else:
+                self.verify(
+                    value == 0,
+                    "the expected value of %s is 0, but the actual value is %s!!!"
+                    % (key, value),
+                )
+        # check all statistics are 0 for tx port.
+        tx_xstats = all_xstats[self.tx_port]
+        for key, value in tx_xstats.items():
+            self.verify(
+                value == 0,
+                "the expected value of %s is 0, but the actual value is %s!!!"
+                % (key, value),
+            )
+        self.pmdout.execute_cmd("stop")
