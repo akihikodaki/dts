@@ -281,3 +281,142 @@ Test Case: VF xstats Checks
 
 3. Then run the same steps of PF xstats Checks, get same result.
 note: because one port forwarding packets, so check rx and tx both in port 0.
+
+Test Case: PF negative xstats check
+===================================
+1. Blind the PF to vfio-pci::
+
+    ./usertools/dpdk-devbind.py -b vfio-pci {pf_pci}
+
+2. Launch testpmd with default mtu::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 -- -i
+    testpmd> set fwd mac
+    testpmd> start
+    testpmd> clear port xstats all
+
+3. Set the mtu for the port where the data packet is sent::
+
+    ifconfig ens7 mtu 5018
+
+4. Send jumbo frames::
+
+    sendp(Ether(dst="00:00:00:00:01:00", src="52:00:00:00:00:00")/IP()/Raw(load="X"*4980), iface="ens7")
+
+5. Check port 0 xstats::
+
+    Check rx port can not receive packet.
+    Check ``rx_errors`` and ``rx_oversize_errors`` increased, but other statistics are 0 for tx port.
+    testpmd> show port xstats 0
+      ###### NIC extended statistics for port 0
+      rx_good_packets: 0
+      tx_good_packets: 0
+      rx_good_bytes: 0
+      tx_good_bytes: 0
+      rx_missed_errors: 0
+      rx_errors: 1
+      tx_errors: 0
+      rx_mbuf_allocation_errors: 0
+      rx_q0_packets: 0
+      rx_q0_bytes: 0
+      rx_q0_errors: 0
+      tx_q0_packets: 0
+      tx_q0_bytes: 0
+      rx_unicast_packets: 0
+      rx_multicast_packets: 0
+      rx_broadcast_packets: 0
+      rx_dropped_packets: 0
+      rx_unknown_protocol_packets: 0
+      tx_unicast_packets: 0
+      tx_multicast_packets: 0
+      tx_broadcast_packets: 0
+      tx_dropped_packets: 0
+      tx_link_down_dropped: 0
+      rx_crc_errors: 0
+      rx_illegal_byte_errors: 0
+      rx_error_bytes: 0
+      mac_local_errors: 0
+      mac_remote_errors: 0
+      rx_len_errors: 0
+      tx_xon_packets: 0
+      rx_xon_packets: 0
+      tx_xoff_packets: 0
+      rx_xoff_packets: 0
+      rx_size_64_packets: 0
+      rx_size_65_to_127_packets: 0
+      rx_size_128_to_255_packets: 0
+      rx_size_256_to_511_packets: 0
+      rx_size_512_to_1023_packets: 0
+      rx_size_1024_to_1522_packets: 0
+      rx_size_1523_to_max_packets: 0
+      rx_undersized_errors: 0
+      rx_oversize_errors: 1
+      rx_mac_short_pkt_dropped: 0
+      rx_fragmented_errors: 0
+      rx_jabber_errors: 0
+      tx_size_64_packets: 0
+      tx_size_65_to_127_packets: 0
+      tx_size_128_to_255_packets: 0
+      tx_size_256_to_511_packets: 0
+      tx_size_512_to_1023_packets: 0
+      tx_size_1024_to_1522_packets: 0
+      tx_size_1523_to_max_packets: 0
+
+6. Check port 1 xstats::
+
+    Check all statistics are 0 for tx port.
+    testpmd> show port xstats 1
+      ###### NIC extended statistics for port 1
+      rx_good_packets: 0
+      tx_good_packets: 0
+      rx_good_bytes: 0
+      tx_good_bytes: 0
+      rx_missed_errors: 0
+      rx_errors: 0
+      tx_errors: 0
+      rx_mbuf_allocation_errors: 0
+      rx_q0_packets: 0
+      rx_q0_bytes: 0
+      rx_q0_errors: 0
+      tx_q0_packets: 0
+      tx_q0_bytes: 0
+      rx_unicast_packets: 0
+      rx_multicast_packets: 0
+      rx_broadcast_packets: 0
+      rx_dropped_packets: 0
+      rx_unknown_protocol_packets: 0
+      tx_unicast_packets: 0
+      tx_multicast_packets: 0
+      tx_broadcast_packets: 0
+      tx_dropped_packets: 0
+      tx_link_down_dropped: 0
+      rx_crc_errors: 0
+      rx_illegal_byte_errors: 0
+      rx_error_bytes: 0
+      mac_local_errors: 0
+      mac_remote_errors: 0
+      rx_len_errors: 0
+      tx_xon_packets: 0
+      rx_xon_packets: 0
+      tx_xoff_packets: 0
+      rx_xoff_packets: 0
+      rx_size_64_packets: 0
+      rx_size_65_to_127_packets: 0
+      rx_size_128_to_255_packets: 0
+      rx_size_256_to_511_packets: 0
+      rx_size_512_to_1023_packets: 0
+      rx_size_1024_to_1522_packets: 0
+      rx_size_1523_to_max_packets: 0
+      rx_undersized_errors: 0
+      rx_oversize_errors: 0
+      rx_mac_short_pkt_dropped: 0
+      rx_fragmented_errors: 0
+      rx_jabber_errors: 0
+      tx_size_64_packets: 0
+      tx_size_65_to_127_packets: 0
+      tx_size_128_to_255_packets: 0
+      tx_size_256_to_511_packets: 0
+      tx_size_512_to_1023_packets: 0
+      tx_size_1024_to_1522_packets: 0
+      tx_size_1523_to_max_packets: 0
+
