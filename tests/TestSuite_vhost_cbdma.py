@@ -13,6 +13,8 @@ from framework.pktgen import PacketGeneratorHelper
 from framework.pmd_output import PmdOutput
 from framework.settings import HEADER_SIZE, UPDATE_EXPECTED, load_global_setting
 from framework.test_case import TestCase
+from tests.virtio_common import basic_common as BC
+from tests.virtio_common import cbdma_common as CC
 
 SPLIT_RING_PATH = {
     "inorder_mergeable": "mrg_rxbuf=1,in_order=1",
@@ -56,6 +58,8 @@ class TestVhostCbdma(TestCase):
         self.testpmd_name = self.dut.apps_name["test-pmd"].split("/")[-1]
         self.save_result_flag = True
         self.json_obj = {}
+        self.CC = CC(self)
+        self.BC = BC(self)
 
     def set_up(self):
         """
@@ -72,55 +76,6 @@ class TestVhostCbdma(TestCase):
         self.dut.send_expect("killall -I %s" % self.testpmd_name, "#", 20)
         # self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.mode_list = []
-
-    def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num, allow_diff_socket=False):
-        """
-        get and bind cbdma ports into DPDK driver
-        """
-        self.all_cbdma_list = []
-        self.cbdma_list = []
-        self.cbdma_str = ""
-        out = self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --status-dev dma", "# ", 30
-        )
-        device_info = out.split("\n")
-        for device in device_info:
-            pci_info = re.search("\s*(0000:\S*:\d*.\d*)", device)
-            if pci_info is not None:
-                dev_info = pci_info.group(1)
-                # the numa id of ioat dev, only add the device which on same socket with nic dev
-                bus = int(dev_info[5:7], base=16)
-                if bus >= 128:
-                    cur_socket = 1
-                else:
-                    cur_socket = 0
-                if allow_diff_socket:
-                    self.all_cbdma_list.append(pci_info.group(1))
-                else:
-                    if self.ports_socket == cur_socket:
-                        self.all_cbdma_list.append(pci_info.group(1))
-        self.verify(
-            len(self.all_cbdma_list) >= cbdma_num, "There no enough cbdma device"
-        )
-        self.cbdma_list = self.all_cbdma_list[0:cbdma_num]
-        self.cbdma_str = " ".join(self.cbdma_list)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=%s %s"
-            % (self.drivername, self.cbdma_str),
-            "# ",
-            60,
-        )
-
-    def bind_cbdma_device_to_kernel(self):
-        self.dut.send_expect("modprobe ioatdma", "# ")
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py -u %s" % self.cbdma_str, "# ", 30
-        )
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=ioatdma  %s" % self.cbdma_str,
-            "# ",
-            60,
-        )
 
     def get_vhost_port_num(self):
         out = self.vhost_user.send_expect("show port summary all", "testpmd> ", 60)
@@ -154,13 +109,6 @@ class TestVhostCbdma(TestCase):
                 )
         self.vhost_user_pmd.execute_cmd("start")
 
-    @property
-    def check_2M_env(self):
-        out = self.dut.send_expect(
-            "cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# "
-        )
-        return True if out == "2048" else False
-
     def start_vhost_testpmd(
         self, cores="Default", param="", eal_param="", ports="", iova_mode="va"
     ):
@@ -174,7 +122,7 @@ class TestVhostCbdma(TestCase):
         self.vhost_user_pmd.execute_cmd("start")
 
     def start_virtio_testpmd(self, cores="Default", param="", eal_param=""):
-        if self.check_2M_env:
+        if self.BC.check_2M_hugepage_size():
             eal_param += " --single-file-segments"
         self.virtio_user_pmd.start_testpmd(
             cores=cores, param=param, eal_param=eal_param, no_pci=True, prefix="virtio"
@@ -188,17 +136,19 @@ class TestVhostCbdma(TestCase):
         """
         Test Case 1: PVP split ring all path multi-queues vhost async operation with 1 to 1 mapping between vrings and CBDMA virtual channels
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=4, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
             "rxq0@%s;"
             "rxq1@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[3],
             )
         )
         vhost_eal_param = (
@@ -206,7 +156,7 @@ class TestVhostCbdma(TestCase):
         )
         vhost_param = "--nb-cores=1 --txq=2 --rxq=2 --txd=1024 --rxd=1024"
         allow_pci = [self.dut.ports_info[0]["pci"]]
-        for i in self.cbdma_list:
+        for i in cbdmas:
             allow_pci.append(i)
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -242,7 +192,7 @@ class TestVhostCbdma(TestCase):
             self.check_each_queue_of_port_packets(queues=2)
             self.virtio_user_pmd.quit()
 
-        if not self.check_2M_env:
+        if not self.BC.check_2M_hugepage_size():
             self.vhost_user_pmd.quit()
             vhost_eal_param += ",dma-ring-size=4096"
             self.start_vhost_testpmd(
@@ -290,7 +240,9 @@ class TestVhostCbdma(TestCase):
         """
         Test Case 2: PVP split ring all path multi-queues vhost async operations test with one CBDMA device being shared among multiple tx/rx queues
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=4, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
@@ -309,22 +261,22 @@ class TestVhostCbdma(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         vhost_eal_param = (
@@ -332,7 +284,7 @@ class TestVhostCbdma(TestCase):
         )
         vhost_param = "--nb-cores=4 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
         allow_pci = [self.dut.ports_info[0]["pci"]]
-        for i in self.cbdma_list:
+        for i in cbdmas:
             allow_pci.append(i)
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -387,22 +339,22 @@ class TestVhostCbdma(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[3],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[3],
             )
         )
         vhost_eal_param = (
@@ -440,7 +392,7 @@ class TestVhostCbdma(TestCase):
                 self.check_each_queue_of_port_packets(queues=8)
                 self.virtio_user_pmd.quit()
 
-        if not self.check_2M_env:
+        if not self.BC.check_2M_hugepage_size():
             self.vhost_user_pmd.quit()
             dmas = (
                 "txq0@%s;"
@@ -460,22 +412,22 @@ class TestVhostCbdma(TestCase):
                 "rxq6@%s;"
                 "rxq7@%s"
                 % (
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
                 )
             )
             vhost_eal_param = (
@@ -527,10 +479,12 @@ class TestVhostCbdma(TestCase):
         """
         Test Case 3: PVP split ring dynamic queue number vhost async operations with cbdma
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=8)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=8, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = "txq0@%s;" "txq1@%s" % (
-            self.cbdma_list[0],
-            self.cbdma_list[1],
+            cbdmas[0],
+            cbdmas[1],
         )
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s],dma-ring-size=64'"
@@ -538,7 +492,7 @@ class TestVhostCbdma(TestCase):
         )
         vhost_param = "--nb-cores=2 --txq=2 --rxq=2 --txd=1024 --rxd=1024"
         allow_pci = [self.dut.ports_info[0]["pci"]]
-        for i in self.cbdma_list:
+        for i in cbdmas:
             allow_pci.append(i)
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -586,10 +540,10 @@ class TestVhostCbdma(TestCase):
             "rxq2@%s;"
             "rxq3@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         vhost_eal_param = (
@@ -625,19 +579,19 @@ class TestVhostCbdma(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         vhost_eal_param = (
@@ -673,19 +627,19 @@ class TestVhostCbdma(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[4],
-                self.cbdma_list[5],
-                self.cbdma_list[6],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[4],
-                self.cbdma_list[5],
-                self.cbdma_list[6],
-                self.cbdma_list[7],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[4],
+                cbdmas[5],
+                cbdmas[6],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[4],
+                cbdmas[5],
+                cbdmas[6],
+                cbdmas[7],
             )
         )
         vhost_eal_param = (
@@ -718,17 +672,19 @@ class TestVhostCbdma(TestCase):
         """
         Test Case 4: PVP packed ring all path multi-queues vhost async operation test with each tx/rx queue using one CBDMA device
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=4, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
             "rxq0@%s;"
             "rxq1@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[3],
             )
         )
         vhost_eal_param = (
@@ -736,7 +692,7 @@ class TestVhostCbdma(TestCase):
         )
         vhost_param = "--nb-cores=1 --txq=2 --rxq=2 --txd=1024 --rxd=1024"
         allow_pci = [self.dut.ports_info[0]["pci"]]
-        for i in self.cbdma_list:
+        for i in cbdmas:
             allow_pci.append(i)
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -773,7 +729,7 @@ class TestVhostCbdma(TestCase):
             self.check_each_queue_of_port_packets(queues=2)
             self.virtio_user_pmd.quit()
 
-        if not self.check_2M_env:
+        if not self.BC.check_2M_hugepage_size():
             self.vhost_user_pmd.quit()
             self.start_vhost_testpmd(
                 cores=self.vhost_core_list,
@@ -821,7 +777,9 @@ class TestVhostCbdma(TestCase):
         """
         Test Case 5: PVP packed ring all path multi-queues vhost async operations with M to 1 mapping between vrings and CBDMA virtual channels
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=4, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
@@ -840,22 +798,22 @@ class TestVhostCbdma(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
             )
         )
         vhost_eal_param = (
@@ -863,7 +821,7 @@ class TestVhostCbdma(TestCase):
         )
         vhost_param = "--nb-cores=4 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
         allow_pci = [self.dut.ports_info[0]["pci"]]
-        for i in self.cbdma_list:
+        for i in cbdmas:
             allow_pci.append(i)
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -919,22 +877,22 @@ class TestVhostCbdma(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[3],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[3],
             )
         )
         vhost_eal_param = (
@@ -972,7 +930,7 @@ class TestVhostCbdma(TestCase):
                 self.check_each_queue_of_port_packets(queues=8)
                 self.virtio_user_pmd.quit()
 
-        if not self.check_2M_env:
+        if not self.BC.check_2M_hugepage_size():
             self.vhost_user_pmd.quit()
             dmas = (
                 "txq0@%s;"
@@ -992,22 +950,22 @@ class TestVhostCbdma(TestCase):
                 "rxq6@%s;"
                 "rxq7@%s"
                 % (
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
-                    self.cbdma_list[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
+                    cbdmas[0],
                 )
             )
             vhost_eal_param = (
@@ -1059,10 +1017,12 @@ class TestVhostCbdma(TestCase):
         """
         Test Case 6: PVP packed ring dynamic queue number vhost async operations with M to N mapping between vrings and CBDMA virtual channels
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=8)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=8, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = "txq0@%s;" "txq1@%s" % (
-            self.cbdma_list[0],
-            self.cbdma_list[1],
+            cbdmas[0],
+            cbdmas[1],
         )
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net0,queues=8,client=1,dmas=[%s],dma-ring-size=64'"
@@ -1071,7 +1031,7 @@ class TestVhostCbdma(TestCase):
         vhost_param = "--nb-cores=2 --txq=2 --rxq=2 --txd=1024 --rxd=1024"
 
         allow_pci = [self.dut.ports_info[0]["pci"]]
-        for i in self.cbdma_list:
+        for i in cbdmas:
             allow_pci.append(i)
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
@@ -1119,10 +1079,10 @@ class TestVhostCbdma(TestCase):
             "rxq2@%s;"
             "rxq3@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[0],
+                cbdmas[1],
             )
         )
         vhost_eal_param = (
@@ -1158,19 +1118,19 @@ class TestVhostCbdma(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         vhost_eal_param = (
@@ -1205,19 +1165,19 @@ class TestVhostCbdma(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[4],
-                self.cbdma_list[5],
-                self.cbdma_list[6],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[4],
-                self.cbdma_list[5],
-                self.cbdma_list[6],
-                self.cbdma_list[7],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[4],
+                cbdmas[5],
+                cbdmas[6],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[4],
+                cbdmas[5],
+                cbdmas[6],
+                cbdmas[7],
             )
         )
         vhost_eal_param = (
@@ -1459,12 +1419,12 @@ class TestVhostCbdma(TestCase):
         Run after each test case.
         """
         self.dut.send_expect("killall -I %s" % self.testpmd_name, "#", 20)
-        self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
+        self.CC.bind_cbdma_to_kernel_driver(cbdma_idxs="all")
         self.dut.close_session(self.vhost_user)
         self.dut.close_session(self.virtio_user)
         self.dut.kill_all()

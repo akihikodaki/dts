@@ -9,6 +9,7 @@ import framework.utils as utils
 from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 from framework.virt_common import VM
+from tests.virtio_common import cbdma_common as CC
 
 
 class TestVM2VMVirtioPmdCBDMA(TestCase):
@@ -24,6 +25,7 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
         self.testpmd_name = self.app_testpmd_path.split("/")[-1]
         self.vhost_user = self.dut.new_session(suite="vhost")
         self.vhost_user_pmd = PmdOutput(self.dut, self.vhost_user)
+        self.CC = CC(self)
 
     def set_up(self):
         """
@@ -44,44 +46,6 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
         self.vm_num = 2
         self.vm_dut = []
         self.vm = []
-
-    def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num, allow_diff_socket=False):
-        """
-        get all cbdma ports
-        """
-        self.all_cbdma_list = []
-        self.cbdma_list = []
-        self.cbdma_str = ""
-        out = self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --status-dev dma", "# ", 30
-        )
-        device_info = out.split("\n")
-        for device in device_info:
-            pci_info = re.search("\s*(0000:\S*:\d*.\d*)", device)
-            if pci_info is not None:
-                dev_info = pci_info.group(1)
-                # the numa id of ioat dev, only add the device which on same socket with nic dev
-                bus = int(dev_info[5:7], base=16)
-                if bus >= 128:
-                    cur_socket = 1
-                else:
-                    cur_socket = 0
-                if allow_diff_socket:
-                    self.all_cbdma_list.append(pci_info.group(1))
-                else:
-                    if self.ports_socket == cur_socket:
-                        self.all_cbdma_list.append(pci_info.group(1))
-        self.verify(
-            len(self.all_cbdma_list) >= cbdma_num, "There no enough cbdma device"
-        )
-        self.cbdma_list = self.all_cbdma_list[0:cbdma_num]
-        self.cbdma_str = " ".join(self.cbdma_list)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=%s %s"
-            % (self.drivername, self.cbdma_str),
-            "# ",
-            60,
-        )
 
     def start_vhost_testpmd(self, cores, ports, prefix, eal_param, param):
         """
@@ -219,7 +183,7 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
         Test Case 1: VM2VM virtio-pmd split ring mergeable path dynamic queue size with cbdma enable and server mode
         """
         self.check_path = ["virtio_dev_rx_async", "virtio_dev_tx_async"]
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(cbdma_num=16, driver_name="vfio-pci")
         dmas1 = (
             "txq0@%s;"
             "txq1@%s;"
@@ -230,14 +194,14 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
             "rxq2@%s;"
             "rxq3@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         dmas2 = (
@@ -250,14 +214,14 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
             "rxq2@%s;"
             "rxq3@%s"
             % (
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[3],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[3],
             )
         )
         eal_param = (
@@ -269,7 +233,7 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
 
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
-            ports=self.cbdma_list,
+            ports=cbdmas,
             prefix="vhost",
             eal_param=eal_param,
             param=param,
@@ -309,18 +273,18 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
                 "rxq6@%s;"
                 "rxq7@%s"
                 % (
-                    self.cbdma_list[0],
-                    self.cbdma_list[1],
-                    self.cbdma_list[2],
-                    self.cbdma_list[3],
-                    self.cbdma_list[4],
-                    self.cbdma_list[1],
-                    self.cbdma_list[2],
-                    self.cbdma_list[3],
-                    self.cbdma_list[4],
-                    self.cbdma_list[5],
-                    self.cbdma_list[6],
-                    self.cbdma_list[7],
+                    cbdmas[0],
+                    cbdmas[1],
+                    cbdmas[2],
+                    cbdmas[3],
+                    cbdmas[4],
+                    cbdmas[1],
+                    cbdmas[2],
+                    cbdmas[3],
+                    cbdmas[4],
+                    cbdmas[5],
+                    cbdmas[6],
+                    cbdmas[7],
                 )
             )
             dmas2 = (
@@ -337,18 +301,18 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
                 "rxq6@%s;"
                 "rxq7@%s"
                 % (
-                    self.cbdma_list[8],
-                    self.cbdma_list[9],
-                    self.cbdma_list[10],
-                    self.cbdma_list[11],
-                    self.cbdma_list[12],
-                    self.cbdma_list[9],
-                    self.cbdma_list[10],
-                    self.cbdma_list[11],
-                    self.cbdma_list[12],
-                    self.cbdma_list[13],
-                    self.cbdma_list[14],
-                    self.cbdma_list[15],
+                    cbdmas[8],
+                    cbdmas[9],
+                    cbdmas[10],
+                    cbdmas[11],
+                    cbdmas[12],
+                    cbdmas[9],
+                    cbdmas[10],
+                    cbdmas[11],
+                    cbdmas[12],
+                    cbdmas[13],
+                    cbdmas[14],
+                    cbdmas[15],
                 )
             )
             eal_param = (
@@ -359,7 +323,7 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
             param = " --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8"
             self.start_vhost_testpmd(
                 cores=self.vhost_core_list,
-                ports=self.cbdma_list,
+                ports=cbdmas,
                 prefix="vhost",
                 eal_param=eal_param,
                 param=param,
@@ -376,7 +340,7 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
         Test Case 2: VM2VM virtio-pmd split ring non-mergeable path dynamic queue size with cbdma enable and server mode
         """
         self.check_path = ["virtio_dev_rx_async", "virtio_dev_tx_async"]
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(cbdma_num=16, driver_name="vfio-pci")
         dmas1 = (
             "txq0@%s;"
             "txq1@%s;"
@@ -387,14 +351,14 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
             "rxq2@%s;"
             "rxq3@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         dmas2 = (
@@ -407,14 +371,14 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
             "rxq2@%s;"
             "rxq3@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         eal_param = (
@@ -425,7 +389,7 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
         param = " --nb-cores=4 --txd=1024 --rxd=1024 --rxq=4 --txq=4"
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
-            ports=self.cbdma_list,
+            ports=cbdmas,
             prefix="vhost",
             eal_param=eal_param,
             param=param,
@@ -455,7 +419,7 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
         Test Case 3: VM2VM virtio-pmd packed ring mergeable path dynamic queue size with cbdma enable and server mode
         """
         self.check_path = ["virtio_dev_rx_async", "virtio_dev_tx_async"]
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(cbdma_num=16, driver_name="vfio-pci")
         dmas1 = (
             "txq0@%s;"
             "txq1@%s;"
@@ -466,14 +430,14 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
             "rxq2@%s;"
             "rxq3@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         dmas2 = (
@@ -486,14 +450,14 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
             "rxq2@%s;"
             "rxq3@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         eal_param = (
@@ -504,7 +468,7 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
         param = " --nb-cores=4 --txd=1024 --rxd=1024 --rxq=4 --txq=4"
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
-            ports=self.cbdma_list,
+            ports=cbdmas,
             prefix="vhost",
             eal_param=eal_param,
             param=param,
@@ -549,7 +513,7 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
         Test Case 4: VM2VM virtio-pmd packed ring non-mergeable path dynamic queue size with cbdma enable and server mode
         """
         self.check_path = ["virtio_dev_rx_async", "virtio_dev_tx_async"]
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(cbdma_num=16, driver_name="vfio-pci")
         dmas1 = (
             "txq0@%s;"
             "txq1@%s;"
@@ -564,18 +528,18 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[4],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[4],
-                self.cbdma_list[5],
-                self.cbdma_list[6],
-                self.cbdma_list[7],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[4],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[4],
+                cbdmas[5],
+                cbdmas[6],
+                cbdmas[7],
             )
         )
         dmas2 = (
@@ -592,18 +556,18 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[8],
-                self.cbdma_list[9],
-                self.cbdma_list[10],
-                self.cbdma_list[11],
-                self.cbdma_list[12],
-                self.cbdma_list[9],
-                self.cbdma_list[10],
-                self.cbdma_list[11],
-                self.cbdma_list[12],
-                self.cbdma_list[13],
-                self.cbdma_list[14],
-                self.cbdma_list[15],
+                cbdmas[8],
+                cbdmas[9],
+                cbdmas[10],
+                cbdmas[11],
+                cbdmas[12],
+                cbdmas[9],
+                cbdmas[10],
+                cbdmas[11],
+                cbdmas[12],
+                cbdmas[13],
+                cbdmas[14],
+                cbdmas[15],
             )
         )
         eal_param = (
@@ -614,7 +578,7 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
         param = " --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8"
         self.start_vhost_testpmd(
             cores=self.vhost_core_list,
-            ports=self.cbdma_list,
+            ports=cbdmas,
             prefix="vhost",
             eal_param=eal_param,
             param=param,
@@ -644,24 +608,13 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
             self.vm[i].stop()
         self.vhost_user.send_expect("quit", "#", 30)
 
-    def bind_cbdma_device_to_kernel(self):
-        self.dut.send_expect("modprobe ioatdma", "# ")
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py -u %s" % self.cbdma_str, "# ", 30
-        )
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=ioatdma  %s" % self.cbdma_str,
-            "# ",
-            60,
-        )
-
     def tear_down(self):
         """
         Run after each test case.
         """
         self.stop_all_apps()
         self.dut.kill_all()
-        self.bind_cbdma_device_to_kernel()
+        self.CC.bind_cbdma_to_kernel_driver()
 
     def tear_down_all(self):
         """

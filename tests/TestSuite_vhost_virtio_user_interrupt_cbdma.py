@@ -14,6 +14,8 @@ import framework.packet as packet
 import framework.utils as utils
 from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
+from tests.virtio_common import basic_common as BC
+from tests.virtio_common import cbdma_common as CC
 
 
 class TestVirtioUserInterruptCbdma(TestCase):
@@ -53,6 +55,8 @@ class TestVirtioUserInterruptCbdma(TestCase):
         self.virtio_user = self.dut.new_session(suite="virtio-user")
         self.virtio_pmd = PmdOutput(self.dut, self.virtio_user)
         self.l3fwd = self.dut.new_session(suite="l3fwd")
+        self.BC = BC(self)
+        self.CC = CC(self)
 
     def set_up(self):
         """
@@ -71,13 +75,6 @@ class TestVirtioUserInterruptCbdma(TestCase):
         out = self.dut.build_dpdk_apps("./examples/l3fwd-power")
         self.verify("Error" not in out, "compilation l3fwd-power error")
 
-    @property
-    def check_2M_env(self):
-        out = self.dut.send_expect(
-            "cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# "
-        )
-        return True if out == "2048" else False
-
     def launch_l3fwd(self, path, packed=False, multi_queue=False):
         if multi_queue:
             queues = 2
@@ -91,7 +88,7 @@ class TestVirtioUserInterruptCbdma(TestCase):
         eal_params = self.dut.create_eal_parameters(
             cores=self.l3fwd_core_list, prefix="l3fwd-pwd", no_pci=True, vdevs=[vdev]
         )
-        if self.check_2M_env:
+        if self.BC.check_2M_hugepage_size():
             eal_params += " --single-file-segments"
         if not multi_queue:
             config = " --config='(0,0,%s)'" % self.l3fwd_core_list[0]
@@ -134,55 +131,6 @@ class TestVirtioUserInterruptCbdma(TestCase):
         else:
             self.logger.error("Wrong link status not right, status is %s" % result)
 
-    def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num, allow_diff_socket=False):
-        """
-        get all cbdma ports
-        """
-        self.all_cbdma_list = []
-        self.cbdma_list = []
-        self.cbdma_str = ""
-        out = self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --status-dev dma", "# ", 30
-        )
-        device_info = out.split("\n")
-        for device in device_info:
-            pci_info = re.search("\s*(0000:\S*:\d*.\d*)", device)
-            if pci_info is not None:
-                dev_info = pci_info.group(1)
-                # the numa id of ioat dev, only add the device which on same socket with nic dev
-                bus = int(dev_info[5:7], base=16)
-                if bus >= 128:
-                    cur_socket = 1
-                else:
-                    cur_socket = 0
-                if allow_diff_socket:
-                    self.all_cbdma_list.append(pci_info.group(1))
-                else:
-                    if self.ports_socket == cur_socket:
-                        self.all_cbdma_list.append(pci_info.group(1))
-        self.verify(
-            len(self.all_cbdma_list) >= cbdma_num, "There no enough cbdma device"
-        )
-        self.cbdma_list = self.all_cbdma_list[0:cbdma_num]
-        self.cbdma_str = " ".join(self.cbdma_list)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=%s %s"
-            % (self.drivername, self.cbdma_str),
-            "# ",
-            60,
-        )
-
-    def bind_cbdma_device_to_kernel(self):
-        self.dut.send_expect("modprobe ioatdma", "# ")
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py -u %s" % self.cbdma_str, "# ", 30
-        )
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=ioatdma  %s" % self.cbdma_str,
-            "# ",
-            60,
-        )
-
     def send_packet(self, multi_queue=False):
         pkt_count = 100
         pkt = packet.Packet()
@@ -207,16 +155,18 @@ class TestVirtioUserInterruptCbdma(TestCase):
         """
         Test Case1: Split ring LSC event between vhost-user and virtio-user with cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = "txq0@%s;" "rxq0@%s" % (
-            self.cbdma_list[0],
-            self.cbdma_list[0],
+            cbdmas[0],
+            cbdmas[0],
         )
         vhost_param = ""
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[%s]'" % dmas
         )
-        ports = self.cbdma_list
+        ports = cbdmas
         self.vhost_pmd.start_testpmd(
             cores=self.vhost_core_list,
             ports=ports,
@@ -249,16 +199,18 @@ class TestVirtioUserInterruptCbdma(TestCase):
         """
         Test Case2: Split ring virtio-user interrupt test with vhost-user as backend and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = "txq0@%s;" "rxq0@%s" % (
-            self.cbdma_list[0],
-            self.cbdma_list[0],
+            cbdmas[0],
+            cbdmas[0],
         )
         vhost_param = "--rxq=1 --txq=1"
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
-        ports = self.cbdma_list
+        ports = cbdmas
         ports.append(self.dut.ports_info[0]["pci"])
         self.logger.info(ports)
         self.vhost_pmd.start_testpmd(
@@ -281,16 +233,18 @@ class TestVirtioUserInterruptCbdma(TestCase):
         """
         Test Case3: Packed ring LSC event between vhost-user and virtio-user with cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = "txq0@%s;" "rxq0@%s" % (
-            self.cbdma_list[0],
-            self.cbdma_list[0],
+            cbdmas[0],
+            cbdmas[0],
         )
         vhost_param = "--tx-offloads=0x00"
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[%s]'" % dmas
         )
-        ports = self.cbdma_list
+        ports = cbdmas
         self.vhost_pmd.start_testpmd(
             cores=self.vhost_core_list,
             ports=ports,
@@ -323,16 +277,18 @@ class TestVirtioUserInterruptCbdma(TestCase):
         """
         Test Case4: Packed ring virtio-user interrupt test with vhost-user as backend and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = "txq0@%s;" "rxq0@%s" % (
-            self.cbdma_list[0],
-            self.cbdma_list[0],
+            cbdmas[0],
+            cbdmas[0],
         )
         vhost_param = "--rxq=1 --txq=1"
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
         )
-        ports = self.cbdma_list
+        ports = cbdmas
         ports.append(self.dut.ports_info[0]["pci"])
         self.vhost_pmd.start_testpmd(
             cores=self.vhost_core_list,
@@ -354,24 +310,26 @@ class TestVirtioUserInterruptCbdma(TestCase):
         """
         Test Case 5: Split ring multi-queues virtio-user interrupt test with vhost-user as backend and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "rxq0@%s;"
             "txq1@%s;"
             "rxq1@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
             )
         )
         vhost_param = "--rxq=2 --txq=2"
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[%s]'" % dmas
         )
-        ports = self.cbdma_list
+        ports = cbdmas
         ports.append(self.dut.ports_info[0]["pci"])
         self.logger.info(ports)
         self.vhost_pmd.start_testpmd(
@@ -394,24 +352,26 @@ class TestVirtioUserInterruptCbdma(TestCase):
         """
         Test Case 6: Packed ring multi-queues virtio-user interrupt test with vhost-user as backend and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "rxq0@%s;"
             "txq1@%s;"
             "rxq1@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
             )
         )
         vhost_param = "--rxq=2 --txq=2"
         vhost_eal_param = (
             "--vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[%s]'" % dmas
         )
-        ports = self.cbdma_list
+        ports = cbdmas
         ports.append(self.dut.ports_info[0]["pci"])
         self.logger.info(ports)
         self.vhost_pmd.start_testpmd(
@@ -434,10 +394,10 @@ class TestVirtioUserInterruptCbdma(TestCase):
         """
         self.dut.send_expect("killall %s" % self.l3fwdpower_name, "#")
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
-        self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
         """
         run after each test suite.
         """
+        self.CC.bind_cbdma_to_kernel_driver(cbdma_idxs="all")
         self.close_all_session()

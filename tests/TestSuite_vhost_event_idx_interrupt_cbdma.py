@@ -7,6 +7,7 @@ import time
 
 from framework.test_case import TestCase
 from framework.virt_common import VM
+from tests.virtio_common import cbdma_common as CC
 
 
 class TestVhostEventIdxInterruptCbdma(TestCase):
@@ -27,6 +28,7 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.cbdma_dev_infos = []
         self.device_str = None
+        self.CC = CC(self)
 
     def set_up(self):
         """
@@ -57,14 +59,7 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
     def list_split(self, items, n):
         return [items[i : i + n] for i in range(0, len(items), n)]
 
-    @property
-    def check_2M_env(self):
-        out = self.dut.send_expect(
-            "cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# "
-        )
-        return True if out == "2048" else False
-
-    def launch_l3fwd_power(self):
+    def launch_l3fwd_power(self, cbdmas, dmas1, dmas2=None):
         """
         launch l3fwd-power with a virtual vhost device
         """
@@ -91,28 +86,25 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
                 core_index = core_index + 1
         # config the vdev info, if have 2 vms, it shoule have 2 vdev info
         vdev_info = ""
-        self.cbdma_dev_infos_list = []
-        if self.vm_num >= 2:
-            self.cbdma_dev_infos_list = self.list_split(
-                self.cbdma_dev_infos, int(len(self.cbdma_dev_infos) / self.vm_num)
+        if self.vm_num == 1:
+            vdev_info = (
+                "--vdev 'net_vhost0,iface=%s/vhost-net0,dmas=[%s],queues=%d,client=1' "
+                % (self.base_dir, dmas1, self.queues)
             )
-        for i in range(self.vm_num):
-            dmas = ""
-            if self.vm_num == 1:
-                for queue in range(self.queues):
-                    dmas += f"txq{queue}@{self.cbdma_dev_infos[queue]};"
-
-            else:
-                cbdma_dev_infos = self.cbdma_dev_infos_list[i]
-                for index, q in enumerate(cbdma_dev_infos):
-                    dmas += f"txq{index}@{q};"
-            vdev_info += (
-                f"--vdev 'net_vhost%d,iface=%s/vhost-net%d,dmas=[{dmas}],queues=%d,client=1' "
-                % (i, self.base_dir, i, self.queues)
+        else:
+            vdev_info = (
+                "--vdev 'net_vhost0,iface=%s/vhost-net0,dmas=[%s],queues=%d,client=1' "
+                "--vdev 'net_vhost1,iface=%s/vhost-net1,dmas=[%s],queues=%d,client=1' "
+                % (
+                    self.base_dir,
+                    dmas1,
+                    self.queues,
+                    self.base_dir,
+                    dmas2,
+                    self.queues,
+                )
             )
-
         port_info = "0x1" if self.vm_num == 1 else "0x3"
-
         example_para = self.app_l3fwd_power_path + " "
         para = (
             " --log-level=9 %s -- -p %s --parse-ptype 1 --config '%s' --interrupt-only"
@@ -121,7 +113,7 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
         eal_params = self.dut.create_eal_parameters(
             cores=self.core_list_l3fwd,
             no_pci=self.nopci,
-            ports=self.used_cbdma,
+            ports=cbdmas,
         )
         command_line_client = example_para + eal_params + para
         self.vhost.get_session_before(timeout=2)
@@ -135,7 +127,7 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
             self.logger.info("Launch l3fwd-power sample finished")
         self.verify(res is True, "Lanuch l3fwd failed")
 
-    def relaunch_l3fwd_power(self):
+    def relaunch_l3fwd_power(self, cbdmas, dmas1, dmas2=None):
         """
         relaunch l3fwd-power sample for port up
         """
@@ -146,7 +138,7 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
         )
         if pid:
             self.dut.send_expect("kill -9 %s" % pid, "#")
-        self.launch_l3fwd_power()
+        self.launch_l3fwd_power(cbdmas, dmas1, dmas2)
 
     def set_vm_cpu_number(self, vm_config):
         # config the vcpu numbers when queue number greater than 1
@@ -279,51 +271,6 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
                 session_info[sess_index].send_expect("^c", "#")
                 self.vm_dut[vm_index].close_session(session_info[sess_index])
 
-    def get_cbdma_ports_info_and_bind_to_dpdk(self):
-        """
-        get all cbdma ports
-        """
-        self.cbdma_dev_infos = []
-        self.used_cbdma = []
-        out = self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --status-dev dma", "# ", 30
-        )
-        device_info = out.split("\n")
-        for device in device_info:
-            pci_info = re.search("\s*(0000:\S*:\d*.\d*)", device)
-            if pci_info is not None:
-                # dev_info = pci_info.group(1)
-                # the numa id of ioat dev, only add the device which
-                # on same socket with nic dev
-                self.cbdma_dev_infos.append(pci_info.group(1))
-        self.verify(
-            len(self.cbdma_dev_infos) >= self.queues,
-            "There no enough cbdma device to run this suite",
-        )
-        if self.queues == 1:
-            self.cbdma_dev_infos = [self.cbdma_dev_infos[0], self.cbdma_dev_infos[-1]]
-        self.used_cbdma = self.cbdma_dev_infos[0 : self.queues * self.vm_num]
-        self.device_str = " ".join(self.used_cbdma)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=%s %s"
-            % (self.drivername, self.device_str),
-            "# ",
-            60,
-        )
-
-    def bind_cbdma_device_to_kernel(self):
-        if self.device_str is not None:
-            self.dut.send_expect("modprobe ioatdma", "# ")
-            self.dut.send_expect(
-                "./usertools/dpdk-devbind.py -u %s" % self.device_str, "# ", 30
-            )
-            self.dut.send_expect(
-                "./usertools/dpdk-devbind.py --force --bind=ioatdma  %s"
-                % self.device_str,
-                "# ",
-                60,
-            )
-
     def stop_all_apps(self):
         """
         close all vms
@@ -342,12 +289,30 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
         self.queues = 16
         self.get_core_mask()
         self.nopci = False
-        self.get_cbdma_ports_info_and_bind_to_dpdk()
-        self.launch_l3fwd_power()
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=8, driver_name="vfio-pci", socket=self.ports_socket
+        )
+        dmas1 = (
+            "rxq0@%s;rxq1@%s;rxq2@%s;rxq3@%s;rxq4@%s;rxq5@%s;rxq6@%s;rxq7@%s;rxq8@%s;rxq9@%s;rxq10@%s"
+            % (
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[4],
+                cbdmas[5],
+                cbdmas[6],
+                cbdmas[7],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[2],
+            )
+        )
+        self.launch_l3fwd_power(cbdmas, dmas1)
         self.start_vms(
             vm_num=self.vm_num,
         )
-        self.relaunch_l3fwd_power()
+        self.relaunch_l3fwd_power(cbdmas, dmas1)
         self.config_virito_net_in_vm()
         self.send_and_verify()
         self.stop_all_apps()
@@ -362,12 +327,20 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
         self.queues = 1
         self.get_core_mask()
         self.nopci = False
-        self.get_cbdma_ports_info_and_bind_to_dpdk()
-        self.launch_l3fwd_power()
+        cbdmas0 = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=0
+        )
+        cbdmas1 = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=1
+        )
+        dmas1 = "rxq0@%s" % cbdmas0[0]
+        dmas2 = "rxq0@%s" % cbdmas1[0]
+        cbdmas = cbdmas0 + cbdmas1
+        self.launch_l3fwd_power(cbdmas, dmas1, dmas2)
         self.start_vms(
             vm_num=self.vm_num,
         )
-        self.relaunch_l3fwd_power()
+        self.relaunch_l3fwd_power(cbdmas, dmas1, dmas2)
         self.config_virito_net_in_vm()
         self.send_and_verify()
         self.stop_all_apps()
@@ -382,10 +355,28 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
         self.queues = 16
         self.get_core_mask()
         self.nopci = False
-        self.get_cbdma_ports_info_and_bind_to_dpdk()
-        self.launch_l3fwd_power()
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=8, driver_name="vfio-pci", socket=self.ports_socket
+        )
+        dmas1 = (
+            "rxq0@%s;rxq1@%s;rxq2@%s;rxq3@%s;rxq4@%s;rxq5@%s;rxq6@%s;rxq7@%s;rxq8@%s;rxq9@%s;rxq10@%s"
+            % (
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[4],
+                cbdmas[5],
+                cbdmas[6],
+                cbdmas[7],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[2],
+            )
+        )
+        self.launch_l3fwd_power(cbdmas, dmas1)
         self.start_vms(vm_num=self.vm_num, packed=True)
-        self.relaunch_l3fwd_power()
+        self.relaunch_l3fwd_power(cbdmas, dmas1)
         self.config_virito_net_in_vm()
         self.send_and_verify()
         self.stop_all_apps()
@@ -400,10 +391,18 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
         self.queues = 1
         self.get_core_mask()
         self.nopci = False
-        self.get_cbdma_ports_info_and_bind_to_dpdk()
-        self.launch_l3fwd_power()
+        cbdmas0 = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=0
+        )
+        cbdmas1 = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=1
+        )
+        dmas1 = "rxq0@%s" % cbdmas0[0]
+        dmas2 = "rxq0@%s" % cbdmas1[0]
+        cbdmas = cbdmas0 + cbdmas1
+        self.launch_l3fwd_power(cbdmas, dmas1, dmas2)
         self.start_vms(vm_num=self.vm_num, packed=True)
-        self.relaunch_l3fwd_power()
+        self.relaunch_l3fwd_power(cbdmas, dmas1, dmas2)
         self.config_virito_net_in_vm()
         self.send_and_verify()
         self.stop_all_apps()
@@ -415,10 +414,9 @@ class TestVhostEventIdxInterruptCbdma(TestCase):
         self.dut.close_session(self.vhost)
         self.dut.send_expect(f"killall {self.l3fwdpower_name}", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
-        pass
+        self.CC.bind_cbdma_to_dpdk_driver(cbdma_idxs="all")

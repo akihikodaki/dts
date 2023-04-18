@@ -7,6 +7,8 @@ import re
 from framework.packet import Packet
 from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
+from tests.virtio_common import basic_common as BC
+from tests.virtio_common import cbdma_common as CC
 
 
 class TestLoopbackVirtioUserServerModeCbama(TestCase):
@@ -32,6 +34,8 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         self.pdump_session = self.dut.new_session(suite="pdump")
         self.vhost_user_pmd = PmdOutput(self.dut, self.vhost_user)
         self.virtio_user_pmd = PmdOutput(self.dut, self.virtio_user)
+        self.CC = CC(self)
+        self.BC = BC(self)
 
     def set_up(self):
         """
@@ -47,13 +51,6 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             "Cycle",
         ]
         self.result_table_create(self.table_header)
-
-    @property
-    def check_2M_env(self):
-        out = self.dut.send_expect(
-            "cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# "
-        )
-        return True if out == "2048" else False
 
     def send_6192_packets_from_vhost(self):
         self.vhost_user_pmd.execute_cmd("set txpkts 64,64,64,2000,2000,2000")
@@ -163,7 +160,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         launch the testpmd as virtio with vhost_net0
         """
-        if self.check_2M_env:
+        if self.BC.check_2M_hugepage_size():
             eal_param += " --single-file-segments"
         self.virtio_user_pmd.start_testpmd(
             cores=cores,
@@ -179,55 +176,6 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             self.virtio_user_pmd.execute_cmd("set fwd rxonly")
         self.virtio_user_pmd.execute_cmd("start")
 
-    def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num, allow_diff_socket=False):
-        """
-        get and bind cbdma ports into DPDK driver
-        """
-        self.all_cbdma_list = []
-        self.cbdma_list = []
-        self.cbdma_str = ""
-        out = self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --status-dev dma", "# ", 30
-        )
-        device_info = out.split("\n")
-        for device in device_info:
-            pci_info = re.search("\s*(0000:\S*:\d*.\d*)", device)
-            if pci_info is not None:
-                dev_info = pci_info.group(1)
-                # the numa id of ioat dev, only add the device which on same socket with nic dev
-                bus = int(dev_info[5:7], base=16)
-                if bus >= 128:
-                    cur_socket = 1
-                else:
-                    cur_socket = 0
-                if allow_diff_socket:
-                    self.all_cbdma_list.append(pci_info.group(1))
-                else:
-                    if self.ports_socket == cur_socket:
-                        self.all_cbdma_list.append(pci_info.group(1))
-        self.verify(
-            len(self.all_cbdma_list) >= cbdma_num, "There no enough cbdma device"
-        )
-        self.cbdma_list = self.all_cbdma_list[0:cbdma_num]
-        self.cbdma_str = " ".join(self.cbdma_list)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=%s %s"
-            % (self.drivername, self.cbdma_str),
-            "# ",
-            60,
-        )
-
-    def bind_cbdma_device_to_kernel(self):
-        self.dut.send_expect("modprobe ioatdma", "# ")
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py -u %s" % self.cbdma_str, "# ", 30
-        )
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=ioatdma  %s" % self.cbdma_str,
-            "# ",
-            60,
-        )
-
     def close_all_session(self):
         """
         close session of vhost-user and virtio-user
@@ -241,7 +189,9 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         Test Case 1: Loopback packed ring inorder mergeable path multi-queues payload check with server mode and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
@@ -256,18 +206,18 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
             )
         )
         vhost_eal_param = (
@@ -278,7 +228,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=cbdmas,
             iova_mode="va",
         )
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,packed_vq=1,server=1"
@@ -300,7 +250,9 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         Test Case 2: Loopback packed ring mergeable path multi-queues payload check with server mode and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=2, socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
@@ -315,18 +267,18 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         vhost_eal_param = (
@@ -337,7 +289,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=cbdmas,
             iova_mode="va",
         )
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,packed_vq=1,server=1"
@@ -359,7 +311,9 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         Test Case 3: Loopback packed ring inorder non-mergeable path multi-queues payload check with server mode and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=4, socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
@@ -374,18 +328,18 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[3],
             )
         )
         vhost_eal_param = (
@@ -396,7 +350,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=cbdmas,
             iova_mode="va",
         )
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=1,packed_vq=1,server=1"
@@ -418,7 +372,9 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         Test Case 4: Loopback packed ring non-mergeable path multi-queues payload check with server mode and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=8)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=8, socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
@@ -433,18 +389,18 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[4],
-                self.cbdma_list[5],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[4],
-                self.cbdma_list[5],
-                self.cbdma_list[6],
-                self.cbdma_list[7],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[4],
+                cbdmas[5],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[4],
+                cbdmas[5],
+                cbdmas[6],
+                cbdmas[7],
             )
         )
         vhost_eal_param = (
@@ -455,7 +411,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=cbdmas,
             iova_mode="va",
         )
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=0,packed_vq=1,server=1"
@@ -477,7 +433,9 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         Test Case 5: Loopback packed ring vectorized path multi-queues payload check with server mode and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=2, socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
@@ -492,18 +450,18 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         vhost_eal_param = (
@@ -514,7 +472,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=cbdmas,
             iova_mode="va",
         )
         virtio_eal_param = "--force-max-simd-bitwidth=512 --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=1,packed_vq=1,vectorized=1,server=1"
@@ -536,7 +494,9 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         Test Case 6: Loopback packed ring vectorized path and ring size is not power of 2 multi-queues payload check with server mode and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=2, socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
@@ -551,18 +511,18 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         vhost_eal_param = (
@@ -573,7 +533,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=cbdmas,
             iova_mode="va",
         )
         virtio_eal_param = "--force-max-simd-bitwidth=512 --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=1,packed_vq=1,vectorized=1,queue_size=1025,server=1"
@@ -595,7 +555,9 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         Test Case 7: Loopback split ring inorder mergeable path multi-queues payload check with server mode and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
@@ -610,18 +572,18 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
             )
         )
         vhost_eal_param = (
@@ -632,7 +594,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=cbdmas,
             iova_mode="va",
         )
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,server=1"
@@ -654,7 +616,9 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         Test Case 8: Loopback split ring mergeable path multi-queues payload check with server mode and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=2, socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
@@ -669,18 +633,18 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         vhost_eal_param = (
@@ -691,7 +655,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=cbdmas,
             iova_mode="va",
         )
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=0,server=1"
@@ -713,7 +677,9 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         Test Case 9: Loopback split ring inorder non-mergeable path multi-queues payload check with server mode and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=4)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=4, socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
@@ -728,18 +694,18 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[3],
             )
         )
         vhost_eal_param = (
@@ -750,7 +716,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=cbdmas,
             iova_mode="va",
         )
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=1,server=1"
@@ -772,7 +738,9 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         Test Case 10: Loopback split ring non-mergeable path multi-queues payload check with server mode and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=2, socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
@@ -787,18 +755,18 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         vhost_eal_param = (
@@ -809,7 +777,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=cbdmas,
             iova_mode="va",
         )
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=0,server=1"
@@ -830,7 +798,9 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         Test Case 11: Loopback split ring vectorized path multi-queues payload check with server mode and cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=2, socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
@@ -845,18 +815,18 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             "rxq6@%s;"
             "rxq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         vhost_eal_param = (
@@ -867,7 +837,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=cbdmas,
             iova_mode="va",
         )
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=0,in_order=1,vectorized=1,server=1"
@@ -889,11 +859,13 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         Test Case 12: Loopback split ring large chain packets stress test with server mode and cbdma enable
         """
-        if not self.check_2M_env:
-            self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        if not self.BC.check_2M_hugepage_size():
+            cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+                cbdma_num=1, socket=self.ports_socket
+            )
             dmas = "txq0@%s;" "rxq0@%s" % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
+                cbdmas[0],
+                cbdmas[0],
             )
             vhost_eal_param = (
                 "--vdev 'eth_vhost0,iface=vhost-net0,queues=1,client=1,dmas=[%s]'"
@@ -904,7 +876,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
                 cores=self.vhost_core_list,
                 eal_param=vhost_eal_param,
                 param=vhost_param,
-                ports=self.cbdma_list,
+                ports=cbdmas,
                 iova_mode="va",
             )
             virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=1,server=1,mrg_rxbuf=1,in_order=0,vectorized=1,queue_size=2048"
@@ -924,11 +896,13 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         Test Case 13: Loopback packed ring large chain packets stress test with server mode and cbdma enable
         """
-        if not self.check_2M_env:
-            self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        if not self.BC.check_2M_hugepage_size():
+            cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+                cbdma_num=1, socket=self.ports_socket
+            )
             dmas = "txq0@%s;" "rxq0@%s" % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
+                cbdmas[0],
+                cbdmas[0],
             )
             vhost_eal_param = (
                 "--vdev 'eth_vhost0,iface=vhost-net0,queues=1,client=1,dmas=[%s]'"
@@ -939,7 +913,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
                 cores=self.vhost_core_list,
                 eal_param=vhost_eal_param,
                 param=vhost_param,
-                ports=self.cbdma_list,
+                ports=cbdmas,
                 iova_mode="va",
             )
             virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=1,server=1,mrg_rxbuf=1,in_order=0,vectorized=1,packed_vq=1,queue_size=2048"
@@ -957,7 +931,9 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         Test Case 14: PV split and packed ring test txonly mode with cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=2, socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
@@ -968,14 +944,14 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             "txq6@%s;"
             "txq7@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         vhost_eal_param = (
@@ -986,7 +962,7 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            ports=cbdmas,
             iova_mode="va",
         )
         virtio_eal_param = "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net0,queues=8,mrg_rxbuf=1,in_order=1,server=1"
@@ -1035,10 +1011,10 @@ class TestLoopbackVirtioUserServerModeCbama(TestCase):
         """
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.kill_all()
-        self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
+        self.CC.bind_cbdma_to_kernel_driver(cbdma_idxs="all")
         self.close_all_session()

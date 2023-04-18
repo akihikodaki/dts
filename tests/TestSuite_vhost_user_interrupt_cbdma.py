@@ -12,6 +12,8 @@ import time
 
 import framework.utils as utils
 from framework.test_case import TestCase
+from tests.virtio_common import basic_common as BC
+from tests.virtio_common import cbdma_common as CC
 
 
 class TestVhostUserInterruptCbdma(TestCase):
@@ -36,6 +38,8 @@ class TestVhostUserInterruptCbdma(TestCase):
         self.cbdma_dev_infos = []
         self.dmas_info = None
         self.device_str = None
+        self.BC = BC(self)
+        self.CC = CC(self)
 
     def set_up(self):
         """
@@ -81,79 +85,13 @@ class TestVhostUserInterruptCbdma(TestCase):
             cores=self.core_list_virtio, prefix="virtio", no_pci=True, vdevs=[vdev]
         )
 
-        if self.check_2M_env:
+        if self.BC.check_2M_hugepage_size():
             eal_params += " --single-file-segments"
         para = " -- -i --rxq=%d --txq=%d --rss-ip" % (self.queues, self.queues)
         command_line_client = self.app_testpmd_path + " " + eal_params + para
         self.virtio_user.send_expect(
             command_line_client, "waiting for client connection...", 120
         )
-
-    def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num):
-        """
-        get all cbdma ports
-        """
-        out = self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --status-dev dma", "# ", 30
-        )
-        device_info = out.split("\n")
-        for device in device_info:
-            pci_info = re.search("\s*(0000:\S*:\d*.\d*)", device)
-            if pci_info is not None:
-                dev_info = pci_info.group(1)
-                # the numa id of ioat dev, only add the device which
-                # on same socket with nic dev
-                bus = int(dev_info[5:7], base=16)
-                if bus >= 128:
-                    cur_socket = 1
-                else:
-                    cur_socket = 0
-                if self.ports_socket == cur_socket:
-                    self.cbdma_dev_infos.append(pci_info.group(1))
-        self.verify(
-            len(self.cbdma_dev_infos) >= cbdma_num,
-            "There no enough cbdma device to run this suite",
-        )
-        used_cbdma = self.cbdma_dev_infos[0:cbdma_num]
-        tx_dmas_info = ""
-        for dmas in used_cbdma:
-            number = used_cbdma.index(dmas)
-            dmas = "txq{}@{};".format(number, dmas)
-            tx_dmas_info += dmas
-        rx_dmas_info = ""
-        for dmas in used_cbdma:
-            number = used_cbdma.index(dmas)
-            dmas = "rxq{}@{};".format(number, dmas)
-            rx_dmas_info += dmas
-        dmas_info = tx_dmas_info + rx_dmas_info
-        self.dmas_info = dmas_info[:-1]
-        self.device_str = " ".join(used_cbdma)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=%s %s"
-            % (self.drivername, self.device_str),
-            "# ",
-            60,
-        )
-
-    def bind_cbdma_device_to_kernel(self):
-        if self.device_str is not None:
-            self.dut.send_expect("modprobe ioatdma", "# ")
-            self.dut.send_expect(
-                "./usertools/dpdk-devbind.py -u %s" % self.device_str, "# ", 30
-            )
-            self.dut.send_expect(
-                "./usertools/dpdk-devbind.py --force --bind=ioatdma  %s"
-                % self.device_str,
-                "# ",
-                60,
-            )
-
-    @property
-    def check_2M_env(self):
-        out = self.dut.send_expect(
-            "cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# "
-        )
-        return True if out == "2048" else False
 
     def lanuch_l3fwd_power(self):
         """
@@ -171,14 +109,29 @@ class TestVhostUserInterruptCbdma(TestCase):
 
         example_cmd = self.app_l3fwd_power_path + " "
         example_cmd += " --log-level=9 "
-        self.get_cbdma_ports_info_and_bind_to_dpdk(4)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=4, driver_name="vfio-pci", socket=self.ports_socket
+        )
+        dmas_info = (
+            "txq0@%s;txq1@%s;txq2@%s;txq3@%s;rxq0@%s;rxq1@%s;rxq2@%s;rxq3@%s"
+            % (
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[3],
+            )
+        )
         vdev = "'net_vhost0,iface=vhost-net,queues=%d,client=1,dmas=[%s]'" % (
             self.queues,
-            self.dmas_info,
+            dmas_info,
         )
         eal_params = self.dut.create_eal_parameters(
             cores=self.core_list_l3fwd,
-            ports=self.cbdma_dev_infos[0:4],
+            ports=cbdmas,
             vdevs=[vdev],
         )
         para = " -- -p 0x1 --parse-ptype 1 --config '%s' --interrupt-only" % config_info
@@ -266,10 +219,9 @@ class TestVhostUserInterruptCbdma(TestCase):
         self.dut.send_expect("killall %s" % self.l3fwdpower_name, "#")
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.kill_all()
-        self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
-        pass
+        self.CC.bind_cbdma_to_kernel_driver(cbdma_idxs="all")

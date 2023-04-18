@@ -24,7 +24,11 @@ class basic_common(object):
         self.vm0_mac = "52:54:00:00:00:01"
         self.vm1_mac = "52:54:00:00:00:02"
 
-    def check_2M_env(self):
+    def check_2M_hugepage_size(self):
+        """
+        check the Hugepage size is 2M or not on DUT
+        :return: True or False
+        """
         out = self.test_case.dut.send_expect(
             "cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# "
         )
@@ -32,7 +36,7 @@ class basic_common(object):
 
     def config_2_vms_ip(self):
         """
-        config VM interface IP and run arp protocal
+        config VM interface IP address and send ARP request
         """
         vm0_intf = self.test_case.vm_dut[0].ports_info[0]["intf"]
         vm1_intf = self.test_case.vm_dut[1].ports_info[0]["intf"]
@@ -148,18 +152,19 @@ class basic_common(object):
         # rm the iperf log file in vm
         self.test_case.vm_dut[0].send_expect("rm iperf_server.log", "#")
         self.test_case.vm_dut[1].send_expect("rm iperf_client.log", "#")
+        return iperfdata[-1]
 
 
 class cbdma_common(object):
     def __init__(self, test_case):
         self.test_case = test_case
 
-    def get_all_cbdma_pci(self):
+    def get_all_cbdma_pcis(self):
         """
-        Get all the CBDMA device PCI of DUT.
-        :return: [0000:00:04.0, 0000:00:04.1, 0000:00:04.2, 0000:00:04.3]
+        get all the CBDMA device PCIs on DUT
+        :return: cbdma_pcis, like [0000:00:04.0, 0000:00:04.1, 0000:00:04.2, 0000:00:04.3, 0000:00:04.4]
         """
-        cbdma_pci = []
+        cbdma_pcis = []
         out = self.test_case.dut.send_expect(
             "./usertools/dpdk-devbind.py --status-dev dma", "#"
         )
@@ -167,20 +172,24 @@ class cbdma_common(object):
         for item in info:
             pci = re.search("\s*(0000:\S*:\d*.\d*)", item)
             if pci is not None:
-                cbdma_pci.append(pci.group(1))
-        return cbdma_pci
+                cbdma_pcis.append(pci.group(1))
+        cbdma_pcis.sort()
+        return cbdma_pcis
 
-    def bind_cbdma_to_dpdk(self, cbdma_number, driver_name="vfio-pci", socket=-1):
+    def bind_cbdma_to_dpdk_driver(
+        self, cbdma_num, driver_name="vfio-pci", cbdma_idxs="all", socket=-1
+    ):
         """
-        Bind CBDMA device to driver
-        :param cbdma_number: number of CBDMA device to be bind.
+        bind CBDMA device to DPDK driver
+        :param cbdma_num: number of CBDMA device to be bind.
         :param driver_name: driver name, like `vfio-pci`.
+        :param cbdma_idxs: the index list of DSA device, like [2,3]
         :param socket: socket id: like 0 or 1, if socket=-1, use all the CBDMA deveice no matter on which socket.
-        :return: bind_cbdma_list, like [0000:00:04.0, 0000:00:04.1]
+        :return: bind_cbdmas, like [0000:00:04.0, 0000:00:04.1]
         """
-        cbdma_list = []
-        cbdma_pci = self.get_all_cbdma_pci()
-        for pci in cbdma_pci:
+        cbdmas = []
+        cbdma_pcis = self.get_all_cbdma_pcis()
+        for pci in cbdma_pcis:
             addr_array = pci.split(":")
             domain_id, bus_id, devfun_id = addr_array[0], addr_array[1], addr_array[2]
             cur_socket = self.test_case.dut.send_expect(
@@ -191,25 +200,38 @@ class cbdma_common(object):
             )
             if socket != -1:
                 if int(cur_socket) == socket:
-                    cbdma_list.append(pci)
+                    cbdmas.append(pci)
             else:
-                cbdma_list.append(pci)
-        bind_cbdma_list = cbdma_list[0:cbdma_number]
-        bind_cbdma_string = " ".join(bind_cbdma_list)
+                cbdmas.append(pci)
+        if cbdma_idxs == "all":
+            bind_cbdmas = cbdmas[0:cbdma_num]
+        else:
+            tmp_cbdmas = []
+            for i in cbdma_idxs:
+                tmp_cbdmas.append(cbdmas[i])
+            bind_cbdmas = tmp_cbdmas[0:cbdma_num]
+        bind_cbdma_str = " ".join(bind_cbdmas)
         self.test_case.dut.send_expect(
             "./usertools/dpdk-devbind.py --force --bind=%s %s"
-            % (driver_name, bind_cbdma_string),
+            % (driver_name, bind_cbdma_str),
             "# ",
             60,
         )
-        return bind_cbdma_list
+        return bind_cbdmas
 
-    def bind_all_cbdma_to_kernel(self):
+    def bind_cbdma_to_kernel_driver(self, cbdma_idxs="all"):
         """
-        Check the CBDMA device is bind to kernel driver or not, if not bind to kernel driver, then bind to kernel driver.
+        check the CBDMA device is bind to kernel driver or not,
+        if not bind to kernel driver, then bind to kernel driver.
         """
-        cbdma_pci = self.get_all_cbdma_pci()
-        for pci in cbdma_pci:
+        cbdma_pcis = self.get_all_cbdma_pcis()
+        pcis = []
+        if cbdma_idxs == "all":
+            pcis = cbdma_pcis
+        else:
+            for cbdma_idx in cbdma_idxs:
+                pcis.append(cbdma_pcis[cbdma_idx])
+        for pci in pcis:
             addr_array = pci.split(":")
             domain_id, bus_id, devfun_id = addr_array[0], addr_array[1], addr_array[2]
             out = self.test_case.dut.send_expect(
@@ -239,8 +261,8 @@ class dsa_common(object):
 
     def get_all_dsa_pcis(self):
         """
-        Get all the DSA device PCI of DUT.
-        :return: [0000:6a:01.0, 0000:6f:01.0, 0000:74:01.0, 0000:79:01.0]
+        get all the DSA device PCIs on DUT
+        :return: dsa_pcis, like [0000:6a:01.0, 0000:6f:01.0, 0000:74:01.0, 0000:79:01.0]
         """
         dsa_pcis = []
         out = self.test_case.dut.send_expect(
@@ -256,7 +278,8 @@ class dsa_common(object):
 
     def bind_dsa_to_kernel_driver(self, dsa_idx):
         """
-        Get the DSA device current driver
+        check the DSA device is bind to kernel driver or not,
+        if not bind to kernel driver, then bind to kernel driver.
         """
         dsa_pcis = self.get_all_dsa_pcis()
         pci = dsa_pcis[dsa_idx]
@@ -282,7 +305,7 @@ class dsa_common(object):
 
     def get_all_dsa_idxs(self):
         """
-        Get all DSA device work queue index.
+        get all DSA device work queue index
         Example: `wq0.0 wq0.1 wq1.0 wq1.1`, return [0, 1]
         """
         dsa_idxs = []
@@ -296,7 +319,8 @@ class dsa_common(object):
 
     def check_wq_exist(self, dsa_idx):
         """
-        Check DSA device has work queue or not, if has work queue, return True, or return False
+        check DSA device has work queue or not,
+        if has work queue, return True or False
         """
         if dsa_idx in self.get_all_dsa_idxs():
             return True
@@ -305,7 +329,7 @@ class dsa_common(object):
 
     def reset_wq(self, dsa_idx):
         """
-        Reset DSA device work queue which have created work queue.
+        reset DSA device work queue which have created work queue
         """
         if self.check_wq_exist(dsa_idx):
             self.test_case.dut.send_expect(
@@ -314,9 +338,10 @@ class dsa_common(object):
 
     def create_wq(self, wq_num, dsa_idxs):
         """
-        Create work queue by work_queue_number and dsa_idx.
+        create work queue by work_queue_number and dsa_idx
         :param wq_num: number of work queue to be create.
         :param dsa_idxs: index of DSA device which to create work queue.
+        :return: wqs, like [wq0.0, wq0.1, wq1.0, wq1.1]
         Example: wq_num=4, dsa_idx=[0, 1], will create 4 work queue:
         root@dpdk:~# ls /dev/dsa/
         wq0.0  wq0.1  wq1.0  wq1.1
@@ -343,15 +368,14 @@ class dsa_common(object):
         self, dsa_num, driver_name="vfio-pci", dsa_idxs="all", socket=-1
     ):
         """
-        Bind DSA device to driver
+        bind DSA device to driver
         :param dsa_num: number of DSA device to be bind.
         :param driver_name: driver name, like `vfio-pci`.
         :param dsa_idxs: the index list of DSA device, like [2,3]
         :param socket: socket id: like 0 or 1, if socket=-1, use all the DSA deveice no matter on which socket.
-        :return: bind_dsa_list, like [0000:6a:01.0, 0000:6f:01.0]
+        :return: bind_dsas, like [0000:6a:01.0, 0000:6f:01.0]
         """
         dsas = []
-        bind_dsas = []
         dsa_pcis = self.get_all_dsa_pcis()
         for pci in dsa_pcis:
             addr_array = pci.split(":")
@@ -373,7 +397,7 @@ class dsa_common(object):
             tmp_dsas = []
             for i in dsa_idxs:
                 tmp_dsas.append(dsas[i])
-                bind_dsas = tmp_dsas[0:dsa_num]
+            bind_dsas = tmp_dsas[0:dsa_num]
         bind_dsas_str = " ".join(bind_dsas)
         self.test_case.dut.send_expect(
             "./usertools/dpdk-devbind.py --force --bind=%s %s"

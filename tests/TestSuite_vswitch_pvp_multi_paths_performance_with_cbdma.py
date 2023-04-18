@@ -19,6 +19,8 @@ from framework.pktgen import PacketGeneratorHelper
 from framework.pmd_output import PmdOutput
 from framework.settings import UPDATE_EXPECTED, load_global_setting
 from framework.test_case import TestCase
+from tests.virtio_common import basic_common as BC
+from tests.virtio_common import cbdma_common as CC
 
 
 class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
@@ -57,6 +59,8 @@ class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
         self.frame_size = [64, 128, 256, 512, 1024, 1518]
         self.save_result_flag = True
         self.json_obj = {}
+        self.CC = CC(self)
+        self.BC = BC(self)
 
     def set_up(self):
         """
@@ -94,13 +98,7 @@ class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
         out = self.dut.build_dpdk_apps("./examples/vhost")
         self.verify("Error" not in out, "compilation vhost error")
 
-    def check_2M_env(self):
-        out = self.dut.send_expect(
-            "cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# "
-        )
-        return True if out == "2048" else False
-
-    def start_vhost_app(self, allow_pci):
+    def start_vhost_app(self, allow_pci, cbdmas):
         """
         launch the vhost app on vhost side
         """
@@ -112,12 +110,12 @@ class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
         params = (
             " -c {} -n {} {} -- -p 0x1 --mergeable 1 --vm2vm 1 --stats 1 "
             + socket_file_param
-            + " --dmas [{}] --total-num-mbufs 600000"
+            + " --dmas [txd0@{}] --total-num-mbufs 600000"
         ).format(
             self.vhost_core_mask,
             self.mem_channels,
             allow_option,
-            self.dmas_info,
+            cbdmas[0],
         )
         self.command_line = self.app_path + params
         self.vhost_user.send_command(self.command_line)
@@ -137,7 +135,7 @@ class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
                 self.virtio_user0_mac, virtio_path
             )
         )
-        if self.check_2M_env():
+        if self.BC.check_2M_hugepage_size():
             eal_params += " --single-file-segments"
         if force_max_simd_bitwidth:
             eal_params += " --force-max-simd-bitwidth=512"
@@ -157,58 +155,6 @@ class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
         self.virtio_user0_pmd.execute_cmd("start tx_first")
         self.virtio_user0_pmd.execute_cmd("stop")
         self.virtio_user0_pmd.execute_cmd("start")
-
-    def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num):
-        """
-        get all cbdma ports
-        """
-        out = self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --status-dev dma", "# ", 30
-        )
-        device_info = out.split("\n")
-        for device in device_info:
-            pci_info = re.search("\s*(0000:\S*:\d*.\d*)", device)
-            if pci_info is not None:
-                dev_info = pci_info.group(1)
-                # the numa id of ioat dev, only add the device which on same socket with nic dev
-                bus = int(dev_info[5:7], base=16)
-                if bus >= 128:
-                    cur_socket = 1
-                else:
-                    cur_socket = 0
-                if self.ports_socket == cur_socket:
-                    self.cbdma_dev_infos.append(pci_info.group(1))
-        self.verify(
-            len(self.cbdma_dev_infos) >= cbdma_num,
-            "There no enough cbdma device to run this suite",
-        )
-        used_cbdma = self.cbdma_dev_infos[0:cbdma_num]
-        dmas_info = ""
-        for dmas in used_cbdma:
-            number = used_cbdma.index(dmas)
-            dmas = "txd{}@{},".format(number, dmas)
-            dmas_info += dmas
-        self.dmas_info = dmas_info[:-1]
-        self.device_str = " ".join(used_cbdma)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=%s %s"
-            % (self.drivername, self.device_str),
-            "# ",
-            60,
-        )
-
-    def bind_cbdma_device_to_kernel(self):
-        if self.device_str is not None:
-            self.dut.send_expect("modprobe ioatdma", "# ")
-            self.dut.send_expect(
-                "./usertools/dpdk-devbind.py -u %s" % self.device_str, "# ", 30
-            )
-            self.dut.send_expect(
-                "./usertools/dpdk-devbind.py --force --bind=ioatdma  %s"
-                % self.device_str,
-                "# ",
-                60,
-            )
 
     def config_stream(self, frame_size):
         tgen_input = []
@@ -373,12 +319,12 @@ class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
             self.test_target
         ]
 
-        cbdma_num = 1
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=cbdma_num)
-        allow_pci = [self.dut.ports_info[0]["pci"]]
-        for item in range(cbdma_num):
-            allow_pci.append(self.cbdma_dev_infos[item])
-        self.start_vhost_app(allow_pci=allow_pci)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
+        ports = cbdmas
+        ports.append(self.dut.ports_info[0]["pci"])
+        self.start_vhost_app(allow_pci=ports, cbdmas=cbdmas)
         virtio_path = "packed_vq=0,mrg_rxbuf=1,in_order=1"
         self.start_virtio_testpmd(virtio_path=virtio_path)
         case_info = "split ring inorder mergeable"
@@ -397,12 +343,12 @@ class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
             self.test_target
         ]
 
-        cbdma_num = 1
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=cbdma_num)
-        allow_pci = [self.dut.ports_info[0]["pci"]]
-        for item in range(cbdma_num):
-            allow_pci.append(self.cbdma_dev_infos[item])
-        self.start_vhost_app(allow_pci=allow_pci)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
+        ports = cbdmas
+        ports.append(self.dut.ports_info[0]["pci"])
+        self.start_vhost_app(allow_pci=ports, cbdmas=cbdmas)
         virtio_path = "packed_vq=0,mrg_rxbuf=0,in_order=1"
         self.start_virtio_testpmd(virtio_path=virtio_path)
         case_info = "split ring inorder non-mergeable"
@@ -419,12 +365,12 @@ class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
             self.test_target
         ]
 
-        cbdma_num = 1
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=cbdma_num)
-        allow_pci = [self.dut.ports_info[0]["pci"]]
-        for item in range(cbdma_num):
-            allow_pci.append(self.cbdma_dev_infos[item])
-        self.start_vhost_app(allow_pci=allow_pci)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
+        ports = cbdmas
+        ports.append(self.dut.ports_info[0]["pci"])
+        self.start_vhost_app(allow_pci=ports, cbdmas=cbdmas)
         virtio_path = "packed_vq=0,mrg_rxbuf=1,in_order=0"
         self.start_virtio_testpmd(virtio_path=virtio_path)
         case_info = "split ring mergeable"
@@ -443,12 +389,12 @@ class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
             self.test_target
         ]
 
-        cbdma_num = 1
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=cbdma_num)
-        allow_pci = [self.dut.ports_info[0]["pci"]]
-        for item in range(cbdma_num):
-            allow_pci.append(self.cbdma_dev_infos[item])
-        self.start_vhost_app(allow_pci=allow_pci)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
+        ports = cbdmas
+        ports.append(self.dut.ports_info[0]["pci"])
+        self.start_vhost_app(allow_pci=ports, cbdmas=cbdmas)
         virtio_path = "packed_vq=0,mrg_rxbuf=0,in_order=0"
         self.start_virtio_testpmd(virtio_path=virtio_path, vlan_strip=True)
         case_info = "split ring non-mergeable"
@@ -465,12 +411,12 @@ class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
             self.test_target
         ]
 
-        cbdma_num = 1
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=cbdma_num)
-        allow_pci = [self.dut.ports_info[0]["pci"]]
-        for item in range(cbdma_num):
-            allow_pci.append(self.cbdma_dev_infos[item])
-        self.start_vhost_app(allow_pci=allow_pci)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
+        ports = cbdmas
+        ports.append(self.dut.ports_info[0]["pci"])
+        self.start_vhost_app(allow_pci=ports, cbdmas=cbdmas)
         virtio_path = "packed_vq=0,mrg_rxbuf=0,in_order=1,vectorized=1"
         self.start_virtio_testpmd(virtio_path=virtio_path)
         case_info = "split ring vectorized"
@@ -489,12 +435,12 @@ class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
             self.test_target
         ]
 
-        cbdma_num = 1
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=cbdma_num)
-        allow_pci = [self.dut.ports_info[0]["pci"]]
-        for item in range(cbdma_num):
-            allow_pci.append(self.cbdma_dev_infos[item])
-        self.start_vhost_app(allow_pci=allow_pci)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
+        ports = cbdmas
+        ports.append(self.dut.ports_info[0]["pci"])
+        self.start_vhost_app(allow_pci=ports, cbdmas=cbdmas)
         virtio_path = "packed_vq=1,mrg_rxbuf=1,in_order=1"
         self.start_virtio_testpmd(virtio_path=virtio_path)
         case_info = "split ring inorder mergeable"
@@ -513,12 +459,12 @@ class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
             self.test_target
         ]
 
-        cbdma_num = 1
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=cbdma_num)
-        allow_pci = [self.dut.ports_info[0]["pci"]]
-        for item in range(cbdma_num):
-            allow_pci.append(self.cbdma_dev_infos[item])
-        self.start_vhost_app(allow_pci=allow_pci)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
+        ports = cbdmas
+        ports.append(self.dut.ports_info[0]["pci"])
+        self.start_vhost_app(allow_pci=ports, cbdmas=cbdmas)
         virtio_path = "packed_vq=1,mrg_rxbuf=0,in_order=1"
         self.start_virtio_testpmd(virtio_path=virtio_path)
         case_info = "split ring inorder non-mergeable"
@@ -535,12 +481,12 @@ class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
             self.test_target
         ]
 
-        cbdma_num = 1
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=cbdma_num)
-        allow_pci = [self.dut.ports_info[0]["pci"]]
-        for item in range(cbdma_num):
-            allow_pci.append(self.cbdma_dev_infos[item])
-        self.start_vhost_app(allow_pci=allow_pci)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
+        ports = cbdmas
+        ports.append(self.dut.ports_info[0]["pci"])
+        self.start_vhost_app(allow_pci=ports, cbdmas=cbdmas)
         virtio_path = "packed_vq=1,mrg_rxbuf=1,in_order=0"
         self.start_virtio_testpmd(virtio_path=virtio_path)
         case_info = "split ring mergeable"
@@ -559,12 +505,12 @@ class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
             self.test_target
         ]
 
-        cbdma_num = 1
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=cbdma_num)
-        allow_pci = [self.dut.ports_info[0]["pci"]]
-        for item in range(cbdma_num):
-            allow_pci.append(self.cbdma_dev_infos[item])
-        self.start_vhost_app(allow_pci=allow_pci)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
+        ports = cbdmas
+        ports.append(self.dut.ports_info[0]["pci"])
+        self.start_vhost_app(allow_pci=ports, cbdmas=cbdmas)
         virtio_path = "packed_vq=1,mrg_rxbuf=0,in_order=0"
         self.start_virtio_testpmd(virtio_path=virtio_path)
         case_info = "split ring non-mergeable"
@@ -581,12 +527,12 @@ class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
             self.test_target
         ]
 
-        cbdma_num = 1
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=cbdma_num)
-        allow_pci = [self.dut.ports_info[0]["pci"]]
-        for item in range(cbdma_num):
-            allow_pci.append(self.cbdma_dev_infos[item])
-        self.start_vhost_app(allow_pci=allow_pci)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
+        ports = cbdmas
+        ports.append(self.dut.ports_info[0]["pci"])
+        self.start_vhost_app(allow_pci=ports, cbdmas=cbdmas)
         virtio_path = "packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1"
         self.start_virtio_testpmd(virtio_path=virtio_path)
         case_info = "split ring vectorized"
@@ -608,10 +554,10 @@ class TestVswitchPvpMultiPathsPerformanceWithCbdma(TestCase):
         """
         self.virtio_user0_pmd.quit()
         self.vhost_user.send_expect("^C", "# ", 20)
-        self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
+        self.CC.bind_cbdma_to_kernel_driver(cbdma_idxs="all")
         self.close_all_session()

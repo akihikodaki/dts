@@ -10,6 +10,8 @@ import tests.vhost_peer_conf as peer
 from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 from framework.virt_common import VM
+from tests.virtio_common import basic_common as BC
+from tests.virtio_common import cbdma_common as CC
 
 
 class TestDPDKGROLibCbdma(TestCase):
@@ -52,6 +54,8 @@ class TestDPDKGROLibCbdma(TestCase):
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.vhost_user = self.dut.new_session(suite="vhost-user")
         self.vhost_pmd = PmdOutput(self.dut, self.vhost_user)
+        self.BC = BC(self)
+        self.CC = CC(self)
 
     def set_up(self):
         """
@@ -60,55 +64,6 @@ class TestDPDKGROLibCbdma(TestCase):
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-
-    def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num, allow_diff_socket=False):
-        """
-        get all cbdma ports
-        """
-        self.all_cbdma_list = []
-        self.cbdma_list = []
-        self.cbdma_str = ""
-        out = self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --status-dev dma", "# ", 30
-        )
-        device_info = out.split("\n")
-        for device in device_info:
-            pci_info = re.search("\s*(0000:\S*:\d*.\d*)", device)
-            if pci_info is not None:
-                dev_info = pci_info.group(1)
-                # the numa id of ioat dev, only add the device which on same socket with nic dev
-                bus = int(dev_info[5:7], base=16)
-                if bus >= 128:
-                    cur_socket = 1
-                else:
-                    cur_socket = 0
-                if allow_diff_socket:
-                    self.all_cbdma_list.append(pci_info.group(1))
-                else:
-                    if self.ports_socket == cur_socket:
-                        self.all_cbdma_list.append(pci_info.group(1))
-        self.verify(
-            len(self.all_cbdma_list) >= cbdma_num, "There no enough cbdma device"
-        )
-        self.cbdma_list = self.all_cbdma_list[0:cbdma_num]
-        self.cbdma_str = " ".join(self.cbdma_list)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=%s %s"
-            % (self.drivername, self.cbdma_str),
-            "# ",
-            60,
-        )
-
-    def bind_cbdma_device_to_kernel(self):
-        self.dut.send_expect("modprobe ioatdma", "# ")
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py -u %s" % self.cbdma_str, "# ", 30
-        )
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=ioatdma  %s" % self.cbdma_str,
-            "# ",
-            60,
-        )
 
     def set_testpmd_params(self):
         self.vhost_user.send_expect("set fwd csum", "testpmd> ", 120)
@@ -216,22 +171,24 @@ class TestDPDKGROLibCbdma(TestCase):
         Test Case1: DPDK GRO test with two queues and cbdma channels using tcp/ipv4 traffic
         """
         self.config_kernel_nic_host()
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=2, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
             "rxq0@%s;"
             "rxq1@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
             )
         )
         param = "--txd=1024 --rxd=1024 --txq=2 --rxq=2 --nb-cores=2"
         eal_param = "--vdev 'net_vhost0,iface=vhost-net,queues=2,dmas=[%s]'" % dmas
-        ports = self.cbdma_list
+        ports = cbdmas
         ports.append(self.pci)
         self.vhost_pmd.start_testpmd(
             cores=self.vhost_core_list,
@@ -291,12 +248,12 @@ class TestDPDKGROLibCbdma(TestCase):
             "# ",
             30,
         )
-        self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
+        self.CC.bind_cbdma_to_kernel_driver(cbdma_idxs="all")
         self.dut.send_expect("ip netns del ns1", "# ", 30)
         self.dut.send_expect("./usertools/dpdk-devbind.py -u %s" % (self.pci), "# ", 30)
         self.dut.send_expect(

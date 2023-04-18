@@ -10,6 +10,8 @@ from framework.pktgen import PacketGeneratorHelper
 from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 from framework.virt_common import VM
+from tests.virtio_common import basic_common as BC
+from tests.virtio_common import cbdma_common as CC
 
 
 class TestVirtioIdxInterruptCbdma(TestCase):
@@ -40,6 +42,8 @@ class TestVirtioIdxInterruptCbdma(TestCase):
         self.testpmd_name = self.app_testpmd_path.split("/")[-1]
         self.vhost_user = self.dut.new_session(suite="vhost-user")
         self.vhost_pmd = PmdOutput(self.dut, self.vhost_user)
+        self.CC = CC(self)
+        self.BC = BC(self)
 
     def set_up(self):
         """
@@ -58,55 +62,6 @@ class TestVirtioIdxInterruptCbdma(TestCase):
             "There has not enough cores to test this case %s" % self.running_case,
         )
         self.core_list = self.dut.get_core_list(self.core_config)
-
-    def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num, allow_diff_socket=False):
-        """
-        get all cbdma ports
-        """
-        self.all_cbdma_list = []
-        self.cbdma_list = []
-        self.cbdma_str = ""
-        out = self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --status-dev dma", "# ", 30
-        )
-        device_info = out.split("\n")
-        for device in device_info:
-            pci_info = re.search("\s*(0000:\S*:\d*.\d*)", device)
-            if pci_info is not None:
-                dev_info = pci_info.group(1)
-                # the numa id of ioat dev, only add the device which on same socket with nic dev
-                bus = int(dev_info[5:7], base=16)
-                if bus >= 128:
-                    cur_socket = 1
-                else:
-                    cur_socket = 0
-                if allow_diff_socket:
-                    self.all_cbdma_list.append(pci_info.group(1))
-                else:
-                    if self.ports_socket == cur_socket:
-                        self.all_cbdma_list.append(pci_info.group(1))
-        self.verify(
-            len(self.all_cbdma_list) >= cbdma_num, "There no enough cbdma device"
-        )
-        self.cbdma_list = self.all_cbdma_list[0:cbdma_num]
-        self.cbdma_str = " ".join(self.cbdma_list)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=%s %s"
-            % (self.drivername, self.cbdma_str),
-            "# ",
-            60,
-        )
-
-    def bind_cbdma_device_to_kernel(self):
-        self.dut.send_expect("modprobe ioatdma", "# ")
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py -u %s" % self.cbdma_str, "# ", 30
-        )
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py --force --bind=ioatdma  %s" % self.cbdma_str,
-            "# ",
-            60,
-        )
 
     def start_vms(self, packed=False, mode=False, set_target=False, bind_dev=False):
         """
@@ -254,14 +209,16 @@ class TestVirtioIdxInterruptCbdma(TestCase):
         """
         Test Case1: Split ring virtio-pci driver reload test with CBDMA enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = "txq0@%s;rxq0@%s" % (
-            self.cbdma_list[0],
-            self.cbdma_list[0],
+            cbdmas[0],
+            cbdmas[0],
         )
         vhost_param = "--nb-cores=1 --txd=1024 --rxd=1024"
         vhost_eal_param = "--vdev 'net_vhost,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
-        ports = self.cbdma_list
+        ports = cbdmas
         ports.append(self.dut.ports_info[0]["pci"])
         self.vhost_pmd.start_testpmd(
             cores=self.vhost_core_list,
@@ -284,7 +241,9 @@ class TestVirtioIdxInterruptCbdma(TestCase):
         """
         Test Case2: Split ring 16 queues virtio-net event idx interrupt mode test with cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=4, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
@@ -319,45 +278,45 @@ class TestVirtioIdxInterruptCbdma(TestCase):
             "rxq14@%s;"
             "rxq15@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[3],
+                cbdmas[3],
+                cbdmas[3],
+                cbdmas[3],
+                cbdmas[3],
+                cbdmas[3],
+                cbdmas[3],
             )
         )
         vhost_param = "--nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16"
         vhost_eal_param = (
             "--vdev 'net_vhost,iface=vhost-net,queues=16,client=1,dmas=[%s]'" % dmas
         )
-        ports = self.cbdma_list
+        ports = cbdmas
         ports.append(self.dut.ports_info[0]["pci"])
         self.vhost_pmd.start_testpmd(
             cores=self.vhost_core_list,
@@ -381,14 +340,16 @@ class TestVirtioIdxInterruptCbdma(TestCase):
         """
         Test Case3: Packed ring virtio-pci driver reload test with CBDMA enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = "txq0@%s;rxq0@%s" % (
-            self.cbdma_list[0],
-            self.cbdma_list[0],
+            cbdmas[0],
+            cbdmas[0],
         )
         vhost_param = "--nb-cores=1 --txd=1024 --rxd=1024"
         vhost_eal_param = "--vdev 'net_vhost,iface=vhost-net,queues=1,dmas=[%s]'" % dmas
-        ports = self.cbdma_list
+        ports = cbdmas
         ports.append(self.dut.ports_info[0]["pci"])
         self.vhost_pmd.start_testpmd(
             cores=self.vhost_core_list,
@@ -411,7 +372,9 @@ class TestVirtioIdxInterruptCbdma(TestCase):
         """
         Test Case4: Packed ring 16 queues virtio-net event idx interrupt mode test with cbdma enable
         """
-        self.get_cbdma_ports_info_and_bind_to_dpdk(16, allow_diff_socket=True)
+        cbdmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=4, driver_name="vfio-pci", socket=self.ports_socket
+        )
         dmas = (
             "txq0@%s;"
             "txq1@%s;"
@@ -446,45 +409,45 @@ class TestVirtioIdxInterruptCbdma(TestCase):
             "rxq14@%s;"
             "rxq15@%s"
             % (
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[0],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[1],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[2],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
-                self.cbdma_list[3],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[0],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[1],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[2],
+                cbdmas[3],
+                cbdmas[3],
+                cbdmas[3],
+                cbdmas[3],
+                cbdmas[3],
+                cbdmas[3],
+                cbdmas[3],
+                cbdmas[3],
             )
         )
         vhost_param = "--nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16"
         vhost_eal_param = (
             "--vdev 'net_vhost,iface=vhost-net,queues=16,client=1,dmas=[%s]'" % dmas
         )
-        ports = self.cbdma_list
+        ports = cbdmas
         ports.append(self.dut.ports_info[0]["pci"])
         self.vhost_pmd.start_testpmd(
             cores=self.vhost_core_list,
@@ -510,10 +473,10 @@ class TestVirtioIdxInterruptCbdma(TestCase):
         """
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
+        self.CC.bind_cbdma_to_kernel_driver(cbdma_idxs="all")
         self.dut.close_session(self.vhost_user)
