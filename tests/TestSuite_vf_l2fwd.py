@@ -60,6 +60,12 @@ class TestVfL2fwd(TestCase):
         VF_MAC_ADDR_port1 = "00:11:22:33:44:66"
         # generate vf
         self.dut.bind_interfaces_linux(self.kdriver)
+        for i_port in [
+            self.dut.ports_info[self.dut_ports[0]]["intf"],
+            self.dut.ports_info[self.dut_ports[1]]["intf"],
+        ]:
+            self.dut.send_expect("ifconfig %s up" % i_port, "# ")
+            self.dut.is_interface_up(i_port)
         self.dut.generate_sriov_vfs_by_port(self.dut_ports[0], 1, self.kdriver)
         self.sriov_vfs_port_0 = self.dut.ports_info[self.dut_ports[0]]["vfs_port"]
         self.verify(len(self.sriov_vfs_port_0) != 0, "VF create failed")
