@@ -12,7 +12,7 @@ import framework.utils as utils
 from framework.pmd_output import PmdOutput
 from framework.qemu_kvm import QEMUKvm
 from framework.settings import get_nic_name
-from framework.test_case import TestCase
+from framework.test_case import TestCase, skip_unsupported_host_driver
 
 VM_CORES_MASK = "all"
 PF_MAX_QUEUE = 64
@@ -45,11 +45,21 @@ class Testddp_mpls(TestCase):
             self.dut.send_expect("modprobe vfio-pci", "#")
 
     def set_up(self):
-        self.setup_vm_env()
+        if "vf" not in self._suite_result.test_case:
+            self.used_dut_port = self.dut_ports[0]
+            tester_port = self.tester.get_local_port(self.used_dut_port)
+            self.tester_intf = self.tester.get_interface(tester_port)
+            self.dut_testpmd = PmdOutput(self.dut)
+            self.dut_testpmd.start_testpmd(
+                "Default",
+                "--port-topology=chained --txq=%s --rxq=%s"
+                % (PF_MAX_QUEUE, PF_MAX_QUEUE),
+            )
 
-    def setup_vm_env(self, driver="default"):
+    def setup_vf_env(self, driver="default"):
         """
         Create testing environment with VF generated from 1PF
+        Start testpmd on host and vm0
         """
         if self.env_done == False:
             self.bind_nic_driver(self.dut_ports[:1], driver="igb_uio")
@@ -91,8 +101,11 @@ class Testddp_mpls(TestCase):
             % (VF_MAX_QUEUE, VF_MAX_QUEUE),
         )
 
-    def destroy_vm_env(self):
-
+    def destroy_vf_env(self):
+        self.vm0_testpmd.execute_cmd("stop")
+        self.dut_testpmd.execute_cmd("stop")
+        self.vm0_testpmd.quit()
+        self.dut_testpmd.quit()
         if getattr(self, "vm0", None):
             self.vm0_dut.kill_all()
             self.vm0_testpmd = None
@@ -211,38 +224,45 @@ class Testddp_mpls(TestCase):
         self.load_profile()
         self.mpls_test(port="pf", pkt="gre")
 
+    @skip_unsupported_host_driver(["vfio-pci"])
     def test_mpls_udp_vf(self):
         """
         MPLS is supported by NVM with profile updated. Send mpls udp packet to VF,
         check VF could receive packet using configured queue, checksum is good.
         """
+        self.setup_vf_env()
         self.load_profile()
         self.mpls_test(port="vf id 0", pkt="udp")
+        self.destroy_vf_env()
 
+    @skip_unsupported_host_driver(["vfio-pci"])
     def test_mpls_gre_vf(self):
         """
         MPLS is supported by NVM with profile updated. Send mpls gre packet to VF,
         check VF could receive packet using configured queue, checksum is good.
         """
+        self.setup_vf_env()
         self.load_profile()
         self.mpls_test(port="vf id 0", pkt="gre")
+        self.destroy_vf_env()
 
     def tear_down(self):
-        self.vm0_testpmd.execute_cmd("stop")
-        self.dut_testpmd.execute_cmd("stop")
-        out = self.dut_testpmd.execute_cmd("ddp get list 0")
-        if "Profile number is: 0" not in out:
-            self.dut_testpmd.execute_cmd("port stop all")
-            time.sleep(1)
-            self.dut_testpmd.execute_cmd("ddp del 0 /tmp/mpls.bak")
+
+        if "vf" not in self._suite_result.test_case:
+            self.dut_testpmd.execute_cmd("stop")
             out = self.dut_testpmd.execute_cmd("ddp get list 0")
-            self.verify(
-                "Profile number is: 0" in out, "Failed to delete mpls profile!!!"
-            )
-            self.dut_testpmd.execute_cmd("port start all")
-        self.vm0_testpmd.quit()
-        self.dut_testpmd.quit()
+            if "Profile number is: 0" not in out:
+                self.dut_testpmd.execute_cmd("port stop all")
+                time.sleep(1)
+                self.dut_testpmd.execute_cmd("ddp del 0 /tmp/mpls.bak")
+                out = self.dut_testpmd.execute_cmd("ddp get list 0")
+                self.verify(
+                    "Profile number is: 0" in out, "Failed to delete mpls profile!!!"
+                )
+                self.dut_testpmd.execute_cmd("port start all")
+
+            self.dut_testpmd.quit()
 
     def tear_down_all(self):
-        self.destroy_vm_env()
-        pass
+        if self.env_done:
+            self.destroy_vf_env()
