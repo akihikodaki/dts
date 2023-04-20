@@ -55,6 +55,10 @@ Prerequisites
 
     ./<build>/app/dpdk-testpmd -c f -n 4 -- -i --port-topology=chained --txq=64 --rxq=64
 
+.. note::
+
+    if test DPDK PF + DPDK VF, bind port to igb_uio,
+    if only test PF, bind pf port to vfio-pci or igb_uio.
 
 Test Case: Load dynamic device personalization 
 ================================================
