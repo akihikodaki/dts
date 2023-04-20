@@ -2520,3 +2520,95 @@ Send packets(`dst_ip` = 2.2.2.5 `src_ip` = 2.2.2.4 `dst_port` = 1 `src_port` =
 sending packets. packets are received on the queue 32 and queue 63 When
 setting 5-tuple Filter with queue(64), it will display failure because the
 number of queues no more than 64.
+
+Test case: IXGBE fdir for ipv6 mask
+===================================
+
+#. Launch the app ``testpmd`` with the following arguments::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --nb-cores=16 --disable-rss
+    testpmd> set fwd rxonly
+    testpmd> set verbose 1
+    testpmd> start
+
+Subcase1: fdir for ipv6 dst mask
+--------------------------------
+1. create a dst mask rule on port 0::
+
+    flow create 0 ingress pattern fuzzy thresh spec 1 thresh mask 1 / ipv6 dst spec 2001::64 dst mask ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff / end actions queue index 2 / end
+
+2. send matched packet::
+
+    p1=Ether(dst="00:11:22:33:44:55")/IPv6(src="2001::3", dst="2001::64")/Raw('x' * 20)
+
+Check the packets are directed to queue 2.
+
+3. send unmatched packet::
+
+    p2=Ether(dst="00:11:22:33:44:55")/IPv6(src="2001::3", dst="2001::63")/Raw('x' * 20)
+
+Check the packet is directed to queue 0.
+
+Subcase2: fdir for ipv6 src mask
+--------------------------------
+1. create a src mask rule on port 0::
+
+    flow create 0 ingress pattern fuzzy thresh spec 1 thresh mask 1 / ipv6 src spec 2001::63 src mask ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff / end actions queue index 1 / end
+
+2. send matched packet::
+
+    p3=Ether(dst="00:11:22:33:44:55")/IPv6(src="2001::63", dst="2001::64")/Raw('x' * 20)
+
+Check the packets are directed to queue 1.
+
+3. send unmatched packet::
+
+    p4=Ether(dst="00:11:22:33:44:55")/IPv6(src="2001::3", dst="2001::64")/Raw('x' * 20)
+
+Check the packet is directed to queue 0
+
+Test case: IXGBE fdir for ipv4 mask
+===================================
+
+#. Launch the app ``testpmd`` with the following arguments::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 1ffff -n 4 -- -i --rxq=16 --txq=16 --nb-cores=16 --disable-rss
+    testpmd> set fwd rxonly
+    testpmd> set verbose 1
+    testpmd> start
+
+Subcase1: fdir for ipv4 dst mask
+--------------------------------
+1. create a dst mask rule on port 0::
+
+    flow create 0 ingress pattern fuzzy thresh spec 1 thresh mask 1 / eth / ipv4 dst spec 100.0.0.5 dst mask 255.255.255.255 / end actions queue index 3 / end
+
+2. send matched packet::
+
+    p1=Ether(dst="00:11:22:33:44:55")/IP(dst="100.0.0.5", src="192.168.0.1")/Raw('x' * 20)
+
+Check the packets are directed to queue 3.
+
+3. send unmatched packet::
+
+    p2=Ether(dst="00:11:22:33:44:55")/IP(dst="100.0.0.6", src="192.168.0.1")/Raw('x' * 20)
+
+Check the packet is directed to queue 0.
+
+Subcase2: fdir for ipv4 src mask
+--------------------------------
+1. create a src mask rule on port 0::
+
+    flow create 0 ingress pattern fuzzy thresh spec 1 thresh mask 1 / eth / ipv4 src spec 100.0.0.5 src mask 255.255.255.255 / end actions queue index 3 / end
+
+2. send matched packet::
+
+    p3=Ether(dst="00:11:22:33:44:55")/IP(src="100.0.0.5", dst="192.168.0.1")/Raw('x' * 20)
+
+Check the packets are directed to queue 3.
+
+3. send unmatched packet::
+
+    p4=Ether(dst="00:11:22:33:44:55")/IP(src="100.0.0.6", dst="192.168.0.1")/Raw('x' * 20)
+
+Check the packet is directed to queue 0.
