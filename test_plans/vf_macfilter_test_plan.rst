@@ -66,10 +66,10 @@ Test Case 1: test_kernel_2pf_2vf_1vm_iplink_macfilter
       -device pci-assign,host=81:0a.0,id=pt_1
 
 5. Login vm0, got VFs pci device id in vm0, assume they are 00:06.0 & 00:07.0,
-   bind them to igb_uio driver, and then start testpmd, enable CRC strip,
+   bind them to vfio-pci driver, and then start testpmd, enable CRC strip,
    disable promisc mode,set it in mac forward mode::
 
-      ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
+      ./usertools/dpdk-devbind.py --bind=vfio-pci 00:06.0 00:07.0
 
    if test IAVF, start up VF port::
 
@@ -155,10 +155,10 @@ Test Case 2: test_kernel_2pf_2vf_1vm_mac_add_filter
       -device pci-assign,host=81:0a.0,id=pt_1
 
 5. login vm0, got VFs pci device id in vm0, assume they are 00:06.0 & 00:07.0,
-   bind them to igb_uio driver, and then start testpmd, enable CRC strip on
+   bind them to vfio-pci driver, and then start testpmd, enable CRC strip on
    VF, disable promisc mode, add a new MAC to VF0 and then start::
 
-      ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
+      ./usertools/dpdk-devbind.py --bind=vfio-pci 00:06.0 00:07.0
 
    if test IAVF, start up VF port::
 
