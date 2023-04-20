@@ -5899,6 +5899,132 @@ class TestGeneric_flow_api(TestCase):
         else:
             self.verify(False, "%s not support this test" % self.nic)
 
+    def launch_testpmd(self):
+        """
+        launch testpmd for IXGBE fdir mask test
+        """
+        self.pmdout.start_testpmd(
+            "all",
+            "--rxq=%d --txq=%d --nb-cores=%d --disable-rss"
+            % (MAX_QUEUE + 1, MAX_QUEUE + 1, MAX_QUEUE + 1),
+        )
+        self.dut.send_expect("set fwd rxonly", "testpmd> ")
+        self.dut.send_expect("set verbose 1", "testpmd> ")
+        self.dut.send_expect("start", "testpmd> ")
+        self.pmdout.wait_link_status_up("all")
+
+    @check_supported_nic("IXGBE_10G-82599_SFP")
+    def test_fdir_for_ipv6_dst_mask(self):
+        """
+        only supported by ixgbe
+        """
+        self.launch_testpmd()
+
+        self.dut.send_expect(
+            "flow create 0 ingress pattern fuzzy thresh spec 1 thresh mask 1 / ipv6 dst spec 2001::64 dst mask ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff / end actions queue index 2 / end",
+            "created",
+        )
+        # send the packets and verify the results
+        self.sendpkt(
+            pktstr="""Ether(dst="00:11:22:33:44:55")/IPv6(src="2001::3", dst="2001::64")/Raw('x' * 20)"""
+        )
+
+        self.verify_result(
+            "pf", expect_rxpkts="1", expect_queue="2", verify_mac="00:11:22:33:44:55"
+        )
+
+        self.sendpkt(
+            pktstr="""Ether(dst="00:11:22:33:44:55")/IPv6(src="2001::3", dst="2001::63")/Raw('x' * 20)"""
+        )
+
+        self.verify_result(
+            "pf", expect_rxpkts="1", expect_queue="0", verify_mac="00:11:22:33:44:55"
+        )
+
+    @check_supported_nic("IXGBE_10G-82599_SFP")
+    def test_fdir_for_ipv6_src_mask(self):
+        """
+        only supported by ixgbe
+        """
+        self.launch_testpmd()
+
+        self.dut.send_expect(
+            "flow create 0 ingress pattern fuzzy thresh spec 1 thresh mask 1 / ipv6 src spec 2001::63 src mask ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff / end actions queue index 1 / end",
+            "created",
+        )
+        # send the packets and verify the results
+        self.sendpkt(
+            pktstr="""Ether(dst="00:11:22:33:44:55")/IPv6(src="2001::63", dst="2001::64")/Raw('x' * 20)"""
+        )
+
+        self.verify_result(
+            "pf", expect_rxpkts="1", expect_queue="1", verify_mac="00:11:22:33:44:55"
+        )
+
+        self.sendpkt(
+            pktstr="""Ether(dst="00:11:22:33:44:55")/IPv6(src="2001::3", dst="2001::64")/Raw('x' * 20)"""
+        )
+
+        self.verify_result(
+            "pf", expect_rxpkts="1", expect_queue="0", verify_mac="00:11:22:33:44:55"
+        )
+
+    @check_supported_nic("IXGBE_10G-82599_SFP")
+    def test_fdir_for_ipv4_dst_mask(self):
+        """
+        only supported by ixgbe
+        """
+        self.launch_testpmd()
+
+        self.dut.send_expect(
+            "flow create 0 ingress pattern fuzzy thresh spec 1 thresh mask 1 / eth / ipv4 dst spec 100.0.0.5 dst mask 255.255.255.255 / end actions queue index 3 / end",
+            "created",
+        )
+        # send the packets and verify the results
+        self.sendpkt(
+            pktstr="""Ether(dst="00:11:22:33:44:55")/IP(dst="100.0.0.5", src="192.168.0.1")/Raw('x' * 20)"""
+        )
+
+        self.verify_result(
+            "pf", expect_rxpkts="1", expect_queue="3", verify_mac="00:11:22:33:44:55"
+        )
+
+        self.sendpkt(
+            pktstr="""Ether(dst="00:11:22:33:44:55")/IP(dst="100.0.0.6", src="192.168.0.1")/Raw('x' * 20)"""
+        )
+
+        self.verify_result(
+            "pf", expect_rxpkts="1", expect_queue="0", verify_mac="00:11:22:33:44:55"
+        )
+
+    @check_supported_nic("IXGBE_10G-82599_SFP")
+    def test_fdir_for_ipv4_src_mask(self):
+        """
+        only supported by ixgbe
+        """
+        self.launch_testpmd()
+
+        self.dut.send_expect(
+            "flow create 0 ingress pattern fuzzy thresh spec 1 thresh mask 1 / eth / ipv4 src spec 100.0.0.5 src mask 255.255.255.255 / end actions queue index 3 / end",
+            "created",
+        )
+        # send the packets and verify the results
+        self.sendpkt(
+            pktstr="""Ether(dst="00:11:22:33:44:55")/IP(src="100.0.0.5", dst="192.168.0.1")/Raw('x' * 20)"""
+        )
+
+        self.verify_result(
+            "pf", expect_rxpkts="1", expect_queue="3", verify_mac="00:11:22:33:44:55"
+        )
+
+        self.sendpkt(
+            pktstr="""Ether(dst="00:11:22:33:44:55")/IP(src="100.0.0.6", dst="192.168.0.1")/Raw('x' * 20)"""
+        )
+
+        self.verify_result(
+            "pf", expect_rxpkts="1", expect_queue="0", verify_mac="00:11:22:33:44:55"
+        )
+
     def tear_down(self):
         """
         Run after each test case.
