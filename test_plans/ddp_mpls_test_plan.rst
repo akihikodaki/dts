@@ -25,9 +25,11 @@ Only 25G NIC supports DDP and MPLS so far.
 Prerequisites
 =============
 
+if test DPDK PF + DPDK VF, bind port to igb_uio:
+
 1. Host PF in DPDK driver. Create 1 VF from 1 PF with DPDK driver::
 
-     ./tools/dpdk-devbind.py -b igb_uio 81:00.0
+     ./usertools/dpdk-devbind.py -b igb_uio 81:00.0
      echo 1 >/sys/bus/pci/devices/0000:81:00.0/max_vfs
 
 2. Detach VF from the host::
@@ -44,6 +46,16 @@ Prerequisites
 
      ./<build>/app/dpdk-testpmd -c f -n 4 -- -i --port-topology=chained
      --txq=4 --rxq=4
+
+if only test PF:
+
+1. bind pf port to vfio-pci::
+
+    ./usertools/dpdk-devbind.py -b vfio-pci 81:00.0
+
+2. Start testpmd on host::
+
+     ./<build>/app/dpdk-testpmd -c f -n 4  -- -i --port-topology=chained --txq=64 --rxq=64
 
 
 Test Case 1: Load dynamic device personalization
