@@ -11,7 +11,7 @@ import framework.utils as utils
 from framework.pmd_output import PmdOutput
 from framework.qemu_kvm import QEMUKvm
 from framework.settings import get_nic_name
-from framework.test_case import TestCase
+from framework.test_case import TestCase, skip_unsupported_host_driver
 
 VM_CORES_MASK = "all"
 
@@ -48,9 +48,11 @@ class TestDdpGtp(TestCase):
             self.vf_assign_method = "vfio-pci"
             self.dut.send_expect("modprobe vfio-pci", "#")
 
-    def insmod_modprobe(self, modename=""):
+    def setup_vf_env(self, modename=""):
         """
         Insmod modProbe before run test case
+        bind VF0 device to igb_uio driver
+        Start testpmd on host and vm0
         """
         if modename == "igb_uio":
             self.dut.send_expect("modprobe uio", "#", 10)
@@ -63,26 +65,24 @@ class TestDdpGtp(TestCase):
 
             out = self.dut.send_expect("lsmod | grep igb_uio", "#")
             assert "igb_uio" in out, "Failed to insmod igb_uio"
+        self.bind_nic_driver(self.dut_ports, "igb_uio")
+        self.setup_vm_env()
+        self.load_profile()
+        self.vm0_testpmd.start_testpmd(
+            VM_CORES_MASK,
+            "--port-topology=chained --txq=%s --rxq=%s"
+            % (self.VF_QUEUE, self.VF_QUEUE),
+        )
+        self.vm0_testpmd.execute_cmd("set fwd rxonly")
+        self.vm0_testpmd.execute_cmd("set verbose 1")
+        self.vm0_testpmd.execute_cmd("start")
 
     def set_up(self):
         self.dut_testpmd = PmdOutput(self.dut)
         self.used_dut_port = self.dut_ports[0]
         tester_port = self.tester.get_local_port(self.used_dut_port)
         self.tester_intf = self.tester.get_interface(tester_port)
-        if "vf" in self._suite_result.test_case:
-            self.insmod_modprobe("igb_uio")
-            self.bind_nic_driver(self.dut_ports, "igb_uio")
-            self.setup_vm_env()
-            self.load_profile()
-            self.vm0_testpmd.start_testpmd(
-                VM_CORES_MASK,
-                "--port-topology=chained --txq=%s --rxq=%s"
-                % (self.VF_QUEUE, self.VF_QUEUE),
-            )
-            self.vm0_testpmd.execute_cmd("set fwd rxonly")
-            self.vm0_testpmd.execute_cmd("set verbose 1")
-            self.vm0_testpmd.execute_cmd("start")
-        else:
+        if "pf" in self._suite_result.test_case:
             self.load_profile()
 
     def search_queue_number(self, Q_strip):
@@ -443,39 +443,44 @@ class TestDdpGtp(TestCase):
         self.gtp_test(type="clfter", port="pf", tunnel_pkt="gtpu", inner_L3="ipv4")
         self.gtp_test(type="clfter", port="pf", tunnel_pkt="gtpu", inner_L3="ipv6")
 
+    @skip_unsupported_host_driver(["vfio-pci"])
     def test_clfter_gtpc_vf(self):
         """
         GTP is supported by NVM with profile updated. Select cloud filter,
         send gtpc packet to VF, check PF could receive packet using configured
         queue, checksum is good.
         """
+        self.setup_vf_env("igb_uio")
         self.gtp_test(type="clfter", port="vf id 0", tunnel_pkt="gtpc", inner_L3=None)
+        self.destroy_vm_env()
 
+    @skip_unsupported_host_driver(["vfio-pci"])
     def test_clfter_gtpu_vf(self):
         """
         GTP is supported by NVM with profile updated. Select cloud filter,
         send gtpu packet to VF, check PF could receive packet using configured
         queue, checksum is good.
         """
+        self.setup_vf_env("igb_uio")
         self.gtp_test(type="clfter", port="vf id 0", tunnel_pkt="gtpu", inner_L3=None)
         self.gtp_test(type="clfter", port="vf id 0", tunnel_pkt="gtpu", inner_L3="ipv4")
         self.gtp_test(type="clfter", port="vf id 0", tunnel_pkt="gtpu", inner_L3="ipv6")
+        self.destroy_vm_env()
 
     def tear_down(self):
-        if "vf" in self._suite_result.test_case:
-            self.destroy_vm_env()
-        self.dut_testpmd.execute_cmd("stop")
-        out = self.dut_testpmd.execute_cmd("ddp get list 0")
-        if "Profile number is: 0" not in out:
-            self.dut_testpmd.execute_cmd("port stop all")
-            time.sleep(1)
-            self.dut_testpmd.execute_cmd("ddp del 0 /tmp/gtp.bak")
+        if "vf" not in self._suite_result.test_case:
+            self.dut_testpmd.execute_cmd("stop")
             out = self.dut_testpmd.execute_cmd("ddp get list 0")
-            self.verify(
-                "Profile number is: 0" in out, "Failed to delete ddp profile!!!"
-            )
-            self.dut_testpmd.execute_cmd("port start all")
-        self.dut_testpmd.quit()
+            if "Profile number is: 0" not in out:
+                self.dut_testpmd.execute_cmd("port stop all")
+                time.sleep(1)
+                self.dut_testpmd.execute_cmd("ddp del 0 /tmp/gtp.bak")
+                out = self.dut_testpmd.execute_cmd("ddp get list 0")
+                self.verify(
+                    "Profile number is: 0" in out, "Failed to delete ddp profile!!!"
+                )
+                self.dut_testpmd.execute_cmd("port start all")
+            self.dut_testpmd.quit()
 
     def tear_down_all(self):
         if self.env_done:
