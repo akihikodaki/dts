@@ -2151,6 +2151,9 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d, v
             self.dut.send_expect(
                 "ip link set %s vf 0 trust off" % (self.dport_ifaces0), "# "
             )
+            self.dut.send_expect(
+                "ip link set %s vf 0 spoofchk off" % (self.dport_ifaces0), "# "
+            )
 
     def tear_down_all(self):
         """
