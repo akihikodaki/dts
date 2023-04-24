@@ -23,7 +23,7 @@ Common steps
 
 2. Bind 1 dsa device to vfio-pci::
 
-    ./usertools/dpdk-devbind.py -b idxd 0000:6f:01.0
+    ./usertools/dpdk-devbind.py -b vfio-pci 0000:6f:01.0
 
 Test Case 1: loopback vhost async test with split ring inorder mergeable path using IDXD kernel driver
 ------------------------------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ Test Case 1: loopback vhost async test with split ring inorder mergeable path us
 
     testpmd>show port stats all
 
-5. Quit virtio-user, rerun step 2-4 with different pac    ket length, <frame_size> include [64, 128, 256, 512, 1024, 1518].
+5. Quit virtio-user, rerun step 2-4 with different packet length, <frame_size> include [64, 128, 256, 512, 1024, 1518].
 
 Test Case 2: loopback vhost async test with split ring inorder non-mergeable path using IDXD kernel driver
 ----------------------------------------------------------------------------------------------------------
