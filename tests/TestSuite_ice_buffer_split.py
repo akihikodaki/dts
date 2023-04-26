@@ -668,6 +668,7 @@ class TestBufferSplit(TestCase):
             if len(pkt_data) != 0:
                 pkt_data_list.append(pkt_data)
         self.logger.info("pkt_data_list: {}".format(pkt_data_list))
+        self.tester.send_expect("quit()", "# ")
         return pkt_data_list
 
     def send_pkt_get_output(self, pkts, port_id, count=1):
