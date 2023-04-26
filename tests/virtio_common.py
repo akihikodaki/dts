@@ -87,7 +87,7 @@ class basic_common(object):
         fp.write(data)
         fp.close()
 
-        # scp file from tester on VM0
+        # scp file from tester to VM0
         out = self.test_case.vm_dut[0].send_command(
             "scp root@%s:/tmp/payload /tmp" % self.tester_ip, timeout=5
         )
@@ -95,7 +95,7 @@ class basic_common(object):
             self.test_case.vm_dut[0].send_command("yes", timeout=3)
         self.test_case.vm_dut[0].send_command(self.tester_passwd, timeout=3)
 
-        # scp file from VM0 on VM1
+        # scp file from VM0 to VM1
         out = self.test_case.vm_dut[1].send_command(
             "scp root@%s:/tmp/payload /tmp" % self.vm0_ip, timeout=5
         )

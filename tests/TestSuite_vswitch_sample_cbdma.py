@@ -649,7 +649,7 @@ class TestVswitchSampleCBDMA(TestCase):
             self.vm0_pmd = PmdOutput(self.vm_dut[0])
             self.vm1_pmd = PmdOutput(self.vm_dut[1])
             self.BC.config_2_vms_ip()
-        self.BC.check_scp_file_between_2_vms(file_size=1)
+        self.BC.check_scp_file_between_2_vms(file_size=10)
         self.BC.run_iperf_test_between_2_vms()
         iperfdata = self.BC.check_iperf_result_between_2_vms()
         return iperfdata

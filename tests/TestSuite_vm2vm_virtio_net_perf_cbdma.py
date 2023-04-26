@@ -475,7 +475,7 @@ class TestVM2VMVirtioNetPerfCbdma(TestCase):
         self.BC.config_2_vms_ip()
         self.BC.config_2_vms_combined(combined=8)
         self.BC.check_ping_between_2_vms()
-        self.BC.check_scp_file_between_2_vms(file_size=1)
+        self.BC.check_scp_file_between_2_vms(file_size=10)
         self.BC.run_iperf_test_between_2_vms()
         self.BC.check_iperf_result_between_2_vms()
 
@@ -528,7 +528,7 @@ class TestVM2VMVirtioNetPerfCbdma(TestCase):
         )
         for _ in range(5):
             self.BC.check_ping_between_2_vms()
-            self.BC.check_scp_file_between_2_vms(file_size=1)
+            self.BC.check_scp_file_between_2_vms(file_size=10)
             self.BC.run_iperf_test_between_2_vms()
             self.BC.check_iperf_result_between_2_vms()
 
@@ -547,7 +547,7 @@ class TestVM2VMVirtioNetPerfCbdma(TestCase):
         )
         self.BC.config_2_vms_combined(combined=8)
         self.BC.check_ping_between_2_vms()
-        self.BC.check_scp_file_between_2_vms(file_size=1)
+        self.BC.check_scp_file_between_2_vms(file_size=10)
         self.BC.run_iperf_test_between_2_vms()
         self.BC.check_iperf_result_between_2_vms()
 
@@ -741,7 +741,7 @@ class TestVM2VMVirtioNetPerfCbdma(TestCase):
         self.BC.config_2_vms_ip()
         self.BC.config_2_vms_combined(combined=16)
         self.BC.check_ping_between_2_vms()
-        self.BC.check_scp_file_between_2_vms(file_size=1)
+        self.BC.check_scp_file_between_2_vms(file_size=10)
         self.BC.run_iperf_test_between_2_vms()
         self.BC.check_iperf_result_between_2_vms()
 
@@ -871,12 +871,12 @@ class TestVM2VMVirtioNetPerfCbdma(TestCase):
         self.BC.config_2_vms_ip()
         self.BC.config_2_vms_combined(combined=8)
         self.BC.check_ping_between_2_vms()
-        self.BC.check_scp_file_between_2_vms(file_size=1)
+        self.BC.check_scp_file_between_2_vms(file_size=10)
         self.BC.run_iperf_test_between_2_vms()
         self.BC.check_iperf_result_between_2_vms()
         for _ in range(5):
             self.BC.check_ping_between_2_vms()
-            self.BC.check_scp_file_between_2_vms(file_size=1)
+            self.BC.check_scp_file_between_2_vms(file_size=10)
             self.BC.run_iperf_test_between_2_vms()
             self.BC.check_iperf_result_between_2_vms()
 
@@ -961,12 +961,12 @@ class TestVM2VMVirtioNetPerfCbdma(TestCase):
         self.BC.config_2_vms_ip()
         self.BC.config_2_vms_combined(combined=8)
         self.BC.check_ping_between_2_vms()
-        self.BC.check_scp_file_between_2_vms(file_size=1)
+        self.BC.check_scp_file_between_2_vms(file_size=10)
         self.BC.run_iperf_test_between_2_vms()
         self.BC.check_iperf_result_between_2_vms()
         for _ in range(5):
             self.BC.check_ping_between_2_vms()
-            self.BC.check_scp_file_between_2_vms(file_size=1)
+            self.BC.check_scp_file_between_2_vms(file_size=10)
             self.BC.run_iperf_test_between_2_vms()
             self.BC.check_iperf_result_between_2_vms()
 
@@ -1143,12 +1143,12 @@ class TestVM2VMVirtioNetPerfCbdma(TestCase):
         self.BC.config_2_vms_ip()
         self.BC.config_2_vms_combined(combined=16)
         self.BC.check_ping_between_2_vms()
-        self.BC.check_scp_file_between_2_vms(file_size=1)
+        self.BC.check_scp_file_between_2_vms(file_size=10)
         self.BC.run_iperf_test_between_2_vms()
         self.BC.check_iperf_result_between_2_vms()
         for _ in range(5):
             self.BC.check_ping_between_2_vms()
-            self.BC.check_scp_file_between_2_vms(file_size=1)
+            self.BC.check_scp_file_between_2_vms(file_size=10)
             self.BC.run_iperf_test_between_2_vms()
             self.BC.check_iperf_result_between_2_vms()
 
@@ -1180,12 +1180,12 @@ class TestVM2VMVirtioNetPerfCbdma(TestCase):
         self.start_vms(server_mode=False, vm_queue=1)
         self.BC.config_2_vms_ip()
         self.BC.check_ping_between_2_vms()
-        self.BC.check_scp_file_between_2_vms(file_size=1)
+        self.BC.check_scp_file_between_2_vms(file_size=10)
         self.BC.run_iperf_test_between_2_vms()
         self.BC.check_iperf_result_between_2_vms()
         for _ in range(5):
             self.BC.check_ping_between_2_vms()
-            self.BC.check_scp_file_between_2_vms(file_size=1)
+            self.BC.check_scp_file_between_2_vms(file_size=10)
             self.BC.run_iperf_test_between_2_vms()
             self.BC.check_iperf_result_between_2_vms()
 
@@ -1269,12 +1269,12 @@ class TestVM2VMVirtioNetPerfCbdma(TestCase):
         self.start_vms(server_mode=False, vm_queue=8)
         self.BC.config_2_vms_ip()
         self.BC.check_ping_between_2_vms()
-        self.BC.check_scp_file_between_2_vms(file_size=1)
+        self.BC.check_scp_file_between_2_vms(file_size=10)
         self.BC.run_iperf_test_between_2_vms()
         self.BC.check_iperf_result_between_2_vms()
         for _ in range(5):
             self.BC.check_ping_between_2_vms()
-            self.BC.check_scp_file_between_2_vms(file_size=1)
+            self.BC.check_scp_file_between_2_vms(file_size=10)
             self.BC.run_iperf_test_between_2_vms()
             self.BC.check_iperf_result_between_2_vms()
 
