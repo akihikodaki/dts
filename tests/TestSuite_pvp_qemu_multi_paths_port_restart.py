@@ -4,10 +4,12 @@
 
 import re
 import time
+from copy import deepcopy
 
 from framework.packet import Packet
 from framework.pktgen import PacketGeneratorHelper
 from framework.pmd_output import PmdOutput
+from framework.settings import HEADER_SIZE, UPDATE_EXPECTED, load_global_setting
 from framework.test_case import TestCase
 from framework.virt_common import VM
 
@@ -18,6 +20,12 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         Run at the start of each test suite.
         """
         self.frame_sizes = [64, 128, 256, 512, 1024, 1280, 1518]
+        self.logger.info(
+            "You can config packet_size in file %s.cfg," % self.suite_name
+            + " in region 'suite' like packet_sizes=[64, 128, 256]"
+        )
+        if "packet_sizes" in self.get_suite_cfg():
+            self.frame_sizes = self.get_suite_cfg()["packet_sizes"]
         self.core_config = "1S/3C/1T"
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
@@ -37,7 +45,8 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
         self.pci_info = self.dut.ports_info[0]["pci"]
-        self.number_of_ports = 1
+        self.nb_ports = 1
+        self.gap = self.get_suite_cfg()["accepted_tolerance"]
         self.path = self.dut.apps_name["test-pmd"]
         self.testpmd_name = self.path.split("/")[-1]
         self.vhost_user = self.dut.new_session(suite="vhost-user")
@@ -51,15 +60,8 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
-        # Prepare the result table
-        self.table_header = [
-            "FrameSize(B)",
-            "Mode",
-            "Throughput(Mpps)",
-            "% linerate",
-            "Cycle",
-        ]
-        self.result_table_create(self.table_header)
+        self.throughput = dict()
+        self.test_result = dict()
 
     def start_vhost_testpmd(self):
         """
@@ -107,7 +109,7 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         """
         start qemu
         """
-        self.vm = VM(self.dut, "vm0", "vhost_sample")
+        self.vm = VM(self.dut, "vm0", self.suite_name)
         vm_params = {}
         vm_params["driver"] = "vhost-user"
         vm_params["opt_path"] = "%s/vhost-net" % self.base_dir
@@ -172,81 +174,102 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.check_port_link_status_after_port_restart()
         self.vhost_user_pmd.execute_cmd("start")
 
-    def update_table_info(self, case_info, frame_size, Mpps, throughtput, Cycle):
-        results_row = [frame_size]
-        results_row.append(case_info)
-        results_row.append(Mpps)
-        results_row.append(throughtput)
-        results_row.append(Cycle)
-        self.result_table_add(results_row)
-
-    @property
-    def check_value(self):
-        check_dict = dict.fromkeys(self.frame_sizes)
-        linerate = {
-            64: 0.075,
-            128: 0.10,
-            256: 0.10,
-            512: 0.20,
-            1024: 0.35,
-            1280: 0.40,
-            1518: 0.45,
-        }
-        for size in self.frame_sizes:
-            speed = self.wirespeed(self.nic, size, self.number_of_ports)
-            check_dict[size] = round(speed * linerate[size], 2)
-        return check_dict
-
-    def calculate_avg_throughput(self, frame_size):
+    def perf_test(self):
         """
         start to send packet and get the throughput
         """
-        pkt = Packet(pkt_type="IP_RAW", pkt_len=frame_size)
-        pkt.config_layer("ether", {"dst": "%s" % self.dst_mac})
-        pkt.save_pcapfile(self.tester, "%s/pvp_multipath.pcap" % (self.out_path))
-
-        tgenInput = []
-        port = self.tester.get_local_port(self.dut_ports[0])
-        tgenInput.append((port, port, "%s/pvp_multipath.pcap" % self.out_path))
-        self.tester.pktgen.clear_streams()
-        streams = self.pktgen_helper.prepare_stream_from_tginput(
-            tgenInput, 100, None, self.tester.pktgen
-        )
-        # set traffic option
-        traffic_opt = {"delay": 5}
-        _, pps = self.tester.pktgen.measure_throughput(
-            stream_ids=streams, options=traffic_opt
-        )
-        Mpps = pps / 1000000.0
-        self.verify(
-            Mpps > self.check_value[frame_size],
-            "%s of frame size %d speed verify failed, expect %s, result %s"
-            % (self.running_case, frame_size, self.check_value[frame_size], Mpps),
-        )
-        throughput = Mpps * 100 / float(self.wirespeed(self.nic, frame_size, 1))
-        return Mpps, throughput
-
-    def send_and_verify(self, case_info):
-        """
-        start to send packets and verify it
-        """
+        # Prepare the result table
+        self.table_header = [
+            "FrameSize(B)",
+            "Throughput(Mpps)",
+            "linerate(%)",
+        ]
+        self.result_table_create(self.table_header)
+        self.throughput = {}
         for frame_size in self.frame_sizes:
             info = "Running test %s, and %d frame size." % (
                 self.running_case,
                 frame_size,
             )
             self.logger.info(info)
+            pkt = Packet(pkt_type="IP_RAW", pkt_len=frame_size)
+            pkt.config_layer("ether", {"dst": "%s" % self.dst_mac})
+            pkt.save_pcapfile(self.tester, "%s/pvp_multipath.pcap" % (self.out_path))
 
-            Mpps, throughput = self.calculate_avg_throughput(frame_size)
-            self.update_table_info(
-                case_info, frame_size, Mpps, throughput, "Before Restart"
+            tgenInput = []
+            port = self.tester.get_local_port(self.dut_ports[0])
+            tgenInput.append((port, port, "%s/pvp_multipath.pcap" % self.out_path))
+            self.tester.pktgen.clear_streams()
+            streams = self.pktgen_helper.prepare_stream_from_tginput(
+                tgenInput, 100, None, self.tester.pktgen
             )
+            # set traffic option
+            traffic_opt = {
+                "delay": 5,
+                "duration": self.get_suite_cfg()["test_duration"],
+            }
+            _, pps = self.tester.pktgen.measure_throughput(
+                stream_ids=streams, options=traffic_opt
+            )
+            Mpps = pps / 1000000.0
+            line_rate = (
+                Mpps * 100 / float(self.wirespeed(self.nic, frame_size, self.nb_ports))
+            )
+            self.throughput[frame_size] = Mpps
+            results_row = [frame_size]
+            results_row.append(Mpps)
+            results_row.append(line_rate)
+            self.result_table_add(results_row)
+        self.result_table_print()
 
-            self.port_restart()
-            Mpps, throughput = self.calculate_avg_throughput(frame_size)
-            self.update_table_info(
-                case_info, frame_size, Mpps, throughput, "After Restart"
-            )
+    def handle_expected(self):
+        """
+        Update expected numbers to configurate file: $DTS_CFG_FOLDER/$suite_name.cfg
+        """
+        if load_global_setting(UPDATE_EXPECTED) == "yes":
+            for frame_size in self.frame_sizes:
+                self.expected_throughput[frame_size] = round(
+                    self.throughput[frame_size], 3
+                )
+
+    def handle_results(self):
+        """
+        results handled process:
+        1, save to self.test_results
+        2, create test results table
+        """
+        # save test results to self.test_result
+        header = self.table_header
+        header.append("Expected Throughput(Mpps)")
+        header.append("Status")
+        self.result_table_create(header)
+        for frame_size in self.frame_sizes:
+            wirespeed = self.wirespeed(self.nic, frame_size, self.nb_ports)
+            ret_data = {}
+            ret_data[header[0]] = str(frame_size)
+            _real = float(self.throughput[frame_size])
+            _exp = float(self.expected_throughput[frame_size])
+            ret_data[header[1]] = "{:.3f}".format(_real)
+            ret_data[header[2]] = "{:.3f}%".format(_real * 100 / wirespeed)
+            ret_data[header[3]] = "{:.3f}".format(_exp)
+            gap = _exp * -self.gap * 0.01
+            if _real > _exp + gap:
+                ret_data[header[4]] = "PASS"
+            else:
+                ret_data[header[4]] = "FAIL"
+            self.test_result[frame_size] = deepcopy(ret_data)
+
+        for frame_size in self.test_result.keys():
+            table_row = list()
+            for i in range(len(header)):
+                table_row.append(self.test_result[frame_size][header[i]])
+            self.result_table_add(table_row)
+        # present test results to screen
+        self.result_table_print()
+        self.verify(
+            "FAIL" not in self.test_result,
+            "Excessive gap between test results and expectations",
+        )
 
     def close_all_testpmd(self):
         """
@@ -268,9 +291,25 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.start_vhost_testpmd()
         self.start_one_vm(disable_modern=True, mrg_rxbuf=True, packed=False)
         self.start_vm_testpmd(path="mergeable")
-        self.send_and_verify("virtio0.95 mergeable")
+
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
+        self.port_restart()
+        self.test_target += "_restart_port"
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
         self.close_all_testpmd()
-        self.result_table_print()
         self.vm.stop()
 
     def test_perf_pvp_qemu_normal_mac(self):
@@ -280,9 +319,25 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.start_vhost_testpmd()
         self.start_one_vm(disable_modern=True, mrg_rxbuf=False, packed=False)
         self.start_vm_testpmd(path="normal")
-        self.send_and_verify("virtio0.95 normal")
+
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
+        self.port_restart()
+        self.test_target += "_restart_port"
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
         self.close_all_testpmd()
-        self.result_table_print()
         self.vm.stop()
 
     def test_perf_pvp_qemu_vector_rx_mac(self):
@@ -292,9 +347,25 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.start_vhost_testpmd()
         self.start_one_vm(disable_modern=True, mrg_rxbuf=False, packed=False)
         self.start_vm_testpmd(path="vector_rx")
-        self.send_and_verify("virtio0.95 vector_rx")
+
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
+        self.port_restart()
+        self.test_target += "_restart_port"
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
         self.close_all_testpmd()
-        self.result_table_print()
         self.vm.stop()
 
     def test_perf_pvp_qemu_modern_mergeable_mac(self):
@@ -304,9 +375,25 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.start_vhost_testpmd()
         self.start_one_vm(disable_modern=False, mrg_rxbuf=True, packed=False)
         self.start_vm_testpmd(path="mergeable")
-        self.send_and_verify("virtio1.0 mergeable")
+
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
+        self.port_restart()
+        self.test_target += "_restart_port"
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
         self.close_all_testpmd()
-        self.result_table_print()
         self.vm.stop()
 
     def test_perf_pvp_qemu_modern_normal_path(self):
@@ -316,9 +403,25 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.start_vhost_testpmd()
         self.start_one_vm(disable_modern=False, mrg_rxbuf=False, packed=False)
         self.start_vm_testpmd(path="normal")
-        self.send_and_verify("virtio1.0 normal")
+
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
+        self.port_restart()
+        self.test_target += "_restart_port"
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
         self.close_all_testpmd()
-        self.result_table_print()
         self.vm.stop()
 
     def test_perf_pvp_qemu_modern_vector_rx_mac(self):
@@ -328,9 +431,25 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.start_vhost_testpmd()
         self.start_one_vm(disable_modern=False, mrg_rxbuf=False, packed=False)
         self.start_vm_testpmd(path="vector_rx")
-        self.send_and_verify("virtio1.0 vector_rx")
+
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
+        self.port_restart()
+        self.test_target += "_restart_port"
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
         self.close_all_testpmd()
-        self.result_table_print()
         self.vm.stop()
 
     def test_perf_pvp_qemu_with_virtio_11_mergeable_mac(self):
@@ -340,9 +459,25 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.start_vhost_testpmd()
         self.start_one_vm(disable_modern=False, mrg_rxbuf=True, packed=True)
         self.start_vm_testpmd(path="mergeable")
-        self.send_and_verify("virtio1.1 mergeable")
+
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
+        self.port_restart()
+        self.test_target += "_restart_port"
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
         self.close_all_testpmd()
-        self.result_table_print()
         self.vm.stop()
 
     def test_perf_pvp_qemu_with_virtio_11_normal_path(self):
@@ -352,9 +487,25 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.start_vhost_testpmd()
         self.start_one_vm(disable_modern=False, mrg_rxbuf=False, packed=True)
         self.start_vm_testpmd(path="normal")
-        self.send_and_verify("virtio1.1 normal")
+
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
+        self.port_restart()
+        self.test_target += "_restart_port"
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
         self.close_all_testpmd()
-        self.result_table_print()
         self.vm.stop()
 
     def test_perf_pvp_qemu_with_virtio_11_vector_rx_mac(self):
@@ -364,9 +515,25 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.start_vhost_testpmd()
         self.start_one_vm(disable_modern=False, mrg_rxbuf=False, packed=True)
         self.start_vm_testpmd(path="vector_rx")
-        self.send_and_verify("virtio1.1 vector_rx")
+
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
+        self.port_restart()
+        self.test_target += "_restart_port"
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
         self.close_all_testpmd()
-        self.result_table_print()
         self.vm.stop()
 
     def test_perf_pvp_qemu_modern_mergeable_mac_restart_10_times(self):
@@ -377,19 +544,27 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.start_one_vm(disable_modern=False, mrg_rxbuf=True, packed=False)
         self.start_vm_testpmd(path="mergeable")
 
-        case_info = "virtio1.0 mergeable"
-        Mpps, throughput = self.calculate_avg_throughput(64)
-        self.update_table_info(case_info, 64, Mpps, throughput, "Before Restart")
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
+        self.perf_test()
+        self.handle_expected()
+        self.handle_results()
+
+        self.test_target += "_restart_port"
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
         for cycle in range(10):
             self.logger.info("now port restart %d times" % (cycle + 1))
             self.port_restart()
-            Mpps, throughput = self.calculate_avg_throughput(64)
-            self.update_table_info(
-                case_info, 64, Mpps, throughput, "After port restart"
-            )
+            self.perf_test()
+            if cycle == 0:
+                self.handle_expected()
+            self.handle_results()
 
         self.close_all_testpmd()
-        self.result_table_print()
         self.vm.stop()
 
     def tear_down(self):
