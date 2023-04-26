@@ -34,6 +34,30 @@ New Features
      Also, make sure to start the actual text at the margin.
      =======================================================
 
+* **Add new test plan.**
+
+  * pvp_vhost_async_multi_paths_performance_dsa_test_plan.rst
+  * pvp_vhost_async_virtio_pmd_perf_dsa_test_plan.rst
+  * loopback_vhost_async_perf_dsa_test_plan.rst
+  * dsa_test_plan.rst
+  * vswitch_sample_dsa_test_plan.rst
+  * vhost_async_robust_cbdma_test_plan.rst
+
+* **Add new test suites.**
+
+  * TestSuite_pvp_vhost_async_multi_paths_performance_dsa.py
+  * TestSuite_pvp_vhost_async_virtio_pmd_perf_dsa.py
+  * TestSuite_loopback_vhost_async_perf_dsa_test_plan.py
+  * TestSuite_dsa.py
+  * TestSuite_vswitch_sample_dsa.py
+  * TestSuite_vhost_async_robust_cbdma.py
+
+* **Misc**
+
+  * Refined bonding cases.
+  * Refined offload cases.
+  * Merged duplicated cases from execution file.
+  * Supported new NICs IGB_1G-82576 and ConnectX6_MT2894
 
 Removed Items
 -------------
@@ -49,6 +73,9 @@ Removed Items
    Also, make sure to start the actual text at the margin.
    =======================================================
 
+* **Remove test suites.**
+
+  * TestSuite_power_empty_poll.py
 
 Known Issues
 ------------
