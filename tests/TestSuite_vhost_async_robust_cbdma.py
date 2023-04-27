@@ -58,7 +58,7 @@ class TestVhostAsyncRobustCbdma(TestCase):
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        self.CC.bind_all_cbdma_to_kernel()
+        self.CC.bind_cbdma_to_kernel_driver()
 
     @property
     def check_2M_env(self):
@@ -359,8 +359,8 @@ class TestVhostAsyncRobustCbdma(TestCase):
         """
         Test Case 1: PVP virtio-user quit test
         """
-        cdbmas = self.CC.bind_cbdma_to_dpdk(
-            cbdma_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        cdbmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = "txq0@%s;rxq0@%s" % (cdbmas[0], cdbmas[0])
         vhost_eal_param = (
@@ -397,8 +397,8 @@ class TestVhostAsyncRobustCbdma(TestCase):
         """
         Test Case 2: PVP vhost-user quit test
         """
-        cdbmas = self.CC.bind_cbdma_to_dpdk(
-            cbdma_number=1, driver_name="vfio-pci", socket=self.ports_socket
+        cdbmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=1, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = "txq0@%s;rxq0@%s" % (cdbmas[0], cdbmas[0])
         vhost_eal_param = (
@@ -437,8 +437,8 @@ class TestVhostAsyncRobustCbdma(TestCase):
         """
         Test Case 3: PVP vhost async test with redundant device parameters
         """
-        cdbmas = self.CC.bind_cbdma_to_dpdk(
-            cbdma_number=4, driver_name="vfio-pci", socket=self.ports_socket
+        cdbmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=4, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = "txq0@%s;rxq0@%s" % (cdbmas[1], cdbmas[1])
         vhost_eal_param = (
@@ -472,8 +472,8 @@ class TestVhostAsyncRobustCbdma(TestCase):
         """
         Test Case 4: Loopback vhost async test with each queue using 2 DMA devices
         """
-        cdbmas = self.CC.bind_cbdma_to_dpdk(
-            cbdma_number=3, driver_name="vfio-pci", socket=self.ports_socket
+        cdbmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=3, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = "txq0@%s;txq0@%s;rxq0@%s;rxq0@%s" % (
             cdbmas[0],
@@ -510,8 +510,8 @@ class TestVhostAsyncRobustCbdma(TestCase):
         """
         Test Case 5: Loopback vhost async test with dmas parameters out of order
         """
-        cdbmas = self.CC.bind_cbdma_to_dpdk(
-            cbdma_number=2, driver_name="vfio-pci", socket=self.ports_socket
+        cdbmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=2, driver_name="vfio-pci", socket=self.ports_socket
         )
         dmas = "rxq3@%s;txq0@%s;rxq1@%s;txq2@%s" % (
             cdbmas[1],
@@ -550,8 +550,8 @@ class TestVhostAsyncRobustCbdma(TestCase):
         """
         Test Case 6: VM2VM split and packed ring mergeable path with cbdma enable and server mode
         """
-        cdbmas = self.CC.bind_cbdma_to_dpdk(
-            cbdma_number=16, driver_name="vfio-pci", socket=-1
+        cdbmas = self.CC.bind_cbdma_to_dpdk_driver(
+            cbdma_num=16, driver_name="vfio-pci", socket=-1
         )
         dmas1 = (
             "txq0@%s;"
@@ -611,9 +611,9 @@ class TestVhostAsyncRobustCbdma(TestCase):
         )
 
         vhost_eal_param = (
-            "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,dmas=[%s]' "
+            "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,tso=1,dmas=[%s]' "
             % dmas1
-            + "--vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,dmas=[%s]'"
+            + "--vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,tso=1,dmas=[%s]'"
             % dmas2
         )
         vhost_param = "--nb-cores=4 --txq=8 --rxq=8 --txd=1024 --rxd=1024"
@@ -690,7 +690,7 @@ class TestVhostAsyncRobustCbdma(TestCase):
     def tear_down(self):
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        self.CC.bind_all_cbdma_to_kernel()
+        self.CC.bind_cbdma_to_kernel_driver()
 
     def tear_down_all(self):
         self.close_all_session()
