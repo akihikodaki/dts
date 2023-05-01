@@ -36,6 +36,13 @@ Supporting Files
 All the supporting files for this test suite are maintained in the folder named "pipeline"
 present in the {DTS_SRC_DIR}/dep directory.
 
+Crypto device library installation is prerequisite to run/execute ipsec testcases.
+The testcases added in the testsuite uses "Intel(R) Multi-Buffer Crypto for
+IPsec Library (AESNI MB PMD)" as a crypto device for encryption and decryption.
+Installation of crypto device library must be done before executing ipsec testcases
+for successful execution. A sample script for the installation of the crypto device
+(here, AESNI MB) has been provided at {DTS_SRC_DIR}/dep/pipeline/} directory.
+
 Directory Structure of Each Test Case
 =====================================
 Within {DTS_SRC_DIR}/dep/pipeline folder, all files related to a particular test case are maintained
