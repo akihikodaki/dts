@@ -6332,7 +6332,7 @@ class TestPipeline(TestCase):
     def test_annotation_001(self):
 
         cli_file = "/tmp/pipeline/annotation_001/annotation_001.cli"
-        self.run_dpdk_app(cli_file, "thread 1 pipeline PIPELINE0 enable\n")
+        self.run_dpdk_app(cli_file, "pipeline PIPELINE0 enable thread 1\n")
 
         in_pcap = ["pipeline/annotation_001/pcap_files/in_1.txt"] * 4
         out_pcap = ["pipeline/annotation_001/pcap_files/out_1.txt"] * 4
@@ -6346,7 +6346,7 @@ class TestPipeline(TestCase):
     def test_annotation_002(self):
 
         cli_file = "/tmp/pipeline/annotation_002/annotation_002.cli"
-        self.run_dpdk_app(cli_file, "thread 1 pipeline PIPELINE0 enable\n")
+        self.run_dpdk_app(cli_file, "pipeline PIPELINE0 enable thread 1\n")
 
         in_pcap = ["pipeline/annotation_002/pcap_files/in_1.txt"] * 4
         out_pcap = ["pipeline/annotation_002/pcap_files/out_1.txt"] * 4

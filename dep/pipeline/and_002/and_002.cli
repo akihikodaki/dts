@@ -7,7 +7,7 @@
 pipeline codegen /tmp/pipeline/and_002/and_002.spec /tmp/pipeline/and_002/and_002.c
 pipeline libbuild /tmp/pipeline/and_002/and_002.c /tmp/pipeline/and_002/and_002.so
 
-mempool MEMPOOL0 buffer 9472 pool 32K cache 256 cpu 0
+mempool MEMPOOL0 meta 128 pkt 9472 pool 32K cache 256 numa 0
 
 ethdev 0000:00:04.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
 ethdev 0000:00:05.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
@@ -19,4 +19,4 @@ pipeline PIPELINE0 build lib /tmp/pipeline/and_002/and_002.so io /tmp/pipeline/a
 pipeline PIPELINE0 table and_002 add /tmp/pipeline/and_002/table.txt
 pipeline PIPELINE0 commit
 
-thread 1 pipeline PIPELINE0 enable
+pipeline PIPELINE0 enable thread 1

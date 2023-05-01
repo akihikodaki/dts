@@ -5,7 +5,7 @@ pipeline codegen /tmp/pipeline/table_014/table_014.spec /tmp/pipeline/table_014/
 pipeline libbuild /tmp/pipeline/table_014/table_014.c /tmp/pipeline/table_014/table_014.so
 
 
-mempool MEMPOOL0 buffer 9472 pool 32K cache 256 cpu 0
+mempool MEMPOOL0 meta 128 pkt 9472 pool 32K cache 256 numa 0
 
 ethdev 0000:00:04.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
 ethdev 0000:00:05.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
@@ -17,4 +17,4 @@ pipeline PIPELINE0 build lib /tmp/pipeline/table_014/table_014.so io /tmp/pipeli
 
 pipeline PIPELINE0 table table_014 add /tmp/pipeline/table_014/cmd_files/cmd_1.txt
 
-thread 1 pipeline PIPELINE0 enable
+pipeline PIPELINE0 enable thread 1

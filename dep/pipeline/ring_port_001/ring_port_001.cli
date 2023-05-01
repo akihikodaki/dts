@@ -11,7 +11,7 @@ pipeline codegen /tmp/pipeline/ring_port_001/ring_port_001_b.spec /tmp/pipeline/
 pipeline libbuild /tmp/pipeline/ring_port_001/ring_port_001_b.c /tmp/pipeline/ring_port_001/ring_port_001_b.so
 
 
-mempool MEMPOOL0 buffer 9472 pool 32K cache 256 cpu 0
+mempool MEMPOOL0 meta 128 pkt 9472 pool 32K cache 256 numa 0
 
 ethdev 0000:00:04.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
 ethdev 0000:00:05.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
@@ -24,5 +24,5 @@ pipeline PIPELINE1 build lib /tmp/pipeline/ring_port_001/ring_port_001_b.so io /
 pipeline PIPELINE1 table ring_port_001 add /tmp/pipeline/ring_port_001/table.txt
 pipeline PIPELINE1 commit
 
-thread 2 pipeline PIPELINE1 enable
-thread 1 pipeline PIPELINE0 enable
+pipeline PIPELINE1 enable thread 2
+pipeline PIPELINE0 enable thread 1

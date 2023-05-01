@@ -7,7 +7,7 @@
 pipeline codegen /tmp/pipeline/selector_002/selector_002.spec /tmp/pipeline/selector_002/selector_002.c
 pipeline libbuild /tmp/pipeline/selector_002/selector_002.c /tmp/pipeline/selector_002/selector_002.so
 
-mempool MEMPOOL0 buffer 9472 pool 32K cache 256 cpu 0
+mempool MEMPOOL0 meta 128 pkt 9472 pool 32K cache 256 numa 0
 
 ethdev 0000:00:04.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
 ethdev 0000:00:05.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
@@ -34,4 +34,4 @@ pipeline PIPELINE0 selector selector_002_2_table group member add /tmp/pipeline/
 pipeline PIPELINE0 table selector_002_3_table add /tmp/pipeline/selector_002/cmd_files/cmd_3.txt
 pipeline PIPELINE0 commit
 
-thread 1 pipeline PIPELINE0 enable
+pipeline PIPELINE0 enable thread 1
