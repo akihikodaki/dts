@@ -459,7 +459,7 @@ class TestPipeline(TestCase):
             self.dut.send_expect("^C", "# ", 20)
             self.verify(0, "CLI Response Error")
 
-    def run_dpdk_app(self, cli_file, exp_out="PIPELINE0 enable"):
+    def run_dpdk_app(self, cli_file, exp_out="PIPELINE0 enable", vdev=""):
 
         try:
             cmd = 'test -f {} && echo "File exists!"'.format(cli_file)
@@ -473,8 +473,8 @@ class TestPipeline(TestCase):
             self.dut.send_expect(cmd, "# ", 20)
             cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
             self.dut.send_expect(cmd, "# ", 20)
-            cmd = "{0} {1} -- -s {2}".format(
-                self.app_pipeline_path, self.eal_para, cli_file
+            cmd = "{0} {1} {2} -- -s {3}".format(
+                self.app_pipeline_path, self.eal_para, vdev, cli_file
             )
             self.dut.send_expect(cmd, exp_out, 60)
         except Exception:
@@ -1516,6 +1516,88 @@ class TestPipeline(TestCase):
         tx_port = [0, 1, 2, 3]
         rx_port = [0, 1, 2, 3]
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_mov_009(self):
+
+        cli_file = "/tmp/pipeline/mov_009/mov_009.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/mov_009/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/mov_009/pcap_files/out_1.txt"] * 4
+        filters = ["udp port 4789"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_mov_010(self):
+
+        cli_file = "/tmp/pipeline/mov_010/mov_010.cli"
+        self.run_dpdk_app(cli_file)
+
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/mov_010/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table table_001 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/mov_010/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/mov_010/pcap_files/out_1.txt"] * 4
+        filters = ["ip"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_mov_011(self):
+
+        cli_file = "/tmp/pipeline/mov_011/mov_011.cli"
+        self.run_dpdk_app(cli_file)
+
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/mov_011/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table table_001 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/mov_011/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/mov_011/pcap_files/out_1.txt"] * 4
+        filters = ["ip"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_mov_012(self):
+
+        cli_file = "/tmp/pipeline/mov_012/mov_012.cli"
+        self.run_dpdk_app(cli_file)
+
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CMD_FILE = "/tmp/pipeline/mov_012/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table table_001 add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/mov_012/pcap_files/in_1.txt"] * 4
+        out_pcap = ["pipeline/mov_012/pcap_files/out_1.txt"] * 4
+        filters = ["ip"] * 4
+        tx_port = [0, 1, 2, 3]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        s.close()
         self.dut.send_expect("^C", "# ", 20)
 
     def test_table_001(self):
@@ -5694,6 +5776,23 @@ class TestPipeline(TestCase):
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
         self.dut.send_expect("^C", "# ", 20)
 
+    def test_selector_003(self):
+
+        cli_file = "/tmp/pipeline/selector_003/selector_003.cli"
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ["pipeline/selector_003/pcap_files/in_1.txt"]
+        out_pcap_1 = "pipeline/selector_003/pcap_files/out_1.txt"
+        out_pcap_2 = "pipeline/selector_003/pcap_files/out_2.txt"
+        out_pcap_3 = "pipeline/selector_003/pcap_files/out_3.txt"
+        out_pcap_4 = "pipeline/selector_003/pcap_files/out_4.txt"
+        out_pcap = [out_pcap_1, out_pcap_2, out_pcap_3, out_pcap_4]
+        filters = ["tcp"] * 4
+        tx_port = [0]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
     def test_scapy_pkt_gen(self):
 
         # self.send_scapy_pkts(0)
@@ -6777,6 +6876,253 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, expected_response)
 
         s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_ipsec_001(self):
+
+        cli_file = "/tmp/pipeline/ipsec_001/ipsec_001.cli"
+        vdev = "--vdev crypto_aesni_mb0"
+        self.run_dpdk_app(cli_file, vdev=vdev)
+
+        in_pcap = ["pipeline/ipsec_001/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/ipsec_001/pcap_files/out_1.txt"]
+        filters = ["udp"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        # Adding SA rules for tunnel mode
+        CMD_FILE = "/tmp/pipeline/ipsec_001/cmd_files/ipsec_sa.txt"
+        CLI_CMD = "ipsec IPSEC0 sa add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        # Adding table rules
+        CMD_FILE = "/tmp/pipeline/ipsec_001/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table policy_table add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/ipsec_001/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/ipsec_001/pcap_files/out_2.txt"]
+        filters = ["udp"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_ipsec_002(self):
+
+        cli_file = "/tmp/pipeline/ipsec_002/ipsec_002.cli"
+        vdev = "--vdev crypto_aesni_mb0"
+        self.run_dpdk_app(cli_file, vdev=vdev)
+
+        in_pcap = ["pipeline/ipsec_002/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/ipsec_002/pcap_files/out_1.txt"]
+        filters = ["tcp"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        # Adding SA rules for transport mode
+        CMD_FILE = "/tmp/pipeline/ipsec_002/cmd_files/ipsec_sa.txt"
+        CLI_CMD = "ipsec IPSEC0 sa add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        # Adding table rules
+        CMD_FILE = "/tmp/pipeline/ipsec_002/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table policy_table add {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/ipsec_002/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/ipsec_002/pcap_files/out_2.txt"]
+        filters = ["tcp"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_ipsec_003(self):
+
+        cli_file = "/tmp/pipeline/ipsec_003/ipsec_003.cli"
+        vdev = "--vdev crypto_aesni_mb0"
+        self.run_dpdk_app(cli_file, vdev=vdev)
+
+        in_pcap = ["pipeline/ipsec_003/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/ipsec_003/pcap_files/out_1.txt"]
+        filters = ["udp"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        # Deleting table rules
+        CMD_FILE = "/tmp/pipeline/ipsec_003/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table policy_table delete {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        # Deleting SA rules for tunnel mode
+        CLI_CMD = "ipsec IPSEC0 sa delete 0\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "ipsec IPSEC0 sa delete 1\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/ipsec_003/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/ipsec_003/pcap_files/out_2.txt"]
+        filters = ["udp"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_ipsec_004(self):
+
+        cli_file = "/tmp/pipeline/ipsec_004/ipsec_004.cli"
+        vdev = "--vdev crypto_aesni_mb0"
+        self.run_dpdk_app(cli_file, vdev=vdev)
+
+        in_pcap = ["pipeline/ipsec_004/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/ipsec_004/pcap_files/out_1.txt"]
+        filters = ["tcp"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        # Deleting table rules
+        CMD_FILE = "/tmp/pipeline/ipsec_004/cmd_files/cmd_1.txt"
+        CLI_CMD = "pipeline PIPELINE0 table policy_table delete {}\n".format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "pipeline PIPELINE0 commit\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        # Deleting SA rules for transport mode
+        CLI_CMD = "ipsec IPSEC0 sa delete 0\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = "ipsec IPSEC0 sa delete 1\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/ipsec_004/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/ipsec_004/pcap_files/out_2.txt"]
+        filters = ["tcp"]
+        tx_port = [0]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_rss_001(self):
+
+        cli_file = "/tmp/pipeline/rss_001/rss_001.cli"
+        self.run_dpdk_app(cli_file)
+
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CLI_CMD = "pipeline PIPELINE0 rss rss0 key 0 0 1 1\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/rss_001/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/rss_001/pcap_files/out_1.txt"]
+        filters = ["udp port 200"]
+        tx_port = [3]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        CLI_CMD = "pipeline PIPELINE0 rss rss0 key 0 0 1 2\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/rss_001/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/rss_001/pcap_files/out_1.txt"]
+        filters = ["udp port 200"]
+        tx_port = [3]
+        rx_port = [1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        s.close()
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_rss_002(self):
+
+        cli_file = "/tmp/pipeline/rss_002/rss_002.cli"
+        self.run_dpdk_app(cli_file)
+
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CLI_CMD = "pipeline PIPELINE0 rss rss0 key 0 0 1 1\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/rss_002/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/rss_002/pcap_files/out_1.txt"]
+        filters = ["udp port 200"]
+        tx_port = [3]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        CLI_CMD = "pipeline PIPELINE0 rss rss0 key 0 0 5 6\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/rss_002/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/rss_002/pcap_files/out_1.txt"]
+        filters = ["udp port 200"]
+        tx_port = [3]
+        rx_port = [2]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        s.close()
+
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_rss_003(self):
+
+        cli_file = "/tmp/pipeline/rss_003/rss_003.cli"
+        self.run_dpdk_app(cli_file)
+
+        sleep(self.cli_connect_delay)
+        s = self.connect_cli_server()
+
+        CLI_CMD = "pipeline PIPELINE0 rss rss0 key 0 0 1 1\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/rss_003/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/rss_003/pcap_files/out_1.txt"]
+        filters = ["udp port 200"]
+        tx_port = [3]
+        rx_port = [0]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        CLI_CMD = "pipeline PIPELINE0 rss rss0 key 0 0 1 2\n"
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+
+        in_pcap = ["pipeline/rss_003/pcap_files/in_1.txt"]
+        out_pcap = ["pipeline/rss_003/pcap_files/out_1.txt"]
+        filters = ["udp port 200"]
+        tx_port = [3]
+        rx_port = [1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        s.close()
+
         self.dut.send_expect("^C", "# ", 20)
 
     def tear_down(self):
