@@ -147,8 +147,8 @@ action vxlan_encap args instanceof vxlan_encap_args_t {
 	mov h.outer_vxlan.vni t.vxlan_vni
 	mov h.outer_vxlan.reserved2 t.vxlan_reserved2
 
-    //Set the output port.
-    mov m.port_out t.port_out
+	//Set the output port.
+	mov m.port_out t.port_out
 
 	//Update h.outer_ipv4.total_len field.
 	add h.outer_ipv4.total_len h.ipv4.total_len

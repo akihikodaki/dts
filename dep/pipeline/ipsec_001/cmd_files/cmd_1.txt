@@ -1,0 +1,2 @@
+match 0x64000001 0x64000001 0x11 action encrypt sa_id 0
+match 0x0a0a0a01 0x0a0a0a01 0x32 action encrypt sa_id 1

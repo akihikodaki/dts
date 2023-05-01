@@ -30,18 +30,19 @@ struct table_002_args_t {
 }
 
 action table_002_action_01 args instanceof table_002_args_t {
+	validate h.ethernet
 	mov h.ethernet.dst_addr t.ethernet_dst_addr
 	mov h.ethernet.src_addr t.ethernet_src_addr
 	mov h.ethernet.ethertype t.ethernet_ethertype
-    validate h.ethernet
+
 	return
 }
 
 action table_002_action_02 args instanceof table_002_args_t {
+	validate h.ethernet
 	mov h.ethernet.dst_addr t.ethernet_dst_addr
 	mov h.ethernet.src_addr t.ethernet_src_addr
 	mov h.ethernet.ethertype t.ethernet_ethertype
-    validate h.ethernet
 	xor m.port 1
 	return
 }

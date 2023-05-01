@@ -1,0 +1,20 @@
+; SPDX-License-Identifier: BSD-3-Clause
+; Copyright(c) 2010-2020 Intel Corporation
+
+;
+; Pipeline code generation & shared object library build
+;
+pipeline codegen /tmp/pipeline/rss_002/rss_002.spec /tmp/pipeline/rss_002/rss_002.c
+pipeline libbuild /tmp/pipeline/rss_002/rss_002.c /tmp/pipeline/rss_002/rss_002.so
+
+mempool MEMPOOL0 meta 128 pkt 9472 pool 32K cache 256 numa 0
+
+ethdev 0000:00:04.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:05.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:06.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:07.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+
+
+pipeline PIPELINE0 build lib /tmp/pipeline/rss_002/rss_002.so io /tmp/pipeline/rss_002/ethdev.io numa 0
+
+pipeline PIPELINE0 enable thread 1

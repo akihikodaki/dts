@@ -1,0 +1,11 @@
+// Nexthop group #0 (Single member)
+group 0 member 0 weight 1
+
+// Nexthop group #1 (Single member)
+group 1 member 1 weight 1
+
+// Nexthop group #2 (Single member)
+group 2 member 2 weight 1
+
+// Nexthop group #3 (Single member)
+group 3 member 3 weight 1

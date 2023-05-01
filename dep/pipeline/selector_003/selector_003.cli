@@ -1,0 +1,29 @@
+; SPDX-License-Identifier: BSD-3-Clause
+; Copyright(c) 2010-2020 Intel Corporation
+
+;
+; Pipeline code generation & shared object library build
+;
+pipeline codegen /tmp/pipeline/selector_003/selector_003.spec /tmp/pipeline/selector_003/selector_003.c
+pipeline libbuild /tmp/pipeline/selector_003/selector_003.c /tmp/pipeline/selector_003/selector_003.so
+
+mempool MEMPOOL0 meta 128 pkt 9472 pool 32K cache 256 numa 0
+
+ethdev 0000:00:04.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:05.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:06.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+ethdev 0000:00:07.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+
+
+pipeline PIPELINE0 build lib /tmp/pipeline/selector_003/selector_003.so io /tmp/pipeline/selector_003/ethdev.io numa 0
+
+pipeline PIPELINE0 table selector_003_1_table add /tmp/pipeline/selector_003/cmd_files/cmd_1.txt
+pipeline PIPELINE0 selector selector_003_2_table group add
+pipeline PIPELINE0 selector selector_003_2_table group add
+pipeline PIPELINE0 selector selector_003_2_table group add
+pipeline PIPELINE0 selector selector_003_2_table group add
+pipeline PIPELINE0 selector selector_003_2_table group member add /tmp/pipeline/selector_003/cmd_files/cmd_2.txt
+pipeline PIPELINE0 table selector_003_3_table add /tmp/pipeline/selector_003/cmd_files/cmd_3.txt
+pipeline PIPELINE0 commit
+
+pipeline PIPELINE0 enable thread 1

@@ -45,10 +45,10 @@ struct table_004_args_t {
 }
 
 action table_004_action args instanceof table_004_args_t {
+	validate h.ethernet
 	mov h.ethernet.dst_addr t.ethernet_dst_addr
 	mov h.ethernet.src_addr t.ethernet_src_addr
 	mov h.ethernet.ethertype t.ethernet_ethertype
-	validate h.ethernet
 	return
 }
 

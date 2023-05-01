@@ -94,11 +94,12 @@ struct dma_006_args_t {
 }
 
 action dma_006_action args instanceof dma_006_args_t {
+	validate h.outer_ethernet
 	mov h.outer_ethernet.dst_addr t.out_ethernet_dst_addr
 	mov h.outer_ethernet.src_addr t.out_ethernet_src_addr
 	mov h.outer_ethernet.ethertype t.out_ethernet_ethertype
-	validate h.outer_ethernet
 
+	validate h.outer_ipv4
 	mov h.outer_ipv4.ver_ihl t.out_ipv4_ver_ihl
 	mov h.outer_ipv4.diffserv t.out_ipv4_diffserv
 	mov h.outer_ipv4.total_len t.out_ipv4_total_len
@@ -109,25 +110,25 @@ action dma_006_action args instanceof dma_006_args_t {
 	mov h.outer_ipv4.hdr_checksum t.out_ipv4_hdr_checksum
 	mov h.outer_ipv4.src_addr t.out_ipv4_src_addr
 	mov h.outer_ipv4.dst_addr t.out_ipv4_dst_addr
-	validate h.outer_ipv4
 
+	validate h.outer_udp
 	mov h.outer_udp.src_port t.out_udp_src_port
 	mov h.outer_udp.dst_port t.out_udp_dst_port
 	mov h.outer_udp.length t.out_udp_length
 	mov h.outer_udp.checksum t.out_udp_checksum
-	validate h.outer_udp
 
+	validate h.outer_vxlan
 	mov h.outer_vxlan.flags t.out_vxlan_flags
 	mov h.outer_vxlan.reserved t.out_vxlan_reserved
 	mov h.outer_vxlan.vni t.out_vxlan_vni
 	mov h.outer_vxlan.reserved2 t.out_vxlan_reserved2
-	validate h.outer_vxlan
 
+	validate h.ethernet
 	mov h.ethernet.dst_addr t.in_ethernet_dst_addr
 	mov h.ethernet.src_addr t.in_ethernet_src_addr
 	mov h.ethernet.ethertype t.in_ethernet_ethertype
-	validate h.ethernet
 
+	validate h.ipv4
 	mov h.ipv4.ver_ihl t.in_ipv4_ver_ihl
 	mov h.ipv4.diffserv t.in_ipv4_diffserv
 	mov h.ipv4.total_len t.in_ipv4_total_len
@@ -138,7 +139,6 @@ action dma_006_action args instanceof dma_006_args_t {
 	mov h.ipv4.hdr_checksum t.in_ipv4_hdr_checksum
 	mov h.ipv4.src_addr t.in_ipv4_src_addr
 	mov h.ipv4.dst_addr t.in_ipv4_dst_addr
-	validate h.ipv4
 
 	return
 }

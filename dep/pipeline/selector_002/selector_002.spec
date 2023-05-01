@@ -58,10 +58,10 @@ struct selector_002_action_02_args_t {
 
 action selector_002_action_02 args instanceof selector_002_action_02_args_t {
 	//Set Ethernet header.
+	validate h.ethernet
 	mov h.ethernet.dst_addr t.ethernet_dst_addr
 	mov h.ethernet.src_addr t.ethernet_src_addr
 	mov h.ethernet.ethertype t.ethernet_ethertype
-	validate h.ethernet
 
 	//Decrement the TTL and update the checksum within the IPv4 header.
 	cksub h.ipv4.hdr_checksum h.ipv4.ttl

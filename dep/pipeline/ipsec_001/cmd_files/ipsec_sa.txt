@@ -1,0 +1,2 @@
+encrypt aead aes-gcm-128 key 0x000102030405060708090a0b0c0d0e0f10111213 esp spi 100 tunnel ipv4 srcaddr 0x0a0a0a01 dstaddr 0x0a0a0a01
+decrypt aead aes-gcm-128 key 0x000102030405060708090a0b0c0d0e0f10111213 esp spi 100 tunnel ipv4 srcaddr 0xa0a0a0a01 dstaddr 0x0a0a0a01

@@ -1,0 +1,31 @@
+; SPDX-License-Identifier: BSD-3-Clause
+; Copyright(c) 2010-2020 Intel Corporation
+
+;
+; Pipeline code generation & shared object library build
+;
+pipeline codegen /tmp/pipeline/ipsec_004/ipsec_004.spec /tmp/pipeline/ipsec_004/ipsec_004.c
+pipeline libbuild /tmp/pipeline/ipsec_004/ipsec_004.c /tmp/pipeline/ipsec_004/ipsec_004.so
+mempool MEMPOOL0 meta 128 pkt 9472 pool 32K cache 256 numa 0
+
+ethdev 0000:00:04.0 rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on
+
+; Crypto device creation
+cryptodev crypto_aesni_mb0 queues 1 qsize 128
+ring RING0 size 1024 numa 0
+ring RING1 size 1024 numa 0
+
+; Pipeline build using shared object file
+pipeline PIPELINE0 build lib /tmp/pipeline/ipsec_004/ipsec_004.so io /tmp/pipeline/ipsec_004/ethdev.io numa 0
+
+; IPSEC block creation
+ipsec IPSEC0 create in RING0 out RING1 cryptodev crypto_aesni_mb0 cryptoq 0 bsz 1 1 1 1 samax 512 numa 0
+
+; IPSEC sa rule addition
+ipsec IPSEC0 sa add /tmp/pipeline/ipsec_004/cmd_files/ipsec_sa.txt
+
+pipeline PIPELINE0 table policy_table add /tmp/pipeline/ipsec_004/cmd_files/cmd_1.txt
+pipeline PIPELINE0 commit
+
+pipeline PIPELINE0 enable thread 1
+block type ipsec instance IPSEC0 enable thread 1

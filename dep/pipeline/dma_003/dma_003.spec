@@ -75,11 +75,12 @@ struct dma_003_args_t {
 }
 
 action dma_003_action args instanceof dma_003_args_t {
+	validate h.ethernet
 	mov h.ethernet.dst_addr t.ethernet_dst_addr
 	mov h.ethernet.src_addr t.ethernet_src_addr
 	mov h.ethernet.ethertype t.ethernet_ethertype
-	validate h.ethernet
 
+	validate h.ipv4
 	mov h.ipv4.ver_ihl t.ipv4_ver_ihl
 	mov h.ipv4.diffserv t.ipv4_diffserv
 	mov h.ipv4.total_len t.ipv4_total_len
@@ -90,8 +91,8 @@ action dma_003_action args instanceof dma_003_args_t {
 	mov h.ipv4.hdr_checksum t.ipv4_hdr_checksum
 	mov h.ipv4.src_addr t.ipv4_src_addr
 	mov h.ipv4.dst_addr t.ipv4_dst_addr
-	validate h.ipv4
 
+	validate h.tcp
 	mov h.tcp.src_port t.tcp_src_port
 	mov h.tcp.dst_port t.tcp_dst_port
 	mov h.tcp.seq_num t.tcp_seq_num
@@ -100,7 +101,6 @@ action dma_003_action args instanceof dma_003_args_t {
 	mov h.tcp.window_size t.tcp_window_size
 	mov h.tcp.checksum t.tcp_checksum
 	mov h.tcp.urg_ptr t.tcp_urg_ptr
-	validate h.tcp
 
 	return
 }

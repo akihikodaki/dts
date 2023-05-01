@@ -1,0 +1,2 @@
+encrypt cipher null auth sha1-hmac key 0x000102030405060708090a0b0c0d0e0f10111213 esp spi 100 tunnel ipv4 srcaddr 0x0a0a0a01 dstaddr 0x0a0a0a01
+decrypt cipher null auth sha1-hmac key 0x000102030405060708090a0b0c0d0e0f10111213 esp spi 100 tunnel ipv4 srcaddr 0x0a0a0a01 dstaddr 0x0a0a0a01

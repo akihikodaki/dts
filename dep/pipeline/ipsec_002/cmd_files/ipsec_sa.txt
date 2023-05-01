@@ -1,0 +1,2 @@
+encrypt cipher aes-cbc-128 key 0x000102030405060708090a0b0c0d0e0f auth null esp spi 100 transport
+decrypt cipher aes-cbc-128 key 0x000102030405060708090a0b0c0d0e0f auth null esp spi 100 transport
