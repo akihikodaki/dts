@@ -35,11 +35,9 @@ class TestEFD(TestCase):
         self.pktgen_helper = PacketGeneratorHelper()
 
     def build_server_node_efd(self):
-        apps = ["node", "server"]
-        for app in apps:
-            out = self.dut.build_dpdk_apps("./examples/server_node_efd/%s" % app)
-            self.verify("Error" not in out, "Compilation %s error" % app)
-            self.verify("No such" not in out, "Compilation %s error" % app)
+        self.dut.build_dpdk_apps(
+            "./examples/server_node_efd/server,server_node_efd/node"
+        )
 
     def set_up(self):
         """
