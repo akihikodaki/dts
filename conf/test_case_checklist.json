@@ -7,7 +7,7 @@
             "NIC": [
                 "IGB_1G-82580_COPPER",
                 "IGB_1G-I350_COPPER",
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "I40E_25G-25G_SFP28",
@@ -116,7 +116,7 @@
             ],
             "NIC": [
                 "I40E_25G-25G_SFP28",
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "IGB_1G-I210_COPPER",
@@ -150,7 +150,7 @@
                 "IGB_1G-82580_COPPER",
                 "IGB_1G-I350_COPPER",
                 "I40E_25G-25G_SFP28",
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "IGB_1G-I210_COPPER",
@@ -231,7 +231,7 @@
                 "ALL"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "I40E_25G-25G_SFP28",
@@ -288,7 +288,7 @@
                 "ALL"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "IGC-I225_LM",
@@ -444,7 +444,7 @@
                 "ALL"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "I40E_25G-25G_SFP28",
@@ -485,7 +485,7 @@
                 "ALL"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "I40E_25G-25G_SFP28",
@@ -526,7 +526,7 @@
                 "ALL"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "I40E_25G-25G_SFP28",
@@ -1316,7 +1316,7 @@
             ],
             "NIC": [
                 "IXGBE_10G-82599_SFP_SF_QP",
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "I40E_25G-25G_SFP28"
@@ -1332,7 +1332,7 @@
                 "ALL"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "I40E_25G-25G_SFP28"
@@ -2117,7 +2117,7 @@
                 "ALL"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "I40E_25G-25G_SFP28",
@@ -2217,7 +2217,7 @@
                 "ALL"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "I40E_25G-25G_SFP28",
@@ -2267,7 +2267,7 @@
                 "ALL"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "I40E_25G-25G_SFP28",
@@ -2286,7 +2286,7 @@
                 "ALL"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "cavium_a034",
@@ -2415,7 +2415,7 @@
                 "ALL"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "I40E_25G-25G_SFP28",
@@ -2919,7 +2919,7 @@
                 "ICE_100G-E810C_QSFP",
 		"IGC-I225_LM",
                 "IGC-I226_LM",
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
 	        "I40E_40G-QSFP_B",
 	        "I40E_10G-X722_A0",
@@ -2982,7 +2982,7 @@
                 "freebsd"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710"
+                "I40E_10G-SFP_X710"
             ],
             "Target": [
                 "ALL"
@@ -3010,7 +3010,7 @@
                 "freebsd"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710"
+                "I40E_10G-SFP_X710"
             ],
             "Target": [
                 "ALL"
@@ -3250,7 +3250,7 @@
                 "freebsd"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710"
+                "I40E_10G-SFP_X710"
             ],
             "Target": [
                 "ALL"
@@ -3278,7 +3278,7 @@
                 "freebsd"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710"
+                "I40E_10G-SFP_X710"
             ],
             "Target": [
                 "ALL"
@@ -3321,7 +3321,7 @@
                 "freebsd"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710"
+                "I40E_10G-SFP_X710"
             ],
             "Target": [
                 "ALL"
@@ -3349,7 +3349,7 @@
                 "freebsd"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710"
+                "I40E_10G-SFP_X710"
             ],
             "Target": [
                 "ALL"
@@ -3364,7 +3364,7 @@
                 "freebsd"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710"
+                "I40E_10G-SFP_X710"
             ],
             "Target": [
                 "ALL"
@@ -3392,7 +3392,7 @@
                 "freebsd"
             ],
             "NIC": [
-                "I40E_10G-SFP_XL710"
+                "I40E_10G-SFP_X710"
             ],
             "Target": [
                 "ALL"
@@ -3691,7 +3691,7 @@
                 "ICE_100G-E810C_QSFP",
 		"ICE_25G-E823C_QSFP",
                 "ICE_25G-E810C_SFP",
-	        "I40E_10G-SFP_XL710",
+	        "I40E_10G-SFP_X710",
 		"I40E_40G-QSFP_A",
 		"I40E_10G-SFP_X722",
 		"I40E_10G-10G_BASE_T_X722",
