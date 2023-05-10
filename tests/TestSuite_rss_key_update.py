@@ -166,7 +166,7 @@ class TestRssKeyUpdate(TestCase):
             in [
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "I40E_10G-SFP_X722",
@@ -185,7 +185,7 @@ class TestRssKeyUpdate(TestCase):
             queue = 4
 
         if self.nic in [
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_40G-QSFP_A",
             "I40E_40G-QSFP_B",
             "I40E_10G-SFP_X722",
@@ -344,7 +344,7 @@ class TestRssKeyUpdate(TestCase):
         nic_rss_key_size = {
             "ICE_25G-E810C_SFP": 52,
             "ICE_100G-E810C_QSFP": 52,
-            "I40E_10G-SFP_XL710": 52,
+            "I40E_10G-SFP_X710": 52,
             "I40E_40G-QSFP_A": 52,
             "I40E_40G-QSFP_B": 52,
             "I40E_25G-25G_SFP28": 52,

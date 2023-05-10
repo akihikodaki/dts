@@ -500,7 +500,7 @@ class TestPmdrssHash(TestCase):
         global queue
 
         if self.nic in [
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_40G-QSFP_A",
             "I40E_40G-QSFP_B",
             "I40E_10G-SFP_X722",

@@ -293,7 +293,7 @@ class TestPmdrssreta(TestCase):
             "ICE_25G-E810C_SFP": 52,
             "ICE_25G-E823C_QSFP": 52,
             "ICE_100G-E810C_QSFP": 52,
-            "I40E_10G-SFP_XL710": 52,
+            "I40E_10G-SFP_X710": 52,
             "I40E_40G-QSFP_A": 52,
             "I40E_40G-QSFP_B": 52,
             "I40E_25G-25G_SFP28": 52,

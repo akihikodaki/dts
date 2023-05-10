@@ -56,7 +56,7 @@ class TestDualVlan(TestCase):
             self.fwversion = self.pmdout.get_firmware_version(self.dut_ports[0]).split()
 
         if self.nic in [
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_40G-QSFP_A",
             "I40E_40G-QSFP_B",
             "I40E_25G-25G_SFP28",
@@ -233,7 +233,7 @@ class TestDualVlan(TestCase):
 
         for mode in modeName:
             if self.nic in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "I40E_25G-25G_SFP28",
@@ -264,7 +264,7 @@ class TestDualVlan(TestCase):
         out = self.dut.send_expect("show port info %s" % dutRxPortId, "testpmd> ")
         for mode in modeName:
             if self.nic in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "I40E_25G-25G_SFP28",
@@ -441,7 +441,7 @@ class TestDualVlan(TestCase):
         if self.nic not in [
             "ICE_25G-E810C_SFP",
             "ICE_100G-E810C_QSFP",
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_40G-QSFP_A",
             "I40E_40G-QSFP_B",
             "I40E_25G-25G_SFP28",
@@ -514,7 +514,7 @@ class TestDualVlan(TestCase):
         if self.nic in [
             "ICE_25G-E810C_SFP",
             "ICE_100G-E810C_QSFP",
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_40G-QSFP_A",
             "I40E_40G-QSFP_B",
             "I40E_25G-25G_SFP28",
@@ -540,7 +540,7 @@ class TestDualVlan(TestCase):
         if self.nic in [
             "ICE_25G-E810C_SFP",
             "ICE_100G-E810C_QSFP",
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_40G-QSFP_A",
             "I40E_40G-QSFP_B",
             "I40E_25G-25G_SFP28",
@@ -566,7 +566,7 @@ class TestDualVlan(TestCase):
             "vlan %s" % self.outvlanId_id in out,
             "vlan strip queue disable error : " + out,
         )
-        # if self.nic in ["I40E_10G-SFP_XL710", "I40E_40G-QSFP_A", "I40E_40G-QSFP_B"]:
+        # if self.nic in ["I40E_10G-SFP_X710", "I40E_40G-QSFP_A", "I40E_40G-QSFP_B"]:
         self.mode_config(strip="on")
         self.mode_config(stripq="on")
         self.vlan_send_packet(self.outvlanId_id)

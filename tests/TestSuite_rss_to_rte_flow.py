@@ -373,7 +373,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -589,7 +589,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -700,7 +700,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -815,7 +815,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -960,7 +960,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -1161,7 +1161,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -1212,7 +1212,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -1287,7 +1287,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -1344,7 +1344,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -1404,7 +1404,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.verify(
             self.nic
             not in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -1466,7 +1466,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.verify(
             self.nic
             not in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -1516,7 +1516,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.verify(
             self.nic
             not in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -1625,7 +1625,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.verify(
             self.nic
             not in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -1723,7 +1723,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.verify(
             self.nic
             not in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -1813,7 +1813,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.verify(
             self.nic
             not in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",

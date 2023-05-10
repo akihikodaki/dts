@@ -34,7 +34,7 @@ VF_L3FWD_NIC_SUPPORT = frozenset(
         "IXGBE_10G-82599_SFP",
         "I40E_40G-QSFP_A",
         "I40E_25G-25G_SFP28",
-        "I40E_10G-SFP_XL710",
+        "I40E_10G-SFP_X710",
         "ICE_100G-E810C_QSFP",
         "ICE_25G-E810C_SFP",
         "ICE_25G-E810_XXV_SFP",

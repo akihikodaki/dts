@@ -27,7 +27,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_B",

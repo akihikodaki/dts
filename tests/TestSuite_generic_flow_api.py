@@ -297,7 +297,7 @@ class TestGeneric_flow_api(TestCase):
                 or "index %s" % str(MAX_QUEUE + 1) in flow_cmd
             ):
                 if self.nic in [
-                    "I40E_10G-SFP_XL710",
+                    "I40E_10G-SFP_X710",
                     "I40E_40G-QSFP_A",
                     "I40E_40G-QSFP_B",
                     "I40E_10G-SFP_X722",
@@ -314,7 +314,7 @@ class TestGeneric_flow_api(TestCase):
                     self.dut.send_expect(flow_cmd, "error")
             elif "type is 0x8100" in flow_cmd:
                 if self.nic in [
-                    "I40E_10G-SFP_XL710",
+                    "I40E_10G-SFP_X710",
                     "I40E_40G-QSFP_A",
                     "I40E_40G-QSFP_B",
                     "I40E_10G-SFP_X722",
@@ -340,7 +340,7 @@ class TestGeneric_flow_api(TestCase):
                 or "index %s" % str(MAX_QUEUE + 1) in flow_cmd
             ):
                 if self.nic in [
-                    "I40E_10G-SFP_XL710",
+                    "I40E_10G-SFP_X710",
                     "I40E_40G-QSFP_A",
                     "I40E_40G-QSFP_B",
                     "I40E_10G-SFP_X722",
@@ -357,7 +357,7 @@ class TestGeneric_flow_api(TestCase):
                     self.dut.send_expect(flow_cmd, "error")
             elif "type is 0x8100" in flow_cmd:
                 if self.nic in [
-                    "I40E_10G-SFP_XL710",
+                    "I40E_10G-SFP_X710",
                     "I40E_40G-QSFP_A",
                     "I40E_40G-QSFP_B",
                     "I40E_10G-SFP_X722",
@@ -1083,7 +1083,7 @@ class TestGeneric_flow_api(TestCase):
                 "IGB_1G-I350_COPPER",
                 "IGC-I225_LM",
                 "IGC-I226_LM",
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_X722",
@@ -1107,7 +1107,7 @@ class TestGeneric_flow_api(TestCase):
         # i350 and 82580 only support 2-tuple, and don't support SCTP
         # create the flow rules
         if self.nic in [
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_25G-25G_SFP28",
             "I40E_40G-QSFP_A",
             "I40E_10G-10G_BASE_T_X722",
@@ -1197,7 +1197,7 @@ class TestGeneric_flow_api(TestCase):
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IXGBE_10G-X550T",
                 "IGB_1G-I350_COPPER",
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
@@ -1225,7 +1225,7 @@ class TestGeneric_flow_api(TestCase):
 
         # i40e,ixgbe and igb support different packet types.
         if self.nic in [
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_40G-QSFP_A",
             "I40E_10G-10G_BASE_T_BC",
             "I40E_40G-QSFP_B",
@@ -1318,7 +1318,7 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
@@ -1388,7 +1388,7 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -1521,7 +1521,7 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -1656,7 +1656,7 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -1791,7 +1791,7 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -1936,7 +1936,7 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
                 "I40E_40G-QSFP_B",
@@ -2023,7 +2023,7 @@ class TestGeneric_flow_api(TestCase):
         )
 
     support_nic = [
-        "I40E_10G-SFP_XL710",
+        "I40E_10G-SFP_X710",
         "I40E_25G-25G_SFP28",
         "I40E_40G-QSFP_A",
         "I40E_10G-10G_BASE_T_BC",
@@ -2271,7 +2271,7 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
@@ -2609,7 +2609,7 @@ class TestGeneric_flow_api(TestCase):
                 "ICE_25G-E823C_QSFP",
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IXGBE_10G-X550T",
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
@@ -2623,7 +2623,7 @@ class TestGeneric_flow_api(TestCase):
         )
         # i40e
         if self.nic in [
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_25G-25G_SFP28",
             "I40E_40G-QSFP_A",
             "ICE_25G-E810C_SFP",
@@ -2906,7 +2906,7 @@ class TestGeneric_flow_api(TestCase):
                 "IXGBE_10G-82599_SFP",
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IXGBE_10G-X550T",
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
@@ -2918,7 +2918,7 @@ class TestGeneric_flow_api(TestCase):
         )
         # i40e
         if self.nic in [
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_25G-25G_SFP28",
             "I40E_40G-QSFP_A",
             "I40E_40G-QSFP_B",
@@ -3249,7 +3249,7 @@ class TestGeneric_flow_api(TestCase):
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
                 "ICE_25G-E823C_QSFP",
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
@@ -3263,7 +3263,7 @@ class TestGeneric_flow_api(TestCase):
         )
         # i40e
         if self.nic in [
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_25G-25G_SFP28",
             "I40E_40G-QSFP_A",
             "ICE_25G-E810C_SFP",
@@ -3557,7 +3557,7 @@ class TestGeneric_flow_api(TestCase):
                 "IXGBE_10G-82599_SFP",
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IXGBE_10G-X550T",
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
@@ -3571,7 +3571,7 @@ class TestGeneric_flow_api(TestCase):
         )
         # i40e
         if self.nic in [
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_25G-25G_SFP28",
             "I40E_40G-QSFP_A",
             "I40E_40G-QSFP_B",
@@ -4140,7 +4140,7 @@ class TestGeneric_flow_api(TestCase):
                 "IXGBE_10G-82599_SFP",
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IXGBE_10G-X550T",
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_BC",
@@ -4157,7 +4157,7 @@ class TestGeneric_flow_api(TestCase):
         )
         # i40e
         if self.nic in [
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_25G-25G_SFP28",
             "I40E_40G-QSFP_A",
             "I40E_10G-10G_BASE_T_BC",
@@ -4740,7 +4740,7 @@ class TestGeneric_flow_api(TestCase):
             in [
                 "IXGBE_10G-X550EM_X_10G_T",
                 "IXGBE_10G-X550T",
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_A",
                 "I40E_10G-10G_BASE_T_X722",
@@ -4765,7 +4765,7 @@ class TestGeneric_flow_api(TestCase):
 
         # create the flow rules
         if self.nic in [
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_25G-25G_SFP28",
             "I40E_40G-QSFP_A",
             "I40E_10G-10G_BASE_T_X722",
@@ -5014,7 +5014,7 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_A",
                 "ICE_25G-E810C_SFP",
@@ -5281,7 +5281,7 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_A",
                 "ICE_25G-E810C_SFP",
@@ -5531,7 +5531,7 @@ class TestGeneric_flow_api(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_40G-QSFP_B",
                 "I40E_25G-25G_SFP28",

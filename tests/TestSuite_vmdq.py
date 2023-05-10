@@ -49,7 +49,7 @@ class TestVmdq(TestCase):
             self.pools = 64
         elif self.nic in ("I40E_40G-QSFP_A", "I40E_40G-QSFP_B"):
             self.pools = 63
-        elif self.nic in ("I40E_10G-SFP_XL710"):
+        elif self.nic in ("I40E_10G-SFP_X710"):
             self.pools = 34
         else:
             self.pools = 8

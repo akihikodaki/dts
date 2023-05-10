@@ -43,7 +43,7 @@ class TestScatter(TestCase):
             "IXGBE_10G-82599_SFP",
             "IXGBE_10G-X550T",
             "I40E_10G-X722_A0",
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_40G-QSFP_A",
             "I40E_40G-QSFP_B",
             "I40E_25G-25G_SFP28",

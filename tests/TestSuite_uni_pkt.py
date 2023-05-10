@@ -284,7 +284,7 @@ class TestUniPacket(TestCase):
                 "ICE_25G-E823C_QSFP",
                 "ICE_100G-E810C_QSFP",
                 "IXGBE_10G-82599_SFP",
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "IGB_1G-I350_COPPER",
                 "I40E_10G-SFP_X722",

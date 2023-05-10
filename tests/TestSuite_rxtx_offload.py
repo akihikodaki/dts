@@ -61,7 +61,7 @@ class TestRxTx_Offload(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_25G-25G_SFP28",
                 "I40E_40G-QSFP_B",
@@ -594,7 +594,7 @@ class TestRxTx_Offload(TestCase):
         self.dut.send_expect("set fwd txonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
         if self.nic in [
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_40G-QSFP_A",
             "I40E_25G-25G_SFP28",
             "I40E_40G-QSFP_B",
@@ -651,7 +651,7 @@ class TestRxTx_Offload(TestCase):
         self.dut.send_expect("set fwd txonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
         if self.nic in [
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_40G-QSFP_A",
             "I40E_25G-25G_SFP28",
             "I40E_40G-QSFP_B",
@@ -789,7 +789,7 @@ class TestRxTx_Offload(TestCase):
         capabilities = self.check_port_capability("tx")
         # Disable per queue capability first, if it is Intel® Ethernet 700 Series/X722.
         if self.nic in [
-            "I40E_10G-SFP_XL710",
+            "I40E_10G-SFP_X710",
             "I40E_40G-QSFP_A",
             "I40E_25G-25G_SFP28",
             "I40E_40G-QSFP_B",
@@ -825,7 +825,7 @@ class TestRxTx_Offload(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_25G-25G_SFP28",
                 "I40E_10G-10G_BASE_T_BC",

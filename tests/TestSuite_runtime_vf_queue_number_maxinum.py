@@ -24,7 +24,7 @@ class TestRuntimeVfQnMaxinum(TestCase):
         self.verify(
             self.nic
             in [
-                "I40E_10G-SFP_XL710",
+                "I40E_10G-SFP_X710",
                 "I40E_40G-QSFP_A",
                 "I40E_25G-25G_SFP28",
                 "I40E_10G-SFP_X722",
@@ -53,7 +53,7 @@ class TestRuntimeVfQnMaxinum(TestCase):
         Bind Intel® Ethernet 700 Series nic to DPDK PF, and create 32/64 vfs on it.
         Start testpmd based on the created vfs.
         """
-        if self.nic in ["I40E_10G-SFP_XL710"]:
+        if self.nic in ["I40E_10G-SFP_X710"]:
             self.dut.generate_sriov_vfs_by_port(self.used_dut_port, 32, driver=driver)
         elif self.nic in [
             "I40E_25G-25G_SFP28",
@@ -148,7 +148,7 @@ class TestRuntimeVfQnMaxinum(TestCase):
         vf2_queue_number = 0
         vf3_allow_index = 0
         vf3_allow_list = ""
-        if self.nic in ["I40E_10G-SFP_XL710"]:
+        if self.nic in ["I40E_10G-SFP_X710"]:
             left_queues = 384 - 65 - 32 * 4
             vf1_allow_index = left_queues / 16
             vf2_queue_number = left_queues % 16
