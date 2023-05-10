@@ -507,7 +507,7 @@ class TestCase(object):
             bitrate *= 2.5  # 2.5 Gb NICs
         elif nic in ["I40E_40G-QSFP_A", "I40E_40G-QSFP_B"]:
             bitrate *= 40
-        elif nic == "I40E_10G-SFP_XL710":
+        elif nic == "I40E_10G-SFP_X710":
             bitrate *= 10
         elif nic == "I40E_10G-SFP_X722":
             bitrate *= 10
