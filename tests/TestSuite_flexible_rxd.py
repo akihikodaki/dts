@@ -16,7 +16,6 @@ class TestFlexibleRxd(TestCase, FlexibleRxdBase):
         "ICE_25G-E810C_SFP",
         "ICE_25G-E810_XXV_SFP",
         "ICE_25G-E823C_QSFP",
-        "IGC-I225_LM",
     ]
 
     def preset_compilation(self):
