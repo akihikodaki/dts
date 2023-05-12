@@ -950,3 +950,59 @@ Test case: IAVF CRC strip and Vlan strip co-exists
      10:29:19.995424 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
      196.222.232.221 > 127.0.0.1:  ip-proto-0 480
 
+Test Case: vf queue start/stop
+==============================
+
+This case support VF (Intel® Ethernet 700 Series/Intel® Ethernet 800 Series)
+
+#. Launch testpmd::
+    x86_64-native-linuxapp-gcc/app/dpdk-testpmd  -l 1-2 -n 4 -a 0000:af:01.0 -- -i --portmask=0x1 --port-topology=loop
+
+#. Run "set verbose 1" to set verbose
+#. Run "set fwd mac" to set fwd type
+#. Run "start" to start fwd package
+
+#. Start a packet capture on the tester in the background::
+    tcpdump -i ens7  'ether[12:2] != 0x88cc'  -Q in -w /tmp/tester/sniff_ens7.pcap
+
+#. Start packet generator to transmit packets::
+    sendp([Ether(dst='3c:fd:fe:c1:0f:4c', src='00:00:20:00:00:00')/IP()/UDP()/Raw(load=b'XXXXXXXXXXXXXXXXXX')],iface="ens7",count=4,inter=0,verbose=False)
+
+#. Stop testpmd::
+
+    --------------------- Forward statistics for port 0  ----------------------
+    RX-packets: 4              RX-dropped: 0             RX-total: 4
+    TX-packets: 4              TX-dropped: 0             TX-total: 4
+    ----------------------------------------------------------------------------
+
+#. Quit tcpdump and check tester port receive 4 packets
+
+#. Run "port 0 rxq 0 stop" to stop rxq 0 in port 0
+#. Start packet generator to transmit and check tester port not receive packets
+#. Stop testpmd::
+
+    ---------------------- Forward statistics for port 0  ----------------------
+    RX-packets: 0              RX-dropped: 4             RX-total: 4
+    TX-packets: 0              TX-dropped: 0             TX-total: 0
+    ----------------------------------------------------------------------------
+
+#. Run "port 0 rxq 0 start" to start rxq 0 in port 0
+#. Run "port 0 txq 0 stop" to stop txq 0 in port 0
+#. Start packet generator to transmit and check tester port not receive packets
+   and in testpmd it not has "port 0/queue 0: received 1 packets" print
+#. Stop testpmd::
+
+    ---------------------- Forward statistics for port 0  ----------------------
+    RX-packets: 4              RX-dropped: 0             RX-total: 4
+    TX-packets: 0              TX-dropped: 0             TX-total: 0
+    ----------------------------------------------------------------------------
+
+#. Run "port 0 txq 0 start" to start txq 0 in port 0
+#. Start packet generator to transmit and check tester port receive 4 packets
+   and in testpmd it has "port 0/queue 0: received 1 packets" print
+#. Stop testpmd::
+
+    ---------------------- Forward statistics for port 0  ----------------------
+    RX-packets: 4              RX-dropped: 0             RX-total: 4
+    TX-packets: 4              TX-dropped: 0             TX-total: 4
+    ----------------------------------------------------------------------------
