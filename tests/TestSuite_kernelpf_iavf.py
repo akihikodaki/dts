@@ -14,7 +14,7 @@ import re
 import time
 
 import framework.utils as utils
-from framework.packet import Packet
+from framework.packet import Packet, strip_pktload
 from framework.pmd_output import PmdOutput
 from framework.settings import (
     DPDK_DCFMODE_SETTING,
@@ -89,7 +89,7 @@ class TestKernelpfIavf(TestCase):
 
     def set_up(self):
 
-        if self.running_case == "test_vf_rx_interrupt":
+        if self.running_case in ["test_vf_rx_interrupt", "test_vf_queue_start_stop"]:
             self.destroy_vm_env()
         elif self.env_done is False:
             self.setup_vm_env()
@@ -1240,6 +1240,124 @@ class TestKernelpfIavf(TestCase):
             self.tester_intf, pkt=pkt, pkt_len=pkt_len, crc_strip=True
         )
 
+    def check_forwarding(self, dmac, rx_received=True, received=True):
+        self.send_packet_check_pktload(0, 0, dmac, rx_received, received)
+
+    def send_packet_check_pktload(
+        self, txPort, rxPort, dmac, rx_received, received=True
+    ):
+        """
+        Send packages according to parameters.
+        """
+        rxitf = self.tester.get_interface(self.tester.get_local_port(rxPort))
+        txitf = self.tester.get_interface(self.tester.get_local_port(txPort))
+
+        pkt = Packet(pkt_type="UDP", pkt_len=64)
+        inst = self.tester.tcpdump_sniff_packets(rxitf)
+        pkt.config_layer("ether", {"dst": dmac})
+        pkt.send_pkt(self.tester, tx_port=txitf, count=4)
+        sniff_pkts = self.tester.load_tcpdump_sniff_packets(inst)
+        out = self.dut.get_session_output()
+        if rx_received:
+            self.verify(
+                "port 0/queue 0: received 1 packets" in out,
+                "start queue revice package failed, out = %s" % out,
+            )
+        else:
+            self.verify(
+                "port 0/queue 0: received 1 packets" not in out,
+                "start queue revice package failed, out = %s" % out,
+            )
+
+        if received:
+            res = strip_pktload(sniff_pkts, layer="L4")
+            self.verify(
+                "58 58 58 58 58 58 58 58" in res, "receive queue not work as expected"
+            )
+        else:
+            self.verify(len(sniff_pkts) == 0, "stop queue not work as expected")
+
+    def test_vf_queue_start_stop(self):
+        """
+        vf queue start/stop test
+        """
+        self.pmd_out = PmdOutput(self.dut)
+        # generate vf
+        self.dut.bind_interfaces_linux(self.kdriver)
+        self.dut.generate_sriov_vfs_by_port(self.dut_ports[0], 1)
+        self.vf_port = self.dut.ports_info[self.dut_ports[0]]["vfs_port"][0]
+
+        self.vf_port.bind_driver(driver="vfio-pci")
+        self.vf_port_pci = self.dut.ports_info[self.dut_ports[0]]["sriov_vfs_pci"][0]
+        self.core_config = "1S/2C/1T"
+        self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
+        cores = self.dut.get_core_list(self.core_config, socket=self.ports_socket)
+        # dpdk start
+        try:
+            self.pmd_out.start_testpmd(
+                cores=cores,
+                eal_param="-a %s --file-prefix=vf" % self.vf_port_pci,
+                param="--portmask=0x1 --port-topology=loop",
+            )
+            self.dut.send_expect("set fwd mac", "testpmd>")
+            self.dut.send_expect("set verbose 1", "testpmd>")
+            self.dut.send_expect("start", "testpmd>")
+            self.pmd_out.wait_link_status_up("all")
+            dmac = self.pmd_out.get_port_mac(0)
+            self.check_forwarding(dmac)
+            out = self.dut.send_expect("stop", "testpmd>")
+            self.verify(
+                "RX-packets: 4" in out, "Forward statistics for RX-packets is error"
+            )
+            self.verify(
+                "TX-packets: 4" in out, "Forward statistics for TX-packets is error"
+            )
+        except Exception as e:
+            raise IOError("dpdk start and first forward failure: %s" % e)
+
+        try:
+            # stop rx queue test
+            print("test stop rx queue")
+            self.dut.send_expect("port 0 rxq 0 stop", "testpmd>")
+            self.dut.send_expect("start", "testpmd>")
+            self.check_forwarding(dmac, rx_received=False, received=False)
+
+            out = self.dut.send_expect("stop", "testpmd>")
+            self.verify(
+                "RX-packets: 0" in out, "Forward statistics for RX-packets is error"
+            )
+
+            # stop tx queue test
+            print("test start rx queue stop tx queue")
+            self.dut.send_expect("port 0 rxq 0 start", "testpmd>")
+            self.dut.send_expect("port 0 txq 0 stop", "testpmd>")
+            self.dut.send_expect("start", "testpmd>")
+            self.check_forwarding(dmac, rx_received=False, received=False)
+            out = self.dut.send_expect("stop", "testpmd>")
+            self.verify(
+                "TX-packets: 0" in out, "Forward statistics for TX-packets is error"
+            )
+        except Exception as e:
+            raise IOError("queue stop forward failure: %s" % e)
+
+        try:
+            # start tx queue test
+            print("test start rx and tx queue")
+            self.dut.send_expect("port 0 txq 0 start", "testpmd>")
+            self.dut.send_expect("start", "testpmd>")
+            self.check_forwarding(dmac)
+            out = self.dut.send_expect("stop", "testpmd>")
+            self.verify(
+                "RX-packets: 4" in out,
+                "restart txq Forward statistics for RX-packets is error",
+            )
+            self.verify(
+                "TX-packets: 4" in out,
+                "restart txq Forward statistics for TX-packets is error",
+            )
+        except Exception as e:
+            raise IOError("queue start forward failure: %s" % e)
+
     def scapy_send_packet(self, mac, testinterface, vlan_flags=False, count=1):
         """
         Send a packet to port
@@ -1296,6 +1414,11 @@ class TestKernelpfIavf(TestCase):
                 "killall %s" % self.l3fwdpower_name, "# ", 60, alt_session=True
             )
             self.destroy_2vf_in_2pf()
+        elif self.running_case == "test_vf_queue_start_stop":
+            try:
+                self.dut.send_expect("quit", "#")
+            except:
+                print("Failed to quit testpmd")
         else:
             self.vm_testpmd.execute_cmd("quit", "#")
             time.sleep(1)
