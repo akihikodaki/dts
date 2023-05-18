@@ -80,6 +80,7 @@ The following are the test plans for the DPDK DTS automated test system.
     hotplug_test_plan
     ice_iavf_fdir_test_plan
     ice_iavf_fdir_gtpogre_test_plan
+    iavf_checksum_offload_perf_test_plan
     iavf_flexible_descriptor_test_plan
     iavf_package_driver_error_handle_test_plan
     iavf_fdir_protocol_agnostic_flow_test_plan
