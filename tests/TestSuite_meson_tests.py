@@ -28,6 +28,7 @@ class TestMesonTests(TestCase):
         # -t 2
         self.ratio = 6
         self.dut_pathlog = "fast-test.log"
+        self.testlog = ""
         self.execute_wait_time = self.ratio * self.timeout * 10
         # skip scope
         self.SKIP_SCOPE = ""
@@ -35,6 +36,7 @@ class TestMesonTests(TestCase):
         self.base_output = os.path.join(
             os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "output"
         )
+        self.dut_ports = self.dut.get_ports()
 
     def set_up(self):
         """
@@ -99,17 +101,30 @@ class TestMesonTests(TestCase):
             self.verify(False, f"Test failed. {sub_fail}{sub_timeout}")
 
     def meson_param(self, case_name):
+        # add -a param when running in container
+        test_args = self.get_suite_cfg().get("test_args", "")
+        if self.dut_ports:
+            for port in self.dut_ports:
+                test_args += " -a {}".format(
+                    self.dut.get_port_pci(self.dut_ports[port])
+                )
         return (
             self.get_suite_cfg().get(case_name, "")
             + " "
-            + self.get_suite_cfg().get("param", "")
+            + self.get_suite_cfg().get("other_param", "")
+            + " --test-args '{}'".format(test_args)
         )
 
-    def copy_file_from_dut(self):
+    def copy_file_from_dut(self, case_name):
         if os.path.exists(os.path.join(self.base_output, self.dut_pathlog)):
             os.remove(os.path.join(self.base_output, self.dut_pathlog))
         src_pathlog = f"/tmp/{self.dut_pathlog}"
         self.dut.session.copy_file_from(src_pathlog, self.base_output)
+        if self.testlog:
+            tester_pathlog = (
+                self.base_output + "/" + "{}_mesontest.log".format(case_name)
+            )
+            self.dut.session.copy_file_from(self.testlog, tester_pathlog)
 
     def insmod_kni(self):
         out = self.dut.send_expect("lsmod | grep rte_kni", "# ")
@@ -142,8 +157,10 @@ class TestMesonTests(TestCase):
         # config test case list in conf/meson_tests.cfg
         cmds = f"meson test -C {self.target} --suite DPDK:fast-tests {param} |tee /tmp/{self.dut_pathlog}"
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
-        self.logger.info(out)
-        self.copy_file_from_dut()
+        # Full log written to /root/dpdk/<<build path>>/meson-logs/testlog.txt
+        self.testlog = re.search(r"Full log written to (\S+)", out).groups()[0]
+        self.logger.info(self.testlog)
+        self.copy_file_from_dut("fast-tests")
         self.check_meson_test_result()
 
     def test_driver(self):
@@ -153,8 +170,10 @@ class TestMesonTests(TestCase):
         self.delete_exists_files()
         cmds = f"meson test -C {self.target} --suite DPDK:driver-tests {param} |tee /tmp/{self.dut_pathlog}"
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
-        self.logger.info(out)
-        self.copy_file_from_dut()
+        # Full log written to /root/dpdk/<<build path>>/meson-logs/testlog.txt
+        self.testlog = re.search(r"Full log written to (\S+)", out).groups()[0]
+        self.logger.info(self.testlog)
+        self.copy_file_from_dut("driver-tests")
         self.check_meson_test_result()
 
     def test_debug(self):
@@ -164,8 +183,10 @@ class TestMesonTests(TestCase):
         self.delete_exists_files()
         cmds = f"meson test -C {self.target} --suite DPDK:debug-tests {param} |tee /tmp/{self.dut_pathlog}"
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
-        self.logger.info(out)
-        self.copy_file_from_dut()
+        # Full log written to /root/dpdk/<<build path>>/meson-logs/testlog.txt
+        self.testlog = re.search(r"Full log written to (\S+)", out).groups()[0]
+        self.logger.info(self.testlog)
+        self.copy_file_from_dut("debug-tests")
         self.check_meson_test_result()
 
     def test_extra(self):
@@ -175,8 +196,10 @@ class TestMesonTests(TestCase):
         self.delete_exists_files()
         cmds = f"meson test -C {self.target} --suite DPDK:extra-tests {param} |tee /tmp/{self.dut_pathlog}"
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
-        self.logger.info(out)
-        self.copy_file_from_dut()
+        # Full log written to /root/dpdk/<<build path>>/meson-logs/testlog.txt
+        self.testlog = re.search(r"Full log written to (\S+)", out).groups()[0]
+        self.logger.info(self.testlog)
+        self.copy_file_from_dut("extra-tests")
         self.check_meson_test_result()
         self.logger.warning(
             "Extra-tests are know issues which are recorded in DPDK commit and meson.build (detail see test plan)"
@@ -190,8 +213,10 @@ class TestMesonTests(TestCase):
         self.delete_exists_files()
         cmds = f"meson test -C {self.target} --suite DPDK:perf-tests {param} |tee /tmp/{self.dut_pathlog}"
         out = self.dut.send_expect(cmds, "# ", self.execute_wait_time)
-        self.logger.info(out)
-        self.copy_file_from_dut()
+        # Full log written to /root/dpdk/<<build path>>/meson-logs/testlog.txt
+        self.testlog = re.search(r"Full log written to (\S+)", out).groups()[0]
+        self.logger.info(self.testlog)
+        self.copy_file_from_dut("perf-tests")
         self.check_meson_test_result()
 
     def tear_down(self):
