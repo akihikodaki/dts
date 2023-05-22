@@ -9,7 +9,7 @@ from framework.settings import HEADER_SIZE, UPDATE_EXPECTED, load_global_setting
 from framework.test_case import TestCase
 
 
-class TestPvpVirtioUser4kHugepages(TestCase):
+class TestPvpVirtioUser4kPages(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -221,7 +221,7 @@ class TestPvpVirtioUser4kHugepages(TestCase):
         self.dut.close_session(self.vhost_user)
         self.dut.close_session(self.virtio_user)
 
-    def test_perf_pvp_virtio_user_split_ring_with_4K_hugepages(self):
+    def test_perf_pvp_virtio_user_split_ring_with_4K_pages(self):
         """
         Basic test for virtio-user 4K pages
         """
@@ -237,7 +237,7 @@ class TestPvpVirtioUser4kHugepages(TestCase):
         self.handle_results()
         self.close_all_apps()
 
-    def test_perf_pvp_virtio_user_packed_ring_with_4K_hugepages(self):
+    def test_perf_pvp_virtio_user_packed_ring_with_4K_pages(self):
         """
         Basic test for virtio-user 4K pages
         """
