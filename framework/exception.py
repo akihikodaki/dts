@@ -146,3 +146,15 @@ class VirtVmOperationException(Exception):
 
 class VirtHostPrepareException(Exception):
     pass
+
+
+class VmPortConflictException(Exception):
+    """
+    Start VM vnc port or vm port conflict failed.
+    """
+
+    def __init__(self, error):
+        self.error = error
+
+    def __str__(self):
+        pass

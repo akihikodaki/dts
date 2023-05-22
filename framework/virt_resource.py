@@ -2,7 +2,7 @@
 # Copyright(c) 2010-2015 Intel Corporation
 #
 
-from random import randint
+from random import randint, randrange
 
 from .utils import RED, get_obj_funcs, parallel_lock
 
@@ -344,15 +344,15 @@ class VirtResource(object):
         if vm == "":
             print("Alloc host port request vitual machine name!!!")
             return None
-
+        offset = randrange(0, 1000, 200)
         if port_type == "connect":
-            port = INIT_FREE_PORT
+            port = INIT_FREE_PORT + offset
         elif port_type == "serial":
-            port = INIT_SERIAL_PORT
+            port = INIT_SERIAL_PORT + offset
         elif port_type == "migrate":
-            port = INIT_MIGRATE_PORT
+            port = INIT_MIGRATE_PORT + offset
         elif port_type == "display":
-            port = INIT_DISPLAY_PORT + 5900
+            port = INIT_DISPLAY_PORT + 5900 + offset
 
         while True:
             if (

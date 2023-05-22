@@ -279,6 +279,7 @@ class VirtBase(object):
         """
         Start VM and instantiate the VM with VirtDut.
         """
+        vm_dut = None
         try:
             if load_config is True:
                 self.load_config()
@@ -293,9 +294,8 @@ class VirtBase(object):
                 vm_dut = self.instantiate_vm_dut(
                     set_target, cpu_topo, bind_dev=bind_dev, autodetect_topo=True
                 )
-            else:
-                vm_dut = None
-
+        except exception.VmPortConflictException:
+            vm_dut = self.start()
         except Exception as vm_except:
             if self.handle_exception(vm_except):
                 print(utils.RED("Handled exception " + str(type(vm_except))))
@@ -305,7 +305,6 @@ class VirtBase(object):
             if callable(self.callback):
                 self.callback()
 
-            return None
         return vm_dut
 
     def quick_start(self, load_config=True, set_target=True, cpu_topo=""):

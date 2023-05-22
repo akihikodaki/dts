@@ -6,7 +6,7 @@ import os
 import re
 import time
 
-from .exception import StartVMFailedException
+from .exception import StartVMFailedException, VmPortConflictException
 from .settings import DTS_PARALLEL_SETTING, get_host_ip, load_global_setting
 from .utils import RED, parallel_lock
 from .virt_base import ST_NOTSTART, ST_PAUSE, ST_RUNNING, ST_UNKNOWN, VirtBase
@@ -1404,16 +1404,20 @@ class QEMUKvm(VirtBase):
     @parallel_lock(num=4)
     def __send_qemu_cmd(self, qemu_boot_line, dut_id):
         # add more time for qemu start will be slow when system is busy
-        ret = self.host_session.send_expect(
-            qemu_boot_line, "# ", verify=True, timeout=30
-        )
+        ret = self.host_session.send_expect(qemu_boot_line, "# ", timeout=30)
+        ret_status = int(self.host_session.send_expect("echo $?", "#", timeout=30))
 
         # record start time
         self.start_time = time.time()
 
         # wait for qemu process ready
         time.sleep(2)
-        if type(ret) is int and ret != 0:
+        if type(ret_status) is int and ret_status != 0:
+            if self.vm_port_conflict(ret):
+                self.qemu_boot_line = ""
+                self.pt_idx = 0
+                delattr(self, "hostfwd_addr")
+                raise VmPortConflictException(self)
             raise StartVMFailedException("Start VM failed!!!")
 
     def _quick_start_vm(self):
@@ -2043,3 +2047,14 @@ class QEMUKvm(VirtBase):
             map = list(zip(threads, lcores))
         for thread, lcore in map:
             self.host_session.send_expect("taskset -pc %s %s" % (lcore, thread), "#")
+
+    def vm_port_conflict(self, ret):
+        """
+        check for vm port conflict
+        """
+        status = None
+        if "Could not set up host forwarding rule" in ret:
+            status = True
+        elif "Failed to find an available port: Address already in use" in ret:
+            status = True
+        return status
