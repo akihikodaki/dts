@@ -30,6 +30,8 @@ NFS configuration
     host# systemctrl stop firewalld.service
     host# vim /etc/exports
     host# /home/osimg/live_mig backup-host-ip(rw,sync,no_root_squash)
+    host# service rpcbind restart
+    host# service nfs-server restart
 
 3. Mount host nfs folder on backup host::
 
