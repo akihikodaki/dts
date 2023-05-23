@@ -249,7 +249,6 @@ The following are the test plans for the DPDK DTS automated test system.
     dpdk_gso_lib_test_plan
     vswitch_sample_cbdma_test_plan
     vswitch_sample_dsa_test_plan
-    vswitch_pvp_multi_paths_performance_with_cbdma_test_plan
     vxlan_gpe_support_in_i40e_test_plan
     pvp_diff_qemu_version_test_plan
     pvp_share_lib_test_plan
