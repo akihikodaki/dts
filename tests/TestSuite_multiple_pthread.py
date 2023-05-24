@@ -23,6 +23,9 @@ class TestMultiplePthread(TestCase):
             "Test suite currently only supports Linux platforms",
         )
         self.dut_ports = self.dut.get_ports(self.nic)
+        self.eal_param_a = ""
+        for i in self.dut_ports:
+            self.eal_param_a += " -a {}".format(self.dut.ports_info[i]["pci"])
         global valports
         valports = [_ for _ in self.dut_ports if self.tester.get_local_port(_) != -1]
         # Verify that enough ports are available
@@ -110,14 +113,19 @@ class TestMultiplePthread(TestCase):
         # Allocate enough streams based on the number of CPUs
         if len(cpu_list) > 2:
             queue_num = len(cpu_list)
-            cmdline = './%s --lcores="%s" -n 4 -- -i --txq=%d --rxq=%d' % (
+            cmdline = './%s%s --lcores="%s" -n 4 -- -i --txq=%d --rxq=%d' % (
                 self.path,
+                self.eal_param_a,
                 lcores,
                 queue_num,
                 queue_num,
             )
         else:
-            cmdline = './%s --lcores="%s" -n 4 -- -i' % (self.path, lcores)
+            cmdline = './%s%s --lcores="%s" -n 4 -- -i' % (
+                self.path,
+                self.eal_param_a,
+                lcores,
+            )
         # start application
         self.dut.send_expect(cmdline, "testpmd", 60)
 
@@ -229,26 +237,26 @@ class TestMultiplePthread(TestCase):
         Test an random parameter from an defined table which has a couple of invalid lcore parameters.
         """
         cmdline_list = [
-            "./%s --lcores='(0-,4-7)@(4,5)' -n 4 -- -i",
-            "./%s --lcores='(-1,4-7)@(4,5)' -n 4 -- -i",
-            "./%s --lcores='(0,4-7-9)@(4,5)' -n 4 -- -i",
-            "./%s --lcores='(0,abcd)@(4,5)' -n 4 -- -i",
-            "./%s --lcores='(0,4-7)@(1-,5)' -n 4 -- -i",
-            "./%s --lcores='(0,4-7)@(-1,5)' -n 4 -- -i",
-            "./%s --lcores='(0,4-7)@(4,5-8-9)' -n 4 -- -i",
-            "./%s --lcores='(0,4-7)@(abc,5)' -n 4 -- -i",
-            "./%s --lcores='(0,4-7)@(4,xyz)' -n 4 -- -i",
-            "./%s --lcores='(0,4-7)=(8,9)' -n 4 -- -i",
-            "./%s --lcores='2,3 at 4,(0-1,,4))' -n 4 -- -i",
-            "./%s --lcores='[0-,4-7]@(4,5)' -n 4 -- -i",
-            "./%s --lcores='(0-,4-7)@[4,5]' -n 4 -- -i",
-            "./%s --lcores='3-4 at 3,2 at 5-6' -n 4 -- -i",
-            "./%s --lcores='2,,3''2--3' -n 4 -- -i",
-            "./%s --lcores='2,,,3''2--3' -n 4 -- -i",
+            "./%s%s --lcores='(0-,4-7)@(4,5)' -n 4 -- -i",
+            "./%s%s --lcores='(-1,4-7)@(4,5)' -n 4 -- -i",
+            "./%s%s --lcores='(0,4-7-9)@(4,5)' -n 4 -- -i",
+            "./%s%s --lcores='(0,abcd)@(4,5)' -n 4 -- -i",
+            "./%s%s --lcores='(0,4-7)@(1-,5)' -n 4 -- -i",
+            "./%s%s --lcores='(0,4-7)@(-1,5)' -n 4 -- -i",
+            "./%s%s --lcores='(0,4-7)@(4,5-8-9)' -n 4 -- -i",
+            "./%s%s --lcores='(0,4-7)@(abc,5)' -n 4 -- -i",
+            "./%s%s --lcores='(0,4-7)@(4,xyz)' -n 4 -- -i",
+            "./%s%s --lcores='(0,4-7)=(8,9)' -n 4 -- -i",
+            "./%s%s --lcores='2,3 at 4,(0-1,,4))' -n 4 -- -i",
+            "./%s%s --lcores='[0-,4-7]@(4,5)' -n 4 -- -i",
+            "./%s%s --lcores='(0-,4-7)@[4,5]' -n 4 -- -i",
+            "./%s%s --lcores='3-4 at 3,2 at 5-6' -n 4 -- -i",
+            "./%s%s --lcores='2,,3''2--3' -n 4 -- -i",
+            "./%s%s --lcores='2,,,3''2--3' -n 4 -- -i",
         ]
 
         cmdline = random.sample(cmdline_list, 1)
-        out = self.dut.send_expect(cmdline[0] % self.path, "#", 60)
+        out = self.dut.send_expect(cmdline[0] % (self.path, self.eal_param_a), "#", 60)
         self.verify("invalid parameter" in out, "it's a valid parameter")
 
     def tear_down(self):
