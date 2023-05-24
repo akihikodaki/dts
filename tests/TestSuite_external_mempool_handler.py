@@ -12,7 +12,7 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 
 
-class TestExternalMempool(TestCase):
+class TestExternalMempoolHandler(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -20,7 +20,9 @@ class TestExternalMempool(TestCase):
         self.dut_ports = self.dut.get_ports()
 
         self.verify(len(self.dut_ports) >= 2, "Not enough ports")
-
+        self.eal_param_a = ""
+        for i in self.dut_ports:
+            self.eal_param_a += " -a {}".format(self.dut.ports_info[i]["pci"])
         self.pmdout = PmdOutput(self.dut)
 
         self.app_test_path = self.dut.apps_name["test"]
@@ -33,7 +35,8 @@ class TestExternalMempool(TestCase):
 
     def verify_unit_func(self, ops=""):
         self.dut.send_expect(
-            "./%s -n 4 -c f --mbuf-pool-ops-name %s" % (self.app_test_path, ops),
+            "./%s%s -n 4 -c f --mbuf-pool-ops-name %s"
+            % (self.app_test_path, self.eal_param_a, ops),
             "R.*T.*E.*>.*>",
             60,
         )
@@ -42,7 +45,11 @@ class TestExternalMempool(TestCase):
         self.verify("Test OK" in out, "Mempool autotest failed")
 
     def verify_unit_perf(self):
-        self.dut.send_expect("./%s -n 4 -c f" % self.app_test_path, "R.*T.*E.*>.*>", 60)
+        self.dut.send_expect(
+            "./%s%s -n 4 -c f" % (self.app_test_path, self.eal_param_a),
+            "R.*T.*E.*>.*>",
+            60,
+        )
         out = self.dut.send_expect("mempool_perf_autotest", "RTE>>", 1200)
         self.dut.send_expect("quit", "# ")
         # may need to compare performance
