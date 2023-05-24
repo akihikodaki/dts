@@ -213,6 +213,7 @@ The following are the test plans for the DPDK DTS automated test system.
     power_bidirection_channel_test_plan
     power_branch_ratio_test_plan
     power_empty_poll_test_plan
+    power_intel_uncore_test_plan
     power_pbf_test_plan
     power_pmd_test_plan
     power_pstate_test_plan
