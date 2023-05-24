@@ -31,43 +31,11 @@ class TestExternalMemory(TestCase):
         """
         pass
 
-    def insmod_modprobe(self, modename=""):
-        """
-        Insmod modProbe before run test case
-        """
-        if modename == "igb_uio":
-            self.dut.send_expect("modprobe uio", "#", 10)
-            out = self.dut.send_expect("lsmod | grep igb_uio", "#")
-            if "igb_uio" in out:
-                self.dut.send_expect("rmmod -f igb_uio", "#", 10)
-            self.dut.send_expect(
-                "insmod ./" + self.target + "/kmod/igb_uio.ko", "#", 10
-            )
-
-            out = self.dut.send_expect("lsmod | grep igb_uio", "#")
-            assert "igb_uio" in out, "Failed to insmod igb_uio"
-
-            self.dut.bind_interfaces_linux(driver="igb_uio")
-
-        if modename == "vfio-pci":
-            self.dut.send_expect("rmmod vfio_pci", "#", 10)
-            self.dut.send_expect("rmmod vfio_iommu_type1", "#", 10)
-            self.dut.send_expect("rmmod vfio", "#", 10)
-            self.dut.send_expect("modprobe vfio", "#", 10)
-            self.dut.send_expect("modprobe vfio_pci", "#", 10)
-            out = self.dut.send_expect("lsmod | grep vfio_iommu_type1", "#")
-            if not out:
-                out = self.dut.send_expect("ls /sys/module |grep vfio_pci", "#")
-            assert "vfio_pci" in out, "Failed to insmod vfio_pci"
-
-            self.dut.bind_interfaces_linux(driver="vfio-pci")
-
     @skip_unsupported_host_driver(["vfio-pci"])
     def test_IGB_UIO_xmem(self):
         """
         Verifier IGB_UIO and anonymous memory allocation
         """
-        self.insmod_modprobe(modename="igb_uio")
         self.eal_para = self.dut.create_eal_parameters(cores="1S/4C/1T")
         self.dut.send_expect(
             r"./%s %s -- --mp-alloc=xmem -i" % (self.app_testpmd_path, self.eal_para),
@@ -81,7 +49,6 @@ class TestExternalMemory(TestCase):
         """
         Verifier IGB_UIO and anonymous hugepage memory allocation
         """
-        self.insmod_modprobe(modename="igb_uio")
         self.eal_para = self.dut.create_eal_parameters(cores="1S/4C/1T")
         self.dut.send_expect(
             r"./%s %s -- --mp-alloc=xmemhuge -i"
@@ -95,7 +62,6 @@ class TestExternalMemory(TestCase):
         """
         Verifier VFIO_PCI and anonymous memory allocation
         """
-        self.insmod_modprobe(modename="vfio-pci")
         self.dut.send_expect(
             "echo 655359 > /sys/module/vfio_iommu_type1/parameters/dma_entry_limit",
             "#",
@@ -115,8 +81,6 @@ class TestExternalMemory(TestCase):
         """
         Verifier VFIO and anonymous hugepage memory allocation
         """
-        self.insmod_modprobe(modename="vfio-pci")
-
         self.eal_para = self.dut.create_eal_parameters(cores="1S/4C/1T")
         self.dut.send_expect(
             r"./%s %s -- --mp-alloc=xmemhuge -i"
@@ -139,8 +103,6 @@ class TestExternalMemory(TestCase):
         self.verify(str(amount) in result, "Wrong: can't get <%d> package" % amount)
 
         self.dut.send_expect("quit", "#", 10)
-
-        self.dut.unbind_interfaces_linux(self.dut_ports)
 
     def scapy_send_packet(self, nu):
         """
@@ -168,5 +130,4 @@ class TestExternalMemory(TestCase):
         """
         Run after each test suite.
         """
-        self.dut.bind_interfaces_linux(driver=self.drivername)
         pass
