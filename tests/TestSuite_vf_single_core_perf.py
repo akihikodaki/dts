@@ -56,6 +56,7 @@ class TestVfSingleCorePerf(TestCase):
         """
         # test parameters include: frames size, descriptor numbers
         self.test_parameters = self.get_suite_cfg()["test_parameters"]
+        self.forwarding_mode = self.get_suite_cfg()["forwarding_mode"]
 
         # traffic duraion in second
         self.test_duration = self.get_suite_cfg()["test_duration"]
@@ -99,6 +100,9 @@ class TestVfSingleCorePerf(TestCase):
             self.dut.send_expect(
                 "ip link set %s vf 0 mac %s" % (pf_intf, self.vfs_mac[i]), "#"
             )
+            if self.forwarding_mode == "io":
+                self.dut.send_expect("ip link set %s vf 0 trust on" % pf_intf, "#")
+                self.dut.send_expect("ip link set %s vf 0 spoofchk off" % pf_intf, "#")
 
         # bind vf to vf driver
         try:
@@ -223,10 +227,10 @@ class TestVfSingleCorePerf(TestCase):
         for i in range(port_num):
             eal_para += " -a " + self.sriov_vfs_port[i][0].pci
         port_mask = utils.create_mask(self.dut_ports)
-        # parameters for application/testpmd
-        param = " --portmask=%s" % (port_mask)
 
         for fwd_config in list(self.test_parameters.keys()):
+            # parameters for application/testpmd
+            param = " --portmask=%s" % (port_mask)
             # the fwd_config just the config for fwd core
             # to start testpmd should add 1C to it
             core_config = "1S/%s" % fwd_config
@@ -279,7 +283,8 @@ class TestVfSingleCorePerf(TestCase):
                     self.pmdout.start_testpmd(
                         core_list, parameter, eal_para, socket=self.socket
                     )
-                    self.dut.send_expect("set fwd mac", "testpmd> ", 15)
+                    if self.forwarding_mode == "mac":
+                        self.dut.send_expect("set fwd mac", "testpmd> ", 15)
                     self.dut.send_expect("start", "testpmd> ", 15)
 
                     vm_config = self.set_fields()
