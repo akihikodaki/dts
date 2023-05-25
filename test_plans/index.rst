@@ -75,6 +75,7 @@ The following are the test plans for the DPDK DTS automated test system.
     firmware_version_test_plan
     floating_veb_test_plan
     i40e_rss_input_test_plan
+    i40e_multi_driver_perf_test_plan
     generic_flow_api_test_plan
     hotplug_mp_test_plan
     hotplug_test_plan
