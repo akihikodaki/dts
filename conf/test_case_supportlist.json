@@ -536,66 +536,6 @@
             "Comments": "the nic on the environment not support this case"
         }
     ],
-     "fdir_ipv6_tc": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "I40E_10G-SFP_X710",
-                "IGC-I225_LM",
-                "I40E_40G-QSFP_A",
-                "I40E_40G-QSFP_B",
-                "I40E_25G-25G_SFP28",
-		"I40E_10G-10G_BASE_T_BC"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic on the environment not support this case"
-        }
-    ],
-    "ipv4_tos_proto_ttl": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "I40E_10G-SFP_X710",
-                "IGC-I225_LM",
-                "I40E_40G-QSFP_A",
-                "I40E_40G-QSFP_B",
-                "I40E_25G-25G_SFP28",
-		"I40E_10G-10G_BASE_T_BC"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic on the environment not support this case"
-        }
-    ],
-    "fdir_ivlan": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "I40E_10G-SFP_X710",
-                "IGC-I225_LM",
-                "I40E_40G-QSFP_A",
-                "I40E_40G-QSFP_B",
-                "I40E_25G-25G_SFP28",
-		"I40E_10G-10G_BASE_T_BC"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic on the environment not support this case"
-        }
-    ],
     "nsh": [
         {
             "OS": [
@@ -641,49 +581,7 @@
             "Comments": "the nic on the environment not support this case"
         }
     ],
-    "queue_region_with_rss_rule_api": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "I40E_10G-SFP_X710",
-                "I40E_40G-QSFP_A",
-                "I40E_40G-QSFP_B",
-                "I40E_25G-25G_SFP28",
-                "I40E_10G-SFP_X722",
-                "I40E_10G-10G_BASE_T_X722",
-                "I40E_10G-10G_BASE_T_BC"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic on the environment not support this case"
-        }
-    ],
     "queue_region_with_rss_rule_combination": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "I40E_10G-SFP_X710",
-                "I40E_40G-QSFP_A",
-                "I40E_40G-QSFP_B",
-                "I40E_25G-25G_SFP28",
-                "I40E_10G-SFP_X722",
-                "I40E_10G-10G_BASE_T_X722",
-                "I40E_10G-10G_BASE_T_BC"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic on the environment not support this case"
-        }
-    ],
-    "queue_region_with_invalid_parameter": [
         {
             "OS": [
                 "ALL"
@@ -1008,23 +906,6 @@
             "NIC": [
                 "IGB_1G-82580_COPPER",
                 "IGB_1G-I350_COPPER",
-                "IGC-I225_LM"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic on the environment not support this case"
-        }
-    ],
-    "L2_tunnel_filter": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-X550EM_X_10G_T",
-                "IXGBE_10G-X550T",
                 "IGC-I225_LM"
             ],
             "Target": [
@@ -1684,23 +1565,6 @@
             "Comments": "the nic on the environment not support this case"
         }
     ],
-    "download_the_package_failed": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "ICE_100G-E810C_QSFP",
-		"ICE_25G-E823C_QSFP",
-                "ICE_25G-E810C_SFP"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic on the environment not support this case"
-        }
-    ],
     "packet_checking_scalar_mode": [
         {
             "OS": [
@@ -2279,78 +2143,6 @@
             ],
             "Bug ID": "",
             "Comments": "This case only support ice"
-        }
-    ],
-    "lsc_event_between_vhost_user_and_virtio_user_with_packed_ring_and_cbdma_enabled": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "host_driver": [
-                "igb_uio"
-            ],
-            "Bug ID": "",
-            "Comments": "This case only supports the igb_uio driver"
-        }
-    ],
-    "lsc_event_between_vhost_user_and_virtio_user_with_split_ring_and_cbdma_enabled": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "host_driver": [
-                "igb_uio"
-            ],
-            "Bug ID": "",
-            "Comments": "This case only supports the igb_uio driver"
-        }
-    ],
-    "packed_ring_virtio_user_interrupt_test_with_vhost_user_as_backend_and_cbdma_enabled": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "host_driver": [
-                "igb_uio"
-            ],
-            "Bug ID": "",
-            "Comments": "This case only supports the igb_uio driver"
-        }
-    ],
-    "split_ring_virtio_user_interrupt_test_with_vhost_user_as_backend_and_cbdma_enabled": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "host_driver": [
-                "igb_uio"
-            ],
-            "Bug ID": "",
-            "Comments": "This case only supports the igb_uio driver"
         }
     ],
     "nic_interrupt_PF_igb_uio": [
