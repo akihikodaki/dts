@@ -55,60 +55,6 @@
             "Comments": "the nic not support this case"
         }
     ],
-    "five_tuple_filter": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IGB_1G-82580_COPPER",
-                "IGB_1G-I350_COPPER",
-                "I40E_40G-QSFP_B",
-                "IGB_1G-I210_COPPER",
-                "IXGBE_10G-82599_T3_LOM",
-                "IXGBE_10G-82599_SFP_SF_QP",
-                "IXGBE_10G-X540T",
-                "cavium_a034",
-                "cavium_a011",
-                "I40E_10G-SFP_X722",
-                "I40E_10G-10G_BASE_T_X722",
-                "I40E_10G-10G_BASE_T_BC",
-		"IGC-I225_LM"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "flex_filter": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-82599_SFP",
-                "IGB_1G-82576_QUAD_COPPER_ET2",
-                "I40E_40G-QSFP_B",
-                "IGB_1G-I210_COPPER",
-                "IXGBE_10G-82599_T3_LOM",
-                "IXGBE_10G-82599_SFP_SF_QP",
-                "IXGBE_10G-X540T",
-                "cavium_a034",
-                "cavium_a011",
-                "I40E_10G-SFP_X722",
-                "I40E_10G-10G_BASE_T_X722",
-                "I40E_10G-10G_BASE_T_BC",
-                "IGC-I225_LM"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
     "jumbo_frame_size": [
         {
             "OS": [
@@ -175,56 +121,6 @@
             "Comments": "the nic not support this case"
         }
     ],
-    "multiple_filters_1GB": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-82599_SFP",
-                "I40E_40G-QSFP_B",
-                "IGB_1G-I210_COPPER",
-                "IXGBE_10G-82599_T3_LOM",
-                "IXGBE_10G-82599_SFP_SF_QP",
-                "IXGBE_10G-X540T",
-                "cavium_a034",
-                "cavium_a011",
-                "I40E_10G-SFP_X722",
-                "I40E_10G-10G_BASE_T_X722",
-                "I40E_10G-10G_BASE_T_BC"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "priority_filter": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "I40E_40G-QSFP_B",
-                "IGB_1G-I210_COPPER",
-                "IXGBE_10G-82599_T3_LOM",
-                "IXGBE_10G-82599_SFP_SF_QP",
-                "IXGBE_10G-X540T",
-                "cavium_a034",
-                "cavium_a011",
-                "I40E_10G-SFP_X722",
-                "I40E_10G-10G_BASE_T_X722",
-                "I40E_10G-10G_BASE_T_BC",
-                "IGC-I225_LM"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
     "syn_filter": [
         {
             "OS": [
@@ -247,33 +143,6 @@
                 "I40E_10G-SFP_X722",
                 "I40E_10G-10G_BASE_T_X722",
                 "I40E_10G-10G_BASE_T_BC"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "twotuple_filter": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-82599_SFP",
-                "IGB_1G-82576_QUAD_COPPER_ET2",
-                "I40E_40G-QSFP_B",
-                "IGB_1G-I210_COPPER",
-                "IXGBE_10G-82599_T3_LOM",
-                "IXGBE_10G-82599_SFP_SF_QP",
-                "IXGBE_10G-X540T",
-                "cavium_a034",
-                "cavium_a011",
-                "I40E_10G-SFP_X722",
-                "I40E_10G-10G_BASE_T_X722",
-                "I40E_10G-10G_BASE_T_BC",
-                "IGC-I225_LM"
             ],
             "Target": [
                 "ALL"
@@ -332,24 +201,6 @@
                 "IGB_1G-I210_COPPER",
                 "IGC-I226_LM",
 	        "IGC-I225_LM"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "vlan_QinQ_filter": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-82599_SFP",
-                "IGB_1G-82576_QUAD_COPPER_ET2",
-                "IGB_1G-82580_COPPER",
-                "IGB_1G-I350_COPPER"
             ],
             "Target": [
                 "ALL"
@@ -625,315 +476,6 @@
             "Comments": "the nic not support this case"
         }
     ],
-    "fdir_flexword_drop_ipv4": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the os not support this case"
-        },
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IGB_1G-I350_COPPER",
-                "IGB_1G-82576_QUAD_COPPER_ET2",
-                "IGB_1G-I210_COPPER",
-                "IXGBE_10G-82599_T3_LOM",
-                "IXGBE_10G-82599_SFP_SF_QP",
-                "IXGBE_10G-X540T",
-                "cavium_a034",
-                "cavium_a011"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "fdir_flexword_drop_ipv6": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the os not support this case"
-        },
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IGB_1G-I350_COPPER",
-                "IGB_1G-82576_QUAD_COPPER_ET2",
-                "IGB_1G-I210_COPPER",
-                "IXGBE_10G-82599_T3_LOM",
-                "IXGBE_10G-82599_SFP_SF_QP",
-                "IXGBE_10G-X540T",
-                "IXGBE_10G-82599_SFP",
-                "cavium_a034",
-                "cavium_0011"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "fdir_flexword_fwd_ipv4": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the os not support this case"
-        },
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IGB_1G-I350_COPPER",
-                "IGB_1G-82576_QUAD_COPPER_ET2",
-                "IGB_1G-I210_COPPER",
-                "IXGBE_10G-82599_T3_LOM",
-                "IXGBE_10G-82599_SFP_SF_QP",
-                "IXGBE_10G-X540T",
-                "cavium_a034",
-                "cavium_0011"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "fdir_flexword_fwd_ipv6": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the os not support this case"
-        },
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IGB_1G-I350_COPPER",
-                "IGB_1G-82576_QUAD_COPPER_ET2",
-                "IGB_1G-I210_COPPER",
-                "IXGBE_10G-82599_T3_LOM",
-                "IXGBE_10G-82599_SFP_SF_QP",
-                "IXGBE_10G-X540T",
-                "cavium_a034",
-                "cavium_0011",
-                "IGC-I225_LM"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "fdir_noflexword_drop_ipv4": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the os not support this case"
-        },
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IGB_1G-I350_COPPER",
-                "IGB_1G-82576_QUAD_COPPER_ET2",
-                "IGB_1G-I210_COPPER",
-                "IXGBE_10G-82599_T3_LOM",
-                "IXGBE_10G-82599_SFP_SF_QP",
-                "IXGBE_10G-X540T",
-                "cavium_a034",
-                "cavium_0011"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "fdir_noflexword_drop_ipv6": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the os not support this case"
-        },
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IGB_1G-I350_COPPER",
-                "IGB_1G-82576_QUAD_COPPER_ET2",
-                "IGB_1G-I210_COPPER",
-                "IXGBE_10G-82599_T3_LOM",
-                "IXGBE_10G-82599_SFP_SF_QP",
-                "IXGBE_10G-X540T",
-                "IXGBE_10G-82599_SFP",
-                "cavium_a034",
-                "cavium_0011"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "fdir_noflexword_fwd_ipv4": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the os not support this case"
-        },
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IGB_1G-I350_COPPER",
-                "IGB_1G-82576_QUAD_COPPER_ET2",
-                "IGB_1G-I210_COPPER",
-                "IXGBE_10G-82599_T3_LOM",
-                "IXGBE_10G-82599_SFP_SF_QP",
-                "IXGBE_10G-X540T",
-                "cavium_a034",
-                "cavium_0011"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "fdir_noflexword_fwd_ipv6": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the os not support this case"
-        },
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IGB_1G-I350_COPPER",
-                "IGB_1G-82576_QUAD_COPPER_ET2",
-                "IGB_1G-I210_COPPER",
-                "IXGBE_10G-82599_T3_LOM",
-                "IXGBE_10G-82599_SFP_SF_QP",
-                "IXGBE_10G-X540T",
-                "cavium_a034",
-                "cavium_0011",
-                "IGC-I225_LM"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "dynamic_rss_bond_config": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IGB_1G-I350_COPPER",
-                "IGB_1G-82576_QUAD_COPPER_ET2",
-                "IGB_1G-I210_COPPER",
-                "IXGBE_10G-82599_T3_LOM",
-                "IXGBE_10G-82599_SFP_SF_QP",
-                "IXGBE_10G-X540T",
-                "IXGBE_10G-82599_SFP",
-                "I40E_40G-QSFP_B",
-                "I40E_10G-SFP_X722",
-                "I40E_10G-10G_BASE_T_X722",
-		"IGC-I225_LM"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case,(x722 know ND issue,DPDK-15118)"
-        }
-    ],
     "pmdrss_reta": [
         {
             "OS": [
@@ -1002,80 +544,7 @@
             "Comments": "32 bit not support this case/not enough queue"
         }
     ],
-    "ifconfig": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the OS not support this case"
-        },
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "i686-native-linuxapp-gcc",
-                "i686-native-linuxapp-icc"
-            ],
-            "Bug ID": "",
-            "Comments": "32 bit not support this case,confirmed with developer"
-        }
-    ],
     "ping": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the OS not support this case"
-        },
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "i686-native-linuxapp-gcc",
-                "i686-native-linuxapp-icc"
-            ],
-            "Bug ID": "",
-            "Comments": "32 bit not support this case,confirmed with developer"
-        }
-    ],
-    "ethtools": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the OS not support this case"
-        }
-    ],
-    "tcpdump": [
         {
             "OS": [
                 "freebsd"
@@ -1131,35 +600,6 @@
             ],
             "Bug ID": "",
             "Comments": "32 bit not support this case"
-        },
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "i686-native-linuxapp-gcc",
-                "i686-native-linuxapp-icc"
-            ],
-            "Bug ID": "",
-            "Comments": "32 bit not support this case,confirmed with developer"
-        }
-    ],
-    "statistics": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the OS not support this case"
         },
         {
             "OS": [
@@ -1309,172 +749,6 @@
             "Comments": "the nic not support this case"
         }
     ],
-    "ethtool": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-82599_SFP_SF_QP",
-                "I40E_10G-SFP_X710",
-                "I40E_40G-QSFP_A",
-                "I40E_40G-QSFP_B",
-                "I40E_25G-25G_SFP28"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        },
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "I40E_10G-SFP_X710",
-                "I40E_40G-QSFP_A",
-                "I40E_40G-QSFP_B",
-                "I40E_25G-25G_SFP28"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        },
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "i686-native-linuxapp-gcc",
-                "i686-native-linuxapp-icc"
-            ],
-            "Bug ID": "",
-            "Comments": "32 bit not support this case,confirmed with developer"
-        }
-    ],
-    "power_acpi": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "depend on os and hw support"
-        }
-    ],
-    "pmd_burst": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "I40E_40G-QSFP_B",
-                "cavium_a064"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        },
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-82599_SFP"
-            ],
-            "Target": [
-                "i686-native-linuxapp-gcc",
-                "i686-native-linuxapp-icc"
-            ],
-            "Bug ID": "",
-            "Comments": "32 bit not support this case"
-        },
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the OS not support this case"
-        }
-    ],
-    "pmd_continues": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "I40E_40G-QSFP_B",
-                "cavium_a064"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        },
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-82599_SFP"
-            ],
-            "Target": [
-                "i686-native-linuxapp-gcc",
-                "i686-native-linuxapp-icc"
-            ],
-            "Bug ID": "",
-            "Comments": "32 bit not support this case"
-        },
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the OS not support this case"
-        }
-    ],
-    "sched": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "i686-native-linuxapp-gcc",
-                "i686-native-linuxapp-icc"
-            ],
-            "Bug ID": "",
-            "Comments": "32 bit not support this case"
-        }
-    ],
     "send_4K_frames_split_in_7_and_4K_maxflows": [
         {
             "OS": [
@@ -1592,96 +866,6 @@
             ],
             "Bug ID": "",
             "Comments": "not enough cores for 32 bit"
-        }
-    ],
-    "alarm": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the OS not support this case"
-        }
-    ],
-    "interrupts": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the OS not support this case"
-        }
-    ],
-    "link_bonding": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the OS not support this case"
-        }
-    ],
-    "log_dump": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the OS not support this case"
-        }
-    ],
-    "kni": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the OS not support this case"
-        }
-    ],
-    "power": [
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the OS not support this case"
         }
     ],
     "vf_pmdrss": [
@@ -2015,23 +1199,6 @@
             "Comments": ""
         }
     ],
-    "flags": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "i686-native-linuxapp-gcc",
-                "i686-native-linuxapp-icc",
-                "i686-native-linuxapp-clang"
-            ],
-            "Bug ID": "",
-            "Comments": "32 bit address space limited"
-        }
-    ],
     "qinq_packet_filter_VF_queues": [
         {
             "OS": [
@@ -2047,68 +1214,6 @@
             ],
             "Bug ID": "",
             "Comments": "32 bit address space limited"
-        }
-    ],
-    "multiprocess": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "i686-native-linuxapp-gcc",
-                "i686-native-linuxapp-icc",
-                "i686-native-linuxapp-clang"
-            ],
-            "Bug ID": "",
-            "Comments": "32 bit not support this case"
-        }
-    ],
-    "fdir_ipv6_tc": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-82599_SFP"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "fdir_ivlan": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-82599_SFP"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "ipv4_tos_proto_ttl": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-82599_SFP"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
         }
     ],
     "port_mtu": [
@@ -2325,73 +1430,7 @@
             "Comments": "the nic not support this case"
         }
     ],
-    "two_vms_uplink_and_downlink_mirror": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "I40E_10G-10G_BASE_T_X722"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "NIC X722 firmware doesn't support to add more than one mirror rule in one vsi"
-        }
-    ],
-    "two_vms_vlan_and_pool_and_uplink_and_downlink": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "I40E_10G-10G_BASE_T_X722"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "NIC X722 firmware doesn't support to add more than one mirror rule in one vsi"
-        }
-    ],
-     "queue_region_with_rss_rule_api": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-82599_SFP",
-                "IGB_1G-I350_COPPER",
-                "IXGBE_10G-X550EM_X_10G_T",
-                "IXGBE_10G-X550T"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
      "queue_region_with_rss_rule_combination": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-82599_SFP",
-                "IGB_1G-I350_COPPER",
-                "IXGBE_10G-X550EM_X_10G_T",
-                "IXGBE_10G-X550T"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-     "queue_region_with_invalid_parameter": [
         {
             "OS": [
                 "ALL"
@@ -2492,22 +1531,6 @@
             "Comments": "the nic not support this case"
         }
     ],
-     "ring_dump": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "cavium_a063",
-                "cavium_a064"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
      "reconfigure_ports": [
         {
             "OS": [
@@ -2534,21 +1557,6 @@
                 "cavium_a064",
                 "IGC-I226_LM",
 		"IGC-I225_LM"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-     "set_promiscuousmode": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "cavium_a064"
             ],
             "Target": [
                 "ALL"
@@ -2595,43 +1603,6 @@
             "Comments": "the nic not support this case: ice_dev_filter_ctrl(): Filter type (6) not supported"
         }
     ],
-     "GRE_packet_filter": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "ICE_25G-E810C_SFP",
-		"ICE_25G-E823C_QSFP",
-                "ICE_100G-E810C_QSFP",
-                "cavium_a063",
-                "cavium_a064"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case: ice_dev_filter_ctrl(): Filter type (6) not supported"
-        }
-    ],
-    "two_vms_pool_down_mirrors": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-82599_SFP",
-                "IXGBE_10G-X550EM_X_10G_T",
-                "IXGBE_10G-X550T",
-                "IXGBE_10G-X540T"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
     "retrieve_eeprom": [
         {
             "OS": [
@@ -2642,54 +1613,6 @@
                 "cavium_a064",
                 "IGC-I226_LM",
 		"IGC-I225_LM"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "enable_disablejumbo": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "cavium_a063",
-                "cavium_a064"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-     "power_acpi_cpufreq": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "cavium_a063",
-                "cavium_a064"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-     "power_cpufreq": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "cavium_a063",
-                "cavium_a064"
             ],
             "Target": [
                 "ALL"
@@ -2714,71 +1637,7 @@
             "Comments": "the nic not support this case"
         }
     ],
-     "different_types_rss_queue_rule": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "cavium_a063",
-                "cavium_a064"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-     "disable_enable_rss": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "cavium_a063",
-                "cavium_a064"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
      "disable_rss_in_commandline": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "cavium_a063",
-                "cavium_a064"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-     "enable_ipv4_udp_rss": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "cavium_a063",
-                "cavium_a064"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-     "rss_queue_rule": [
         {
             "OS": [
                 "ALL"
@@ -2946,21 +1805,6 @@
             ],
             "Bug ID": "",
             "Comments": "freebsd not support create vf"
-        }
-    ],
-    "ipv6_5tuple_hash_table": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IGC-I225_LM"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "NIC not support this case"
         }
     ],
     "fdir_for_vlan": [
@@ -3167,37 +2011,6 @@
             ],
             "Bug ID": "",
             "Comments": "only support by i40e"
-        }
-    ],
-
-    "perf_pvp_split_ring_dequeue_zero_copy": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-82599_SFP"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "perf_pvp_packed_ring_dequeue_zero_copy": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IXGBE_10G-82599_SFP"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
         }
     ],
     "check_double_VLAN_fields_in_RXD_8021ad": [
@@ -3573,21 +2386,6 @@
             "Bug ID": "",
             "Comments": "Nic not support this case"
        }
-    ],
-    "rxoffload_port": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "IGB_1G-I210_COPPER"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "Nic not support this case"
-        }
     ],
     "txoffload_port_cmdline": [
         {
