@@ -49,6 +49,10 @@ Removed Items
    Also, make sure to start the actual text at the margin.
    =======================================================
 
+* **Remove test suites.**
+
+  * TestSuite_vswitch_pvp_multi_paths_performance_with_cbdma.py
+
 
 Known Issues
 ------------
