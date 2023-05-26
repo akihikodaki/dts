@@ -86,7 +86,6 @@ class IpReassemblyTestConfig(object):
 
 
 class TestIpReassembly(TestCase):
-
     #
     #
     #
@@ -599,6 +598,7 @@ class TestIpReassembly(TestCase):
         )
         try:
             self.set_tester_iface_mtu(self.test_config.tester_iface, mtu)
+            self.tester.is_interface_up(self.test_config.tester_iface)
             self.set_max_num_of_fragments(4)
             self.compile_example_app()
             self.execute_example_app()
