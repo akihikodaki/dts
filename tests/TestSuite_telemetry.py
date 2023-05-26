@@ -270,9 +270,9 @@ class TestTelemetry(TestCase):
         self.dut.session.copy_file_from(json_file, dst_file)
         msg = "failed to get {}".format(json_name)
         self.verify(os.path.exists(dst_file), msg)
-        with open(dst_file, "r") as fp:
+        with open(dst_file, "r", encoding="utf-8") as fp:
             try:
-                query_data = json.load(fp, encoding="utf-8")
+                query_data = json.load(fp)
             except Exception as e:
                 msg = "failed to load metrics json data"
                 self.verify(False, msg)
