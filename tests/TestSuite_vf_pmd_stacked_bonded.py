@@ -403,7 +403,8 @@ class TestVFPmdStackedBonded(TestCase):
         self.verify("bsdapp" not in self.target, "Bonding not support freebsd")
         self.dut_ports = self.dut.get_ports()
         self.dport_info0 = self.dut.ports_info[self.dut_ports[0]]
-        self.dport_ifaces = self.dport_info0["intf"]
+        self.dport_ifaces_port0 = self.dport_info0["intf"]
+        self.dport_ifaces_port1 = self.dut.ports_info[self.dut_ports[1]]["intf"]
         num_ports = len(self.dut_ports)
         self.verify(num_ports == 2 or num_ports == 4, "Insufficient ports")
         tester_port0 = self.tester.get_local_port(self.dut_ports[0])
@@ -444,6 +445,11 @@ class TestVFPmdStackedBonded(TestCase):
         Run before each test case.
         """
         self.create_vfs(pf_list=self.dut_ports, vf_num=1)
+        port0_stats = self.dut.is_interface_up(self.dport_ifaces_port0)
+        port1_stats = self.dut.is_interface_up(self.dport_ifaces_port1)
+        if not all([port0_stats, port1_stats]):
+            self.dut.send_expect(f"ip link set {self.dport_ifaces_port0} up", "# ")
+            self.dut.send_expect(f"ip link set {self.dport_ifaces_port1} up", "# ")
         self.eal_param = ""
         for pci in self.vfs_pci:
             self.eal_param += " -a %s" % pci
