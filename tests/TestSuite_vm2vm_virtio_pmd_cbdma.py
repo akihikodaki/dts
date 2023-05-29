@@ -165,7 +165,8 @@ class TestVM2VMVirtioPmdCBDMA(TestCase):
 
     def get_and_verify_func_name_of_perf_top(self, func_name_list):
         self.dut.send_expect("rm -fr perf_top.log", "# ", 120)
-        self.dut.send_expect("perf top > perf_top.log", "", 120)
+        pid = self.dut.send_expect("pidof dpdk-testpmd", "# ", 120)
+        self.dut.send_expect("perf top -p %s > perf_top.log" % pid, "", 120)
         time.sleep(10)
         self.dut.send_expect("^C", "#")
         out = self.dut.send_expect("cat perf_top.log", "# ", 120)
