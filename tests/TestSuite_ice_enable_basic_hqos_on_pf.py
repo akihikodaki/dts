@@ -22,7 +22,7 @@ STREAM_UP_CONFIG = [0, 1, 2, 0, 0, 0, 0, 0]
 LINERATE = 100
 
 
-class TestIceEnableBasicHqosOnPF(TestCase):
+class TestICEEnableBasicHqosOnPF(TestCase):
     def set_up_all(self):
         self.dut_ports = self.dut.get_ports()
         # for test topo requirement,need 1 100G port and 1 25G port

@@ -9,7 +9,7 @@ from framework.settings import HEADER_SIZE, UPDATE_EXPECTED, load_global_setting
 from framework.test_case import TestCase
 
 
-class TestPVPVirtioWith2MHugepages(TestCase):
+class TestPVPVirtioUser2MHugepages(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

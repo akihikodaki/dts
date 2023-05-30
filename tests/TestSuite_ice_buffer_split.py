@@ -514,7 +514,7 @@ queue_buffer_split_inner_ipv6_sctp = [
 ]
 
 
-class TestBufferSplit(TestCase):
+class TestICEBufferSplit(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

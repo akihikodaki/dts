@@ -14,7 +14,7 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 
 
-class TestEEPROMDump(TestCase):
+class TestEepromDump(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

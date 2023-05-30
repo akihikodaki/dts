@@ -19,7 +19,7 @@ from framework.settings import HEADER_SIZE, UPDATE_EXPECTED, load_global_setting
 from framework.test_case import TestCase
 
 
-class TestVirtioUserInterruptDsa(TestCase):
+class TestVhostVirtioUserInterruptWithPowerMonitor(TestCase):
     def set_up_all(self):
         """
         run at the start of each test suite.

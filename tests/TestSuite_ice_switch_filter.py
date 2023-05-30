@@ -4317,7 +4317,7 @@ tvs_L2_mask_non_pipeline_mode = [
 test_results = OrderedDict()
 
 
-class ICESwitchFilterTest(TestCase):
+class TestICESwitchFilter(TestCase):
     def bind_nics_driver(self, ports, driver=""):
         # modprobe vfio driver
         if driver == "vfio-pci":

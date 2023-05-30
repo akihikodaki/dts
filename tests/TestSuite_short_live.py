@@ -23,7 +23,7 @@ from framework.test_case import TestCase
 #
 
 
-class TestShortLiveApp(TestCase):
+class TestShortLive(TestCase):
     #
     #
     #

@@ -8456,7 +8456,7 @@ mac_ipv4_gtpc_symmetric_toeplitz = [mac_ipv4_gtpc_symmetric]
 mac_ipv6_gtpc_symmetric_toeplitz = [mac_ipv6_gtpc_symmetric]
 
 
-class TestICEAdvancedIAVFRSSGTPU(TestCase):
+class TestICEAdvancedIavfRSSGTPU(TestCase):
     supported_nic = [
         "ICE_100G-E810C_QSFP",
         "ICE_25G-E810C_SFP",

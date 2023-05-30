@@ -230,7 +230,7 @@ tvs_mac_disable_rss = eval(
 tvs_mac_default = tvs_mac_all
 
 
-class IAVFRSSConfigureTest(TestCase):
+class TestICEIavfRSSConfigure(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

@@ -19,7 +19,7 @@ from .bonding import FRAME_SIZE_64, MODE_LACP
 ######################
 # bonding 802.3ad mode
 ######################
-class TestBonding8023AD(TestCase):
+class TestPmdBonded8023AD(TestCase):
     AGG_MODES = ["bandwidth", "stable", "count"]
     DEDICATED_QUEUES = ["disable", "enable"]
 

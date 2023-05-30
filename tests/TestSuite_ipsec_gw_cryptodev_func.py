@@ -13,7 +13,7 @@ from framework.settings import CONFIG_ROOT_PATH
 from framework.test_case import TestCase
 
 
-class TestIPsecGW(TestCase):
+class TestIPsecGwCryptodevFunc(TestCase):
     def set_up_all(self):
         self.core_config = "1S/3C/1T"
         self.number_of_ports = 2

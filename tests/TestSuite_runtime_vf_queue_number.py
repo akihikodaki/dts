@@ -19,7 +19,7 @@ RSS_KEY = "6EA6A420D5138E712433B813AE45B3C4BECB2B405F31AD6C331835372D15E2D5E4956
 PACKET_COUNT = 100
 
 
-class TestRuntimeVfQn(TestCase):
+class TestRuntimeVfQueueNumber(TestCase):
     supported_vf_driver = ["pci-stub", "vfio-pci"]
 
     def set_up_all(self):

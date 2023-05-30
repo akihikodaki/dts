@@ -18,7 +18,7 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 
 
-class TestSuiteMaliciousDrvEventIndication(TestCase):
+class TestMaliciousDriverEventIndication(TestCase):
     def d_con(self, cmd):
         _cmd = [cmd, "# ", 10] if isinstance(cmd, str) else cmd
         return self.dut.send_expect(*_cmd)

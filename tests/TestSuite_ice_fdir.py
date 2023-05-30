@@ -2989,7 +2989,7 @@ vectors_ipv6_next_proto_sctp = [
 ]
 
 
-class TestICEFdir(TestCase):
+class TestICEFDIR(TestCase):
     def query_count(self, hits_set, hits, port_id=0, rule_id=0):
         out = self.dut.send_command(
             "flow query %s %s count" % (port_id, rule_id), timeout=1

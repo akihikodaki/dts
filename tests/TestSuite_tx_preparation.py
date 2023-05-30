@@ -33,7 +33,7 @@ TSO_value = 1460
 count = 4
 
 
-class TestTX_preparation(TestCase):
+class TestTxPreparation(TestCase):
     #
     # Test cases.
     #

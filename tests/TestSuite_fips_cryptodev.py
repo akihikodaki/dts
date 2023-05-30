@@ -9,7 +9,7 @@ import tests.cryptodev_common as cc
 from framework.test_case import TestCase
 
 
-class FipCryptodev(TestCase):
+class TestFipsCryptodev(TestCase):
     def set_up_all(self):
         out = self.dut.build_dpdk_apps("./examples/fips_validation")
         self.verify("Error" not in out, "Compilation error")

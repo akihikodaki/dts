@@ -42,7 +42,7 @@ MNT_PATH = ["/mnt/huge1", "/mnt/huge2", "/mnt/huge3"]
 vhost_name = ["vhost1", "vhost2", "vhost3"]
 
 
-class DpdkHugetlbfsMountSize(TestCase):
+class TestDPDKHugetlbfsMountSize(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

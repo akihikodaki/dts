@@ -20,7 +20,7 @@ from framework.test_case import TestCase
 from framework.virt_common import VM
 
 
-class TestIxgbeVfGetExtraInfo(TestCase):
+class TestIxgbeVfGetExtraQueueInformation(TestCase):
     def get_packet_bytes(self, queue):
         """
         Get rx queue packets and bytes.

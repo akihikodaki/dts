@@ -21,7 +21,7 @@ import framework.utils as utils
 from framework.test_case import TestCase
 
 
-class IpReassemblyTestConfig(object):
+class Ipv4ReassemblyTestConfig(object):
 
     """
     Helper class that encapsulates all the parameters used by the different
@@ -85,7 +85,8 @@ class IpReassemblyTestConfig(object):
 #
 
 
-class TestIpReassembly(TestCase):
+class TestIpv4Reassembly(TestCase):
+
     #
     #
     #
@@ -419,7 +420,7 @@ class TestIpReassembly(TestCase):
         1K maxflows.
         """
 
-        self.test_config = IpReassemblyTestConfig(self)
+        self.test_config = Ipv4ReassemblyTestConfig(self)
 
         self.execute_example_app()
         self.send_n_siff_packets()
@@ -432,7 +433,7 @@ class TestIpReassembly(TestCase):
         Only 1K frames are expected to be forwarded.
         """
 
-        self.test_config = IpReassemblyTestConfig(self, number_of_frames=2048)
+        self.test_config = Ipv4ReassemblyTestConfig(self, number_of_frames=2048)
 
         self.execute_example_app()
         self.send_n_siff_packets()
@@ -444,7 +445,7 @@ class TestIpReassembly(TestCase):
         Sends 4K frames split into 7 fragments each.
         """
 
-        self.test_config = IpReassemblyTestConfig(
+        self.test_config = Ipv4ReassemblyTestConfig(
             self,
             number_of_frames=4096,
             frags_per_frame=7,
@@ -474,7 +475,7 @@ class TestIpReassembly(TestCase):
         sends 1K frames. 1K frames must be forwarded back.
         """
 
-        self.test_config = IpReassemblyTestConfig(
+        self.test_config = Ipv4ReassemblyTestConfig(
             self, number_of_frames=1100, flowttl="3s"
         )
 
@@ -496,7 +497,7 @@ class TestIpReassembly(TestCase):
         timeout sends 1K frames expecting all of them to be forwarded back.
         """
 
-        self.test_config = IpReassemblyTestConfig(self, maxflows=1023, flowttl="5s")
+        self.test_config = Ipv4ReassemblyTestConfig(self, maxflows=1023, flowttl="5s")
 
         self.execute_example_app()
 
@@ -518,7 +519,7 @@ class TestIpReassembly(TestCase):
         Sends 1 frame split in into maximum fragments + 1 fragment, the packet can't be forwarded back.
         """
 
-        self.test_config = IpReassemblyTestConfig(
+        self.test_config = Ipv4ReassemblyTestConfig(
             self,
             number_of_frames=1,
             frags_per_frame=self.default_max_fragments + 1,
@@ -541,7 +542,7 @@ class TestIpReassembly(TestCase):
         be forwarded back.
         """
 
-        self.test_config = IpReassemblyTestConfig(
+        self.test_config = Ipv4ReassemblyTestConfig(
             self, number_of_frames=1, flowttl="3s"
         )
         self.execute_example_app()
@@ -574,7 +575,7 @@ class TestIpReassembly(TestCase):
         Expects all the frames to be forwarded back.
         """
         mtu = 9000
-        self.test_config = IpReassemblyTestConfig(
+        self.test_config = Ipv4ReassemblyTestConfig(
             self, payload_size=mtu - 100, fragment_size=2500
         )
         try:
@@ -593,7 +594,7 @@ class TestIpReassembly(TestCase):
         """
 
         mtu = 9000
-        self.test_config = IpReassemblyTestConfig(
+        self.test_config = Ipv4ReassemblyTestConfig(
             self, payload_size=mtu - 100, fragment_size=2500
         )
         try:

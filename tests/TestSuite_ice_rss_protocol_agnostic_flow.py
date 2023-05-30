@@ -359,7 +359,7 @@ mac_ipv4_udp_gtpu_dl_ipv4_tcp = {
 }
 
 
-class TestIceRssProtocolAgnosticFlow(TestCase):
+class TestICERSSProtocolAgnosticFlow(TestCase):
     """
     E810 enable Protocol agnostic flow offloading
     """

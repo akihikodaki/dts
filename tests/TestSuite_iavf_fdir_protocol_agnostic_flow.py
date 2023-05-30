@@ -635,7 +635,7 @@ mac_ipv4_udp_gtpu_ul_ipv4_tcp = [
 vf1_mac = "00:11:22:33:44:55"
 
 
-class TestIavfFdirProtocolAgnosticFlow(TestCase):
+class TestIavfFDIRProtocolAgnosticFlow(TestCase):
     """
     E810 enable Protocol agnostic flow offloading
     """

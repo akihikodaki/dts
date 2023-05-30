@@ -16,7 +16,7 @@ from framework.test_case import TestCase
 from framework.utils import GREEN, RED
 
 
-class IAVFPacketPacingTest(TestCase):
+class TestICEIavfPacketPacing(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

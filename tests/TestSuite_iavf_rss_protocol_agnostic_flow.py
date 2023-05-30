@@ -367,7 +367,7 @@ dPort = 1
 port_topology = {"port_id": dPort, "tport_id": tPort}
 
 
-class TestIavfRssProtocolAgnosticFlow(TestCase):
+class TestIavfRSSProtocolAgnosticFlow(TestCase):
     """
     E810 enable Protocol agnostic flow offloading
     """

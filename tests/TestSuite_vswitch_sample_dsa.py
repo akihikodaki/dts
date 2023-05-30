@@ -19,7 +19,7 @@ from framework.virt_common import VM
 from .virtio_common import dsa_common as DC
 
 
-class TestVswitchSampleDSA(TestCase):
+class TestVswitchSampleDsa(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

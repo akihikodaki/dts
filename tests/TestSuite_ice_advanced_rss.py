@@ -6732,7 +6732,7 @@ ipv6_64bit_prefix = [
 ]
 
 
-class ICEAdvancedRSSTest(TestCase):
+class TestICEAdvancedRSS(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

@@ -25,7 +25,7 @@ from .bonding import (
 )
 
 
-class TestBondingStacked(TestCase):
+class TestPmdStackedBonded(TestCase):
 
     #
     # On dut, dpdk bonding

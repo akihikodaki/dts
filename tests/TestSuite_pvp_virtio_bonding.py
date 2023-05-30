@@ -18,7 +18,7 @@ from framework.test_case import TestCase
 from framework.virt_common import VM
 
 
-class TestPVPVirtIOBonding(TestCase):
+class TestPVPVirtioBonding(TestCase):
     def set_up_all(self):
         # Get and verify the ports
         self.core_config = "1S/5C/1T"

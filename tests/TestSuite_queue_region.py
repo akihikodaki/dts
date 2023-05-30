@@ -21,7 +21,7 @@ from framework.settings import DRIVERS, HEADER_SIZE
 from framework.test_case import TestCase
 
 
-class TestQueue_region(TestCase):
+class TestQueueRegion(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

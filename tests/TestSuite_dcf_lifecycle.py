@@ -32,7 +32,7 @@ from framework.settings import HEADER_SIZE
 from framework.test_case import TestCase
 
 
-class TestDcfLifeCycle(TestCase):
+class TestDCFLifeCycle(TestCase):
     @property
     def target_dir(self):
         target_dir = (

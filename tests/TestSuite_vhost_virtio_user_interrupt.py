@@ -14,7 +14,7 @@ import framework.utils as utils
 from framework.test_case import TestCase
 
 
-class TestVirtioUserInterrupt(TestCase):
+class TestVhostVirtioUserInterrupt(TestCase):
     def set_up_all(self):
         """
         run at the start of each test suite.

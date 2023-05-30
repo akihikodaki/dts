@@ -23,7 +23,7 @@ from tests.virtio_common import basic_common as BC
 from tests.virtio_common import cbdma_common as CC
 
 
-class TestVswitchSampleCBDMA(TestCase):
+class TestVswitchSampleCbdma(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

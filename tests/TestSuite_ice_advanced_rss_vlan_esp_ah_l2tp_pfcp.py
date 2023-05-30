@@ -1344,7 +1344,7 @@ mac_vlan_ipv6_sctp_pay_list = [
 ]
 
 
-class Advanced_rss_vlan_ah_l2tp_pfcp(TestCase):
+class TestICEAdvancedRSSVlanEspAhL2tpPfcp(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

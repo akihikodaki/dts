@@ -46,7 +46,7 @@ SCTP_PROTO = 132
 RESERVED_PROTO = 255
 
 
-class TestGeneric_flow_api(TestCase):
+class TestGenericFlowApi(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

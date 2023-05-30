@@ -10,7 +10,7 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 
 
-class TestLoopbackPortRestart(TestCase):
+class TestLoopbackMultiPathsPortRestart(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

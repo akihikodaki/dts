@@ -19,7 +19,7 @@ from framework.settings import UPDATE_EXPECTED, load_global_setting
 from framework.test_case import TestCase
 
 
-class TestPVPMultiPathPerformance(TestCase):
+class TestPVPMultiPathsPerformance(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

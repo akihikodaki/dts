@@ -10,7 +10,7 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 
 
-class DcfDataPathTest(TestCase):
+class TestICEDCFDataPath(TestCase):
     vf_mac = "D2:6B:4C:EB:1C:26"
     wrong_mac = "68:05:CA:8D:ED:A8"
 

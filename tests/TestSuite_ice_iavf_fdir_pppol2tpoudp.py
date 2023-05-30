@@ -1899,7 +1899,7 @@ vectors_mac_ipv6_pppol2tpv2_ipv6_tcp = [
 ]
 
 
-class TestICEIAVFFDIRPPPoL2TPv2oUDP(TestCase):
+class TestICEIavfFDIRPPPoL2TPv2oUDP(TestCase):
     def rte_flow_process(self, vectors):
         test_results = {}
         for tv in vectors:

@@ -4921,7 +4921,7 @@ mac_vlan_pppoe_pay = [
 ]
 
 
-class Advanced_rss_pppoe(TestCase):
+class TestICEAdvancedRSSPPPOE(TestCase):
     @skip_unsupported_pkg(["os default", "wireless"])
     def set_up_all(self):
         """

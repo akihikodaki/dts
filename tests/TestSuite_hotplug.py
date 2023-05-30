@@ -16,7 +16,7 @@ from framework.packet import Packet
 from framework.test_case import TestCase
 
 
-class TestPortHotPlug(TestCase):
+class TestHotPlug(TestCase):
     """
     This feature supports igb_uio, vfio-pci and vfio-pci:noiommu now and not support freebsd
     """

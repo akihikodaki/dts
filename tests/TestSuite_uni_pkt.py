@@ -25,7 +25,7 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 
 
-class TestUniPacket(TestCase):
+class TestUniPkt(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

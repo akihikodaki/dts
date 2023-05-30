@@ -67,7 +67,7 @@ command_line_option_with_timestamp = {
 }
 
 
-class IAVFTimestampConfigureTest(TestCase):
+class TestICEIavfRxTimestamp(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

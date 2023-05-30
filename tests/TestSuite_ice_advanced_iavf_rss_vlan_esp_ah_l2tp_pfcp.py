@@ -1609,7 +1609,7 @@ mac_vlan_ipv6_sctp_l3dst_l4dst = {
 mac_vlan_ipv6_sctp_pay = [mac_vlan_ipv6_sctp_vlan, mac_vlan_ipv6_sctp_l3dst_l4dst]
 
 
-class ICE_advance_iavf_rss_vlan_ah_l2tp_pfcp(TestCase):
+class TestICEAdvancedIavfRSSVlanEspAhL2tpPfcp(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

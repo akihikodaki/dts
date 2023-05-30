@@ -11,7 +11,7 @@ from framework.test_case import TestCase
 from framework.virt_common import VM
 
 
-class TestVhostPVPDiffQemuVersion(TestCase):
+class TestPVPDiffQemuVersion(TestCase):
     def set_up_all(self):
         # Get and verify the ports
         self.dut_ports = self.dut.get_ports()

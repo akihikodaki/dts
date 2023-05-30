@@ -19,7 +19,7 @@ PF_MAX_QUEUE = 64
 VF_MAX_QUEUE = 4
 
 
-class Testddp_mpls(TestCase):
+class TestDdpMpls(TestCase):
     supported_vf_driver = ["pci-stub", "vfio-pci"]
 
     def set_up_all(self):

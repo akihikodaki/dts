@@ -12,7 +12,7 @@ from framework.test_case import TestCase
 from framework.virt_common import VM
 
 
-class TestVirtioIdxInterrupt(TestCase):
+class TestVirtioEventIdxInterrupt(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

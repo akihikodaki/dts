@@ -24,7 +24,7 @@ from framework.settings import HEADER_SIZE, NICS, get_nic_name
 from framework.test_case import TestCase
 
 
-class TestICEDcfQos(TestCase):
+class TestICEDCFQos(TestCase):
     def d_con(self, cmd):
         _cmd = [cmd, "# ", 15] if isinstance(cmd, str) else cmd
         return self.dut.send_expect(*_cmd)

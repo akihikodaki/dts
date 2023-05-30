@@ -43,7 +43,7 @@ from framework.test_case import TestCase
 #
 # Test class.
 #
-class TestPmdrssHash(TestCase):
+class TestPmdRSSHash(TestCase):
     #
     #
     # Utility methods and other non-test code.

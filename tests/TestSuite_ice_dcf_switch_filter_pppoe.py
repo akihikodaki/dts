@@ -791,7 +791,7 @@ tv_mac_vlan_pppoe_ipcp_pay = {
 }
 
 
-class ICEDCFSwitchFilterPPPOETest(TestCase):
+class TestICEDCFSwitchFilterPPPOE(TestCase):
     supported_nic = [
         "ICE_100G-E810C_QSFP",
         "ICE_25G-E810C_SFP",

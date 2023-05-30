@@ -50,7 +50,7 @@ D_MAC_IP_PORT = []
 LACP_MESSAGE_SIZE = 128
 
 
-class TestVFPmdBonded(TestCase):
+class TestVfPmdBonded(TestCase):
     def get_stats(self, portid, rx_tx):
         """
         Get packets number from port statistic

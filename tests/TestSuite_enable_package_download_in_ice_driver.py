@@ -10,7 +10,7 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 
 
-class TestEnable_Package_Download_In_Ice_Driver(TestCase):
+class TestEnablePackageDownloadInICEDriver(TestCase):
     def set_up_all(self):
         self.verify(
             self.nic

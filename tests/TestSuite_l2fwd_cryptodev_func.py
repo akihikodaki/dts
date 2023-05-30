@@ -22,7 +22,7 @@ from framework.packet import Packet
 from framework.test_case import TestCase
 
 
-class TestL2fwdCrypto(TestCase):
+class TestL2fwdCryptodevFunc(TestCase):
     def set_up_all(self):
         self.core_config = "1S/3C/1T"
         self.number_of_ports = 2

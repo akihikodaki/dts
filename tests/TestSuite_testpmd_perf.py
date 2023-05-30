@@ -12,7 +12,7 @@ from framework.test_case import TestCase
 from .perf_test_base import BIN_TYPE, IP_TYPE, MATCH_MODE, PerfTestBase
 
 
-class TestPmdPerf(TestCase, PerfTestBase):
+class TestTestpmdPerf(TestCase, PerfTestBase):
 
     #
     # Test cases.

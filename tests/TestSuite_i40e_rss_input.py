@@ -42,7 +42,7 @@ from framework.test_case import TestCase
 #
 
 
-class TestI40ERssInput(TestCase):
+class TestI40eRSSInput(TestCase):
     #
     #
     # Utility methods and other non-test code.

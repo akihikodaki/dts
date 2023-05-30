@@ -108,7 +108,7 @@ tv_MAC_IPV6_NAT_T_ESP_vlan = {
 }
 
 
-class L2tpEspCoverage(TestCase):
+class TestL2tpEspCoverage(TestCase):
     supported_nic = [
         "ICE_100G-E810C_QSFP",
         "ICE_25G-E810C_SFP",

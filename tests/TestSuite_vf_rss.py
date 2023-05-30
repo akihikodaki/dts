@@ -23,7 +23,7 @@ from framework.test_case import TestCase
 from framework.virt_common import VM
 
 
-class TestVfRss(TestCase):
+class TestVfRSS(TestCase):
 
     supported_vf_driver = ["pci-stub", "vfio-pci"]
 

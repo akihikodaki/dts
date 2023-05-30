@@ -3535,7 +3535,7 @@ sv_mac_ipv6_gtpu_ipv6_tcp_2 = [
 sv_mac_ipv6_gtpu_ipv6_tcp = [sv_mac_ipv6_gtpu_ipv6_tcp_1, sv_mac_ipv6_gtpu_ipv6_tcp_2]
 
 
-class ICEDCFSwitchFilterGTPUTest(TestCase):
+class TestICEDCFSwitchFilterGTPU(TestCase):
     supported_nic = [
         "ICE_100G-E810C_QSFP",
         "ICE_25G-E810C_SFP",

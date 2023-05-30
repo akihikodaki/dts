@@ -8429,7 +8429,7 @@ vectors_ipv6_gre_ipv6_udp = [
 ]
 
 
-class TestICEIAVFFdir(TestCase):
+class TestICEIavfFDIR(TestCase):
     def rte_flow_process(self, vectors):
         test_results = {}
         for tv in vectors:

@@ -16,7 +16,7 @@ from framework.qemu_kvm import QEMUKvm
 from framework.test_case import TestCase
 
 
-class VirtioCryptodevUnitTest(TestCase):
+class TestVirtioUnitCryptodevFunc(TestCase):
     def set_up_all(self):
         self.sample_app = self.dut.apps_name["vhost_crypto"]
         self.user_app = self.dut.apps_name["test"]

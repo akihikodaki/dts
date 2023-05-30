@@ -12,7 +12,7 @@ from framework.settings import CONFIG_ROOT_PATH
 from framework.test_case import TestCase
 
 
-class Testiavf_package_and_driver_check(TestCase):
+class TestIavfPackageDriverErrorHandle(TestCase):
     def set_up_all(self):
         self.verify(
             self.nic

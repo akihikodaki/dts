@@ -40,7 +40,7 @@ tv_max_rule_number = {
 }
 
 
-class TestICELimitValue(TestCase):
+class TestICELimitValueTest(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.

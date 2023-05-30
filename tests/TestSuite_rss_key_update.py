@@ -35,7 +35,7 @@ iptypes = {
 }
 
 
-class TestRssKeyUpdate(TestCase):
+class TestRSSKeyUpdate(TestCase):
     def send_packet(self, itf, tran_type, symmetric):
         """
         Sends packets.

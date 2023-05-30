@@ -846,7 +846,7 @@ vectors_ipv4_sctp_2ports = [
 ]
 
 
-class ICEDCFACLFilterTest(TestCase):
+class TestICEDCFACLFilter(TestCase):
     def bind_nics_driver(self, ports, driver=""):
         # modprobe vfio driver
         if driver == "vfio-pci":

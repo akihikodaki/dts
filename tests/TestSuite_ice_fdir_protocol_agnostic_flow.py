@@ -632,7 +632,7 @@ mac_ipv4_udp_gtpu_ul_ipv4_tcp = [
 ]
 
 
-class TestIceFdirProtocolAgnosticFlow(TestCase):
+class TestICEFDIRProtocolAgnosticFlow(TestCase):
     """
     E810 enable Protocol agnostic flow offloading
     """

@@ -70,7 +70,7 @@ subcases = {
 }
 
 
-class ICEDCFACLDisableFilterTest(TestCase):
+class TestICEDCFDisableACLFilter(TestCase):
     supported_nic = [
         "ICE_25G-E810C_SFP",
         "ICE_25G-E810_XXV_SFP",

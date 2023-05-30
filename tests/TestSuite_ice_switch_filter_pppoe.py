@@ -2885,7 +2885,7 @@ tvs_mac_vlan_pppoe_ipcp_pay = [
 test_results = OrderedDict()
 
 
-class ICESwitchFilterPPPOETest(TestCase):
+class TestICESwitchFilterPPPOE(TestCase):
     def bind_nics_driver(self, ports, driver=""):
         # modprobe vfio driver
         if driver == "vfio-pci":

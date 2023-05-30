@@ -15,7 +15,7 @@ from framework.packet import Packet
 from framework.test_case import TestCase, skip_unsupported_host_driver
 
 
-class TestIPPipeline(TestCase):
+class TestIpPipeline(TestCase):
     def write_pcap_file(self, pcap_file, pkts):
         try:
             wrpcap(pcap_file, pkts)

@@ -20,7 +20,7 @@ from framework.test_case import TestCase
 from framework.utils import convert_int2ip, convert_ip2int
 
 
-class TestIceHeaderSplitPerf(TestCase):
+class TestICEHeaderSplitPerf(TestCase):
     #
     # Test cases.
     #

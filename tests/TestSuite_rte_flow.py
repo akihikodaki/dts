@@ -17,7 +17,7 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 
 
-class RteFlow(TestCase):
+class TestRteFlow(TestCase):
     #
     #
     # Helper methods and setup methods.

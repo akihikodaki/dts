@@ -22,7 +22,7 @@ from framework.utils import RED
 from framework.virt_dut import VirtDut
 
 
-class TestVEBSwitching(TestCase):
+class TestVebSwitch(TestCase):
     def VEB_get_stats(self, vf0_vf1, portid, rx_tx):
         """
         Get packets number from port statistic

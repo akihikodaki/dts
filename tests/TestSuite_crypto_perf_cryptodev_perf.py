@@ -9,7 +9,7 @@ import tests.cryptodev_common as cc
 from framework.test_case import TestCase
 
 
-class PerfTestsCryptodev(TestCase):
+class TestCryptoPerfCryptodevPerf(TestCase):
     def set_up_all(self):
         self._perf_result = {}
         self._default_crypto_perf_opts = {

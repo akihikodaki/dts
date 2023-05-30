@@ -24,7 +24,7 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 
 
-class TestPmdrssreta(TestCase):
+class TestPmdRSSReta(TestCase):
     def send_packet(self, itf, tran_type):
         """
         Sends packets.

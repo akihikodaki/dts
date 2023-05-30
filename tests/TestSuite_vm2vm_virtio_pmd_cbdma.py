@@ -12,7 +12,7 @@ from framework.virt_common import VM
 from tests.virtio_common import cbdma_common as CC
 
 
-class TestVM2VMVirtioPmdCBDMA(TestCase):
+class TestVM2VMVirtioPmdCbdma(TestCase):
     def set_up_all(self):
         self.dut_ports = self.dut.get_ports()
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])

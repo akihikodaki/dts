@@ -21,7 +21,7 @@ VF_TEMP_MAC = "52:54:12:45:67:1%d"
 SEND_PACKET = 100
 
 
-class TestVF2VFBridge(TestCase):
+class TestVfToVfNicBridge(TestCase):
 
     supported_vf_driver = ["pci-stub", "vfio-pci"]
 

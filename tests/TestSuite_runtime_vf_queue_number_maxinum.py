@@ -15,7 +15,7 @@ from framework.pmd_output import PmdOutput
 from framework.test_case import TestCase
 
 
-class TestRuntimeVfQnMaxinum(TestCase):
+class TestRuntimeVfQueueNumberMaxinum(TestCase):
     supported_vf_driver = ["igb_uio", "vfio-pci"]
     rss_key = "6EA6A420D5138E712433B813AE45B3C4BECB2B405F31AD6C331835372D15E2D5E49566EE0ED1962AFA1B7932F3549520FD71C75E"
     max_allow_per_testpmd = 18

@@ -402,7 +402,7 @@ tv_mac_qinq_ipv6_tcp = {
 tvs_mac_l4_qinq_dcf_pipeline_mode = [tv_mac_qinq_ipv6_udp, tv_mac_qinq_ipv6_tcp]
 
 
-class TestICEDcfDualVlan(TestCase):
+class TestICEDCFDualVlan(TestCase):
     @check_supported_nic(
         [
             "ICE_25G-E810C_SFP",

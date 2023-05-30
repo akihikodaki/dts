@@ -6355,7 +6355,7 @@ mac_ipv6_gre_ipv6_udp_symmetric = eval(
 # gre tunnel end
 
 
-class AdvancedIavfRSSTest(TestCase):
+class TestICEAdvancedIavfRSS(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
