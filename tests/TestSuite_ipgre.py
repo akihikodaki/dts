@@ -46,6 +46,7 @@ class TestIpgre(TestCase):
                 "I40E_25G-25G_SFP28",
                 "I40E_10G-10G_BASE_T_BC",
                 "ICE_25G-E823C_QSFP",
+                "ICE_25G-E810_XXV_SFP",
                 "ICE_25G-E810C_SFP",
                 "ICE_100G-E810C_QSFP",
                 "cavium_a063",

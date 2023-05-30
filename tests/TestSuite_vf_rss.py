@@ -280,6 +280,7 @@ class TestVfRSS(TestCase):
                 "I40E_10G-10G_BASE_T_BC",
                 "ICE_25G-E823C_QSFP",
                 "ICE_25G-E810C_SFP",
+                "ICE_25G-E810_XXV_SFP",
                 "ICE_100G-E810C_QSFP",
             ],
             "NIC Unsupported: " + str(self.nic),

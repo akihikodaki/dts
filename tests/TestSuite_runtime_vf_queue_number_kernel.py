@@ -36,6 +36,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
                 "I40E_10G-10G_BASE_T_BC",
                 "ICE_100G-E810C_QSFP",
                 "ICE_25G-E810C_SFP",
+                "ICE_25G-E810_XXV_SFP",
                 "ICE_25G-E823C_QSFP",
             ],
             "Only supported by Intel® Ethernet 700 Series and Intel® Ethernet 800 Series",
