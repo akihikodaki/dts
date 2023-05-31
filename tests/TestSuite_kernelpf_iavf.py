@@ -756,7 +756,13 @@ class TestKernelpfIavf(TestCase):
         # start l3fwd-power
         l3fwd_app = self.dut.apps_name["l3fwd-power"]
 
-        cmd = l3fwd_app + " -l 6,7 -n 4 -- -p 0x3 --config " + "'(0,0,6),(1,0,7)'"
+        vf_pci_id_0 = self.dut.ports_info[self.used_dut_port_0]["sriov_vfs_pci"][0]
+        vf_pci_id_1 = self.dut.ports_info[self.used_dut_port_1]["sriov_vfs_pci"][0]
+        cmd = (
+            l3fwd_app
+            + f" -l 6,7 -n 4 -a {vf_pci_id_0} -a {vf_pci_id_1} -- -p 0x3 --config "
+            + "'(0,0,6),(1,0,7)'"
+        )
         self.dut.send_expect(cmd, "POWER", timeout=40)
         out = self.dut.get_session_output()
         print(out)
