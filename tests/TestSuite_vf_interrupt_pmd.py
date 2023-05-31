@@ -93,13 +93,14 @@ class TestVfInterruptPmd(TestCase):
         self.host_intf = self.dut.ports_info[self.used_dut_port]["intf"]
         self.dut.send_expect("ifconfig %s up" % self.host_intf, "#", 3)
 
-    def begin_l3fwd_power(self, use_dut):
+    def begin_l3fwd_power(self, use_dut, vf_pci_addr):
         """
         begin l3fwd-power
         """
         cmd_vhost_net = (
             self.path
-            + "-n %d -c %s" % (use_dut.get_memory_channels(), self.core_mask_user)
+            + "-n %d -c %s -a %s"
+            % (use_dut.get_memory_channels(), self.core_mask_user, vf_pci_addr)
             + " -- -P -p 1 --config='(0,0,%s)'" % self.core_user
         )
         try:
@@ -114,7 +115,7 @@ class TestVfInterruptPmd(TestCase):
                 "ERROR: Failed to launch  l3fwd-power sample: %s" % str(e)
             )
 
-    def begin_l3fwd_power_multi_queues(self, use_dut):
+    def begin_l3fwd_power_multi_queues(self, use_dut, pci_addr):
         """
         begin l3fwd-power
         """
@@ -125,7 +126,7 @@ class TestVfInterruptPmd(TestCase):
             config_info += "(0,%d,%d)" % (queue, queue)
         cmd_vhost_net = (
             self.path
-            + "-l 0-%d -n 4 -- -P -p 0x1" % queue
+            + "-l 0-%d -n 4 -a %s -- -P -p 0x1" % (queue, pci_addr)
             + " --config='%s'" % config_info
         )
         try:
@@ -246,13 +247,15 @@ class TestVfInterruptPmd(TestCase):
         self.used_dut_port_0 = self.dut_ports[0]
         self.dut.generate_sriov_vfs_by_port(self.used_dut_port_0, 1, driver=driver)
         self.sriov_vfs_port_0 = self.dut.ports_info[self.used_dut_port_0]["vfs_port"]
+        vf_pci_list = self.dut.ports_info[self.used_dut_port_0].get("sriov_vfs_pci")
+        vf_pci_addr = vf_pci_list[0] if vf_pci_list else ""
         for port in self.sriov_vfs_port_0:
             port.bind_driver("vfio-pci")
         # set vf mac
         self.dut.send_expect(
             "ip link set %s vf 0 mac %s" % (self.host_intf, self.vf_mac), "# "
         )
-        self.begin_l3fwd_power(self.dut)
+        self.begin_l3fwd_power(self.dut, vf_pci_addr)
         self.send_packet(self.vf_mac, self.rx_intf_0, self.dut)
         self.verify(
             "lcore %s is waked up from rx interrupt on port 0" % self.core_user
@@ -288,13 +291,15 @@ class TestVfInterruptPmd(TestCase):
         self.used_dut_port_0 = self.dut_ports[0]
         self.dut.generate_sriov_vfs_by_port(self.used_dut_port_0, 1, driver=driver)
         self.sriov_vfs_port_0 = self.dut.ports_info[self.used_dut_port_0]["vfs_port"]
+        vf_pci_list = self.dut.ports_info[self.used_dut_port_0].get("sriov_vfs_pci")
+        vf_pci_addr = vf_pci_list[0] if vf_pci_list else ""
         for port in self.sriov_vfs_port_0:
             port.bind_driver("vfio-pci")
         # set vf mac
         self.dut.send_expect(
             "ip link set %s vf 0 mac %s" % (self.host_intf, self.vf_mac), "# "
         )
-        self.begin_l3fwd_power_multi_queues(self.dut)
+        self.begin_l3fwd_power_multi_queues(self.dut, vf_pci_addr)
         stroutput = ""
         for ip in range(2, 30):
             self.send_packet_loop(self.vf_mac, self.rx_intf_0, self.dut, ip)
