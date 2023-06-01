@@ -27,21 +27,23 @@ Test Case 1: PVP multi qemu version test with virtio 0.95 mergeable path
     testpmd>set fwd mac
     testpmd>start
 
-2. Check dut machine already has installed different version qemu, includes [qemu-5.2.0, qemu-6.2.0, qemu-7.0.0, qemu-7.1.0, qemu-7.2.0].
+2. Check dut machine already has installed different version qemu, includes [qemu-4.2.0, qemu-5.2.0, qemu-6.2.0, qemu-7.2.0, qemu-8.x].
 
 3. Go to the absolute_path of different version qemu,then launch VM with different version qemu, note: we need add "disable-modern=true" to enable virtio 0.95::
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 2 -m 4096 \
-    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
-    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -netdev user,id=netdev0,hostfwd=tcp:127.0.0.1:6002-:22 \
-    -chardev socket,id=char0,path=./vhost-net \
-    -netdev type=vhost-user,id=netdev1,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev1,mac=52:54:00:00:00:01,disable-modern=true,mrg_rxbuf=on \
-    -vnc :10
+    qemu-system-x86_64 -name vm0 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004.img -pidfile /tmp/.vm0.pid \
+    -cpu host -smp 8 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1 \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 \
+    -chardev socket,id=char0,path=/root/dpdk/vhost-net \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=true,mrg_rxbuf=on \
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -vnc :4
 
 4. On VM, bind virtio net to vfio-pci and run testpmd ::
 
@@ -66,21 +68,23 @@ Test Case 2: PVP test with virtio 1.0 mergeable path
     testpmd>set fwd mac
     testpmd>start
 
-2. Check dut machine already has installed different version qemu, includes [qemu-5.2.0, qemu-6.2.0, qemu-7.0.0, qemu-7.1.0, qemu-7.2.0].
+2. Check dut machine already has installed different version qemu, includes [qemu-4.2.0, qemu-5.2.0, qemu-6.2.0, qemu-7.2.0, qemu-8.x].
 
 3. Go to the absolute_path of different version qemu,then launch VM with different version qemu, note: we need add "disable-modern=false" to enable virtio 1.0::
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 2 -m 4096 \
-    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
-    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -netdev user,id=netdev0,hostfwd=tcp:127.0.0.1:6002-:22 \
-    -chardev socket,id=char0,path=./vhost-net \
-    -netdev type=vhost-user,id=netdev1,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev1,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on \
-    -vnc :10
+    qemu-system-x86_64 -name vm0 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004.img -pidfile /tmp/.vm0.pid \
+    -cpu host -smp 8 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1  \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 \
+    -chardev socket,id=char0,path=/root/dpdk/vhost-net \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on \
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -vnc :4
 
 4. On VM, bind virtio net to vfio-pci and run testpmd::
 
@@ -105,21 +109,23 @@ Test Case 3: PVP test with virtio 1.1 mergeable path
     testpmd>set fwd mac
     testpmd>start
 
-2. Check dut machine already has installed different version qemu, includes [qemu-5.2.0, qemu-6.2.0, qemu-7.0.0, qemu-7.1.0, qemu-7.2.0].
+2. Check dut machine already has installed different version qemu, includes [qemu-4.2.0, qemu-5.2.0, qemu-6.2.0, qemu-7.2.0, qemu-8.x].
 
 3. Go to the absolute_path of different version qemu,then launch VM with different version qemu, note: we need add "disable-modern=false,packed=on" to enable virtio 1.1::
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 2 -m 4096 \
-    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
-    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -netdev user,id=netdev0,hostfwd=tcp:127.0.0.1:6002-:22 \
-    -chardev socket,id=char0,path=./vhost-net \
-    -netdev type=vhost-user,id=netdev1,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev1,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,packed=on \
-    -vnc :10
+    qemu-system-x86_64 -name vm0 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004.img -pidfile /tmp/.vm0.pid \
+    -cpu host -smp 8 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1  \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 \
+    -chardev socket,id=char0,path=/root/dpdk/vhost-net \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,packed=on \
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -vnc :4
 
 4. On VM, bind virtio net to vfio-pci and run testpmd::
 
