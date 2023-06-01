@@ -78,17 +78,21 @@ Test Case1: DPDK GRO lightmode test with tcp/ipv4 traffic
     testpmd>port start 1
     testpmd>start
 
-3.  Set up vm with virto device and using kernel virtio-net driver::
+3. Set up vm with virto device and using kernel virtio-net driver::
 
-     taskset -c 13 qemu-system-x86_64 -name us-vhost-vm1 \
-       -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
-       -numa node,memdev=mem \
-       -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f -net user,vlan=2,hostfwd=tcp:127.0.0.1:6001-:22 \
-       -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu2004.img  \
-       -chardev socket,id=char0,path=./vhost-net \
-       -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
-       -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on \
-       -vnc :10 -daemonize
+    qemu-system-x86_64 -name vm0 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004.img -pidfile /tmp/.vm0.pid \
+    -cpu host -smp 1 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1  \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 \
+    -chardev socket,id=char0,path=/root/dpdk/vhost-net \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=2 \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on,mq=on,vectors=6 \
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -vnc :4
 
 4. In vm, config the virtio-net device with ip and turn the kernel gro off::
 
@@ -132,17 +136,21 @@ Test Case2: DPDK GRO heavymode test with tcp/ipv4 traffic
     testpmd>port start 1
     testpmd>start
 
-3.  Set up vm with virto device and using kernel virtio-net driver::
+3. Set up vm with virto device and using kernel virtio-net driver::
 
-     taskset -c 13 qemu-system-x86_64 -name us-vhost-vm1 \
-       -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
-       -numa node,memdev=mem \
-       -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f -net user,vlan=2,hostfwd=tcp:127.0.0.1:6001-:22 \
-       -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu2004.img  \
-       -chardev socket,id=char0,path=./vhost-net \
-       -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
-       -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on \
-       -vnc :10 -daemonize
+    qemu-system-x86_64 -name vm0 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004.img -pidfile /tmp/.vm0.pid\
+    -cpu host -smp 1 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1  \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 \
+    -chardev socket,id=char0,path=/root/dpdk/vhost-net \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=1 \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on \
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -vnc :4
 
 4. In vm, config the virtio-net device with ip and turn the kernel gro off::
 
@@ -186,17 +194,21 @@ Test Case3: DPDK GRO heavymode_flush4 test with tcp/ipv4 traffic
     testpmd>port start 1
     testpmd>start
 
-3.  Set up vm with virto device and using kernel virtio-net driver::
+3. Set up vm with virto device and using kernel virtio-net driver::
 
-     taskset -c 13 qemu-system-x86_64 -name us-vhost-vm1 \
-       -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
-       -numa node,memdev=mem \
-       -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f -net user,vlan=2,hostfwd=tcp:127.0.0.1:6001-:22 \
-       -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu2004.img  \
-       -chardev socket,id=char0,path=./vhost-net \
-       -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
-       -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on \
-       -vnc :10 -daemonize
+    qemu-system-x86_64 -name vm0 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004.img -pidfile /tmp/.vm0.pid \
+    -cpu host -smp 1 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1  \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 \
+    -chardev socket,id=char0,path=/root/dpdk/vhost-net \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=1 \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on \
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -vnc :4
 
 4. In vm, config the virtio-net device with ip and turn the kernel gro off::
 
@@ -317,17 +329,21 @@ Test Case5: DPDK GRO test with 2 queues using tcp/ipv4 traffic
     testpmd>port start 1
     testpmd>start
 
-3.  Set up vm with virto device and using kernel virtio-net driver::
+3. Set up vm with virto device and using kernel virtio-net driver::
 
-     taskset -c 31 /home/qemu-install/qemu-4.2.1/bin/qemu-system-x86_64 -name us-vhost-vm1 \
-       -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
-       -numa node,memdev=mem \
-       -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -netdev user,id=yinan,hostfwd=tcp:127.0.0.1:6005-:22 -device e1000,netdev=yinan \
-       -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu2004.img  \
-       -chardev socket,id=char0,path=./vhost-net \
-       -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce,queues=2 \
-       -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on,mq=on,vectors=15 \
-       -vnc :10 -daemonize
+    qemu-system-x86_64 -name vm0 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004.img -pidfile /tmp/.vm0.pid \
+    -cpu host -smp 1 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1  \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 \
+    -chardev socket,id=char0,path=/root/dpdk/vhost-net \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=2 \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on,mq=on,vectors=6 \
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -vnc :4
 
 4. In vm, config the virtio-net device with ip and turn the kernel gro off::
 
