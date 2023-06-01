@@ -54,10 +54,6 @@ class TestNtb(TestCase):
         self.result_table_create(self.table_header)
 
     def prepare_dpdk_app(self, crb):
-        out = crb.send_expect("ls ./" + crb.target + "/kmod/igb_uio.ko", "#", 10)
-        if "No such file or directory" in out:
-            crb.build_install_dpdk(crb.target)
-
         out = crb.build_dpdk_apps("./examples/ntb")
         self.verify("Error" not in out, "Compilation error")
         self.verify("No such" not in out, "Compilation error")
@@ -74,9 +70,7 @@ class TestNtb(TestCase):
         )
 
     def get_ntb_port(self, crb):
-        device = crb.send_expect(
-            "lspci -D | grep Non-Transparent |awk '{{print $1}}'", "# ", 10
-        )
+        device = crb.send_expect("lspci -D | grep 347e |awk '{{print $1}}'", "# ", 10)
         self.verify(device, "Falied to find ntb device")
         addr_array = device.strip().split(":")
         domain_id = addr_array[0]
@@ -85,25 +79,26 @@ class TestNtb(TestCase):
         port = GetNicObj(crb, domain_id, bus_id, devfun_id)
         return port
 
+    def get_ntb_base_and_size(self, crb):
+        pci = self.get_ntb_port(crb).pci
+        out = crb.send_expect("lspci -vv -s %s" % pci, "# ", 10)
+        reg = "Region \d+: Memory at (\w+) \(64-bit, prefetchable\) \[size=(\d+)M\]"
+        ntb_infos = re.findall(reg, out)
+        return ntb_infos
+
     def set_driver(self, driver=""):
         self.ntb_host.restore_interfaces()
         self.ntb_client.restore_interfaces()
 
         for crb in [self.ntb_host, self.ntb_client]:
             crb.setup_modules(crb.target, driver, None)
-            if driver == "igb_uio":
-                crb.send_expect("rmmod -f igb_uio", "#", 30)
+            ntb_infos = self.get_ntb_base_and_size(crb)
+            for ntb_info in ntb_infos:
+                base = ntb_info[0]
+                size = hex(int(ntb_info[1]) * 1024 * 1024)
                 crb.send_expect(
-                    "insmod ./" + crb.target + "/kmod/igb_uio.ko wc_activate=1", "#", 30
-                )
-            if driver == "vfio-pci":
-                crb.send_expect(
-                    "echo 'base=0x39bfa0000000 size=0x400000 type=write-combining' >> /proc/mtrr",
-                    "#",
-                    10,
-                )
-                crb.send_expect(
-                    "echo 'base=0x39bfa0000000 size=0x4000000 type=write-combining' >> /proc/mtrr",
+                    "echo 'base=0x%s size=%s type=write-combining' >> /proc/mtrr"
+                    % (base, size),
                     "#",
                     10,
                 )
@@ -127,15 +122,17 @@ class TestNtb(TestCase):
 
         self.get_core_list()
         app = self.dut.apps_name["ntb"]
-        eal_host = self.ntb_host.create_eal_parameters(cores=self.host_core_list)
-        eal_client = self.ntb_client.create_eal_parameters(cores=self.client_core_list)
+        eal_host = self.ntb_host.create_eal_parameters(
+            cores=self.host_core_list, ports=[self.get_ntb_port(self.ntb_host).pci]
+        )
+        eal_client = self.ntb_client.create_eal_parameters(
+            cores=self.client_core_list, ports=[self.get_ntb_port(self.ntb_client).pci]
+        )
         host_cmd_line = " ".join([app, eal_host, cmd_opt])
         client_cmd_line = " ".join([app, eal_client, cmd_opt])
         self.ntb_host.send_expect(host_cmd_line, "Checking ntb link status", 30)
         self.ntb_client.send_expect(client_cmd_line, "ntb>", 30)
         time.sleep(3)
-        # self.ntb_host.send_expect(" ", 'ntb> ', 10)
-        # self.ntb_client.send_expect(" ", 'ntb> ', 10)
 
     def start_ntb_fwd_on_dut(self, crb, fwd_mode="io"):
         crb.send_expect("set fwd %s" % fwd_mode, "ntb> ", 30)
@@ -253,16 +250,6 @@ class TestNtb(TestCase):
             self.check_packets_for_iofwd()
             self.update_table_info(result)
 
-    def test_file_tran_mode_and_igb_uio(self):
-        driver = "igb_uio"
-        self.set_driver(driver)
-        self.ntb_bind_driver(driver)
-
-        self.launch_ntb_fwd(**{"buf-size": 65407})
-        self.start_ntb_fwd_on_dut(self.ntb_host, fwd_mode="file-trans")
-        self.start_ntb_fwd_on_dut(self.ntb_client, fwd_mode="file-trans")
-        self.send_file_and_verify()
-
     def test_file_tran_mode_and_vfio_pci(self):
         driver = "vfio-pci"
         self.set_driver(driver)
@@ -272,17 +259,6 @@ class TestNtb(TestCase):
         self.start_ntb_fwd_on_dut(self.ntb_host, fwd_mode="file-trans")
         self.start_ntb_fwd_on_dut(self.ntb_client, fwd_mode="file-trans")
         self.send_file_and_verify()
-
-    def test_pkt_rxtx_mode_and_igb_uio(self):
-        driver = "igb_uio"
-        self.set_driver(driver)
-        self.ntb_bind_driver(driver)
-
-        self.launch_ntb_fwd(**{"buf-size": 65407})
-        self.start_ntb_fwd_on_dut(self.ntb_host, fwd_mode="rxonly")
-        self.start_ntb_fwd_on_dut(self.ntb_client, fwd_mode="txonly")
-        time.sleep(1)
-        self.check_packets_for_rxtx()
 
     def test_pkt_rxtx_mode_and_vfio_pci(self):
         driver = "vfio-pci"
@@ -294,20 +270,6 @@ class TestNtb(TestCase):
         self.start_ntb_fwd_on_dut(self.ntb_client, fwd_mode="txonly")
         time.sleep(1)
         self.check_packets_for_rxtx()
-
-    def test_perf_iofwd_mode_and_igb_uio(self):
-        driver = "igb_uio"
-        self.set_driver(driver)
-        self.ntb_bind_driver(driver)
-        self.port_bind_driver(driver)
-
-        self.create_table()
-        self.launch_ntb_fwd(**{"burst": 32})
-        self.start_ntb_fwd_on_dut(self.ntb_host, fwd_mode="iofwd")
-        self.start_ntb_fwd_on_dut(self.ntb_client, fwd_mode="iofwd")
-        self.send_pkg_and_verify()
-
-        self.result_table_print()
 
     def test_perf_iofwd_mode_and_vfio_pci(self):
         driver = "vfio-pci"
