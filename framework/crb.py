@@ -721,9 +721,21 @@ class Crb(object):
         socket_id = 0
 
         sockets = cpu_xml.findall(".//group[@level='2']")
+        if not sockets:
+            sockets = cpu_xml.findall(".//group[@level='1']")
         for socket in sockets:
             core_id = 0
             core_elements = socket.findall(".//children/group/cpu")
+            if not core_elements:
+                core_elements = socket.findall("./cpu")
+                for core in core_elements:
+                    cores = [int(x) for x in core.text.split(",")]
+                for core in cores:
+                    if self.crb["bypass core0"] and core == 0:
+                        continue
+                    self.cores.append(
+                        {"socket": socket_id, "core": core, "thread": core}
+                    )
             for core in core_elements:
                 threads = [int(x) for x in core.text.split(",")]
                 for thread in threads:
