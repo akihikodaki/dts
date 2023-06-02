@@ -148,26 +148,26 @@ class TestPowerTelemetry(TestCase):
         """
         script_content = textwrap.dedent(
             """
-            #! /usr/bin/env python
+            #! /usr/bin/env python3
             import argparse
             import time
             import json
             from dpdk_telemetry_client import Client, GLOBAL_METRICS_REQ, BUFFER_SIZE
-            
+
             class ClientExd(Client):
                 def __init__(self, json_file):
                     super(ClientExd, self).__init__()
                     self.json_file = json_file
                 def save_date(self, data):
-                    with open(self.json_file, 'w') as fp:
+                    with open(self.json_file, 'wb') as fp:
                         fp.write(data)
                 def requestGlobalMetrics(self):
-                    self.socket.client_fd.send(GLOBAL_METRICS_REQ)
+                    self.socket.client_fd.send(GLOBAL_METRICS_REQ.encode())
                     data = self.socket.client_fd.recv(BUFFER_SIZE)
                     self.save_date(data)
             parser = argparse.ArgumentParser(description='telemetry')
             parser.add_argument('-f',
-                                '--file',
+                                '--file-prefix',
                                 nargs='*',
                                 default=1,
                                 help='message channel')
@@ -177,9 +177,10 @@ class TestPowerTelemetry(TestCase):
                                 default=None,
                                 help='json_file option')
             args = parser.parse_args()
-            file_path = args.file[0]
+            file_path = args.file_prefix[0]
             client = ClientExd(args.json_file[0])
             client.getFilepath(file_path)
+            client.setRunpath(file_path)
             client.register()
             client.requestGlobalMetrics()
             time.sleep(2)
