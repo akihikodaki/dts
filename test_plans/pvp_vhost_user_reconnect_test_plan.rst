@@ -40,17 +40,19 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 
 2. Start VM with 1 virtio device, and set the qemu as server mode::
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 2 -m 4096 \
-    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
-    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
-    -chardev socket,id=char0,path=./vhost-net,server \
+    qemu-system-x86_64 -name vm0 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004.img -pidfile /tmp/.vm0.pid \
+    -cpu host -smp 8 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1 \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 \
+    -chardev socket,id=char0,path=./vhost-net0,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
-    -vnc :10
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -vnc :4
 
 3. On VM, bind virtio net to vfio-pci and run testpmd::
 
@@ -90,17 +92,19 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 
 2. Start VM with 1 virtio device, and set the qemu as server mode::
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 2 -m 4096 \
-    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
-    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
-    -chardev socket,id=char0,path=./vhost-net,server \
+    qemu-system-x86_64 -name vm0 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004.img -pidfile /tmp/.vm0.pid \
+    -cpu host -smp 8 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1 \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 \
+    -chardev socket,id=char0,path=./vhost-net0,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
-    -vnc :10
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -vnc :4
 
 3. On VM, bind virtio net to vfio-pci and run testpmd::
 
@@ -137,29 +141,33 @@ Test Case 4: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect from 
 
 2. Launch VM1 and VM2::
 
-    qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 12 -m 4096 \
-    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
-    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
-    -chardev socket,id=char0,path=./vhost-net,server \
+    qemu-system-x86_64 -name vm0 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004.img -pidfile /tmp/.vm0.pid \
+    -cpu host -smp 8 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1 \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 \
+    -chardev socket,id=char0,path=./vhost-net0,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
-    -vnc :10
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -vnc :4
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 12 -m 4096 \
-    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
-    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16-1.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,hostfwd=tcp:127.0.0.1:6003-:22 \
+    qemu-system-x86_64 -name vm1 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004_2.img -pidfile /tmp/.vm1.pid \
+    -cpu host -smp 8 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1  \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6001-:22 \
+    -chardev socket,path=/tmp/vm1_qga0.sock,server,nowait,id=vm1_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm1_qga0,name=org.qemu.guest_agent.0 \
     -chardev socket,id=char0,path=./vhost-net1,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
-    -vnc :11
+    -monitor unix:/tmp/vm1_monitor.sock,server,nowait -vnc :5
 
 3. On VM1, bind virtio1 to vfio-pci and run testpmd::
 
@@ -205,29 +213,33 @@ Test Case 5: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect from 
 
 2. Launch VM1 and VM2::
 
-    qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 2 -m 4096 \
-    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
-    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
-    -chardev socket,id=char0,path=./vhost-net,server \
+    qemu-system-x86_64 -name vm0 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004.img -pidfile /tmp/.vm0.pid \
+    -cpu host -smp 8 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1 \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 \
+    -chardev socket,id=char0,path=./vhost-net0,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
-    -vnc :10
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -vnc :4
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 2 -m 4096 \
-    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
-    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16-1.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,hostfwd=tcp:127.0.0.1:6003-:22 \
+    qemu-system-x86_64 -name vm1 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004_2.img -pidfile /tmp/.vm1.pid \
+    -cpu host -smp 8 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1  \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6001-:22 \
+    -chardev socket,path=/tmp/vm1_qga0.sock,server,nowait,id=vm1_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm1_qga0,name=org.qemu.guest_agent.0 \
     -chardev socket,id=char0,path=./vhost-net1,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
-    -vnc :11
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
+    -monitor unix:/tmp/vm1_monitor.sock,server,nowait -vnc :5
 
 3. On VM1, bind virtio1 to vfio-pci and run testpmd::
 
@@ -275,29 +287,33 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
 
 3. Launch VM1 and VM2::
 
-    qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 2 -m 4096 \
-    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
-    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
-    -chardev socket,id=char0,path=./vhost-net,server \
+    qemu-system-x86_64 -name vm0 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004.img -pidfile /tmp/.vm0.pid \
+    -cpu host -smp 8 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1 \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 \
+    -chardev socket,id=char0,path=./vhost-net0,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
-    -vnc :10
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -vnc :4
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 2 -m 4096 \
-    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
-    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16-1.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,hostfwd=tcp:127.0.0.1:6003-:22 \
+    qemu-system-x86_64 -name vm1 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004_2.img -pidfile /tmp/.vm1.pid \
+    -cpu host -smp 8 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1  \
+    -netdev user,id=nttsip1,hostfwd=tcp:10.239.252.214:6001-:22 \
+    -chardev socket,path=/tmp/vm1_qga0.sock,server,nowait,id=vm1_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm1_qga0,name=org.qemu.guest_agent.0 \
     -chardev socket,id=char0,path=./vhost-net1,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
-    -vnc :11
+    -monitor unix:/tmp/vm1_monitor.sock,server,nowait -vnc :5
 
 4. Set virtio device IP and run arp protocal on two VMs::
 
@@ -334,29 +350,33 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
 
 3. Launch VM1 and VM2::
 
-    qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 2 -m 4096 \
-    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
-    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
-    -chardev socket,id=char0,path=./vhost-net,server \
+    qemu-system-x86_64 -name vm0 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004.img -pidfile /tmp/.vm0.pid \
+    -cpu host -smp 8 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1 \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6000-:22 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 \
+    -chardev socket,id=char0,path=./vhost-net0,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
-    -vnc :10
+    -monitor unix:/tmp/vm0_monitor.sock,server,nowait -vnc :4
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 2 -m 4096 \
-    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
-    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16-1.img  \
-    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
-    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,hostfwd=tcp:127.0.0.1:6003-:22 \
+    qemu-system-x86_64 -name vm1 -enable-kvm -daemonize \
+    -drive file=/home/image/ubuntu2004_2.img -pidfile /tmp/.vm1.pid \
+    -cpu host -smp 8 -m 8192 -numa node,memdev=mem -mem-prealloc \
+    -object memory-backend-file,id=mem,size=8192M,mem-path=/dev/hugepages,share=on \
+    -device e1000,netdev=nttsip1  \
+    -netdev user,id=nttsip1,hostfwd=tcp:10.239.252.214:6001-:22 \
+    -chardev socket,path=/tmp/vm1_qga0.sock,server,nowait,id=vm1_qga0 \
+    -device virtio-serial \
+    -device virtserialport,chardev=vm1_qga0,name=org.qemu.guest_agent.0 \
     -chardev socket,id=char0,path=./vhost-net1,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
-    -vnc :11
+    -monitor unix:/tmp/vm1_monitor.sock,server,nowait -vnc :5
 
 4. Set virtio device IP and run arp protocal on two VMs::
 
