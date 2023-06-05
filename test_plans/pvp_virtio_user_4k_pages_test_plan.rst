@@ -18,7 +18,7 @@ Test Case1: Basic test vhost/virtio-user split ring with 4K-pages
 
     modprobe vfio-pci
     ./usertools/dpdk-devbind.py --bind=vfio-pci xx:xx.x
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 3-4 -n 4 -m 1024 --no-huge --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 3-4 -n 4 --file-prefix=vhost \
     --vdev 'net_vhost0,iface=/tmp/vhost-net,queues=1' -- -i --no-numa --socket-num=0
     testpmd>start
 
@@ -44,7 +44,7 @@ Test Case2: Basic test vhost/virtio-user packed ring with 4K-pages
 
     modprobe vfio-pci
     ./usertools/dpdk-devbind.py --bind=vfio-pci xx:xx.x
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 3-4 -n 4 -m 1024 --no-huge --file-prefix=vhost \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 3-4 -n 4 --file-prefix=vhost \
     --vdev 'net_vhost0,iface=/tmp/vhost-net,queues=1' -- -i --no-numa --socket-num=0
     testpmd>start
 
