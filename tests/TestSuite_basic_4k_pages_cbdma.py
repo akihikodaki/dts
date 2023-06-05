@@ -7,13 +7,19 @@ import random
 import re
 import string
 import time
+from copy import deepcopy
 
 from framework.config import VirtConf
 from framework.packet import Packet
 from framework.pktgen import PacketGeneratorHelper
 from framework.pmd_output import PmdOutput
 from framework.qemu_kvm import QEMUKvm
-from framework.settings import CONFIG_ROOT_PATH, get_host_ip
+from framework.settings import (
+    CONFIG_ROOT_PATH,
+    UPDATE_EXPECTED,
+    get_host_ip,
+    load_global_setting,
+)
 from framework.test_case import TestCase
 
 
@@ -45,14 +51,13 @@ class TestBasic4kPagesCbdma(TestCase):
         self.virtio_user0_pmd = PmdOutput(self.dut, self.virtio_user0)
         self.pci_info = self.dut.ports_info[0]["pci"]
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
-        self.frame_sizes = [64, 128, 256, 512, 1024, 1518]
         self.out_path = "/tmp/%s" % self.suite_name
         out = self.tester.send_expect("ls -d %s" % self.out_path, "# ")
         if "No such file or directory" in out:
             self.tester.send_expect("mkdir -p %s" % self.out_path, "# ")
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
-        self.number_of_ports = 1
+        self.nb_ports = 1
         self.app_testpmd_path = self.dut.apps_name["test-pmd"]
         self.testpmd_name = self.app_testpmd_path.split("/")[-1]
         self.vm_num = 2
@@ -102,6 +107,15 @@ class TestBasic4kPagesCbdma(TestCase):
                 self.vm1_user = param["login"][0]["user"]
                 self.vm1_passwd = param["login"][0]["password"]
 
+        self.logger.info(
+            "You can config packet_size in file %s.cfg," % self.suite_name
+            + " in region 'suite' like packet_sizes=[64, 128, 256]"
+        )
+        if "packet_sizes" in self.get_suite_cfg():
+            self.frame_sizes = self.get_suite_cfg()["packet_sizes"]
+        self.test_duration = self.get_suite_cfg()["test_duration"]
+        self.gap = self.get_suite_cfg()["accepted_tolerance"]
+
     def set_up(self):
         """
         Run before each test case.
@@ -111,14 +125,13 @@ class TestBasic4kPagesCbdma(TestCase):
         self.dut.send_expect("rm -rf /root/dpdk/vhost-net*", "# ")
         # Prepare the result table
         self.table_header = ["Frame"]
-        self.table_header.append("Mode")
         self.table_header.append("Mpps")
-        self.table_header.append("Queue Num")
         self.table_header.append("% linerate")
         self.result_table_create(self.table_header)
         self.vm_dut = []
         self.vm = []
-        self.packed = False
+        self.throughput = {}
+        self.test_result = {}
 
     def start_vm0(self, packed=False, queues=1, server=False):
         packed_param = ",packed=on" if packed else ""
@@ -145,6 +158,9 @@ class TestBasic4kPagesCbdma(TestCase):
         )
         self.vm0_session.send_expect(cmd0, "# ")
         time.sleep(10)
+        self.monitor_socket = "/tmp/vm0_monitor.sock"
+        lcores = self.vm0_cpupin.split(" ")
+        self.pin_threads(lcores)
         self.vm0_dut = self.connect_vm0()
         self.verify(self.vm0_dut is not None, "vm start fail")
         self.vm_session = self.vm0_dut.new_session(suite="vm_session")
@@ -174,9 +190,51 @@ class TestBasic4kPagesCbdma(TestCase):
         )
         self.vm1_session.send_expect(cmd1, "# ")
         time.sleep(10)
+        self.monitor_socket = "/tmp/vm1_monitor.sock"
+        lcores = self.vm1_cpupin.split(" ")
+        self.pin_threads(lcores)
         self.vm1_dut = self.connect_vm1()
         self.verify(self.vm1_dut is not None, "vm start fail")
         self.vm_session = self.vm1_dut.new_session(suite="vm_session")
+
+    def __monitor_session(self, command, *args):
+        """
+        Connect the qemu monitor session, send command and return output message.
+        """
+        self.dut.send_expect("nc -U %s" % self.monitor_socket, "(qemu)")
+
+        cmd = command
+        for arg in args:
+            cmd += " " + str(arg)
+
+        # after quit command, qemu will exit
+        if "quit" in cmd:
+            self.dut.send_command("%s" % cmd)
+            out = self.dut.send_expect(" ", "#")
+        else:
+            out = self.dut.send_expect("%s" % cmd, "(qemu)", 30)
+        self.dut.send_expect("^C", "# ")
+        return out
+
+    def pin_threads(self, lcores):
+        thread_reg = r"CPU #\d+: thread_id=(\d+)"
+        output = self.__monitor_session("info", "cpus")
+        threads = re.findall(thread_reg, output)
+        if len(threads) <= len(lcores):
+            map = list(zip(threads, lcores))
+        else:
+            self.logger.warning(
+                "lcores is less than VM's threads, 1 lcore will pin multiple VM's threads"
+            )
+            lcore_len = len(lcores)
+            for item in threads:
+                thread_idx = threads.index(item)
+                if thread_idx >= lcore_len:
+                    lcore_idx = thread_idx % lcore_len
+                    lcores.append(lcores[lcore_idx])
+            map = list(zip(threads, lcores))
+        for thread, lcore in map:
+            self.dut.send_expect("taskset -pc %s %s" % (lcore, thread), "#")
 
     def connect_vm0(self):
         self.vm0 = QEMUKvm(self.dut, "vm0", self.suite_name)
@@ -299,31 +357,96 @@ class TestBasic4kPagesCbdma(TestCase):
             streams = self.pktgen_helper.prepare_stream_from_tginput(
                 tgen_input, 100, None, self.tester.pktgen
             )
-            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
+            # set traffic option
+            traffic_opt = {
+                "delay": 5,
+                "duration": self.get_suite_cfg()["test_duration"],
+            }
+            _, pps = self.tester.pktgen.measure_throughput(
+                stream_ids=streams, options=traffic_opt
+            )
             Mpps = pps / 1000000.0
-            # self.verify(Mpps > self.check_value[frame_size],
-            #             "%s of frame size %d speed verify failed, expect %s, result %s" % (
-            #                 self.running_case, frame_size, self.check_value[frame_size], Mpps))
-            throughput = Mpps * 100 / float(self.wirespeed(self.nic, 64, 1))
+            self.throughput[frame_size] = Mpps
+            linerate = Mpps * 100 / float(self.wirespeed(self.nic, 64, 1))
             results_row = [frame_size]
-            results_row.append("4K pages")
             results_row.append(Mpps)
-            results_row.append("1")
-            results_row.append(throughput)
+            results_row.append(linerate)
             self.result_table_add(results_row)
+        self.result_table_print()
 
-    def start_vhost_user_testpmd(self, cores, param="", eal_param="", ports=""):
+    def handle_expected(self):
+        """
+        Update expected numbers to configurate file: $DTS_CFG_FOLDER/$suite_name.cfg
+        """
+        if load_global_setting(UPDATE_EXPECTED) == "yes":
+            for frame_size in self.frame_sizes:
+                self.expected_throughput[frame_size] = round(
+                    self.throughput[frame_size], 3
+                )
+
+    def handle_results(self):
+        """
+        results handled process:
+        1, save to self.test_results
+        2, create test results table
+        """
+        # save test results to self.test_result
+        header = self.table_header
+        header.append("Expected Throughput(Mpps)")
+        header.append("Status")
+        self.result_table_create(self.table_header)
+        for frame_size in self.frame_sizes:
+            wirespeed = self.wirespeed(self.nic, frame_size, self.nb_ports)
+            ret_data = {}
+            ret_data[header[0]] = str(frame_size)
+            _real = float(self.throughput[frame_size])
+            _exp = float(self.expected_throughput[frame_size])
+            ret_data[header[1]] = "{:.3f}".format(_real)
+            ret_data[header[2]] = "{:.3f}%".format(_real * 100 / wirespeed)
+            ret_data[header[3]] = "{:.3f}".format(_exp)
+            gap = _exp * -self.gap * 0.01
+            if _real > _exp + gap:
+                ret_data[header[4]] = "PASS"
+            else:
+                ret_data[header[4]] = "FAIL"
+            self.test_result[frame_size] = deepcopy(ret_data)
+
+        for frame_size in self.test_result.keys():
+            table_row = list()
+            for i in range(len(header)):
+                table_row.append(self.test_result[frame_size][header[i]])
+            self.result_table_add(table_row)
+        # present test results to screen
+        self.result_table_print()
+        self.verify(
+            "FAIL" not in self.test_result,
+            "Excessive gap between test results and expectations",
+        )
+
+    def start_vhost_user_testpmd(
+        self, cores, param="", eal_param="", ports="", no_pci=False
+    ):
         """
         launch the testpmd as virtio with vhost_user
         """
-        self.vhost_user_pmd.start_testpmd(
-            cores=cores,
-            param=param,
-            eal_param=eal_param,
-            ports=ports,
-            prefix="vhost",
-            fixed_prefix=True,
-        )
+        if no_pci:
+            self.vhost_user_pmd.start_testpmd(
+                cores=cores,
+                param=param,
+                eal_param=eal_param,
+                no_pci=True,
+                prefix="vhost",
+                fixed_prefix=True,
+            )
+        else:
+            self.vhost_user_pmd.start_testpmd(
+                cores=cores,
+                param=param,
+                eal_param=eal_param,
+                ports=ports,
+                prefix="vhost",
+                fixed_prefix=True,
+            )
 
     def start_virtio_user0_testpmd(self, cores, eal_param="", param=""):
         """
@@ -489,11 +612,14 @@ class TestBasic4kPagesCbdma(TestCase):
         """
         Test Case 1: Basic test vhost-user/virtio-user split ring vhost async operation using 4K-pages and cbdma enable
         """
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
         dmas = "txq0@%s;rxq0@%s" % (self.cbdma_list[0], self.cbdma_list[0])
         vhost_eal_param = (
-            "--no-huge -m 1024 --vdev 'net_vhost0,iface=./vhost-net,queues=1,dmas=[%s]'"
-            % dmas
+            "--vdev 'net_vhost0,iface=./vhost-net,queues=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--no-numa --socket-num=%s " % self.ports_socket
         ports = [self.dut.ports_info[0]["pci"]]
@@ -513,7 +639,8 @@ class TestBasic4kPagesCbdma(TestCase):
         self.virtio_user0_pmd.execute_cmd("set fwd mac")
         self.virtio_user0_pmd.execute_cmd("start")
         self.send_and_verify()
-        self.result_table_print()
+        self.handle_expected()
+        self.handle_results()
 
     def test_perf_pvp_packed_ring_vhost_async_operation_using_4K_pages_and_cbdma_enable(
         self,
@@ -521,11 +648,14 @@ class TestBasic4kPagesCbdma(TestCase):
         """
         Test Case 2: Basic test vhost-user/virtio-user packed ring vhost async operation using 4K-pages and cbdma enable
         """
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()["expected_throughput"][
+            self.test_target
+        ]
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=1)
         dmas = "txq0@%s;rxq0@%s" % (self.cbdma_list[0], self.cbdma_list[0])
         vhost_eal_param = (
-            "--no-huge -m 1024 --vdev 'net_vhost0,iface=./vhost-net,queues=1,dmas=[%s]'"
-            % dmas
+            "--vdev 'net_vhost0,iface=./vhost-net,queues=1,dmas=[%s]'" % dmas
         )
         vhost_param = "--no-numa --socket-num=%s " % self.ports_socket
         ports = [self.dut.ports_info[0]["pci"]]
@@ -545,7 +675,8 @@ class TestBasic4kPagesCbdma(TestCase):
         self.virtio_user0_pmd.execute_cmd("set fwd mac")
         self.virtio_user0_pmd.execute_cmd("start")
         self.send_and_verify()
-        self.result_table_print()
+        self.handle_expected()
+        self.handle_results()
 
     def test_vm2vm_split_ring_vhost_async_operaiton_test_with_tcp_traffic_using_4k_pages_and_cbdma_enable(
         self,
@@ -557,8 +688,7 @@ class TestBasic4kPagesCbdma(TestCase):
         dmas1 = "txq0@%s;rxq0@%s" % (self.cbdma_list[0], self.cbdma_list[0])
         dmas2 = "txq0@%s;rxq0@%s" % (self.cbdma_list[1], self.cbdma_list[1])
         vhost_eal_param = (
-            "--no-huge -m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,queues=1,tso=1,dmas=[%s],dma-ring-size=2048'"
+            "--vdev 'net_vhost0,iface=./vhost-net0,queues=1,tso=1,dmas=[%s],dma-ring-size=2048'"
             % dmas1
             + " --vdev 'net_vhost1,iface=./vhost-net1,queues=1,tso=1,dmas=[%s],dma-ring-size=2048'"
             % dmas2
@@ -594,8 +724,7 @@ class TestBasic4kPagesCbdma(TestCase):
         dmas1 = "txq0@%s;rxq0@%s" % (self.cbdma_list[0], self.cbdma_list[0])
         dmas2 = "txq0@%s;rxq0@%s" % (self.cbdma_list[1], self.cbdma_list[1])
         vhost_eal_param = (
-            "--no-huge -m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,queues=1,tso=1,dmas=[%s],dma-ring-size=2048'"
+            "--vdev 'net_vhost0,iface=./vhost-net0,queues=1,tso=1,dmas=[%s],dma-ring-size=2048'"
             % dmas1
             + " --vdev 'net_vhost1,iface=./vhost-net1,queues=1,tso=1,dmas=[%s],dma-ring-size=2048'"
             % dmas2
@@ -667,9 +796,7 @@ class TestBasic4kPagesCbdma(TestCase):
             )
         )
         vhost_eal_param = (
-            "--no-huge -m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,dmas=[%s]'"
-            % dmas1
+            "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,dmas=[%s]'" % dmas1
             + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,dmas=[%s]'"
             % dmas2
         )
@@ -748,8 +875,7 @@ class TestBasic4kPagesCbdma(TestCase):
             )
         )
         vhost_eal_param = (
-            "--no-huge -m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,dmas=[%s],dma-ring-size=1024'"
+            "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,dmas=[%s],dma-ring-size=1024'"
             % dmas1
             + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,dmas=[%s],dma-ring-size=1024'"
             % dmas2
@@ -769,8 +895,7 @@ class TestBasic4kPagesCbdma(TestCase):
 
         self.vhost_user_pmd.quit()
         vhost_eal_param = (
-            "--no-huge -m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=4'"
+            "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=4'"
             + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=4'"
         )
         vhost_param = "--nb-cores=4 --txd=1024 --rxd=1024 --rxq=4 --txq=4"
@@ -778,7 +903,7 @@ class TestBasic4kPagesCbdma(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            no_pci=True,
         )
         self.vhost_user_pmd.execute_cmd("start")
         self.config_vm_combined(combined=4)
@@ -789,8 +914,7 @@ class TestBasic4kPagesCbdma(TestCase):
 
         self.vhost_user_pmd.quit()
         vhost_eal_param = (
-            "--no-huge -m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=4'"
+            "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=4'"
             + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=4'"
         )
         vhost_param = " --nb-cores=4 --txd=1024 --rxd=1024 --rxq=1 --txq=1"
@@ -798,7 +922,7 @@ class TestBasic4kPagesCbdma(TestCase):
             cores=self.vhost_core_list,
             eal_param=vhost_eal_param,
             param=vhost_param,
-            ports=self.cbdma_list,
+            no_pci=True,
         )
         self.vhost_user_pmd.execute_cmd("start")
         self.config_vm_combined(combined=1)
@@ -837,8 +961,7 @@ class TestBasic4kPagesCbdma(TestCase):
             )
         )
         vhost_eal_param = (
-            "--no-huge -m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,tso=1,dmas=[%s]'"
+            "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,tso=1,dmas=[%s]'"
             % dmas
             + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,tso=1,dmas=[%s]'"
             % dmas
@@ -899,8 +1022,7 @@ class TestBasic4kPagesCbdma(TestCase):
             )
         )
         vhost_eal_param = (
-            "-m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,tso=1,dmas=[%s],dma-ring-size=1024'"
+            "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,tso=1,dmas=[%s],dma-ring-size=1024'"
             % dmas
             + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,tso=1,dmas=[%s],dma-ring-size=1024'"
             % dmas
@@ -961,8 +1083,7 @@ class TestBasic4kPagesCbdma(TestCase):
             )
         )
         vhost_eal_param = (
-            "--no-huge -m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,tso=1,dmas=[%s]'"
+            "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,tso=1,dmas=[%s]'"
             % dmas
             + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,tso=1,dmas=[%s]'"
             % dmas
@@ -1048,9 +1169,7 @@ class TestBasic4kPagesCbdma(TestCase):
             )
         )
         vhost_eal_param = (
-            "-m 1024 "
-            + "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,dmas=[%s]'"
-            % dmas1
+            "--vdev 'net_vhost0,iface=./vhost-net0,client=1,queues=8,dmas=[%s]'" % dmas1
             + " --vdev 'net_vhost1,iface=./vhost-net1,client=1,queues=8,dmas=[%s]'"
             % dmas2
         )
