@@ -159,10 +159,11 @@ class TestPvpVirtioUser4kPages(TestCase):
             self.result_table_add(table_row)
         # present test results to screen
         self.result_table_print()
-        self.verify(
-            "FAIL" not in self.test_result,
-            "Excessive gap between test results and expectations",
-        )
+        for data in self.test_result.values():
+            self.verify(
+                data["Status"] != "FAIL",
+                "Excessive gap between test results and expectations",
+            )
 
     def start_testpmd_as_vhost(self):
         """
@@ -177,7 +178,7 @@ class TestPvpVirtioUser4kPages(TestCase):
             ports=[self.pci_info],
             vdevs=[vdev],
         )
-        command_line_client = testcmd + eal_params + " -m 1024 --no-huge" + para
+        command_line_client = testcmd + eal_params + para
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost_user.send_expect("start", "testpmd> ", 120)
 
