@@ -1040,10 +1040,12 @@ class TestMultiprocess(TestCase):
         )
 
     # test testpmd multi-process
-    @check_supported_nic(support_nic)
     def test_multiprocess_auto_process_type_detected(self):
         # start 2 process
-        self.launch_multi_testpmd("auto", 8, 2)
+        if self.kdriver in ["igc", "ixgbe"]:
+            self.launch_multi_testpmd("auto", 4, 2)
+        else:
+            self.launch_multi_testpmd("auto", 8, 2)
         # get output of each process and check the detected process type is correctly
         process_type = ["PRIMARY", "SECONDARY"]
         for i in range(2):
@@ -1056,11 +1058,13 @@ class TestMultiprocess(TestCase):
                 "pass: Auto-detected {} process type correctly".format(process_type[i])
             )
 
-    @check_supported_nic(support_nic)
     def test_multiprocess_negative_2_primary_process(self):
         # start 2 primary process
         try:
-            self.launch_multi_testpmd(["primary", "primary"], 8, 2, timeout=10)
+            if self.kdriver in ["igc", "ixgbe"]:
+                self.launch_multi_testpmd(["primary", "primary"], 4, 2, timeout=10)
+            else:
+                self.launch_multi_testpmd(["primary", "primary"], 8, 2, timeout=10)
         except Exception as e:
             # check second process start failed
             self.verify(
