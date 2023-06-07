@@ -294,7 +294,7 @@ class TestIpPipeline(TestCase):
         # rule 0 test
         pcap_file = "/tmp/fw_0.pcap"
         pkt = [
-            Ether(dst=self.dut_p0_mac)
+            Ether(dst="00:11:22:33:44:55")
             / IP(dst="100.0.0.1")
             / TCP(sport=100, dport=200)
             / Raw(load="X" * 6)
@@ -394,7 +394,7 @@ class TestIpPipeline(TestCase):
         # rule 0 test
         pcap_file = "/tmp/fl_0.pcap"
         pkt = [
-            Ether(dst=self.dut_p0_mac)
+            Ether(dst="00:11:22:33:44:55")
             / IP(src="100.0.0.10", dst="200.0.0.10")
             / TCP(sport=100, dport=200)
             / Raw(load="X" * 6)
