@@ -299,7 +299,7 @@ class TestVM2VMVirtioNetPerfDsa(TestCase):
         self.BC.run_iperf_test_between_2_vms()
         self.BC.check_iperf_result_between_2_vms()
 
-        if not self.check_2M_env:
+        if not self.BC.check_2M_hugepage_size:
             self.vhost_user_pmd.quit()
             self.start_vhost_testpmd(
                 cores=self.vhost_core_list,
@@ -947,10 +947,10 @@ class TestVM2VMVirtioNetPerfDsa(TestCase):
             param=vhost_param,
             no_pci=True,
         )
-        self.check_ping_between_vms()
-        self.check_scp_file_valid_between_vms()
-        self.start_iperf()
-        self.get_perf_result()
+        self.BC.check_ping_between_2_vms()
+        self.BC.check_scp_file_between_2_vms()
+        self.BC.run_iperf_test_between_2_vms()
+        self.BC.check_iperf_result_between_2_vms()
 
         self.vhost_user_pmd.quit()
         vhost_eal_param = (
@@ -1338,7 +1338,7 @@ class TestVM2VMVirtioNetPerfDsa(TestCase):
         dsas = self.DC.bind_dsa_to_dpdk_driver(
             dsa_num=2,
             driver_name="vfio-pci",
-            dsa_index_list=[2, 3],
+            dsa_idxs=[2, 3],
             socket=self.ports_socket,
         )
         dmas1 = (
@@ -1617,7 +1617,7 @@ class TestVM2VMVirtioNetPerfDsa(TestCase):
         dsas = self.DC.bind_dsa_to_dpdk_driver(
             dsa_num=2,
             driver_name="vfio-pci",
-            dsa_index_list=[2, 3],
+            dsa_idxs=[2, 3],
             socket=self.ports_socket,
         )
         dmas1 = (
