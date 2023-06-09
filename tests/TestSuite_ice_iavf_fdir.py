@@ -8701,6 +8701,9 @@ class TestICEIavfFDIR(TestCase):
                     vf_port.bind_driver(self.vf_driver)
                 for vf_port in self.sriov_vfs_pf1:
                     vf_port.bind_driver(self.vf_driver)
+            self.eal_param_a = ""
+            for sriov_vf in self.sriov_vfs_pf0:
+                self.eal_param_a += " -a {}".format(sriov_vf.pci)
 
         except Exception as e:
             self.destroy_env()
@@ -10486,7 +10489,9 @@ class TestICEIavfFDIR(TestCase):
             "ip link set {} vf {} mac 00:11:22:33:44:55".format(self.pf0_intf, nex_cnt),
             "#",
         )
-        command = self.path + " -c f -n 6 -- -i --rxq=16 --txq=16"
+        command = self.path + " -c f -n 6 %s -- -i --rxq=16 --txq=16" % (
+            self.eal_param_a
+        )
         self.dut.send_expect(command, "testpmd> ", 360)
         self.config_testpmd()
 
