@@ -320,10 +320,14 @@ class TestIavfPackageDriverErrorHandle(TestCase):
 
         for port in self.sriov_vfs_port:
             port.bind_driver("vfio-pci")
+        self.eal_param_a = ""
+        for sriov_vf in self.sriov_vfs_port:
+            self.eal_param_a += " -a {}".format(sriov_vf.pci)
 
-        testpmdcmd = (
-            self.dut.apps_name["test-pmd"]
-            + "-l 6-9 -n 4  --file-prefix=vf -- -i --rxq=4 --txq=4  --nb-cores=2"
+        testpmdcmd = self.dut.apps_name[
+            "test-pmd"
+        ] + "-l 6-9 -n 4 %s --file-prefix=vf -- -i --rxq=4 --txq=4  --nb-cores=2" % (
+            self.eal_param_a
         )
         self.dut_testpmd.execute_cmd(testpmdcmd)
         out = self.dut_testpmd.execute_cmd(
