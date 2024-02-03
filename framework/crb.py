@@ -1069,7 +1069,7 @@ class Crb(object):
         elif self.get_os_type() == "freebsd":
             return False
         elif self.send_expect(
-            "systemd-detect-virt -c|egrep '(systemd-nspawn|lxc|docker|podman|rkt|wsl|container-other)$' ",
+            "systemd-detect-virt -c|grep -E '(systemd-nspawn|lxc|docker|podman|rkt|wsl|container-other)$' ",
             "# ",
         ):
             return True
